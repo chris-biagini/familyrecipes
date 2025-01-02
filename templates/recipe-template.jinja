@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body data-recipe-id="{{ recipe_id }}">
+    <nav>
+        <a href="index.html" class="home">Home</a>
+        
+        <div>
+            <a href="{{ recipe_id }}.text" class="text">View as Text</a>
+            <a href="#" onclick="window.print(); return false;" class="print">Print</a>
+        </div>
+    </nav>
+    
+    <main>
+        <article>
+            <header>
+                <h1>{{ title }}</h1>
+                <p>{{ subtitle }}</p>
+            </header>
+
+            {% for section in sections %}
+            <section>
+                <h2>{{ section.title }}</h2>
+                <div>
+                    {% if section.ingredients %}
+                    <div class="ingredients">
+                        <ul>
+                            {% for ingredient in section.ingredients %}
+                            <li><b>{{ ingredient.name }}</b>{% if ingredient.quantity %}, {{ ingredient.quantity }}{% endif %}{% if ingredient.prep_note %} <small>{{ ingredient.prep_note }}</small>{% endif %}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                    <div class="instructions">
+                        {{ section.instructions | markdown }}
+                    </div>
+                </div>
+            </section>
+            {% endfor %}
+            
+            <footer>
+                {%+ if footer +%}{{ footer | markdown }}{%+ endif +%}
+            </footer>
+        </article>
+    </main>
+    <script src="script.js" defer></script>
+</body>
+
+</html>

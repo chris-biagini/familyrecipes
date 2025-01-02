@@ -1,0 +1,12 @@
+# macOS system files
+.DS_Store
+
+# Windows temp files
+Thumbs.db
+desktop.ini
+
+# Output directory
+output/
+
+# Nova editor directory
+.nova/
