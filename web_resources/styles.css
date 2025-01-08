@@ -32,8 +32,8 @@ body {
 	background-attachment: fixed;
 	background-color: white;
 
-	/* Nifty gingham pattern, but maybe more computation than really needs to happen here */
-	/*
+	/* Nifty gingham pattern, but maybe more computation than really needs to happen here? */
+
 	--weave-color: rgba(255, 255, 255, 0.03);
 	--weave-stripe-width: 2px;
 
@@ -61,11 +61,12 @@ body {
 		linear-gradient(90deg, 
 			var(--gingham-base), 
 			var(--gingham-base)); 
-	*/
 	
-	/* Background image from <https://github.com/tanshoku/squidfingers-patterns/blob/master/pattern_070.gif> */
+	/* Alternative background image from <https://github.com/tanshoku/squidfingers-patterns/blob/master/pattern_070.gif> */
+	/*
 	background-image: url('data:image/gif;base64,R0lGODlhEAAQAJH/AKtBFL5QKMdpRQAAACwAAAAAEAAQAAACNJQFCceXAUNqBsQrqcFBs+tNW1ctB2RClXqynzuaK/nSQlS2r+4xliTT/CIi3xCk4fRakAIAOw==');
-	background-repeat: repeat; /* Ensures the image repeats */
+	background-repeat: repeat; 
+	*/
 }
 
 nav {
