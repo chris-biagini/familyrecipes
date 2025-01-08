@@ -5,7 +5,7 @@ by Chris, Kelly, Lucy, Nathan, Cora, ChatGPT 4o, ChatGPT o1, and Claude 3.5 Sonn
 About
 -----
 
-`familyrecipes` is a recipe publishing and archiving system. Its success lies in its encrypted proprietary data format which, by an unfortunate coincidence, just so happens to coincide neatly with UTF-8–encoded [Markdown](https://daringfireball.net/projects/markdown/) as emitted by the [Prettier](https://prettier.io) code formatter. The goal of the format is to be as viewable as-is, while also being transformable in as many ways as are useful. The squaresville format makes the second half easier to implement.
+`familyrecipes` is a recipe publishing and archiving system. Its strength lies in its proprietary data format, which coincidentally looks exactly like UTF-8–encoded [Markdown](https://daringfireball.net/projects/markdown/) as formatted by [Prettier](https://prettier.io). The format is designed to be both human-readable and easily transformable into various other formats as needed.
 
 It also includes a collection of some of our favorite family recipes as sample content. 
 
