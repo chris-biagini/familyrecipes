@@ -135,6 +135,8 @@ article {
 
 header {
 	text-align: center;
+	margin-left: 2.5rem;
+	margin-right: 2.5rem;
 }
 
 /* See https://www.fontsquirrel.com/fonts/quigleywiggly */
@@ -222,7 +224,7 @@ section > div {
 }
 
 footer {
-	margin: 0 2.5rem 1rem 0;
+	margin: 0 2.5rem 1rem 2.5rem;
 	font-style: italic;
 	text-align: center;
 	position: relative;
