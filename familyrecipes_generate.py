@@ -295,7 +295,7 @@ def main():
         generate_all_recipes(output_dir, env, recipes_dir)
         
         # Copy web_resources folder to output directory
-        web_resources_dir = Path('web_resources')
+        web_resources_dir = Path('resources/web')
         if web_resources_dir.exists() and web_resources_dir.is_dir():
             for item in web_resources_dir.iterdir():
                 dest = output_dir / item.name
