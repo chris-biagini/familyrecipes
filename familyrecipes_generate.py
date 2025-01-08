@@ -188,7 +188,7 @@ def collect_recipe_data(recipes_dir: Path) -> List[Dict]:
 def generate_index(output_dir: Path, env: jinja2.Environment, recipes: List[Dict]) -> None:
     """Generate an index.html file listing all recipes."""
     try:
-        template = env.get_template('templates/index-template.jinja')
+        template = env.get_template('./templates/web/index-template.jinja')
         output = template.render(recipes=recipes)
         
         output_path = output_dir / 'index.html'
@@ -208,7 +208,7 @@ def generate_all_recipes(output_dir: Path, env: jinja2.Environment, recipes_dir:
                 print(f"Error reading {recipe_file}: {str(e)}")
                 
         all_recipes.sort(key=lambda x: x['title'].lower())
-        template = env.get_template('templates/all-template.jinja')
+        template = env.get_template('./templates/web/all-template.jinja')
         output = template.render(recipes=all_recipes)
         
         output_path = output_dir / 'all.html'
@@ -225,7 +225,7 @@ def convert_recipe(input_path: Path, output_dir: Path, env: jinja2.Environment) 
         recipe_id = recipe_data['recipe_id']
         
         # Render the template
-        template = env.get_template('templates/recipe-template.jinja')
+        template = env.get_template('./templates/web/recipe-template.jinja')
         output = template.render(**recipe_data)
         
         # Write the HTML output with transformed filename
@@ -251,7 +251,7 @@ def main():
         sys.exit(1)
     
     # Check for template file
-    template_path = Path('templates/recipe-template.jinja')
+    template_path = Path('./templates/web/recipe-template.jinja')
     if not template_path.exists():
         print(f"Error: Template file '{template_path}' does not exist")
         sys.exit(1)
