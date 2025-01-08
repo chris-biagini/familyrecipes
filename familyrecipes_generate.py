@@ -174,7 +174,7 @@ def parse_markdown_file(file_path: Path) -> Dict:
 def collect_recipe_data(recipes_dir: Path) -> List[Dict]:
     """Collect title and ID information from all recipe files."""
     recipes = []
-    for recipe_file in recipes_dir.glob('*.text'):
+    for recipe_file in recipes_dir.glob('*.txt'):
         try:
             recipe_data = parse_markdown_file(recipe_file)
             recipes.append({
@@ -200,7 +200,7 @@ def generate_index(output_dir: Path, env: jinja2.Environment, recipes: List[Dict
 def generate_all_recipes(output_dir: Path, env: jinja2.Environment, recipes_dir: Path) -> None:
         """Generate a single page containing all recipes."""
         all_recipes = []
-        for recipe_file in recipes_dir.glob('*.text'):
+        for recipe_file in recipes_dir.glob('*.txt'):
             try:
                 recipe_data = parse_markdown_file(recipe_file)
                 all_recipes.append(recipe_data)
@@ -233,7 +233,7 @@ def convert_recipe(input_path: Path, output_dir: Path, env: jinja2.Environment) 
         html_output_path.write_text(output)
         
         # Copy the text file with transformed filename
-        text_output_path = output_dir / f"{recipe_id}.text"
+        text_output_path = output_dir / f"{recipe_id}.txt"
         shutil.copy2(input_path, text_output_path)
         
         print(f"Successfully processed {input_path}")
@@ -274,8 +274,8 @@ def main():
     # Collect recipe data for index
     recipes = collect_recipe_data(recipes_dir)
     
-    # Process all .text files in recipes directory
-    text_files = recipes_dir.glob('*.text')
+    # Process all .txt files in recipes directory
+    text_files = recipes_dir.glob('*.txt')
     files_processed = 0
     
     # Generate individual recipe pages and copy text files
@@ -284,7 +284,7 @@ def main():
         files_processed += 1
     
     if files_processed == 0:
-        print("No .text files found in 'recipes' directory")
+        print("No .txt files found in 'recipes' directory")
     else:
         print(f"\nProcessed {files_processed} recipe files")
         
