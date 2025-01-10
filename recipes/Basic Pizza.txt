@@ -7,11 +7,11 @@ Minimum viable pizza, cooked in round pizza pans.
 - Olive oil, 15 g
 - Salt, 12.5 g
 - Malt syrup, 10 g
-- Yeast, 0.5-1 g
+- Yeast, 1-2 g
 - Water, 325 g
 - Bread flour, 500 g
 
-In large bowl, whisk together all ingredients except flour.
+In large bowl, whisk together all ingredients except flour. Adjust yeast based on time available and ambient temperature. 
 
 Whisk in half the flour. Stir in remaining flour mix until a shaggy dough forms.
 
