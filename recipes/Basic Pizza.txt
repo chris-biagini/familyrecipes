@@ -5,7 +5,7 @@ Minimum viable pizza, cooked in round pizza pans.
 ## Make dough.
 
 - Olive oil, 15 g
-- Salt, 12.5 g
+- Salt, 10 g
 - Malt syrup, 10 g
 - Yeast, 1-2 g
 - Water, 325 g
