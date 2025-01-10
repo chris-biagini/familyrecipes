@@ -37,31 +37,36 @@ body {
 	--weave-color: rgba(255, 255, 255, 0.03);
 	--weave-stripe-width: 2px;
 
-	 background-image:
-		repeating-linear-gradient(135deg,
+	background-image: repeating-linear-gradient(
+			135deg,
 			var(--weave-color) 0,
 			var(--weave-color) var(--weave-stripe-width),
 			transparent var(--weave-stripe-width),
-			transparent calc(2 * var(--weave-stripe-width))),
-		repeating-linear-gradient(45deg,
+			transparent calc(2 * var(--weave-stripe-width))
+		),
+		repeating-linear-gradient(
+			45deg,
 			var(--weave-color) 0,
 			var(--weave-color) var(--weave-stripe-width),
 			transparent var(--weave-stripe-width),
-			transparent calc(2 * var(--weave-stripe-width))),
-		repeating-linear-gradient(135deg,
+			transparent calc(2 * var(--weave-stripe-width))
+		),
+		repeating-linear-gradient(
+			135deg,
 			var(--gingham-red) 0,
 			var(--gingham-red) var(--gingham-stripe-width),
 			transparent var(--gingham-stripe-width),
-			transparent calc(2 * var(--gingham-stripe-width))),
-		repeating-linear-gradient(45deg,
+			transparent calc(2 * var(--gingham-stripe-width))
+		),
+		repeating-linear-gradient(
+			45deg,
 			var(--gingham-red) 0,
 			var(--gingham-red) var(--gingham-stripe-width),
 			transparent var(--gingham-stripe-width),
-			transparent calc(2 * var(--gingham-stripe-width))),
-		linear-gradient(90deg, 
-			var(--gingham-base), 
-			var(--gingham-base)); 
-	
+			transparent calc(2 * var(--gingham-stripe-width))
+		),
+		linear-gradient(90deg, var(--gingham-base), var(--gingham-base));
+
 	/* Alternative background image from <https://github.com/tanshoku/squidfingers-patterns/blob/master/pattern_070.gif> */
 	/*
 	background-image: url('data:image/gif;base64,R0lGODlhEAAQAJH/AKtBFL5QKMdpRQAAACwAAAAAEAAQAAACNJQFCceXAUNqBsQrqcFBs+tNW1ctB2RClXqynzuaK/nSQlS2r+4xliTT/CIi3xCk4fRakAIAOw==');
@@ -71,15 +76,17 @@ body {
 
 nav {
 	position: fixed;
-		top: 0; right: 0; left: 0;
+	top: 0;
+	right: 0;
+	left: 0;
 	z-index: 1000;
 	display: flex;
 	justify-content: space-between;
-	
+
 	background-color: rgba(249, 249, 249, 0.9);
 	backdrop-filter: blur(10px);
 
-	box-shadow: 
+	box-shadow:
 		0 2px 4px rgba(0, 0, 0, 0.08),
 		0 1px 2px rgba(0, 0, 0, 0.04);
 }
@@ -98,12 +105,12 @@ nav a {
 /* Optionally change color on hover/focus */
 nav a:hover,
 nav a:focus {
-  color: #0077ff; /* For example */
+	color: #0077ff; /* For example */
 }
 
 /* Prevent the dotted outline from sticking */
 nav a:focus {
-  outline: none;
+	outline: none;
 }
 
 nav a.home::before {
@@ -124,7 +131,8 @@ article {
 	background-color: var(--content-background-color);
 	border-radius: 0.25rem;
 
-	box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px,
+	box-shadow:
+		rgba(50, 50, 93, 0.25) 0px 13px 27px -5px,
 		rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
 }
 
@@ -147,10 +155,11 @@ header {
 } */
 
 /* in allrecipes view, all headers get demoted by one to avoid multiple H1's on page */
-header h1, .allrecipes header h2 {
+header h1,
+.allrecipes header h2 {
 	/* font-family: 'quigleywigglyregular', cursive; */
 	font-family: "Futura", sans-serif;
-	font-weight: bold; 
+	font-weight: bold;
 	font-size: 4rem;
 	line-height: 1;
 	margin: 2rem 0 1rem 0;
@@ -168,7 +177,8 @@ section {
 }
 
 /* in allrecipes view, all headers get demoted by one to avoid multiple H1's on page */
-section h2, .allrecipes section h3 {
+section h2,
+.allrecipes section h3 {
 	font-size: 1.5rem;
 	margin-top: 0;
 	margin-bottom: 0.5rem;
@@ -203,7 +213,7 @@ section > div {
 }
 
 .ingredients ul li {
-	white-space:nowrap;
+	white-space: nowrap;
 	break-inside: avoid;
 	page-break-inside: avoid;
 }
@@ -235,8 +245,8 @@ footer:before {
 }
 
 footer small {
-  text-align: right; /* Right-align the small text */
-  display: block; /* Ensures it takes up a full line for alignment to work */
+	text-align: right; /* Right-align the small text */
+	display: block; /* Ensures it takes up a full line for alignment to work */
 }
 
 /******************************************************/
@@ -246,7 +256,10 @@ footer small {
 @media screen {
 	/* for highlighting sections */
 	section {
-		transition: transform 0.5s ease, background-color 0.5s ease, box-shadow 0.5s ease;
+		transition:
+			transform 0.5s ease,
+			background-color 0.5s ease,
+			box-shadow 0.5s ease;
 		background-color: transparent;
 	}
 
@@ -284,7 +297,7 @@ footer small {
 	html {
 		font-size: 14px;
 	}
-	
+
 	body {
 		margin: 3rem auto 2.5rem auto; /* need to add vars to calculate these automatically */
 	}
@@ -324,7 +337,7 @@ footer small {
 
 	body {
 		margin: 0 auto;
-		padding: 0;		
+		padding: 0;
 		background-color: white;
 		color: black;
 		background: none;
@@ -340,7 +353,7 @@ footer small {
 		box-shadow: none;
 		break-after: page;
 	}
-	
+
 	a {
 		color: black;
 		text-decoration: none;
