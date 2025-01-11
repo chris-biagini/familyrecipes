@@ -60,25 +60,17 @@ class RecipeProgressManager {
 		});
 	}
 
-	handleClickOnCrossableItem(crossableItemNode) {
-		crossableItemNode.classList.toggle("crossed-off");
-		this.saveRecipeState();
-	}
-
-	handleClickOnSectionHighlighterItem(sectionHighlighterNode) {
-		sectionHighlighterNode.closest("section").classList.toggle("highlighted");
-	}
-
 	setupEventListeners() {
 		this.crossableItemNodes.forEach((crossableItemNode) => {
 			crossableItemNode.addEventListener("click", () => {
-				this.handleClickOnCrossableItem(crossableItemNode);
+				crossableItemNode.classList.toggle("crossed-off");
+				this.saveRecipeState();
 			});
 		});
 
 		this.sectionHighlighterNodes.forEach((sectionHighlighterNode) => {
 			sectionHighlighterNode.addEventListener("click", () => {
-				this.handleClickOnSectionHighlighterItem(sectionHighlighterNode);
+				sectionHighlighterNode.closest("section").classList.toggle("highlighted");
 			});
 		});
 	}
