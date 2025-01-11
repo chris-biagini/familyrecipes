@@ -4,11 +4,11 @@ class RecipeProgressManager {
 		this.recipeId = document.body.dataset.recipeId || "defaultRecipe";
 		this.TTL = 24 * 60 * 60 * 1000; // 24 hours
 
-		this.crossableItems = document.querySelectorAll(
+		this.crossableItemNodes = document.querySelectorAll(
 			".ingredients li, .instructions p"
 		);
 
-		this.sectionHighlighterItems = document.querySelectorAll("section h2");
+		this.sectionHighlighterNodes = document.querySelectorAll("section h2");
 
 		// Initialize
 		this.init();
@@ -18,24 +18,25 @@ class RecipeProgressManager {
 		this.setupEventListeners();
 	}
 
-	handleClickOnCrossableItem(crossableItem) {
-		crossableItem.classList.toggle("crossed-off");
+	handleClickOnCrossableItem(crossableItemNode) {
+		crossableItemNode.classList.toggle("crossed-off");
+		console.log(crossableItemNode);
 	}
 
-	handleClickOnSectionHighlighterItem(sectionHighlighterItem) {
-		sectionHighlighterItem.closest("section").classList.toggle("highlighted");
+	handleClickOnSectionHighlighterItem(sectionHighlighterNode) {
+		sectionHighlighterNode.closest("section").classList.toggle("highlighted");
 	}
 
 	setupEventListeners() {
-		this.crossableItems.forEach((crossableItem) => {
-			crossableItem.addEventListener("click", () => {
-				this.handleClickOnCrossableItem(crossableItem);
+		this.crossableItemNodes.forEach((crossableItemNode) => {
+			crossableItemNode.addEventListener("click", () => {
+				this.handleClickOnCrossableItem(crossableItemNode);
 			});
 		});
 		
-		this.sectionHighlighterItems.forEach((sectionHighlighterItem) => {
-			sectionHighlighterItem.addEventListener("click", () => {
-				this.handleClickOnSectionHighlighterItem(sectionHighlighterItem);
+		this.sectionHighlighterNodes.forEach((sectionHighlighterNode) => {
+			sectionHighlighterNode.addEventListener("click", () => {
+				this.handleClickOnSectionHighlighterItem(sectionHighlighterNode);
 			});
 		});
 	}
