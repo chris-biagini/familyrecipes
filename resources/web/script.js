@@ -5,9 +5,7 @@ class RecipeProgressManager {
 		//this.storedStateTimeToLive = 48 * (60 * 60 * 1000); // 48 hours in ms
 		this.storedStateTimeToLive = 20 * 1000; // 20 seconds in ms
 
-		this.crossableItemNodes = document.querySelectorAll(
-			".ingredients li, .instructions p"
-		);
+		this.crossableItemNodes = document.querySelectorAll(".ingredients li, .instructions p");
 
 		this.sectionHighlighterNodes = document.querySelectorAll("section h2");
 
@@ -25,8 +23,7 @@ class RecipeProgressManager {
 		const currentCrossableItemState = {};
 
 		this.crossableItemNodes.forEach((crossableItemNode, index) => {
-			currentCrossableItemState[index] =
-				crossableItemNode.classList.contains("crossed-off");
+			currentCrossableItemState[index] = crossableItemNode.classList.contains("crossed-off");
 		});
 
 		currentRecipeState["crossableItemState"] = currentCrossableItemState;
@@ -45,20 +42,14 @@ class RecipeProgressManager {
 
 		if (!storedRecipeState) return;
 
-		const storedCrossableItemState =
-			storedRecipeState["crossableItemState"];
+		const storedCrossableItemState = storedRecipeState["crossableItemState"];
 
-		const storedLastInteractionTime =
-			storedRecipeState["lastInteractionTime"];
+		const storedLastInteractionTime = storedRecipeState["lastInteractionTime"];
 
 		const stateAge = Date.now() - storedLastInteractionTime;
 
 		if (stateAge > this.storedStateTimeToLive) {
-			console.log(
-				"Saved state is too old (" +
-					stateAge +
-					" ms). Ignoring for now."
-			);
+			console.log("Saved state is too old (" + stateAge + " ms). Ignoring for now.");
 			return;
 		}
 
@@ -75,9 +66,7 @@ class RecipeProgressManager {
 	}
 
 	handleClickOnSectionHighlighterItem(sectionHighlighterNode) {
-		sectionHighlighterNode
-			.closest("section")
-			.classList.toggle("highlighted");
+		sectionHighlighterNode.closest("section").classList.toggle("highlighted");
 	}
 
 	setupEventListeners() {
@@ -89,9 +78,7 @@ class RecipeProgressManager {
 
 		this.sectionHighlighterNodes.forEach((sectionHighlighterNode) => {
 			sectionHighlighterNode.addEventListener("click", () => {
-				this.handleClickOnSectionHighlighterItem(
-					sectionHighlighterNode
-				);
+				this.handleClickOnSectionHighlighterItem(sectionHighlighterNode);
 			});
 		});
 	}
