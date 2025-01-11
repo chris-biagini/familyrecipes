@@ -264,8 +264,9 @@ footer small {
 		background-color: transparent;
 	}
 
+	/* switch to hand pointer for interactive elements */
 	section h2,
-	section .instructions,
+	.instructions p,
 	.ingredients ul li {
 		cursor: pointer;
 	}
@@ -283,7 +284,7 @@ footer small {
 		box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 	}
 
-	.ingredients ul li.crossed-off {
+	.crossed-off {
 		text-decoration: line-through;
 		color: #888;
 	}
