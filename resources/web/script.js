@@ -5,7 +5,7 @@ class RecipeProgressManager {
 		this.STORED_STATE_TTL = 48 * (60 * 60 * 1000); // 48 hours in ms
 
 		this.crossableItemNodes = document.querySelectorAll(".ingredients li, .instructions p");
-		this.sectionHighlighterNodes = document.querySelectorAll("section h2");
+		this.sectionTogglerNodes = document.querySelectorAll("section h2");
 
 		// Initialize
 		this.init();
@@ -74,13 +74,31 @@ class RecipeProgressManager {
 			});
 		});
 
-		this.sectionHighlighterNodes.forEach((sectionHighlighterNode) => {
-			sectionHighlighterNode.addEventListener("click", () => {
-				sectionHighlighterNode.closest("section").classList.toggle("highlighted");
+		this.sectionTogglerNodes.forEach((sectionTogglerNode) => {
+			sectionTogglerNode.addEventListener("click", () => {
+				const sectionToToggle = sectionTogglerNode.closest("section");
 
-				// TODO: rename sectionHighlighterNodes to sectionTogglerNodes
+				const crossableItemsInSection = sectionToToggle.querySelectorAll(
+					".ingredients li, .instructions p"
+				);
+
+				const allItemsInSectionAreCrossedOff = Array.from(crossableItemsInSection).every(
+					(item) => item.classList.contains("crossed-off")
+				);
+
 				// if ALL li and p's are crossed off, then remove crossed-off from all and return
+				if (allItemsInSectionAreCrossedOff) {
+					crossableItemsInSection.forEach((item) => {
+						item.classList.remove("crossed-off");
+					});
+
+					return;
+				}
+
 				// otherwise, apply crossed-off to all
+				crossableItemsInSection.forEach((item) => {
+					item.classList.add("crossed-off");
+				});
 			});
 		});
 	}

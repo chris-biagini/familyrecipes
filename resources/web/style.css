@@ -255,19 +255,10 @@ footer small {
 /*****************************************************/
 
 @media screen {
-	/* for highlighting sections */
-	section {
-		transition:
-			transform 0.5s ease,
-			background-color 0.5s ease,
-			box-shadow 0.5s ease;
-		background-color: transparent;
-	}
-
 	/* switch to hand pointer for interactive elements */
 	section h2,
 	.instructions p,
-	.ingredients ul li {
+	.ingredients li {
 		cursor: pointer;
 	}
 
@@ -278,12 +269,6 @@ footer small {
 		cursor: default;
 	}
 
-	section.highlighted {
-		transform: scale(1.02);
-		background-color: var(--highlighted-step-background-color);
-		box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-	}
-
 	.crossed-off {
 		text-decoration: line-through;
 		color: #888;
@@ -291,6 +276,7 @@ footer small {
 
 	/* Target h2 in a section where every <li> and <p> is "crossed-off". */
 	section:not(:has(li:not(.crossed-off), p:not(.crossed-off))) h2 {
+		text-decoration: line-through;
 		color: #888;
 		border-color: #888;
 	}
