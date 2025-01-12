@@ -8,7 +8,6 @@ class RecipeProgressManager {
 		this.sectionHighlighterNodes = document.querySelectorAll("section h2");
 
 		this.currentRecipeState = {};
-
 		this.currentRecipeState["lastInteractionTime"] = 0;
 		this.currentRecipeState["crossableItemState"] = {};
 
@@ -21,7 +20,7 @@ class RecipeProgressManager {
 		this.loadRecipeState();
 	}
 
-	saveRecipeState() {
+	buildAndSaveRecipeState() {
 		this.crossableItemNodes.forEach((crossableItemNode, index) => {
 			this.currentRecipeState["crossableItemState"][index] =
 				crossableItemNode.classList.contains("crossed-off");
@@ -40,15 +39,25 @@ class RecipeProgressManager {
 			localStorage.getItem(`saved-state-for-${this.recipeId}`)
 		);
 
-		if (!storedRecipeState) return;
+		if (!storedRecipeState) {
+			console.log("No saved state found!");
+			return;
+		}
 
 		const storedCrossableItemState = storedRecipeState["crossableItemState"];
 		const storedLastInteractionTime = storedRecipeState["lastInteractionTime"];
 
+		if (!storedCrossableItemState || !storedLastInteractionTime) {
+			console.log("Saved state appears to be invalid. Overwriting.");
+			this.buildAndSaveRecipeState();
+			return;
+		}
+
 		const storedStateAge = Date.now() - storedLastInteractionTime;
 
 		if (storedStateAge > this.STORED_STATE_TTL) {
-			console.log("Saved state is too old (" + storedStateAge + " ms). Ignoring for now.");
+			console.log("Saved state is too old (" + storedStateAge + " ms). Overwriting.");
+			this.buildAndSaveRecipeState();
 			return;
 		}
 
@@ -63,7 +72,7 @@ class RecipeProgressManager {
 		this.crossableItemNodes.forEach((crossableItemNode) => {
 			crossableItemNode.addEventListener("click", () => {
 				crossableItemNode.classList.toggle("crossed-off");
-				this.saveRecipeState();
+				this.buildAndSaveRecipeState();
 			});
 		});
 
