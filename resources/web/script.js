@@ -91,14 +91,14 @@ class RecipeProgressManager {
 					crossableItemsInSection.forEach((item) => {
 						item.classList.remove("crossed-off");
 					});
-
-					return;
+				} else {
+					// otherwise, apply crossed-off to all
+					crossableItemsInSection.forEach((item) => {
+						item.classList.add("crossed-off");
+					});
 				}
 
-				// otherwise, apply crossed-off to all
-				crossableItemsInSection.forEach((item) => {
-					item.classList.add("crossed-off");
-				});
+				this.saveRecipeState();
 			});
 		});
 	}
