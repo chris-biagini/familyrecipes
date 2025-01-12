@@ -1,161 +1,109 @@
-class RecipeManager {
-    constructor() {
-        this.recipeId = document.body.dataset.recipeId || "defaultRecipe";
-        this.EXPIRATION_TIME = 24 * 60 * 60 * 1000; // 24 hours
-        
-        // Storage keys
-        this.keys = {
-            lastInteraction: `lastInteractionTime_${this.recipeId}`,
-            crossOff: `crossedOffIngredients_${this.recipeId}`,
-            highlight: `highlightedSection_${this.recipeId}`
-        };
+class RecipeProgressManager {
+	constructor() {
+		// set properties
+		this.recipeId = document.body.dataset.recipeId;
+		this.STORED_STATE_TTL = 48 * (60 * 60 * 1000); // 48 hours in ms
 
-        // Cache DOM elements
-        this.sections = document.querySelectorAll("section");
-        this.ingredientsContainers = document.querySelectorAll(".ingredients"); // Changed to querySelectorAll
-        
-        // Initialize
-        this.init();
-    }
+		this.crossableItemNodes = document.querySelectorAll(".ingredients li, .instructions p");
+		this.sectionTogglerNodes = document.querySelectorAll("section h2");
 
-    init() {
-        // Check expiration before loading state
-        if (this.hasExpired()) {
-            this.clearAllState();
-        } else {
-            this.loadState();
-        }
+		// Initialize
+		this.init();
+	}
 
-        this.setupEventListeners();
-        this.updateInteractionTime();
-    }
+	init() {
+		this.setupEventListeners();
+		this.loadRecipeState();
+	}
 
-    // Storage Management with Error Handling
-    getFromStorage(key, defaultValue = null) {
-        try {
-            const value = localStorage.getItem(this.keys[key]);
-            return value ? JSON.parse(value) : defaultValue;
-        } catch (e) {
-            console.warn(`Error reading from storage (${key}):`, e);
-            return defaultValue;
-        }
-    }
+	saveRecipeState() {
+		const currentRecipeState = {};
+		currentRecipeState["lastInteractionTime"] = Date.now();
+		currentRecipeState["crossableItemState"] = {};
 
-    saveToStorage(key, value) {
-        try {
-            localStorage.setItem(this.keys[key], JSON.stringify(value));
-        } catch (e) {
-            console.warn(`Error saving to storage (${key}):`, e);
-        }
-    }
+		this.crossableItemNodes.forEach((crossableItemNode, index) => {
+			currentRecipeState["crossableItemState"][index] =
+				crossableItemNode.classList.contains("crossed-off");
+		});
 
-    // Time Management
-    updateInteractionTime() {
-        this.saveToStorage('lastInteraction', Date.now());
-    }
+		localStorage.setItem(
+			`saved-state-for-${this.recipeId}`,
+			JSON.stringify(currentRecipeState)
+		);
+	}
 
-    hasExpired() {
-        const lastTime = this.getFromStorage('lastInteraction', 0);
-        return (Date.now() - lastTime) > this.EXPIRATION_TIME;
-    }
+	loadRecipeState() {
+		const storedRecipeState = JSON.parse(
+			localStorage.getItem(`saved-state-for-${this.recipeId}`)
+		);
 
-    clearAllState() {
-        Object.values(this.keys).forEach(key => {
-            localStorage.removeItem(key);
-        });
-    }
+		if (!storedRecipeState) {
+			console.log("No saved state found!");
+			return;
+		}
 
-    // State Management
-    loadState() {
-        this.loadCrossOffState();
-        this.loadHighlightState();
-    }
+		const storedCrossableItemState = storedRecipeState["crossableItemState"];
+		const storedLastInteractionTime = storedRecipeState["lastInteractionTime"];
 
-    loadHighlightState() {
-        const highlightedIndex = this.getFromStorage('highlight');
-        if (highlightedIndex !== null && this.sections[highlightedIndex]) {
-            this.sections[highlightedIndex].classList.add('highlighted');
-        }
-    }
+		if (!storedCrossableItemState || !storedLastInteractionTime) {
+			console.log("Saved state appears to be invalid. Overwriting.");
+			this.saveRecipeState();
+			return;
+		}
 
-    // UI Updates with RequestAnimationFrame
-    updateHighlight(section, index) {
-        requestAnimationFrame(() => {
-            this.removeAllHighlights();
-            if (section) {
-                section.classList.add('highlighted');
-                this.saveToStorage('highlight', index);
-            } else {
-                this.saveToStorage('highlight', null);
-            }
-            this.updateInteractionTime();
-        });
-    }
+		const storedStateAge = Date.now() - storedLastInteractionTime;
 
-    removeAllHighlights() {
-        this.sections.forEach(sec => sec.classList.remove('highlighted'));
-    }
+		if (storedStateAge > this.STORED_STATE_TTL) {
+			console.log("Saved state is too old (" + storedStateAge + " ms). Overwriting.");
+			this.saveRecipeState();
+			return;
+		}
 
-    loadCrossOffState() {
-        const crossedOffBitmap = this.getFromStorage('crossOff', '');
-        if (crossedOffBitmap) {
-            // Get all ingredient items across all sections
-            const items = document.querySelectorAll('.ingredients ul > li');
-            [...crossedOffBitmap].forEach((bit, index) => {
-                if (bit === '1' && items[index]) {
-                    items[index].classList.add('crossed-off');
-                }
-            });
-        }
-    }
+		this.crossableItemNodes.forEach((crossableItemNode, index) => {
+			if (storedCrossableItemState[index] === true) {
+				crossableItemNode.classList.add("crossed-off");
+			}
+		});
+	}
 
-    saveCrossOffState() {
-        // Get all ingredient items across all sections
-        const items = document.querySelectorAll('.ingredients ul > li');
-        const bitmap = Array.from(items)
-            .map(li => li.classList.contains('crossed-off') ? '1' : '0')
-            .join('');
-        this.saveToStorage('crossOff', bitmap);
-        this.updateInteractionTime();
-    }
+	setupEventListeners() {
+		this.crossableItemNodes.forEach((crossableItemNode) => {
+			crossableItemNode.addEventListener("click", () => {
+				crossableItemNode.classList.toggle("crossed-off");
+				this.saveRecipeState();
+			});
+		});
 
-    // ... (other methods remain the same until setupEventListeners)
+		this.sectionTogglerNodes.forEach((sectionTogglerNode) => {
+			sectionTogglerNode.addEventListener("click", () => {
+				const sectionToToggle = sectionTogglerNode.closest("section");
 
-    setupEventListeners() {
-        // Event delegation for ingredients - now at the document level
-        document.addEventListener('click', (event) => {
-            const li = event.target.closest('li');
-            if (li && li.closest('.ingredients ul')) {
-                event.stopPropagation();
-                li.classList.toggle('crossed-off');
-                this.saveCrossOffState();
-            }
-        });
+				const crossableItemsInSection = sectionToToggle.querySelectorAll(
+					".ingredients li, .instructions p"
+				);
 
-        // Event delegation for sections
-        document.addEventListener('click', (event) => {
-            // Clear highlight when clicking outside sections
-            if (!event.target.closest('section')) {
-                this.updateHighlight(null);
-                return;
-            }
+				const allItemsInSectionAreCrossedOff = Array.from(crossableItemsInSection).every(
+					(item) => item.classList.contains("crossed-off")
+				);
 
-            const section = event.target.closest('section');
-            if (!section) return;
+				// if ALL li and p's are crossed off, then remove crossed-off from all and return
+				if (allItemsInSectionAreCrossedOff) {
+					crossableItemsInSection.forEach((item) => {
+						item.classList.remove("crossed-off");
+					});
 
-            // Don't highlight if clicking in ingredients area
-            if (event.target.closest('.ingredients')) return;
+					return;
+				}
 
-            event.stopPropagation();
-            const index = Array.from(this.sections).indexOf(section);
-            const wasHighlighted = section.classList.contains('highlighted');
-            
-            this.updateHighlight(wasHighlighted ? null : section, index);
-        });
-    }
+				// otherwise, apply crossed-off to all
+				crossableItemsInSection.forEach((item) => {
+					item.classList.add("crossed-off");
+				});
+			});
+		});
+	}
 }
 
-document.addEventListener("DOMContentLoaded", function() {
-    // Initialize the recipe manager
-    new RecipeManager();
+document.addEventListener("DOMContentLoaded", function () {
+	new RecipeProgressManager();
 });
