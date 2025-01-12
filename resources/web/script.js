@@ -2,11 +2,9 @@ class RecipeProgressManager {
 	constructor() {
 		// set properties
 		this.recipeId = document.body.dataset.recipeId;
-		//this.storedStateTimeToLive = 48 * (60 * 60 * 1000); // 48 hours in ms
-		this.storedStateTimeToLive = 20 * 1000; // 20 seconds in ms
+		this.STORED_STATE_TTL = 48 * (60 * 60 * 1000); // 48 hours in ms
 
 		this.crossableItemNodes = document.querySelectorAll(".ingredients li, .instructions p");
-
 		this.sectionHighlighterNodes = document.querySelectorAll("section h2");
 
 		// Initialize
@@ -43,12 +41,11 @@ class RecipeProgressManager {
 		if (!storedRecipeState) return;
 
 		const storedCrossableItemState = storedRecipeState["crossableItemState"];
-
 		const storedLastInteractionTime = storedRecipeState["lastInteractionTime"];
 
 		const stateAge = Date.now() - storedLastInteractionTime;
 
-		if (stateAge > this.storedStateTimeToLive) {
+		if (stateAge > this.STORED_STATE_TTL) {
 			console.log("Saved state is too old (" + stateAge + " ms). Ignoring for now.");
 			return;
 		}
