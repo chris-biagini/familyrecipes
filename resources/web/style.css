@@ -288,6 +288,12 @@ footer small {
 		text-decoration: line-through;
 		color: #888;
 	}
+
+	/* Target h2 in a section where every <li> and <p> is "crossed-off". */
+	section:not(:has(li:not(.crossed-off), p:not(.crossed-off))) h2 {
+		color: #888;
+		border-color: #888;
+	}
 }
 
 /****************************************/
