@@ -7,6 +7,11 @@ class RecipeProgressManager {
 		this.crossableItemNodes = document.querySelectorAll(".ingredients li, .instructions p");
 		this.sectionHighlighterNodes = document.querySelectorAll("section h2");
 
+		this.currentRecipeState = {};
+
+		this.currentRecipeState["lastInteractionTime"] = 0;
+		this.currentRecipeState["crossableItemState"] = {};
+
 		// Initialize
 		this.init();
 	}
@@ -17,19 +22,16 @@ class RecipeProgressManager {
 	}
 
 	saveRecipeState() {
-		const currentRecipeState = {};
-		const currentCrossableItemState = {};
-
 		this.crossableItemNodes.forEach((crossableItemNode, index) => {
-			currentCrossableItemState[index] = crossableItemNode.classList.contains("crossed-off");
+			this.currentRecipeState["crossableItemState"][index] =
+				crossableItemNode.classList.contains("crossed-off");
 		});
 
-		currentRecipeState["crossableItemState"] = currentCrossableItemState;
-		currentRecipeState["lastInteractionTime"] = Date.now();
+		this.currentRecipeState["lastInteractionTime"] = Date.now();
 
 		localStorage.setItem(
 			`saved-state-for-${this.recipeId}`,
-			JSON.stringify(currentRecipeState)
+			JSON.stringify(this.currentRecipeState)
 		);
 	}
 
@@ -43,10 +45,10 @@ class RecipeProgressManager {
 		const storedCrossableItemState = storedRecipeState["crossableItemState"];
 		const storedLastInteractionTime = storedRecipeState["lastInteractionTime"];
 
-		const stateAge = Date.now() - storedLastInteractionTime;
+		const storedStateAge = Date.now() - storedLastInteractionTime;
 
-		if (stateAge > this.STORED_STATE_TTL) {
-			console.log("Saved state is too old (" + stateAge + " ms). Ignoring for now.");
+		if (storedStateAge > this.STORED_STATE_TTL) {
+			console.log("Saved state is too old (" + storedStateAge + " ms). Ignoring for now.");
 			return;
 		}
 
@@ -68,6 +70,10 @@ class RecipeProgressManager {
 		this.sectionHighlighterNodes.forEach((sectionHighlighterNode) => {
 			sectionHighlighterNode.addEventListener("click", () => {
 				sectionHighlighterNode.closest("section").classList.toggle("highlighted");
+
+				// TODO: rename sectionHighlighterNodes to sectionTogglerNodes
+				// if ALL li and p's are crossed off, then remove crossed-off from all and return
+				// otherwise, apply crossed-off to all
 			});
 		});
 	}
