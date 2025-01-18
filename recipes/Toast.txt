@@ -1,14 +1,13 @@
-Toast
-=====
+# Toast
 
-Ingredients
------------
+Not a real recipe.
 
-  * 4 slices bread
-  * Butter, 56.7 grams, softened
+## Ingredients
 
-Procedure
----------
+- Bread
+- Butter
+
+## Procedure
 
 Toast bread. Butter toasted bread.
 
