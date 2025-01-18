@@ -111,7 +111,7 @@ nav a.print::before { content: "🖨️ "; }
 main {
 	max-width: 35rem;  /* Ensures it never exceeds 35rem */
 	margin: var(--breathing-room) auto;  /* Center horizontally with top/bottom margin */
-	padding: var(--breathing-room);
+	padding: 3rem;
 
 	border: 1px solid var(--border-color);
 	background-color: var(--content-background-color);
