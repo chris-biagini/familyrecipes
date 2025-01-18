@@ -5,15 +5,13 @@
 /* Made with invaluable assistance from ChatGPT and Claude. :) */
 
 :root {
-	--gingham-base: rgb(249, 242, 223);
-	--gingham-red: rgba(190, 12, 30, 0.5);
-	--gingham-stripe-width: 75px;
-
 	--border-color: rgb(25, 25, 25);
 	--text-color: rgb(50, 50, 50);
 
 	--content-background-color: rgb(252, 255, 249);
 	--highlighted-step-background-color: rgb(255, 255, 255);
+	
+	--breathing-room: 3rem;
 }
 
 html {
@@ -21,20 +19,22 @@ html {
 	touch-action: manipulation; /* Should prevent double-tap zoom, but maybe doesn't? */
 }
 
+body, html {
+	margin: 0;
+	padding: 0;
+}
+
 body {
-	font-family: "Hoefler Text", serif;
-	margin: 5rem auto 2.5rem auto;
-	padding: 0 2.5rem;
-	transition: padding 0.5s ease;
-	/* Smoothly animates padding changes */
-	max-width: 600px;
-	min-width: 300px;
+	padding: 0 var(--breathing-room);
+	
+	font-family: "Bodoni 72", Georgia, serif;
 	color: var(--text-color);
 	background-attachment: fixed;
-	background-color: white;
-
-	/* Nifty gingham pattern, but maybe more computation than really needs to happen here? */
-
+	
+	/* Nifty gingham pattern */
+	--gingham-base: rgb(249, 242, 223);
+	--gingham-red: rgba(190, 12, 30, 0.5);
+	--gingham-stripe-width: 75px;
 	--weave-color: rgba(255, 255, 255, 0.03);
 	--weave-stripe-width: 2px;
 
@@ -67,23 +67,15 @@ body {
 			transparent calc(2 * var(--gingham-stripe-width))
 		),
 		linear-gradient(90deg, var(--gingham-base), var(--gingham-base));
-
-	/* Alternative background image from <https://github.com/tanshoku/squidfingers-patterns/blob/master/pattern_070.gif> */
-	/*
-	background-image: url('data:image/gif;base64,R0lGODlhEAAQAJH/AKtBFL5QKMdpRQAAACwAAAAAEAAQAAACNJQFCceXAUNqBsQrqcFBs+tNW1ctB2RClXqynzuaK/nSQlS2r+4xliTT/CIi3xCk4fRakAIAOw==');
-	background-repeat: repeat; 
-	*/
 }
 
 nav {
-	position: fixed;
-	top: 0;
-	right: 0;
-	left: 0;
-	z-index: 1000;
+	position: relative;
+	left: calc(-1 * var(--breathing-room));
+	width: calc(100% + (2 * var(--breathing-room)));  /* Compensate for body padding */
 	display: flex;
 	justify-content: space-between;
-
+	
 	background-color: rgba(249, 249, 249, 0.9);
 	backdrop-filter: blur(10px);
 
@@ -110,25 +102,18 @@ nav a:focus {
 }
 
 /* Prevent the dotted outline from sticking */
-nav a:focus {
-	outline: none;
-}
+nav a:focus { outline: none; }
 
-nav a.home::before {
-	content: "🏠 ";
-}
+nav a.home::before 	{ content: "🏠 "; }
+nav a.text::before 	{ content: "📄 "; }
+nav a.print::before { content: "🖨️ "; }
 
-nav a.text::before {
-	content: "📄 ";
-}
+main {
+	  max-width: 35rem;  /* Ensures it never exceeds 35rem */
+	margin: var(--breathing-room) auto;  /* Center horizontally with top/bottom margin */
+	padding: var(--breathing-room);
 
-nav a.print::before {
-	content: "🖨️ ";
-}
-
-article {
 	border: 1px solid var(--border-color);
-	padding: 1rem;
 	background-color: var(--content-background-color);
 	border-radius: 0.25rem;
 
@@ -144,26 +129,15 @@ article {
 
 header {
 	text-align: center;
-	margin-left: 2.5rem;
-	margin-right: 2.5rem;
 }
-
-/* See https://www.fontsquirrel.com/fonts/quigleywiggly */
-/* Removing for now so I can commit to GitHub without worrying about licensing */
-/* @font-face {
-	font-family: 'quigleywigglyregular';
-	src: url('quigleywiggly-webfont.woff') format('woff');
-} */
 
 /* in allrecipes view, all headers get demoted by one to avoid multiple H1's on page */
 header h1,
 .allrecipes header h2 {
 	/* font-family: 'quigleywigglyregular', cursive; */
 	font-family: "Futura", sans-serif;
-	font-weight: bold;
 	font-size: 3rem;
-	line-height: 1;
-	margin: 2rem 0 1rem 0;
+	margin: 0 0 1rem 0;
 }
 
 header p {
@@ -173,69 +147,50 @@ header p {
 }
 
 section {
-	border-radius: 1rem;
-	padding: 1.5rem;
+	margin-top: 2rem;
+	break-inside: avoid;
 }
 
 /* in allrecipes view, all headers get demoted by one to avoid multiple H1's on page */
 section h2,
 .allrecipes section h3 {
-	font-size: 1.5rem;
+	font-family: "Futura", sans-serif;
+	font-size: 1.25rem;
 	margin-top: 0;
 	margin-bottom: 0.5rem;
-	border-bottom: 1px solid var(--border-color);
-	padding-bottom: 0.5rem;
+	border-bottom: 1.5px solid var(--border-color);
+	padding-bottom: 0.25rem;
 }
 
-section > div {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 1rem;
+section > div:has(.ingredients):has(.instructions) {
+	display: grid;
+	grid-template-columns: 10rem 1fr;
+	gap: 2rem;
 }
 
-.ingredients {
-	flex: 2;
-}
-
-.instructions {
-	flex: 3;
-	line-height: 1.5;
+.instructions p {
+	margin: 0 0 1.5rem 0;
 }
 
 .ingredients ul {
 	list-style: none;
 	margin: 0;
 	padding: 0;
-	line-height: 2rem;
 }
 
-.ingredients ul ul {
-	line-height: 1rem;
-}
-
-.ingredients ul li {
-	white-space: nowrap;
+.ingredients li {
 	break-inside: avoid;
-	page-break-inside: avoid;
+	margin: 0 0 1rem 0;
 }
 
 .ingredients ul li small {
 	display: block;
 	font-style: italic;
 	font-size: 0.95em;
-	margin: 0 0 0 1rem;
-	padding: 0;
-	line-height: 1rem;
-	column-count: 1;
-	/* avoids breaking up prep notes because... reasons */
-}
-
-.instructions p:first-of-type {
-	margin-top: 0;
+	margin: 0.25rem 0 0 1rem;
 }
 
 footer {
-	margin: 0 2.5rem 1rem 2.5rem;
 	font-style: italic;
 	text-align: center;
 	position: relative;
@@ -269,16 +224,13 @@ footer small {
 		cursor: default;
 	}
 
-	.crossed-off {
-		text-decoration: line-through;
-		color: #888;
-	}
-
 	/* Target h2 in a section where every <li> and <p> is "crossed-off". */
+	.crossed-off,
 	section:not(:has(li:not(.crossed-off), p:not(.crossed-off))) h2 {
 		text-decoration: line-through;
 		color: #888;
 		border-color: #888;
+		transition: color 0.3s ease;
 	}
 }
 
@@ -286,35 +238,28 @@ footer small {
 /* Styles for mobiles and small screens */
 /****************************************/
 
-/* specifically target phones for small font */
-@media (hover: none) and (pointer: coarse) and (max-width: 600px) {
+/* small mobiles only */
+@media screen and (max-width: 600px) and (pointer:coarse) {
+	:root {
+		--breathing-room: 1rem;
+	}
+	
 	html {
 		font-size: 14px;
 	}
-
-	body {
-		margin: 3rem auto 2.5rem auto; /* need to add vars to calculate these automatically */
-	}
 }
 
-@media screen and (max-width: 600px) {
-	body {
-		padding: 0 0.5rem;
+/* anything with a narrow window */
+@media screen and (max-width: 600px) {	
+	section > div:has(.ingredients):has(.instructions) {
+		grid-template-columns: 1fr;
+		gap: 0.5rem;
 	}
-
-	/* On small screens, switch to two ingredient columns and full-width instructions */
+	  
+	/* On small screens, switch to two ingredient columns */
 	.ingredients ul {
-		column-count: 2;
-		column-gap: 0.25rem;
-	}
-
-	.ingredients ul li p {
-		margin: 0 0 0 0.5rem;
-	}
-
-	.ingredients,
-	.instructions {
-		flex: 1 1 100%;
+		display: grid;
+		grid-template-columns: 1fr 1fr;
 	}
 }
 
@@ -341,26 +286,15 @@ footer small {
 		display: none;
 	}
 
-	article {
+	main {
 		border: none;
 		background-color: white;
 		box-shadow: none;
-		break-after: page;
+		max-width: none;
 	}
 
 	a {
 		color: black;
 		text-decoration: none;
-	}
-
-	/* Do not allow page breaks inside sections */
-	section {
-		page-break-inside: avoid;
-		break-inside: avoid;
-	}
-
-	h2 {
-		page-break-after: avoid;
-		break-after: avoid;
 	}
 }
