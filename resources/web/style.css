@@ -109,7 +109,7 @@ nav a.text::before 	{ content: "📄 "; }
 nav a.print::before { content: "🖨️ "; }
 
 main {
-	  max-width: 35rem;  /* Ensures it never exceeds 35rem */
+	max-width: 35rem;  /* Ensures it never exceeds 35rem */
 	margin: var(--breathing-room) auto;  /* Center horizontally with top/bottom margin */
 	padding: var(--breathing-room);
 
@@ -287,6 +287,7 @@ footer small {
 	}
 
 	main {
+		margin: 0;
 		border: none;
 		background-color: white;
 		box-shadow: none;
