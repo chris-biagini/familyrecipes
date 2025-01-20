@@ -29,7 +29,6 @@ body {
 	
 	font-family: "Bodoni 72", Georgia, serif;
 	color: var(--text-color);
-	background-attachment: fixed;
 	
 	/* Nifty gingham pattern */
 	--gingham-base: rgb(249, 242, 223);
@@ -38,6 +37,8 @@ body {
 	--weave-color: rgba(255, 255, 255, 0.03);
 	--weave-stripe-width: 2px;
 
+	background-color: var(--gingham-base);
+	
 	background-image: repeating-linear-gradient(
 			135deg,
 			var(--weave-color) 0,
@@ -65,8 +66,7 @@ body {
 			var(--gingham-red) var(--gingham-stripe-width),
 			transparent var(--gingham-stripe-width),
 			transparent calc(2 * var(--gingham-stripe-width))
-		),
-		linear-gradient(90deg, var(--gingham-base), var(--gingham-base));
+		);
 }
 
 nav {
@@ -122,18 +122,12 @@ main {
 		rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
 }
 
-/* give articles breathing room in allrecipes view */
-.allrecipes article {
-	margin-bottom: 2.5rem;
-}
-
 header {
 	text-align: center;
 }
 
 /* in allrecipes view, all headers get demoted by one to avoid multiple H1's on page */
-header h1,
-.allrecipes header h2 {
+header h1 {
 	/* font-family: 'quigleywigglyregular', cursive; */
 	font-family: "Futura", sans-serif;
 	font-size: 3rem;
@@ -152,8 +146,7 @@ section {
 }
 
 /* in allrecipes view, all headers get demoted by one to avoid multiple H1's on page */
-section h2,
-.allrecipes section h3 {
+section h2 {
 	font-family: "Futura", sans-serif;
 	font-size: 1.25rem;
 	margin-top: 0;
@@ -215,13 +208,6 @@ footer small {
 	.instructions p,
 	.ingredients li {
 		cursor: pointer;
-	}
-
-	/* no JS interactivity on allrecipes view, use default cursor */
-	.allrecipes section h2,
-	.allrecipes section .instructions,
-	.allrecipes .ingredients ul li {
-		cursor: default;
 	}
 
 	/* Target h2 in a section where every <li> and <p> is "crossed-off". */
