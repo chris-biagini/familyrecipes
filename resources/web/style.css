@@ -38,7 +38,7 @@ body {
 	--weave-stripe-width: 2px;
 
 	background-color: var(--gingham-base);
-	
+	background-attachment: fixed;
 	background-image: repeating-linear-gradient(
 			135deg,
 			var(--weave-color) 0,
