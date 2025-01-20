@@ -1,4 +1,4 @@
-# Delivery-Style Pizza
+# Basic Pizza
 
 Minimum viable pizza, cooked in round pizza pans.
 
@@ -11,7 +11,7 @@ Minimum viable pizza, cooked in round pizza pans.
 - Water, 325 g
 - Bread flour, 500 g
 
-In large bowl, whisk together all ingredients except flour. Adjust yeast based on time available and ambient temperature. 
+In large bowl, whisk together all ingredients except flour. Adjust yeast based on time available and ambient temperature.
 
 Whisk in half the flour. Stir in remaining flour mix until a shaggy dough forms.
 
