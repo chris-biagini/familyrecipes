@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Recipe Index</title>
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+	<nav>
+		<a href="#" class="home">Home</a>
+	</nav>
+	
+	<main class="allrecipes">
+		<article>
+			<header>
+				<h1>Our Recipes</h1>
+				<p>A collection of the Biagini Family's favorite recipes.</p>
+			</header>
+
+			<section>
+				<h2>Table of Contents</h2>
+				<ol>
+					<% recipes.each do |recipe| %>
+					<li><a href="<%= recipe.id %>.html"><%= recipe.title %></a></li>
+					<% end %>
+				</ol>
+			</section>
+		</article>
+	</main>
+	<!-- <script src="script.js" defer></script> -->
+</body>
+</html>
