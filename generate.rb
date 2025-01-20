@@ -72,12 +72,10 @@ class Recipe
 	def parse_filename(markdown_file)
 		name = File.basename(markdown_file, ".*")
 		
-		name.downcase					# Convert to lowercase
-			.unicode_normalize(:nfkd)	# Normalize Unicode characters
+		name.unicode_normalize(:nfkd)	# Normalize Unicode characters
+			.downcase					# Convert to lowercase
 			.gsub(/\s+/, '-')			# Replace spaces with hyphens
 			.gsub(/[^a-z0-9\-]/, '')	# Remove non-alphanumeric characters except hyphens
-			.gsub(/-+/, '-')			# Replace multiple hyphens with a single one
-			.gsub(/^-+|-+$/, '')		# Trim leading/trailing hyphens
 	end
 		
 	def parse_recipe
