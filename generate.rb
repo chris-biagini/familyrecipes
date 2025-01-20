@@ -103,10 +103,19 @@ class Recipe
 					current_line = lines.shift.strip
 					
 					# if we find an ingredient, accumulate it as one; otherwise, accumulate it as an instruction line
-					if current_line =~ /^- ([^,]+)(?:, ([^:]+))?(?:: (.+))?$/
-						name = $1
-						quantity = $2
-						prep_note = $3
+					if current_line =~ /^- (.+)$/
+						ingredient_text = $1
+						
+						# chop up string, look for prep notes
+						parts = ingredient_text.split(':', 2) 
+						left_side = parts[0]
+						prep_note = parts[1]&.strip # ampersand allows this to be nil
+						
+						# look for name and quantity
+						left_parts = left_side.split(',',2)
+						name = left_parts[0].strip
+						quantity = left_parts[1]&.strip
+
 						ingredients << Ingredient.new(name: name, quantity: quantity, prep_note: prep_note)
 					else
 						instructions += current_line + "\n"
