@@ -21,9 +21,11 @@ To download your own copy, use `git clone https://github.com/chris-biagini/famil
 
 ## Server Config
 
-By default, the generate script produces files with extensions (`.html`, `.txt`), but _omits_ those extensions from hyperlinks. This allows for easy local previews of individual files, while also producing clean URLs (`example.com/foo` instead of `example.com/foo.html`). On the server side, I am using this set of `.htaccess` rules to handle redirects:
+By default, the generate script produces files with extensions (`.html`, `.txt`), but _omits_ those extensions from hyperlinks. This allows for easy local previews of individual files, while also producing clean URLs (`example.com/foo` instead of `example.com/foo.html`). On the server side, I am using this set of `.htaccess` rules to handle redirects (among other things):
 
-```apache_conf
+```
+AddDefaultCharset UTF-8
+
 <IfModule mod_rewrite.c>
 RewriteEngine On
 
