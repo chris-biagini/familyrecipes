@@ -51,20 +51,10 @@ class Recipe
 	end
 	
 	def to_html
-		# Create markdown renderer
-		markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML, 
-			autolink: true, 
-			tables: true)
-		
-		# Load and compile template
+		markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML)
 		template = File.read('templates/web/recipe-template.html.erb')
 		erb = ERB.new(template)
-		
-		# Create binding with necessary variables
-		erb_binding = binding
-		
-		# Render the template
-		erb.result(erb_binding)
+		erb.result(binding)
 	end
 	
 	private
@@ -146,6 +136,7 @@ end
 
 # Generation logic
 
+template_dir = "templates/web"
 resources_dir = "resources/web"
 output_dir = "output/web"
 
@@ -197,14 +188,10 @@ end
 begin
 	print "Generating index page..."
 	
-	# Load and compile template
-	template = File.read('templates/web/index-template.html.erb')
+	template_path = File.join(template_dir, "index-template.html.erb")
+	template = File.read(template_path)
 	erb = ERB.new(template)
-	
-	# Generate the HTML using the current binding (which has access to the recipes array)
-	html = erb.result(binding)
-	
-	# Write the file
+	html = erb.result(binding)	
 	index_path = File.join(output_dir, "index.html")
 	File.write(index_path, html)
 	
