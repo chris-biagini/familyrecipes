@@ -136,82 +136,52 @@ end
 
 # Generation logic
 
+recipes_dir = "recipes"
 template_dir = "templates/web"
 resources_dir = "resources/web"
 output_dir = "output/web"
 
-begin
-	print "Parsing recipes..."
-	
-	recipe_files = Dir.glob("recipes/*")
-	
-	if recipe_files.empty?
-		raise StandardError, "No files in `recipe` directory."
-	end
-		
-	recipes = recipe_files.map do |file|
-		Recipe.new(file)
-	end
-	
-	print "done! (Parsed #{recipes.size} recipes.)\n"	
-rescue StandardError => error
-	puts "Error: #{error.message}"
-	exit(1)
+# parse recipes; actual parsing happens in Recipe constructor
+print "Parsing recipes from #{recipes_dir}..."
+
+recipe_files = Dir.glob(File.join(recipes_dir, "*"))
+recipes = recipe_files.map do |file|
+	Recipe.new(file)
 end
 
-begin
-	FileUtils.mkdir_p(output_dir)
-rescue StandardError => e
-	puts "Error creating output directory: #{e.message}"
-	exit(1)
+print "done! (Parsed #{recipes.size} recipes.)\n"	
+
+# make output directory
+FileUtils.mkdir_p(output_dir)
+
+# write text and HTML files to output directory
+print "Generating output files in #{output_dir}..."
+
+recipes.each do |recipe|
+	# Write text version
+	text_path = File.join(output_dir, "#{recipe.id}.txt")
+	File.write(text_path, recipe.source)
+	
+	# Write HTML version
+	html_path = File.join(output_dir, "#{recipe.id}.html")
+	File.write(html_path, recipe.to_html)
 end
 
-begin
-	print "Generating output files in #{output_dir}..."
-	
-	recipes.each do |recipe|
-		# Write text version
-		text_path = File.join(output_dir, "#{recipe.id}.txt")
-		File.write(text_path, recipe.source)
-		
-		# Write HTML version
-		html_path = File.join(output_dir, "#{recipe.id}.html")
-		File.write(html_path, recipe.to_html)
-	end
-	
-	print "done!\n"
-rescue StandardError => e
-	puts "Error writing recipe files: #{e.message}"
-	exit(1)
-end
+print "done!\n"
 
-begin
-	print "Generating index page..."
-	
-	template_path = File.join(template_dir, "index-template.html.erb")
-	template = File.read(template_path)
-	erb = ERB.new(template)
-	html = erb.result(binding)	
-	index_path = File.join(output_dir, "index.html")
-	File.write(index_path, html)
-	
-	print "done!\n"
-rescue StandardError => e
-	puts "Error generating index page: #{e.message}"
-	exit(1)
-end
+# build index page
+print "Generating index page in #{output_dir}..."
 
-begin
-	print "Copying web resources..."
-	
-	if Dir.exist?(resources_dir)
-		FileUtils.cp_r("#{resources_dir}/.", output_dir) # Copy everything, including subdirectories
-	else
-		puts "Warning: Source directory #{resources_dir} does not exist, skipping copy."
-	end
-	
-	print "done!\n"	
-rescue StandardError => e
-	puts "Error copying files: #{e.message}"
-	exit(1)
-end
+template_path = File.join(template_dir, "index-template.html.erb")
+template = File.read(template_path)
+erb = ERB.new(template)
+html = erb.result(binding)	
+index_path = File.join(output_dir, "index.html")
+File.write(index_path, html)
+
+print "done!\n"
+
+# Copy resources (e.g., stylesheets, javascript)
+print "Copying web resources from #{resources_dir} to #{output_dir}..."
+FileUtils.cp_r("#{resources_dir}/.", output_dir) # Copy everything, including subdirectories
+print "done!\n"	
