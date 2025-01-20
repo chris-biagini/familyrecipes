@@ -4,6 +4,10 @@ require 'fileutils'
 require 'erb'
 require 'redcarpet'
 
+# Config
+
+extension_for_hyperlinks = ""
+
 # Utility classes
 
 class Ingredient

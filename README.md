@@ -18,3 +18,25 @@ To download your own copy, use `git clone https://github.com/chris-biagini/famil
 - ChatGPT by OpenAI
 - Claude by Anthropic
 - xScope by iconfactory
+
+## Server Config
+
+By default, the generate script produces files with extensions (`.html`, `.txt`), but _omits_ those extensions from hyperlinks. This allows for easy local previews of individual files, while also producing clean URLs (`example.com/foo` instead of `example.com/foo.html`). On the server side, I am using this set of `.htaccess` rules to handle redirects:
+
+```apache_conf
+<IfModule mod_rewrite.c>
+RewriteEngine On
+
+# 1) Redirect /foo.html => /foo
+RewriteCond %{THE_REQUEST} \s/([^?\s]+?)\.html[\s?]
+RewriteRule ^ /%1 [R=301,L]
+
+# 2) Directory index
+DirectoryIndex index.html
+
+# 3) Rewrite extensionless => .html internally
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.+?)/?$ $1.html [L]
+</IfModule>
+```

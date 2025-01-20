@@ -22,7 +22,7 @@
 				<h2>Table of Contents</h2>
 				<ol>
 					<% recipes.each do |recipe| %>
-					<li><a href="<%= recipe.id %>.html"><%= recipe.title %></a></li>
+					<li><a href="<%= recipe.id + extension_for_hyperlinks %>"><%= recipe.title %></a></li>
 					<% end %>
 				</ol>
 			</section>
