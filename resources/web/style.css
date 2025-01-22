@@ -173,14 +173,14 @@ section > div:has(.ingredients):has(.instructions) {
 
 .ingredients li {
 	break-inside: avoid;
-	margin: 0 0 1rem 0;
+	padding: 0 0 1rem 0;
 }
 
 .ingredients ul li small {
 	display: block;
 	font-style: italic;
 	font-size: 0.95em;
-	margin: 0.25rem 0 0 1rem;
+	padding: 0.25rem 0 0 1rem;
 }
 
 footer {
@@ -244,8 +244,8 @@ footer small {
 	  
 	/* On small screens, switch to two ingredient columns */
 	.ingredients ul {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
+	  column-count: 2;
+	  column-gap: 0.5rem;
 	}
 }
 
