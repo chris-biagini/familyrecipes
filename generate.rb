@@ -3,6 +3,7 @@
 require 'fileutils'
 require 'erb'
 require 'redcarpet'
+require 'digest'
 
 # Config
 
@@ -40,11 +41,12 @@ class Step
 end
 
 class Recipe
-	attr_reader :title, :description, :steps, :footer, :source, :id
+	attr_reader :title, :description, :steps, :footer, :source, :id, :version_hash
 	
 	def initialize(markdown_file)
 		@source = File.read(markdown_file)
 		@id = parse_filename(markdown_file)
+		@version_hash = Digest::SHA256.hexdigest(@source)
 		
 		@title = nil
 		@description = nil

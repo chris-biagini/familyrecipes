@@ -2,6 +2,7 @@ class RecipeProgressManager {
 	constructor() {
 		// set properties
 		this.recipeId = document.body.dataset.recipeId;
+		this.versionHash = document.body.dataset.versionHash;
 		this.STORED_STATE_TTL = 48 * (60 * 60 * 1000); // 48 hours in ms
 
 		this.crossableItemNodes = document.querySelectorAll(".ingredients li, .instructions p");
@@ -19,6 +20,7 @@ class RecipeProgressManager {
 	saveRecipeState() {
 		const currentRecipeState = {};
 		currentRecipeState["lastInteractionTime"] = Date.now();
+		currentRecipeState["versionHash"] = this.versionHash;
 		currentRecipeState["crossableItemState"] = {};
 
 		this.crossableItemNodes.forEach((crossableItemNode, index) => {
@@ -44,9 +46,16 @@ class RecipeProgressManager {
 
 		const storedCrossableItemState = storedRecipeState["crossableItemState"];
 		const storedLastInteractionTime = storedRecipeState["lastInteractionTime"];
+		const storedVersionHash = storedRecipeState["versionHash"];
 
-		if (!storedCrossableItemState || !storedLastInteractionTime) {
+		if (!storedCrossableItemState || !storedLastInteractionTime || !storedVersionHash) {
 			console.log("Saved state appears to be invalid. Overwriting.");
+			this.saveRecipeState();
+			return;
+		}
+
+		if (this.versionHash != storedVersionHash) {
+			console.log("Saved state is for a different version of this recipe. Overwriting.");
 			this.saveRecipeState();
 			return;
 		}
