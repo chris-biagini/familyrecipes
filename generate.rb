@@ -124,7 +124,7 @@ class Recipe
 
 						ingredients << Ingredient.new(name: name, quantity: quantity, prep_note: prep_note)
 					else
-						instructions += current_line + "\n"
+						instructions += current_line + "\n\n" # hack to undo stripping whitespace, need to fix
 					end
 				end #done parsing individual step
 				
@@ -144,7 +144,7 @@ class Recipe
 		# if we get to this point, we should have either hit a delimiter or EOF above
 		if lines.any? && lines.first.strip == "---"
 			lines.shift # Discard the delimiter
-			@footer = lines.join("\n").strip # Accumulate the rest as the footer
+			@footer = lines.join("\n\n").strip # Accumulate the rest as the footer / hack to undo stripping whitespace, need to fix
 		end
 	end
 end
