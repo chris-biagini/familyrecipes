@@ -59,7 +59,7 @@ class Recipe
 	def to_html
 		markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML)
 		template = File.read('templates/web/recipe-template.html.erb')
-		erb = ERB.new(template)
+		erb = ERB.new(template, trim_mode: '-')
 		erb.result(binding)
 	end
 	
@@ -189,7 +189,7 @@ print "Generating index page in #{output_dir}..."
 
 template_path = File.join(template_dir, "index-template.html.erb")
 template = File.read(template_path)
-erb = ERB.new(template)
+erb = ERB.new(template, trim_mode: '-')
 html = erb.result(binding)	
 index_path = File.join(output_dir, "index.html")
 File.write(index_path, html)

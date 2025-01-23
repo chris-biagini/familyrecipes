@@ -25,33 +25,33 @@
                 <p><%= description %></p>
             </header>
 
-            <% steps.each do |step| %>
+            <%- steps.each do |step| -%>
             <section>
                 <h2><%= step.tldr %></h2>
                 <div>
-                    <% unless step.ingredients.empty? %>
+                    <%- unless step.ingredients.empty? -%>
                     <div class="ingredients">
                         <ul>
-                            <% step.ingredients.each do |ingredient| %>
+                            <%- step.ingredients.each do |ingredient| -%>
                             <li><b><%= ingredient.name %></b><% if ingredient.quantity %>, <%= ingredient.quantity %><% end %><% if ingredient.prep_note %> <small><%= ingredient.prep_note %></small><% end %></li>
-                            <% end %>
+                            <%- end -%>
                         </ul>
                     </div>
-                    <% end %>
+                    <%- end -%>
                     
-                    <% unless step.instructions.empty? %>
+                    <%- unless step.instructions.empty? -%>
                     <div class="instructions">
                         <%= markdown.render(step.instructions) %>
                     </div>
-                    <% end %>
+                    <%- end -%>
                 </div>
             </section>
-            <% end %>
+            <%- end -%>
             
             <footer>
-                <% if footer %>
+                <%- if footer -%>
                 <%= markdown.render(footer) %>
-                <% end %>
+                <%- end -%>
             </footer>
         </article>
     </main>

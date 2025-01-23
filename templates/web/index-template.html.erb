@@ -21,9 +21,9 @@
 			<section>
 				<h2>Table of Contents</h2>
 				<ol>
-					<% recipes.each do |recipe| %>
+					<%- recipes.each do |recipe| -%>
 					<li><a href="<%= recipe.id + extension_for_hyperlinks %>"><%= recipe.title %></a></li>
-					<% end %>
+					<%- end -%>
 				</ol>
 			</section>
 		</article>
