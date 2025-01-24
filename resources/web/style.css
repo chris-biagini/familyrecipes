@@ -32,7 +32,7 @@ body {
 	
 	/* Nifty gingham pattern */
 	--gingham-base: rgb(249, 242, 223);
-	--gingham-red: rgba(190, 12, 30, 0.5);
+	--gingham-stripe-color: rgba(190, 12, 30, 0.5);
 	--gingham-stripe-width: 75px;
 	--weave-color: rgba(255, 255, 255, 0.03);
 	--weave-stripe-width: 2px;
@@ -55,15 +55,15 @@ body {
 		),
 		repeating-linear-gradient(
 			135deg,
-			var(--gingham-red) 0,
-			var(--gingham-red) var(--gingham-stripe-width),
+			var(--gingham-stripe-color) 0,
+			var(--gingham-stripe-color) var(--gingham-stripe-width),
 			transparent var(--gingham-stripe-width),
 			transparent calc(2 * var(--gingham-stripe-width))
 		),
 		repeating-linear-gradient(
 			45deg,
-			var(--gingham-red) 0,
-			var(--gingham-red) var(--gingham-stripe-width),
+			var(--gingham-stripe-color) 0,
+			var(--gingham-stripe-color) var(--gingham-stripe-width),
 			transparent var(--gingham-stripe-width),
 			transparent calc(2 * var(--gingham-stripe-width))
 		);

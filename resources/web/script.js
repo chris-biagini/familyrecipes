@@ -116,3 +116,20 @@ class RecipeProgressManager {
 document.addEventListener("DOMContentLoaded", function () {
 	new RecipeProgressManager();
 });
+
+/* https://meyerweb.com/eric/thoughts/category/personal/rebecca/?order=asc/ */
+
+const sequence = ["r", "e", "b", "e", "c", "c", "a"];
+let input = [];
+
+document.addEventListener("keydown", (event) => {
+	if (event.target.tagName === "INPUT" || event.target.tagName === "TEXTAREA") return;
+
+	input.push(event.key.toLowerCase());
+	input = input.slice(-sequence.length);
+
+	if (input.join("") === sequence.join("")) {
+		document.body.style.setProperty("--gingham-stripe-color", "hsla(270, 50%, 40%, 0.5)");
+		input = [];
+	}
+});
