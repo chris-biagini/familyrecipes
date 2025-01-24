@@ -8,8 +8,8 @@
 	--border-color: rgb(25, 25, 25);
 	--text-color: rgb(50, 50, 50);
 
+	--nav-background-color: rgba(252, 252, 252, 0.8);
 	--content-background-color: rgb(252, 255, 249);
-	--highlighted-step-background-color: rgb(255, 255, 255);
 	
 	--breathing-room: 3rem;
 }
@@ -37,7 +37,7 @@ body {
 	--weave-color: rgba(255, 255, 255, 0.03);
 	--weave-stripe-width: 2px;
 
-	background-color: var(--gingham-base);
+	background-color: var(--content-background-color);
 	background-attachment: fixed;
 	background-image: repeating-linear-gradient(
 			135deg,
@@ -76,7 +76,8 @@ nav {
 	display: flex;
 	justify-content: space-between;
 	
-	background-color: rgba(249, 249, 249, 0.9);
+	background-color: var(--nav-background-color);
+	border-bottom: 1px solid var(--gingham-stripe-color);
 	backdrop-filter: blur(10px);
 
 	box-shadow:
