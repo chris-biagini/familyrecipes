@@ -20,12 +20,23 @@
 
 			<section>
 				<h2>Table of Contents</h2>
-				<ol>
-					<%- recipes.each do |recipe| -%>
-					<li><%= recipe.category %>: <a href="<%= recipe.id %>"><%= recipe.title %></a> (<%= recipe.description %>)</li>
+				<ul>
+					<%- grouped_recipes.each do |category, recipes| -%>
+						<li><a href="#<%= category.downcase %>"><%= category %></a></li>
 					<%- end -%>
-				</ol>
+				</ul>
 			</section>
+			
+			<%- grouped_recipes.each do |category, recipes| -%>
+			<section id="<%= category.downcase %>">
+				<h2><%= category %></h2>
+				<ul>
+					<%- recipes.each do |recipe| -%>
+					<li><a href="<%= recipe.id %>"><%= recipe.title %></a> (<%= recipe.description %>)</li>
+					<%- end -%>
+				</ul>
+			</section>
+			<%- end -%>
 		</article>
 	</main>
 	<!-- <script src="script.js" defer></script> -->
