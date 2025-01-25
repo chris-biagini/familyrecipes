@@ -5,10 +5,6 @@ require 'erb'
 require 'redcarpet'
 require 'digest'
 
-# Config
-
-extension_for_hyperlinks = ""
-
 # Utility classes
 
 class Ingredient
@@ -41,11 +37,10 @@ class Step
 end
 
 class Recipe
-	attr_reader :title, :description, :steps, :footer, :source, :id, :version_hash
+	attr_reader :title, :description, :steps, :footer, :source, :id, :version_hash, :category
 	
-	def initialize(markdown_file)
-		@source = File.read(markdown_file)
-		@id = parse_filename(markdown_file)
+	def initialize(markdown_file_path)
+		@source = File.read(markdown_file_path)
 		@version_hash = Digest::SHA256.hexdigest(@source)
 		
 		@title = nil
@@ -53,6 +48,7 @@ class Recipe
 		@steps = []
 		@footer = nil
 		
+		parse_filename(markdown_file_path)
 		parse_recipe
 	end
 	
@@ -65,13 +61,14 @@ class Recipe
 	
 	private
 	
-	def parse_filename(markdown_file)
-		name = File.basename(markdown_file, ".*")
-		
-		name.unicode_normalize(:nfkd)	# Normalize Unicode characters
-			.downcase					# Convert to lowercase
-			.gsub(/\s+/, '-')			# Replace spaces with hyphens
-			.gsub(/[^a-z0-9\-]/, '')	# Remove non-alphanumeric characters except hyphens
+	def parse_filename(markdown_file_path)
+		@id = File.basename(markdown_file_path, ".*") # Get name without extension
+				.unicode_normalize(:nfkd)		 # Normalize Unicode characters
+				.downcase						 # Convert to lowercase
+				.gsub(/\s+/, '-')				 # Replace spaces with hyphens
+				.gsub(/[^a-z0-9\-]/, '')		 # Remove non-alphanumeric characters except hyphens
+			
+		@category = File.basename(File.dirname(markdown_file_path)).sub(/^./, &:upcase)
 	end
 		
 	def parse_recipe
