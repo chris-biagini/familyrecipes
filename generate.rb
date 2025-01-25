@@ -159,7 +159,7 @@ output_dir = "output/web"
 # parse recipes; actual parsing happens in Recipe constructor
 print "Parsing recipes from #{recipes_dir}..."
 
-recipe_files = Dir.glob(File.join(recipes_dir, "*"))
+recipe_files = Dir.glob(File.join(recipes_dir, "**", "*")).select { |file| File.file?(file) }
 recipes = recipe_files.map do |file|
 	Recipe.new(file)
 end
