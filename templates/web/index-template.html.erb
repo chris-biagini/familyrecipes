@@ -15,11 +15,10 @@
 		<article>
 			<header>
 				<h1>Our Recipes</h1>
-				<p>A collection of the Biagini Family's favorite recipes.</p>
+				<p>A collection of our family’s favorite recipes.</p>
 			</header>
 
-			<section>
-				<h2>Table of Contents</h2>
+			<section class="toc">
 				<ul>
 					<%- grouped_recipes.each do |category, recipes| -%>
 						<li><a href="#<%= category.downcase %>"><%= category %></a></li>
@@ -32,7 +31,7 @@
 				<h2><%= category %></h2>
 				<ul>
 					<%- recipes.each do |recipe| -%>
-					<li><a href="<%= recipe.id %>"><%= recipe.title %></a> (<%= recipe.description %>)</li>
+					<li><a href="<%= recipe.id %>" title="<%= recipe.description %>"><%= recipe.title %></a></li>
 					<%- end -%>
 				</ul>
 			</section>

@@ -96,10 +96,9 @@ nav a {
 	transition: color 0.3s ease;
 }
 
-/* Optionally change color on hover/focus */
 nav a:hover,
 nav a:focus {
-	color: #0077ff; /* For example */
+	color: #0077ff;
 }
 
 /* Prevent the dotted outline from sticking */
@@ -127,7 +126,6 @@ header {
 	text-align: center;
 }
 
-/* in allrecipes view, all headers get demoted by one to avoid multiple H1's on page */
 header h1 {
 	/* font-family: 'quigleywigglyregular', cursive; */
 	font-family: "Futura", sans-serif;
@@ -139,6 +137,54 @@ header p {
 	font-style: italic;
 	font-size: 1.5rem;
 	margin-top: 0;
+}
+
+.toc {
+	text-align: center;
+	margin-bottom: 2rem;
+	padding: 1.5rem;
+}
+
+.toc h2 {
+	font-family: "Futura", sans-serif;
+	font-size: 1.5rem;
+	font-weight: bold;
+	text-align: center;
+	margin-bottom: 0.75rem;
+	border-bottom: 1px solid rgba(50, 50, 50, 0.2); /* Lighter, subtler underline */
+	display: inline-block;
+	padding-bottom: 0.25rem;
+}
+
+.toc ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 0.625rem; /* 10px equivalent */
+}
+
+.toc ul li {
+	display: inline-block;
+	margin: 0;
+}
+
+.toc ul li a {
+	display: inline-block;
+	padding: 0.75rem 1.125rem; /* 12px 18px equivalent */
+	border-radius: 0.5rem;
+	text-decoration: none;
+	color: #333;
+	font-weight: bold;
+	box-shadow: 0.125rem 0.125rem 0.3125rem rgba(0, 0, 0, 0.1);
+	border: 0.0625rem solid rgba(0, 0, 0, 0.1);
+	background-image: linear-gradient(135deg, #fcfcfc, #f2f2f2);
+}
+
+.toc ul li a:hover {
+	background-image: linear-gradient(135deg, #f2f2f2, #e6e6e6);
 }
 
 section {
@@ -205,9 +251,9 @@ footer small {
 
 @media screen {
 	/* switch to hand pointer for interactive elements */
-	section h2,
-	.instructions p,
-	.ingredients li {
+	.recipe section h2,
+	.recipe .instructions p,
+	.recipe .ingredients li {
 		cursor: pointer;
 	}
 
