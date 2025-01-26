@@ -17,7 +17,7 @@ To download your own copy, use `git clone https://github.com/chris-biagini/famil
 - Nova by Panic
 - ChatGPT by OpenAI
 - Claude by Anthropic
-- xScope by iconfactory
+- Tot, WorldWideWeb, xScope by iconfactory
 
 ## Server Config
 
