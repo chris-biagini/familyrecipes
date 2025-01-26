@@ -1,10 +1,10 @@
-# Home Fries and Eggs
+# Eggs and Potatoes
 
-Almost a deconstructed tortilla espanola
+~
 
 ## Fry the potatoes.
 
-- Potatoes, 4: Peel and cut into small pieces.
+- Potatoes: Peel and cut into small pieces.
 - Olive oil
 - Salt
 
@@ -14,12 +14,27 @@ Add potatoes and cook gently, stirring frequently, until crispy and golden brown
 
 When potatoes are done, set heat to low and stir them around occasionally while you cook the eggs. Salt to taste.
 
+## Make salad.
+
+- Salad greens
+- Salt and pepper
+- Oil
+- Vinegar
+
+Place greens in large bowl. Season with salt and pepper, then oil, then vinegar, mixing and tasting as you go.
+
 ## Fry the eggs.
 
-- Eggs, 4
+- Eggs
 - Olive oil
 - Salt and pepper
 
 Fry off the eggs, working in batches if necessary.
 
 Season to taste and transfer to plates with the potatoes.
+
+## Plate and serve.
+
+- Bread
+
+Toast bread. Serve eggs on toast with potatoes and salad on the side.
