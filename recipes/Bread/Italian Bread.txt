@@ -10,7 +10,7 @@ A good everyday bread.
 - Salt, 10 g
 - Yeast, 3-5 g
 - Water, 300 g
-- AP flour, 450 g
+- All-purpose flour, 450 g
 
 Whisk together everything except AP flour in large bowl. Adjust yeast quantity based on time available and ambient temperature.
 
@@ -26,7 +26,7 @@ Let rise until approximately doubled in size.
 
 ## Pre-shape.
 
-- Flour
+- All-purpose flour
 
 Preheat oven to 450° convection roast.
 
