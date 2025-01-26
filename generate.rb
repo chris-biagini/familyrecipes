@@ -200,3 +200,27 @@ print "done!\n"
 print "Copying web resources from #{resources_dir} to #{output_dir}..."
 FileUtils.cp_r("#{resources_dir}/.", output_dir) # Copy everything, including subdirectories
 print "done!\n"	
+
+# Generate ingredient report
+ingredient_report_path = File.join("output", "ingredient-report.txt")
+print "Generating ingredient report: #{ingredient_report_path}..."
+ingredient_usage = Hash.new { |hash, key| hash[key] = [] }
+
+recipes.each do |recipe|
+  recipe.steps.each do |step|
+	step.ingredients.each do |ingredient|
+	  ingredient_usage[ingredient.name] << recipe.title unless ingredient_usage[ingredient.name].include?(recipe.title)
+	end
+  end
+end
+
+sorted_ingredients = ingredient_usage.sort_by { |_, recipes| -recipes.size }
+
+ingredient_report = "# Ingredient Report\n\n"
+sorted_ingredients.each_with_index do |(ingredient, recipes), index|
+  ingredient_report += "#{index + 1}. #{ingredient} (#{recipes.join(', ')})\n"
+end
+
+File.write(ingredient_report_path, ingredient_report)
+
+print "done!\n"
