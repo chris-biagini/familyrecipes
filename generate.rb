@@ -206,10 +206,23 @@ ingredient_report_path = File.join("output", "ingredient-report.txt")
 print "Generating ingredient report: #{ingredient_report_path}..."
 ingredient_usage = Hash.new { |hash, key| hash[key] = [] }
 
+# Define equivalent ingredient names (synonyms)
+ingredient_synonyms = {
+  "Egg" => "Eggs",
+  "Egg yolks" => "Eggs",
+  "Egg yolk" => "Eggs"
+}
+
+def normalize_ingredient(name, synonyms)
+  base_name = name.downcase.strip
+  synonyms[base_name] || base_name # Use mapped name if it exists; otherwise, keep original
+end
+
 recipes.each do |recipe|
   recipe.steps.each do |step|
 	step.ingredients.each do |ingredient|
-	  ingredient_usage[ingredient.name] << recipe.title unless ingredient_usage[ingredient.name].include?(recipe.title)
+	  normalized_name = ingredient_synonyms[ingredient.name] || ingredient.name # Use mapped name if it exists; otherwise, keep original
+	  ingredient_usage[normalized_name] << recipe.title unless ingredient_usage[normalized_name].include?(recipe.title)
 	end
   end
 end
@@ -222,5 +235,4 @@ sorted_ingredients.each_with_index do |(ingredient, recipes), index|
 end
 
 File.write(ingredient_report_path, ingredient_report)
-
 print "done!\n"
