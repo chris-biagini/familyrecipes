@@ -213,11 +213,6 @@ ingredient_synonyms = {
   "Egg yolk" => "Eggs"
 }
 
-def normalize_ingredient(name, synonyms)
-  base_name = name.downcase.strip
-  synonyms[base_name] || base_name # Use mapped name if it exists; otherwise, keep original
-end
-
 recipes.each do |recipe|
   recipe.steps.each do |step|
 	step.ingredients.each do |ingredient|
