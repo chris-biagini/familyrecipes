@@ -4,12 +4,12 @@ Minimum viable pizza, cooked in round pizza pans.
 
 ## Make dough.
 
-- Olive oil, 15 g
-- Salt, 10 g
-- Malt syrup, 10 g
-- Yeast, 1-2 g
-- Water, 325 g
-- Bread flour, 500 g
+- Olive oil, 32 g
+- Salt, 16 g
+- Malt syrup, 12.8 g
+- Yeast, 2 g
+- Water, 384 g
+- 00 flour, 640 g: Adjust to 640 to match other pizza recipes, and also incorporate notebook changes
 
 In large bowl, whisk together all ingredients except flour. Adjust yeast based on time available and ambient temperature.
 
@@ -21,23 +21,24 @@ Portion out, pre-shape, cover, and let rest.
 
 ## Make sauce.
 
-- Tomatoes, 350 g
-- Tomato paste, 50 g
-- Salt, 5 g
+- Tomato passata, 350 g
 - Oregano
 - Fennel pollen
 - Olive oil
+- Salt
 - Pepper
 
-Blend tomatoes until smooth. Whisk together with remaining ingredients. Season to taste.
+Whisk ingredients together. Season to taste.
 
 ## Assemble and bake.
 
 - Mozzarella, 225 g: Shredded.
 - Parmesan: Grated.
+- Pecorino: Grated.
+- Bocconcini: Optional.
 
-Preheat oven to 475°, convection roast.
+Preheat oven to 500°, convection roast.
 
-Stretch dough balls into large rounds, using semolina liberally to prevent sticking. Place on pan, then top.
+Stretch dough balls into large rounds, using semolina liberally to prevent sticking. Place on pan, then add cheese and top with dollops of sauce.
 
 Bake for about 12 minutes, or until cheese is bubbly and just barely beginning to brown. Rotate halfway through.
