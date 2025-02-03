@@ -1,6 +1,6 @@
-# Ricotta Gnocchi (in progress!)
+# 🚧 Ricotta Gnocchi 🚧
 
-Cheese dumplings in tomato sauce
+Cheesey dumplings in tomato sauce.
 
 ## Prepare sauce.
 
