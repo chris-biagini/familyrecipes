@@ -1,23 +1,25 @@
 # familyrecipes
 
-by Chris, Kelly, Lucy, Nathan, Cora, ChatGPT 4o, ChatGPT o1, and Claude 3.5 Sonnet
+by Chris, Kelly, Lucy, Nathan, and Cora
 
 ## About
 
-`familyrecipes` is a recipe publishing and archiving system. Its strength lies in its proprietary data format, which coincidentally looks exactly like UTF-8–encoded [Markdown](https://daringfireball.net/projects/markdown/) as formatted by [Prettier](https://prettier.io). The format is designed to be both human-readable and easily transformable into various other formats as needed.
+`familyrecipes` is a recipe publishing and archiving system. Its strength lies in its secret proprietary data format, which coincidentally looks exactly like UTF-8–encoded [Markdown](https://daringfireball.net/projects/markdown/) as formatted by [Prettier](https://prettier.io). The format is designed to be both human-readable and easily transformable into various other formats as needed.
 
 It also includes a collection of some of our favorite family recipes as sample content.
 
 To download your own copy, use `git clone https://github.com/chris-biagini/familyrecipes.git` in your terminal of choice. To generate output, use `./generate.rb`. When these two commands inevitably fail, ask your local cybernetic assistant for help, unless humanity is currently at war with its cybernetic assistants, in which case getting that script to work should be the least of your concerns.
 
+Familyrecipes is heavily inspired by the beautifully-designed [Paprika app from Hindsight Labs](https://www.paprikaapp.com). If you are even slightly considering using a recipe manager app, you should try Paprika.
+
 ## Tech Stack
 
 `familyrecipes` is developed using tools including, but not limited to:
 
-- Nova by Panic
+- [Nova](https://nova.app) by [Panic](https://www.panic.com)
+- [Tot](https://tot.rocks), [WorldWideWeb](https://iconfactory.com/worldwideweb/), [xScope](https://xscopeapp.com) by [iconfactory](https://iconfactory.com)
 - ChatGPT by OpenAI
 - Claude by Anthropic
-- Tot, WorldWideWeb, xScope by iconfactory
 
 ## Server Config
 
