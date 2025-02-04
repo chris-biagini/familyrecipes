@@ -43,12 +43,19 @@ class Recipe
     @source = File.read(markdown_file_path)
     @version_hash = Digest::SHA256.hexdigest(@source)
     
+    @id = File.basename(markdown_file_path, ".*") # Get name without extension
+        .unicode_normalize(:nfkd) # Normalize Unicode characters
+        .downcase                 # Convert to lowercase
+        .gsub(/\s+/, '-')         # Replace spaces with hyphens
+        .gsub(/[^a-z0-9\-]/, '')  # Remove non-alphanumeric characters except hyphens
+      
+    @category = File.basename(File.dirname(markdown_file_path)).sub(/^./, &:upcase)
+    
     @title = nil
     @description = nil
     @steps = []
     @footer = nil
     
-    parse_filename(markdown_file_path)
     parse_recipe
   end
   
@@ -60,17 +67,7 @@ class Recipe
   end
   
   private
-  
-  def parse_filename(markdown_file_path)
-    @id = File.basename(markdown_file_path, ".*") # Get name without extension
-        .unicode_normalize(:nfkd)     # Normalize Unicode characters
-        .downcase             # Convert to lowercase
-        .gsub(/\s+/, '-')         # Replace spaces with hyphens
-        .gsub(/[^a-z0-9\-]/, '')     # Remove non-alphanumeric characters except hyphens
-      
-    @category = File.basename(File.dirname(markdown_file_path)).sub(/^./, &:upcase)
-  end
-    
+
   def parse_recipe
     # just worry about non-blank lines for now
     lines = @source.split("\n").reject { |line| line.strip.empty? }
@@ -215,10 +212,10 @@ ingredient_synonyms = {
 
 recipes.each do |recipe|
   recipe.steps.each do |step|
-  step.ingredients.each do |ingredient|
-    normalized_name = ingredient_synonyms[ingredient.name] || ingredient.name # Use mapped name if it exists; otherwise, keep original
-    ingredient_usage[normalized_name] << recipe.title unless ingredient_usage[normalized_name].include?(recipe.title)
-  end
+    step.ingredients.each do |ingredient|
+      normalized_name = ingredient_synonyms[ingredient.name] || ingredient.name # Use mapped name if it exists; otherwise, keep original
+      ingredient_usage[normalized_name] << recipe.title unless ingredient_usage[normalized_name].include?(recipe.title)
+    end
   end
 end
 
