@@ -200,7 +200,7 @@ print "Generating index page in #{output_dir}..."
 grouped_recipes = recipes.group_by(&:category) # hash of recipes, with categories as keys
 
 # Read and process the template
-template_path = File.join(template_dir, "index-template.html.erb")
+template_path = File.join(template_dir, "homepage-template.html.erb")
 erb_template = ERB.new(File.read(template_path), trim_mode: "-")
 
 # Generate the index file
