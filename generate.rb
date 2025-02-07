@@ -194,7 +194,7 @@ end
 
 print "done!\n"
 
-# build index page
+# build home page
 print "Generating homepage in #{output_dir}..."
 
 grouped_recipes = recipes.group_by(&:category) # hash of recipes, with categories as keys
@@ -203,9 +203,9 @@ grouped_recipes = recipes.group_by(&:category) # hash of recipes, with categorie
 template_path = File.join(template_dir, "homepage-template.html.erb")
 erb_template = ERB.new(File.read(template_path), trim_mode: "-")
 
-# Generate the index file
-index_path = File.join(output_dir, "index.html")
-File.write(index_path, erb_template.result_with_hash(grouped_recipes: grouped_recipes))
+# Generate the homepage file
+homepage_path = File.join(output_dir, "index.html")
+File.write(homepage_path, erb_template.result_with_hash(grouped_recipes: grouped_recipes))
 
 print "done!\n"
 
@@ -214,23 +214,21 @@ print "Copying web resources from #{resources_dir} to #{output_dir}..."
 FileUtils.cp_r("#{resources_dir}/.", output_dir) # Copy everything, including subdirectories
 print "done!\n"  
 
-# Generate ingredient report
-ingredient_report_path = File.join("output", "ingredient-report.txt")
-print "Generating ingredient report: #{ingredient_report_path}..."
-ingredient_usage = Hash.new { |hash, key| hash[key] = [] }
+# Generate index
+print "Generating index..."
 
+ingredient_usage = Hash.new { |hash, key| hash[key] = [] }
 recipes.each do |recipe|
     recipe.all_ingredients.each do |ingredient|
       ingredient_usage[ingredient.normalized_name] << recipe.title
     end
 end
-
 sorted_ingredients = ingredient_usage.sort_by { |_, recipes| -recipes.size }
 
-ingredient_report = "# Ingredient Report\n\n"
-sorted_ingredients.each_with_index do |(ingredient, recipes), index|
-  ingredient_report += "#{index + 1}. #{ingredient} (#{recipes.join(', ')})\n"
-end
+template_path = File.join(template_dir, "index-template.html.erb")
+erb_template = ERB.new(File.read(template_path), trim_mode: "-")
+index_path = File.join(output_dir, "index", "index.html")
+FileUtils.mkdir_p(File.dirname(index_path))  # Ensure directory exists
+File.write(index_path, erb_template.result_with_hash(sorted_ingredients: sorted_ingredients))
 
-File.write(ingredient_report_path, ingredient_report)
 print "done!\n"
