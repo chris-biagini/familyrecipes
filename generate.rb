@@ -16,6 +16,17 @@ class Ingredient
     @quantity = quantity
     @prep_note = prep_note
   end
+  
+  def normalized_name
+    ingredient_synonyms = {
+      "Egg" => "Eggs",
+      "Egg yolks" => "Eggs",
+      "Egg yolk" => "Eggs"
+    }
+    
+    # Return mapped name if it exists; otherwise, keep original
+    ingredient_synonyms[@name] || @name
+  end
 end
 
 class Step
@@ -64,6 +75,11 @@ class Recipe
     template = File.read('templates/web/recipe-template.html.erb')
     erb = ERB.new(template, trim_mode: '-')
     erb.result(binding)
+  end
+  
+  def all_ingredients
+    # magic ruby syntax, returns a flat array of all unique ingredients
+    @steps.flat_map(&:ingredients).uniq { |ingredient| ingredient.normalized_name }
   end
   
   private
@@ -203,20 +219,10 @@ ingredient_report_path = File.join("output", "ingredient-report.txt")
 print "Generating ingredient report: #{ingredient_report_path}..."
 ingredient_usage = Hash.new { |hash, key| hash[key] = [] }
 
-# Define equivalent ingredient names (synonyms)
-ingredient_synonyms = {
-  "Egg" => "Eggs",
-  "Egg yolks" => "Eggs",
-  "Egg yolk" => "Eggs"
-}
-
 recipes.each do |recipe|
-  recipe.steps.each do |step|
-    step.ingredients.each do |ingredient|
-      normalized_name = ingredient_synonyms[ingredient.name] || ingredient.name # Use mapped name if it exists; otherwise, keep original
-      ingredient_usage[normalized_name] << recipe.title unless ingredient_usage[normalized_name].include?(recipe.title)
+    recipe.all_ingredients.each do |ingredient|
+      ingredient_usage[ingredient.normalized_name] << recipe.title
     end
-  end
 end
 
 sorted_ingredients = ingredient_usage.sort_by { |_, recipes| -recipes.size }
