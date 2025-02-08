@@ -105,6 +105,7 @@ nav a:focus {
 nav a:focus { outline: none; }
 
 nav a.home::before 	{ content: "🏠 "; }
+nav a.index::before { content: "🗂️ "; }
 nav a.text::before 	{ content: "📄 "; }
 nav a.print::before { content: "🖨️ "; }
 
