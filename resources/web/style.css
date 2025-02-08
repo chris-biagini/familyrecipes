@@ -274,6 +274,12 @@ footer small {
 ol li ul {
 	column-count: 3;
 	font-size: 0.9rem;
+	list-style: none;
+	padding-left: 0.5rem;
+}
+
+ol > li {
+	margin-bottom: 1rem;
 }
 
 /* small mobiles only */
@@ -298,6 +304,11 @@ ol li ul {
 	.ingredients ul {
 	  column-count: 2;
 	  column-gap: 0.5rem;
+	}
+	
+	/* Switch to two index columns as well */
+	ol li ul {
+		column-count: 2;
 	}
 }
 
