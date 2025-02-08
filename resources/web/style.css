@@ -139,13 +139,13 @@ header p {
 	margin-top: 0;
 }
 
-.toc {
+.toc_nav {
 	text-align: center;
 	margin-bottom: 2rem;
 	padding: 1.5rem;
 }
 
-.toc h2 {
+.toc_nav h2 {
 	font-family: "Futura", sans-serif;
 	font-size: 1.5rem;
 	font-weight: bold;
@@ -156,7 +156,7 @@ header p {
 	padding-bottom: 0.25rem;
 }
 
-.toc ul {
+.toc_nav ul {
 	list-style: none;
 	padding: 0;
 	margin: 0;
@@ -166,12 +166,12 @@ header p {
 	gap: 0.625rem; /* 10px equivalent */
 }
 
-.toc ul li {
+.toc_nav ul li {
 	display: inline-block;
 	margin: 0;
 }
 
-.toc ul li a {
+.toc_nav ul li a {
 	display: inline-block;
 	padding: 0.75rem 1.125rem; /* 12px 18px equivalent */
 	border-radius: 0.5rem;
@@ -183,13 +183,19 @@ header p {
 	background-image: linear-gradient(135deg, #fcfcfc, #f2f2f2);
 }
 
-.toc ul li a:hover {
+.toc_nav ul li a:hover {
 	background-image: linear-gradient(135deg, #f2f2f2, #e6e6e6);
 }
 
 section {
 	margin-top: 2rem;
 	break-inside: avoid;
+}
+
+section > ul {
+	column-count: 3;
+	list-style: none;
+	padding-left: 0.5rem;
 }
 
 /* in allrecipes view, all headers get demoted by one to avoid multiple H1's on page */
@@ -270,12 +276,6 @@ footer small {
 /****************************************/
 /* Styles for mobiles and small screens */
 /****************************************/
-
-section > ul {
-	column-count: 3;
-	list-style: none;
-	padding-left: 0.5rem;
-}
 
 /* small mobiles only */
 @media screen and (max-width: 600px) and (pointer:coarse) {
