@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Grocery List</title>
+	<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+	<nav>
+			<div>
+				<a href="/" class="home" title="Home (Table of Contents)">Home</a>
+				<a href="/index/" class="index" title="Index of ingredients">Index</a>
+				<a href="/groceries/" class="groceries" title="Printable grocery list">Groceries</a>
+			</div>
+	</nav>
+	
+	<main>
+		<article>
+			<header>
+				<h1>Grocery List</h1>
+			</header>
+			
+			<%- grouped_recipes.each do |category, recipes| -%>
+			<section>
+				<h2><%= category %></h2>
+				<ul>
+					<%- recipes.each do |recipe| -%>
+					<li>
+						<input type="checkbox" id="recipe-<%= recipe.id %>">
+						<label for="recipe-<%= recipe.id %>"><%= recipe.title %></label>
+					</li>
+					<%- end -%>
+				</ul>
+			</section>
+			<%- end -%>
+			
+		</article>
+	</main>
+	<!-- <script src="script.js" defer></script> -->
+</body>
+</html>

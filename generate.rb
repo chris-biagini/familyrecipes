@@ -198,6 +198,11 @@ end
 
 print "done!\n"
 
+# Copy resources (e.g., stylesheets, javascript)
+print "Copying web resources from #{resources_dir} to #{output_dir}..."
+FileUtils.cp_r("#{resources_dir}/.", output_dir) # Copy everything, including subdirectories
+print "done!\n"
+
 # build home page
 print "Generating homepage in #{output_dir}..."
 
@@ -212,11 +217,6 @@ homepage_path = File.join(output_dir, "index.html")
 File.write(homepage_path, erb_template.result_with_hash(grouped_recipes: grouped_recipes))
 
 print "done!\n"
-
-# Copy resources (e.g., stylesheets, javascript)
-print "Copying web resources from #{resources_dir} to #{output_dir}..."
-FileUtils.cp_r("#{resources_dir}/.", output_dir) # Copy everything, including subdirectories
-print "done!\n"  
 
 # Generate index
 print "Generating index..."
@@ -234,5 +234,16 @@ erb_template = ERB.new(File.read(template_path), trim_mode: "-")
 index_path = File.join(output_dir, "index", "index.html")
 FileUtils.mkdir_p(File.dirname(index_path))  # Ensure directory exists
 File.write(index_path, erb_template.result_with_hash(sorted_ingredients: sorted_ingredients))
+
+print "done!\n"
+
+# build grocery page
+print "Generating groceries page..."
+
+template_path = File.join(template_dir, "groceries-template.html.erb")
+erb_template = ERB.new(File.read(template_path), trim_mode: "-")
+groceries_path = File.join(output_dir, "groceries", "index.html")
+FileUtils.mkdir_p(File.dirname(groceries_path))  # Ensure directory exists
+File.write(groceries_path, erb_template.result_with_hash(grouped_recipes: grouped_recipes))
 
 print "done!\n"
