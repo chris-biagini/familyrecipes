@@ -4,6 +4,7 @@ require 'fileutils'
 require 'erb'
 require 'redcarpet'
 require 'digest'
+require 'json'
 
 # Utility classes
 
