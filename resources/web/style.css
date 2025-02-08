@@ -271,6 +271,11 @@ footer small {
 /* Styles for mobiles and small screens */
 /****************************************/
 
+ol li ul {
+	column-count: 3;
+	font-size: 0.9rem;
+}
+
 /* small mobiles only */
 @media screen and (max-width: 600px) and (pointer:coarse) {
 	:root {

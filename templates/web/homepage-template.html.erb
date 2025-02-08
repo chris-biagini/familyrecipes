@@ -31,7 +31,7 @@
 				<h2><%= category %></h2>
 				<ul>
 					<%- recipes.each do |recipe| -%>
-					<li><a href="<%= recipe.id %>" title="<%= recipe.description %>"><%= recipe.title %></a></li>
+					<li><a href="<%= recipe.relative_url %>" title="<%= recipe.description %>"><%= recipe.title %></a></li>
 					<%- end -%>
 				</ul>
 			</section>

@@ -70,6 +70,10 @@ class Recipe
     parse_recipe
   end
   
+  def relative_url
+    "/#{@id}"
+  end
+  
   def to_html
     markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML)
     template = File.read('templates/web/recipe-template.html.erb')
@@ -220,7 +224,7 @@ print "Generating index..."
 ingredient_usage = Hash.new { |hash, key| hash[key] = [] }
 recipes.each do |recipe|
     recipe.all_ingredients.each do |ingredient|
-      ingredient_usage[ingredient.normalized_name] << recipe.title
+      ingredient_usage[ingredient.normalized_name] << recipe
     end
 end
 sorted_ingredients = ingredient_usage.sort_by { |_, recipes| -recipes.size }

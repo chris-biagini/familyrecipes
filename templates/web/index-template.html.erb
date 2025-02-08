@@ -14,19 +14,29 @@
 	<main>
 		<article>
 			<header>
-				<h1>Index</h1>
+				<h1>Ingredient Index</h1>
 			</header>
-						
+			
 			<section>
 				<ol>
 					<%- sorted_ingredients.each do |ingredient, recipes| -%>
-					<li><%= ingredient %></li>
+						<li>
+							<strong><%= ingredient %></strong>
+							<ul>
+								<%- recipes.each do |recipe| -%>
+									<li>
+										<a href="<%= recipe.relative_url %>"><%= recipe.title %></a>
+									</li>
+								<%- end -%>
+							</ul>
+						</li>
 					<%- end -%>
 				</ol>
 			</section>
 			
 		</article>
 	</main>
+
 	<!-- <script src="script.js" defer></script> -->
 </body>
 </html>
