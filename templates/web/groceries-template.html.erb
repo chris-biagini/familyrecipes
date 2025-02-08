@@ -46,9 +46,13 @@
 					<li>
 						<!--
 							We add a data attribute holding a JSON array of ingredient objects.
-							Each ingredient object includes a normalized name and its quantity (if any).
+							Each ingredient object includes a normalized name and its quantity, split into a value and a unit.
 						-->
-						<input type="checkbox" id="recipe-<%= recipe.id %>" data-ingredients='<%= recipe.all_ingredients.map { |ing| { name: ing.normalized_name, quantity: (ing.quantity || "").to_s } }.to_json %>'>
+						<input type="checkbox" id="recipe-<%= recipe.id %>" data-ingredients='<%= recipe.all_ingredients.map { |ing| { 
+							name: ing.normalized_name, 
+							value: (ing.quantity_value || "").to_s, 
+							unit: (ing.quantity_unit || "").to_s 
+						} }.to_json %>'>
 						<label for="recipe-<%= recipe.id %>"><%= recipe.title %></label>
 					</li>
 					<%- end -%>
@@ -66,81 +70,116 @@
 		
 	</main>
 	
-	<script>
-		// Helper: combine two quantities.
-		// - If both quantities are pure numbers, we add them.
-		// - Otherwise, we combine them with a " + " separator (avoiding duplicates).
-		function combineQuantities(q1, q2) {
-			q1 = q1.trim();
-			q2 = q2.trim();
-			if (!q1) return q2;
-			if (!q2) return q1;
-	
-			var num1 = parseFloat(q1);
-			var num2 = parseFloat(q2);
-			// Check if both strings are exactly the numeric value.
-			if (!isNaN(num1) && q1 === num1.toString() &&
-					!isNaN(num2) && q2 === num2.toString()) {
-				return (num1 + num2).toString();
-			} else {
-				// For non-numeric or mixed values, split on " + " to avoid duplicates.
-				var parts = q1.split(' + ');
-				if (parts.indexOf(q2) === -1) {
-					parts.push(q2);
-				}
-				return parts.join(' + ');
+<script>
+	// Update the grocery list by aggregating ingredients with separated value/unit pairs.
+	function updateGroceryList() {
+		const aggregatedIngredients = {};
+
+		// Loop over all checked recipe checkboxes.
+		document.querySelectorAll('input[type="checkbox"]:checked').forEach(function(checkbox) {
+			let ingredients;
+			try {
+				ingredients = JSON.parse(checkbox.dataset.ingredients);
+			} catch (e) {
+				console.error("Error parsing ingredients for checkbox", checkbox, e);
+				return;
 			}
-		}
-	
-		// This function aggregates ingredients from all checked recipes.
-		function updateGroceryList() {
-			const aggregatedIngredients = {};
-			
-			// Loop over all checked recipe checkboxes.
-			document.querySelectorAll('input[type="checkbox"]:checked').forEach(function(checkbox) {
-				let ingredients;
-				try {
-					ingredients = JSON.parse(checkbox.dataset.ingredients);
-				} catch (e) {
-					console.error("Error parsing ingredients for checkbox", checkbox, e);
-					return;
+
+			// For each ingredient, aggregate by name and then by unit.
+			ingredients.forEach(function(ing) {
+				const name  = ing.name;
+				const value = ing.value ? ing.value.toString().trim() : "";
+				const unit  = ing.unit ? ing.unit.toString().trim() : "";
+
+				if (!aggregatedIngredients[name]) {
+					aggregatedIngredients[name] = {};
 				}
-	
-				// For each ingredient, aggregate by name.
-				ingredients.forEach(function(ing) {
-					const name = ing.name;
-					// Ensure quantity is a string; trim it so empty strings are handled.
-					const qty = ing.quantity ? ing.quantity.toString().trim() : "";
-					if (aggregatedIngredients[name]) {
-						aggregatedIngredients[name] = combineQuantities(aggregatedIngredients[name], qty);
-					} else {
-						aggregatedIngredients[name] = qty;
-					}
-				});
+				// Use the unit (empty string for unspecified) as the key.
+				if (!aggregatedIngredients[name][unit]) {
+					aggregatedIngredients[name][unit] = [];
+				}
+				aggregatedIngredients[name][unit].push(value);
 			});
-	
-			// Update the grocery list <ul> with aggregated ingredients.
-			const groceryListUl = document.querySelector('#grocery-list ul');
-			groceryListUl.innerHTML = '';  // Clear the previous list
-	
-			// Sort ingredients alphabetically.
-			const sortedNames = Object.keys(aggregatedIngredients).sort();
-			sortedNames.forEach(function(name) {
-				const qty = aggregatedIngredients[name];
-				const li = document.createElement('li');
-				li.textContent = qty ? `${name} (${qty})` : name;
-				groceryListUl.appendChild(li);
-			});
-		}
-	
-		// Attach event listeners to checkboxes.
-		document.querySelectorAll('input[type="checkbox"]').forEach(function(cb) {
-			cb.addEventListener('change', updateGroceryList);
 		});
-	
-		// Update the list on page load (in case any boxes are pre-checked).
-		updateGroceryList();
-	</script>
+
+		// Helper: Format the aggregated quantities for one ingredient.
+		// Returns an array of strings to be joined later.
+		function formatAggregatedQuantity(quantitiesByUnit) {
+			const pieces = [];
+			
+			// Process specified units (non-empty keys).
+			for (const unit in quantitiesByUnit) {
+				if (unit !== "") {
+					const values = quantitiesByUnit[unit];
+					// Check if all values are pure numbers.
+					const allNumeric = values.every(v => v !== "" && !isNaN(parseFloat(v)) && parseFloat(v).toString() === v);
+					if (allNumeric) {
+						// Sum the numeric values.
+						const sum = values.reduce((acc, v) => acc + parseFloat(v), 0);
+						pieces.push(`${sum} ${unit}`);
+					} else {
+						// Otherwise, join unique values with commas.
+						const uniqueValues = Array.from(new Set(values));
+						pieces.push(uniqueValues.join(", "));
+					}
+				}
+			}
+			
+			// Process unspecified quantities (empty unit).
+			if (quantitiesByUnit[""]) {
+				const unspecifiedValues = quantitiesByUnit[""];
+				const hasSpecified = Object.keys(quantitiesByUnit).some(key => key !== "");
+				if (hasSpecified) {
+					// If there's also a specified quantity, indicate additional amounts.
+					pieces.push("plus additional");
+				} else {
+					// Only unspecified quantities exist.
+					// Filter out empty values.
+					const nonEmpty = unspecifiedValues.filter(v => v !== "");
+					if (nonEmpty.length > 0) {
+						const allNumeric = nonEmpty.every(v => !isNaN(parseFloat(v)) && parseFloat(v).toString() === v);
+						if (allNumeric) {
+							const sum = nonEmpty.reduce((acc, v) => acc + parseFloat(v), 0);
+							pieces.push(`${sum}`);
+						} else {
+							const uniqueValues = Array.from(new Set(nonEmpty));
+							pieces.push(uniqueValues.join(", "));
+						}
+					}
+				}
+			}
+			
+			return pieces;
+		}
+
+		// Update the grocery list <ul> with aggregated ingredients.
+		const groceryListUl = document.querySelector('#grocery-list ul');
+		groceryListUl.innerHTML = '';  // Clear previous content
+
+		// Sort ingredients alphabetically by name.
+		const sortedNames = Object.keys(aggregatedIngredients).sort();
+		sortedNames.forEach(function(name) {
+			const quantitiesByUnit = aggregatedIngredients[name];
+			const pieces = formatAggregatedQuantity(quantitiesByUnit);
+			let displayText = name;
+			// Only add a parenthetical if there's at least one non-empty quantity.
+			if (pieces.length > 0) {
+				displayText += " (" + pieces.join(", ") + ")";
+			}
+			const li = document.createElement('li');
+			li.textContent = displayText;
+			groceryListUl.appendChild(li);
+		});
+	}
+
+	// Attach event listeners to recipe checkboxes.
+	document.querySelectorAll('input[type="checkbox"]').forEach(function(cb) {
+		cb.addEventListener('change', updateGroceryList);
+	});
+
+	// Update the list on page load (in case any boxes are pre-checked).
+	updateGroceryList();
+</script>
 	
 	<!-- <script src="script.js" defer></script> -->
 </body>
