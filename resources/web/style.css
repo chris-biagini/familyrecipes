@@ -271,15 +271,10 @@ footer small {
 /* Styles for mobiles and small screens */
 /****************************************/
 
-ol li ul {
+section > ul {
 	column-count: 3;
-	font-size: 0.9rem;
 	list-style: none;
 	padding-left: 0.5rem;
-}
-
-ol > li {
-	margin-bottom: 1rem;
 }
 
 /* small mobiles only */
@@ -307,7 +302,7 @@ ol > li {
 	}
 	
 	/* Switch to two index columns as well */
-	ol li ul {
+	section > ul {
 		column-count: 2;
 	}
 }
