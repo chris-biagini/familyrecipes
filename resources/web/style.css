@@ -200,6 +200,10 @@ section > ul {
 	padding-left: 0.5rem;
 }
 
+section > ul li {
+	white-space: nowrap;
+}
+
 /* in allrecipes view, all headers get demoted by one to avoid multiple H1's on page */
 section h2 {
 	font-family: "Futura", sans-serif;
