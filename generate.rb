@@ -212,11 +212,6 @@ end
 
 print "done! (Parsed #{recipes.size} recipes.)\n"  
 
-# Load the ingredient database
-ingredient_db_path = "resources/ingredient-db.yaml"
-ingredient_db = YAML.load_file(ingredient_db_path)
-print "Loaded ingredient database from #{ingredient_db_path}\n"
-
 # make output directory
 FileUtils.mkdir_p(output_dir)
 
@@ -276,6 +271,11 @@ print "done!\n"
 
 # Build grocery page
 print "Generating groceries page..."
+
+# Load the ingredient database
+ingredient_db_path = "resources/ingredient-db.yaml"
+ingredient_db = YAML.load_file(ingredient_db_path)
+print "Loaded ingredient database from #{ingredient_db_path}\n"
 
 # Build recipes_db as an associative array keyed by recipe.id.
 recipes_db = {}
