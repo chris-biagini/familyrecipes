@@ -111,15 +111,28 @@
 				});
 			});
 
-			// Include staple ingredients even if not selected.
+// Include staple ingredients even if not selected.
 			Object.entries(ingredientDB).forEach(([dbName, details]) => {
-				if (details.is_staple) {
-					// Check if any aggregated ingredient (case-insensitive match) already exists.
-					let exists = Object.keys(aggregatedIngredients).some(aggName => aggName.toLowerCase() === dbName.toLowerCase());
-					if (!exists) {
-						aggregatedIngredients[dbName] = { "": [] };
+					if (details.is_staple) {
+							// Look for an existing aggregated ingredient matching this staple (case-insensitive)
+							let matchingKey = Object.keys(aggregatedIngredients).find(
+									aggName => aggName.toLowerCase() === dbName.toLowerCase()
+							);
+							if (matchingKey) {
+									// If there is any specified quantity (i.e. any key other than "")
+									const specifiedKeys = Object.keys(aggregatedIngredients[matchingKey]).filter(key => key !== "");
+									if (specifiedKeys.length > 0) {
+											// Ensure the unspecified group exists, then push a marker.
+											if (!aggregatedIngredients[matchingKey].hasOwnProperty("")) {
+													aggregatedIngredients[matchingKey][""] = [];
+											}
+											aggregatedIngredients[matchingKey][""].push("staple-marker");
+									}
+							} else {
+									// If not present at all, add it as a staple (with no unspecified marker).
+									aggregatedIngredients[dbName] = { "": [] };
+							}
 					}
-				}
 			});
 
 			// Helper: Format aggregated quantities.
