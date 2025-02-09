@@ -1,19 +1,161 @@
-Olive oil:
-    aisle: Pantry
+# Produce
+Apples:
+    aisle: Produce
+    is_staple: true
+Berries:
+    aisle: Produce
+    is_staple: true
+Fruit juice:
+    aisle: Produce
+    is_staple: true
+Oranges:
+    aisle: Produce
+    is_staple: true
+Mangoes:
+    aisle: Produce
+    is_staple: true
+Grapes:
+    aisle: Produce
+    is_staple: true
+Carrots:
+    aisle: Produce
+    is_staple: true
+Cucumbers:
+    aisle: Produce
+    is_staple: true
+Salad greens:
+    aisle: Produce
+    is_staple: true
+Bananas:
+    aisle: Produce
+    is_staple: true
+Onions:
+    aisle: Produce
+    is_staple: true
+Bell peppers:
+    aisle: Produce
     is_staple: true
 
+# Bakery
+Bread:
+    aisle: Bakery
+    is_staple: true
+Sandwich bread:
+    aisle: Bakery
+    is_staple: true
+Cookies:
+    aisle: Bakery
+    is_staple: true
+
+# International
+Muesli:
+    aisle: International
+    is_staple: true
+"Tortillas (large)":
+    aisle: International
+    is_staple: true
+Salsa:
+    aisle: International
+    is_staple: true
+
+# Health
+RXBARs:
+    aisle: Health
+    is_staple: true
+Protein shake mix:
+    aisle: Health
+    is_staple: true
+Creatine:
+    aisle: Health
+    is_staple: true
+
+# Frozen
+Fro-yo bars:
+    aisle: Frozen
+    is_staple: true
+Soft pretzels:
+    aisle: Frozen
+    is_staple: true
+"Chik'n nuggets":
+    aisle: Frozen
+    is_staple: true
+French fries:
+    aisle: Frozen
+    is_staple: true
+
+# Other
+"Diet Coke":
+    aisle: Beverages
+    is_staple: true
+Chocolate:
+    aisle: Candy
+    is_staple: true
+Candy:
+    aisle: Candy
+    is_staple: true
+"Chickpeas (canned)":
+    aisle: Pantry
+    is_staple: true
+"Black beans (canned)":
+    aisle: Pantry
+    is_staple: true
+Pretzels:
+    aisle: Snacks
+    is_staple: true
+"Tortilla chips":
+    aisle: Snacks
+    is_staple: true
 Peanut butter:
     aisle: Pantry
     is_staple: true
-
-Canned black beans:
-    aisle: "Canned Goods"
-    is_staple: false
-
-Carrot:
-    aisle: Produce
-    is_staple: false
-
+Coffee:
+    aisle: Beverages
+    is_staple: true
+Triscuits:
+    aisle: Snacks
+    is_staple: true
+Goldfish:
+    aisle: Snacks
+    is_staple: true
+Cereal:
+    aisle: Cereal
+    is_staple: true
+Wine:
+    aisle: Alcohol
+    is_staple: true
+Olives:
+    aisle: Pantry
+    is_staple: true
+Hummus:
+    aisle: Deli
+    is_staple: true
+"String cheese":
+    aisle: Dairy
+    is_staple: true
+"American cheez":
+    aisle: Dairy
+    is_staple: true
+"Mexican cheese blend":
+    aisle: Dairy
+    is_staple: true
+Bocconcini:
+    aisle: Dairy
+    is_staple: true
+"Chocolate milk":
+    aisle: Dairy
+    is_staple: true
+"Skim milk":
+    aisle: Dairy
+    is_staple: true
+"Whole milk":
+    aisle: Dairy
+    is_staple: true
 Eggs:
     aisle: Dairy
-    is_staple: false
+    is_staple: true
+Yogurt:
+    aisle: Dairy
+    is_staple: true
+"Yogurt drinks":
+    aisle: Dairy
+    is_staple: true
