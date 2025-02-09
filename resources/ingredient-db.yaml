@@ -1,0 +1,19 @@
+Olive oil:
+    aisle: Pantry
+    is_staple: true
+
+Peanut butter:
+    aisle: Pantry
+    is_staple: true
+
+Canned black beans:
+    aisle: "Canned Goods"
+    is_staple: false
+
+Carrot:
+    aisle: Produce
+    is_staple: false
+
+Eggs:
+    aisle: Dairy
+    is_staple: false

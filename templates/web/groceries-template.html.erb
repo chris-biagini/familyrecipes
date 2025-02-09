@@ -31,7 +31,7 @@
 		</div>
 		
 		<div>
-				<a href="#" onclick="window.print(); return false;" class="print">Print</a>
+			<a href="#" onclick="window.print(); return false;" class="print">Print</a>
 		</div>
 	</nav>
 	
@@ -48,10 +48,6 @@
 				<ul>
 					<%- recipes.each do |recipe| -%>
 					<li>
-						<!--
-							We add a data attribute holding a JSON array of ingredient objects.
-							Each ingredient object includes a normalized name and its quantity, split into a value and a unit.
-						-->
 						<input type="checkbox" id="recipe-<%= recipe.id %>" data-ingredients='<%= recipe.all_ingredients.map { |ing| { 
 							name: ing.normalized_name, 
 							value: (ing.quantity_value || "").to_s, 
@@ -69,122 +65,168 @@
 		<!-- This div will be updated dynamically with the aggregated grocery list -->
 		<div id="grocery-list">
 			<h2>Your Grocery List</h2>
-			<ul></ul>
+			<!-- We’ll insert the grouped list here -->
+			<div id="grocery-list-content"></div>
 		</div>
 		
 	</main>
 	
-<script>
-	// Update the grocery list by aggregating ingredients with separated value/unit pairs.
-	function updateGroceryList() {
-		const aggregatedIngredients = {};
-
-		// Loop over all checked recipe checkboxes.
-		document.querySelectorAll('input[type="checkbox"]:checked').forEach(function(checkbox) {
-			let ingredients;
-			try {
-				ingredients = JSON.parse(checkbox.dataset.ingredients);
-			} catch (e) {
-				console.error("Error parsing ingredients for checkbox", checkbox, e);
-				return;
-			}
-
-			// For each ingredient, aggregate by name and then by unit.
-			ingredients.forEach(function(ing) {
-				const name  = ing.name;
-				const value = ing.value ? ing.value.toString().trim() : "";
-				const unit  = ing.unit ? ing.unit.toString().trim() : "";
-
-				if (!aggregatedIngredients[name]) {
-					aggregatedIngredients[name] = {};
-				}
-				// Use the unit (empty string for unspecified) as the key.
-				if (!aggregatedIngredients[name][unit]) {
-					aggregatedIngredients[name][unit] = [];
-				}
-				aggregatedIngredients[name][unit].push(value);
-			});
-		});
-
-		// Helper: Format the aggregated quantities for one ingredient.
-		// Returns an array of strings to be joined later.
-		function formatAggregatedQuantity(quantitiesByUnit) {
-			const pieces = [];
+	<!-- Embed ingredient database JSON for use in JavaScript -->
+	<script id="ingredient-db" type="application/json">
+		<%= ingredient_db.to_json %>
+	</script>
+	
+	<script>
+		// Update the grocery list by aggregating ingredients, grouping by aisle, and including staples.
+		function updateGroceryList() {
+			// Parse the ingredient DB from the embedded JSON.
+			const ingredientDB = JSON.parse(document.getElementById('ingredient-db').textContent);
 			
-			// Process specified units (non-empty keys).
-			for (const unit in quantitiesByUnit) {
-				if (unit !== "") {
-					const values = quantitiesByUnit[unit];
-					// Check if all values are pure numbers.
-					const allNumeric = values.every(v => v !== "" && !isNaN(parseFloat(v)) && parseFloat(v).toString() === v);
-					if (allNumeric) {
-						// Sum the numeric values.
-						const sum = values.reduce((acc, v) => acc + parseFloat(v), 0);
-						pieces.push(`${sum} ${unit}`);
-					} else {
-						// Otherwise, join unique values with commas.
-						const uniqueValues = Array.from(new Set(values));
-						pieces.push(uniqueValues.join(", "));
+			const aggregatedIngredients = {};
+
+			// Loop over all checked recipe checkboxes.
+			document.querySelectorAll('input[type="checkbox"]:checked').forEach(function(checkbox) {
+				let ingredients;
+				try {
+					ingredients = JSON.parse(checkbox.dataset.ingredients);
+				} catch (e) {
+					console.error("Error parsing ingredients for checkbox", checkbox, e);
+					return;
+				}
+
+				// Aggregate each ingredient by name and then by unit.
+				ingredients.forEach(function(ing) {
+					const name  = ing.name;
+					const value = ing.value ? ing.value.toString().trim() : "";
+					const unit  = ing.unit ? ing.unit.toString().trim() : "";
+
+					if (!aggregatedIngredients[name]) {
+						aggregatedIngredients[name] = {};
+					}
+					// Use the unit (empty string for unspecified) as the key.
+					if (!aggregatedIngredients[name][unit]) {
+						aggregatedIngredients[name][unit] = [];
+					}
+					aggregatedIngredients[name][unit].push(value);
+				});
+			});
+
+			// Include staple ingredients even if not selected.
+			Object.entries(ingredientDB).forEach(([dbName, details]) => {
+				if (details.is_staple) {
+					// Check if any aggregated ingredient (case-insensitive match) already exists.
+					let exists = Object.keys(aggregatedIngredients).some(aggName => aggName.toLowerCase() === dbName.toLowerCase());
+					if (!exists) {
+						aggregatedIngredients[dbName] = { "": [] };
 					}
 				}
-			}
-			
-			// Process unspecified quantities (empty unit).
-			if (quantitiesByUnit[""]) {
-				const unspecifiedValues = quantitiesByUnit[""];
-				const hasSpecified = Object.keys(quantitiesByUnit).some(key => key !== "");
-				if (hasSpecified) {
-					// If there's also a specified quantity, indicate additional amounts.
-					pieces.push("plus additional");
-				} else {
-					// Only unspecified quantities exist.
-					// Filter out empty values.
-					const nonEmpty = unspecifiedValues.filter(v => v !== "");
-					if (nonEmpty.length > 0) {
-						const allNumeric = nonEmpty.every(v => !isNaN(parseFloat(v)) && parseFloat(v).toString() === v);
+			});
+
+			// Helper: Format aggregated quantities.
+			function formatAggregatedQuantity(quantitiesByUnit) {
+				const pieces = [];
+				
+				// Process specified units.
+				for (const unit in quantitiesByUnit) {
+					if (unit !== "") {
+						const values = quantitiesByUnit[unit];
+						const allNumeric = values.every(v => v !== "" && !isNaN(parseFloat(v)) && parseFloat(v).toString() === v);
 						if (allNumeric) {
-							const sum = nonEmpty.reduce((acc, v) => acc + parseFloat(v), 0);
-							pieces.push(`${sum}`);
+							const sum = values.reduce((acc, v) => acc + parseFloat(v), 0);
+							pieces.push(`${sum} ${unit}`);
 						} else {
-							const uniqueValues = Array.from(new Set(nonEmpty));
+							const uniqueValues = Array.from(new Set(values));
 							pieces.push(uniqueValues.join(", "));
 						}
 					}
 				}
+				
+				// Process unspecified quantities.
+				if (quantitiesByUnit[""]) {
+					const unspecifiedValues = quantitiesByUnit[""];
+					const hasSpecified = Object.keys(quantitiesByUnit).some(key => key !== "");
+					if (hasSpecified) {
+						pieces.push("plus additional");
+					} else {
+						const nonEmpty = unspecifiedValues.filter(v => v !== "");
+						if (nonEmpty.length > 0) {
+							const allNumeric = nonEmpty.every(v => !isNaN(parseFloat(v)) && parseFloat(v).toString() === v);
+							if (allNumeric) {
+								const sum = nonEmpty.reduce((acc, v) => acc + parseFloat(v), 0);
+								pieces.push(`${sum}`);
+							} else {
+								const uniqueValues = Array.from(new Set(nonEmpty));
+								pieces.push(uniqueValues.join(", "));
+							}
+						}
+					}
+				}
+				
+				return pieces;
 			}
-			
-			return pieces;
+
+			// Function to determine the aisle for a given ingredient using the DB.
+			function getAisle(name) {
+				const lowerName = name.toLowerCase();
+				for (const [dbName, details] of Object.entries(ingredientDB)) {
+					if (dbName.toLowerCase() === lowerName) {
+						return details.aisle;
+					}
+					if (details.aliases && Array.isArray(details.aliases)) {
+						for (const alias of details.aliases) {
+							if (alias.toLowerCase() === lowerName) {
+								return details.aisle;
+							}
+						}
+					}
+				}
+				return "Miscellaneous";
+			}
+
+			// Group aggregated ingredients by aisle.
+			const groupedByAisle = {};
+			Object.keys(aggregatedIngredients).forEach(function(name) {
+				const aisle = getAisle(name);
+				if (!groupedByAisle[aisle]) {
+					groupedByAisle[aisle] = {};
+				}
+				groupedByAisle[aisle][name] = aggregatedIngredients[name];
+			});
+
+			// Update the DOM with the grouped grocery list.
+			const groceryListContainer = document.getElementById('grocery-list-content');
+			groceryListContainer.innerHTML = '';  // Clear previous content
+
+			const sortedAisles = Object.keys(groupedByAisle).sort();
+			sortedAisles.forEach(function(aisle) {
+				const aisleHeader = document.createElement('h3');
+				aisleHeader.textContent = aisle;
+				groceryListContainer.appendChild(aisleHeader);
+
+				const ul = document.createElement('ul');
+				const ingredientNames = Object.keys(groupedByAisle[aisle]).sort();
+				ingredientNames.forEach(function(name) {
+					const quantitiesByUnit = groupedByAisle[aisle][name];
+					const pieces = formatAggregatedQuantity(quantitiesByUnit);
+					let displayText = name;
+					if (pieces.length > 0) {
+						displayText += " (" + pieces.join(", ") + ")";
+					}
+					const li = document.createElement('li');
+					li.textContent = displayText;
+					ul.appendChild(li);
+				});
+				groceryListContainer.appendChild(ul);
+			});
 		}
 
-		// Update the grocery list <ul> with aggregated ingredients.
-		const groceryListUl = document.querySelector('#grocery-list ul');
-		groceryListUl.innerHTML = '';  // Clear previous content
-
-		// Sort ingredients alphabetically by name.
-		const sortedNames = Object.keys(aggregatedIngredients).sort();
-		sortedNames.forEach(function(name) {
-			const quantitiesByUnit = aggregatedIngredients[name];
-			const pieces = formatAggregatedQuantity(quantitiesByUnit);
-			let displayText = name;
-			// Only add a parenthetical if there's at least one non-empty quantity.
-			if (pieces.length > 0) {
-				displayText += " (" + pieces.join(", ") + ")";
-			}
-			const li = document.createElement('li');
-			li.textContent = displayText;
-			groceryListUl.appendChild(li);
+		// Attach event listeners to recipe checkboxes.
+		document.querySelectorAll('input[type="checkbox"]').forEach(function(cb) {
+			cb.addEventListener('change', updateGroceryList);
 		});
-	}
 
-	// Attach event listeners to recipe checkboxes.
-	document.querySelectorAll('input[type="checkbox"]').forEach(function(cb) {
-		cb.addEventListener('change', updateGroceryList);
-	});
-
-	// Update the list on page load (in case any boxes are pre-checked).
-	updateGroceryList();
-</script>
-	
-	<!-- <script src="script.js" defer></script> -->
+		// Update the list on page load.
+		updateGroceryList();
+	</script>
 </body>
 </html>

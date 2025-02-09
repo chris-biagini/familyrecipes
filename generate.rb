@@ -5,7 +5,7 @@ require 'erb'
 require 'redcarpet'
 require 'digest'
 require 'json'
-
+require 'yaml'
 # Utility classes
 
 class Ingredient
@@ -212,6 +212,11 @@ end
 
 print "done! (Parsed #{recipes.size} recipes.)\n"  
 
+# Load the ingredient database
+ingredient_db_path = "resources/ingredient-db.yaml"
+ingredient_db = YAML.load_file(ingredient_db_path)
+print "Loaded ingredient database from #{ingredient_db_path}\n"
+
 # make output directory
 FileUtils.mkdir_p(output_dir)
 
@@ -269,13 +274,16 @@ File.write(index_path, erb_template.result_with_hash(sorted_ingredients: sorted_
 
 print "done!\n"
 
-# build grocery page
+# Build grocery page
 print "Generating groceries page..."
 
 template_path = File.join(template_dir, "groceries-template.html.erb")
 erb_template = ERB.new(File.read(template_path), trim_mode: "-")
 groceries_path = File.join(output_dir, "groceries", "index.html")
 FileUtils.mkdir_p(File.dirname(groceries_path))  # Ensure directory exists
-File.write(groceries_path, erb_template.result_with_hash(grouped_recipes: grouped_recipes))
-
+# Pass both grouped_recipes and the ingredient database to the template.
+File.write(groceries_path, erb_template.result_with_hash(
+  grouped_recipes: grouped_recipes,
+  ingredient_db: ingredient_db
+))
 print "done!\n"
