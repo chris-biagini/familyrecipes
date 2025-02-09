@@ -5,14 +5,14 @@ Fancy cheese puffs.
 ## Make choux.
 
 - Water, 225 g
-- Unsalted butter, 75 g
+- Butter (unsalted), 75 g
 - Salt, 3 g
-- All-purpose flour, 150 g
+- Flour (all-purpose), 150 g
 - Eggs, 3
 
-Bring the water, butter, salt to a boil in a saucepan. 
+Bring the water, butter, salt to a boil in a saucepan.
 
-Remove from heat, add flour all at once, and mix with wooden spoon until mixture forms a ball. 
+Remove from heat, add flour all at once, and mix with wooden spoon until mixture forms a ball.
 
 Return pan to medium heat and cook, stirring occasionally, for about 1 minute to dry the mixture a bit. Aim for an internal temperature of 165-175°.
 
@@ -22,7 +22,7 @@ Add the eggs one-by-one to the bowl, mixing for 10-20 seconds after each, or unt
 
 ## Finish and bake.
 
-- Gruyere, 225 g: Shredded.
+- Gruyère, 225 g: Shredded.
 - Maldon salt
 
 Preheat oven to 400º convection roast.

@@ -22,7 +22,9 @@ class Ingredient
     ingredient_synonyms = {
       "Egg" => "Eggs",
       "Egg yolks" => "Eggs",
-      "Egg yolk" => "Eggs"
+      "Egg yolk" => "Eggs",
+      "Onion" => "Onions",
+      "Carrot" => "Carrots"
     }
     
     # Return mapped name if it exists; otherwise, keep original
