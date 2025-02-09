@@ -20,7 +20,7 @@ Cookies: { aisle: Bakery, is_staple: true }
 # International
 Muesli: { aisle: International, is_staple: true }
 "Tortillas (large)": { aisle: International, is_staple: true }
-Salsa: { aisle: International, is_staple: true }
+"Tomato salsa": { aisle: International, is_staple: true }
 
 # Health
 RXBARs: { aisle: Health, is_staple: true }

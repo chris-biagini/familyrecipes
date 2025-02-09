@@ -4,13 +4,13 @@ A good everyday bread.
 
 ## Make dough.
 
-- Whole wheat flour, 50 g
+- Flour (whole wheat), 50 g
 - Malt syrup, 15 g
 - Olive oil, 15 g
 - Salt, 10 g
 - Yeast, 3-5 g
 - Water, 300 g
-- All-purpose flour, 450 g
+- Flour (all-purpose), 450 g
 
 Whisk together everything except AP flour in large bowl. Adjust yeast quantity based on time available and ambient temperature.
 
@@ -26,7 +26,7 @@ Let rise until approximately doubled in size.
 
 ## Pre-shape.
 
-- All-purpose flour
+- Flour (all-purpose)
 
 Preheat oven to 450° convection roast.
 

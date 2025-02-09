@@ -9,7 +9,7 @@ Minimum viable pizza, cooked in round pizza pans.
 - Malt syrup, 12.8 g
 - Yeast, 2 g
 - Water, 384 g
-- 00 flour, 640 g: Adjust to 640 to match other pizza recipes, and also incorporate notebook changes
+- Flour (00), 640 g
 
 In large bowl, whisk together all ingredients except flour. Adjust yeast based on time available and ambient temperature.
 
@@ -26,7 +26,7 @@ Portion out, pre-shape, cover, and let rest.
 - Fennel pollen
 - Olive oil
 - Salt
-- Pepper
+- Black pepper
 
 Whisk ingredients together. Season to taste.
 

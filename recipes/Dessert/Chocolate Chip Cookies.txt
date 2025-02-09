@@ -4,9 +4,9 @@ With browned butter and walnuts
 
 ## Prepare sugar mixture.
 
-- Unsalted butter, 60 g
-- Brown sugar, 150 g
-- White sugar, 100 g
+- Butter (unsalted), 60 g
+- Sugar (brown), 150 g
+- Sugar (white), 100 g
 - Baking soda, 3.5 g
 - Salt, 6 g
 
@@ -14,7 +14,7 @@ Add to mixer bowl; stir to combine.
 
 ## Brown butter and add to sugar mixture.
 
-- Unsalted butter, 140 g
+- Butter (unsalted), 140 g
 
 Add butter to small saucepan. Cook gently over medium heat until solids are browned, then immediately add to sugar mixture in mixer bowl and allow to cool slightly.
 
@@ -27,7 +27,7 @@ Preheat oven to 350° with convection. Line two half-sheet pans with parchment p
 - Egg, 1
 - Egg yolk, 1
 - Vanilla extract, 10 g
-- All-purpose flour, 250 g
+- Flour (all-purpose), 250 g
 - Chocolate, 250 g: Use chips or roughly-chopped bar.
 - Walnuts, 75 g: Roughly chop.
 
