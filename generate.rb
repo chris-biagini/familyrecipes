@@ -259,7 +259,7 @@ recipes.each do |recipe|
       ingredient_usage[ingredient.normalized_name] << recipe
     end
 end
-sorted_ingredients = ingredient_usage.sort_by { |_, recipes| -recipes.size }
+sorted_ingredients = ingredient_usage.sort_by { |ingredient_name, _| ingredient_name.downcase }
 
 template_path = File.join(template_dir, "index-template.html.erb")
 erb_template = ERB.new(File.read(template_path), trim_mode: "-")

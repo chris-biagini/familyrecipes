@@ -23,7 +23,7 @@
 			
 			<%- sorted_ingredients.each_with_index do |(ingredient, recipes), index| -%>
 			<section>
-				<h2><%= "#{index + 1}. #{ingredient}" %></h2>
+				<h2><%= ingredient %></h2>
 				<ul>
 					<%- recipes.each do |recipe| -%>
 					<li><a href="<%= recipe.relative_url %>" title="<%= recipe.description %>"><%= recipe.title %></a></li>
