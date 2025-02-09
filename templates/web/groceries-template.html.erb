@@ -6,20 +6,43 @@
 	<title>Grocery List</title>
 	<link rel="stylesheet" href="/style.css">
 	<style>
-		/* Example print stylesheet: when printing, only show the grocery list */
-		@media print {
+/* Regular styles */
+	#grocery-list-content {
+			column-count: 3;
+			column-gap: 2rem;
+	}
+	
+	/* Print styles */
+	@media print {
 			body * {
-				visibility: hidden;
+					visibility: hidden;
 			}
 			#grocery-list, #grocery-list * {
-				visibility: visible;
+					visibility: visible;
 			}
 			#grocery-list {
-				position: absolute;
-				left: 0;
-				top: 0;
+					position: fixed;
+					left: 0;
+					top: 0;
+					width: 100%;
+					padding: 1rem;
 			}
-		}
+			#grocery-list-content {
+					column-count: 3;
+					column-gap: 2rem;
+					width: 100%;
+			}
+			/* Ensure headers don't break across columns */
+			#grocery-list h3 {
+					break-inside: avoid;
+					page-break-inside: avoid;
+			}
+			/* Ensure list items don't break across columns */
+			#grocery-list ul {
+					break-inside: avoid;
+					page-break-inside: avoid;
+			}
+	}
 	</style>
 </head>
 <body>
@@ -29,7 +52,6 @@
 			<a href="/index/" class="index" title="Index of ingredients">Index</a>
 			<a href="/groceries/" class="groceries" title="Printable grocery list">Groceries</a>
 		</div>
-		
 		<div>
 			<a href="#" onclick="window.print(); return false;" class="print">Print</a>
 		</div>
@@ -41,31 +63,43 @@
 				<h1>Grocery List</h1>
 			</header>
 			
-			<!-- Loop over recipes by category -->
-			<%- grouped_recipes.each do |category, recipes| -%>
+			<!-- Staples Toggle Checkbox -->
+			<section id="staples-section">
+				<h2>Staples</h2>
+				<ul>
+					<li>
+						<input type="checkbox" id="recipe-staples" data-recipe-id="staples" checked>
+						<label for="recipe-staples">Include Staples</label>
+					</li>
+				</ul>
+			</section>
+			
+			<!-- Recipes Checkboxes (excluding staples) -->
+			<%
+				# Exclude the "staples" entry from the main recipes listing.
+				non_staple_recipes = recipes_db.reject { |id, r| id == "staples" }
+				# Group recipes by category; default to "Uncategorized" if none.
+				grouped_recipes = non_staple_recipes.group_by { |id, r| r[:category] || "Uncategorized" }
+			%>
+			<% grouped_recipes.each do |category, recipes| %>
 			<section>
 				<h2><%= category %></h2>
 				<ul>
-					<%- recipes.each do |recipe| -%>
+					<% recipes.each do |recipe_id, recipe| %>
 					<li>
-						<input type="checkbox" id="recipe-<%= recipe.id %>" data-ingredients='<%= recipe.all_ingredients.map { |ing| { 
-							name: ing.normalized_name, 
-							value: (ing.quantity_value || "").to_s, 
-							unit: (ing.quantity_unit || "").to_s 
-						} }.to_json %>'>
-						<label for="recipe-<%= recipe.id %>"><%= recipe.title %></label>
+						<input type="checkbox" id="recipe-<%= recipe_id %>" data-recipe-id="<%= recipe_id %>">
+						<label for="recipe-<%= recipe_id %>"><%= recipe[:title] %></label>
 					</li>
-					<%- end -%>
+					<% end %>
 				</ul>
 			</section>
-			<%- end -%>
+			<% end %>
 			
 		</article>
 		
-		<!-- This div will be updated dynamically with the aggregated grocery list -->
+		<!-- Aggregated Grocery List -->
 		<div id="grocery-list">
-			<h2>Your Grocery List</h2>
-			<!-- We’ll insert the grouped list here -->
+			<h2>My Grocery List</h2>
 			<div id="grocery-list-content"></div>
 		</div>
 		
@@ -76,30 +110,31 @@
 		<%= ingredient_db.to_json %>
 	</script>
 	
+	<!-- Embed recipes database JSON for use in JavaScript -->
+	<script id="recipes-db" type="application/json">
+		<%= recipes_db.to_json %>
+	</script>
+	
 	<script>
-		// Update the grocery list by aggregating ingredients, grouping by aisle, and including staples.
+		// Update the grocery list by aggregating ingredients from selected recipes.
 		function updateGroceryList() {
-			// Parse the ingredient DB from the embedded JSON.
 			const ingredientDB = JSON.parse(document.getElementById('ingredient-db').textContent);
-			
+			const recipesDB = JSON.parse(document.getElementById('recipes-db').textContent);
 			const aggregatedIngredients = {};
-
-			// Loop over all checked recipe checkboxes.
+			
+			// Loop over all checked checkboxes and aggregate their ingredients.
 			document.querySelectorAll('input[type="checkbox"]:checked').forEach(function(checkbox) {
-				let ingredients;
-				try {
-					ingredients = JSON.parse(checkbox.dataset.ingredients);
-				} catch (e) {
-					console.error("Error parsing ingredients for checkbox", checkbox, e);
+				const recipeId = checkbox.dataset.recipeId;
+				if (!recipeId || !recipesDB[recipeId]) {
+					console.error("Recipe ID not found:", recipeId);
 					return;
 				}
-
-				// Aggregate each ingredient by name and then by unit.
-				ingredients.forEach(function(ing) {
+				const recipe = recipesDB[recipeId];
+				recipe.ingredients.forEach(function(ing) {
 					const name  = ing.name;
 					const value = ing.value ? ing.value.toString().trim() : "";
 					const unit  = ing.unit ? ing.unit.toString().trim() : "";
-
+					
 					if (!aggregatedIngredients[name]) {
 						aggregatedIngredients[name] = {};
 					}
@@ -110,36 +145,10 @@
 					aggregatedIngredients[name][unit].push(value);
 				});
 			});
-
-// Include staple ingredients even if not selected.
-			Object.entries(ingredientDB).forEach(([dbName, details]) => {
-					if (details.is_staple) {
-							// Look for an existing aggregated ingredient matching this staple (case-insensitive)
-							let matchingKey = Object.keys(aggregatedIngredients).find(
-									aggName => aggName.toLowerCase() === dbName.toLowerCase()
-							);
-							if (matchingKey) {
-									// If there is any specified quantity (i.e. any key other than "")
-									const specifiedKeys = Object.keys(aggregatedIngredients[matchingKey]).filter(key => key !== "");
-									if (specifiedKeys.length > 0) {
-											// Ensure the unspecified group exists, then push a marker.
-											if (!aggregatedIngredients[matchingKey].hasOwnProperty("")) {
-													aggregatedIngredients[matchingKey][""] = [];
-											}
-											aggregatedIngredients[matchingKey][""].push("staple-marker");
-									}
-							} else {
-									// If not present at all, add it as a staple (with no unspecified marker).
-									aggregatedIngredients[dbName] = { "": [] };
-							}
-					}
-			});
-
+			
 			// Helper: Format aggregated quantities.
 			function formatAggregatedQuantity(quantitiesByUnit) {
 				const pieces = [];
-				
-				// Process specified units.
 				for (const unit in quantitiesByUnit) {
 					if (unit !== "") {
 						const values = quantitiesByUnit[unit];
@@ -153,8 +162,6 @@
 						}
 					}
 				}
-				
-				// Process unspecified quantities.
 				if (quantitiesByUnit[""]) {
 					const unspecifiedValues = quantitiesByUnit[""];
 					const hasSpecified = Object.keys(quantitiesByUnit).some(key => key !== "");
@@ -174,11 +181,10 @@
 						}
 					}
 				}
-				
 				return pieces;
 			}
-
-			// Function to determine the aisle for a given ingredient using the DB.
+			
+			// Helper: Determine the aisle for a given ingredient using the DB.
 			function getAisle(name) {
 				const lowerName = name.toLowerCase();
 				for (const [dbName, details] of Object.entries(ingredientDB)) {
@@ -195,7 +201,7 @@
 				}
 				return "Miscellaneous";
 			}
-
+			
 			// Group aggregated ingredients by aisle.
 			const groupedByAisle = {};
 			Object.keys(aggregatedIngredients).forEach(function(name) {
@@ -205,17 +211,17 @@
 				}
 				groupedByAisle[aisle][name] = aggregatedIngredients[name];
 			});
-
+			
 			// Update the DOM with the grouped grocery list.
 			const groceryListContainer = document.getElementById('grocery-list-content');
 			groceryListContainer.innerHTML = '';  // Clear previous content
-
+			
 			const sortedAisles = Object.keys(groupedByAisle).sort();
 			sortedAisles.forEach(function(aisle) {
 				const aisleHeader = document.createElement('h3');
 				aisleHeader.textContent = aisle;
 				groceryListContainer.appendChild(aisleHeader);
-
+				
 				const ul = document.createElement('ul');
 				const ingredientNames = Object.keys(groupedByAisle[aisle]).sort();
 				ingredientNames.forEach(function(name) {
@@ -232,13 +238,13 @@
 				groceryListContainer.appendChild(ul);
 			});
 		}
-
-		// Attach event listeners to recipe checkboxes.
+		
+		// Attach event listeners to all checkboxes.
 		document.querySelectorAll('input[type="checkbox"]').forEach(function(cb) {
 			cb.addEventListener('change', updateGroceryList);
 		});
-
-		// Update the list on page load.
+		
+		// Update the grocery list on page load.
 		updateGroceryList();
 	</script>
 </body>

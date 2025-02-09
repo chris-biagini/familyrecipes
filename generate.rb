@@ -277,13 +277,37 @@ print "done!\n"
 # Build grocery page
 print "Generating groceries page..."
 
+# Build recipes_db as an associative array keyed by recipe.id.
+recipes_db = {}
+recipes.each do |recipe|
+  recipes_db[recipe.id] = {
+    title: recipe.title,
+    category: recipe.category,  # assuming your Recipe objects have a category attribute
+    ingredients: recipe.all_ingredients.map do |ing|
+      {
+        name: ing.normalized_name,
+        value: (ing.quantity_value || "").to_s,
+        unit: (ing.quantity_unit || "").to_s
+      }
+    end
+  }
+end
+
+# Add a special entry for staples by scanning the ingredient DB.
+staple_ingredients = ingredient_db.select { |name, details| details["is_staple"] }
+                                  .map { |name, details| { name: name, value: "", unit: "" } }
+recipes_db["staples"] = {
+  title: "Staples",
+  ingredients: staple_ingredients
+}
+
 template_path = File.join(template_dir, "groceries-template.html.erb")
 erb_template = ERB.new(File.read(template_path), trim_mode: "-")
 groceries_path = File.join(output_dir, "groceries", "index.html")
 FileUtils.mkdir_p(File.dirname(groceries_path))  # Ensure directory exists
 # Pass both grouped_recipes and the ingredient database to the template.
 File.write(groceries_path, erb_template.result_with_hash(
-  grouped_recipes: grouped_recipes,
+  recipes_db: recipes_db,
   ingredient_db: ingredient_db
 ))
 print "done!\n"
