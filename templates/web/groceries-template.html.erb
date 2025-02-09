@@ -105,21 +105,11 @@
 		
 	</main>
 	
-	<!-- Embed ingredient database JSON for use in JavaScript -->
-	<script id="ingredient-db" type="application/json">
-		<%= ingredient_db.to_json %>
-	</script>
-	
-	<!-- Embed recipes database JSON for use in JavaScript -->
-	<script id="recipes-db" type="application/json">
-		<%= recipes_db.to_json %>
-	</script>
-	
 	<script>
 		// Update the grocery list by aggregating ingredients from selected recipes.
 		function updateGroceryList() {
-			const ingredientDB = JSON.parse(document.getElementById('ingredient-db').textContent);
-			const recipesDB = JSON.parse(document.getElementById('recipes-db').textContent);
+			const ingredientDB = <%= ingredient_db.to_json %>;
+			const recipesDB = <%= recipes_db.to_json %>;
 			const aggregatedIngredients = {};
 			
 			// Loop over all checked checkboxes and aggregate their ingredients.
