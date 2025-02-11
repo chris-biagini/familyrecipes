@@ -10,6 +10,7 @@ Cucumbers: { aisle: Produce, is_staple: true }
 Salad greens: { aisle: Produce, is_staple: true }
 Bananas: { aisle: Produce, is_staple: true }
 Onions: { aisle: Produce, is_staple: true }
+Garlic: { aisle: Produce, is_staple: true }
 Bell peppers: { aisle: Produce, is_staple: true }
 
 # Bakery
@@ -46,6 +47,10 @@ Candy: { aisle: Candy, is_staple: true }
 Peanut butter: { aisle: Pantry, is_staple: true }
 Coffee: { aisle: Pantry, is_staple: true }
 Olives: { aisle: Pantry, is_staple: true }
+Olive oil: { aisle: Pantry, is_staple: true }
+Farro: { aisle: Pantry, is_staple: true }
+Jasmine rice: { aisle: Pantry, is_staple: true }
+Vegetable bouillon: { aisle: Pantry, is_staple: true }
 
 # Dairy
 "String cheese": { aisle: Dairy, is_staple: true }

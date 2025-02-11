@@ -1,6 +1,6 @@
 # Basic Pizza
 
-Minimum viable pizza, cooked in round pizza pans.
+Minimum viable pizza.
 
 ## Make dough.
 
