@@ -52,6 +52,13 @@ Farro: { aisle: Pantry, is_staple: true }
 Jasmine rice: { aisle: Pantry, is_staple: true }
 Vegetable bouillon: { aisle: Pantry, is_staple: true }
 
+# Baking
+
+"Flour (bread)": { aisle: Baking, is_staple: true }
+"Flour (all-purpose)": { aisle: Baking, is_staple: true }
+"Flour (whole wheat)": { aisle: Baking, is_staple: true }
+"Flour (semolina)": { aisle: Baking, is_staple: true }
+
 # Dairy
 "String cheese": { aisle: Dairy, is_staple: true }
 "American cheez": { aisle: Dairy, is_staple: true }
