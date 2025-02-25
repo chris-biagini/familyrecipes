@@ -12,36 +12,38 @@
 			column-gap: 2rem;
 	}
 	
-	/* Print styles */
-	@media print {
-			body * {
-					visibility: hidden;
-			}
-			#grocery-list, #grocery-list * {
-					visibility: visible;
-			}
-			#grocery-list {
-					position: fixed;
-					left: 0;
-					top: 0;
-					width: 100%;
-					padding: 1rem;
-			}
-			#grocery-list-content {
-					column-count: 3;
-					column-gap: 2rem;
-					width: 100%;
-			}
-			/* Ensure headers don't break across columns */
-			#grocery-list h3 {
-					break-inside: avoid;
-					page-break-inside: avoid;
-			}
-			/* Ensure list items don't break across columns */
-			#grocery-list ul {
-					break-inside: avoid;
-					page-break-inside: avoid;
-			}
+@media print {
+		/* Hide navigation and the recipe selection area */
+		nav,
+		article {
+			display: none;
+		}
+		
+		/* Ensure the main area (which contains #grocery-list) displays properly */
+		main {
+			display: block;
+		}
+		
+		/* Grocery List Styles */
+		#grocery-list {
+			display: block;
+			position: static; /* Avoid fixed positioning issues */
+			width: 100%;
+			padding: 1rem;
+		}
+		
+		#grocery-list-content {
+			column-count: 3;
+			column-gap: 2rem;
+			width: 100%;
+		}
+		
+		/* Prevent breaking of headers and lists across pages/columns */
+		#grocery-list h3,
+		#grocery-list ul {
+			break-inside: avoid;
+			page-break-inside: avoid;
+		}
 	}
 	</style>
 </head>
@@ -233,6 +235,8 @@
 		document.querySelectorAll('input[type="checkbox"]').forEach(function(cb) {
 			cb.addEventListener('change', updateGroceryList);
 		});
+		
+		window.addEventListener('beforeprint', updateGroceryList);
 		
 		// Update the grocery list on page load.
 		updateGroceryList();
