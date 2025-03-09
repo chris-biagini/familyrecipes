@@ -1,50 +1,80 @@
 # Mujadara
 
-Lebanese pilaf with lentils and caramelized onions. (🚧)
+🚧 Lebanese pilaf with lentils and caramelized onions. 🚧
+
+## Cook rice in rice cooker.
+
+- Jasmine rice, 225 g: Rinse and pour off excess water.
+- Olive oil, 15 g
+- Garlic, 1 clove: Crushed in mortar.
+- Water, 300 g: Boiling.
+- Vegetable bouillon, 10 g
+- Salt
+- Black pepper
+- Cumin
+
+Add rice and oil to skillet. Sauté gently until rice is milky white in color. Add garlic and cook until fragrant.
+
+Transfer rice to rice cooker along with water and bouillon. Season to taste. Cook using quick cook setting, if available.
 
 ## Caramelize onions.
 
+- Onions, 450-500 g: Quarter, then slice thin.
 - Olive oil, 75 g
-- Onions, 450 g: Quarter, then slice thin.
 - Salt
 - Black pepper
 
-Place olive oil and onions in a large saucepan over medium heat. Season to taste.
+Place onions and oil in a large skillet over medium heat. Season to taste.
 
-Cook gently, stirring frequently, for 20-30 minutes or until the onions are a deep golden brown.
+Cook gently, stirring frequently, for 30 minutes or until the onions are a deep golden brown.
+
+While onions are cooking, start lentils (see next step).
 
 ## Start the lentils.
 
 - Lentils, 225 g: Check for debris and rinse.
-- Water, 1250 g
-- Kombu, 1 small piece: Optional.
+- Water, 1000 g: Boiling.
+- Kombu, 1 small piece.
+- Salt, 5 g
+- Black pepper
 - Cumin
 
-Add the lentils to the saucepan and stir, scraping up any onion bits from the pan.
+Add the lentils, water, kombu, and salt to a large saucepan. Add pepper and cumin to taste. Bring to a simmer.
 
-Add water and kombu, if using, and bring to a boil.
+Cook for 25 minutes, maintaining simmer. Allow liquid to reduce naturally, but do not let pan run dry.
 
-Cook for 20 minutes, maintaining a low boil. Remove kombu.
+Remove kombu. Cook for 5 additional minutes, allowing broth to reduce to just a scant few tablespoons.
 
-## Add the rice and finish cooking.
+## Make yogurt sauce in mortar.
 
-- Jasmine rice, 225 g: Rinse.
+- Garlic, 1 clove.
+- Yogurt
+- Water
+- Lemon
 - Salt
+- Black pepper
 
-Add rice, stir, and return to a low boil. Taste liquid for seasoning and add more salt if necessary. Add water if pan looks too dry.
+Place garlic in mortar and pound into a fine paste. Whisk in yogurt. Thin to desired consistency with water and season to taste with lemon juice, salt, and pepper.
 
-Cover pan and cook over very low heat for 15 minutes.
+## Combine ingredients and finish cooking.
 
-Check rice for doneness. Add water, if needed. Cook a bit longer if rice is not quite done, removing lid if dish is too wet.
+Add rice and caramelized onions (optionally setting some aside as a topping) to lentils in saucepan. Set heat to very low.
+
+Stir gently to avoid breaking rice. Allow excess water to steam off.
 
 ## Finish and serve.
 
 - Lemon
 - Salt
 - Black pepper
+- Cumin
 
-Correct for acid and seasoning. Serve.
+Correct for acid and seasoning.
+
+Serve. Optionally, top with reserved caramelized onions and yogurt topping.
 
 ---
 
-Based on a recipe from [Maureen Abood](https://maureenabood.com/lebanese-mujadara/).
+Based on a recipe from [Maureen Abood](https://maureenabood.com/lebanese-mujadara/), tweaked to approximate the great version served at [The Pita House](https://www.thepitahouse.com) in Old Town Alexandria, VA.
+
+If you have some parsley, add a bit to the yogurt sauce and as a garnish at the end.
