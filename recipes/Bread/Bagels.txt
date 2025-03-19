@@ -1,17 +1,28 @@
 # Bagels
 
-A fun weekend baking project.
+🚧 A fun weekend baking project. 🚧
+
+## Friday night: Make poolish.
+
+- Flour (bread), 525 g
+- Water, 525 g
+- Yeast, pinch
+
+Whisk together flour, water, and yeast in a medium bowl. Let sit on counter overnight.
+
+Note that you only need 1000 g of poolish the next day; making extra now accounts for residue on your bowl and utensils.
 
 ## Saturday: Make dough and bulk ferment.
 
-- Malt syrup, 10 g
-- Salt, 9 g
-- Diastatic malt powder, 1 g
-- Yeast, 1 g
-- Water, 275 g
+- Poolish, 1000 g
+- Malt syrup, 20 g
+- Salt, 18 g
+- Diastatic malt powder, 2 g
+- Yeast, 2 g
+- Water, 80 g
 - Flour (bread), 500 g
 
-In mixer bowl, whisk together all ingredients except flour. Add flour.
+In mixer bowl, combine all ingredients.
 
 Use dough hook to knead for 15 minutes on speed 2.
 
@@ -19,11 +30,11 @@ Cover the bowl tightly and let rise until not quite doubled.
 
 ## Saturday: Shape and refrigerate overnight.
 
-Divide dough into six 130 g portions. Pre-shape portions into balls and keep covered. Let rest for 20 minutes or so.
+Divide dough into twelve 130 g portions. Pre-shape portions into balls and keep covered. Let rest for 20 minutes or so.
 
-Form each portion into a bagel by pinching through the center and stretching it into a wide ring. Place finished bagels in proofing box.
+Form each portion into a bagel by pinching through the center and stretching it into a wide ring. Place finished bagels in proofing boxes.
 
-Cover the proofing box and refrigerate immediately.
+Cover the proofing boxes and refrigerate immediately.
 
 ## Sunday: Boil and bake.
 
@@ -40,7 +51,7 @@ Line a half-sheet pan with parchment paper. Sprinkle with cornmeal.
 
 Working in batches, drop the bagels into the water and boil for 60 seconds, then flip and boil for another 60 seconds. Dip in toppings, if desired.
 
-Transfer the bagels to the lined sheet pan, topping-side down.
+Transfer the bagels to the lined sheet pans, topping-side down.
 
 Bake for 10 minutes, then flip bagels over, then bake 5-10 minutes longer.
 
