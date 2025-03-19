@@ -6,7 +6,7 @@
 
 - Flour (bread), 525 g
 - Water, 525 g
-- Yeast, pinch
+- Yeast, 0.5 g
 
 Whisk together flour, water, and yeast in a medium bowl. Let sit on counter overnight.
 
@@ -18,11 +18,7 @@ Note that you only need 1000 g of poolish the next day; making extra now account
 - Malt syrup, 20 g
 - Salt, 18 g
 - Diastatic malt powder, 2 g
-<<<<<<< HEAD
-- Yeast, 5 g
-=======
-- Yeast, 2 g
->>>>>>> main
+- Yeast, 4.5 g
 - Water, 80 g
 - Flour (bread), 500 g
 
