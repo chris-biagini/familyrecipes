@@ -1,12 +1,12 @@
 # Produce
 Apples: { aisle: Produce, is_staple: true }
-Berries: { aisle: Produce, is_staple: true }
+Berries: { aisle: Produce, is_staple: false }
 Fruit juice: { aisle: Produce, is_staple: true }
 Oranges: { aisle: Produce, is_staple: true }
 Mangoes: { aisle: Produce, is_staple: false }
 Grapes: { aisle: Produce, is_staple: true }
 Carrots: { aisle: Produce, is_staple: true }
-Cucumbers: { aisle: Produce, is_staple: true }
+Cucumbers: { aisle: Produce, is_staple: false }
 Salad greens: { aisle: Produce, is_staple: true }
 Bananas: { aisle: Produce, is_staple: true }
 Onions: { aisle: Produce, is_staple: true }
@@ -53,9 +53,9 @@ Olive oil: { aisle: Pantry, is_staple: true }
 Farro: { aisle: Pantry, is_staple: true }
 Jasmine rice: { aisle: Pantry, is_staple: false }
 Vegetable bouillon: { aisle: Pantry, is_staple: true }
+"Dried fruit": { aisle: Pantry, is_staple: true }
 
 # Baking
-
 "Flour (bread)": { aisle: Baking, is_staple: false }
 "Flour (all-purpose)": { aisle: Baking, is_staple: false }
 "Flour (whole wheat)": { aisle: Baking, is_staple: false }
