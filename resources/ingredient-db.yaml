@@ -67,11 +67,13 @@ Vegetable bouillon: { aisle: Pantry, is_staple: true }
 "Monterey jack cheese": { aisle: Dairy, is_staple: true }
 Bocconcini: { aisle: Dairy, is_staple: false }
 "Chocolate milk": { aisle: Dairy, is_staple: true }
-"Skim milk": { aisle: Dairy, is_staple: true }
+"Vegan milk": { aisle: Dairy, is_staple: true }
 "Whole milk": { aisle: Dairy, is_staple: true }
 Eggs: { aisle: Dairy, is_staple: true }
 Yogurt: { aisle: Dairy, is_staple: true }
 "Yogurt drinks": { aisle: Dairy, is_staple: true }
+Parmesan: { aisle: Dairy, is_staple: true }
+Pecorino: { aisle: Dairy, is_staple: true }
 
 # Deli
 Hummus: { aisle: Deli, is_staple: true }
