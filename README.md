@@ -20,6 +20,8 @@ Familyrecipes is heavily inspired by the beautifully-designed [Paprika app from 
 - [Tot](https://tot.rocks), [WorldWideWeb](https://iconfactory.com/worldwideweb/), [xScope](https://xscopeapp.com) by [iconfactory](https://iconfactory.com)
 - ChatGPT by OpenAI
 - Claude by Anthropic
+- [Pixelmator Pro](https://www.pixelmator.com/pro/)
+- [RealFaviconGenerator](https://realfavicongenerator.net/)
 
 ## Server Config
 
