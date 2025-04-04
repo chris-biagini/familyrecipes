@@ -1,5 +1,5 @@
 {
-	"name": "Our Family Recipes",
+	"name": "Biagini Family Recipes",
 	"short_name": "FamilyRecipes",
 	"icons": [
 		{
@@ -17,5 +17,5 @@
 	],
 	"theme_color": "#fcfff9",
 	"background_color": "#fcfff9",
-	"display": "standalone"
+	"display": "minimal-ui"
 }
