@@ -1,1 +1,122 @@
 #!/usr/bin/env ruby
+
+# Load libraries and classes
+require_relative '../lib/familyrecipes'
+
+# Define project root as the current directory
+project_root = File.expand_path("..", __dir__)
+
+recipes_dir   = File.join(project_root, "recipes")
+template_dir  = File.join(project_root, "templates/web")
+resources_dir = File.join(project_root, "resources/web")
+output_dir    = File.join(project_root, "output/web")
+ingredient_db_path = File.join(project_root, "resources/ingredient-db.yaml")
+
+# parse recipes; actual parsing happens in Recipe constructor
+print "Parsing recipes from #{recipes_dir}..."
+
+recipe_files = Dir.glob(File.join(recipes_dir, "**", "*")).select { |file| File.file?(file) }
+recipes = recipe_files.map do |file|
+  Recipe.new(file)
+end
+
+print "done! (Parsed #{recipes.size} recipes.)\n"  
+
+# make output directory
+FileUtils.mkdir_p(output_dir)
+
+# write text and HTML files to output directory
+print "Generating output files in #{output_dir}..."
+
+recipes.each do |recipe|
+  # Write text version
+  text_path = File.join(output_dir, "#{recipe.id}.txt")
+  File.write(text_path, recipe.source)
+  
+  # Write HTML version
+  html_path = File.join(output_dir, "#{recipe.id}.html")
+  File.write(html_path, recipe.to_html)
+end
+
+print "done!\n"
+
+# Copy resources (e.g., stylesheets, javascript)
+print "Copying web resources from #{resources_dir} to #{output_dir}..."
+FileUtils.cp_r("#{resources_dir}/.", output_dir) # Copy everything, including subdirectories
+print "done!\n"
+
+# build home page
+print "Generating homepage in #{output_dir}..."
+
+grouped_recipes = recipes.group_by(&:category) # hash of recipes, with categories as keys
+
+# Read and process the template
+template_path = File.join(template_dir, "homepage-template.html.erb")
+erb_template = ERB.new(File.read(template_path), trim_mode: "-")
+
+# Generate the homepage file
+homepage_path = File.join(output_dir, "index.html")
+File.write(homepage_path, erb_template.result_with_hash(grouped_recipes: grouped_recipes))
+
+print "done!\n"
+
+# Generate index
+print "Generating index..."
+
+ingredient_usage = Hash.new { |hash, key| hash[key] = [] }
+recipes.each do |recipe|
+    recipe.all_ingredients.each do |ingredient|
+      ingredient_usage[ingredient.normalized_name] << recipe
+    end
+end
+sorted_ingredients = ingredient_usage.sort_by { |ingredient_name, _| ingredient_name.downcase }
+
+template_path = File.join(template_dir, "index-template.html.erb")
+erb_template = ERB.new(File.read(template_path), trim_mode: "-")
+index_path = File.join(output_dir, "index", "index.html")
+FileUtils.mkdir_p(File.dirname(index_path))  # Ensure directory exists
+File.write(index_path, erb_template.result_with_hash(sorted_ingredients: sorted_ingredients))
+
+print "done!\n"
+
+# Build grocery page
+print "Generating groceries page..."
+
+# Load the ingredient database
+ingredient_db = YAML.load_file(ingredient_db_path)
+print "Loaded ingredient database from #{ingredient_db_path}\n"
+
+# Build recipes_db as an associative array keyed by recipe.id.
+recipes_db = {}
+recipes.each do |recipe|
+  recipes_db[recipe.id] = {
+    title: recipe.title,
+    category: recipe.category,  # assuming your Recipe objects have a category attribute
+    ingredients: recipe.all_ingredients.map do |ing|
+      {
+        name: ing.normalized_name,
+        value: (ing.quantity_value || "").to_s,
+        unit: (ing.quantity_unit || "").to_s
+      }
+    end
+  }
+end
+
+# Add a special entry for staples by scanning the ingredient DB.
+staple_ingredients = ingredient_db.select { |name, details| details["is_staple"] }
+                                  .map { |name, details| { name: name, value: "", unit: "" } }
+recipes_db["staples"] = {
+  title: "Staples",
+  ingredients: staple_ingredients
+}
+
+template_path = File.join(template_dir, "groceries-template.html.erb")
+erb_template = ERB.new(File.read(template_path), trim_mode: "-")
+groceries_path = File.join(output_dir, "groceries", "index.html")
+FileUtils.mkdir_p(File.dirname(groceries_path))  # Ensure directory exists
+# Pass both grouped_recipes and the ingredient database to the template.
+File.write(groceries_path, erb_template.result_with_hash(
+  recipes_db: recipes_db,
+  ingredient_db: ingredient_db
+))
+print "done!\n"
