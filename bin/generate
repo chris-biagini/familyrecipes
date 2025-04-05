@@ -12,6 +12,17 @@ resources_dir = File.join(project_root, "resources/web")
 output_dir    = File.join(project_root, "output/web")
 ingredient_db_path = File.join(project_root, "resources/ingredient-db.yaml")
 
+# helper function to avoid rewriting files that haven't changed
+def write_file_if_changed(path, content)
+  if File.exist?(path)
+    existing_content = File.read(path)
+    return if existing_content == content
+  end
+
+  File.write(path, content)
+  puts "Updated: #{path}"
+end
+
 # parse recipes; actual parsing happens in Recipe constructor
 print "Parsing recipes from #{recipes_dir}..."
 
@@ -31,11 +42,11 @@ print "Generating output files in #{output_dir}..."
 recipes.each do |recipe|
   # Write text version
   text_path = File.join(output_dir, "#{recipe.id}.txt")
-  File.write(text_path, recipe.source)
+  write_file_if_changed(text_path, recipe.source)
   
   # Write HTML version
   html_path = File.join(output_dir, "#{recipe.id}.html")
-  File.write(html_path, recipe.to_html)
+  write_file_if_changed(html_path, recipe.to_html)
 end
 
 print "done!\n"
@@ -56,7 +67,7 @@ erb_template = ERB.new(File.read(template_path), trim_mode: "-")
 
 # Generate the homepage file
 homepage_path = File.join(output_dir, "index.html")
-File.write(homepage_path, erb_template.result_with_hash(grouped_recipes: grouped_recipes))
+write_file_if_changed(homepage_path, erb_template.result_with_hash(grouped_recipes: grouped_recipes))
 
 print "done!\n"
 
@@ -75,7 +86,7 @@ template_path = File.join(template_dir, "index-template.html.erb")
 erb_template = ERB.new(File.read(template_path), trim_mode: "-")
 index_path = File.join(output_dir, "index", "index.html")
 FileUtils.mkdir_p(File.dirname(index_path))  # Ensure directory exists
-File.write(index_path, erb_template.result_with_hash(sorted_ingredients: sorted_ingredients))
+write_file_if_changed(index_path, erb_template.result_with_hash(sorted_ingredients: sorted_ingredients))
 
 print "done!\n"
 
@@ -115,7 +126,7 @@ erb_template = ERB.new(File.read(template_path), trim_mode: "-")
 groceries_path = File.join(output_dir, "groceries", "index.html")
 FileUtils.mkdir_p(File.dirname(groceries_path))  # Ensure directory exists
 # Pass both grouped_recipes and the ingredient database to the template.
-File.write(groceries_path, erb_template.result_with_hash(
+write_file_if_changed(groceries_path, erb_template.result_with_hash(
   recipes_db: recipes_db,
   ingredient_db: ingredient_db
 ))
