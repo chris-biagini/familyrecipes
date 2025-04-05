@@ -5,10 +5,10 @@
       --gingham-stripe-color: rgba(190, 12, 30, 0.5);
     }
   </style>
-  <!-- Off-white background -->
+  <!-- Background -->
   <rect x="0" y="0" width="16" height="16" fill="var(--gingham-base)" />
-  <!-- Vertical red stripe covering left half -->
+  <!-- Vertical stripe covering left half -->
   <rect x="0" y="0" width="8" height="16" fill="var(--gingham-stripe-color)" />
-  <!-- Horizontal red stripe covering top half -->
+  <!-- Horizontal stripe covering top half -->
   <rect x="0" y="0" width="16" height="8" fill="var(--gingham-stripe-color)" />
 </svg>
