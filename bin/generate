@@ -53,7 +53,18 @@ print "done!\n"
 
 # Copy resources (e.g., stylesheets, javascript)
 print "Copying web resources from #{resources_dir} to #{output_dir}..."
-FileUtils.cp_r("#{resources_dir}/.", output_dir) # Copy everything, including subdirectories
+Dir.glob(File.join(resources_dir, '**', '*')).each do |source_file|
+  next if File.directory?(source_file)
+
+  relative_path = source_file.sub("#{resources_dir}/", '')
+  dest_file = File.join(output_dir, relative_path)
+
+  if !File.exist?(dest_file) || !FileUtils.identical?(source_file, dest_file)
+    FileUtils.mkdir_p(File.dirname(dest_file))
+    FileUtils.cp(source_file, dest_file)
+    puts "Copied: #{relative_path}"
+  end
+end
 print "done!\n"
 
 # build home page
