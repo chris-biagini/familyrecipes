@@ -6,8 +6,8 @@
 	<title>Biagini Family Recipes</title>
 	<link rel="stylesheet" href="/style.css">
 	
-	<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-	<link rel="shortcut icon" href="/favicon.ico" />
+	<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+	<link rel="shortcut icon" href="/favicon.ico">
 </head>
 <body>
 	<nav>
@@ -25,13 +25,13 @@
 				<p>A collection of our family’s favorite recipes.</p>
 			</header>
 
-			<section class="toc_nav">
+			<div class="toc_nav">
 				<ul>
 					<%- grouped_recipes.each do |category, recipes| -%>
 						<li><a href="#<%= category.downcase %>"><%= category %></a></li>
 					<%- end -%>
 				</ul>
-			</section>
+			</div>
 			
 			<%- grouped_recipes.each do |category, recipes| -%>
 			<section id="<%= category.downcase %>">
