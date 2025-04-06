@@ -56,7 +56,14 @@ print "Copying web resources from #{resources_dir} to #{output_dir}..."
 Dir.glob(File.join(resources_dir, '**', '*')).each do |source_file|
   next if File.directory?(source_file)
 
+  # Get the relative path from the resources directory.
   relative_path = source_file.sub("#{resources_dir}/", '')
+
+  # Special case: if the file is named 'htaccess', rename it to '.htaccess'
+  if File.basename(source_file) == "htaccess"
+    relative_path = File.join(File.dirname(relative_path), ".htaccess")
+  end
+
   dest_file = File.join(output_dir, relative_path)
 
   if !File.exist?(dest_file) || !FileUtils.identical?(source_file, dest_file)
