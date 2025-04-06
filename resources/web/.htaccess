@@ -21,5 +21,6 @@ DirectoryIndex index.html
 # 4) Rewrite extensionless => .html internally
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_URI} !\.html$
 RewriteRule ^(.+?)/?$ $1.html [L]
 </IfModule>
