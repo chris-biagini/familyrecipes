@@ -9,7 +9,7 @@
 	--text-color: rgb(50, 50, 50);
 
 	--nav-background-color: rgba(252, 252, 252, 0.8);
-	--content-background-color: rgb(252, 255, 249);
+	--content-background-color: rgb(255, 252, 249);
 	
 	--breathing-room: 3rem;
 }
@@ -34,28 +34,15 @@ body {
 	/* Appearance inspired by <https://www.penguinrandomhouse.com/books/13304/better-homes-and-gardens-new-cookbook-by-better-homes-and-gardens-editors/> */
 	/* Implementation inspired by <https://www.gradientmagic.com/collection/gingham/gradient/1575939528284> */
 
-	--gingham-base: rgb(249, 242, 223);
+	--gingham-base: rgb(249, 246, 243);
 	--gingham-stripe-color: rgba(190, 12, 30, 0.5);
 	--gingham-stripe-width: 75px;
-	--weave-color: rgba(255, 255, 255, 0.03);
+	--weave-color: rgba(150, 150, 150, 0.05);
 	--weave-stripe-width: 2px;
 
-	background-color: var(--content-background-color);
+	background-color: var(--gingham-base);
 	background-attachment: fixed;
-	background-image: repeating-linear-gradient(
-			135deg,
-			var(--weave-color) 0,
-			var(--weave-color) var(--weave-stripe-width),
-			transparent var(--weave-stripe-width),
-			transparent calc(2 * var(--weave-stripe-width))
-		),
-		repeating-linear-gradient(
-			45deg,
-			var(--weave-color) 0,
-			var(--weave-color) var(--weave-stripe-width),
-			transparent var(--weave-stripe-width),
-			transparent calc(2 * var(--weave-stripe-width))
-		),
+	background-image: 
 		repeating-linear-gradient(
 			135deg,
 			var(--gingham-stripe-color) 0,
@@ -69,7 +56,22 @@ body {
 			var(--gingham-stripe-color) var(--gingham-stripe-width),
 			transparent var(--gingham-stripe-width),
 			transparent calc(2 * var(--gingham-stripe-width))
-		);
+		),
+		repeating-linear-gradient(
+			0deg,
+			var(--weave-color) 0,
+			var(--weave-color) var(--weave-stripe-width),
+			transparent var(--weave-stripe-width),
+			transparent calc(2 * var(--weave-stripe-width))
+		),
+		repeating-linear-gradient(
+			90deg,
+			var(--weave-color) 0,
+			var(--weave-color) var(--weave-stripe-width),
+			transparent var(--weave-stripe-width),
+			transparent calc(2 * var(--weave-stripe-width))
+		)
+		;
 }
 
 nav {
