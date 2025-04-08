@@ -38,7 +38,7 @@ body {
 	--gingham-stripe-color: rgba(190, 12, 30, 0.5);
 	--gingham-stripe-width: 75px;
 	--weave-color: rgba(150, 150, 150, 0.05);
-	--weave-stripe-width: 2px;
+	--weave-stripe-width: 1.5px;
 
 	background-color: var(--gingham-base);
 	background-attachment: fixed;
