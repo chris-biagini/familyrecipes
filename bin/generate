@@ -45,8 +45,9 @@ recipes.each do |recipe|
   write_file_if_changed(text_path, recipe.source)
   
   # Write HTML version
+  template_path = File.join(template_dir, "recipe-template.html.erb")
   html_path = File.join(output_dir, "#{recipe.id}.html")
-  write_file_if_changed(html_path, recipe.to_html)
+  write_file_if_changed(html_path, recipe.to_html(erb_template_path: template_path))
 end
 
 print "done!\n"

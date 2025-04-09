@@ -29,12 +29,12 @@ class Recipe
     "/#{@id}"
   end
   
-  def to_html
+def to_html(erb_template_path:)
     markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML)
-    template = File.read('templates/web/recipe-template.html.erb')
+    template = File.read(erb_template_path)
     erb = ERB.new(template, trim_mode: '-')
     erb.result(binding)
-  end
+end
   
   def all_ingredients
     # magic ruby syntax, returns a flat array of all unique ingredients
