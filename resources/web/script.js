@@ -73,6 +73,8 @@ class RecipeProgressManager {
 				crossableItemNode.classList.add("crossed-off");
 			}
 		});
+
+		console.log("Loaded and applied saved state.");
 	}
 
 	setupEventListeners() {
