@@ -5,23 +5,18 @@
 class Recipe
   attr_reader :title, :description, :steps, :footer, :source, :id, :version_hash, :category
   
-  def initialize(markdown_file_path)
-    @source = File.read(markdown_file_path)
+  def initialize(markdown_source:, id:, category:)
+    @source = markdown_source
+    @id = id
+    @category = category
+  
     @version_hash = Digest::SHA256.hexdigest(@source)
-    
-    @id = File.basename(markdown_file_path, ".*") # Get name without extension
-        .unicode_normalize(:nfkd) # Normalize Unicode characters
-        .downcase                 # Convert to lowercase
-        .gsub(/\s+/, '-')         # Replace spaces with hyphens
-        .gsub(/[^a-z0-9\-]/, '')  # Remove non-alphanumeric characters except hyphens
-      
-    @category = File.basename(File.dirname(markdown_file_path)).sub(/^./, &:upcase)
     
     @title = nil
     @description = nil
     @steps = []
     @footer = nil
-    
+  
     parse_recipe
   end
   
