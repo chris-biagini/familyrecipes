@@ -1,67 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= title %></title>
-    <link rel="stylesheet" href="/style.css">
-    
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="shortcut icon" href="/favicon.ico">
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/style.css">
+  
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="shortcut icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 </head>
 
 <body data-recipe-id="<%= id %>" data-version-hash="<%= version_hash %>">
-    <nav>
-        <div>
-            <a href="/" class="home" title="Home (Table of Contents)">Home</a>
-            <a href="/index/" class="index" title="Index of ingredients">Index</a>
-            <!-- <a href="/groceries/" class="groceries" title="Printable grocery list">Groceries</a> -->
-        </div>
-        
-        <div>
-            <a href="<%= id %>.txt" class="text">View as Text</a>
-            <a href="#" onclick="window.print(); return false;" class="print">Print</a>
-        </div>
-    </nav>
+  <nav>
+    <div>
+      <a href="/" class="home" title="Home (Table of Contents)">Home</a>
+      <a href="/index/" class="index" title="Index of ingredients">Index</a>
+      <!-- <a href="/groceries/" class="groceries" title="Printable grocery list">Groceries</a> -->
+    </div>
     
-    <main>
-        <article class="recipe">
-            <header>
-                <h1><%= title %></h1>
-                <p><%= description %></p>
-            </header>
+    <div>
+      <a href="<%= id %>.txt" class="text">View as Text</a>
+      <a href="#" onclick="window.print(); return false;" class="print">Print</a>
+    </div>
+  </nav>
+  
+  <main>
+    <article class="recipe">
+      <header>
+        <h1><%= title %></h1>
+        <p><%= description %></p>
+      </header>
 
-            <%- steps.each do |step| -%>
-            <section>
-                <h2><%= step.tldr %></h2>
-                <div>
-                    <%- unless step.ingredients.empty? -%>
-                    <div class="ingredients">
-                        <ul>
-                            <%- step.ingredients.each do |ingredient| -%>
-                            <li><b><%= ingredient.name %></b><% if ingredient.quantity %>, <%= ingredient.quantity %><% end %><% if ingredient.prep_note %> <small><%= ingredient.prep_note %></small><% end %></li>
-                            <%- end -%>
-                        </ul>
-                    </div>
-                    <%- end -%>
-                    
-                    <%- unless step.instructions.empty? -%>
-                    <div class="instructions">
-                        <%= markdown.render(step.instructions) %>
-                    </div>
-                    <%- end -%>
-                </div>
-            </section>
-            <%- end -%>
-            
-            <footer>
-                <%- if footer -%>
-                <%= markdown.render(footer) %>
-                <%- end -%>
-            </footer>
-        </article>
-    </main>
-    <script src="script.js" defer></script>
+      <%- steps.each do |step| -%>
+      <section>
+        <h2><%= step.tldr %></h2>
+        <div>
+          <%- unless step.ingredients.empty? -%>
+          <div class="ingredients">
+            <ul>
+              <%- step.ingredients.each do |ingredient| -%>
+              <li><b><%= ingredient.name %></b><% if ingredient.quantity %>, <%= ingredient.quantity %><% end %><% if ingredient.prep_note %> <small><%= ingredient.prep_note %></small><% end %></li>
+              <%- end -%>
+            </ul>
+          </div>
+          <%- end -%>
+          
+          <%- unless step.instructions.empty? -%>
+          <div class="instructions">
+            <%= markdown.render(step.instructions) %>
+          </div>
+          <%- end -%>
+        </div>
+      </section>
+      <%- end -%>
+      
+      <footer>
+        <%- if footer -%>
+        <%= markdown.render(footer) %>
+        <%- end -%>
+      </footer>
+    </article>
+  </main>
+  <script src="script.js" defer></script>
 </body>
 </html>

@@ -1,55 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Biagini Family Recipes</title>
-	<link rel="stylesheet" href="/style.css">
-	
-	<link rel="icon" type="image/svg+xml" href="/favicon.svg">
-	<link rel="shortcut icon" href="/favicon.ico">
-	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Biagini Family Recipes</title>
+  <link rel="stylesheet" href="/style.css">
+  
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="shortcut icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 </head>
 <body>
-	<nav>
-		<div>
-			<a href="/" class="home" title="Home (Table of Contents)">Home</a>
-			<a href="/index/" class="index" title="Index of ingredients">Index</a>
-			<!-- <a href="/groceries/" class="groceries" title="Printable grocery list">Groceries</a> -->
-		</div>
-	</nav>
-	
-	<main>
-		<article>
-			<header>
-				<h1>Our Recipes</h1>
-				<p>A collection of our family’s favorite recipes.</p>
-			</header>
+  <nav>
+    <div>
+      <a href="/" class="home" title="Home (Table of Contents)">Home</a>
+      <a href="/index/" class="index" title="Index of ingredients">Index</a>
+      <!-- <a href="/groceries/" class="groceries" title="Printable grocery list">Groceries</a> -->
+    </div>
+  </nav>
+  
+  <main>
+    <article>
+      <header>
+        <h1>Our Recipes</h1>
+        <p>A collection of our family’s favorite recipes.</p>
+      </header>
 
-			<div class="toc_nav">
-				<ul>
-					<%- grouped_recipes.each do |category, recipes| -%>
-						<li><a href="#<%= category.downcase %>"><%= category %></a></li>
-					<%- end -%>
-				</ul>
-			</div>
-			
-			<%- grouped_recipes.each do |category, recipes| -%>
-			<section id="<%= category.downcase %>">
-				<h2><%= category %></h2>
-				<ul>
-					<%- recipes.each do |recipe| -%>
-					<li><a href="<%= recipe.relative_url %>" title="<%= recipe.description %>"><%= recipe.title %></a></li>
-					<%- end -%>
-				</ul>
-			</section>
-			<%- end -%>
-			
-			<footer>
-				<p>For more information, visit <a href="https://github.com/chris-biagini/familyrecipes">our project page on GitHub</a>.</p>
-			</footer>
-		</article>
-	</main>
-	<!-- <script src="script.js" defer></script> -->
+      <div class="toc_nav">
+        <ul>
+          <%- grouped_recipes.each do |category, recipes| -%>
+            <li><a href="#<%= category.downcase %>"><%= category %></a></li>
+          <%- end -%>
+        </ul>
+      </div>
+      
+      <%- grouped_recipes.each do |category, recipes| -%>
+      <section id="<%= category.downcase %>">
+        <h2><%= category %></h2>
+        <ul>
+          <%- recipes.each do |recipe| -%>
+          <li><a href="<%= recipe.relative_url %>" title="<%= recipe.description %>"><%= recipe.title %></a></li>
+          <%- end -%>
+        </ul>
+      </section>
+      <%- end -%>
+      
+      <footer>
+        <p>For more information, visit <a href="https://github.com/chris-biagini/familyrecipes">our project page on GitHub</a>.</p>
+      </footer>
+    </article>
+  </main>
+  <!-- <script src="script.js" defer></script> -->
 </body>
 </html>
