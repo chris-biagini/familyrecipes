@@ -1,32 +1,38 @@
 # Lentil Soup
 
-Basic lentil soup with tomato
+Basic lentil soup with tomato.
 
 ## Prepare base.
 
-- Olive oil, 100 g
-- Carrot, 1: Grate.
-- Onion, 1: Grate.
-- Garlic, 2 cloves: Chop coarsely.
+- Olive oil, 50 g
+- Onion, 1: Chop finely.
+- Carrot, 1: Chop finely.
 - Tomato paste, 30 g
 
-In a deep pot, sauté onion and carrot in oil. Add garlic and tomato paste and cook until fragrant.
+In a deep pot, sauté onion and carrot in oil. Add tomato paste and cook until fragrant.
 
 ## Add and cook lentils.
 
-- Lentils, 1 lb: Check for stones, then rinse.
+- Lentils, 225 g: Check for stones, then rinse.
 - Water, 6 cups
-- Vegetable bouillon, 1 Tbsp
-- Bay leaf, 1
+- Vegetable bouillon, 1 small spoonful
 
-Add lentils, water, bouillon, and bay leaf. Bring to a boil and continue boiling for 15 minutes.
+Add lentils, water, and bouillon to pot. Bring to a gentle boil.
 
-Reduce heat to a simmer and continue cooking on for 30 minutes or until lentils are soft. Add more water as needed to maintain consistency.
+Cook for 20 minutes, or until lentils have softened but are not quite done.
+
+## Add pasta.
+
+- Pasta, 150 g: Ditalini or similar.
+- Water
+
+Add the pasta and additional water, if necessary to maintain consistency.
+
+Continue cooking until pasta is done, about 15 minutes.
 
 ## Finish and serve.
 
 - Salt
 - Black pepper
-- Lemon
 
-Season to taste with salt, pepper, and lemon juice.
+Season to taste with salt and pepper.
