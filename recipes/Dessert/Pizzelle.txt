@@ -4,14 +4,13 @@ Italian waffle cookies.
 
 ## Prepare batter.
 
-- Eggs, 2
-- Sugar (white), 100 g
-- Olive oil (mild), 50 g
-- Baking powder, 4 g
-- Salt, 2 g
-- Vanilla extract, 1 tsp
-- Orange zest, 1
-- Flour, 200 g
+- Eggs, 4
+- Sugar (white), 200 g
+- Olive oil (mild), 100 g
+- Baking powder, 8 g
+- Salt, 4 g
+- Fiori di Sicilia, 1/2 tsp
+- Flour (00), 400 g
 
 Whisk together everything except flour.
 
@@ -25,6 +24,8 @@ Top or fill pizzelle as desired.
 
 ---
 
-Recipe makes about 16 cookies.
+Recipe makes about 32 cookies.
 
 Based on [a recipe from GialloZafferano](https://ricette.giallozafferano.it/Ferratelle.html).
+
+You can get [Fiori di Sicilia from King Arthur Baking](https://shop.kingarthurbaking.com/items/fiori-di-sicilia).
