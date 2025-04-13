@@ -4,25 +4,27 @@ Good for sandwiches!
 
 ## Make dough.
 
-- Malt syrup, 12.5 g
-- Olive oil, 12.5 g
-- Salt, 12.5 g
-- Yeast, 5 g
-- Water, 400 g
-- Flour (bread), 500 g
+- Malt syrup, 16 g
+- Olive oil, 16 g
+- Salt, 16 g
+- Yeast, 2 g
+- Water, 512 g
+- Flour (bread), 640 g
 
 Add all ingredients except flour to bowl. Add half the flour and whisk together. Add remaining flour, then mix until thoroughly combined.
 
 Bulk ferment for a few hours, folding occasionally during the first hour or so.
 
-## Portion.
+## Portion and pre-shape.
 
-- Raisins, 50 g: Optional.
+- Raisins, 65 g: Optional.
 - Flour (bread), 5 g: Optional.
+- Butter
+- Olive oil
 
-Divide dough in half, or leave whole if you prefer a thicker focaccia. If using raisins, toss with flour and mix into one of the halves.
+Divide dough in half. If using raisins, toss with flour and mix into one of the halves.
 
-Pre-shape into ball(s) and place each ball into pan(s) greased with butter (to mitigate sticking) and olive oil. Cover and let rest, then spread dough to edges. Cover and allow to proof.
+Pre-shape into ball(s) and place each ball into pan(s) greased with a little butter (to mitigate sticking) and a fair bit of olive oil. Cover and let rest, then spread dough to edges. Cover and allow to proof.
 
 ## Bake.
 
@@ -34,3 +36,9 @@ Preheat oven to 500° convection roast and put oven rack in middle position. (Us
 Dimple dough, then top with flaky salt and olive oil.
 
 Bake for 8-10 minutes.
+
+---
+
+If you have time, make a poolish the night before with about half the flour and an equal quantity of water, plus a small pinch of yeast.
+
+Olive oil and salt are all the toppings you need, but this dough makes a good base for just about any topping: olives, grapes, herbs like rosemary, marinated vegetables. Go wild.
