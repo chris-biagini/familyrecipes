@@ -1,0 +1,31 @@
+# Limoncello
+
+Italian lemon liqueur.
+
+## Make lemon infusion.
+
+- Everclear 151, 750 mL
+- Lemons, 12-15
+
+Peel zest from lemons using a vegetable peeler. Avoid getting any of the white pith underneath the yellow skins. You'll need a total of 180 g lemon zest.
+
+Place zest in glass container along with alcohol. Let set at room temperature for 24 hours, agitating occasionally. Alternatively, place container in a 50°C sous vide bath and cook for two hours.
+
+## Make simple syrup.
+
+- Sugar, 480 g
+- Water, 240 g
+
+Combine water and sugar in saucepan or heatproof container. Heat gently on stovetop or in microwave, stirring until all sugar is dissolved. This will take a while.
+
+## Combine and chill.
+
+Wait until syrup has cooled to room temperature.
+
+Strain out lemon skins from alcohol infusion. Combine infused alcohol and simple syrup in a large bottle. Stir to combine. Chill thoroughly.
+
+---
+
+Everclear makes for a potent drink. Everclear 151 will make an infusion at about 80 proof or 40% ABV. You can use 100-proof vodka instead, which will get you about 30% ABV.
+
+Based on a recipe from [Dario Bressanini](http://bressanini-lescienze.blogautore.espresso.repubblica.it/2015/12/21/le-ricette-scientifiche-il-limoncello-anche-veloce/).
