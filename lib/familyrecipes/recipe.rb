@@ -36,6 +36,13 @@ end
     @steps.flat_map(&:ingredients).uniq { |ingredient| ingredient.normalized_name }
   end
   
+  def all_ingredient_names
+    @steps
+      .flat_map(&:ingredients)
+      .map(&:normalized_name)
+      .uniq
+  end
+  
   private
 
   def parse_recipe
