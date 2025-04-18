@@ -11,6 +11,10 @@
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   
   <style>
+    .hidden-until-js {
+      display: none;
+    }
+    
     #grocery-list ul {
       list-style-type: disc;
       column-count: 1;
@@ -42,21 +46,27 @@
     <header>
       <h1>Groceries</h1>
     </header>
-      
-    <%- grouped_recipes.each do |category, recipes| -%>
-    <details id="<%= category.downcase %>">
-      <summary><%= category %></summary>
-      <ul>
-      <%- recipes.each do |recipe| -%>
-        <li>
-          <input type="checkbox" id="<%= recipe.id %>" data-ingredients='<%= recipe.all_ingredient_names.to_json %>'>
-          <label for="<%= recipe.id %>"><%= recipe.title %></label>
-          <a href="/<%= recipe.id %>" title="Go to <%= recipe.title %> →">→</a>
-        </li>
+    
+    <noscript>
+      <p><em>This page works without JavaScript, but consider enabling it if you would like to generate a custom list from selected recipes.</em></p>
+    </noscript>
+    
+    <div class="hidden-until-js">
+      <%- grouped_recipes.each do |category, recipes| -%>
+      <details id="<%= category.downcase %>">
+        <summary><%= category %></summary>
+        <ul>
+        <%- recipes.each do |recipe| -%>
+          <li>
+            <input type="checkbox" id="<%= recipe.id %>" data-ingredients='<%= recipe.all_ingredient_names.to_json %>'>
+            <label for="<%= recipe.id %>"><%= recipe.title %></label>
+            <a href="/<%= recipe.id %>" title="Go to <%= recipe.title %> →">→</a>
+          </li>
+        <%- end -%>
+        </ul>
+      </details>
       <%- end -%>
-      </ul>
-    </details>
-    <%- end -%>
+    </div>
           
     <section id="grocery-list">
       <h2>Grocery List</h2>
@@ -77,6 +87,8 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', () => {
+    document.querySelector('.hidden-until-js')?.classList.remove('hidden-until-js');
+    
     // grab all recipe checkboxes
     const checkboxes = document.querySelectorAll('input[type="checkbox"][data-ingredients]');
     const miscList    = document.getElementById('misc-items');
