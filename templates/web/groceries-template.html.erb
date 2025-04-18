@@ -12,16 +12,21 @@
   
   <style>
     #grocery-list ul {
-      list-style-type: square;
+      list-style-type: disc;
       column-count: 1;
     }
     
     #grocery-list ul li {
-      color: black;
+      margin-left: 3rem;
     }
     
     #grocery-list ul li.is-needed {
       color: green;
+    }
+    
+    #grocery-list ul li.is-staple {
+      // Staples are shown by default, can be hidden via JS 
+      color: red;
     }
   </style>
 </head>
@@ -35,26 +40,25 @@
   </nav>
   
   <main>
-    <article>
-      <header>
-        <h1>Groceries</h1>
-      </header>
+    <header>
+      <h1>Groceries</h1>
+    </header>
       
-      <%- grouped_recipes.each do |category, recipes| -%>
-      <section id="<%= category.downcase %>">
-        <h2><%= category %></h2>
-        <ul>
-        <%- recipes.each do |recipe| -%>
-          <li data-ingredients='<%= recipe.all_ingredient_names.to_json %>'>
-            <input type="checkbox" id="<%= recipe.id %>">
-            <label for="<%= recipe.id %>"><%= recipe.title %></label>
-            <a href="/<%= recipe.id %>" title="Go to <%= recipe.title %>">→</a>
-          </li>
-        <%- end -%>
-        </ul>
-      </section>
+    <%- grouped_recipes.each do |category, recipes| -%>
+    <details id="<%= category.downcase %>">
+      <summary><%= category %></summary>
+      <ul>
+      <%- recipes.each do |recipe| -%>
+        <li>
+          <input type="checkbox" id="<%= recipe.id %>" data-ingredients='<%= recipe.all_ingredient_names.to_json %>'>
+          <label for="<%= recipe.id %>"><%= recipe.title %></label>
+          <a href="/<%= recipe.id %>" title="Go to <%= recipe.title %> →">→</a>
+        </li>
       <%- end -%>
-    
+      </ul>
+    </details>
+    <%- end -%>
+          
     <section id="grocery-list">
       <h2>Grocery List</h2>
       
@@ -83,13 +87,12 @@
       <h3>Miscellaneous</h3>
       <ul id="misc-items"></ul>
     </section>
-    </article>
   </main>
 
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     // grab all recipe checkboxes
-    const checkboxes = document.querySelectorAll('li[data-ingredients] input[type="checkbox"]');
+    const checkboxes = document.querySelectorAll('input[type="checkbox"][data-ingredients]');
     const miscList    = document.getElementById('misc-items');
   
     // wire up change‐events
@@ -101,7 +104,7 @@
       checkboxes.forEach(cb => {
         if (cb.checked) {
           // parse the JSON array from the parent <li>
-          const arr = JSON.parse(cb.closest('li').dataset.ingredients);
+          const arr = JSON.parse(cb.dataset.ingredients);
           arr.forEach(item => needed.add(item));
         }
       });
