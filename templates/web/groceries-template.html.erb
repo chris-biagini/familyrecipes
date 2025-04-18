@@ -25,8 +25,7 @@
     }
     
     #grocery-list ul li.is-staple {
-      // Staples are shown by default, can be hidden via JS 
-      color: red;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -62,27 +61,14 @@
     <section id="grocery-list">
       <h2>Grocery List</h2>
       
-      <h3>Produce</h3>
+      <% ingredient_db.each do |aisle, ingredients| %>
+      <h3><%= aisle %></h3>
       <ul>
-        <li>Apples</li>
-        <li>Bananas</li>
-        <li>Onions</li>
-        <li>Garlic</li>
+        <% ingredients.each do |ingredient| %>
+          <li<%= ' class="is-staple"' if ingredient[:staple] %>><%= ingredient[:name] %></li>
+        <% end %>
       </ul>
-
-      <h3>Dairy</h3>
-      <ul>
-        <li>Milk</li>
-        <li>Butter</li>
-        <li>Eggs</li>
-      </ul>
-
-      <h3>Pantry</h3>
-      <ul>
-        <li>Flour</li>
-        <li>Baking Powder</li>
-        <li>Salt</li>
-      </ul>
+      <% end %>
             
       <h3>Miscellaneous</h3>
       <ul id="misc-items"></ul>

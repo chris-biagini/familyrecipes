@@ -1,91 +1,95 @@
-# Produce
-Apples: { aisle: Produce, is_staple: true }
-Berries: { aisle: Produce, is_staple: false }
-Fruit juice: { aisle: Produce, is_staple: true }
-Oranges: { aisle: Produce, is_staple: true }
-Mangoes: { aisle: Produce, is_staple: false }
-Grapes: { aisle: Produce, is_staple: true }
-Carrots: { aisle: Produce, is_staple: true }
-Cucumbers: { aisle: Produce, is_staple: false }
-Salad greens: { aisle: Produce, is_staple: true }
-Bananas: { aisle: Produce, is_staple: true }
-Onions: { aisle: Produce, is_staple: true }
-Garlic: { aisle: Produce, is_staple: true }
-Bell peppers: { aisle: Produce, is_staple: false }
-Basil: { aisle: Produce, is_staple: false }
-Parsley: { aisle: Produce, is_staple: false }
+# Ingredient Database
 
-# Bakery
-Bread: { aisle: Bakery, is_staple: true }
-Sandwich bread: { aisle: Bakery, is_staple: true }
-Cookies: { aisle: Bakery, is_staple: true }
+# note: an asterisk after the ingredient name marks the ingredient as a "staple"
 
-# International
-Muesli: { aisle: International, is_staple: true }
-"Tortillas (large)": { aisle: International, is_staple: true }
-"Tomato salsa": { aisle: International, is_staple: true }
+Produce:
+  - Apples*
+  - Bananas*
+  - Basil
+  - Bell peppers
+  - Berries
+  - Carrots*
+  - Cucumbers
+  - Fruit juice*
+  - Garlic*
+  - Grapes*
+  - Mangoes
+  - Onions*
+  - Oranges*
+  - Parsley
+  - Salad greens*
 
-# Health
-RXBARs: { aisle: Health, is_staple: true }
-Protein shake mix: { aisle: Health, is_staple: true }
-Creatine: { aisle: Health, is_staple: true }
+Bakery:
+  - Bread*
+  - Cookies*
+  - Sandwich bread*
 
-# Frozen
-Fro-yo bars: { aisle: Frozen, is_staple: true }
-Soft pretzels: { aisle: Frozen, is_staple: true }
-"Chik'n nuggets": { aisle: Frozen, is_staple: true }
-French fries: { aisle: Frozen, is_staple: true }
+International:
+  - Muesli*
+  - Tomato salsa*
+  - Tortillas (large)*
 
-# Beverages
-"Diet Coke": { aisle: Beverages, is_staple: true }
+Health:
+  - RXBARs*
+  - Creatine*
+  - Protein shake mix*
 
-# Candy
-Chocolate: { aisle: Candy, is_staple: true }
-Candy: { aisle: Candy, is_staple: true }
+Frozen:
+  - Chik'n nuggets*
+  - French fries*
+  - Fro-yo bars*
+  - Soft pretzels*
 
-# Pantry
-"Chickpeas (canned)": { aisle: Pantry, is_staple: true }
-"Black beans (canned)": { aisle: Pantry, is_staple: true }
-Peanut butter: { aisle: Pantry, is_staple: true }
-Coffee: { aisle: Pantry, is_staple: true }
-Olives: { aisle: Pantry, is_staple: false }
-Olive oil: { aisle: Pantry, is_staple: true }
-Farro: { aisle: Pantry, is_staple: true }
-Jasmine rice: { aisle: Pantry, is_staple: false }
-Vegetable bouillon: { aisle: Pantry, is_staple: true }
-"Dried fruit": { aisle: Pantry, is_staple: true }
+Beverages:
+  - Diet Coke*
 
-# Baking
-"Flour (bread)": { aisle: Baking, is_staple: false }
-"Flour (all-purpose)": { aisle: Baking, is_staple: false }
-"Flour (whole wheat)": { aisle: Baking, is_staple: false }
-"Flour (semolina)": { aisle: Baking, is_staple: false }
+Candy:
+  - Candy*
+  - Chocolate*
 
-# Dairy
-"String cheese": { aisle: Dairy, is_staple: true }
-"American cheez": { aisle: Dairy, is_staple: true }
-"Monterey jack cheese": { aisle: Dairy, is_staple: true }
-Bocconcini: { aisle: Dairy, is_staple: false }
-"Chocolate milk": { aisle: Dairy, is_staple: true }
-"Vegan milk": { aisle: Dairy, is_staple: true }
-"Whole milk": { aisle: Dairy, is_staple: true }
-Eggs: { aisle: Dairy, is_staple: true }
-Yogurt: { aisle: Dairy, is_staple: true }
-"Yogurt drinks": { aisle: Dairy, is_staple: true }
-Parmesan: { aisle: Dairy, is_staple: true }
-Pecorino: { aisle: Dairy, is_staple: true }
+Pantry:
+  - Black beans (canned)*
+  - Chickpeas (canned)*
+  - Coffee*
+  - Dried fruit*
+  - Farro*
+  - Jasmine rice
+  - Olive oil*
+  - Olives
+  - Peanut butter*
+  - Vegetable bouillon*
 
-# Deli
-Hummus: { aisle: Deli, is_staple: true }
+Baking:
+  - Flour (all-purpose)
+  - Flour (bread)
+  - Flour (semolina)
+  - Flour (whole wheat)
 
-# Snacks
-Pretzels: { aisle: Snacks, is_staple: true }
-"Tortilla chips": { aisle: Snacks, is_staple: true }
-Triscuits: { aisle: Snacks, is_staple: true }
-Goldfish: { aisle: Snacks, is_staple: true }
+Dairy:
+  - American cheez*
+  - Bocconcini
+  - Chocolate milk*
+  - Eggs*
+  - Monterey jack cheese*
+  - Parmesan*
+  - Pecorino*
+  - String cheese*
+  - Vegan milk*
+  - Whole milk*
+  - Yogurt drinks*
+  - Yogurt*
 
-# Cereal
-Cereal: { aisle: Cereal, is_staple: true }
+Deli:
+  - Hummus*
 
-# Alcohol
-Wine: { aisle: Alcohol, is_staple: true }
+Snacks:
+  - Goldfish*
+  - Pretzels*
+  - Tortilla chips*
+  - Triscuits*
+
+Cereal:
+  - Cereal*
+
+Alcohol:
+  - Wine*

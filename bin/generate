@@ -121,10 +121,22 @@ print "done!\n"
 
 # Build grocery page
 print "Generating groceries page..."
+ingredient_db_raw = YAML.load_file(ingredient_db_path)
+ingredient_db = {}
+
+ingredient_db_raw.each do |aisle, items|
+  ingredient_db[aisle] = items.map do |item|
+    {
+      name: item.chomp('*'),
+      staple: item.end_with?('*')
+    }
+  end
+end
+
 template_path = File.join(template_dir, "groceries-template.html.erb")
 erb_template = ERB.new(File.read(template_path), trim_mode: "-")
 groceries_path = File.join(output_dir, "groceries", "index.html")
 FileUtils.mkdir_p(File.dirname(groceries_path))  # Ensure directory exists
 # Pass both recipes_by_category and the ingredient database to the template.
-write_file_if_changed(groceries_path, erb_template.result_with_hash(grouped_recipes: recipes_by_category))
+write_file_if_changed(groceries_path, erb_template.result_with_hash(grouped_recipes: recipes_by_category, ingredient_database: ingredient_db))
 print "done!\n"
