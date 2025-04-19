@@ -16,20 +16,28 @@
     }
     
     #grocery-list ul {
-      list-style-type: disc;
+      list-style-type: circle;
       column-count: 1;
     }
     
     #grocery-list ul li {
       margin-left: 3rem;
+      display: none;
     }
-    
-    #grocery-list ul li.is-needed {
-      color: green;
-    }
-    
+
+    #grocery-list ul li.is-needed-for-selected-recipes, 
     #grocery-list ul li.is-staple {
-      font-weight: bold;
+      display: list-item;
+    }
+        
+    #grocery-list ul li.is-needed-for-selected-recipes {
+      list-style-type: disc;
+    }
+        
+    @media print {
+      #recipe-selector, header {
+        display: none;
+      }
     }
   </style>
 </head>
@@ -51,7 +59,7 @@
       <p><em>This page works without JavaScript, but consider enabling it if you would like to generate a custom list from selected recipes.</em></p>
     </noscript>
     
-    <div class="hidden-until-js">
+    <div id="recipe-selector" class="hidden-until-js">
       <%- grouped_recipes.each do |category, recipes| -%>
       <details id="<%= category.downcase %>">
         <summary><%= category %></summary>
@@ -115,10 +123,10 @@
       document
         .querySelectorAll('#grocery-list ul:not(#misc-items) li')
         .forEach(li => {
-          li.classList.remove('is-needed');
+          li.classList.remove('is-needed-for-selected-recipes');
           const name = li.textContent.trim();
           if (needed.has(name)) {
-            li.classList.add('is-needed');
+            li.classList.add('is-needed-for-selected-recipes');
             needed.delete(name);
           }
         });
@@ -127,7 +135,7 @@
       needed.forEach(name => {
         const li = document.createElement('li');
         li.textContent = name;
-        li.classList.add('is-needed');
+        li.classList.add('is-needed-for-selected-recipes');
         miscList.appendChild(li);
       });
     }
