@@ -15,9 +15,13 @@
       display: none;
     }
     
+    #grocery-list {
+      columns: 3;
+    }
+    
     #grocery-list ul {
       list-style-type: circle;
-      column-count: 1;
+      column-count: 1; 
     }
     
     #grocery-list ul li {
@@ -35,7 +39,7 @@
     }
         
     @media print {
-      #recipe-selector, header {
+      #recipe-selector {
         display: none;
       }
     }
@@ -68,7 +72,7 @@
           <li>
             <input type="checkbox" id="<%= recipe.id %>" data-ingredients='<%= recipe.all_ingredient_names.to_json %>'>
             <label for="<%= recipe.id %>"><%= recipe.title %></label>
-            <a href="/<%= recipe.id %>" title="Go to <%= recipe.title %> →">→</a>
+            <a href="/<%= recipe.id %>" title="Open <%= recipe.title %> in new tab →" target="_blank">→</a>
           </li>
         <%- end -%>
         </ul>
@@ -76,9 +80,7 @@
       <%- end -%>
     </div>
           
-    <section id="grocery-list">
-      <h2>Grocery List</h2>
-      
+    <section id="grocery-list">   
       <% ingredient_database.each do |aisle, ingredients| %>
       <h3><%= aisle %></h3>
       <ul>
@@ -103,6 +105,9 @@
   
     // wire up change‐events
     checkboxes.forEach(cb => cb.addEventListener('change', updateGroceryList));
+  
+    // clear boxes on page load
+    checkboxes.forEach(cb => cb.checked = false);
   
     function updateGroceryList() {
       // 1) collect all needed ingredients into a Set
