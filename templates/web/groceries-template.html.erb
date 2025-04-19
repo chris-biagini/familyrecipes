@@ -70,8 +70,8 @@
         <ul>
         <%- recipes.each do |recipe| -%>
           <li>
-            <input type="checkbox" id="<%= recipe.id %>" data-ingredients='<%= recipe.all_ingredient_names.to_json %>'>
-            <label for="<%= recipe.id %>"><%= recipe.title %></label>
+            <input type="checkbox" id="<%= recipe.id %>-checkbox" data-ingredients='<%= recipe.all_ingredient_names.to_json %>'>
+            <label for="<%= recipe.id %>-checkbox"><%= recipe.title %></label>
             <a href="/<%= recipe.id %>" title="Open <%= recipe.title %> in new tab →" target="_blank">→</a>
           </li>
         <%- end -%>
