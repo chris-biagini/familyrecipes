@@ -10,7 +10,7 @@ recipes_dir   = File.join(project_root, "recipes")
 template_dir  = File.join(project_root, "templates/web")
 resources_dir = File.join(project_root, "resources/web")
 output_dir    = File.join(project_root, "output/web")
-ingredient_db_path = File.join(project_root, "resources/ingredient-db.yaml")
+grocery_info_path = File.join(project_root, "resources/grocery-info.yaml")
 
 # helper function to avoid rewriting files that haven't changed
 def write_file_if_changed(path, content)
@@ -121,11 +121,11 @@ print "done!\n"
 
 # Build grocery page
 print "Generating groceries page..."
-ingredient_db_raw = YAML.load_file(ingredient_db_path)
-ingredient_db = {}
+grocery_info_raw = YAML.load_file(grocery_info_path)
+grocery_info = {}
 
-ingredient_db_raw.each do |aisle, items|
-  ingredient_db[aisle] = items.map do |item|
+grocery_info_raw.each do |aisle, items|
+  grocery_info[aisle] = items.map do |item|
     {
       name: item.chomp('*'),
       staple: item.end_with?('*')
@@ -138,5 +138,5 @@ erb_template = ERB.new(File.read(template_path), trim_mode: "-")
 groceries_path = File.join(output_dir, "groceries", "index.html")
 FileUtils.mkdir_p(File.dirname(groceries_path))  # Ensure directory exists
 # Pass both recipes_by_category and the ingredient database to the template.
-write_file_if_changed(groceries_path, erb_template.result_with_hash(grouped_recipes: recipes_by_category, ingredient_database: ingredient_db))
+write_file_if_changed(groceries_path, erb_template.result_with_hash(grouped_recipes: recipes_by_category, ingredient_database: grocery_info))
 print "done!\n"
