@@ -39,7 +39,7 @@
     }
         
     @media print {
-      #recipe-selector {
+      #recipe-selector, #freeform-entries {
         display: none;
       }
     }
@@ -79,6 +79,10 @@
       </details>
       <%- end -%>
     </div>
+    
+    <div class="hidden-until-js">
+      <textarea id="freeform-entries" rows="10" cols="40" placeholder="Enter grocery items here, one per line."></textarea>
+    </div>
           
     <section id="grocery-list">   
       <% ingredient_database.each do |aisle, ingredients| %>
@@ -97,7 +101,10 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', () => {
-    document.querySelector('.hidden-until-js')?.classList.remove('hidden-until-js');
+    
+    document.querySelectorAll('.hidden-until-js').forEach(el => {
+      el.classList.remove('hidden-until-js');
+    });
     
     // grab all recipe checkboxes
     const checkboxes = document.querySelectorAll('input[type="checkbox"][data-ingredients]');
@@ -106,6 +113,10 @@
     // wire up change‐events
     checkboxes.forEach(cb => cb.addEventListener('change', updateGroceryList));
   
+    // listen for input on the freeform textarea
+    const freeformInput = document.getElementById('freeform-entries');
+    freeformInput.addEventListener('input', updateGroceryList);
+      
     // clear boxes on page load
     checkboxes.forEach(cb => cb.checked = false);
   
@@ -118,6 +129,13 @@
           const arr = JSON.parse(cb.dataset.ingredients);
           arr.forEach(item => needed.add(item));
         }
+      });
+      
+      // also add ingredients from the freeform textarea
+      const freeformLines = freeformInput.value.split('\n');
+      freeformLines.forEach(line => {
+        const trimmed = line.trim();
+        if (trimmed) needed.add(trimmed);
       });
   
       // 2) clear any old “misc” items
