@@ -1,6 +1,6 @@
 # Mac and Cheese Casserole
 
-Southern-style macaroni and cheese
+Southern-style macaroni and cheese.
 
 ## Preheat oven and pasta water; butter casserole dish.
 
@@ -13,7 +13,6 @@ Preheat oven to 350º convection roast. Set a large pot of water to boil. Add a 
 ## Make cheese sauce.
 
 - Cheddar, 680 g: Cut into small cubes.
-- Parmesan, 25 g: Grated.
 - Sodium citrate, 25 g
 - Egg yolks, 4
 - Frank’s Red Hot, 5 g
@@ -32,7 +31,14 @@ Combine ingredients in small bowl. Stir until combined.
 
 ## Cook pasta; combine with sauce.
 
-Boil pasta until barely al dente, then drain and return to pot. Pour cheese mixture into pot with hot pasta and stir until combined.
+- Cavatappi, 454 g
+- Salt
+
+Add salt to a big pot of water and bring to a boil.
+
+Boil pasta until barely al dente, then drain and return to pot.
+
+Pour cheese mixture into pot with hot pasta and stir until combined.
 
 ## Assemble and bake.
 
@@ -45,5 +51,3 @@ Bake for 30 minutes. Let cool for 15 minutes before serving.
 Based on a recipe from Dave Arnold.
 
 For the cheddar, use a blend of mild, medium, and sharp. (Three 8-oz. packages will yield 680 g.)
-
-Pro tip: Use the blender to grate all 75 g of Parmesan at once, then take out 50 g for the topping.
