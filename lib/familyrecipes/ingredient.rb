@@ -18,7 +18,8 @@ class Ingredient
       "Egg yolks" => "Eggs",
       "Egg yolk" => "Eggs",
       "Onion" => "Onions",
-      "Carrot" => "Carrots"
+      "Carrot" => "Carrots",
+      "Lemon" => "Lemons"
     }
     
     # Return mapped name if it exists; otherwise, keep original
