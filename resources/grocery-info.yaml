@@ -18,16 +18,36 @@ Produce:
   - Oranges*
   - Parsley
   - Salad greens*
+  - Watermelon
+  - Limes
+  - Lemons
+  - Broccoli
+  - Red bell pepper
+  - Red onion
+  - Tomatoes (fresh)
+  - Asparagus
+  - Baby spinach
+  - Fruit
 
 Bakery:
   - Bread*
-  - Cookies*
   - Sandwich bread*
 
 International:
   - Muesli*
   - Tomato salsa*
   - Tortillas (large)*
+  - Kombu
+
+Condiments:
+  - Frank’s Red Hot
+  - Hot sauce
+  - Mayonnaise
+  - Veganaise
+  - Soy sauce
+  - Liquid smoke
+  - Pickled jalapeños
+  - Chipotles en adobo
 
 Health:
   - RXBARs*
@@ -38,6 +58,7 @@ Frozen:
   - French fries*
   - Fro-yo bars*
   - Soft pretzels*
+  - Frozen spinach
 
 Beverages:
   - Diet Coke*
@@ -57,12 +78,49 @@ Pantry:
   - Olives
   - Peanut butter*
   - Vegetable bouillon*
+  - Olive oil (mild)
+  - Beans
+  - Lentils
+  - Red beans
+  - Raisins
+  - Pasta
+  - Cavatappi
+  - Spaghetti
+  - Tomato paste
+  - Tomatoes (canned)
+  - Tomato passata
+  - Marinated artichokes
 
 Baking:
   - Flour (all-purpose)
   - Flour (bread)
   - Flour (semolina)
   - Flour (whole wheat)
+  - Flour (00)
+  - Flour (whole rye)
+  - Yeast
+  - Malt syrup
+  - Diastatic malt powder
+  - Sodium carbonate
+  - Salt
+  - Maldon salt
+  - Sugar (brown)
+  - Sugar (white)
+  - Baking soda
+  - Baking powder
+  - Vanilla extract
+  - Cornmeal
+  - Maple syrup
+  - Honey
+
+Spices & Seasonings:
+  - Sesame seeds
+  - Cinnamon
+  - Black pepper
+  - Cumin
+  - Smoked paprika
+  - Thyme
+  - Oregano
 
 Dairy:
   - American cheese*
@@ -74,9 +132,22 @@ Dairy:
   - Pecorino*
   - String cheese*
   - Vegan milk*
-  - Whole milk*
+  - Milk*
   - Yogurt drinks*
   - Yogurt*
+  - Butter
+  - Butter (unsalted)
+  - Buttermilk
+  - Greek yogurt
+  - Cream cheese
+  - Whipped cream
+  - Ricotta
+  - Mozzarella (low-moisture)
+  - Mozzarella (fresh)
+  - Cheddar
+  - Muenster
+  - Gruyère
+  - Gouda
 
 Deli:
   - Hummus*
@@ -86,9 +157,13 @@ Snacks:
   - Pretzels*
   - Tortilla chips*
   - Triscuits*
+  - Cookies*
+  - Ritz crackers
 
 Cereal:
   - Cereal*
+  - Rolled oats
 
 Alcohol:
   - Wine*
+  - Everclear 151
