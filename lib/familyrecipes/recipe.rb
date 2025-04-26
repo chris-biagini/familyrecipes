@@ -57,8 +57,12 @@ end
       raise StandardError, "Invalid recipe format: The first line must be a level-one header (# Toasted Bread)."
     end
 
-    # look for description, which is just the first line after the title
-    @description = lines.shift&.strip
+    # look for optional description, which is just the first line after the title
+    if lines.first.strip.match(/^## (.+)$/)
+      @description = nil
+    else
+      @description = lines.shift.strip
+    end
   
     # start loop to parse steps; stop parsing steps when we hit EOF or a delimiter ("---")
     while lines.any?
