@@ -1,41 +1,42 @@
 # Focaccia
 
-Good for sandwiches!
-
 ## Make dough.
 
-- Malt syrup, 16 g
 - Olive oil, 16 g
 - Salt, 16 g
-- Yeast, 2 g
-- Water, 512 g
-- Flour (bread), 640 g
+- Malt syrup, 10 g
+- Yeast, 5 g
+- Water, 460 g
+- Flour (00), 640 g
 
 Add all ingredients except flour to bowl. Add half the flour and whisk together. Add remaining flour, then mix until thoroughly combined.
 
-Bulk ferment for a few hours, folding occasionally during the first hour or so.
+Let rest for 20-30 minutes, then knead until smooth. Form into a neat ball, return to bowl, and cover.
+
+Bulk ferment until doubled in size.
 
 ## Portion and pre-shape.
 
-- Raisins, 65 g: Optional.
-- Flour (bread), 5 g: Optional.
+- Raisins, 75 g: Optional.
 - Butter
 - Olive oil
 
-Divide dough in half. If using raisins, toss with flour and mix into one of the halves.
+Grease two 9x13 pans with a little butter (to prevent sticking) and a fair bit of olive oil.
 
-Pre-shape into ball(s) and place each ball into pan(s) greased with a little butter (to mitigate sticking) and a fair bit of olive oil. Cover and let rest, then spread dough to edges. Cover and allow to proof.
+Divide dough in half. For each half, gently stretch out into a large rectangle, then roll like a jelly roll. If using raisins, sprinkle them on top of one of the rectangles before rolling.
+
+Place each piece of dough into a pan greased with a little butter (to mitigate sticking) and a fair bit of olive oil. Cover and let rest, then gently press and spread dough to edges. Cover and allow to proof.
 
 ## Bake.
 
 - Olive oil
 - Maldon salt
 
-Preheat oven to 500° convection roast and put oven rack in middle position. (Use 450° conv roast if using raisins.)
+Preheat oven to 450° convection roast and put oven rack in middle position.
 
 Dimple dough, then top with flaky salt and olive oil.
 
-Bake for 8-10 minutes.
+Bake for 10-15 minutes.
 
 ---
 
