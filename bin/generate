@@ -26,7 +26,10 @@ end
 # parse recipes; actual parsing happens in Recipe constructor
 print "Parsing recipes from #{recipes_dir}..."
 
-recipe_files = Dir.glob(File.join(recipes_dir, "**", "*")).select { |file| File.file?(file) }
+recipe_files = Dir.glob(File.join(recipes_dir, "**", "*")).select do |file|
+  File.file?(file) && File.basename(file) != "Quick Bites.txt"
+end
+
 recipes_array = recipe_files.map do |file|
   source = File.read(file)
   
@@ -41,7 +44,47 @@ recipes_array = recipe_files.map do |file|
   recipe = Recipe.new(markdown_source: source, id: id, category: category)
 end
 
-print "done! (Parsed #{recipes_array.size} recipes.)\n"  
+quick_bite_sources = []
+
+File.foreach(File.join(recipes_dir, "Quick Bites.txt")) do |line|
+  if line.start_with?("  - ")
+    quick_bite_sources << line.sub("  - ", "").strip
+  end
+end
+
+quick_bites_array = quick_bite_sources.map do |line|
+  if line.include?(":")
+    title, rest = line.split(":", 2).map(&:strip)
+  else
+    title = line.strip
+    rest = ""
+  end
+  
+  id = title.unicode_normalize(:nfkd).downcase.gsub(/\s+/, '-').gsub(/[^a-z0-9\-]/, '') # same as above
+  
+  # Start with full line for ingredients if no colon, otherwise the right part
+  ingredients_source = rest.empty? ? title : rest
+  
+  # Split ingredients by delimiters: on, with, and, commas, etc.
+  ingredients = ingredients_source
+    .split(/\bon\b|\bwith\b|\band\b|,/i)
+    .map(&:strip)
+    .reject(&:empty?)
+  
+  recipe_source = ""
+  recipe_source << "# #{title}\n\n"
+  recipe_source << "## Combine ingredients.\n\n"
+  ingredients.each do |ingredient|
+    recipe_source << "- #{ingredient}\n"
+  end
+  recipe_source << "\nCombine.\n\n"
+
+  category = "Quick Bites"
+  
+  recipe = Recipe.new(markdown_source: recipe_source, id: id, category: category)
+end
+
+print "done! (Parsed #{recipes_array.size} recipes and #{quick_bites_array.size} quick bites.)\n"  
 
 # make output directory
 FileUtils.mkdir_p(output_dir)
@@ -89,6 +132,7 @@ print "done!\n"
 print "Generating homepage in #{output_dir}..."
 
 recipes_by_category = recipes_array.group_by(&:category) # hash of recipes, with categories as keys
+quick_bites_by_category = quick_bites_array.group_by(&:category) # hash of quick bites, with categories as keys
 
 # Read and process the template
 template_path = File.join(template_dir, "homepage-template.html.erb")
@@ -133,10 +177,12 @@ grocery_info_raw.each do |aisle, items|
   end
 end
 
+combined_recipes_and_quick_bites_by_category = recipes_by_category.merge(quick_bites_by_category)
+
 template_path = File.join(template_dir, "groceries-template.html.erb")
 erb_template = ERB.new(File.read(template_path), trim_mode: "-")
 groceries_path = File.join(output_dir, "groceries", "index.html")
 FileUtils.mkdir_p(File.dirname(groceries_path))  # Ensure directory exists
 # Pass both recipes_by_category and the ingredient database to the template.
-write_file_if_changed(groceries_path, erb_template.result_with_hash(grouped_recipes: recipes_by_category, ingredient_database: grocery_info))
+write_file_if_changed(groceries_path, erb_template.result_with_hash(grouped_recipes: combined_recipes_and_quick_bites_by_category, ingredient_database: grocery_info))
 print "done!\n"

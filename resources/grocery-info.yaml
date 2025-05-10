@@ -1,23 +1,23 @@
 # Ingredient Database
 
-# note: an asterisk after the ingredient name marks the ingredient as a "staple"
+# note: an asterisk after the ingredient name forces its inclusion into the grocery list
 
 Produce:
-  - Apples*
-  - Bananas*
+  - Apples
+  - Bananas
   - Basil
   - Bell peppers
   - Berries
-  - Carrots*
+  - Carrots
   - Cucumbers
-  - Fruit juice*
-  - Garlic*
-  - Grapes*
+  - Fruit juice
+  - Garlic
+  - Grapes
   - Mangoes
-  - Onions*
-  - Oranges*
+  - Onions
+  - Oranges
   - Parsley
-  - Salad greens*
+  - Salad greens
   - Watermelon
   - Limes
   - Lemons
@@ -30,13 +30,13 @@ Produce:
   - Fruit
 
 Bakery:
-  - Bread*
-  - Sandwich bread*
+  - Bread
+  - Sandwich bread
 
 International:
-  - Muesli*
-  - Tomato salsa*
-  - Tortillas (large)*
+  - Muesli
+  - Tomato salsa
+  - Tortillas (large)
   - Kombu
 
 Condiments:
@@ -50,34 +50,34 @@ Condiments:
   - Chipotles en adobo
 
 Health:
-  - RXBARs*
-  - Protein shake mix*
+  - RXBARs
+  - Protein shake mix
 
 Frozen:
-  - Chik'n nuggets*
-  - French fries*
-  - Fro-yo bars*
-  - Soft pretzels*
+  - Chik'n nuggets
+  - French fries
+  - Fro-yo bars
+  - Soft pretzels
   - Frozen spinach
 
 Beverages:
-  - Diet Coke*
+  - Diet Coke
 
 Candy:
-  - Candy*
-  - Chocolate*
+  - Candy
+  - Chocolate
 
 Pantry:
-  - Black beans (canned)*
-  - Chickpeas (canned)*
-  - Coffee*
-  - Dried fruit*
-  - Farro*
+  - Black beans (canned)
+  - Chickpeas (canned)
+  - Coffee
+  - Dried fruit
+  - Farro
   - Jasmine rice
-  - Olive oil*
+  - Olive oil
   - Olives
-  - Peanut butter*
-  - Vegetable bouillon*
+  - Peanut butter
+  - Vegetable bouillon
   - Olive oil (mild)
   - Beans
   - Lentils
@@ -128,18 +128,18 @@ Spices:
   - Oregano
 
 Dairy:
-  - American cheese*
+  - American cheese
   - Bocconcini
-  - Chocolate milk*
-  - Eggs*
-  - Monterey jack cheese*
-  - Parmesan*
-  - Pecorino*
-  - String cheese*
-  - Vegan milk*
-  - Milk*
-  - Yogurt drinks*
-  - Yogurt*
+  - Chocolate milk
+  - Eggs
+  - Monterey jack cheese
+  - Parmesan
+  - Pecorino
+  - String cheese
+  - Vegan milk
+  - Milk
+  - Yogurt drinks
+  - Yogurt
   - Butter
   - Butter (unsalted)
   - Buttermilk
@@ -155,20 +155,20 @@ Dairy:
   - Gouda
 
 Deli:
-  - Hummus*
+  - Hummus
 
 Snacks:
-  - Goldfish*
-  - Pretzels*
-  - Tortilla chips*
-  - Triscuits*
-  - Cookies*
+  - Goldfish
+  - Pretzels
+  - Tortilla chips
+  - Triscuits
+  - Cookies
   - Ritz crackers
 
 Cereal:
-  - Cereal*
+  - Cereal
   - Rolled oats
 
 Alcohol:
-  - Wine*
+  - Wine
   - Everclear 151
