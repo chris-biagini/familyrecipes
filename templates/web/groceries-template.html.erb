@@ -102,87 +102,69 @@
   </main>
 
 <script>
-// key = 'groceries‑state'
-function getSelectedIds() {
-  return Array.from(document.querySelectorAll('input[type=checkbox]:checked'))
-              .map(cb => cb.id.replace(/-checkbox$/, ''));
-}
-function save() {
-  localStorage.setItem('groceries‑state',
-    JSON.stringify(getSelectedIds()));
-}
-function restore() {
-  const raw = localStorage.getItem('groceries‑state');
-  if (!raw) return;
-  JSON.parse(raw).forEach(id => {
-    const cb = document.getElementById(id + '-checkbox');
-    if (cb) cb.checked = true;
-  });
-}
-window.addEventListener('DOMContentLoaded', () => {
-  restore();
-  document.querySelectorAll('input[type=checkbox]')
-          .forEach(cb => cb.addEventListener('change', () => {
-            save();
-            updateGroceryList();
-          }));
-});
-
-  document.addEventListener('DOMContentLoaded', () => {
-    
-    document.querySelectorAll('.hidden-until-js').forEach(el => {
-      el.classList.remove('hidden-until-js');
-    });
-    
-    // grab all recipe checkboxes
-    const checkboxes = document.querySelectorAll('input[type="checkbox"][data-ingredients]');
-    const miscList    = document.getElementById('misc-items');
+  (function(){
+    const STORAGE_KEY = 'groceries-state';
   
-    // wire up change‐events
-    checkboxes.forEach(cb => cb.addEventListener('change', updateGroceryList));
+    // 1) Grab all recipe-checkbox inputs
+    function getSelectedIds() {
+      return Array.from(
+        document.querySelectorAll('input[type="checkbox"][data-ingredients]:checked')
+      ).map(cb => cb.id.replace(/-checkbox$/, ''));
+    }
   
-    // listen for input on the freeform textarea
-    const freeformInput = document.getElementById('freeform-entries');
-    freeformInput.addEventListener('input', updateGroceryList);
-      
-    // clear boxes on page load
-    checkboxes.forEach(cb => cb.checked = false);
+    // 2) Persist to localStorage
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(getSelectedIds()));
+    }
   
+    // 3) Restore from localStorage
+    function restoreState() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      try {
+        JSON.parse(raw).forEach(id => {
+          const cb = document.getElementById(id + '-checkbox');
+          if (cb) cb.checked = true;
+        });
+      } catch(e) {
+        console.error('Could not parse saved grocery state:', e);
+      }
+    }
+  
+    // 4) Main list‑update routine
     function updateGroceryList() {
-      // 1) collect all needed ingredients into a Set
       const needed = new Set();
-      checkboxes.forEach(cb => {
-        if (cb.checked) {
-          // parse the JSON array from the parent <li>
-          const arr = JSON.parse(cb.dataset.ingredients);
-          arr.forEach(item => needed.add(item));
-        }
+  
+      // a) From checked recipes
+      document.querySelectorAll('input[type="checkbox"][data-ingredients]').forEach(cb => {
+        if (!cb.checked) return;
+        const items = JSON.parse(cb.dataset.ingredients);
+        items.forEach(i => needed.add(i));
       });
-      
-      // also add ingredients from the freeform textarea
-      const freeformLines = freeformInput.value.split('\n');
+  
+      // b) From the freeform textarea
+      const freeformLines = document.getElementById('freeform-entries')
+                                      .value.split(/\r?\n/);
       freeformLines.forEach(line => {
-        const trimmed = line.trim();
-        if (trimmed) needed.add(trimmed);
+        const t = line.trim();
+        if (t) needed.add(t);
       });
   
-      // 2) clear any old “misc” items
-      miscList.innerHTML = '';
-  
-      // 3) show/hide items in the static grocery list
-      //    skip the “Miscellaneous” ul by using :not(#misc-items)
-      document
-        .querySelectorAll('#grocery-list ul:not(#misc-items) li')
+      // c) Show/hide in the static list
+      document.querySelectorAll('#grocery-list ul:not(#misc-items) li')
         .forEach(li => {
-          li.classList.remove('is-needed-for-selected-recipes');
           const name = li.textContent.trim();
           if (needed.has(name)) {
             li.classList.add('is-needed-for-selected-recipes');
             needed.delete(name);
+          } else {
+            li.classList.remove('is-needed-for-selected-recipes');
           }
         });
   
-      // 4) whatever’s left in needed → append under Miscellaneous
+      // d) Dump leftovers into Miscellaneous
+      const miscList = document.getElementById('misc-items');
+      miscList.innerHTML = '';
       needed.forEach(name => {
         const li = document.createElement('li');
         li.textContent = name;
@@ -190,7 +172,36 @@ window.addEventListener('DOMContentLoaded', () => {
         miscList.appendChild(li);
       });
     }
-  });
-</script>
+  
+    // Wire it all up
+    document.addEventListener('DOMContentLoaded', () => {
+      // Reveal JS-only bits
+      document.querySelectorAll('.hidden-until-js')
+              .forEach(el => el.classList.remove('hidden-until-js'));
+  
+      // Grab elements
+      const recipeCheckboxes = Array.from(
+        document.querySelectorAll('input[type="checkbox"][data-ingredients]')
+      );
+      const freeformInput = document.getElementById('freeform-entries');
+  
+      // On any checkbox change → save + update
+      recipeCheckboxes.forEach(cb =>
+        cb.addEventListener('change', () => {
+          saveState();
+          updateGroceryList();
+        })
+      );
+  
+      // On freeform text change → just update
+      freeformInput.addEventListener('input', updateGroceryList);
+  
+      // Restore saved checkboxes, then redraw
+      restoreState();
+      updateGroceryList();
+    });
+  })();
+  </script>
+
 </body>
 </html>
