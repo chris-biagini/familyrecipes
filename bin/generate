@@ -53,35 +53,9 @@ File.foreach(File.join(recipes_dir, "Quick Bites.txt")) do |line|
 end
 
 quick_bites_array = quick_bite_sources.map do |line|
-  if line.include?(":")
-    title, rest = line.split(":", 2).map(&:strip)
-  else
-    title = line.strip
-    rest = ""
-  end
-  
-  id = title.unicode_normalize(:nfkd).downcase.gsub(/\s+/, '-').gsub(/[^a-z0-9\-]/, '') # same as above
-  
-  # Start with full line for ingredients if no colon, otherwise the right part
-  ingredients_source = rest.empty? ? title : rest
-  
-  # Split ingredients by delimiters: on, with, and, commas, etc.
-  ingredients = ingredients_source
-    .split(/\bon\b|\bwith\b|\band\b|,/i)
-    .map(&:strip)
-    .reject(&:empty?)
-  
-  recipe_source = ""
-  recipe_source << "# #{title}\n\n"
-  recipe_source << "## Combine ingredients.\n\n"
-  ingredients.each do |ingredient|
-    recipe_source << "- #{ingredient}\n"
-  end
-  recipe_source << "\nCombine.\n\n"
-
   category = "Quick Bites"
   
-  recipe = Recipe.new(markdown_source: recipe_source, id: id, category: category)
+  QuickBite.new(text_source: line, category: category)
 end
 
 print "done! (Parsed #{recipes_array.size} recipes and #{quick_bites_array.size} quick bites.)\n"  

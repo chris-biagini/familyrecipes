@@ -1,3 +1,5 @@
+<% require 'erb'      -%>
+<% include ERB::Util  -%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -70,7 +72,7 @@
         <ul>
         <%- recipes.each do |recipe| -%>
           <li>
-            <input type="checkbox" id="<%= recipe.id %>-checkbox" data-ingredients='<%= recipe.all_ingredient_names.to_json %>'>
+            <input type="checkbox" id="<%= recipe.id %>-checkbox" data-ingredients="<%= html_escape(recipe.all_ingredient_names.to_json) %>">
             <label for="<%= recipe.id %>-checkbox"><%= recipe.title %></label>
             <a href="/<%= recipe.id %>" title="Open <%= recipe.title %> in new tab →" target="_blank">→</a>
           </li>
