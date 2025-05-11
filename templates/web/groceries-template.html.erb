@@ -102,6 +102,32 @@
   </main>
 
 <script>
+// key = 'groceries‑state'
+function getSelectedIds() {
+  return Array.from(document.querySelectorAll('input[type=checkbox]:checked'))
+              .map(cb => cb.id.replace(/-checkbox$/, ''));
+}
+function save() {
+  localStorage.setItem('groceries‑state',
+    JSON.stringify(getSelectedIds()));
+}
+function restore() {
+  const raw = localStorage.getItem('groceries‑state');
+  if (!raw) return;
+  JSON.parse(raw).forEach(id => {
+    const cb = document.getElementById(id + '-checkbox');
+    if (cb) cb.checked = true;
+  });
+}
+window.addEventListener('DOMContentLoaded', () => {
+  restore();
+  document.querySelectorAll('input[type=checkbox]')
+          .forEach(cb => cb.addEventListener('change', () => {
+            save();
+            updateGroceryList();
+          }));
+});
+
   document.addEventListener('DOMContentLoaded', () => {
     
     document.querySelectorAll('.hidden-until-js').forEach(el => {
