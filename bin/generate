@@ -44,18 +44,27 @@ recipes_array = recipe_files.map do |file|
   recipe = Recipe.new(markdown_source: source, id: id, category: category)
 end
 
-quick_bite_sources = []
+file_path        = File.join(recipes_dir, "Quick Bites.txt")
+base_category    = "Quick Bites"        # => "Quick Bites"
+quick_bite_specs = []
+current_subcat   = nil
 
-File.foreach(File.join(recipes_dir, "Quick Bites.txt")) do |line|
-  if line.start_with?("  - ")
-    quick_bite_sources << line.sub("  - ", "").strip
+File.foreach(file_path) do |line|
+  case line
+  when /^##\s+(.*)/
+    # saw a sub‑heading like "## Snacks" or "## Mains"
+    current_subcat = $1.strip
+  when /^\s*-\s+(.*)/
+    # saw an item line like "- Peanut Butter on Bread"
+    text = $1.strip
+    # build "Quick Bites: Snacks" (or just "Quick Bites" if no subcat yet)
+    category = [base_category, current_subcat].compact.join(": ")
+    quick_bite_specs << { text: text, category: category }
   end
 end
 
-quick_bites_array = quick_bite_sources.map do |line|
-  category = "Quick Bites"
-  
-  QuickBite.new(text_source: line, category: category)
+quick_bites_array = quick_bite_specs.map do |spec|
+  QuickBite.new(text_source: spec[:text], category: spec[:category])
 end
 
 print "done! (Parsed #{recipes_array.size} recipes and #{quick_bites_array.size} quick bites.)\n"  

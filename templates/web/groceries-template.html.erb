@@ -67,7 +67,7 @@
     
     <div id="recipe-selector" class="hidden-until-js">
       <%- grouped_recipes.each do |category, recipes| -%>
-      <details id="<%= category.downcase %>" <%= 'open' if ['Mains', 'Pizza', 'Sides', 'Quick Bites'].include?(category) %>>
+      <details id="<%= category.downcase %>" open>
         <summary><%= category %></summary>
         <ul>
         <%- recipes.each do |recipe| -%>
