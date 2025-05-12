@@ -28,6 +28,8 @@ Produce:
   - Asparagus
   - Baby spinach
   - Fruit
+  - Fresh Fruit
+  - Fruit Juice
 
 Bakery:
   - Bread
@@ -59,6 +61,7 @@ Frozen:
   - Fro-yo bars
   - Soft pretzels
   - Frozen spinach
+  - French Fries
 
 Beverages:
   - Diet Coke
@@ -68,6 +71,7 @@ Candy:
   - Chocolate
 
 Pantry:
+  - Beans (canned)
   - Black beans (canned)
   - Chickpeas (canned)
   - Coffee
@@ -95,6 +99,7 @@ Pantry:
   - Vinegar (white)
   - Vinegar (sherry)
   - Vinegar (balsamic)
+  - Fruit Preserves
 
 Baking:
   - Flour (all-purpose)
@@ -102,7 +107,7 @@ Baking:
   - Flour (semolina)
   - Flour (whole wheat)
   - Flour (00)
-  - Flour (whole rye)
+  - Flour (rye)
   - Yeast
   - Malt syrup
   - Diastatic malt powder
@@ -153,6 +158,8 @@ Dairy:
   - Muenster
   - Gruyère
   - Gouda
+  - Yogurt shakes
+  - Yogurt cups
 
 Deli:
   - Hummus
@@ -164,6 +171,8 @@ Snacks:
   - Triscuits
   - Cookies
   - Ritz crackers
+  - Salsa
+  - Dried Fruit
 
 Cereal:
   - Cereal
@@ -171,4 +180,9 @@ Cereal:
 
 Alcohol:
   - Wine
+  - Beer
+
+Specialty:
   - Everclear 151
+  - Fiori di Sicilia
+  - Sodium citrate
