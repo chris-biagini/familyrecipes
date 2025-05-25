@@ -19,7 +19,7 @@ class RecipeStateManager {
     this.setupEventListeners();
     this.loadRecipeState();
     this.setupScaleButton();
-    this.updateScaleButtonLabel();    // ensure correct label on load
+    this.updateScaleButtonLabel(); // ensure correct label on load
   }
 
   saveRecipeState() {
@@ -27,7 +27,7 @@ class RecipeStateManager {
       lastInteractionTime: Date.now(),
       versionHash: this.versionHash,
       crossableItemState: {},
-      scaleFactor: this.lastScaleInput   // persist the raw user input
+      scaleFactor: this.lastScaleInput // persist the raw user input
     };
 
     this.crossableItemNodes.forEach((node, idx) => {
@@ -117,7 +117,7 @@ class RecipeStateManager {
       );
       if (!input) return; // cancelled
 
-      const factor = parseFactor(input);
+      const factor = this.parseFactor(input);
       // only accept finite, positive numbers
       if (!(factor > 0 && isFinite(factor))) {
         alert(
@@ -134,7 +134,7 @@ class RecipeStateManager {
   }
 
   applyScale(rawInput) {
-    const factor = parseFactor(rawInput);
+    const factor = this.parseFactor(rawInput);
 
     document
       .querySelectorAll('li[data-quantity-value]')
@@ -154,7 +154,7 @@ class RecipeStateManager {
     const btn = document.getElementById('scale-button');
     if (!btn) return;
 
-    const factor = parseFactor(this.lastScaleInput);
+    const factor = this.parseFactor(this.lastScaleInput);
     // only care about exactly 1 vs. anything else
     if (factor === 1) {
       btn.textContent = 'Scale';
@@ -165,15 +165,14 @@ class RecipeStateManager {
       btn.textContent = `Scale (x${pretty})`;
     }
   }
-}
 
-// global helper—unchanged
-function parseFactor(str) {
-  str = str.trim();
-  const frac = str.match(/^(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)$/);
-  if (frac) return parseFloat(frac[1]) / parseFloat(frac[2]);
-  const num = parseFloat(str);
-  return isNaN(num) ? NaN : num;
+  parseFactor(str) {
+    str = str.trim();
+    const frac = str.match(/^(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)$/);
+    if (frac) return parseFloat(frac[1]) / parseFloat(frac[2]);
+    const num = parseFloat(str);
+    return isNaN(num) ? NaN : num;
+  }
 }
 
 // kick it all off
