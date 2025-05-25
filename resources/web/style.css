@@ -100,6 +100,10 @@ nav a {
   transition: color 0.3s ease;
 }
 
+nav button {
+  margin: 0.5rem;
+}
+
 nav a:hover,
 nav a:focus {
   color: #0077ff;
