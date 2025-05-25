@@ -1,132 +1,153 @@
-class RecipeProgressManager {
+class RecipeStateManager {
   constructor() {
-    // set properties
+    // existing…
     this.recipeId = document.body.dataset.recipeId;
     this.versionHash = document.body.dataset.versionHash;
-    this.STORED_STATE_TTL = 48 * (60 * 60 * 1000); // 48 hours in ms
+    this.STORED_STATE_TTL = 48 * 60 * 60 * 1000; // 48h
 
     this.crossableItemNodes = document.querySelectorAll(".ingredients li, .instructions p");
     this.sectionTogglerNodes = document.querySelectorAll("section h2");
 
-    // Initialize
+    // NEW: track the last raw scale input
+    this.lastScaleInput = '1';
+
     this.init();
   }
 
   init() {
     this.setupEventListeners();
     this.loadRecipeState();
+    this.setupScaleButton();      // NEW: hook up the Scale button
   }
 
   saveRecipeState() {
-    const currentRecipeState = {};
-    currentRecipeState["lastInteractionTime"] = Date.now();
-    currentRecipeState["versionHash"] = this.versionHash;
-    currentRecipeState["crossableItemState"] = {};
+    const currentRecipeState = {
+      lastInteractionTime: Date.now(),
+      versionHash: this.versionHash,
+      crossableItemState: {},
+      scaleFactor: this.lastScaleInput   // NEW: persist the raw input
+    };
 
-    this.crossableItemNodes.forEach((crossableItemNode, index) => {
-      currentRecipeState["crossableItemState"][index] =
-        crossableItemNode.classList.contains("crossed-off");
+    this.crossableItemNodes.forEach((node, idx) => {
+      currentRecipeState.crossableItemState[idx] = node.classList.contains("crossed-off");
     });
 
-    localStorage.setItem(`saved-state-for-${this.recipeId}`, JSON.stringify(currentRecipeState));
+    localStorage.setItem(
+      `saved-state-for-${this.recipeId}`,
+      JSON.stringify(currentRecipeState)
+    );
   }
 
   loadRecipeState() {
-    const storedRecipeState = JSON.parse(localStorage.getItem(`saved-state-for-${this.recipeId}`));
+    const raw = localStorage.getItem(`saved-state-for-${this.recipeId}`);
+    if (!raw) return console.log("No saved state found!");
 
-    if (!storedRecipeState) {
-      console.log("No saved state found!");
-      return;
+    let stored;
+    try {
+      stored = JSON.parse(raw);
+    } catch {
+      console.log("Corrupt state JSON. Overwriting.");
+      return this.saveRecipeState();
     }
 
-    const storedCrossableItemState = storedRecipeState["crossableItemState"];
-    const storedLastInteractionTime = storedRecipeState["lastInteractionTime"];
-    const storedVersionHash = storedRecipeState["versionHash"];
+    const { versionHash, lastInteractionTime, crossableItemState, scaleFactor } = stored;
 
-    if (!storedCrossableItemState || !storedLastInteractionTime || !storedVersionHash) {
-      console.log("Saved state appears to be invalid. Overwriting.");
-      this.saveRecipeState();
-      return;
+    if (!versionHash || !lastInteractionTime || !crossableItemState) {
+      console.log("Saved state invalid. Overwriting.");
+      return this.saveRecipeState();
     }
 
-    if (this.versionHash != storedVersionHash) {
-      console.log("Saved state is for a different version of this recipe. Overwriting.");
-      this.saveRecipeState();
-      return;
+    if (this.versionHash !== versionHash) {
+      console.log("Version mismatch. Overwriting.");
+      return this.saveRecipeState();
     }
 
-    const storedStateAge = Date.now() - storedLastInteractionTime;
-
-    if (storedStateAge > this.STORED_STATE_TTL) {
-      console.log("Saved state is too old (" + storedStateAge + " ms). Overwriting.");
-      this.saveRecipeState();
-      return;
+    if (Date.now() - lastInteractionTime > this.STORED_STATE_TTL) {
+      console.log("Saved state expired. Overwriting.");
+      return this.saveRecipeState();
     }
 
-    this.crossableItemNodes.forEach((crossableItemNode, index) => {
-      if (storedCrossableItemState[index] === true) {
-        crossableItemNode.classList.add("crossed-off");
-      }
+    // re-apply cross‐off state
+    this.crossableItemNodes.forEach((node, idx) => {
+      if (crossableItemState[idx]) node.classList.add("crossed-off");
     });
+
+    // NEW: re-apply scale
+    if (scaleFactor) {
+      this.lastScaleInput = scaleFactor;
+      this.applyScale(scaleFactor);
+    }
 
     console.log("Loaded and applied saved state.");
   }
 
   setupEventListeners() {
-    this.crossableItemNodes.forEach((crossableItemNode) => {
-      crossableItemNode.addEventListener("click", () => {
-        crossableItemNode.classList.toggle("crossed-off");
+    // (no change to your cross-off logic)
+    this.crossableItemNodes.forEach(node => {
+      node.addEventListener("click", () => {
+        node.classList.toggle("crossed-off");
         this.saveRecipeState();
       });
     });
-
-    this.sectionTogglerNodes.forEach((sectionTogglerNode) => {
-      sectionTogglerNode.addEventListener("click", () => {
-        const sectionToToggle = sectionTogglerNode.closest("section");
-
-        const crossableItemsInSection = sectionToToggle.querySelectorAll(
-          ".ingredients li, .instructions p",
-        );
-
-        const allItemsInSectionAreCrossedOff = Array.from(crossableItemsInSection).every((item) =>
-          item.classList.contains("crossed-off"),
-        );
-
-        // if ALL li and p's are crossed off, then remove crossed-off from all and return
-        if (allItemsInSectionAreCrossedOff) {
-          crossableItemsInSection.forEach((item) => {
-            item.classList.remove("crossed-off");
-          });
-        } else {
-          // otherwise, apply crossed-off to all
-          crossableItemsInSection.forEach((item) => {
-            item.classList.add("crossed-off");
-          });
-        }
-
+    this.sectionTogglerNodes.forEach(h2 => {
+      h2.addEventListener("click", () => {
+        const section = h2.closest("section");
+        const items = section.querySelectorAll(".ingredients li, .instructions p");
+        const allCrossed = Array.from(items)
+          .every(i => i.classList.contains("crossed-off"));
+        items.forEach(i => i.classList.toggle("crossed-off", !allCrossed));
         this.saveRecipeState();
       });
+    });
+  }
+
+  setupScaleButton() {
+    const btn = document.getElementById("scale-button");
+    if (!btn) return;
+
+    btn.addEventListener("click", () => {
+      const input = prompt(
+        'Scale ingredients by factor (e.g. 2 or 3/2):',
+        this.lastScaleInput
+      );
+      if (!input) return;
+
+      const factor = parseFactor(input);
+      if (!(factor > 0)) {
+        alert('Couldn’t parse that. Try something like "2" or "3/2".');
+        return;
+      }
+
+      this.lastScaleInput = input;
+      this.applyScale(input);
+      this.saveRecipeState();
+    });
+  }
+
+  applyScale(rawInput) {
+    const factor = parseFactor(rawInput);
+    document.querySelectorAll("li[data-quantity-value]").forEach(li => {
+      const orig = parseFloat(li.dataset.quantityValue);
+      const unit = li.dataset.quantityUnit || "";
+      const scaled = orig * factor;
+      const pretty = Number.isInteger(scaled)
+        ? scaled
+        : Math.round(scaled * 100) / 100;
+      const span = li.querySelector(".quantity");
+      if (span) span.textContent = pretty + (unit ? " " + unit : "");
     });
   }
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-  new RecipeProgressManager();
-});
+// global parseFactor stays as-is
+function parseFactor(str) {
+  str = str.trim();
+  const frac = str.match(/^(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)$/);
+  if (frac) return parseFloat(frac[1]) / parseFloat(frac[2]);
+  const num = parseFloat(str);
+  return isNaN(num) ? NaN : num;
+}
 
-/* https://meyerweb.com/eric/thoughts/category/personal/rebecca/?order=asc/ */
-
-const sequence = ["r", "e", "b", "e", "c", "c", "a"];
-let input = [];
-
-document.addEventListener("keydown", (event) => {
-  if (event.target.tagName === "INPUT" || event.target.tagName === "TEXTAREA") return;
-
-  input.push(event.key.toLowerCase());
-  input = input.slice(-sequence.length);
-
-  if (input.join("") === sequence.join("")) {
-    document.body.style.setProperty("--gingham-stripe-color", "hsla(270, 50%, 40%, 0.5)");
-    input = [];
-  }
+document.addEventListener("DOMContentLoaded", () => {
+  new RecipeStateManager();
 });

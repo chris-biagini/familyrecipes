@@ -67,54 +67,5 @@
     </article>
   </main>
   <script src="script.js" defer></script>
-  <script>
-document.addEventListener('DOMContentLoaded', () => {
-    // remember the last raw input (starts at "1" on page load)
-    let lastScaleInput = '1';
-  
-    const btn = document.getElementById('scale-button');
-    btn.addEventListener('click', () => {
-      // use lastScaleInput as the prompt’s default value
-      const input = prompt(
-        'Scale ingredients by factor (e.g. 2 or 3/2):',
-        lastScaleInput
-      );
-      if (!input) return;  // user cancelled or blank
-  
-      const factor = parseFactor(input);
-      if (!(factor > 0)) {
-        alert('Couldn’t parse that. Try something like "2" or "3/2".');
-        return;
-      }
-  
-      // update lastScaleInput, so we keep exactly what they typed
-      lastScaleInput = input;
-  
-      document.querySelectorAll('li[data-quantity-value]').forEach(li => {
-        const orig = parseFloat(li.dataset.quantityValue);
-        const unit = li.dataset.quantityUnit || '';
-        const scaled = orig * factor;
-        const pretty = Number.isInteger(scaled)
-                         ? scaled
-                         : Math.round(scaled * 100) / 100;
-  
-        const span = li.querySelector('.quantity');
-        if (span) {
-          span.textContent = pretty + (unit ? ' ' + unit : '');
-        }
-      });
-    });
-  });
-  
-  function parseFactor(str) {
-    str = str.trim();
-    const frac = str.match(/^(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)$/);
-    if (frac) {
-      return parseFloat(frac[1]) / parseFloat(frac[2]);
-    }
-    const num = parseFloat(str);
-    return isNaN(num) ? NaN : num;
-  }
-  </script>
 </body>
 </html>
