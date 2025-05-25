@@ -1,14 +1,15 @@
 class RecipeStateManager {
   constructor() {
-    // existing…
     this.recipeId = document.body.dataset.recipeId;
     this.versionHash = document.body.dataset.versionHash;
     this.STORED_STATE_TTL = 48 * 60 * 60 * 1000; // 48h
 
-    this.crossableItemNodes = document.querySelectorAll(".ingredients li, .instructions p");
-    this.sectionTogglerNodes = document.querySelectorAll("section h2");
+    this.crossableItemNodes = document.querySelectorAll(
+      '.ingredients li, .instructions p'
+    );
+    this.sectionTogglerNodes = document.querySelectorAll('section h2');
 
-    // NEW: track the last raw scale input
+    // track the last raw scale input (defaults to "1")
     this.lastScaleInput = '1';
 
     this.init();
@@ -17,7 +18,8 @@ class RecipeStateManager {
   init() {
     this.setupEventListeners();
     this.loadRecipeState();
-    this.setupScaleButton();      // NEW: hook up the Scale button
+    this.setupScaleButton();
+    this.updateScaleButtonLabel();    // ensure correct label on load
   }
 
   saveRecipeState() {
@@ -25,11 +27,12 @@ class RecipeStateManager {
       lastInteractionTime: Date.now(),
       versionHash: this.versionHash,
       crossableItemState: {},
-      scaleFactor: this.lastScaleInput   // NEW: persist the raw input
+      scaleFactor: this.lastScaleInput   // persist the raw user input
     };
 
     this.crossableItemNodes.forEach((node, idx) => {
-      currentRecipeState.crossableItemState[idx] = node.classList.contains("crossed-off");
+      currentRecipeState.crossableItemState[idx] =
+        node.classList.contains('crossed-off');
     });
 
     localStorage.setItem(
@@ -40,106 +43,131 @@ class RecipeStateManager {
 
   loadRecipeState() {
     const raw = localStorage.getItem(`saved-state-for-${this.recipeId}`);
-    if (!raw) return console.log("No saved state found!");
+    if (!raw) return;
 
     let stored;
     try {
       stored = JSON.parse(raw);
     } catch {
-      console.log("Corrupt state JSON. Overwriting.");
+      console.warn('Corrupt state JSON. Resetting.');
       return this.saveRecipeState();
     }
 
-    const { versionHash, lastInteractionTime, crossableItemState, scaleFactor } = stored;
+    const {
+      versionHash,
+      lastInteractionTime,
+      crossableItemState,
+      scaleFactor
+    } = stored;
 
-    if (!versionHash || !lastInteractionTime || !crossableItemState) {
-      console.log("Saved state invalid. Overwriting.");
+    if (
+      versionHash !== this.versionHash ||
+      Date.now() - lastInteractionTime > this.STORED_STATE_TTL
+    ) {
+      console.info('Saved state stale or mismatched. Overwriting.');
       return this.saveRecipeState();
     }
 
-    if (this.versionHash !== versionHash) {
-      console.log("Version mismatch. Overwriting.");
-      return this.saveRecipeState();
-    }
-
-    if (Date.now() - lastInteractionTime > this.STORED_STATE_TTL) {
-      console.log("Saved state expired. Overwriting.");
-      return this.saveRecipeState();
-    }
-
-    // re-apply cross‐off state
+    // re-apply crossed-off state
     this.crossableItemNodes.forEach((node, idx) => {
-      if (crossableItemState[idx]) node.classList.add("crossed-off");
+      if (crossableItemState[idx]) node.classList.add('crossed-off');
     });
 
-    // NEW: re-apply scale
+    // re-apply scale if we have one
     if (scaleFactor) {
       this.lastScaleInput = scaleFactor;
       this.applyScale(scaleFactor);
+      this.updateScaleButtonLabel();
     }
-
-    console.log("Loaded and applied saved state.");
   }
 
   setupEventListeners() {
-    // (no change to your cross-off logic)
+    // cross-off on click
     this.crossableItemNodes.forEach(node => {
-      node.addEventListener("click", () => {
-        node.classList.toggle("crossed-off");
+      node.addEventListener('click', () => {
+        node.classList.toggle('crossed-off');
         this.saveRecipeState();
       });
     });
+
+    // header toggles entire section
     this.sectionTogglerNodes.forEach(h2 => {
-      h2.addEventListener("click", () => {
-        const section = h2.closest("section");
-        const items = section.querySelectorAll(".ingredients li, .instructions p");
-        const allCrossed = Array.from(items)
-          .every(i => i.classList.contains("crossed-off"));
-        items.forEach(i => i.classList.toggle("crossed-off", !allCrossed));
+      h2.addEventListener('click', () => {
+        const section = h2.closest('section');
+        const items = section.querySelectorAll(
+          '.ingredients li, .instructions p'
+        );
+        const allCrossed = Array.from(items).every(i =>
+          i.classList.contains('crossed-off')
+        );
+        items.forEach(i => i.classList.toggle('crossed-off', !allCrossed));
         this.saveRecipeState();
       });
     });
   }
 
   setupScaleButton() {
-    const btn = document.getElementById("scale-button");
+    const btn = document.getElementById('scale-button');
     if (!btn) return;
 
-    btn.addEventListener("click", () => {
+    btn.addEventListener('click', () => {
       const input = prompt(
         'Scale ingredients by factor (e.g. 2 or 3/2):',
         this.lastScaleInput
       );
-      if (!input) return;
+      if (!input) return; // cancelled
 
       const factor = parseFactor(input);
-      if (!(factor > 0)) {
-        alert('Couldn’t parse that. Try something like "2" or "3/2".');
+      // only accept finite, positive numbers
+      if (!(factor > 0 && isFinite(factor))) {
+        alert(
+          'Invalid scale. Please enter a positive number or fraction (e.g. "2" or "3/2"), and make sure denominator isn’t zero.'
+        );
         return;
       }
 
       this.lastScaleInput = input;
       this.applyScale(input);
+      this.updateScaleButtonLabel();
       this.saveRecipeState();
     });
   }
 
   applyScale(rawInput) {
     const factor = parseFactor(rawInput);
-    document.querySelectorAll("li[data-quantity-value]").forEach(li => {
-      const orig = parseFloat(li.dataset.quantityValue);
-      const unit = li.dataset.quantityUnit || "";
-      const scaled = orig * factor;
-      const pretty = Number.isInteger(scaled)
-        ? scaled
-        : Math.round(scaled * 100) / 100;
-      const span = li.querySelector(".quantity");
-      if (span) span.textContent = pretty + (unit ? " " + unit : "");
-    });
+
+    document
+      .querySelectorAll('li[data-quantity-value]')
+      .forEach(li => {
+        const orig = parseFloat(li.dataset.quantityValue);
+        const unit = li.dataset.quantityUnit || '';
+        const scaled = orig * factor;
+        const pretty = Number.isInteger(scaled)
+          ? scaled
+          : Math.round(scaled * 100) / 100;
+        const span = li.querySelector('.quantity');
+        if (span) span.textContent = pretty + (unit ? ' ' + unit : '');
+      });
+  }
+
+  updateScaleButtonLabel() {
+    const btn = document.getElementById('scale-button');
+    if (!btn) return;
+
+    const factor = parseFactor(this.lastScaleInput);
+    // only care about exactly 1 vs. anything else
+    if (factor === 1) {
+      btn.textContent = 'Scale';
+    } else {
+      const pretty = Number.isInteger(factor)
+        ? factor
+        : Math.round(factor * 100) / 100;
+      btn.textContent = `Scale (x${pretty})`;
+    }
   }
 }
 
-// global parseFactor stays as-is
+// global helper—unchanged
 function parseFactor(str) {
   str = str.trim();
   const frac = str.match(/^(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)$/);
@@ -148,6 +176,7 @@ function parseFactor(str) {
   return isNaN(num) ? NaN : num;
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+// kick it all off
+document.addEventListener('DOMContentLoaded', () => {
   new RecipeStateManager();
 });
