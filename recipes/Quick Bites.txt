@@ -21,13 +21,14 @@ Pantry staples and "fast food" that comes together with minimal fuss.
   - Muesli with Banana and Vegan Milk: Muesli, Bananas, Vegan milk
   - Muesli with Milk
   - Cereal with Milk
-  - Eggs with Bread
+  - Eggs for Dinner: Eggs, Olive oil, Bread
   - Yogurt with Fruit Preserves, Fruit, Carrots, and Candy
   - Yogurt Cup with Fruit, and Candy: Yogurt cups, Fruit, Candy
   - Green Salad with Beans: Salad greens, Beans (canned), Olive oil, Vinegar (balsamic), Salt, and Black pepper
+  - Bean Salad: Beans (canned), Olive oil, Vinegar (balsamic), Salt, and Black pepper
   - Grilled cheese: Bread, American cheese, Butter
-  - Quesadilla: Tortillas (large), Monterey jack cheese, Olive oil
   - Chik'n nuggets with French Fries
+  - Impossible Burgers and Fries: Hamburger buns, Impossible burgers, French Fries, Ketchup, American cheese
 
 ## Dessert
   - Dried Fruit with Chocolate
