@@ -34,11 +34,14 @@ Produce:
 Bakery:
   - Bread
   - Sandwich bread
+  - Hamburger buns
 
 International:
   - Muesli
   - Tomato salsa
-  - Tortillas (large)
+  - Tortillas (large flour)
+  - Tortillas (corn)
+  - Queso fresco
   - Kombu
 
 Condiments:
@@ -62,6 +65,7 @@ Frozen:
   - Soft pretzels
   - Frozen spinach
   - French Fries
+  - Impossible burgers
 
 Beverages:
   - Diet Coke
@@ -100,6 +104,7 @@ Pantry:
   - Vinegar (sherry)
   - Vinegar (balsamic)
   - Fruit Preserves
+  - Ketchup
 
 Baking:
   - Flour (all-purpose)
