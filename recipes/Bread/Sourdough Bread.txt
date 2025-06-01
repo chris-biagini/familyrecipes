@@ -1,57 +1,43 @@
 # Sourdough Bread
 
-Worth the effort.
-
-## Two nights before: Feed starter.
+## Feed starter.
 
 - Sourdough starter, 30 g: Existing, well-maintained.
-- Flour (rye), 60 g
+- Flour (bread), 60 g
 - Water, 60 g
 
-The night before you want to make the dough, add some existing starter to a small bowl. Mix in flour and water.
+Add some existing starter to a small bowl. Mix in flour and water.
 
-Clean starter jar, then return mixture to it. Place lid on jar and leave at room temperature overnight.
+Clean starter jar, then return mixture to it. Leave at room temperature until at least doubled.
 
-## Day before, 9 am: Make dough, bulk ferment, shape, and refrigerate.
+## Make dough and bulk ferment.
 
 - Sourdough starter, 100 g: From above.
 - Water, 300 g
 - Salt, 9 g
-- Flour (all-purpose), 450 g
+- Flour (bread), 450 g
 
-Take 100 g of starter out of the jar and put it in a large bowl. Place lid on starter jar and put in fridge.
+Stir together starter, water, and salt.
 
-Turn oven on proof mode.
+Mix in flour and continue mixing until a shaggy dough forms. Allow to rest for a few minutes, then mix again until no dry spots remain.
 
-Autolyse: To bowl, add the water, salt, and flour, then mix until no dry spots remain. Cover and let sit for 30 minutes in oven.
+Perform a few stretch and folds at half-hour intervals, until dough is strong and smooth.
 
-Stretch and fold: every half hour or so, perform a stretch-and fold. Grab an edge of the dough, lift it gently, and fold it over the top. Rotate and repeat several times. Perform this process a total of three times, allowing the dough to rest in the proofer for 30 minutes each time. Use a light spray of water to prevent sticking.
+Shape the dough into a neat ball and allow to rise until at least doubled. This will take around 4-8 hours.
 
-## Day before, 11 am: Bulk ferment.
+## Shape, proof, and refrigerate.
 
-Shape the dough into a neat ball, then cover and return to proofer. Allow to rise until nearly doubled in size.
+Dust counter lightly with flour. Turn dough out onto counter. 
 
-## Day before, 3 PM: Pre-shape.
+If making multiple loaves, portion accordingly. 
 
-From now on, shaping is done with flour to prevent sticking.
+Pre-shape each portion into a smooth ball. Cover with a towel and let rest for 30 minutes.
 
-Dust the top of the dough and the bench with flour, then turn out dough upside down onto the bench. Divide into balls if you scaled the recipe. Each dough ball should slide freely on the bench, with the top side remaining unfloured and sticky.
+Dust banneton(s) with flour, then shape each portion again and into a banneton.
 
-Pre-shape each ball by stretching and folding from the edge and into the sticky center. Flip the ball over so the smooth side is up and the seams are on the table. Cover with cloth and let rest for 1 hour.
+Let proof for about 60 minutes, then place in refrigerator, uncovered.
 
-## Day before, 4 PM: Final shape.
-
-Lightly dust the ball, then turn it upside down onto a lightly dusted surface. The sticky side should be on top.
-
-Gently stretch the dough into a circle, deflating any large air bubbles. Fold the side edges toward the center. Roll the dough from the top edge towards you into a sausage and stick it onto the sticky patch closest to you, pressing the seam to seal it.
-
-Dust the loaf and an oval banneton with flour. Place the dough in the banneton upside down (seam side up). Let the dough rise for an hour and a half or so.
-
-## Day before, 5:30 PM: Final proof.
-
-Place basket in the fridge, uncovered, to prove slowly overnight.
-
-## Day of: Bake.
+## Bake.
 
 - Cornmeal
 
@@ -59,14 +45,10 @@ Preheat the oven to 450°F convection roast.
 
 Remove loaf from fridge and let it rest on the counter while the oven preheats.
 
-Turn out the loaf out onto a floured peel and slide it into the shallow side of a bread cloche. Score the top with a grignette. Cover the cloche and transfer to oven.
+Turn out the loaf out into the shallow side of a bread cloche. Score the top. Cover the cloche and transfer to oven.
 
-Bake for 25 minutes, then remove the cover and bake for a further 20 minutes.
-
-Allow to cool completely on a wire rack before slicing.
+Bake for 25 minutes, then remove the cover and bake for an additional 20 minutes.
 
 ---
 
 Based on a recipe from [Jack Sturgess](https://www.bakewithjack.co.uk/blog-1/2018/7/5/sourdough-loaf-for-beginners).
-
-Try baking the loaf from cold--follow baking procedure above, except start in a cold oven and remove cover after about 30 minutes.
