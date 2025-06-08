@@ -18,9 +18,13 @@
     }
     
     #grocery-list {
-      columns: 3;
+      columns: 4;
     }
     
+    div.aisle {
+      break-inside: avoid;
+    }
+        
     #grocery-list ul {
       list-style-type: circle;
       column-count: 1; 
@@ -73,8 +77,8 @@
         <%- recipes.each do |recipe| -%>
           <li>
             <input type="checkbox" id="<%= recipe.id %>-checkbox" data-ingredients="<%= html_escape(recipe.all_ingredient_names.to_json) %>">
-            <label for="<%= recipe.id %>-checkbox"><%= recipe.title %></label>
-            <a href="/<%= recipe.id %>" title="Open <%= recipe.title %> in new tab →" target="_blank">→</a>
+            <label for="<%= recipe.id %>-checkbox" title="Ingredients: <%= html_escape(recipe.all_ingredient_names.join(', ')) %>"><%= recipe.title %></label>
+            <% unless recipe.is_a?(QuickBite) %><a href="/<%= recipe.id %>" title="Open <%= recipe.title %> in new tab →" target="_blank">→</a><% end %>
           </li>
         <%- end -%>
         </ul>
@@ -88,16 +92,20 @@
           
     <section id="grocery-list">   
       <% ingredient_database.each do |aisle, ingredients| %>
-      <h3><%= aisle %></h3>
-      <ul>
-        <% ingredients.each do |ingredient| %>
-          <li<%= ' class="is-staple"' if ingredient[:staple] %>><%= ingredient[:name] %></li>
-        <% end %>
-      </ul>
+      <div class="aisle"<%= ' style="display:none"' if aisle == "Omit_From_List" %>>
+        <h3><%= aisle %></h3>
+        <ul>
+          <% ingredients.each do |ingredient| %>
+            <li<%= ' class="is-staple"' if ingredient[:staple] %>><%= ingredient[:name] %></li>
+          <% end %>
+        </ul>
+      </div>
       <% end %>
-            
-      <h3>Miscellaneous</h3>
-      <ul id="misc-items"></ul>
+     
+      <div class="aisle">
+        <h3>Miscellaneous</h3>
+        <ul id="misc-items"></ul>
+      </div>
     </section>
   </main>
 
