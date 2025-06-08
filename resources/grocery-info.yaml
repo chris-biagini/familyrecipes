@@ -69,6 +69,7 @@ Frozen:
 
 Beverages:
   - Diet Coke
+  - Root beer
 
 Candy:
   - Candy
@@ -79,7 +80,6 @@ Pantry:
   - Black beans (canned)
   - Chickpeas (canned)
   - Coffee
-  - Dried fruit
   - Farro
   - Jasmine rice
   - Olive oil
@@ -177,7 +177,7 @@ Snacks:
   - Cookies
   - Ritz crackers
   - Salsa
-  - Dried Fruit
+  - Dried fruit
 
 Cereal:
   - Cereal

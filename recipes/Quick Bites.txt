@@ -19,7 +19,6 @@ Pantry staples and "fast food" that comes together with minimal fuss.
   - Protein shake: Protein shake mix
   - RXBARs
   - Muesli with Banana and Vegan Milk: Muesli, Bananas, Vegan milk
-  - Muesli with Milk
   - Cereal with Milk
   - Eggs for Dinner: Eggs, Olive oil, Bread
   - Yogurt with Fruit Preserves, Fruit, Carrots, and Candy
@@ -31,12 +30,13 @@ Pantry staples and "fast food" that comes together with minimal fuss.
   - Impossible Burgers and Fries: Hamburger buns, Impossible burgers, French Fries, Ketchup, American cheese
 
 ## Dessert
-  - Dried Fruit with Chocolate
+  - Dried fruit with Chocolate
   - Fro-yo bars
   
 ## Drinks  
   - Diet Coke
-  - Fruit Juice
+  - Root beer
+  - Fruit juice
   - Chocolate milk
   - Coffee
   - Wine
