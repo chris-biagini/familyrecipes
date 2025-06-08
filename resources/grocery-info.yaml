@@ -64,7 +64,6 @@ Frozen:
   - Fro-yo bars
   - Soft pretzels
   - Frozen spinach
-  - French Fries
   - Impossible burgers
 
 Beverages:
@@ -103,7 +102,7 @@ Pantry:
   - Vinegar (white)
   - Vinegar (sherry)
   - Vinegar (balsamic)
-  - Fruit Preserves
+  - Fruit preserves
   - Ketchup
 
 Baking:
@@ -191,3 +190,12 @@ Specialty:
   - Everclear 151
   - Fiori di Sicilia
   - Sodium citrate
+
+Omit_From_List:
+  - Water
+  - Poolish
+  - Sourdough starter
+  - Ice
+  - Greek Yogurt
+  - Fruit preserves
+  
