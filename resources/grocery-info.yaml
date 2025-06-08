@@ -2,108 +2,114 @@
 
 # note: an asterisk after the ingredient name forces its inclusion into the grocery list
 
+Fresh Bakery:
+  - Bread
+
 Produce:
-  - Apples
-  - Bananas
-  - Basil
-  - Bell peppers
-  - Berries
-  - Carrots
-  - Cucumbers
-  - Fruit juice
-  - Garlic
-  - Grapes
-  - Mangoes
-  - Onions
-  - Oranges
-  - Parsley
-  - Salad greens
+  - Cherries
   - Watermelon
-  - Limes
-  - Lemons
+  - Grapes
+  - Blueberries
+  - Strawberries
+  - Berries
+  - Fruit
+  - Fruit juice
   - Broccoli
+  - Brussels sprouts
+  - Bell peppers
+  - Red bell peppers
   - Red bell pepper
+  - Cucumbers
+  - Apples
+  - Lemons
+  - Limes
+  - Oranges
+  - Basil
+  - Parsley
+  - Mangoes
+  - Salad greens
+  - Carrots
   - Red onion
   - Tomatoes (fresh)
   - Asparagus
   - Baby spinach
-  - Fruit
-  - Fresh Fruit
-  - Fruit Juice
+  - Onions
+  - Potatoes
+  - Garlic
+  - Bananas
 
-Bakery:
-  - Bread
+Gourmet:
+  - Olives
+  - Parmesan
+  - Pecorino
+  - Gruyère
+  - Gouda
+  - Mozzarella (fresh)
+  - Bocconcini
+
+Bread:
   - Sandwich bread
   - Hamburger buns
 
 International:
-  - Muesli
-  - Tomato salsa
-  - Tortillas (large flour)
-  - Tortillas (corn)
   - Queso fresco
-  - Kombu
-
-Condiments:
-  - Frank’s Red Hot
-  - Hot sauce
-  - Mayonnaise
-  - Veganaise
-  - Soy sauce
-  - Liquid smoke
-  - Pickled jalapeños
-  - Chipotles en adobo
-
-Health:
-  - RXBARs
-  - Protein shake mix
-
-Frozen:
-  - Chik'n nuggets
-  - French fries
-  - Fro-yo bars
-  - Soft pretzels
-  - Frozen spinach
-  - Impossible burgers
-
-Beverages:
-  - Diet Coke
-  - Root beer
-
-Candy:
-  - Candy
-  - Chocolate
-
-Pantry:
   - Beans (canned)
   - Black beans (canned)
   - Chickpeas (canned)
-  - Coffee
-  - Farro
-  - Jasmine rice
-  - Olive oil
-  - Olives
-  - Peanut butter
-  - Vegetable bouillon
-  - Olive oil (mild)
+  - Red beans
   - Beans
   - Lentils
-  - Red beans
-  - Raisins
-  - Pasta
-  - Cavatappi
-  - Spaghetti
-  - Tomato paste
-  - Tomatoes (canned)
-  - Tomato passata
-  - Marinated artichokes
-  - Walnuts
-  - Pecans
-  - Vinegar (white)
-  - Vinegar (sherry)
-  - Vinegar (balsamic)
-  - Fruit preserves
-  - Ketchup
+  - Tortillas (large flour)
+  - Tortillas (corn)
+  - Tomato salsa
+  - Pickled jalapeños
+  - Chipotles en adobo
+  - Muesli
+  - Kombu
+  - Soy sauce
+  - Asian snacks
+  - Jasmine rice
+
+Health:
+  - Protein shake mix
+  - RXBARs
+  - Vegan milk
+
+Refrigerated:
+  - Hummus
+  - Whipped cream
+  - Butter
+  - Butter (unsalted)
+  - Cream cheese
+  - String cheese
+  - Cheddar
+  - Muenster
+  - Monterey jack cheese
+  - Mozzarella (low-moisture)
+  - American cheese
+  - Ricotta
+  - Yogurt
+  - Greek yogurt
+  - Yogurt cups
+  - Yogurt shakes
+  - Yogurt drinks
+  - Buttermilk
+  - Milk
+  - Chocolate milk
+  - Eggs
+
+Household:
+  - Toilet paper
+  - Paper towels
+  - Napkins
+
+Alcohol:
+  - Wine
+  - Beer
+
+Cereal:
+  - Cereal
+  - Rolled oats
 
 Baking:
   - Flour (all-purpose)
@@ -136,38 +142,6 @@ Spices:
   - Thyme
   - Oregano
 
-Dairy:
-  - American cheese
-  - Bocconcini
-  - Chocolate milk
-  - Eggs
-  - Monterey jack cheese
-  - Parmesan
-  - Pecorino
-  - String cheese
-  - Vegan milk
-  - Milk
-  - Yogurt drinks
-  - Yogurt
-  - Butter
-  - Butter (unsalted)
-  - Buttermilk
-  - Greek yogurt
-  - Cream cheese
-  - Whipped cream
-  - Ricotta
-  - Mozzarella (low-moisture)
-  - Mozzarella (fresh)
-  - Cheddar
-  - Muenster
-  - Gruyère
-  - Gouda
-  - Yogurt shakes
-  - Yogurt cups
-
-Deli:
-  - Hummus
-
 Snacks:
   - Goldfish
   - Pretzels
@@ -177,14 +151,60 @@ Snacks:
   - Ritz crackers
   - Salsa
   - Dried fruit
+  - Hershey's Kisses
+  - Chocolate
+  - Dark chocolate
+  - Candy
 
-Cereal:
-  - Cereal
-  - Rolled oats
+Condiments:
+  - Frank’s Red Hot
+  - Hot sauce
+  - Mayonnaise
+  - Veganaise
+  - Liquid smoke
+  - Ketchup
 
-Alcohol:
-  - Wine
-  - Beer
+Pantry:
+  - Coffee
+  - Farro
+  - Olive oil
+  - Peanut butter
+  - Vegetable bouillon
+  - Olive oil (mild)
+  - Raisins
+  - Pasta
+  - Cavatappi
+  - Spaghetti
+  - Tomato paste
+  - Tomatoes (canned)
+  - Tomato passata
+  - Marinated artichokes
+  - Walnuts
+  - Pecans
+  - Vinegar (white)
+  - Vinegar (sherry)
+  - Vinegar (balsamic)
+  - Fruit preserves
+
+Beverages:
+  - Diet Coke
+  - Root beer
+
+Personal:
+  - Shampoo
+  - Bath soap
+  - Mens' Deodorant
+  - Melatonin
+
+Frozen:
+  - Chik'n nuggets
+  - French fries
+  - Tater tots
+  - Fro-yo bars
+  - Soft pretzels
+  - Frozen spinach
+  - Impossible burgers
+  - Green beans
 
 Specialty:
   - Everclear 151
@@ -193,9 +213,6 @@ Specialty:
 
 Omit_From_List:
   - Water
-  - Poolish
-  - Sourdough starter
   - Ice
-  - Greek Yogurt
-  - Fruit preserves
-  
+  - Sourdough starter
+  - Poolish
