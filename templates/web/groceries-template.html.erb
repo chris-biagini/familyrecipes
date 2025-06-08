@@ -76,7 +76,7 @@
         <ul>
         <%- recipes.each do |recipe| -%>
           <li>
-            <input type="checkbox" id="<%= recipe.id %>-checkbox" data-ingredients="<%= html_escape(recipe.all_ingredient_names.to_json) %>">
+            <input type="checkbox" id="<%= recipe.id %>-checkbox" data-title="<%= html_escape(recipe.title) %>" data-ingredients="<%= html_escape(recipe.all_ingredient_names.to_json) %>">
             <label for="<%= recipe.id %>-checkbox" title="Ingredients: <%= html_escape(recipe.all_ingredient_names.join(', ')) %>"><%= recipe.title %></label>
             <% unless recipe.is_a?(QuickBite) %><a href="/<%= recipe.id %>" title="Open <%= recipe.title %> in new tab →" target="_blank">→</a><% end %>
           </li>
@@ -110,106 +110,116 @@
   </main>
 
 <script>
-  (function(){
-    const STORAGE_KEY = 'groceries-state';
+    (function(){
+      const STORAGE_KEY = 'groceries-state';
   
-    // 1) Grab all recipe-checkbox inputs
-    function getSelectedIds() {
-      return Array.from(
-        document.querySelectorAll('input[type="checkbox"][data-ingredients]:checked')
-      ).map(cb => cb.id.replace(/-checkbox$/, ''));
-    }
-  
-    // 2) Persist to localStorage
-    function saveState() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(getSelectedIds()));
-    }
-  
-    // 3) Restore from localStorage
-    function restoreState() {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
-      try {
-        JSON.parse(raw).forEach(id => {
-          const cb = document.getElementById(id + '-checkbox');
-          if (cb) cb.checked = true;
-        });
-      } catch(e) {
-        console.error('Could not parse saved grocery state:', e);
+      function saveState() {
+        const ids = Array.from(
+          document.querySelectorAll('input[type="checkbox"][data-ingredients]:checked')
+        ).map(cb => cb.id.replace(/-checkbox$/, ''));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
       }
-    }
   
-    // 4) Main list‑update routine
-    function updateGroceryList() {
-      const needed = new Set();
+      function restoreState() {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+        try {
+          JSON.parse(raw).forEach(id => {
+            const cb = document.getElementById(id + '-checkbox');
+            if (cb) cb.checked = true;
+          });
+        } catch(e) {
+          console.error('Could not parse saved grocery state:', e);
+        }
+      }
   
-      // a) From checked recipes
-      document.querySelectorAll('input[type="checkbox"][data-ingredients]').forEach(cb => {
-        if (!cb.checked) return;
-        const items = JSON.parse(cb.dataset.ingredients);
-        items.forEach(i => needed.add(i));
-      });
+      function updateGroceryList() {
+        // A Map: ingredientName → Set of recipe titles that need it
+        const neededMap = new Map();
   
-      // b) From the freeform textarea
-      const freeformLines = document.getElementById('freeform-entries')
-                                      .value.split(/\r?\n/);
-      freeformLines.forEach(line => {
-        const t = line.trim();
-        if (t) needed.add(t);
-      });
-  
-      // c) Show/hide in the static list
-      document.querySelectorAll('#grocery-list ul:not(#misc-items) li')
-        .forEach(li => {
-          const name = li.textContent.trim();
-          if (needed.has(name)) {
-            li.classList.add('is-needed-for-selected-recipes');
-            needed.delete(name);
-          } else {
-            li.classList.remove('is-needed-for-selected-recipes');
-          }
+        // (a) from checked recipes
+        document.querySelectorAll('input[type="checkbox"][data-ingredients]').forEach(cb => {
+          if (!cb.checked) return;
+          const recipeTitle = cb.dataset.title;
+          const items = JSON.parse(cb.dataset.ingredients);
+          items.forEach(name => {
+            if (!neededMap.has(name)) neededMap.set(name, new Set());
+            neededMap.get(name).add(recipeTitle);
+          });
         });
   
-      // d) Dump leftovers into Miscellaneous
-      const miscList = document.getElementById('misc-items');
-      miscList.innerHTML = '';
-      needed.forEach(name => {
-        const li = document.createElement('li');
-        li.textContent = name;
-        li.classList.add('is-needed-for-selected-recipes');
-        miscList.appendChild(li);
-      });
-    }
+        // (b) from the freeform textarea (we still want to show these, but they won’t get a "Needed for")
+        document.getElementById('freeform-entries').value
+          .split(/\r?\n/)
+          .map(l => l.trim())
+          .filter(l => l)
+          .forEach(name => {
+            if (!neededMap.has(name)) neededMap.set(name, new Set());
+          });
   
-    // Wire it all up
-    document.addEventListener('DOMContentLoaded', () => {
-      // Reveal JS-only bits
-      document.querySelectorAll('.hidden-until-js')
-              .forEach(el => el.classList.remove('hidden-until-js'));
+        // (c) show/hide & title for your static list items
+        document
+          .querySelectorAll('#grocery-list ul:not(#misc-items) li')
+          .forEach(li => {
+            const name = li.textContent.trim();
+            const titles = neededMap.get(name);
+            if (titles) {
+              li.classList.add('is-needed-for-selected-recipes');
+              if (titles.size > 0) {
+                li.setAttribute(
+                  'title',
+                  'Needed for: ' + Array.from(titles).join(', ')
+                );
+              } else {
+                li.removeAttribute('title');
+              }
+              neededMap.delete(name);
+            } else {
+              li.classList.remove('is-needed-for-selected-recipes');
+              li.removeAttribute('title');
+            }
+          });
   
-      // Grab elements
-      const recipeCheckboxes = Array.from(
-        document.querySelectorAll('input[type="checkbox"][data-ingredients]')
-      );
-      const freeformInput = document.getElementById('freeform-entries');
+        // (d) dump everything else (leftovers) into Miscellaneous
+        const misc = document.getElementById('misc-items');
+        misc.innerHTML = '';
+        neededMap.forEach((titles, name) => {
+          const li = document.createElement('li');
+          li.textContent = name;
+          li.classList.add('is-needed-for-selected-recipes');
+          if (titles.size > 0) {
+            li.setAttribute(
+              'title',
+              'Needed for: ' + Array.from(titles).join(', ')
+            );
+          }
+          misc.appendChild(li);
+        });
+      }
   
-      // On any checkbox change → save + update
-      recipeCheckboxes.forEach(cb =>
-        cb.addEventListener('change', () => {
+      document.addEventListener('DOMContentLoaded', () => {
+        // reveal the JS-only bits
+        document.querySelectorAll('.hidden-until-js')
+                .forEach(el => el.classList.remove('hidden-until-js'));
+  
+        // wire up events
+        const cbs = Array.from(
+          document.querySelectorAll('input[type="checkbox"][data-ingredients]')
+        );
+        const freeform = document.getElementById('freeform-entries');
+  
+        cbs.forEach(cb => cb.addEventListener('change', () => {
           saveState();
           updateGroceryList();
-        })
-      );
+        }));
+        freeform.addEventListener('input', updateGroceryList);
   
-      // On freeform text change → just update
-      freeformInput.addEventListener('input', updateGroceryList);
-  
-      // Restore saved checkboxes, then redraw
-      restoreState();
-      updateGroceryList();
-    });
-  })();
-  </script>
+        // restore + initial draw
+        restoreState();
+        updateGroceryList();
+      });
+    })();
+</script>
 
 </body>
 </html>
