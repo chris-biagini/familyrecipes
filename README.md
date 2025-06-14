@@ -23,8 +23,6 @@ The functionality of `familyrecipes` is heavily inspired by the beautifully-desi
 - [Claude](https://claude.ai/) by [Anthropic](https://www.anthropic.com/)
 - [RealFaviconGenerator](https://realfavicongenerator.net/)
 
-I feel compelled to add that ChatGPT has contributed as much to this project as I have. The high-level ideas and overall design are mine, but nearly every line of code was generated in collaboration with ChatGPT. [Pair programming](https://en.wikipedia.org/wiki/Pair_programming) describes the process better than [vibe coding](https://en.wikipedia.org/wiki/Vibe_coding). It's like working on a project with Lt. Commander Data, though ChatGPT is funnier. I hope we as a species get this AI thing right. Here's hoping.
-
 ## Server Config
 
 By default, the generate script produces files with extensions (`.html`), but _omits_ those extensions from hyperlinks. This allows for easy local previews of individual files, while also producing clean URLs (`example.com/foo` instead of `example.com/foo.html`). On the server side, rules in an `.htaccess` file handles these redirects (among others). A copy of this file is included in the `resources/web/` directory.
