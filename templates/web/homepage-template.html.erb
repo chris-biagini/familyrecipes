@@ -29,13 +29,15 @@
       <div class="toc_nav">
         <ul>
           <%- grouped_recipes.each do |category, recipes| -%>
-            <li><a href="#<%= category.downcase %>"><%= category %></a></li>
+            <% category_id = category.downcase.gsub(/[^a-z0-9]+/, '-') %>
+            <li><a href="#<%= category_id %>"><%= category %></a></li>
           <%- end -%>
         </ul>
       </div>
-      
+
       <%- grouped_recipes.each do |category, recipes| -%>
-      <section id="<%= category.downcase %>">
+      <% category_id = category.downcase.gsub(/[^a-z0-9]+/, '-') %>
+      <section id="<%= category_id %>">
         <h2><%= category %></h2>
         <ul>
           <%- recipes.each do |recipe| -%>
