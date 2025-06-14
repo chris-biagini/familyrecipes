@@ -71,7 +71,8 @@
     
     <div id="recipe-selector" class="hidden-until-js">
       <%- grouped_recipes.each do |category, recipes| -%>
-      <details id="<%= category.downcase %>" open>
+      <% category_id = category.downcase.gsub(/[^a-z0-9]+/, '-') %>
+      <details id="<%= category_id %>" open>
         <summary><%= category %></summary>
         <ul>
         <%- recipes.each do |recipe| -%>
