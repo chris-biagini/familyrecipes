@@ -2,9 +2,11 @@
 
 Vaguely reminiscent of New Orleans red beans and rice.
 
+Serves 4.
+
 ## Soak beans.
 
-- Red beans, 1 lb: Check for debris.
+- Red beans, 450 g: Check for debris.
 - Water, 1250 g: Boiling.
 - Salt, 10 g
 - Vegetable bouillon, 1 Tbsp
@@ -29,15 +31,16 @@ Add rice and butter to sauté pan and cook gently until rice is translucent. Add
 ## Saute aromatics and cook beans.
 
 - Olive oil, 125 g
-- Red onion, 1: Chop fine.
-- Red bell pepper, 1: Chop fine.
+- Onion, 1: Chop fine.
+- Green bell pepper, 1: Chop fine.
+- Celery, 1 stalk:  Chop fine.
 - Garlic, 4 cloves: Chop fine.
 
 In a pot, heat olive oil over medium heat. Add onion, pepper, and garlic and cook gently for as long as you have patience for. Add tomato paste and cook for an additional minute or so.
 
 Add beans with kombu, spices, and soaking liquid to the pot.
 
-To cook on stovetop: Bring to a boil and cook for 15 minutes, then reduce to a simmer, cover, and cook until done, about 1-2 hours. Remove kombu halfway through.
+To cook on stovetop: Bring to a boil and cook for 15 minutes, then reduce to a simmer, cover, and cook until done, about 1-2 hours. Remove kombu halfway through. Top off with water as needed. 
 
 To cook in electric pressure cooker: Simmer for a few minutes, then remove kombu. Pressure cook for 30 minutes, then release pressure. 
 
@@ -50,3 +53,7 @@ To cook in electric pressure cooker: Simmer for a few minutes, then remove kombu
 Use immersion blender to puree a small portion of the beans. Stir well and simmer briefly to thicken.
 
 Correct for acid and seasoning. Serve with rice.
+
+---
+
+This recipe resists being expressed entirely in metric units. 
