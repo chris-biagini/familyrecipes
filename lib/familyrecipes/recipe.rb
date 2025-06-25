@@ -24,13 +24,22 @@ class Recipe
     "/#{@id}"
   end
   
-def to_html(erb_template_path:)
-    markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML)
+  def to_html(erb_template_path:)
+    # HTML renderer that includes SmartyPants
+    renderer = Redcarpet::Render::SmartyHTML.new
+    
+    # Turn on whatever other extensions you want (tables, fenced code, autolink, etc.)
+    markdown = Redcarpet::Markdown.new(renderer,
+      tables:               true,
+      fenced_code_blocks:   true,
+      autolink:             true,
+      no_intra_emphasis:    true
+    )
+    
     template = File.read(erb_template_path)
-    erb = ERB.new(template, trim_mode: '-')
-    erb.result(binding)
-end
-  
+    ERB.new(template, trim_mode: '-').result(binding)
+  end
+
   def all_ingredients
     # magic ruby syntax, returns a flat array of all unique ingredients
     @steps.flat_map(&:ingredients).uniq { |ingredient| ingredient.normalized_name }
