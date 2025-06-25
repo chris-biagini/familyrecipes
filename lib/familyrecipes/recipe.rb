@@ -28,7 +28,6 @@ class Recipe
     # HTML renderer that includes SmartyPants
     renderer = Redcarpet::Render::SmartyHTML.new
     
-    # Turn on whatever other extensions you want (tables, fenced code, autolink, etc.)
     markdown = Redcarpet::Markdown.new(renderer,
       tables:               true,
       fenced_code_blocks:   true,
