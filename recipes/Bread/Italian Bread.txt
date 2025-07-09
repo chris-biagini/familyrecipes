@@ -1,6 +1,6 @@
 # Italian Bread
 
-A good everyday bread.
+An attempt to replicate Brooklyn-style seeded bread.
 
 ## Make dough.
 
