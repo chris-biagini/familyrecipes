@@ -1,10 +1,10 @@
-# Spaghetti
+# Pasta with Salad
 
-Classic pasta in red sauce.
+Classic pasta, with a green salad.
 
 ## Make the sauce.
 
-- Olive oil, 125 g
+- Olive oil, 75 g
 - Garlic, 4 cloves: Remove germ, chop coarsely.
 - Tomato passata, 680 g
 - Salt
@@ -16,7 +16,7 @@ Add passata and bring to a gentle simmer. Stir well to incorporate oil into toma
 
 ## Cook the pasta.
 
-- Spaghetti, 450 g
+- Pasta, 450 g: Spaghetti, for example.
 
 Set a large pot of salted water over high heat. Bring to a boil while sauce simmers.
 
@@ -24,16 +24,16 @@ Add spaghetti and cook according to package directions.
 
 ## Combine pasta and sauce.
 
-- Parmesan, 15 g: Grated.
 - Basil: Optional.
 - Salt
 - Black pepper
+- Olive oil
 
 A few minutes before pasta is done: (1) use a measuring cup to reserve a bit of the cooking liquid; (2) add basil to sauce, if using.
 
 When pasta is done, drain well and add to pan with sauce. Remove basil. Stir to combine.
 
-Add parmesan, stir, then correct seasoning if needed.
+Add parmesan, stir, then correct seasoning if needed. Add additional oil to taste.
 
 ## Make salad.
 
@@ -50,3 +50,7 @@ Place greens in large bowl. Season with salt and pepper, then oil, then vinegar,
 - Bread
 
 Serve pasta with bread and salad.
+
+---
+
+For variety, swap out the garlic for finely chopped onion and carrot.
