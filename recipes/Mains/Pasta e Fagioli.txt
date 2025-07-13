@@ -1,42 +1,41 @@
 # Pasta e Fagioli
 
-Pasta and beans in broth.
+Pasta and beans in a simple broth.
 
 ## Soak beans.
 
-- Beans, 225 g: Check for debris.
-- Water, 1000 g: Boiling.
-- Salt, 5 g
+- Beans, 450 g: Check for debris.
+- Water, 2000 g: Boiling.
+- Salt, 10 g
 
-Combine beans, water, and salt in a sealable container. Allow to soak for as much time as you have. If short on time, use boiling water. Refrigerate if soaking overnight.
+Combine beans, water, and salt in a sealable container. Soak for a while.
 
 ## Cook beans.
 
-- Olive oil, 50 g
-- Garlic, 2 cloves: Peel and roughly chop.
-- Tomato paste, 30 g
+- Olive oil, 75 g
+- Onion, 1: Chopped.
+- Cinnamon, 1 pinch
 - Black pepper
 - Water
 
-In a large pot, heat olive oil over medium heat. Add garlic and a few grinds of pepper. Cook gently until just barely golden. Stir in the tomato paste and fry for 30 seconds or so.
+In a large pot, heat olive oil over medium heat. Add onion and a few grinds of pepper. Cook gently until just barely golden. Add the tiniest bit of cinnamon and cook for a few seconds, until fragrant.
 
 Add the beans and soaking liquid to the pot. Add additional water, if necessary, to cover by one inch. Bring to a boil and cook for 15 minutes, then reduce to a simmer, cover, and cook until done, about 1-2 hours.
 
 ## Add pasta.
 
-- Pasta, 150 g: Ditalini or similar.
+- Pasta, 300 g: Ditalini or similar.
 - Water
 
 When beans are just about done, add the pasta and additional water, if necessary to maintain consistency. Continue cooking until pasta is done, about 15 minutes.
 
 ## Finish and serve.
 
-- Vinegar (sherry)
 - Salt
 - Black pepper
 
-Correct for acid and seasoning. Serve.
+Correct for seasoning. Serve.
 
 ---
 
-For Dean Martin's "pasta fazool," omit tomato, substitute an onion for the garlic, and add a pinch of cinnamon.
+Based on a recipe from [Dean Martin's mom](https://www.allrecipes.com/dean-martins-pasta-fagioli-recipe-8612535).
