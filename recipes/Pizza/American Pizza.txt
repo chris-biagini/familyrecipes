@@ -1,35 +1,6 @@
 # American Pizza
 
-Overnight dough with smooth tomato sauce and low-moisture mozz.
-
-## Advance Prep, night before: Make poolish.
-
-- Flour (00), 315 g
-- Water, 315 g
-- Yeast, 0.2 g
-
-Whisk together flour, water, and yeast in a medium bowl. Let sit on counter overnight.
-
-Note that you only need 600 g of poolish the next day; making extra now accounts for residue on your bowl and utensils.
-
-## Advance Prep, around 10 am: Make dough.
-
-- Poolish, 600 g
-- Water, 80 g
-- Salt, 18 g
-- Yeast, 0.5 g
-- Flour (00), 340 g
-
-Stir together poolish, water, salt, and yeast in mixer bowl.
-
-Stir in flour, then knead thoroughly until a smooth dough forms. Scrape down sides of bowl. Form dough into a neat ball, place back into bowl, and cover with damp cloth and a plate.
-
-## Advance Prep, around 12 pm: Portion and pre-shape dough.
-
-- Flour (00)
-- Cornmeal
-
-Divide dough into 250-gram portions. Form each portion into a neat ball. Place in a covered container that has been dusted with cornmeal.
+NY-style toppings for Neapolitan dough.
 
 ## Make sauce.
 
@@ -41,16 +12,10 @@ Divide dough into 250-gram portions. Form each portion into a neat ball. Place i
 
 Whisk tomato passata and paste together. Season to taste.
 
-## Shape, assemble, and cook.
+## Prep cheese.
 
 - Mozzarella (low-moisture), 400 g: Shred.
 - Parmesan
 - Olive oil
-- Cornmeal
-- Flour (00)
 
-Preheat pizza oven at maximum setting. Oven is ready to cook when floor reads about 850ºF.
-
-For each pizza: Lightly dust counter and pizza peel with cornmeal. Dust dough and counter with a bit of flour. Stretch a dough ball into a pizza base. Top with tomato sauce, cheese, and oil to taste.
-
-Cook pizzas as you go. Cook for about 90 seconds, rotating at approximately the 30-second and 1-minute marks. Hold in a warm oven.
+Cook the same way as Neapolitan pizza, but use low-moisture mozz instead of fresh.
