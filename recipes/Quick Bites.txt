@@ -19,6 +19,7 @@ Pantry staples and "fast food" that comes together with minimal fuss.
 ## Breakfast and Light Meals
   - RXBARs
   - Fried eggs: Eggs, Olive oil, Bread
+  - Breakfast Hash: Potatoes, Onions, Red bell peppers, Eggs, Olive oil
   - Muesli with Banana and Vegan Milk: Muesli, Bananas, Vegan milk
   - Cereal with Milk
   - Grilled cheese: Sandwich bread, American cheese, Butter
