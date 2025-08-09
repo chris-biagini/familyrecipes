@@ -35,19 +35,32 @@
       display: none;
     }
 
-    #grocery-list ul li.is-needed-for-selected-recipes, 
+    #grocery-list ul li.is-needed-for-selected-recipes,
     #grocery-list ul li.is-staple {
       display: list-item;
     }
-        
+
     #grocery-list ul li.is-needed-for-selected-recipes {
-      list-style-type: disc;
+      font-weight: bold;
     }
-        
+
+    #menu-list ul {
+      list-style-type: none;
+      margin-left: 0;
+      padding-left: 0;
+    }
+
+    #menu-list li {
+      margin-left: 0;
+    }
+
+    #menu-list .quick-bites {
+      font-size: 0.9em;
+    }
+
     @media print {
-      #recipe-selector, #freeform-entries {
-        display: none;
-      }
+      #recipe-selector, #freeform-entries { display: none; }
+      #menu-list { break-after: page; }
     }
   </style>
 </head>
@@ -77,7 +90,7 @@
         <ul>
         <%- recipes.each do |recipe| -%>
           <li>
-            <input type="checkbox" id="<%= recipe.id %>-checkbox" data-title="<%= html_escape(recipe.title) %>" data-ingredients="<%= html_escape(recipe.all_ingredient_names.to_json) %>">
+            <input type="checkbox" id="<%= recipe.id %>-checkbox" data-title="<%= html_escape(recipe.title) %>" data-ingredients="<%= html_escape(recipe.all_ingredient_names.to_json) %>" data-category="<%= html_escape(category) %>">
             <label for="<%= recipe.id %>-checkbox" title="Ingredients: <%= html_escape(recipe.all_ingredient_names.join(', ')) %>"><%= recipe.title %></label>
             <% unless recipe.is_a?(QuickBite) %><a href="/<%= recipe.id %>" title="Open <%= recipe.title %> in new tab →" target="_blank">→</a><% end %>
           </li>
@@ -90,8 +103,10 @@
     <div class="hidden-until-js">
       <textarea id="freeform-entries" rows="10" cols="40" placeholder="Enter grocery items here, one per line."></textarea>
     </div>
-          
-    <section id="grocery-list">   
+
+    <section id="menu-list" class="hidden-until-js"></section>
+
+    <section id="grocery-list">
       <% ingredient_database.each do |aisle, ingredients| %>
       <div class="aisle"<%= ' style="display:none"' if aisle == "Omit_From_List" %>>
         <h3><%= aisle %></h3>
@@ -133,15 +148,80 @@
           console.error('Could not parse saved grocery state:', e);
         }
       }
-  
+
+      function updateMenu(menuMap) {
+        const container = document.getElementById('menu-list');
+        container.innerHTML = '';
+
+        const regular = [];
+        const quick = new Map();
+
+        menuMap.forEach((titles, category) => {
+          if (category.startsWith('Quick Bites')) {
+            const parts = category.split(':').map(s => s.trim());
+            const sub = parts[1] || '';
+            if (!quick.has(sub)) quick.set(sub, []);
+            quick.get(sub).push(...titles);
+          } else {
+            regular.push({ category, titles: Array.from(titles).sort() });
+          }
+        });
+
+        regular.sort((a,b) => a.category.localeCompare(b.category));
+        regular.forEach(obj => {
+          const div = document.createElement('div');
+          div.classList.add('menu-category');
+          const h2 = document.createElement('h2');
+          h2.textContent = obj.category;
+          div.appendChild(h2);
+          const ul = document.createElement('ul');
+          obj.titles.forEach(title => {
+            const li = document.createElement('li');
+            li.textContent = title;
+            ul.appendChild(li);
+          });
+          div.appendChild(ul);
+          container.appendChild(div);
+        });
+
+        if (quick.size > 0) {
+          const div = document.createElement('div');
+          div.classList.add('menu-category', 'quick-bites');
+          const h2 = document.createElement('h2');
+          h2.textContent = 'Quick Bites';
+          div.appendChild(h2);
+          Array.from(quick.keys()).sort().forEach(sub => {
+            if (sub) {
+              const h3 = document.createElement('h3');
+              h3.textContent = sub;
+              div.appendChild(h3);
+            }
+            const ul = document.createElement('ul');
+            quick.get(sub).sort().forEach(title => {
+              const li = document.createElement('li');
+              li.textContent = title;
+              ul.appendChild(li);
+            });
+            div.appendChild(ul);
+          });
+          container.appendChild(div);
+        }
+
+        container.style.display = container.childElementCount ? '' : 'none';
+      }
+
       function updateGroceryList() {
         // A Map: ingredientName → Set of recipe titles that need it
         const neededMap = new Map();
-  
+        const menuMap = new Map(); // category → Set of titles
+
         // (a) from checked recipes
         document.querySelectorAll('input[type="checkbox"][data-ingredients]').forEach(cb => {
           if (!cb.checked) return;
           const recipeTitle = cb.dataset.title;
+          const category = cb.dataset.category;
+          if (!menuMap.has(category)) menuMap.set(category, new Set());
+          menuMap.get(category).add(recipeTitle);
           const items = JSON.parse(cb.dataset.ingredients);
           items.forEach(name => {
             if (!neededMap.has(name)) neededMap.set(name, new Set());
@@ -196,6 +276,8 @@
           }
           misc.appendChild(li);
         });
+
+        updateMenu(menuMap);
       }
   
       document.addEventListener('DOMContentLoaded', () => {
