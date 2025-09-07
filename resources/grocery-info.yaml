@@ -99,6 +99,7 @@ Refrigerated:
   - Mozzarella (low-moisture)
   - American cheese
   - Ricotta
+  - Sour cream
   - Yogurt
   - Greek yogurt
   - Yogurt cups
@@ -113,6 +114,7 @@ Household:
   - Toilet paper
   - Paper towels
   - Napkins
+  - Air freshener
 
 Alcohol:
   - Wine
@@ -146,6 +148,8 @@ Baking:
   - Honey
   - Parmalat milk
   - Vegetable bouillon
+  - Vegetarian bouillon
+  - Bouillon
 
 Spices:
   - Sesame seeds
@@ -221,6 +225,7 @@ Frozen:
   - French fries
   - Tater tots
   - Fro-yo bars
+  - Frozen potatoes
   - Soft pretzels
   - Frozen spinach
   - Impossible burgers
