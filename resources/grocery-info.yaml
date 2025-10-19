@@ -27,6 +27,7 @@ Produce:
   - Apples
   - Lemons
   - Limes
+  - Lime
   - Oranges
   - Basil
   - Parsley
@@ -49,6 +50,7 @@ Produce:
 Gourmet:
   - Olives
   - Parmesan
+  - Parmesan cheese
   - Pecorino
   - Gruyère
   - Gouda
@@ -138,6 +140,7 @@ Baking:
   - Sodium carbonate
   - Salt
   - Maldon salt
+  - Kosher salt
   - Sugar (brown)
   - Sugar (white)
   - Baking soda
@@ -159,6 +162,7 @@ Spices:
   - Smoked paprika
   - Thyme
   - Oregano
+  - Mexican oregano
 
 Snacks:
   - Goldfish
@@ -208,6 +212,7 @@ Pantry:
   - Vinegar (sherry)
   - Vinegar (balsamic)
   - Fruit preserves
+  - Pickles
 
 Beverages:
   - Diet Coke
