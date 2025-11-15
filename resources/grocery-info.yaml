@@ -99,6 +99,7 @@ Refrigerated:
   - Muenster
   - Monterey jack cheese
   - Mozzarella (low-moisture)
+  - Mozzarella (shredded)
   - American cheese
   - Ricotta
   - Sour cream
@@ -197,11 +198,13 @@ Pantry:
   - Raisins
   - Pasta
   - Small pasta
+  - Mezze rigatoni
   - Cavatappi
   - Spaghetti
   - Tomato paste
   - Tomatoes (canned)
   - Tomato passata
+  - Pasta sauce (jarred)
   - Marinated artichokes
   - Artichokes (jarred)
   - Roasted peppers (jarred)
@@ -214,6 +217,7 @@ Pantry:
   - Vinegar (balsamic)
   - Fruit preserves
   - Pickles
+  - Distilled water
 
 Beverages:
   - Diet Coke
