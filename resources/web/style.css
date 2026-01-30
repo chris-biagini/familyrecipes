@@ -30,10 +30,19 @@ body {
 
   font-family: "Bodoni 72", Georgia, serif;
   color: var(--text-color);
+}
 
-  /* Gingham pattern */
-  /* Appearance inspired by <https://www.penguinrandomhouse.com/books/13304/better-homes-and-gardens-new-cookbook-by-better-homes-and-gardens-editors/> */
-  /* Implementation inspired by <https://www.gradientmagic.com/collection/gingham/gradient/1575939528284> */
+/* Gingham pattern background */
+/* Appearance inspired by <https://www.penguinrandomhouse.com/books/13304/better-homes-and-gardens-new-cookbook-by-better-homes-and-gardens-editors/> */
+/* Implementation inspired by <https://www.gradientmagic.com/collection/gingham/gradient/1575939528284> */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 10000px;
+  height: 10000px;
+  z-index: -1;
 
   --gingham-base: rgb(249, 246, 243);
   --gingham-stripe-color: rgba(190, 12, 30, 0.5);
@@ -42,7 +51,7 @@ body {
   --weave-stripe-width: 1.5px;
 
   background-color: var(--gingham-base);
-  background-attachment: fixed;
+  background-position: top left;
   background-image: repeating-linear-gradient(
       135deg,
       var(--gingham-stripe-color) 0,
