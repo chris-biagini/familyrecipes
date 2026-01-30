@@ -1,7 +1,7 @@
 # familyrecipes
 
 _recipes by Chris, Kelly, Lucy, Nathan, and Cora_  
-_code by Chris and ChatGPT_
+_code by Chris, ChatGPT, and Claude_
 
 ## About
 
