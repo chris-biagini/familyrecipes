@@ -5,7 +5,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Biagini Family Recipes: Groceries</title>
+  <title>Biagini Family Recipes: Menu</title>
   <link rel="stylesheet" href="/style.css">
   
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
@@ -16,37 +16,504 @@
     .hidden-until-js {
       display: none;
     }
-    
-    #grocery-list {
-      columns: 4;
+
+    /* Recipe Selector - Menu Style */
+    #recipe-selector {
+      max-width: 900px;
+      margin: 0 auto 3rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 3rem;
+      align-items: start;
     }
-    
-    div.aisle {
+
+    #recipe-selector .category {
+      margin-bottom: 2rem;
+    }
+
+    #recipe-selector .category h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      border-bottom: 1px solid #ccc;
+      padding-bottom: 0.4rem;
+      margin-bottom: 0.75rem;
+    }
+
+    #recipe-selector .category ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    #recipe-selector .category li {
+      display: flex;
+      align-items: center;
+      padding: 0.35rem 0;
+      cursor: pointer;
+    }
+
+    #recipe-selector .category li:hover {
+      background-color: #f8f8f8;
+      margin: 0 -0.5rem;
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
+    }
+
+    #recipe-selector .category input[type="checkbox"] {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 1rem;
+      height: 1rem;
+      border: 1.5px solid #999;
+      border-radius: 2px;
+      margin-right: 0.6rem;
+      cursor: pointer;
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    #recipe-selector .category input[type="checkbox"]:checked {
+      background-color: #2a5a3a;
+      border-color: #2a5a3a;
+    }
+
+    #recipe-selector .category input[type="checkbox"]:checked::after {
+      content: '✓';
+      color: white;
+      font-size: 0.75rem;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    #recipe-selector .category label {
+      flex: 1;
+      cursor: pointer;
+    }
+
+    #recipe-selector .category .recipe-link {
+      color: #999;
+      text-decoration: none;
+      font-size: 0.9rem;
+      padding-left: 0.5rem;
+    }
+
+    #recipe-selector .category .recipe-link:hover {
+      color: #2a5a3a;
+    }
+
+    /* Quick Bites Section */
+    #recipe-selector .quick-bites {
+      grid-column: 1 / -1;
+      margin-top: 1rem;
+      padding-top: 1.5rem;
+      border-top: 2px solid #ddd;
+    }
+
+    #recipe-selector .quick-bites > h2 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      text-align: center;
+      margin-bottom: 1.25rem;
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    #recipe-selector .quick-bites .subsections {
+      columns: 3;
+      column-gap: 2rem;
+    }
+
+    #recipe-selector .quick-bites .subsection {
       break-inside: avoid;
+      margin-bottom: 1.5rem;
     }
-        
-    #grocery-list ul {
-      list-style-type: circle;
-      column-count: 1; 
+
+    #recipe-selector .quick-bites .subsection h3 {
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #666;
+      margin-bottom: 0.5rem;
+      padding-bottom: 0.25rem;
+      border-bottom: 1px dotted #ccc;
     }
-    
-    #grocery-list ul li {
-      margin-left: 3rem;
+
+    #recipe-selector .quick-bites .subsection ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    #recipe-selector .quick-bites .subsection li {
+      display: flex;
+      align-items: center;
+      padding: 0.25rem 0;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+
+    #recipe-selector .quick-bites .subsection li:hover {
+      background-color: #f8f8f8;
+      margin: 0 -0.5rem;
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
+    }
+
+    #recipe-selector .quick-bites .subsection input[type="checkbox"] {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 0.9rem;
+      height: 0.9rem;
+      border: 1.5px solid #999;
+      border-radius: 2px;
+      margin-right: 0.5rem;
+      cursor: pointer;
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    #recipe-selector .quick-bites .subsection input[type="checkbox"]:checked {
+      background-color: #2a5a3a;
+      border-color: #2a5a3a;
+    }
+
+    #recipe-selector .quick-bites .subsection input[type="checkbox"]:checked::after {
+      content: '✓';
+      color: white;
+      font-size: 0.65rem;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    #recipe-selector .quick-bites .subsection label {
+      flex: 1;
+      cursor: pointer;
+    }
+
+    @media (max-width: 900px) {
+      #recipe-selector .quick-bites .subsections {
+        columns: 2;
+      }
+    }
+
+    @media (max-width: 700px) {
+      #recipe-selector .quick-bites .subsections {
+        columns: 1;
+      }
+    }
+
+    /* Freeform Entries */
+    #freeform-section {
+      max-width: 900px;
+      margin: 0 auto 2rem;
+      padding-top: 1.5rem;
+      border-top: 2px solid #ddd;
+    }
+
+    #freeform-section h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #666;
+      margin-bottom: 0.75rem;
+    }
+
+    #freeform-entries {
+      width: 100%;
+      max-width: 400px;
+      padding: 0.75rem;
+      font-family: inherit;
+      font-size: 0.95rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      resize: vertical;
+    }
+
+    #freeform-entries:focus {
+      outline: none;
+      border-color: #2a5a3a;
+    }
+
+    #freeform-section .hint {
+      font-size: 0.85rem;
+      color: #888;
+      margin-top: 0.5rem;
+    }
+
+    #instructions {
+      max-width: 900px;
+      margin: 0 auto 1.5rem;
+      text-align: center;
+      color: #666;
+      font-size: 0.95rem;
+    }
+
+    /* Grocery List - hidden on screen, shown in print */
+    #grocery-list {
       display: none;
     }
 
-    #grocery-list ul li.is-needed-for-selected-recipes, 
-    #grocery-list ul li.is-staple {
-      display: list-item;
+    #grocery-list ul li {
+      display: none;
     }
-        
+
     #grocery-list ul li.is-needed-for-selected-recipes {
-      list-style-type: disc;
+      display: block;
     }
-        
+
+    /* Notes section - hidden on screen */
+    #notes-section {
+      display: none;
+    }
+
+    @media (max-width: 700px) {
+      #recipe-selector {
+        grid-template-columns: 1fr;
+      }
+    }
+
     @media print {
-      #recipe-selector, #freeform-entries {
-        display: none;
+      /* Hide screen-only elements */
+      #freeform-section, nav, #instructions {
+        display: none !important;
+      }
+
+      main {
+        padding: 0;
+        margin: 0;
+      }
+
+      /* === MENU PAGE === */
+      #menu-header {
+        text-align: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #333;
+      }
+
+      #menu-header h1 {
+        font-size: 1.6rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        margin: 0;
+      }
+
+      /* Recipe selector as printed menu - 3 columns */
+      #recipe-selector {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr 1fr;
+        column-gap: 2rem;
+        row-gap: 0;
+        align-items: start;
+        max-width: none;
+        margin-bottom: 0;
+        page-break-after: always;
+        break-after: page;
+      }
+
+      /* Hide unselected recipes */
+      #recipe-selector .category li:not(.is-selected),
+      #recipe-selector .quick-bites .subsection li:not(.is-selected) {
+        display: none !important;
+      }
+
+      /* Hide empty categories and subsections */
+      #recipe-selector .category.is-empty,
+      #recipe-selector .quick-bites.is-empty,
+      #recipe-selector .quick-bites .subsection.is-empty {
+        display: none !important;
+      }
+
+      /* Hide checkboxes and links */
+      #recipe-selector input[type="checkbox"],
+      #recipe-selector .recipe-link {
+        display: none !important;
+      }
+
+      /* Category print styling */
+      #recipe-selector .category {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        margin-bottom: 1.25rem;
+      }
+
+      #recipe-selector .category h2 {
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+        padding-bottom: 0.3rem;
+      }
+
+      #recipe-selector .category li {
+        padding: 0.15rem 0 0.15rem 1rem;
+        position: relative;
+      }
+
+      #recipe-selector .category li::before {
+        content: '·';
+        position: absolute;
+        left: 0.25rem;
+        font-weight: bold;
+      }
+
+      #recipe-selector .category label {
+        font-size: 1rem;
+        line-height: 1.6;
+      }
+
+      /* Quick Bites print styling */
+      #recipe-selector .quick-bites {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        grid-column: 1 / -1;
+        border-top: 1px solid #ccc;
+        padding-top: 1rem;
+        margin-top: 0.5rem;
+      }
+
+      #recipe-selector .quick-bites > h2 {
+        font-size: 1rem;
+        margin-bottom: 0.75rem;
+      }
+
+      #recipe-selector .quick-bites .subsections {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+        column-gap: 1.5rem;
+        align-items: start;
+      }
+
+      #recipe-selector .quick-bites .subsection {
+        margin-bottom: 0.75rem;
+      }
+
+      #recipe-selector .quick-bites .subsection h3 {
+        font-size: 0.75rem;
+        margin-bottom: 0.3rem;
+      }
+
+      #recipe-selector .quick-bites .subsection li {
+        padding: 0.1rem 0 0.1rem 0.75rem;
+        position: relative;
+      }
+
+      #recipe-selector .quick-bites .subsection li::before {
+        content: '·';
+        position: absolute;
+        left: 0;
+        font-weight: bold;
+      }
+
+      #recipe-selector .quick-bites .subsection label {
+        font-size: 0.9rem;
+        line-height: 1.5;
+      }
+
+      /* === GROCERY LIST === */
+      #print-grocery-header {
+        display: block !important;
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.4rem;
+        border-bottom: 1px solid #333;
+      }
+
+      #print-grocery-header h1 {
+        font-size: 1rem;
+        font-weight: 700;
+        margin: 0;
+      }
+
+      #grocery-list {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+        gap: 0.1rem 1rem;
+        align-items: start;
+      }
+
+      div.aisle {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        margin-bottom: 0.5rem;
+      }
+
+      div.aisle.is-empty {
+        display: none !important;
+      }
+
+      #grocery-list h3 {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        margin: 0 0 0.2rem 0;
+        padding-bottom: 0.1rem;
+        border-bottom: 1px solid #999;
+      }
+
+      #grocery-list ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      #grocery-list ul li {
+        font-size: 0.75rem;
+        line-height: 1.4;
+        padding-left: 1.1rem;
+        position: relative;
+      }
+
+      #grocery-list ul li.is-needed-for-selected-recipes {
+        display: block !important;
+      }
+
+      /* Checkbox squares for grocery items */
+      #grocery-list ul li::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0.15rem;
+        width: 0.55rem;
+        height: 0.55rem;
+        border: 1px solid #333;
+        border-radius: 1px;
+      }
+
+      /* === NOTES SECTION === */
+      #notes-section {
+        display: block;
+        margin-top: 1rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid #ccc;
+      }
+
+      #notes-section h3 {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        margin: 0 0 0.4rem 0;
+      }
+
+      #notes-section .notes-lines {
+        height: 2.5rem;
+        background: repeating-linear-gradient(
+          to bottom,
+          transparent,
+          transparent 1rem,
+          #ddd 1rem,
+          #ddd calc(1rem + 1px)
+        );
       }
     }
   </style>
@@ -61,66 +528,116 @@
   </nav>
   
   <main>
-    <header>
-      <h1>Groceries</h1>
+    <header id="menu-header">
+      <h1>Menu</h1>
     </header>
     
     <noscript>
       <p><em>This page works without JavaScript, but consider enabling it if you would like to generate a custom list from selected recipes.</em></p>
     </noscript>
-    
+
+    <p id="instructions" class="hidden-until-js">Select the recipes you're planning to make, then print this page to get a printable menu and grocery list.</p>
+
+    <%
+      # Separate regular recipes from Quick Bites
+      regular_recipes = grouped_recipes.reject { |cat, _| cat.start_with?('Quick Bites') }
+      quick_bites = grouped_recipes.select { |cat, _| cat.start_with?('Quick Bites') }
+
+      # Extract subsection names from Quick Bites categories (e.g., "Quick Bites: Snacks" -> "Snacks")
+      quick_bites_by_subsection = quick_bites.transform_keys do |cat|
+        name = cat.sub(/^Quick Bites(: )?/, '')
+        name.empty? ? 'Other' : name
+      end
+    -%>
     <div id="recipe-selector" class="hidden-until-js">
-      <%- grouped_recipes.each do |category, recipes| -%>
-      <% category_id = category.downcase.gsub(/[^a-z0-9]+/, '-') %>
-      <details id="<%= category_id %>" open>
-        <summary><%= category %></summary>
+      <%- regular_recipes.each do |category, recipes| -%>
+      <div class="category">
+        <h2><%= category %></h2>
         <ul>
         <%- recipes.each do |recipe| -%>
           <li>
             <input type="checkbox" id="<%= recipe.id %>-checkbox" data-title="<%= html_escape(recipe.title) %>" data-ingredients="<%= html_escape(recipe.all_ingredient_names.to_json) %>">
             <label for="<%= recipe.id %>-checkbox" title="Ingredients: <%= html_escape(recipe.all_ingredient_names.join(', ')) %>"><%= recipe.title %></label>
-            <% unless recipe.is_a?(QuickBite) %><a href="/<%= recipe.id %>" title="Open <%= recipe.title %> in new tab →" target="_blank">→</a><% end %>
+            <a href="/<%= recipe.id %>" class="recipe-link" title="Open <%= recipe.title %> in new tab" target="_blank">→</a>
           </li>
         <%- end -%>
         </ul>
-      </details>
+      </div>
+      <%- end -%>
+
+      <%- if quick_bites_by_subsection.any? -%>
+      <div class="quick-bites">
+        <h2>Quick Bites</h2>
+        <div class="subsections">
+          <%- quick_bites_by_subsection.each do |subsection, items| -%>
+          <div class="subsection">
+            <h3><%= subsection %></h3>
+            <ul>
+            <%- items.each do |item| -%>
+              <li>
+                <input type="checkbox" id="<%= item.id %>-checkbox" data-title="<%= html_escape(item.title) %>" data-ingredients="<%= html_escape(item.all_ingredient_names.to_json) %>">
+                <label for="<%= item.id %>-checkbox" title="Ingredients: <%= html_escape(item.all_ingredient_names.join(', ')) %>"><%= item.title %></label>
+              </li>
+            <%- end -%>
+            </ul>
+          </div>
+          <%- end -%>
+        </div>
+      </div>
       <%- end -%>
     </div>
     
-    <div class="hidden-until-js">
-      <textarea id="freeform-entries" rows="10" cols="40" placeholder="Enter grocery items here, one per line."></textarea>
+    <div id="freeform-section" class="hidden-until-js">
+      <h2>Additional Items</h2>
+      <textarea id="freeform-entries" rows="6" placeholder="Add extra items here, one per line..."></textarea>
+      <p class="hint">These will be added to your grocery list when you print.</p>
     </div>
-          
-    <section id="grocery-list">   
+
+    <header id="print-grocery-header" style="display: none;">
+      <h1>Grocery List</h1>
+    </header>
+
+    <section id="grocery-list">
       <% ingredient_database.each do |aisle, ingredients| %>
       <div class="aisle"<%= ' style="display:none"' if aisle == "Omit_From_List" %>>
         <h3><%= aisle %></h3>
         <ul>
           <% ingredients.each do |ingredient| %>
-            <li<%= ' class="is-staple"' if ingredient[:staple] %>><%= ingredient[:name] %></li>
+            <li><%= ingredient[:name] %></li>
           <% end %>
         </ul>
       </div>
       <% end %>
-     
+
       <div class="aisle">
         <h3>Miscellaneous</h3>
         <ul id="misc-items"></ul>
       </div>
     </section>
+
+    <div id="notes-section">
+      <h3>Notes</h3>
+      <div class="notes-lines"></div>
+    </div>
   </main>
 
 <script>
     (function(){
       const STORAGE_KEY = 'groceries-state';
-  
+      const FREEFORM_KEY = 'groceries-freeform';
+
       function saveState() {
         const ids = Array.from(
           document.querySelectorAll('input[type="checkbox"][data-ingredients]:checked')
         ).map(cb => cb.id.replace(/-checkbox$/, ''));
         localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
       }
-  
+
+      function saveFreeform() {
+        const freeform = document.getElementById('freeform-entries');
+        localStorage.setItem(FREEFORM_KEY, freeform.value);
+      }
+
       function restoreState() {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (!raw) return;
@@ -131,6 +648,13 @@
           });
         } catch(e) {
           console.error('Could not parse saved grocery state:', e);
+        }
+      }
+
+      function restoreFreeform() {
+        const saved = localStorage.getItem(FREEFORM_KEY);
+        if (saved) {
+          document.getElementById('freeform-entries').value = saved;
         }
       }
   
@@ -196,27 +720,60 @@
           }
           misc.appendChild(li);
         });
+
+        // (e) hide empty aisles
+        document.querySelectorAll('#grocery-list div.aisle').forEach(aisle => {
+          const hasVisibleItems = aisle.querySelectorAll('li.is-needed-for-selected-recipes').length > 0;
+          aisle.classList.toggle('is-empty', !hasVisibleItems);
+        });
+
+        // (f) mark selected recipes for print styling
+        document.querySelectorAll('#recipe-selector input[type="checkbox"][data-ingredients]').forEach(cb => {
+          const li = cb.closest('li');
+          li.classList.toggle('is-selected', cb.checked);
+        });
+
+        // (g) mark empty categories/subsections for print hiding
+        document.querySelectorAll('#recipe-selector .category').forEach(cat => {
+          const hasSelected = cat.querySelectorAll('li.is-selected').length > 0;
+          cat.classList.toggle('is-empty', !hasSelected);
+        });
+
+        document.querySelectorAll('#recipe-selector .quick-bites .subsection').forEach(sub => {
+          const hasSelected = sub.querySelectorAll('li.is-selected').length > 0;
+          sub.classList.toggle('is-empty', !hasSelected);
+        });
+
+        const quickBites = document.querySelector('#recipe-selector .quick-bites');
+        if (quickBites) {
+          const hasAnySelected = quickBites.querySelectorAll('li.is-selected').length > 0;
+          quickBites.classList.toggle('is-empty', !hasAnySelected);
+        }
       }
   
       document.addEventListener('DOMContentLoaded', () => {
         // reveal the JS-only bits
         document.querySelectorAll('.hidden-until-js')
                 .forEach(el => el.classList.remove('hidden-until-js'));
-  
+
         // wire up events
         const cbs = Array.from(
           document.querySelectorAll('input[type="checkbox"][data-ingredients]')
         );
         const freeform = document.getElementById('freeform-entries');
-  
+
         cbs.forEach(cb => cb.addEventListener('change', () => {
           saveState();
           updateGroceryList();
         }));
-        freeform.addEventListener('input', updateGroceryList);
-  
+        freeform.addEventListener('input', () => {
+          saveFreeform();
+          updateGroceryList();
+        });
+
         // restore + initial draw
         restoreState();
+        restoreFreeform();
         updateGroceryList();
       });
     })();
