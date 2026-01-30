@@ -125,12 +125,13 @@
     }
 
     #recipe-selector .quick-bites .subsections {
-      columns: 3;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
       column-gap: 2rem;
+      align-items: start;
     }
 
     #recipe-selector .quick-bites .subsection {
-      break-inside: avoid;
       margin-bottom: 1.5rem;
     }
 
@@ -201,13 +202,13 @@
 
     @media (max-width: 900px) {
       #recipe-selector .quick-bites .subsections {
-        columns: 2;
+        grid-template-columns: repeat(2, 1fr);
       }
     }
 
     @media (max-width: 700px) {
       #recipe-selector .quick-bites .subsections {
-        columns: 1;
+        grid-template-columns: 1fr;
       }
     }
 
