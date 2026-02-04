@@ -13,7 +13,7 @@ class QuickBite
     end
     
     @title = title
-    @id = title.unicode_normalize(:nfkd).downcase.gsub(/\s+/, '-').gsub(/[^a-z0-9\-]/, '') # same as Recipes in generate.rb
+    @id = FamilyRecipes.slugify(title)
     
     # Start with full line for ingredients if no colon, otherwise the right part
     ingredients_source = rest.empty? ? title : rest

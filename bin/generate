@@ -116,16 +116,10 @@ end
 
 recipes_array = recipe_files.map do |file|
   source = File.read(file)
-  
-  id = File.basename(file, ".*")  # Get name without extension
-        .unicode_normalize(:nfkd) # Normalize Unicode characters
-        .downcase                 # Convert to lowercase
-        .gsub(/\s+/, '-')         # Replace spaces with hyphens
-        .gsub(/[^a-z0-9\-]/, '')  # Remove non-alphanumeric characters except hyphens
-    
+  id = FamilyRecipes.slugify(File.basename(file, ".*"))
   category = File.basename(File.dirname(file)).sub(/^./, &:upcase)
-  
-  recipe = Recipe.new(markdown_source: source, id: id, category: category)
+
+  Recipe.new(markdown_source: source, id: id, category: category)
 end
 
 file_path        = File.join(recipes_dir, "Quick Bites.txt")

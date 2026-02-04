@@ -54,80 +54,90 @@ class Recipe
   private
 
   def parse_recipe
-    # just worry about non-blank lines for now
     lines = @source.split("\n").reject { |line| line.strip.empty? }
-    
-    # look for title, which must be an ATX-style H1 at the beginning of the file.
-    current_line = lines.shift.strip
-    if current_line.match(/^# (.+)$/)
-      @title = $1 # Capture the title text
+
+    @title = parse_title(lines)
+    @description = parse_description(lines)
+    @steps = parse_steps(lines)
+    @footer = parse_footer(lines)
+
+    if @steps.empty?
+      raise StandardError, "Invalid recipe format: Must have at least one step."
+    end
+  end
+
+  def parse_title(lines)
+    first_line = lines.shift&.strip
+    if first_line&.match(/^# (.+)$/)
+      $1
     else
       raise StandardError, "Invalid recipe format: The first line must be a level-one header (# Toasted Bread)."
     end
+  end
 
-    # look for optional description, which is just the first line after the title
-    if lines.first.strip.match(/^## (.+)$/)
-      @description = nil
-    else
-      @description = lines.shift.strip
-    end
-  
-    # start loop to parse steps; stop parsing steps when we hit EOF or a delimiter ("---")
+  def parse_description(lines)
+    return nil if lines.empty?
+    return nil if lines.first.strip.match(/^## /)
+
+    lines.shift.strip
+  end
+
+  def parse_steps(lines)
+    steps = []
+
     while lines.any?
-      # if we're about to hit an HR, we're done looping
-      break if lines.first.strip == "---" 
-      current_line = lines.shift.strip
-      
-      # if we hit an H2, start building a new Step
-      if current_line.match(/^## (.+)$/)
-        tldr = $1 # Capture  H2 text, which is a short blurb describing the step
-        ingredients = []
-        instructions = ""
-        
-        ## start loop to parse *inside* step, accumulating ingredients or instructions
-        ## break loop (and go to outer loop) if we are about to hit H2 or delimiter
-        while lines.any?
-          break if lines.first.strip == "---" # about to hit delimiter, done parsing step
-          break if lines.first.strip.match(/^## /) # about to hit H2, done parsing step
-          current_line = lines.shift.strip
-          
-          # if we find an ingredient, accumulate it as one; otherwise, accumulate it as an instruction line
-          if current_line.match(/^- (.+)$/)
-            ingredient_text = $1
-            
-            # chop up string, look for prep notes
-            parts = ingredient_text.split(':', 2) 
-            left_side = parts[0]
-            prep_note = parts[1]&.strip # ampersand allows this to be nil
-            
-            # look for name and quantity
-            left_parts = left_side.split(',',2)
-            name = left_parts[0].strip
-            quantity = left_parts[1]&.strip
+      break if lines.first.strip == "---"
 
-            ingredients << Ingredient.new(name: name, quantity: quantity, prep_note: prep_note)
-          else
-            instructions += current_line + "\n\n" # hack to undo stripping whitespace, need to fix
-          end
-        end #done parsing individual step
-        
-        # build step and throw it on the pile
-        @steps << Step.new(
-          tldr: tldr,
-          ingredients: ingredients,
-          instructions: instructions.strip
-        )
-      end 
-    end  # done parsing all steps
-    
-    if @steps.empty?
-      raise StandardError, "Invalid recipe format: Must have at least one step."
+      current_line = lines.shift.strip
+      if current_line.match(/^## (.+)$/)
+        steps << parse_step($1, lines)
       end
-    
-    # if we get to this point, we should have either hit a delimiter or EOF above
-    if lines.any? && lines.first.strip == "---"
-      lines.shift # Discard the delimiter
-      @footer = lines.join("\n\n").strip # Accumulate the rest as the footer / hack to undo stripping whitespace, need to fix
     end
+
+    steps
+  end
+
+  def parse_step(tldr, lines)
+    ingredients = []
+    instruction_lines = []
+
+    while lines.any?
+      break if lines.first.strip == "---"
+      break if lines.first.strip.match(/^## /)
+
+      current_line = lines.shift.strip
+
+      if current_line.match(/^- (.+)$/)
+        ingredients << parse_ingredient($1)
+      else
+        instruction_lines << current_line
+      end
+    end
+
+    Step.new(
+      tldr: tldr,
+      ingredients: ingredients,
+      instructions: instruction_lines.join("\n\n")
+    )
+  end
+
+  def parse_ingredient(text)
+    parts = text.split(':', 2)
+    left_side = parts[0]
+    prep_note = parts[1]&.strip
+
+    left_parts = left_side.split(',', 2)
+    name = left_parts[0].strip
+    quantity = left_parts[1]&.strip
+
+    Ingredient.new(name: name, quantity: quantity, prep_note: prep_note)
+  end
+
+  def parse_footer(lines)
+    return nil if lines.empty?
+    return nil unless lines.first.strip == "---"
+
+    lines.shift # Discard the delimiter
+    lines.join("\n\n").strip
   end
 end

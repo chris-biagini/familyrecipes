@@ -6,15 +6,11 @@ class Ingredient
   attr_accessor :name, :quantity, :prep_note
 
   # Class-level alias map, set during build
-  @@alias_map = {}
-
-  def self.alias_map=(map)
-    @@alias_map = map
+  # Uses class instance variable instead of @@ to avoid inheritance issues
+  class << self
+    attr_accessor :alias_map
   end
-
-  def self.alias_map
-    @@alias_map
-  end
+  @alias_map = {}
 
   # name is required, quantity and prep_note are optional
   def initialize(name:, quantity: nil, prep_note: nil)
@@ -25,7 +21,8 @@ class Ingredient
 
   def normalized_name
     # First check the alias map (includes explicit aliases and auto-plurals)
-    return @@alias_map[@name] if @@alias_map.key?(@name)
+    alias_map = self.class.alias_map
+    return alias_map[@name] if alias_map.key?(@name)
 
     # Otherwise return the original name
     @name
