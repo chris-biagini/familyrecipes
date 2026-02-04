@@ -5,11 +5,11 @@ Pantry staples and "fast food" that comes together with minimal fuss.
 ## Snacks
   - Peanut Butter on Bread: Peanut butter, Bread
   - Apples and Peanut Butter: Apples, Peanut butter
-  - Fruit: Bananas, Grapes, Oranges, Apples
+  - Fruit: Bananas, Grapes, Clementines, Apples, Berries
   - Yogurt Shake: Yogurt shakes
   - Hummus with Pretzels
   - Tortilla chips with Salsa
-  - Soft pretzels
+  - Peanut butter pretzels
   - Dried fruit
   - String cheese
   - Goldfish
@@ -20,7 +20,6 @@ Pantry staples and "fast food" that comes together with minimal fuss.
   - RXBARs
   - Fried eggs: Eggs, Olive oil, Bread
   - Breakfast Hash: Frozen potatoes, Onions, Red bell pepper, Eggs, Olive oil
-  - Muesli with Banana and Vegan Milk: Muesli, Bananas, Vegan milk
   - Cereal with Milk
   - Grilled cheese: Sandwich bread, American cheese, Butter
   
@@ -33,7 +32,8 @@ Pantry staples and "fast food" that comes together with minimal fuss.
   - Impossible Burgers and Fries: Hamburger buns, Impossible burgers, French fries, Ketchup, American cheese
 
 ## Dessert
-  - Dried fruit with Chocolate
+  - Sorbet
+  - Ice cream
   - Fro-yo bars
   
 ## Drinks  
@@ -41,5 +41,5 @@ Pantry staples and "fast food" that comes together with minimal fuss.
   - Root beer
   - Fruit juice
   - Chocolate milk
-  - Coffee: Coffee, Coffee (decaf), Distilled water
+  - Coffee: Coffee, Distilled water
   - Wine
