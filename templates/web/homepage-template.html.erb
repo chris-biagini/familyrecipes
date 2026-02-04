@@ -26,18 +26,19 @@
         <p>A collection of our family’s favorite recipes.</p>
       </header>
 
+      <%# Helper to generate URL-safe IDs from category names -%>
+      <%- slugify = ->(text) { text.downcase.gsub(/[^a-z0-9]+/, '-') } -%>
+
       <div class="toc_nav">
         <ul>
           <%- grouped_recipes.each do |category, recipes| -%>
-            <% category_id = category.downcase.gsub(/[^a-z0-9]+/, '-') %>
-            <li><a href="#<%= category_id %>"><%= category %></a></li>
+            <li><a href="#<%= slugify.call(category) %>"><%= category %></a></li>
           <%- end -%>
         </ul>
       </div>
 
       <%- grouped_recipes.each do |category, recipes| -%>
-      <% category_id = category.downcase.gsub(/[^a-z0-9]+/, '-') %>
-      <section id="<%= category_id %>">
+      <section id="<%= slugify.call(category) %>">
         <h2><%= category %></h2>
         <ul>
           <%- recipes.each do |recipe| -%>

@@ -25,7 +25,7 @@
         <h1>Ingredient Index</h1>
       </header>
       
-      <%- sorted_ingredients.each_with_index do |(ingredient, recipes), index| -%>
+      <%- sorted_ingredients.each do |ingredient, recipes| -%>
       <section>
         <h2><%= ingredient %></h2>
         <ul>

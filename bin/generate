@@ -178,10 +178,23 @@ end
 
 combined_recipes_and_quick_bites_by_category = recipes_by_category.merge(quick_bites_by_category)
 
+# Separate regular recipes from Quick Bites for the grocery page layout
+grocery_regular_recipes = combined_recipes_and_quick_bites_by_category.reject { |cat, _| cat.start_with?('Quick Bites') }
+grocery_quick_bites = combined_recipes_and_quick_bites_by_category.select { |cat, _| cat.start_with?('Quick Bites') }
+
+# Extract subsection names from Quick Bites categories (e.g., "Quick Bites: Snacks" -> "Snacks")
+grocery_quick_bites_by_subsection = grocery_quick_bites.transform_keys do |cat|
+  name = cat.sub(/^Quick Bites(: )?/, '')
+  name.empty? ? 'Other' : name
+end
+
 template_path = File.join(template_dir, "groceries-template.html.erb")
 erb_template = ERB.new(File.read(template_path), trim_mode: "-")
 groceries_path = File.join(output_dir, "groceries", "index.html")
 FileUtils.mkdir_p(File.dirname(groceries_path))  # Ensure directory exists
-# Pass both recipes_by_category and the ingredient database to the template.
-FamilyRecipes.write_file_if_changed(groceries_path, erb_template.result_with_hash(grouped_recipes: combined_recipes_and_quick_bites_by_category, ingredient_database: grocery_info))
+FamilyRecipes.write_file_if_changed(groceries_path, erb_template.result_with_hash(
+  regular_recipes: grocery_regular_recipes,
+  quick_bites_by_subsection: grocery_quick_bites_by_subsection,
+  ingredient_database: grocery_info
+))
 print "done!\n"

@@ -1,5 +1,5 @@
-<% require 'erb'      -%>
-<% include ERB::Util  -%>
+<%# Helper for HTML escaping -%>
+<%- h = ->(text) { ERB::Util.html_escape(text) } -%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -539,17 +539,6 @@
 
     <p id="instructions" class="hidden-until-js">Select the recipes you're planning to make, then print this page to get a printable menu and grocery list.</p>
 
-    <%
-      # Separate regular recipes from Quick Bites
-      regular_recipes = grouped_recipes.reject { |cat, _| cat.start_with?('Quick Bites') }
-      quick_bites = grouped_recipes.select { |cat, _| cat.start_with?('Quick Bites') }
-
-      # Extract subsection names from Quick Bites categories (e.g., "Quick Bites: Snacks" -> "Snacks")
-      quick_bites_by_subsection = quick_bites.transform_keys do |cat|
-        name = cat.sub(/^Quick Bites(: )?/, '')
-        name.empty? ? 'Other' : name
-      end
-    -%>
     <div id="recipe-selector" class="hidden-until-js">
       <%- regular_recipes.each do |category, recipes| -%>
       <div class="category">
@@ -557,8 +546,8 @@
         <ul>
         <%- recipes.each do |recipe| -%>
           <li>
-            <input type="checkbox" id="<%= recipe.id %>-checkbox" data-title="<%= html_escape(recipe.title) %>" data-ingredients="<%= html_escape(recipe.all_ingredient_names.to_json) %>">
-            <label for="<%= recipe.id %>-checkbox" title="Ingredients: <%= html_escape(recipe.all_ingredient_names.join(', ')) %>"><%= recipe.title %></label>
+            <input type="checkbox" id="<%= recipe.id %>-checkbox" data-title="<%= h.call(recipe.title) %>" data-ingredients="<%= h.call(recipe.all_ingredient_names.to_json) %>">
+            <label for="<%= recipe.id %>-checkbox" title="Ingredients: <%= h.call(recipe.all_ingredient_names.join(', ')) %>"><%= recipe.title %></label>
             <a href="/<%= recipe.id %>" class="recipe-link" title="Open <%= recipe.title %> in new tab" target="_blank">→</a>
           </li>
         <%- end -%>
@@ -576,8 +565,8 @@
             <ul>
             <%- items.each do |item| -%>
               <li>
-                <input type="checkbox" id="<%= item.id %>-checkbox" data-title="<%= html_escape(item.title) %>" data-ingredients="<%= html_escape(item.all_ingredient_names.to_json) %>">
-                <label for="<%= item.id %>-checkbox" title="Ingredients: <%= html_escape(item.all_ingredient_names.join(', ')) %>"><%= item.title %></label>
+                <input type="checkbox" id="<%= item.id %>-checkbox" data-title="<%= h.call(item.title) %>" data-ingredients="<%= h.call(item.all_ingredient_names.to_json) %>">
+                <label for="<%= item.id %>-checkbox" title="Ingredients: <%= h.call(item.all_ingredient_names.join(', ')) %>"><%= item.title %></label>
               </li>
             <%- end -%>
             </ul>
@@ -599,16 +588,17 @@
     </header>
 
     <section id="grocery-list">
-      <% ingredient_database.each do |aisle, ingredients| %>
-      <div class="aisle"<%= ' style="display:none"' if aisle == "Omit_From_List" %>>
+      <%- ingredient_database.each do |aisle, ingredients| -%>
+      <%- aisle_hidden = (aisle == "Omit_From_List") ? ' style="display:none"' : '' -%>
+      <div class="aisle"<%= aisle_hidden %>>
         <h3><%= aisle %></h3>
         <ul>
-          <% ingredients.each do |ingredient| %>
+          <%- ingredients.each do |ingredient| -%>
             <li><%= ingredient[:name] %></li>
-          <% end %>
+          <%- end -%>
         </ul>
       </div>
-      <% end %>
+      <%- end -%>
 
       <div class="aisle">
         <h3>Miscellaneous</h3>
