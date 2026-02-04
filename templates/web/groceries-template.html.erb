@@ -250,17 +250,93 @@
       font-size: 0.95rem;
     }
 
-    /* Grocery List - hidden on screen, shown in print */
+    /* Grocery List Preview - shown on screen */
+    #grocery-preview {
+      max-width: 900px;
+      margin: 2rem auto 0;
+      padding-top: 2rem;
+      border-top: 2px solid #ddd;
+    }
+
+    #grocery-preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    #grocery-preview-header h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #666;
+      margin: 0;
+    }
+
+    #grocery-preview-header .item-count {
+      font-size: 0.9rem;
+      color: #888;
+      font-style: italic;
+    }
+
+    #grocery-preview-empty {
+      text-align: center;
+      color: #999;
+      font-style: italic;
+      padding: 2rem;
+    }
+
     #grocery-list {
       display: none;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 1.5rem;
+    }
+
+    #grocery-list .aisle {
+      background: #fafafa;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      padding: 0.75rem 1rem;
+    }
+
+    #grocery-list .aisle.is-empty {
+      display: none;
+    }
+
+    #grocery-list h3 {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #555;
+      margin: 0 0 0.5rem 0;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid #ddd;
+    }
+
+    #grocery-list ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
     }
 
     #grocery-list ul li {
       display: none;
+      font-size: 0.9rem;
+      padding: 0.25rem 0;
+      color: #333;
     }
 
     #grocery-list ul li.is-needed-for-selected-recipes {
       display: block;
+    }
+
+    #grocery-list ul li::before {
+      content: '○';
+      color: #999;
+      margin-right: 0.5rem;
+      font-size: 0.7rem;
     }
 
     /* Notes section - hidden on screen */
@@ -276,8 +352,15 @@
 
     @media print {
       /* Hide screen-only elements */
-      #freeform-section, nav, #instructions {
+      #freeform-section, nav, #instructions, #grocery-preview-header, #grocery-preview-empty {
         display: none !important;
+      }
+
+      #grocery-preview {
+        max-width: none;
+        margin: 0;
+        padding: 0;
+        border: none;
       }
 
       main {
@@ -572,11 +655,18 @@ CSS
       <p class="hint">These will be added to your grocery list when you print.</p>
     </div>
 
-    <header id="print-grocery-header" style="display: none;">
-      <h1>Grocery List</h1>
-    </header>
+    <div id="grocery-preview" class="hidden-until-js">
+      <div id="grocery-preview-header">
+        <h2>Shopping List</h2>
+        <span class="item-count" id="item-count"></span>
+      </div>
+      <p id="grocery-preview-empty">Select recipes above to build your shopping list.</p>
 
-    <section id="grocery-list">
+      <header id="print-grocery-header" style="display: none;">
+        <h1>Grocery List</h1>
+      </header>
+
+      <section id="grocery-list">
       <%- ingredient_database.each do |aisle, ingredients| -%>
       <%- aisle_hidden = (aisle == "Omit_From_List") ? ' style="display:none"' : '' -%>
       <div class="aisle"<%= aisle_hidden %>>
@@ -594,6 +684,7 @@ CSS
         <ul id="misc-items"></ul>
       </div>
     </section>
+    </div>
 
     <div id="notes-section">
       <h3>Notes</h3>
@@ -728,6 +819,23 @@ CSS
         if (quickBites) {
           const hasAnySelected = quickBites.querySelectorAll('li.is-selected').length > 0;
           quickBites.classList.toggle('is-empty', !hasAnySelected);
+        }
+
+        // (h) update item count and empty state for preview
+        const visibleItems = document.querySelectorAll('#grocery-list li.is-needed-for-selected-recipes');
+        const itemCount = visibleItems.length;
+        const countEl = document.getElementById('item-count');
+        const emptyEl = document.getElementById('grocery-preview-empty');
+        const groceryList = document.getElementById('grocery-list');
+
+        if (itemCount > 0) {
+          countEl.textContent = itemCount + (itemCount === 1 ? ' item' : ' items');
+          emptyEl.style.display = 'none';
+          groceryList.style.display = 'grid';
+        } else {
+          countEl.textContent = '';
+          emptyEl.style.display = 'block';
+          groceryList.style.display = 'none';
         }
       }
 
