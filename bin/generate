@@ -232,24 +232,25 @@ print "done!\n"
 
 # Validate ingredients
 print "Validating ingredients..."
-all_recipe_ingredients = Set.new
+ingredients_to_recipes = Hash.new { |h, k| h[k] = [] }
 recipes_array.each do |recipe|
   recipe.all_ingredients.each do |ingredient|
-    all_recipe_ingredients << ingredient.name
+    ingredients_to_recipes[ingredient.name] << recipe.title
   end
 end
 quick_bites_array.each do |quick_bite|
   quick_bite.ingredients.each do |ingredient_name|
-    all_recipe_ingredients << ingredient_name
+    ingredients_to_recipes[ingredient_name] << quick_bite.title
   end
 end
 
-unknown_ingredients = all_recipe_ingredients - known_ingredients
+unknown_ingredients = ingredients_to_recipes.keys.to_set - known_ingredients
 if unknown_ingredients.any?
   puts "\n"
   puts "WARNING: The following ingredients are not in grocery-info.yaml:"
   unknown_ingredients.sort.each do |ing|
-    puts "  - #{ing}"
+    recipes = ingredients_to_recipes[ing].uniq.sort
+    puts "  - #{ing} (in: #{recipes.join(', ')})"
   end
   puts "Add them to grocery-info.yaml or add as aliases to existing items."
   puts ""

@@ -11,8 +11,8 @@ Produce:
   - Baby spinach
   - Bananas
   - Basil
-  - name: Bell peppers
-    aliases: [Green bell pepper, Red bell pepper]
+  - Red bell peppers
+  - Green bell peppers
   - Berries
   - Blueberries
   - Broccoli
@@ -57,8 +57,10 @@ Bread:
 
 International:
   - Asian snacks
-  - name: Beans
-    aliases: [Beans (canned), Black beans (canned), Red beans]
+  - Beans (any dry)
+  - Beans (any canned)
+  - Black beans (canned)
+  - Red beans (dry)
   - Chickpeas (canned)
   - Chipotles en adobo
   - Jasmine rice
@@ -88,7 +90,7 @@ Refrigerated:
   - Chocolate milk
   - Cream cheese
   - name: Eggs
-    aliases: [Egg yolk, Egg yolks, Egg white]
+    aliases: [Egg, Egg yolk, Egg yolks, Egg white]
   - Greek yogurt
   - Heavy cream
   - Hummus
