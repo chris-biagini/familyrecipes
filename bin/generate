@@ -31,8 +31,11 @@ print "done!\n"
 # parse recipes; actual parsing happens in Recipe constructor
 print "Parsing recipes from #{recipes_dir}..."
 
+quick_bites_filename = FamilyRecipes::CONFIG[:quick_bites_filename]
+quick_bites_category = FamilyRecipes::CONFIG[:quick_bites_category]
+
 recipe_files = Dir.glob(File.join(recipes_dir, "**", "*")).select do |file|
-  File.file?(file) && File.basename(file) != "Quick Bites.txt"
+  File.file?(file) && File.basename(file) != quick_bites_filename
 end
 
 recipes_array = recipe_files.map do |file|
@@ -43,8 +46,7 @@ recipes_array = recipe_files.map do |file|
   Recipe.new(markdown_source: source, id: id, category: category)
 end
 
-file_path        = File.join(recipes_dir, "Quick Bites.txt")
-base_category    = "Quick Bites"        # => "Quick Bites"
+file_path        = File.join(recipes_dir, quick_bites_filename)
 quick_bite_specs = []
 current_subcat   = nil
 
@@ -57,7 +59,7 @@ File.foreach(file_path) do |line|
     # saw an item line like "- Peanut Butter on Bread"
     text = $1.strip
     # build "Quick Bites: Snacks" (or just "Quick Bites" if no subcat yet)
-    category = [base_category, current_subcat].compact.join(": ")
+    category = [quick_bites_category, current_subcat].compact.join(": ")
     quick_bite_specs << { text: text, category: category }
   end
 end
@@ -116,13 +118,14 @@ print "Generating homepage in #{output_dir}..."
 recipes_by_category = recipes_array.group_by(&:category) # hash of recipes, with categories as keys
 quick_bites_by_category = quick_bites_array.group_by(&:category) # hash of quick bites, with categories as keys
 
-# Read and process the template
-template_path = File.join(template_dir, "homepage-template.html.erb")
-erb_template = ERB.new(File.read(template_path), trim_mode: "-")
-
 # Generate the homepage file
+slugify = ->(text) { FamilyRecipes.slugify(text) }
 homepage_path = File.join(output_dir, "index.html")
-FamilyRecipes.write_file_if_changed(homepage_path, erb_template.result_with_hash(grouped_recipes: recipes_by_category, render: render))
+FamilyRecipes.render_template(:homepage, homepage_path,
+  grouped_recipes: recipes_by_category,
+  render: render,
+  slugify: slugify
+)
 
 print "done!\n"
 
@@ -137,11 +140,11 @@ recipes_array.each do |recipe|
 end
 sorted_ingredients = recipes_by_ingredient.sort_by { |ingredient_name, _| ingredient_name.downcase }
 
-template_path = File.join(template_dir, "index-template.html.erb")
-erb_template = ERB.new(File.read(template_path), trim_mode: "-")
 index_path = File.join(output_dir, "index", "index.html")
-FileUtils.mkdir_p(File.dirname(index_path))  # Ensure directory exists
-FamilyRecipes.write_file_if_changed(index_path, erb_template.result_with_hash(sorted_ingredients: sorted_ingredients, render: render))
+FamilyRecipes.render_template(:index, index_path,
+  sorted_ingredients: sorted_ingredients,
+  render: render
+)
 
 print "done!\n"
 
@@ -185,23 +188,21 @@ end
 combined_recipes_and_quick_bites_by_category = recipes_by_category.merge(quick_bites_by_category)
 
 # Separate regular recipes from Quick Bites for the grocery page layout
-grocery_regular_recipes = combined_recipes_and_quick_bites_by_category.reject { |cat, _| cat.start_with?('Quick Bites') }
-grocery_quick_bites = combined_recipes_and_quick_bites_by_category.select { |cat, _| cat.start_with?('Quick Bites') }
+grocery_regular_recipes = combined_recipes_and_quick_bites_by_category.reject { |cat, _| cat.start_with?(quick_bites_category) }
+grocery_quick_bites = combined_recipes_and_quick_bites_by_category.select { |cat, _| cat.start_with?(quick_bites_category) }
 
 # Extract subsection names from Quick Bites categories (e.g., "Quick Bites: Snacks" -> "Snacks")
+quick_bites_prefix = /^#{Regexp.escape(quick_bites_category)}(: )?/
 grocery_quick_bites_by_subsection = grocery_quick_bites.transform_keys do |cat|
-  name = cat.sub(/^Quick Bites(: )?/, '')
+  name = cat.sub(quick_bites_prefix, '')
   name.empty? ? 'Other' : name
 end
 
-template_path = File.join(template_dir, "groceries-template.html.erb")
-erb_template = ERB.new(File.read(template_path), trim_mode: "-")
 groceries_path = File.join(output_dir, "groceries", "index.html")
-FileUtils.mkdir_p(File.dirname(groceries_path))  # Ensure directory exists
-FamilyRecipes.write_file_if_changed(groceries_path, erb_template.result_with_hash(
+FamilyRecipes.render_template(:groceries, groceries_path,
   regular_recipes: grocery_regular_recipes,
   quick_bites_by_subsection: grocery_quick_bites_by_subsection,
   ingredient_database: grocery_info,
   render: render
-))
+)
 print "done!\n"

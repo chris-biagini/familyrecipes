@@ -12,6 +12,18 @@ require 'set'
 
 # Shared utilities
 module FamilyRecipes
+  # Configuration constants
+  CONFIG = {
+    quick_bites_filename: 'Quick Bites.txt',
+    quick_bites_category: 'Quick Bites',
+    templates: {
+      recipe: 'recipe-template.html.erb',
+      homepage: 'homepage-template.html.erb',
+      index: 'index-template.html.erb',
+      groceries: 'groceries-template.html.erb'
+    }
+  }.freeze
+
   # Default template directory (can be overridden)
   @template_dir = nil
 
@@ -29,6 +41,21 @@ module FamilyRecipes
     ERB.new(partial_content, trim_mode: '-').result_with_hash(locals)
   end
 
+  # Render a template and write to output file (only if content changed)
+  # Usage: FamilyRecipes.render_template(:homepage, output_path, locals)
+  def self.render_template(template_key, output_path, locals = {})
+    raise "template_dir not set" unless @template_dir
+
+    template_name = CONFIG[:templates][template_key]
+    raise "Unknown template: #{template_key}" unless template_name
+
+    template_path = File.join(@template_dir, template_name)
+    erb_template = ERB.new(File.read(template_path), trim_mode: '-')
+
+    FileUtils.mkdir_p(File.dirname(output_path))
+    write_file_if_changed(output_path, erb_template.result_with_hash(locals))
+  end
+
   # Generate a URL-safe slug from a title string
   def self.slugify(title)
     title
@@ -41,7 +68,7 @@ module FamilyRecipes
   # Parse grocery-info.yaml into structured data
   # Items can be simple strings or hashes with 'name' and 'aliases' keys
   def self.parse_grocery_info(yaml_path)
-    raw = YAML.load_file(yaml_path)
+    raw = YAML.safe_load_file(yaml_path, permitted_classes: [], permitted_symbols: [], aliases: false)
     aisles = {}
 
     raw.each do |aisle, items|
