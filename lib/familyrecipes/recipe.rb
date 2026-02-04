@@ -18,21 +18,21 @@ class Recipe
     @source = markdown_source
     @id = id
     @category = category
-  
+
     @version_hash = Digest::SHA256.hexdigest(@source)
-    
+
     @title = nil
     @description = nil
     @steps = []
     @footer = nil
-  
+
     parse_recipe
   end
-  
+
   def relative_url
     "/#{@id}"
   end
-  
+
   def to_html(erb_template_path:)
     markdown = MARKDOWN
     template = File.read(erb_template_path)
@@ -43,101 +43,51 @@ class Recipe
     # magic ruby syntax, returns a flat array of all unique ingredients
     @steps.flat_map(&:ingredients).uniq { |ingredient| ingredient.normalized_name }
   end
-  
+
   def all_ingredient_names
     @steps
       .flat_map(&:ingredients)
       .map(&:normalized_name)
       .uniq
   end
-  
+
   private
 
   def parse_recipe
-    lines = @source.split("\n").reject { |line| line.strip.empty? }
+    # Use the new two-phase parser
+    tokens = LineClassifier.classify(@source)
+    builder = RecipeBuilder.new(tokens)
+    doc = builder.build
 
-    @title = parse_title(lines)
-    @description = parse_description(lines)
-    @steps = parse_steps(lines)
-    @footer = parse_footer(lines)
+    @title = doc[:title]
+    @description = doc[:description]
+    @steps = build_steps(doc[:steps])
+    @footer = doc[:footer]
 
     if @steps.empty?
       raise StandardError, "Invalid recipe format: Must have at least one step."
     end
   end
 
-  def parse_title(lines)
-    first_line = lines.shift&.strip
-    if first_line&.match(/^# (.+)$/)
-      $1
-    else
-      raise StandardError, "Invalid recipe format: The first line must be a level-one header (# Toasted Bread)."
+  # Convert step hashes from RecipeBuilder into Step objects
+  def build_steps(step_data)
+    step_data.map do |data|
+      Step.new(
+        tldr: data[:tldr],
+        ingredients: build_ingredients(data[:ingredients]),
+        instructions: data[:instructions]
+      )
     end
   end
 
-  def parse_description(lines)
-    return nil if lines.empty?
-    return nil if lines.first.strip.match(/^## /)
-
-    lines.shift.strip
-  end
-
-  def parse_steps(lines)
-    steps = []
-
-    while lines.any?
-      break if lines.first.strip == "---"
-
-      current_line = lines.shift.strip
-      if current_line.match(/^## (.+)$/)
-        steps << parse_step($1, lines)
-      end
+  # Convert ingredient hashes from IngredientParser into Ingredient objects
+  def build_ingredients(ingredient_data)
+    ingredient_data.map do |data|
+      Ingredient.new(
+        name: data[:name],
+        quantity: data[:quantity],
+        prep_note: data[:prep_note]
+      )
     end
-
-    steps
-  end
-
-  def parse_step(tldr, lines)
-    ingredients = []
-    instruction_lines = []
-
-    while lines.any?
-      break if lines.first.strip == "---"
-      break if lines.first.strip.match(/^## /)
-
-      current_line = lines.shift.strip
-
-      if current_line.match(/^- (.+)$/)
-        ingredients << parse_ingredient($1)
-      else
-        instruction_lines << current_line
-      end
-    end
-
-    Step.new(
-      tldr: tldr,
-      ingredients: ingredients,
-      instructions: instruction_lines.join("\n\n")
-    )
-  end
-
-  def parse_ingredient(text)
-    parts = text.split(':', 2)
-    left_side = parts[0]
-    prep_note = parts[1]&.strip
-
-    left_parts = left_side.split(',', 2)
-    name = left_parts[0].strip
-    quantity = left_parts[1]&.strip
-
-    Ingredient.new(name: name, quantity: quantity, prep_note: prep_note)
-  end
-
-  def parse_footer(lines)
-    return nil if lines.empty?
-    return nil unless lines.first.strip == "---"
-
-    lines.shift # Discard the delimiter
-    lines.join("\n\n").strip
   end
 end

@@ -101,6 +101,9 @@ end
 # my classes
 
 require_relative 'familyrecipes/ingredient'
+require_relative 'familyrecipes/ingredient_parser'
+require_relative 'familyrecipes/line_classifier'
+require_relative 'familyrecipes/recipe_builder'
 require_relative 'familyrecipes/step'
 require_relative 'familyrecipes/recipe'
 require_relative 'familyrecipes/quick_bite'
