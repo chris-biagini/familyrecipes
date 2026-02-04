@@ -1,0 +1,141 @@
+require_relative 'test_helper'
+
+class IngredientTest < Minitest::Test
+  def setup
+    # Reset alias map for clean tests
+    Ingredient.alias_map = {}
+  end
+
+  # Pluralization tests
+  def test_pluralize_regular_word
+    assert_equal ["apples"], Ingredient.pluralize("apple")
+  end
+
+  def test_pluralize_word_ending_in_s
+    assert_equal ["glasses"], Ingredient.pluralize("glass")
+  end
+
+  def test_pluralize_word_ending_in_x
+    assert_equal ["boxes"], Ingredient.pluralize("box")
+  end
+
+  def test_pluralize_word_ending_in_ch
+    assert_equal ["peaches"], Ingredient.pluralize("peach")
+  end
+
+  def test_pluralize_word_ending_in_sh
+    assert_equal ["dishes"], Ingredient.pluralize("dish")
+  end
+
+  def test_pluralize_word_ending_in_consonant_y
+    assert_equal ["berries"], Ingredient.pluralize("berry")
+  end
+
+  def test_pluralize_word_ending_in_vowel_y
+    assert_equal ["days"], Ingredient.pluralize("day")
+  end
+
+  def test_pluralize_word_ending_in_consonant_o
+    assert_equal ["potatoes"], Ingredient.pluralize("potato")
+  end
+
+  def test_pluralize_irregular_leaf
+    assert_equal ["leaves"], Ingredient.pluralize("leaf")
+  end
+
+  def test_pluralize_nil
+    assert_equal [nil], Ingredient.pluralize(nil)
+  end
+
+  def test_pluralize_empty
+    assert_equal [""], Ingredient.pluralize("")
+  end
+
+  # Singularization tests
+  def test_singularize_regular_plural
+    assert_equal ["apple"], Ingredient.singularize("apples")
+  end
+
+  def test_singularize_word_ending_in_ies
+    assert_equal ["berry"], Ingredient.singularize("berries")
+  end
+
+  def test_singularize_word_ending_in_es_after_s
+    assert_equal ["glass"], Ingredient.singularize("glasses")
+  end
+
+  def test_singularize_word_ending_in_es_after_ch
+    assert_equal ["peach"], Ingredient.singularize("peaches")
+  end
+
+  def test_singularize_word_ending_in_oes
+    assert_equal ["potato"], Ingredient.singularize("potatoes")
+  end
+
+  def test_singularize_irregular_leaves
+    assert_equal ["leaf"], Ingredient.singularize("leaves")
+  end
+
+  # Quantity parsing tests
+  def test_quantity_value_simple_number
+    ingredient = Ingredient.new(name: "Flour", quantity: "250 g")
+    assert_equal "250", ingredient.quantity_value
+  end
+
+  def test_quantity_value_decimal
+    ingredient = Ingredient.new(name: "Salt", quantity: "3.5 g")
+    assert_equal "3.5", ingredient.quantity_value
+  end
+
+  def test_quantity_value_fraction_half
+    ingredient = Ingredient.new(name: "Butter", quantity: "1/2 cup")
+    assert_equal "0.5", ingredient.quantity_value
+  end
+
+  def test_quantity_value_fraction_quarter
+    ingredient = Ingredient.new(name: "Oil", quantity: "1/4 cup")
+    assert_equal "0.25", ingredient.quantity_value
+  end
+
+  def test_quantity_value_range_takes_high_end
+    ingredient = Ingredient.new(name: "Eggs", quantity: "2-3")
+    assert_equal "3", ingredient.quantity_value
+  end
+
+  def test_quantity_value_nil_when_no_quantity
+    ingredient = Ingredient.new(name: "Salt")
+    assert_nil ingredient.quantity_value
+  end
+
+  def test_quantity_value_nil_when_empty_quantity
+    ingredient = Ingredient.new(name: "Salt", quantity: "  ")
+    assert_nil ingredient.quantity_value
+  end
+
+  def test_quantity_unit
+    ingredient = Ingredient.new(name: "Flour", quantity: "250 g")
+    assert_equal "g", ingredient.quantity_unit
+  end
+
+  def test_quantity_unit_normalizes_clove
+    ingredient = Ingredient.new(name: "Garlic", quantity: "4 clove")
+    assert_equal "cloves", ingredient.quantity_unit
+  end
+
+  def test_quantity_unit_nil_when_no_unit
+    ingredient = Ingredient.new(name: "Eggs", quantity: "4")
+    assert_nil ingredient.quantity_unit
+  end
+
+  # Normalized name tests
+  def test_normalized_name_returns_original_when_no_alias
+    ingredient = Ingredient.new(name: "Flour")
+    assert_equal "Flour", ingredient.normalized_name
+  end
+
+  def test_normalized_name_returns_canonical_when_alias_exists
+    Ingredient.alias_map = { "Flour (all-purpose)" => "Flour" }
+    ingredient = Ingredient.new(name: "Flour (all-purpose)")
+    assert_equal "Flour", ingredient.normalized_name
+  end
+end
