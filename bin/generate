@@ -12,6 +12,12 @@ resources_dir = File.join(project_root, "resources/web")
 output_dir    = File.join(project_root, "output/web")
 grocery_info_path = File.join(project_root, "resources/grocery-info.yaml")
 
+# Set template directory for partial rendering
+FamilyRecipes.template_dir = template_dir
+
+# Helper lambda for templates to render partials
+render = ->(name, locals = {}) { FamilyRecipes.render_partial(name, locals) }
+
 # Parse grocery info and build alias map (must happen before recipe parsing)
 print "Loading grocery info from #{grocery_info_path}..."
 grocery_aisles = FamilyRecipes.parse_grocery_info(grocery_info_path)
@@ -116,7 +122,7 @@ erb_template = ERB.new(File.read(template_path), trim_mode: "-")
 
 # Generate the homepage file
 homepage_path = File.join(output_dir, "index.html")
-FamilyRecipes.write_file_if_changed(homepage_path, erb_template.result_with_hash(grouped_recipes: recipes_by_category))
+FamilyRecipes.write_file_if_changed(homepage_path, erb_template.result_with_hash(grouped_recipes: recipes_by_category, render: render))
 
 print "done!\n"
 
@@ -135,7 +141,7 @@ template_path = File.join(template_dir, "index-template.html.erb")
 erb_template = ERB.new(File.read(template_path), trim_mode: "-")
 index_path = File.join(output_dir, "index", "index.html")
 FileUtils.mkdir_p(File.dirname(index_path))  # Ensure directory exists
-FamilyRecipes.write_file_if_changed(index_path, erb_template.result_with_hash(sorted_ingredients: sorted_ingredients))
+FamilyRecipes.write_file_if_changed(index_path, erb_template.result_with_hash(sorted_ingredients: sorted_ingredients, render: render))
 
 print "done!\n"
 
@@ -195,6 +201,7 @@ FileUtils.mkdir_p(File.dirname(groceries_path))  # Ensure directory exists
 FamilyRecipes.write_file_if_changed(groceries_path, erb_template.result_with_hash(
   regular_recipes: grocery_regular_recipes,
   quick_bites_by_subsection: grocery_quick_bites_by_subsection,
-  ingredient_database: grocery_info
+  ingredient_database: grocery_info,
+  render: render
 ))
 print "done!\n"

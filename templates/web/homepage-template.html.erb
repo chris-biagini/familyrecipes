@@ -1,29 +1,13 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Biagini Family Recipes</title>
-  <link rel="stylesheet" href="/style.css">
-  
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link rel="shortcut icon" href="/favicon.ico">
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-</head>
+<%= render.call('head', title: 'Biagini Family Recipes') %>
+
 <body>
-  <nav>
-    <div>
-      <a href="/" class="home" title="Home (Table of Contents)">Home</a>
-      <a href="/index/" class="index" title="Index of ingredients">Index</a>
-      <a href="/groceries/" class="groceries" title="Printable grocery list">Groceries</a>
-    </div>
-  </nav>
-  
+<%= render.call('nav') %>
+
   <main>
     <article>
       <header>
         <h1>Our Recipes</h1>
-        <p>A collection of our family’s favorite recipes.</p>
+        <p>A collection of our family's favorite recipes.</p>
       </header>
 
       <%# Helper to generate URL-safe IDs from category names -%>
@@ -47,7 +31,7 @@
         </ul>
       </section>
       <%- end -%>
-      
+
       <footer>
         <p>For more information, visit <a href="https://github.com/chris-biagini/familyrecipes">our project page on GitHub</a>.</p>
       </footer>
@@ -55,16 +39,16 @@
   </main>
   <script>
     /* https://meyerweb.com/eric/thoughts/category/personal/rebecca/?order=asc/ */
-    
+
     const sequence = ["r", "e", "b", "e", "c", "c", "a"];
     let input = [];
-    
+
     document.addEventListener("keydown", (event) => {
       if (event.target.tagName === "INPUT" || event.target.tagName === "TEXTAREA") return;
-    
+
       input.push(event.key.toLowerCase());
       input = input.slice(-sequence.length);
-    
+
       if (input.join("") === sequence.join("")) {
         document.body.style.setProperty("--gingham-stripe-color", "hsla(270, 50%, 40%, 0.5)");
         input = [];

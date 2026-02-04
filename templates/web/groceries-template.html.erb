@@ -1,17 +1,8 @@
 <%# Helper for HTML escaping -%>
 <%- h = ->(text) { ERB::Util.html_escape(text) } -%>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Biagini Family Recipes: Menu</title>
-  <link rel="stylesheet" href="/style.css">
-  
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link rel="shortcut icon" href="/favicon.ico">
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  
+
+<%# Page-specific styles for the grocery list builder -%>
+<%- extra_styles = <<~CSS
   <style>
     .hidden-until-js {
       display: none;
@@ -518,21 +509,19 @@
       }
     }
   </style>
-</head>
+CSS
+-%>
+
+<%= render.call('head', title: 'Biagini Family Recipes: Menu', extra_head: extra_styles) %>
+
 <body>
-  <nav>
-    <div>
-      <a href="/" class="home" title="Home (Table of Contents)">Home</a>
-      <a href="/index/" class="index" title="Index of ingredients">Index</a>
-      <a href="/groceries/" class="groceries" title="Printable grocery list">Groceries</a>
-    </div>
-  </nav>
-  
+<%= render.call('nav') %>
+
   <main>
     <header id="menu-header">
       <h1>Menu</h1>
     </header>
-    
+
     <noscript>
       <p><em>This page works without JavaScript, but consider enabling it if you would like to generate a custom list from selected recipes.</em></p>
     </noscript>
@@ -576,7 +565,7 @@
       </div>
       <%- end -%>
     </div>
-    
+
     <div id="freeform-section" class="hidden-until-js">
       <h2>Additional Items</h2>
       <textarea id="freeform-entries" rows="6" placeholder="Add extra items here, one per line..."></textarea>
@@ -648,11 +637,11 @@
           document.getElementById('freeform-entries').value = saved;
         }
       }
-  
+
       function updateGroceryList() {
         // A Map: ingredientName → Set of recipe titles that need it
         const neededMap = new Map();
-  
+
         // (a) from checked recipes
         document.querySelectorAll('input[type="checkbox"][data-ingredients]').forEach(cb => {
           if (!cb.checked) return;
@@ -663,8 +652,8 @@
             neededMap.get(name).add(recipeTitle);
           });
         });
-  
-        // (b) from the freeform textarea (we still want to show these, but they won’t get a "Needed for")
+
+        // (b) from the freeform textarea (we still want to show these, but they won't get a "Needed for")
         document.getElementById('freeform-entries').value
           .split(/\r?\n/)
           .map(l => l.trim())
@@ -672,7 +661,7 @@
           .forEach(name => {
             if (!neededMap.has(name)) neededMap.set(name, new Set());
           });
-  
+
         // (c) show/hide & title for your static list items
         document
           .querySelectorAll('#grocery-list ul:not(#misc-items) li')
@@ -695,7 +684,7 @@
               li.removeAttribute('title');
             }
           });
-  
+
         // (d) dump everything else (leftovers) into Miscellaneous
         const misc = document.getElementById('misc-items');
         misc.innerHTML = '';
@@ -741,7 +730,7 @@
           quickBites.classList.toggle('is-empty', !hasAnySelected);
         }
       }
-  
+
       document.addEventListener('DOMContentLoaded', () => {
         // reveal the JS-only bits
         document.querySelectorAll('.hidden-until-js')

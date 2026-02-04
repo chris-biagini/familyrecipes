@@ -12,6 +12,23 @@ require 'set'
 
 # Shared utilities
 module FamilyRecipes
+  # Default template directory (can be overridden)
+  @template_dir = nil
+
+  class << self
+    attr_accessor :template_dir
+  end
+
+  # Render a partial template with local variables
+  # Usage: FamilyRecipes.render_partial('head', title: 'My Page')
+  def self.render_partial(name, locals = {})
+    raise "template_dir not set" unless @template_dir
+
+    partial_path = File.join(@template_dir, "_#{name}.html.erb")
+    partial_content = File.read(partial_path)
+    ERB.new(partial_content, trim_mode: '-').result_with_hash(locals)
+  end
+
   # Generate a URL-safe slug from a title string
   def self.slugify(title)
     title
