@@ -1,89 +1,78 @@
-# Ingredient Database
-
-# note: an asterisk after the ingredient name forces its inclusion into the grocery list
+# Grocery Information
+# Items can be simple strings or have a 'name' and 'aliases' list
+# An asterisk after the name marks it as a staple (always on the list)
 
 Fresh Bakery:
   - Bread
 
 Produce:
-  - Cherries
-  - Watermelon
-  - Grapes
-  - Blueberries
-  - Strawberries
-  - Berries
-  - Fruit
-  - Fruit juice
-  - Broccoli
-  - Brussels sprouts
-  - Bell pepper
-  - Bell peppers
-  - Red bell pepper
-  - Red bell peppers
-  - Green bell pepper
-  - Green bell peppers
-  - Celery
-  - Cucumbers
   - Apples
-  - Lemons
-  - Limes
-  - Lime
-  - Oranges
-  - Clementines
-  - Basil
-  - Parsley
-  - Mangoes
-  - Salad greens
-  - Carrot
-  - Carrots
-  - Tomatoes (fresh)
   - Asparagus
   - Baby spinach
-  - Onion
-  - Onions
-  - Red onion
-  - Red onions
-  - Green onions
-  - Potato
-  - Potatoes
-  - Garlic
   - Bananas
+  - Basil
+  - name: Bell peppers
+    aliases: [Green bell pepper, Red bell pepper]
+  - Berries
+  - Blueberries
+  - Broccoli
+  - Brussels sprouts
+  - Carrots
+  - Celery
+  - Cherries
+  - Clementines
+  - Cucumbers
+  - Fruit
+  - Fruit juice
+  - Garlic
+  - Grapes
+  - Green onions
+  - Lemons
+  - Limes
+  - Mangoes
+  - Onions
+  - Oranges
+  - Parsley
+  - Potatoes
+  - Red onions
+  - Salad greens
+  - Strawberries
+  - Tomatoes (fresh)
+  - Watermelon
 
 Gourmet:
-  - Olives
-  - Parmesan
-  - Parmesan cheese
-  - Pecorino
-  - Gruyère
-  - Gouda
-  - Mozzarella (fresh)
   - Bocconcini
   - Calabrian chilis
+  - Gouda
+  - Gruyère
+  - Mozzarella (fresh)
+  - Olives
+  - name: Parmesan
+    aliases: [Parmesan cheese]
+  - Pecorino
 
 Bread:
-  - Sandwich bread
   - Hamburger buns
+  - Sandwich bread
 
 International:
+  - Asian snacks
+  - name: Beans
+    aliases: [Beans (canned), Black beans (canned), Red beans]
+  - Chickpeas (canned)
+  - Chipotles en adobo
+  - Jasmine rice
+  - Kombu
+  - Lentils
+  - Muesli
+  - Pickled jalapeños
   - Queso fresco
   - Queso Quesadilla
-  - Beans (canned)
-  - Black beans (canned)
-  - Chickpeas (canned)
-  - Red beans
-  - Beans
-  - Lentils
-  - Tortillas (large flour)
-  - Tortillas (corn)
-  - Tomato salsa
-  - Pickled jalapeños
-  - Chipotles en adobo
-  - Muesli
-  - Kombu
-  - Soy sauce
-  - Asian snacks
   - Rice
-  - Jasmine rice
+  - Soy sauce
+  - Tomato salsa
+  - Tortillas (corn)
+  - Tortillas (large flour)
 
 Health:
   - Protein shake mix
@@ -91,159 +80,168 @@ Health:
   - Vegan milk
 
 Refrigerated:
-  - Hummus
-  - Whipped cream
+  - American cheese
   - Butter
   - Butter (unsalted)
-  - Cream cheese
-  - String cheese
+  - Buttermilk
   - Cheddar
-  - Muenster
+  - Chocolate milk
+  - Cream cheese
+  - name: Eggs
+    aliases: [Egg yolk, Egg yolks, Egg white]
+  - Greek yogurt
+  - Heavy cream
+  - Hummus
+  - Milk
   - Monterey jack cheese
   - Mozzarella (low-moisture)
   - Mozzarella (shredded)
-  - American cheese
+  - Muenster
   - Ricotta
   - Sour cream
+  - String cheese
+  - Whipped cream
   - Yogurt
-  - Greek yogurt
   - Yogurt cups
-  - Yogurt shakes
   - Yogurt drinks
-  - Buttermilk
-  - Milk
-  - Chocolate milk
-  - Eggs
+  - Yogurt shakes
 
 Household:
-  - Toilet paper
-  - Paper towels
-  - Napkins
   - Air freshener
+  - Napkins
+  - Paper towels
+  - Toilet paper
 
 Alcohol:
-  - Wine
   - Beer
+  - Wine
 
 Cereal:
   - Cereal
   - Rolled oats
 
 Baking:
+  - Baking powder
+  - Baking soda
+  - name: Bouillon
+    aliases: [Vegetable bouillon, Vegetarian bouillon]
+  - Cake mix
+  - Cornmeal
+  - Cornstarch
+  - Diastatic malt powder
+  - Flour (00)
   - Flour (all-purpose)
   - Flour (bread)
+  - Flour (rye)
   - Flour (semolina)
   - Flour (whole wheat)
-  - Flour (00)
-  - Flour (rye)
-  - Cake mix
-  - Yeast
-  - Malt syrup
-  - Diastatic malt powder
-  - Sodium carbonate
-  - Salt
-  - Maldon salt
+  - Honey
   - Kosher salt
+  - Maldon salt
+  - Malt syrup
+  - Maple syrup
+  - Parmalat milk
+  - Salt
+  - Sodium carbonate
   - Sugar (brown)
   - Sugar (white)
-  - Baking soda
-  - Baking powder
   - Vanilla extract
-  - Cornmeal
-  - Maple syrup
-  - Honey
-  - Parmalat milk
-  - Vegetable bouillon
-  - Vegetarian bouillon
-  - Bouillon
+  - Yeast
 
 Spices:
-  - Sesame seeds
-  - Cinnamon
   - Black pepper
+  - Cinnamon
   - Cumin
+  - Italian seasoning
+  - Mexican oregano
+  - MSG
+  - Oregano
+  - Red pepper flakes
+  - Sesame seeds
   - Smoked paprika
   - Thyme
-  - Oregano
-  - Mexican oregano
-  - Red pepper flakes
-  - MSG
 
 Snacks:
-  - Goldfish
-  - Pretzels
-  - Tortilla chips
-  - Triscuits
+  - Candy
+  - name: Chocolate
+    aliases: [Dark chocolate]
+  - Chocolate chips
   - Cookies
+  - Dried fruit
+  - Goldfish
+  - Hershey's Kisses
+  - Peanut butter pretzels
+  - Peanut M&Ms
+  - Pretzels
   - Ritz crackers
   - Salsa
-  - Dried fruit
-  - Hershey's Kisses
-  - Peanut M&Ms
-  - Chocolate
-  - Dark chocolate
-  - Candy
+  - Tortilla chips
+  - Triscuits
 
 Condiments:
-  - Frank’s Red Hot
+  - Frank's Red Hot
   - Hot sauce
+  - Ketchup
+  - Liquid smoke
   - Mayonnaise
   - Veganaise
-  - Liquid smoke
-  - Ketchup
 
 Pantry:
+  - name: Artichokes (jarred)
+    aliases: [Marinated artichokes]
+  - Cavatappi
   - Coffee
   - Coffee (decaf)
+  - Distilled water
   - Farro
-  - Olive oil
-  - Peanut butter
-  - Olive oil (mild)
-  - Raisins
-  - Pasta
-  - Small pasta
+  - Fruit preserves
+  - name: Jarred red peppers
+    aliases: [Roasted peppers (jarred)]
   - Mezze rigatoni
-  - Cavatappi
+  - Olive oil
+  - Olive oil (mild)
+  - Pasta
+  - Pasta sauce (jarred)
+  - Peanut butter
+  - Pecans
+  - Pickles
+  - Raisins
+  - Small pasta
   - Spaghetti
+  - Tomato passata
   - Tomato paste
   - Tomatoes (canned)
-  - Tomato passata
-  - Pasta sauce (jarred)
-  - Marinated artichokes
-  - Artichokes (jarred)
-  - Roasted peppers (jarred)
-  - Jarred red peppers
-  - Walnuts
-  - Pecans
-  - Vinegar (white)
-  - White vinegar
-  - Vinegar (sherry)
   - Vinegar (balsamic)
-  - Fruit preserves
-  - Pickles
-  - Distilled water
+  - Vinegar (sherry)
+  - name: Vinegar (white)
+    aliases: [White vinegar]
+  - Walnuts
 
 Beverages:
   - Diet Coke
   - Root beer
 
 Personal:
-  - Shampoo
   - Bath soap
-  - Mens' Deodorant
-  - Melatonin
   - Listerine
+  - Melatonin
+  - Mens' Deodorant
+  - Shampoo
 
 Frozen:
   - Chik'n nuggets
   - French fries
-  - Tater tots
   - Fro-yo bars
   - Frozen potatoes
-  - Soft pretzels
   - Frozen spinach
-  - Impossible burgers
   - Green beans
+  - name: Ice cream
+    aliases: [Ice cream (vanilla)]
+  - Impossible burgers
+  - Peas and carrots (frozen)
+  - Soft pretzels
+  - Sorbet
+  - Tater tots
 
 Specialty:
   - Everclear 151
@@ -251,7 +249,7 @@ Specialty:
   - Sodium citrate
 
 Omit_From_List:
-  - Water
   - Ice
-  - Sourdough starter
   - Poolish
+  - Sourdough starter
+  - Water

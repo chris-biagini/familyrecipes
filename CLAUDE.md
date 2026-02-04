@@ -40,6 +40,9 @@ This parses all recipes, generates HTML files in `output/web/`, and copies stati
 - Ingredient index (index-template.html.erb)
 - Grocery list builder (groceries-template.html.erb)
 
+**Resources**:
+- `resources/grocery-info.yaml` contains mappings between ingredients and grocery store aisles
+
 ## Recipe Format
 
 Recipes are plain text files using this markdown structure:

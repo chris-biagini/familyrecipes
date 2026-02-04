@@ -1,6 +1,6 @@
 # This file handles loading all required libraries and classes
 
-# libraries 
+# libraries
 
 require 'fileutils'
 require 'erb'
@@ -8,6 +8,7 @@ require 'redcarpet'
 require 'digest'
 require 'json'
 require 'yaml'
+require 'set'
 
 # my classes
 

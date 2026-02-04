@@ -5,25 +5,103 @@
 class Ingredient
   attr_accessor :name, :quantity, :prep_note
 
+  # Class-level alias map, set during build
+  @@alias_map = {}
+
+  def self.alias_map=(map)
+    @@alias_map = map
+  end
+
+  def self.alias_map
+    @@alias_map
+  end
+
   # name is required, quantity and prep_note are optional
   def initialize(name:, quantity: nil, prep_note: nil)
     @name = name
     @quantity = quantity
     @prep_note = prep_note
   end
-  
+
   def normalized_name
-    ingredient_synonyms = {
-      "Egg" => "Eggs",
-      "Egg yolks" => "Eggs",
-      "Egg yolk" => "Eggs",
-      "Onion" => "Onions",
-      "Carrot" => "Carrots",
-      "Lemon" => "Lemons"
+    # First check the alias map (includes explicit aliases and auto-plurals)
+    return @@alias_map[@name] if @@alias_map.key?(@name)
+
+    # Otherwise return the original name
+    @name
+  end
+
+  # Generate plural forms of a word for automatic matching
+  def self.pluralize(word)
+    return [word] if word.nil? || word.empty?
+
+    # Irregular plurals (only ones not handled by rules below)
+    irregulars = {
+      "leaf" => "leaves"
     }
-    
-    # Return mapped name if it exists; otherwise, keep original
-    ingredient_synonyms[@name] || @name
+
+    lower = word.downcase
+
+    # Check irregulars first
+    if irregulars.key?(lower)
+      return [irregulars[lower].sub(/^./) { |m| word[0] == word[0].upcase ? m.upcase : m }]
+    end
+
+    # Words ending in consonant + y -> ies
+    if lower =~ /[^aeiou]y$/
+      return [word[0..-2] + "ies"]
+    end
+
+    # Words ending in s, x, z, ch, sh -> es
+    if lower =~ /(s|x|z|ch|sh)$/
+      return [word + "es"]
+    end
+
+    # Words ending in o (after consonant) -> es
+    if lower =~ /[^aeiou]o$/
+      return [word + "es"]
+    end
+
+    # Default: add s
+    [word + "s"]
+  end
+
+  # Generate singular forms from a plural word
+  def self.singularize(word)
+    return [word] if word.nil? || word.empty?
+
+    lower = word.downcase
+
+    # Irregular plurals (reverse, only ones not handled by rules below)
+    irregulars = {
+      "leaves" => "leaf"
+    }
+
+    if irregulars.key?(lower)
+      return [irregulars[lower].sub(/^./) { |m| word[0] == word[0].upcase ? m.upcase : m }]
+    end
+
+    # Words ending in ies -> y
+    if lower =~ /ies$/
+      return [word[0..-4] + "y"]
+    end
+
+    # Words ending in es (after s, x, z, ch, sh) -> remove es
+    if lower =~ /(s|x|z|ch|sh)es$/
+      return [word[0..-3]]
+    end
+
+    # Words ending in oes -> o
+    if lower =~ /oes$/
+      return [word[0..-3]]
+    end
+
+    # Words ending in s -> remove s
+    if lower =~ /s$/
+      return [word[0..-2]]
+    end
+
+    [word]
   end
   
   def quantity_value

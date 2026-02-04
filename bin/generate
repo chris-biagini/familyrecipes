@@ -12,6 +12,80 @@ resources_dir = File.join(project_root, "resources/web")
 output_dir    = File.join(project_root, "output/web")
 grocery_info_path = File.join(project_root, "resources/grocery-info.yaml")
 
+# Parse grocery-info.yaml into structured data
+# Items can be simple strings or hashes with 'name' and 'aliases' keys
+def parse_grocery_info(yaml_path)
+  raw = YAML.load_file(yaml_path)
+  aisles = {}
+
+  raw.each do |aisle, items|
+    aisles[aisle] = items.map do |item|
+      if item.is_a?(Hash)
+        # Nested format: { 'name' => 'Eggs', 'aliases' => ['Egg', 'Egg yolk'] }
+        name = item['name'].chomp('*')
+        aliases = item['aliases'] || []
+        staple = item['name'].end_with?('*')
+      else
+        # Simple string format: "Salt" or "Salt*"
+        name = item.chomp('*')
+        aliases = []
+        staple = item.end_with?('*')
+      end
+      { name: name, aliases: aliases, staple: staple }
+    end
+  end
+
+  aisles
+end
+
+# Build a reverse lookup map: alias -> canonical name
+def build_alias_map(grocery_aisles)
+  alias_map = {}
+
+  grocery_aisles.each do |aisle, items|
+    items.each do |item|
+      canonical = item[:name]
+
+      # Add explicit aliases
+      item[:aliases].each do |al|
+        alias_map[al] = canonical
+      end
+
+      # Add automatic singular/plural variants
+      # Try singularizing the canonical name to create singular -> plural mapping
+      Ingredient.singularize(canonical).each do |singular|
+        alias_map[singular] = canonical unless singular == canonical
+      end
+
+      # Also add singulars for each explicit alias
+      item[:aliases].each do |al|
+        Ingredient.singularize(al).each do |singular|
+          alias_map[singular] = canonical unless singular == al
+        end
+      end
+    end
+  end
+
+  alias_map
+end
+
+# Build set of all known ingredient names (canonical + aliases)
+def build_known_ingredients(grocery_aisles, alias_map)
+  known = Set.new
+
+  grocery_aisles.each do |aisle, items|
+    items.each do |item|
+      known << item[:name]
+      known.merge(item[:aliases])
+    end
+  end
+
+  # Also add all keys from alias_map (auto-generated singulars)
+  known.merge(alias_map.keys)
+
+  known
+end
+
 # helper function to avoid rewriting files that haven't changed
 def write_file_if_changed(path, content)
   if File.exist?(path)
@@ -22,6 +96,16 @@ def write_file_if_changed(path, content)
   File.write(path, content)
   puts "Updated: #{path}"
 end
+
+# Parse grocery info and build alias map (must happen before recipe parsing)
+print "Loading grocery info from #{grocery_info_path}..."
+grocery_aisles = parse_grocery_info(grocery_info_path)
+alias_map = build_alias_map(grocery_aisles)
+known_ingredients = build_known_ingredients(grocery_aisles, alias_map)
+
+# Set the alias map on the Ingredient class for normalized_name lookups
+Ingredient.alias_map = alias_map
+print "done!\n"
 
 # parse recipes; actual parsing happens in Recipe constructor
 print "Parsing recipes from #{recipes_dir}..."
@@ -146,17 +230,39 @@ write_file_if_changed(index_path, erb_template.result_with_hash(sorted_ingredien
 
 print "done!\n"
 
+# Validate ingredients
+print "Validating ingredients..."
+all_recipe_ingredients = Set.new
+recipes_array.each do |recipe|
+  recipe.all_ingredients.each do |ingredient|
+    all_recipe_ingredients << ingredient.name
+  end
+end
+quick_bites_array.each do |quick_bite|
+  quick_bite.ingredients.each do |ingredient_name|
+    all_recipe_ingredients << ingredient_name
+  end
+end
+
+unknown_ingredients = all_recipe_ingredients - known_ingredients
+if unknown_ingredients.any?
+  puts "\n"
+  puts "WARNING: The following ingredients are not in grocery-info.yaml:"
+  unknown_ingredients.sort.each do |ing|
+    puts "  - #{ing}"
+  end
+  puts "Add them to grocery-info.yaml or add as aliases to existing items."
+  puts ""
+else
+  print "done! (All ingredients validated.)\n"
+end
+
 # Build grocery page
 print "Generating groceries page..."
-grocery_info_raw = YAML.load_file(grocery_info_path)
 grocery_info = {}
-
-grocery_info_raw.each do |aisle, items|
+grocery_aisles.each do |aisle, items|
   grocery_info[aisle] = items.map do |item|
-    {
-      name: item.chomp('*'),
-      staple: item.end_with?('*')
-    }
+    { name: item[:name], staple: item[:staple] }
   end
 end
 
