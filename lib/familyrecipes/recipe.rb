@@ -4,7 +4,16 @@
 
 class Recipe
   attr_reader :title, :description, :steps, :footer, :source, :id, :version_hash, :category
-  
+
+  # Shared markdown renderer with SmartyPants for typographic quotes/dashes
+  MARKDOWN = Redcarpet::Markdown.new(
+    Redcarpet::Render::SmartyHTML.new,
+    tables: true,
+    fenced_code_blocks: true,
+    autolink: true,
+    no_intra_emphasis: true
+  )
+
   def initialize(markdown_source:, id:, category:)
     @source = markdown_source
     @id = id
@@ -25,16 +34,7 @@ class Recipe
   end
   
   def to_html(erb_template_path:)
-    # HTML renderer that includes SmartyPants
-    renderer = Redcarpet::Render::SmartyHTML.new
-    
-    markdown = Redcarpet::Markdown.new(renderer,
-      tables:               true,
-      fenced_code_blocks:   true,
-      autolink:             true,
-      no_intra_emphasis:    true
-    )
-    
+    markdown = MARKDOWN
     template = File.read(erb_template_path)
     ERB.new(template, trim_mode: '-').result(binding)
   end

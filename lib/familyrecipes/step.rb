@@ -3,7 +3,7 @@
 # Handles parsing and providing information about top-level Steps in a Recipe
 
 class Step
-  attr_accessor :tldr, :ingredients, :instructions
+  attr_reader :tldr, :ingredients, :instructions
 
   def initialize(tldr:, ingredients: [], instructions:)
     if tldr.nil? || tldr.strip.empty?

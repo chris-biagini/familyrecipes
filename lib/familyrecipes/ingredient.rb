@@ -3,7 +3,7 @@
 # Handles parsing and providing information about individual ingredient lines in a Step
 
 class Ingredient
-  attr_accessor :name, :quantity, :prep_note
+  attr_reader :name, :quantity, :prep_note
 
   # Class-level alias map, set during build
   # Uses class instance variable instead of @@ to avoid inheritance issues
@@ -11,6 +11,21 @@ class Ingredient
     attr_accessor :alias_map
   end
   @alias_map = {}
+
+  # Irregular plural/singular mappings not handled by standard rules
+  IRREGULAR_PLURALS = { "leaf" => "leaves" }.freeze
+  IRREGULAR_SINGULARS = { "leaves" => "leaf" }.freeze
+
+  # Fraction-to-decimal conversions for quantity parsing
+  QUANTITY_FRACTIONS = {
+    "1/2" => "0.5",
+    "1/4" => "0.25"
+  }.freeze
+
+  # Unit normalizations (singular -> plural)
+  UNIT_NORMALIZATIONS = {
+    "clove" => "cloves"
+  }.freeze
 
   # name is required, quantity and prep_note are optional
   def initialize(name:, quantity: nil, prep_note: nil)
@@ -32,16 +47,11 @@ class Ingredient
   def self.pluralize(word)
     return [word] if word.nil? || word.empty?
 
-    # Irregular plurals (only ones not handled by rules below)
-    irregulars = {
-      "leaf" => "leaves"
-    }
-
     lower = word.downcase
 
     # Check irregulars first
-    if irregulars.key?(lower)
-      return [irregulars[lower].sub(/^./) { |m| word[0] == word[0].upcase ? m.upcase : m }]
+    if IRREGULAR_PLURALS.key?(lower)
+      return [IRREGULAR_PLURALS[lower].sub(/^./) { |m| word[0] == word[0].upcase ? m.upcase : m }]
     end
 
     # Words ending in consonant + y -> ies
@@ -69,13 +79,8 @@ class Ingredient
 
     lower = word.downcase
 
-    # Irregular plurals (reverse, only ones not handled by rules below)
-    irregulars = {
-      "leaves" => "leaf"
-    }
-
-    if irregulars.key?(lower)
-      return [irregulars[lower].sub(/^./) { |m| word[0] == word[0].upcase ? m.upcase : m }]
+    if IRREGULAR_SINGULARS.key?(lower)
+      return [IRREGULAR_SINGULARS[lower].sub(/^./) { |m| word[0] == word[0].upcase ? m.upcase : m }]
     end
 
     # Words ending in ies -> y
@@ -104,31 +109,22 @@ class Ingredient
   def quantity_value
     return nil if @quantity.nil? || @quantity.strip.empty?
 
-    quantity_synonyms = {
-      "1/2" => "0.5",
-      "1/4" => "0.25"
-    }
-      
-    parts = @quantity.strip.split(' ', 2)  # Split on the first space
+    parts = @quantity.strip.split(' ', 2)
     value_str = parts[0]
-    
+
     # If the value is a range (e.g., "2-5" or "2–5"), take the high end.
     if value_str =~ /[-–]/
       range_parts = value_str.split(/[-–]/).map(&:strip)
       value_str = range_parts.last
     end
-    
-    quantity_synonyms[value_str] || value_str
+
+    QUANTITY_FRACTIONS[value_str] || value_str
   end
-  
+
   def quantity_unit
     return nil if @quantity.nil? || @quantity.strip.empty?
-    
-    unit_synonyms = {
-      "clove" => "cloves"
-    }
-      
+
     parts = @quantity.strip.split(' ', 2)
-    unit_synonyms[parts[1]] || parts[1]
+    UNIT_NORMALIZATIONS[parts[1]] || parts[1]
   end
 end

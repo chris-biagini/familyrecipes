@@ -12,96 +12,11 @@ resources_dir = File.join(project_root, "resources/web")
 output_dir    = File.join(project_root, "output/web")
 grocery_info_path = File.join(project_root, "resources/grocery-info.yaml")
 
-# Parse grocery-info.yaml into structured data
-# Items can be simple strings or hashes with 'name' and 'aliases' keys
-def parse_grocery_info(yaml_path)
-  raw = YAML.load_file(yaml_path)
-  aisles = {}
-
-  raw.each do |aisle, items|
-    aisles[aisle] = items.map do |item|
-      if item.is_a?(Hash)
-        # Nested format: { 'name' => 'Eggs', 'aliases' => ['Egg', 'Egg yolk'] }
-        name = item['name'].chomp('*')
-        aliases = item['aliases'] || []
-        staple = item['name'].end_with?('*')
-      else
-        # Simple string format: "Salt" or "Salt*"
-        name = item.chomp('*')
-        aliases = []
-        staple = item.end_with?('*')
-      end
-      { name: name, aliases: aliases, staple: staple }
-    end
-  end
-
-  aisles
-end
-
-# Build a reverse lookup map: alias -> canonical name
-def build_alias_map(grocery_aisles)
-  alias_map = {}
-
-  grocery_aisles.each do |aisle, items|
-    items.each do |item|
-      canonical = item[:name]
-
-      # Add explicit aliases
-      item[:aliases].each do |al|
-        alias_map[al] = canonical
-      end
-
-      # Add automatic singular/plural variants
-      # Try singularizing the canonical name to create singular -> plural mapping
-      Ingredient.singularize(canonical).each do |singular|
-        alias_map[singular] = canonical unless singular == canonical
-      end
-
-      # Also add singulars for each explicit alias
-      item[:aliases].each do |al|
-        Ingredient.singularize(al).each do |singular|
-          alias_map[singular] = canonical unless singular == al
-        end
-      end
-    end
-  end
-
-  alias_map
-end
-
-# Build set of all known ingredient names (canonical + aliases)
-def build_known_ingredients(grocery_aisles, alias_map)
-  known = Set.new
-
-  grocery_aisles.each do |aisle, items|
-    items.each do |item|
-      known << item[:name]
-      known.merge(item[:aliases])
-    end
-  end
-
-  # Also add all keys from alias_map (auto-generated singulars)
-  known.merge(alias_map.keys)
-
-  known
-end
-
-# helper function to avoid rewriting files that haven't changed
-def write_file_if_changed(path, content)
-  if File.exist?(path)
-    existing_content = File.read(path)
-    return if existing_content == content
-  end
-
-  File.write(path, content)
-  puts "Updated: #{path}"
-end
-
 # Parse grocery info and build alias map (must happen before recipe parsing)
 print "Loading grocery info from #{grocery_info_path}..."
-grocery_aisles = parse_grocery_info(grocery_info_path)
-alias_map = build_alias_map(grocery_aisles)
-known_ingredients = build_known_ingredients(grocery_aisles, alias_map)
+grocery_aisles = FamilyRecipes.parse_grocery_info(grocery_info_path)
+alias_map = FamilyRecipes.build_alias_map(grocery_aisles)
+known_ingredients = FamilyRecipes.build_known_ingredients(grocery_aisles, alias_map)
 
 # Set the alias map on the Ingredient class for normalized_name lookups
 Ingredient.alias_map = alias_map
@@ -156,12 +71,12 @@ print "Generating output files in #{output_dir}..."
 recipes_array.each do |recipe|
   # Write text version
   text_path = File.join(output_dir, "#{recipe.id}.txt")
-  write_file_if_changed(text_path, recipe.source)
+  FamilyRecipes.write_file_if_changed(text_path, recipe.source)
   
   # Write HTML version
   template_path = File.join(template_dir, "recipe-template.html.erb")
   html_path = File.join(output_dir, "#{recipe.id}.html")
-  write_file_if_changed(html_path, recipe.to_html(erb_template_path: template_path))
+  FamilyRecipes.write_file_if_changed(html_path, recipe.to_html(erb_template_path: template_path))
 end
 
 print "done!\n"
@@ -201,7 +116,7 @@ erb_template = ERB.new(File.read(template_path), trim_mode: "-")
 
 # Generate the homepage file
 homepage_path = File.join(output_dir, "index.html")
-write_file_if_changed(homepage_path, erb_template.result_with_hash(grouped_recipes: recipes_by_category))
+FamilyRecipes.write_file_if_changed(homepage_path, erb_template.result_with_hash(grouped_recipes: recipes_by_category))
 
 print "done!\n"
 
@@ -220,7 +135,7 @@ template_path = File.join(template_dir, "index-template.html.erb")
 erb_template = ERB.new(File.read(template_path), trim_mode: "-")
 index_path = File.join(output_dir, "index", "index.html")
 FileUtils.mkdir_p(File.dirname(index_path))  # Ensure directory exists
-write_file_if_changed(index_path, erb_template.result_with_hash(sorted_ingredients: sorted_ingredients))
+FamilyRecipes.write_file_if_changed(index_path, erb_template.result_with_hash(sorted_ingredients: sorted_ingredients))
 
 print "done!\n"
 
@@ -268,5 +183,5 @@ erb_template = ERB.new(File.read(template_path), trim_mode: "-")
 groceries_path = File.join(output_dir, "groceries", "index.html")
 FileUtils.mkdir_p(File.dirname(groceries_path))  # Ensure directory exists
 # Pass both recipes_by_category and the ingredient database to the template.
-write_file_if_changed(groceries_path, erb_template.result_with_hash(grouped_recipes: combined_recipes_and_quick_bites_by_category, ingredient_database: grocery_info))
+FamilyRecipes.write_file_if_changed(groceries_path, erb_template.result_with_hash(grouped_recipes: combined_recipes_and_quick_bites_by_category, ingredient_database: grocery_info))
 print "done!\n"
