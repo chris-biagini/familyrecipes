@@ -15,12 +15,12 @@ class QuickBite
     @title = title
     @id = FamilyRecipes.slugify(title)
     
-    # Start with full line for ingredients if no colon, otherwise the right part
+    # If no colon, the title itself is the ingredient (simple items like "Ice cream")
+    # If colon present, parse the comma-separated list after it
     ingredients_source = rest.empty? ? title : rest
-    
-    # Split ingredients by delimiters: on, with, and, commas, etc.
+
     @ingredients = ingredients_source
-      .split(/\bon\b|\bwith\b|\band\b|,/i)
+      .split(',')
       .map(&:strip)
       .reject(&:empty?)
   end

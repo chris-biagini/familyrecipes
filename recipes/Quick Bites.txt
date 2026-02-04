@@ -7,8 +7,8 @@ Pantry staples and "fast food" that comes together with minimal fuss.
   - Apples and Peanut Butter: Apples, Peanut butter
   - Fruit: Bananas, Grapes, Clementines, Apples, Berries
   - Yogurt Shake: Yogurt shakes
-  - Hummus with Pretzels
-  - Tortilla chips with Salsa
+  - Hummus with Pretzels: Hummus, Pretzels
+  - Tortilla chips with Salsa: Tortilla chips, Salsa
   - Peanut butter pretzels
   - Dried fruit
   - String cheese
@@ -20,7 +20,7 @@ Pantry staples and "fast food" that comes together with minimal fuss.
   - RXBARs
   - Fried eggs: Eggs, Olive oil, Bread
   - Breakfast Hash: Frozen potatoes, Onions, Red bell pepper, Eggs, Olive oil
-  - Cereal with Milk
+  - Cereal with Milk: Cereal, Milk
   - Grilled cheese: Sandwich bread, American cheese, Butter
   
 ## Kids' Lunches

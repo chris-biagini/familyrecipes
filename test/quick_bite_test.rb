@@ -27,35 +27,28 @@ class QuickBiteTest < Minitest::Test
     assert_includes qb.ingredients, "cucumber"
   end
 
-  def test_parses_ingredients_separated_by_and
-    qb = QuickBite.new(text_source: "PB&J: Peanut butter and jelly and bread", category: "Sandwiches")
+  def test_does_not_split_on_and
+    # "and" in ingredient names should not cause splitting
+    qb = QuickBite.new(text_source: "Snack: Salt and Vinegar Chips", category: "Snacks")
 
-    assert_includes qb.ingredients, "Peanut butter"
-    assert_includes qb.ingredients, "jelly"
-    assert_includes qb.ingredients, "bread"
+    assert_equal 1, qb.ingredients.length
+    assert_equal "Salt and Vinegar Chips", qb.ingredients[0]
   end
 
-  def test_parses_ingredients_separated_by_with
-    qb = QuickBite.new(text_source: "Toast: Bread with butter", category: "Breakfast")
+  def test_does_not_split_on_with
+    # "with" in ingredient names should not cause splitting
+    qb = QuickBite.new(text_source: "Crackers: Crackers with Everything Seasoning", category: "Snacks")
 
-    assert_includes qb.ingredients, "Bread"
-    assert_includes qb.ingredients, "butter"
+    assert_equal 1, qb.ingredients.length
+    assert_equal "Crackers with Everything Seasoning", qb.ingredients[0]
   end
 
-  def test_parses_ingredients_separated_by_on
-    qb = QuickBite.new(text_source: "Eggs: Fried egg on toast", category: "Breakfast")
+  def test_explicit_comma_separated_ingredients
+    qb = QuickBite.new(text_source: "Hummus with Pretzels: Hummus, Pretzels", category: "Snacks")
 
-    assert_includes qb.ingredients, "Fried egg"
-    assert_includes qb.ingredients, "toast"
-  end
-
-  def test_handles_mixed_separators
-    qb = QuickBite.new(text_source: "Combo: Apple and cheese with crackers, grapes", category: "Snacks")
-
-    assert_includes qb.ingredients, "Apple"
-    assert_includes qb.ingredients, "cheese"
-    assert_includes qb.ingredients, "crackers"
-    assert_includes qb.ingredients, "grapes"
+    assert_equal "Hummus with Pretzels", qb.title
+    assert_includes qb.ingredients, "Hummus"
+    assert_includes qb.ingredients, "Pretzels"
   end
 
   def test_handles_no_colon
