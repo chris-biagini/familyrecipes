@@ -10,3 +10,6 @@ output/
 
 # Nova editor directory
 .nova/
+
+# Claude Code local data
+.claude/
