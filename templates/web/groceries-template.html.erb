@@ -1,24 +1,29 @@
 <%# Helper for HTML escaping -%>
 <%- h = ->(text) { ERB::Util.html_escape(text) } -%>
 
-<%# Page-specific styles for the grocery list builder -%>
-<%- extra_styles = '  <link rel="stylesheet" href="groceries.css">' -%>
+<%# Page-specific styles and PWA meta -%>
+<%- extra_styles = <<~EXTRA_HEAD
+  <link rel="stylesheet" href="groceries.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#be0c1e">
+EXTRA_HEAD
+-%>
 
-<%= render.call('head', title: 'Biagini Family Recipes: Menu', extra_head: extra_styles, base_path: '../') %>
+<%= render.call('head', title: 'Biagini Family Recipes: Groceries', extra_head: extra_styles, base_path: '../') %>
 
 <body>
 <%= render.call('nav') %>
 
   <main>
-    <header id="menu-header">
-      <h1>Menu</h1>
+    <header id="groceries-header">
+      <h1>Groceries</h1>
     </header>
 
     <noscript>
-      <p><em>This page works without JavaScript, but consider enabling it if you would like to generate a custom list from selected recipes.</em></p>
+      <p><em>This page requires JavaScript to build your shopping list.</em></p>
     </noscript>
 
-    <p id="instructions" class="hidden-until-js">Select the recipes you're planning to make, then print this page to get a printable menu and grocery list.</p>
+    <p id="instructions" class="hidden-until-js">Select recipes to build your shopping list.</p>
 
     <div id="recipe-selector" class="hidden-until-js">
       <%- regular_recipes.each do |category, recipes| -%>
@@ -58,10 +63,18 @@
       <%- end -%>
     </div>
 
-    <div id="freeform-section" class="hidden-until-js">
+    <div id="custom-items-section" class="hidden-until-js">
       <h2>Additional Items</h2>
-      <textarea id="freeform-entries" rows="6" placeholder="Add extra items here, one per line..."></textarea>
-      <p class="hint">These will be added to your grocery list when you print.</p>
+      <div id="custom-input-row">
+        <input type="text" id="custom-input" placeholder="Add an item...">
+        <button id="custom-add" type="button">Add</button>
+      </div>
+      <div id="custom-chips"></div>
+    </div>
+
+    <div id="share-section" class="hidden-until-js">
+      <button id="share-button" type="button">Share List</button>
+      <div id="qr-container"></div>
     </div>
 
     <div id="grocery-preview" class="hidden-until-js">
@@ -71,36 +84,33 @@
       </div>
       <p id="grocery-preview-empty">Select recipes above to build your shopping list.</p>
 
-      <header id="print-grocery-header" style="display: none;">
-        <h1>Grocery List</h1>
-      </header>
-
       <section id="grocery-list">
       <%- ingredient_database.each do |aisle, ingredients| -%>
-      <%- aisle_hidden = (aisle == "Omit_From_List") ? ' style="display:none"' : '' -%>
-      <div class="aisle"<%= aisle_hidden %>>
-        <h3><%= aisle %></h3>
+      <%- next if aisle == "Omit_From_List" -%>
+      <details class="aisle">
+        <summary><%= aisle %> <span class="aisle-count"></span></summary>
         <ul>
           <%- ingredients.each do |ingredient| -%>
-            <li><%= ingredient[:name] %></li>
+            <li data-item="<%= h.call(ingredient[:name]) %>" hidden>
+              <label class="check-off">
+                <input type="checkbox">
+                <span><%= ingredient[:name] %></span>
+              </label>
+            </li>
           <%- end -%>
         </ul>
-      </div>
+      </details>
       <%- end -%>
 
-      <div class="aisle">
-        <h3>Miscellaneous</h3>
+      <details class="aisle" id="misc-aisle">
+        <summary>Miscellaneous <span class="aisle-count"></span></summary>
         <ul id="misc-items"></ul>
-      </div>
-    </section>
-    </div>
-
-    <div id="notes-section">
-      <h3>Notes</h3>
-      <div class="notes-lines"></div>
+      </details>
+      </section>
     </div>
   </main>
 
+<script src="qrcodegen.js" defer></script>
 <script src="groceries.js" defer></script>
 
 </body>

@@ -21,6 +21,9 @@ class SiteGeneratorTest < Minitest::Test
     assert File.exist?(File.join(output_dir, 'style.css')), 'stylesheet should exist'
     assert File.exist?(File.join(output_dir, 'groceries.css')), 'groceries CSS should exist'
     assert File.exist?(File.join(output_dir, 'groceries.js')), 'groceries JS should exist'
+    assert File.exist?(File.join(output_dir, 'qrcodegen.js')), 'QR code library should exist'
+    assert File.exist?(File.join(output_dir, 'manifest.json')), 'PWA manifest should exist'
+    assert File.exist?(File.join(output_dir, 'sw.js')), 'service worker should exist'
 
     # Should have at least one recipe HTML + TXT pair
     html_files = Dir.glob(File.join(output_dir, '*.html')).reject { |f| f.end_with?('index.html', '404.html') }
