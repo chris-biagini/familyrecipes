@@ -31,7 +31,7 @@ class Recipe
   end
 
   def relative_url
-    "/#{@id}"
+    @id
   end
 
   def to_html(erb_template_path:)

@@ -2,9 +2,9 @@
 <%- h = ->(text) { ERB::Util.html_escape(text) } -%>
 
 <%# Page-specific styles for the grocery list builder -%>
-<%- extra_styles = '  <link rel="stylesheet" href="/groceries.css">' -%>
+<%- extra_styles = '  <link rel="stylesheet" href="groceries.css">' -%>
 
-<%= render.call('head', title: 'Biagini Family Recipes: Menu', extra_head: extra_styles) %>
+<%= render.call('head', title: 'Biagini Family Recipes: Menu', extra_head: extra_styles, base_path: '../') %>
 
 <body>
 <%= render.call('nav') %>
@@ -29,7 +29,7 @@
           <li>
             <input type="checkbox" id="<%= recipe.id %>-checkbox" data-title="<%= h.call(recipe.title) %>" data-ingredients="<%= h.call(recipe.all_ingredient_names.to_json) %>">
             <label for="<%= recipe.id %>-checkbox" title="Ingredients: <%= h.call(recipe.all_ingredient_names.join(', ')) %>"><%= recipe.title %></label>
-            <a href="/<%= recipe.id %>" class="recipe-link" title="Open <%= recipe.title %> in new tab" target="_blank">→</a>
+            <a href="<%= recipe.id %>" class="recipe-link" title="Open <%= recipe.title %> in new tab" target="_blank">→</a>
           </li>
         <%- end -%>
         </ul>
@@ -101,7 +101,7 @@
     </div>
   </main>
 
-<script src="/groceries.js" defer></script>
+<script src="groceries.js" defer></script>
 
 </body>
 </html>
