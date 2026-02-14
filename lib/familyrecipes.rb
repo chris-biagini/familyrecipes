@@ -9,6 +9,7 @@ require 'digest'
 require 'json'
 require 'yaml'
 require 'set'
+require 'tempfile'
 
 # Shared utilities
 module FamilyRecipes
@@ -153,3 +154,4 @@ require_relative 'familyrecipes/step'
 require_relative 'familyrecipes/recipe'
 require_relative 'familyrecipes/quick_bite'
 require_relative 'familyrecipes/site_generator'
+require_relative 'familyrecipes/pdf_generator'

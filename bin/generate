@@ -4,3 +4,4 @@ require_relative '../lib/familyrecipes'
 
 project_root = File.expand_path("..", __dir__)
 FamilyRecipes::SiteGenerator.new(project_root).generate
+FamilyRecipes::PdfGenerator.new(project_root).generate
