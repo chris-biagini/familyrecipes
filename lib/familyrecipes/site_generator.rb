@@ -1,0 +1,227 @@
+module FamilyRecipes
+  class SiteGenerator
+    def initialize(project_root)
+      @project_root     = project_root
+      @recipes_dir      = File.join(project_root, "recipes")
+      @template_dir     = File.join(project_root, "templates/web")
+      @resources_dir    = File.join(project_root, "resources/web")
+      @output_dir       = File.join(project_root, "output/web")
+      @grocery_info_path = File.join(project_root, "resources/grocery-info.yaml")
+
+      FamilyRecipes.template_dir = @template_dir
+    end
+
+    def generate
+      load_grocery_info
+      parse_recipes
+      parse_quick_bites
+      generate_recipe_pages
+      copy_resources
+      generate_homepage
+      generate_index
+      validate_ingredients
+      generate_groceries_page
+    end
+
+    private
+
+    attr_reader :project_root, :recipes_dir, :template_dir, :resources_dir,
+                :output_dir, :grocery_info_path
+
+    def render
+      @render ||= ->(name, locals = {}) { FamilyRecipes.render_partial(name, locals) }
+    end
+
+    def load_grocery_info
+      print "Loading grocery info from #{grocery_info_path}..."
+      @grocery_aisles = FamilyRecipes.parse_grocery_info(grocery_info_path)
+      @alias_map = FamilyRecipes.build_alias_map(@grocery_aisles)
+      @known_ingredients = FamilyRecipes.build_known_ingredients(@grocery_aisles, @alias_map)
+      Ingredient.alias_map = @alias_map
+      print "done!\n"
+    end
+
+    def parse_recipes
+      print "Parsing recipes from #{recipes_dir}..."
+
+      quick_bites_filename = CONFIG[:quick_bites_filename]
+
+      recipe_files = Dir.glob(File.join(recipes_dir, "**", "*")).select do |file|
+        File.file?(file) && File.basename(file) != quick_bites_filename
+      end
+
+      @recipes = recipe_files.map do |file|
+        source = File.read(file)
+        id = FamilyRecipes.slugify(File.basename(file, ".*"))
+        category = File.basename(File.dirname(file)).sub(/^./, &:upcase)
+        Recipe.new(markdown_source: source, id: id, category: category)
+      end
+    end
+
+    def parse_quick_bites
+      quick_bites_filename = CONFIG[:quick_bites_filename]
+      quick_bites_category = CONFIG[:quick_bites_category]
+      file_path = File.join(recipes_dir, quick_bites_filename)
+
+      quick_bite_specs = []
+      current_subcat = nil
+
+      File.foreach(file_path) do |line|
+        case line
+        when /^##\s+(.*)/
+          current_subcat = $1.strip
+        when /^\s*-\s+(.*)/
+          text = $1.strip
+          category = [quick_bites_category, current_subcat].compact.join(": ")
+          quick_bite_specs << { text: text, category: category }
+        end
+      end
+
+      @quick_bites = quick_bite_specs.map do |spec|
+        QuickBite.new(text_source: spec[:text], category: spec[:category])
+      end
+
+      print "done! (Parsed #{@recipes.size} recipes and #{@quick_bites.size} quick bites.)\n"
+    end
+
+    def generate_recipe_pages
+      FileUtils.mkdir_p(output_dir)
+      print "Generating output files in #{output_dir}..."
+
+      @recipes.each do |recipe|
+        text_path = File.join(output_dir, "#{recipe.id}.txt")
+        FamilyRecipes.write_file_if_changed(text_path, recipe.source)
+
+        template_path = File.join(template_dir, "recipe-template.html.erb")
+        html_path = File.join(output_dir, "#{recipe.id}.html")
+        FamilyRecipes.write_file_if_changed(html_path, recipe.to_html(erb_template_path: template_path))
+      end
+
+      print "done!\n"
+    end
+
+    def copy_resources
+      print "Copying web resources from #{resources_dir} to #{output_dir}..."
+
+      Dir.glob(File.join(resources_dir, '**', '*')).each do |source_file|
+        next if File.directory?(source_file)
+
+        relative_path = source_file.sub("#{resources_dir}/", '')
+
+        if File.basename(source_file) == "htaccess"
+          relative_path = File.join(File.dirname(relative_path), ".htaccess")
+        end
+
+        dest_file = File.join(output_dir, relative_path)
+
+        if !File.exist?(dest_file) || !FileUtils.identical?(source_file, dest_file)
+          FileUtils.mkdir_p(File.dirname(dest_file))
+          FileUtils.cp(source_file, dest_file)
+          puts "Copied: #{relative_path}"
+        end
+      end
+
+      print "done!\n"
+    end
+
+    def generate_homepage
+      print "Generating homepage in #{output_dir}..."
+
+      @recipes_by_category = @recipes.group_by(&:category)
+      @quick_bites_by_category = @quick_bites.group_by(&:category)
+
+      homepage_path = File.join(output_dir, "index.html")
+      FamilyRecipes.render_template(:homepage, homepage_path,
+        grouped_recipes: @recipes_by_category,
+        render: render,
+        slugify: FamilyRecipes.method(:slugify)
+      )
+
+      print "done!\n"
+    end
+
+    def generate_index
+      print "Generating index..."
+
+      recipes_by_ingredient = Hash.new { |hash, key| hash[key] = [] }
+      @recipes.each do |recipe|
+        recipe.all_ingredients.each do |ingredient|
+          recipes_by_ingredient[ingredient.normalized_name] << recipe
+        end
+      end
+      sorted_ingredients = recipes_by_ingredient.sort_by { |name, _| name.downcase }
+
+      index_path = File.join(output_dir, "index", "index.html")
+      FamilyRecipes.render_template(:index, index_path,
+        sorted_ingredients: sorted_ingredients,
+        render: render
+      )
+
+      print "done!\n"
+    end
+
+    def validate_ingredients
+      print "Validating ingredients..."
+
+      ingredients_to_recipes = Hash.new { |h, k| h[k] = [] }
+      @recipes.each do |recipe|
+        recipe.all_ingredients.each do |ingredient|
+          ingredients_to_recipes[ingredient.name] << recipe.title
+        end
+      end
+      @quick_bites.each do |quick_bite|
+        quick_bite.ingredients.each do |ingredient_name|
+          ingredients_to_recipes[ingredient_name] << quick_bite.title
+        end
+      end
+
+      unknown_ingredients = ingredients_to_recipes.keys.to_set - @known_ingredients
+      if unknown_ingredients.any?
+        puts "\n"
+        puts "WARNING: The following ingredients are not in grocery-info.yaml:"
+        unknown_ingredients.sort.each do |ing|
+          recipes = ingredients_to_recipes[ing].uniq.sort
+          puts "  - #{ing} (in: #{recipes.join(', ')})"
+        end
+        puts "Add them to grocery-info.yaml or add as aliases to existing items."
+        puts ""
+      else
+        print "done! (All ingredients validated.)\n"
+      end
+    end
+
+    def generate_groceries_page
+      print "Generating groceries page..."
+
+      quick_bites_category = CONFIG[:quick_bites_category]
+
+      grocery_info = {}
+      @grocery_aisles.each do |aisle, items|
+        grocery_info[aisle] = items.map do |item|
+          { name: item[:name], staple: item[:staple] }
+        end
+      end
+
+      combined = @recipes_by_category.merge(@quick_bites_by_category)
+
+      regular_recipes = combined.reject { |cat, _| cat.start_with?(quick_bites_category) }
+      grocery_quick_bites = combined.select { |cat, _| cat.start_with?(quick_bites_category) }
+
+      quick_bites_prefix = /^#{Regexp.escape(quick_bites_category)}(: )?/
+      quick_bites_by_subsection = grocery_quick_bites.transform_keys do |cat|
+        name = cat.sub(quick_bites_prefix, '')
+        name.empty? ? 'Other' : name
+      end
+
+      groceries_path = File.join(output_dir, "groceries", "index.html")
+      FamilyRecipes.render_template(:groceries, groceries_path,
+        regular_recipes: regular_recipes,
+        quick_bites_by_subsection: quick_bites_by_subsection,
+        ingredient_database: grocery_info,
+        render: render
+      )
+
+      print "done!\n"
+    end
+  end
+end

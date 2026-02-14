@@ -34,10 +34,17 @@ class Recipe
   end
 
   def to_html(erb_template_path:)
-    markdown = MARKDOWN
-    render = ->(name, locals = {}) { FamilyRecipes.render_partial(name, locals) }
     template = File.read(erb_template_path)
-    ERB.new(template, trim_mode: '-').result(binding)
+    ERB.new(template, trim_mode: '-').result_with_hash(
+      markdown: MARKDOWN,
+      render: ->(name, locals = {}) { FamilyRecipes.render_partial(name, locals) },
+      title: @title,
+      description: @description,
+      steps: @steps,
+      footer: @footer,
+      id: @id,
+      version_hash: @version_hash
+    )
   end
 
   def all_ingredients

@@ -10,15 +10,21 @@ Recipe source files should be perfectly readable in plaintext form, and look lik
 
 HTML should be valid, minimal, and semantic. JavaScript should be used very sparingly, and only for optional features (e.g., scaling, state preservation) that progressively enhance the base content. Every page should be readable with both JavaScript and CSS disabled. HTML, CSS, and JavaScript should be minimal so that the pages load as fast as possible, without going overboard by doing things like stripping whitespace and shortening variable names. The code should be indented nicely and human-readable. Third-party libraries, scripts, stylesheets, fonts, etc. should be avoided unless they're clearly the best solution to a problem--but you should ask before resorting to them. An exception to all this is the grocery list builder (groceries-template.html.erb)--for that page, you can have a little more fun, and go a little heavier on the JavaScript, but you should still try to avoid third-party stuff.
 
-Ruby code should be relatively simple and readable to a novice (i.e., me).
-
 ## Build Command
 
 ```bash
 bin/generate
 ```
 
-This parses all recipes, generates HTML files in `output/web/`, and copies static resources. Requires Ruby with the `redcarpet` gem.
+This parses all recipes, generates HTML files in `output/web/`, and copies static resources. Dependencies are managed via `Gemfile` (Ruby, Bundler, and `bundle install` required).
+
+## Test Command
+
+```bash
+rake test
+```
+
+Runs all tests in `test/` via Minitest (90 tests across 7 files).
 
 ## Dev Server
 
@@ -35,16 +41,18 @@ bin/generate && bin/serve
 ## Architecture
 
 **Core Classes** (`lib/familyrecipes/`):
+- `SiteGenerator` - Orchestrates the full build: parsing, rendering, resource copying, and validation
 - `Recipe` - Parses markdown recipe files into structured data (title, description, steps, footer)
 - `Step` - A recipe step containing a tldr summary, ingredients list, and instructions
 - `Ingredient` - Individual ingredient with name, quantity, and prep note
 - `QuickBite` - Simple recipe from Quick Bites.txt (name and ingredients only)
 
 **Data Flow**:
-1. `bin/generate` reads `.txt` files from `recipes/` subdirectories
-2. Each file is parsed by `Recipe` class using markdown conventions
-3. ERB templates in `templates/web/` render HTML output
-4. Static assets from `resources/web/` are copied to output
+1. `bin/generate` creates a `SiteGenerator` and calls `generate`
+2. `SiteGenerator` reads `.txt` files from `recipes/` subdirectories
+3. Each file is parsed by `Recipe` class using markdown conventions
+4. ERB templates in `templates/web/` render HTML output
+5. Static assets from `resources/web/` are copied to output
 
 **Output Pages**:
 - Individual recipe pages (from recipe-template.html.erb)
@@ -54,6 +62,8 @@ bin/generate && bin/serve
 
 **Resources**:
 - `resources/grocery-info.yaml` contains mappings between ingredients and grocery store aisles
+- `resources/web/groceries.css` - page-specific styles for the grocery list builder
+- `resources/web/groceries.js` - client-side logic for the grocery list builder (selections, localStorage, print layout)
 
 ## Recipe Format
 

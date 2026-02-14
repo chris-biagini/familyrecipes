@@ -26,22 +26,22 @@ class LineClassifierTest < Minitest::Test
   end
 
   def test_classifies_divider
-    type, content = LineClassifier.classify_line("---")
+    type, _content = LineClassifier.classify_line("---")
     assert_equal :divider, type
   end
 
   def test_classifies_divider_with_trailing_spaces
-    type, content = LineClassifier.classify_line("---   ")
+    type, _content = LineClassifier.classify_line("---   ")
     assert_equal :divider, type
   end
 
   def test_classifies_blank_line
-    type, content = LineClassifier.classify_line("")
+    type, _content = LineClassifier.classify_line("")
     assert_equal :blank, type
   end
 
   def test_classifies_whitespace_only_as_blank
-    type, content = LineClassifier.classify_line("   ")
+    type, _content = LineClassifier.classify_line("   ")
     assert_equal :blank, type
   end
 

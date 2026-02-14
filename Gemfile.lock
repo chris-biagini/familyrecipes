@@ -1,0 +1,23 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    minitest (5.16.3)
+    rake (13.0.6)
+    redcarpet (3.6.1)
+
+PLATFORMS
+  ruby
+  x86_64-linux-gnu
+
+DEPENDENCIES
+  minitest
+  rake
+  redcarpet
+
+CHECKSUMS
+  minitest (5.16.3) sha256=60f81ad96ca5518e1457bd29eb826db60f86fbbdf8c05eac63b4824ef1f52614
+  rake (13.0.6) sha256=5ce4bf5037b4196c24ac62834d8db1ce175470391026bd9e557d669beeb19097
+  redcarpet (3.6.1) sha256=d444910e6aa55480c6bcdc0cdb057626e8a32c054c29e793fa642ba2f155f445
+
+BUNDLED WITH
+  4.0.6
