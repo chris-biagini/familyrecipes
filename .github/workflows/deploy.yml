@@ -28,9 +28,6 @@ jobs:
       - name: Build site
         run: bin/generate
 
-      - name: Add CNAME for custom domain
-        run: echo "biaginifamily.recipes" > output/web/CNAME
-
       - uses: actions/upload-pages-artifact@v3
         with:
           path: output/web
