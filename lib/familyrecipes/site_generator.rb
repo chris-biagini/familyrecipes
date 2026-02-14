@@ -107,11 +107,6 @@ module FamilyRecipes
         next if File.directory?(source_file)
 
         relative_path = source_file.sub("#{resources_dir}/", '')
-
-        if File.basename(source_file) == "htaccess"
-          relative_path = File.join(File.dirname(relative_path), ".htaccess")
-        end
-
         dest_file = File.join(output_dir, relative_path)
 
         if !File.exist?(dest_file) || !FileUtils.identical?(source_file, dest_file)

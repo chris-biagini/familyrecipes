@@ -23,6 +23,6 @@ The functionality of `familyrecipes` is heavily inspired by the beautifully-desi
 - [Claude](https://claude.ai/) by [Anthropic](https://www.anthropic.com/)
 - [RealFaviconGenerator](https://realfavicongenerator.net/)
 
-## Server Config
+## Hosting
 
-By default, the generate script produces files with extensions (`.html`), but _omits_ those extensions from hyperlinks. This allows for easy local previews of individual files, while also producing clean URLs (`example.com/foo` instead of `example.com/foo.html`). On the server side, rules in an `.htaccess` file handles these redirects (among others). A copy of this file is included in the `resources/web/` directory.
+The site is hosted on [GitHub Pages](https://pages.github.com/). Pushing to `main` triggers a [GitHub Actions](https://github.com/features/actions) workflow that runs tests, builds the site, and deploys it automatically. The generate script produces files with extensions (`.html`) but omits those extensions from hyperlinks, resulting in clean URLs (`example.com/foo` instead of `example.com/foo.html`). GitHub Pages serves these natively.
