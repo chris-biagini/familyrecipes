@@ -1,6 +1,6 @@
 <%= render.call('head', title: title, base_path: './') %>
 
-<%- extra_nav = <<~HTML
+<%- extra_nav = <<HTML
     <div>
       <button type="button" id="scale-button">Scale</button>
     </div>
@@ -32,7 +32,9 @@ HTML
               <%- step.ingredients.each do |ingredient| -%>
               <li<% if ingredient.quantity_value %> data-quantity-value="<%= ingredient.quantity_value %>" data-quantity-unit="<%= ingredient.quantity_unit %>"<% end %>>
                 <b><%= ingredient.name %></b><% if ingredient.quantity %>, <span class="quantity"><%= ingredient.quantity%></span><% end %>
-                <%- if ingredient.prep_note -%><small><%= ingredient.prep_note %></small><%- end -%>
+              <%- if ingredient.prep_note -%>
+                <small><%= ingredient.prep_note %></small>
+              <%- end -%>
               </li>
               <%- end -%>
             </ul>
@@ -41,7 +43,7 @@ HTML
 
           <%- unless step.instructions.empty? -%>
           <div class="instructions">
-            <%= markdown.render(ScalableNumberPreprocessor.process_instructions(step.instructions)) %>
+            <%= markdown.render(ScalableNumberPreprocessor.process_instructions(step.instructions)).strip.gsub(/\n\n+/, "\n").gsub("\n", "\n            ") %>
           </div>
           <%- end -%>
         </div>
