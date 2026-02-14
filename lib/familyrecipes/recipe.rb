@@ -3,7 +3,7 @@
 # Parses and encapsulates an entire recipe
 
 class Recipe
-  attr_reader :title, :description, :steps, :footer, :source, :id, :version_hash, :category
+  attr_reader :title, :description, :yield_line, :steps, :footer, :source, :id, :version_hash, :category
 
   # Shared markdown renderer with SmartyPants for typographic quotes/dashes
   MARKDOWN = Redcarpet::Markdown.new(
@@ -23,6 +23,7 @@ class Recipe
 
     @title = nil
     @description = nil
+    @yield_line = nil
     @steps = []
     @footer = nil
 
@@ -40,6 +41,7 @@ class Recipe
       render: ->(name, locals = {}) { FamilyRecipes.render_partial(name, locals) },
       title: @title,
       description: @description,
+      yield_line: @yield_line,
       steps: @steps,
       footer: @footer,
       id: @id,
@@ -69,6 +71,7 @@ class Recipe
 
     @title = doc[:title]
     @description = doc[:description]
+    @yield_line = doc[:yield_line]
     @steps = build_steps(doc[:steps])
     @footer = doc[:footer]
 

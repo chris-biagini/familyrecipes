@@ -14,7 +14,12 @@ HTML
     <article class="recipe">
       <header>
         <h1><%= title %></h1>
+        <%- if description -%>
         <p><%= description %></p>
+        <%- end -%>
+        <%- if yield_line -%>
+        <p class="yield-line"><%= ScalableNumberPreprocessor.process_yield_line(yield_line) %></p>
+        <%- end -%>
       </header>
 
       <%- steps.each do |step| -%>
@@ -36,7 +41,7 @@ HTML
 
           <%- unless step.instructions.empty? -%>
           <div class="instructions">
-            <%= markdown.render(step.instructions) %>
+            <%= markdown.render(ScalableNumberPreprocessor.process_instructions(step.instructions)) %>
           </div>
           <%- end -%>
         </div>

@@ -144,6 +144,7 @@ end
 
 # my classes
 
+require_relative 'familyrecipes/scalable_number_preprocessor'
 require_relative 'familyrecipes/ingredient'
 require_relative 'familyrecipes/ingredient_parser'
 require_relative 'familyrecipes/line_classifier'

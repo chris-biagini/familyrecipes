@@ -148,6 +148,20 @@ class RecipeStateManager {
         const span = li.querySelector('.quantity');
         if (span) span.textContent = pretty + (unit ? ' ' + unit : '');
       });
+
+    // Scale marked numbers (yield line + instruction numbers)
+    document.querySelectorAll('.scalable[data-base-value]').forEach(span => {
+      if (factor === 1) {
+        span.textContent = span.dataset.originalText;
+      } else {
+        const base = parseFloat(span.dataset.baseValue);
+        const scaled = base * factor;
+        const pretty = Number.isInteger(scaled)
+          ? scaled
+          : Math.round(scaled * 100) / 100;
+        span.textContent = String(pretty);
+      }
+    });
   }
 
   updateScaleButtonLabel() {

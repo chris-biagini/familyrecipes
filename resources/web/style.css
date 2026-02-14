@@ -170,6 +170,21 @@ header p {
   margin-top: 0;
 }
 
+header .yield-line {
+  font-style: normal;
+  font-size: 1.1rem;
+  color: rgb(100, 100, 100);
+  margin-top: -0.5rem;
+}
+
+.scalable {
+  border-bottom: 1px dotted rgb(150, 150, 150);
+}
+
+.yield-line .scalable {
+  border-bottom: none;
+}
+
 .toc_nav {
   font-family: "Futura", sans-serif;
   text-align: center;
@@ -375,5 +390,9 @@ footer small {
   a {
     color: black;
     text-decoration: none;
+  }
+
+  .scalable {
+    border-bottom: none;
   }
 }

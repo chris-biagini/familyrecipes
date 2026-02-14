@@ -202,4 +202,92 @@ class RecipeBuilderTest < Minitest::Test
     assert_equal "75 g", ingredient[:quantity]
     assert_equal "Roughly chop.", ingredient[:prep_note]
   end
+
+  def test_parses_yield_line_with_makes
+    text = <<~RECIPE
+      # Cookies
+
+      Delicious cookies.
+
+      Makes about 32 cookies.
+
+      ## Mix
+
+      Mix them.
+    RECIPE
+
+    result = build_recipe(text)
+
+    assert_equal "Delicious cookies.", result[:description]
+    assert_equal "Makes about 32 cookies.", result[:yield_line]
+    assert_equal 1, result[:steps].length
+  end
+
+  def test_parses_yield_line_with_serves
+    text = <<~RECIPE
+      # Beans
+
+      A hearty dish.
+
+      Serves 4.
+
+      ## Cook
+
+      Cook them.
+    RECIPE
+
+    result = build_recipe(text)
+
+    assert_equal "A hearty dish.", result[:description]
+    assert_equal "Serves 4.", result[:yield_line]
+  end
+
+  def test_parses_yield_line_without_description
+    text = <<~RECIPE
+      # Pizza
+
+      Makes enough for 2 pizzas.
+
+      ## Make dough
+
+      Do it.
+    RECIPE
+
+    result = build_recipe(text)
+
+    assert_nil result[:description]
+    assert_equal "Makes enough for 2 pizzas.", result[:yield_line]
+    assert_equal 1, result[:steps].length
+  end
+
+  def test_no_yield_line_returns_nil
+    text = <<~RECIPE
+      # Simple Recipe
+
+      ## Step one
+
+      Do the thing.
+    RECIPE
+
+    result = build_recipe(text)
+
+    assert_nil result[:yield_line]
+  end
+
+  def test_description_not_consumed_as_yield_line
+    text = <<~RECIPE
+      # Cookies
+
+      Delicious chocolate chip cookies.
+
+      ## Mix
+
+      Mix them.
+    RECIPE
+
+    result = build_recipe(text)
+
+    assert_equal "Delicious chocolate chip cookies.", result[:description]
+    assert_nil result[:yield_line]
+  end
 end
