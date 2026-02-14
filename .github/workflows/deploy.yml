@@ -25,6 +25,9 @@ jobs:
           ruby-version: "3.3"
           bundler-cache: true
 
+      - name: Run tests
+        run: rake test
+
       - name: Build site
         run: bin/generate
 
