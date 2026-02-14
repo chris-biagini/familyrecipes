@@ -32,11 +32,25 @@ Runs all tests in `test/` via Minitest (90 tests across 7 files).
 bin/serve [port]
 ```
 
-Starts a WEBrick server (default port 8888) that serves `output/web/` with clean/extensionless URLs and the custom 404 page, matching the Apache behavior in production. Binds to `0.0.0.0` so it's accessible across the LAN. The typical dev workflow is:
+Starts a WEBrick server (default port 8888) that serves `output/web/` with clean/extensionless URLs and the custom 404 page, matching the GitHub Pages behavior in production. Binds to `0.0.0.0` so it's accessible across the LAN. The typical dev workflow is:
 
 ```bash
 bin/generate && bin/serve
 ```
+
+## Deployment
+
+The site is hosted on **GitHub Pages** at `biaginifamily.recipes`. Pushing to `main` automatically triggers a build and deploy via GitHub Actions (`.github/workflows/deploy.yml`). The workflow:
+
+1. Runs `bundle exec rake test` (build fails if tests don't pass)
+2. Runs `bin/generate` to build the site
+3. Deploys `output/web/` to GitHub Pages
+
+The custom domain is configured in the repo's GitHub Pages settings, not in the workflow file, so forks don't need to modify the workflow.
+
+## URL Portability
+
+All templates use relative paths resolved via an HTML `<base>` tag, so the site works regardless of deployment root (e.g., `biaginifamily.recipes/` or `username.github.io/familyrecipes/`). Root-level pages use `<base href="./">` and subdirectory pages (`index/`, `groceries/`) use `<base href="../">`. When adding new links or asset references in templates, use relative paths (e.g., `style.css`, not `/style.css`).
 
 ## Architecture
 
