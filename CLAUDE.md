@@ -20,6 +20,18 @@ bin/generate
 
 This parses all recipes, generates HTML files in `output/web/`, and copies static resources. Requires Ruby with the `redcarpet` gem.
 
+## Dev Server
+
+```bash
+bin/serve [port]
+```
+
+Starts a WEBrick server (default port 8888) that serves `output/web/` with clean/extensionless URLs and the custom 404 page, matching the Apache behavior in production. Binds to `0.0.0.0` so it's accessible across the LAN. The typical dev workflow is:
+
+```bash
+bin/generate && bin/serve
+```
+
 ## Architecture
 
 **Core Classes** (`lib/familyrecipes/`):

@@ -1,0 +1,41 @@
+#!/usr/bin/env ruby
+
+require 'webrick'
+
+project_root = File.expand_path("..", __dir__)
+document_root = File.join(project_root, "output", "web")
+port = (ARGV[0] || 8888).to_i
+
+unless File.directory?(document_root)
+  puts "Output directory not found: #{document_root}"
+  puts "Run bin/generate first."
+  exit 1
+end
+
+# Subclass FileHandler to serve .html files for extensionless URLs,
+# matching the Apache behavior in production.
+class CleanURLHandler < WEBrick::HTTPServlet::FileHandler
+  def service(req, res)
+    path = File.join(@root, req.path_info)
+    if !File.exist?(path) && !File.directory?(path) && File.exist?(path + '.html')
+      req.path_info += '.html'
+    end
+    super
+  rescue WEBrick::HTTPStatus::NotFound
+    res.status = 404
+    res.content_type = 'text/html'
+    res.body = File.read(File.join(@root, '404.html'))
+  end
+end
+
+server = WEBrick::HTTPServer.new(
+  Port: port,
+  BindAddress: '0.0.0.0',
+  DocumentRoot: document_root
+)
+
+server.unmount('/')
+server.mount('/', CleanURLHandler, document_root)
+
+trap('INT') { server.shutdown }
+server.start
