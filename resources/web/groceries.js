@@ -395,6 +395,7 @@
         details.hidden = true;
       } else {
         details.hidden = false;
+        details.open = true;
         var countSpan = details.querySelector('.aisle-count');
         if (countSpan) countSpan.textContent = '(' + count + ')';
       }

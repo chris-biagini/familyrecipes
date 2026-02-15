@@ -423,8 +423,13 @@
 }
 
 #grocery-list details.aisle > summary::before {
-  content: '\25B6';
-  font-size: 0.55rem;
+  content: '';
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0.3rem 0 0.3rem 0.45rem;
+  border-color: transparent transparent transparent #999;
   transition: transform 0.15s ease;
 }
 
