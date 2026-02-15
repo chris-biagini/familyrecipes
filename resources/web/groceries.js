@@ -5,7 +5,8 @@
   var state = {
     selectedIds: new Set(),
     customItems: [],
-    checkedOff: new Set()
+    checkedOff: new Set(),
+    sourceSnapshot: null
   };
 
   // --- Recipe index mapping (for compact URLs) ---
@@ -36,58 +37,213 @@
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       selectedIds: Array.from(state.selectedIds),
       customItems: state.customItems,
-      checkedOff: Array.from(state.checkedOff)
+      checkedOff: Array.from(state.checkedOff),
+      sourceSnapshot: state.sourceSnapshot
     }));
   }
 
-  function loadStateFromStorage() {
+  function loadStateFromStorageRaw() {
     var raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return false;
+    if (!raw) return null;
     try {
       var data = JSON.parse(raw);
-      if (data.selectedIds) data.selectedIds.forEach(function(id) { state.selectedIds.add(id); });
-      if (data.customItems) state.customItems = data.customItems;
-      if (data.checkedOff) data.checkedOff.forEach(function(id) { state.checkedOff.add(id); });
-      return true;
+      return {
+        selectedIds: data.selectedIds || [],
+        customItems: data.customItems || [],
+        checkedOff: data.checkedOff || [],
+        sourceSnapshot: data.sourceSnapshot || null
+      };
     } catch(e) {
-      return false;
+      return null;
     }
   }
 
-  function loadStateFromUrl() {
+  function parseStateFromUrl() {
     var params = new URLSearchParams(window.location.search);
     var r = params.get('r');
     var c = params.get('c');
     var h = params.get('h');
-    if (!r && !c) return false;
+    if (!r && !c) return null;
+
+    var selectedIds = [];
+    var hashWasStale = false;
 
     if (r && h) {
       if (h === recipeListHash()) {
         r.split('.').forEach(function(idx) {
           var i = parseInt(idx, 10);
           if (i >= 0 && i < recipeIdList.length) {
-            state.selectedIds.add(recipeIdList[i]);
+            selectedIds.push(recipeIdList[i]);
           }
         });
+      } else {
+        hashWasStale = true;
       }
-      // Stale hash: silently skip recipe selections
     }
+
+    var customItems = [];
     if (c) {
       c.split('|').forEach(function(item) {
-        if (item.trim()) state.customItems.push(item.trim());
+        if (item.trim()) customItems.push(item.trim());
       });
     }
 
-    // Clean URL without reload
+    return {
+      selectedIds: selectedIds,
+      customItems: customItems,
+      hashWasStale: hashWasStale
+    };
+  }
+
+  function cleanUrl() {
     history.replaceState(null, '', window.location.pathname);
-    return true;
+  }
+
+  function computeSnapshot(selectedIds, customItems) {
+    var ids = selectedIds.slice().sort();
+    var items = customItems.slice().sort();
+    return JSON.stringify({ s: ids, c: items });
+  }
+
+  function selectionsMatch(urlState, storageState) {
+    return computeSnapshot(urlState.selectedIds, urlState.customItems)
+        === computeSnapshot(storageState.selectedIds, storageState.customItems);
+  }
+
+  function applyUrlState(urlState) {
+    state.selectedIds = new Set(urlState.selectedIds);
+    state.customItems = urlState.customItems.slice();
+    state.checkedOff = new Set();
+    state.sourceSnapshot = computeSnapshot(urlState.selectedIds, urlState.customItems);
+  }
+
+  function applyStorageState(storageState) {
+    state.selectedIds = new Set(storageState.selectedIds);
+    state.customItems = storageState.customItems.slice();
+    state.checkedOff = new Set(storageState.checkedOff);
+    state.sourceSnapshot = storageState.sourceSnapshot;
   }
 
   function applyStateToCheckboxes() {
-    state.selectedIds.forEach(function(id) {
-      var cb = document.getElementById(id + '-checkbox');
-      if (cb) cb.checked = true;
+    document.querySelectorAll('input[type="checkbox"][data-ingredients]').forEach(function(cb) {
+      var id = cb.id.replace(/-checkbox$/, '');
+      cb.checked = state.selectedIds.has(id);
     });
+  }
+
+  // --- Notification UI ---
+
+  var noticeTimer = null;
+  var undoState = null;
+
+  function showNotice(message, options) {
+    options = options || {};
+    dismissNotice(true);
+
+    var bar = document.getElementById('state-notice');
+    bar.innerHTML = '';
+    bar.hidden = false;
+    bar.className = options.persistent ? 'notice-persistent' : 'notice-transient';
+
+    if (options.detailLine) {
+      var msgWrap = document.createElement('div');
+      msgWrap.className = 'notice-messages';
+      var main = document.createElement('span');
+      main.className = 'notice-message';
+      main.textContent = message;
+      var detail = document.createElement('span');
+      detail.className = 'notice-detail';
+      detail.textContent = options.detailLine;
+      msgWrap.appendChild(main);
+      msgWrap.appendChild(detail);
+      bar.appendChild(msgWrap);
+    } else {
+      var msg = document.createElement('span');
+      msg.className = 'notice-message';
+      msg.textContent = message;
+      bar.appendChild(msg);
+    }
+
+    var actions = document.createElement('span');
+    actions.className = 'notice-actions';
+
+    if (options.buttons) {
+      options.buttons.forEach(function(btn) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = btn.label;
+        b.className = 'notice-btn ' + (btn.style || 'notice-btn-secondary');
+        b.addEventListener('click', btn.action);
+        actions.appendChild(b);
+      });
+    }
+
+    if (options.undo) {
+      var undoBtn = document.createElement('button');
+      undoBtn.type = 'button';
+      undoBtn.textContent = 'Undo';
+      undoBtn.className = 'notice-btn notice-btn-undo';
+      undoBtn.addEventListener('click', function() {
+        if (undoState) {
+          applyStorageState(undoState);
+          applyStateToCheckboxes();
+          renderChips();
+          saveState();
+          updateGroceryList();
+          updateShareSection();
+        }
+        undoState = null;
+        dismissNotice();
+      });
+      actions.appendChild(undoBtn);
+    }
+
+    if (!options.persistent) {
+      var dismiss = document.createElement('button');
+      dismiss.type = 'button';
+      dismiss.className = 'notice-dismiss';
+      dismiss.textContent = '\u00d7';
+      dismiss.setAttribute('aria-label', 'Dismiss');
+      dismiss.addEventListener('click', function() {
+        undoState = null;
+        dismissNotice();
+      });
+      actions.appendChild(dismiss);
+
+      noticeTimer = setTimeout(function() {
+        undoState = null;
+        dismissNotice();
+      }, 4000);
+    }
+
+    bar.appendChild(actions);
+
+    // Trigger slide-in animation
+    bar.offsetHeight;
+    bar.classList.add('notice-visible');
+  }
+
+  function dismissNotice(instant) {
+    if (noticeTimer) {
+      clearTimeout(noticeTimer);
+      noticeTimer = null;
+    }
+    var bar = document.getElementById('state-notice');
+    if (!bar || bar.hidden) return;
+    if (instant) {
+      bar.hidden = true;
+      bar.classList.remove('notice-visible');
+      return;
+    }
+    bar.classList.remove('notice-visible');
+    var dismissed = false;
+    bar.addEventListener('transitionend', function handler() {
+      bar.removeEventListener('transitionend', handler);
+      if (!dismissed) { dismissed = true; bar.hidden = true; }
+    });
+    setTimeout(function() {
+      if (!dismissed) { dismissed = true; bar.hidden = true; }
+    }, 400);
   }
 
   // --- Grocery list logic ---
@@ -359,14 +515,12 @@
     sel.addRange(range);
   }
 
-  // --- Desktop aisle behavior ---
+  // --- Aisle behavior ---
 
-  function openAislesOnDesktop() {
-    if (window.innerWidth >= 700) {
-      document.querySelectorAll('#grocery-list details.aisle:not([hidden])').forEach(function(d) {
-        d.open = true;
-      });
-    }
+  function openAisles() {
+    document.querySelectorAll('#grocery-list details.aisle:not([hidden])').forEach(function(d) {
+      d.open = true;
+    });
   }
 
   // --- Init ---
@@ -377,24 +531,110 @@
       el.classList.remove('hidden-until-js');
     });
 
-    // Build recipe index mapping (must happen before URL loading)
+    // Build recipe index mapping (must happen before URL parsing)
     buildRecipeIndex();
 
-    // Load state: URL params take priority, then localStorage
-    var loadedFromUrl = loadStateFromUrl();
-    if (!loadedFromUrl) {
-      loadStateFromStorage();
-    } else {
-      saveState();
-    }
-    applyStateToCheckboxes();
-    renderChips();
+    // Parse state sources without applying
+    var urlState = parseStateFromUrl();
+    var storageState = loadStateFromStorageRaw();
 
-    if (loadedFromUrl) {
-      var notice = document.getElementById('url-loaded-notice');
-      notice.textContent = 'List loaded from shared link';
-      notice.hidden = false;
-      setTimeout(function() { notice.hidden = true; }, 3000);
+    function finishInit() {
+      applyStateToCheckboxes();
+      renderChips();
+      updateGroceryList();
+      updateShareSection();
+      openAisles();
+    }
+
+    if (!urlState) {
+      // No URL params — load from localStorage silently
+      if (storageState) applyStorageState(storageState);
+      finishInit();
+
+    } else if (!storageState) {
+      // URL params present, no localStorage — auto-load from URL
+      applyUrlState(urlState);
+      cleanUrl();
+      saveState();
+      finishInit();
+      var msg = 'List loaded from shared link';
+      if (urlState.hashWasStale) msg += ' (some recipes could not be loaded)';
+      showNotice(msg);
+
+    } else if (selectionsMatch(urlState, storageState)) {
+      // URL matches current selections — keep localStorage (preserves check-offs)
+      applyStorageState(storageState);
+      cleanUrl();
+      finishInit();
+
+    } else {
+      // Different selections — check if user has modified since last URL load
+      var userModified = true; // default to prompting (no snapshot = migration)
+      if (storageState.sourceSnapshot) {
+        var currentSnap = computeSnapshot(storageState.selectedIds, storageState.customItems);
+        userModified = currentSnap !== storageState.sourceSnapshot
+                    || storageState.checkedOff.length > 0;
+      }
+
+      if (userModified) {
+        // User modified or no snapshot (migration) — prompt
+        applyStorageState(storageState);
+        cleanUrl();
+        finishInit();
+
+        var checkedCount = storageState.checkedOff.length;
+        var detailLine = checkedCount > 0
+          ? 'You\u2019ll lose your current progress (' + checkedCount + ' item' + (checkedCount === 1 ? '' : 's') + ' checked off)'
+          : null;
+        var savedStorage = storageState;
+        var pendingUrl = urlState;
+
+        showNotice(
+          'A different grocery list was shared with you, but yours has been modified. Load the shared list instead?',
+          {
+            persistent: true,
+            detailLine: detailLine,
+            buttons: [
+              {
+                label: 'Keep current list',
+                style: 'notice-btn-primary',
+                action: function() {
+                  dismissNotice(true);
+                  showNotice('Keeping your current list');
+                }
+              },
+              {
+                label: 'Load shared list',
+                style: 'notice-btn-secondary',
+                action: function() {
+                  applyUrlState(pendingUrl);
+                  applyStateToCheckboxes();
+                  renderChips();
+                  saveState();
+                  updateGroceryList();
+                  updateShareSection();
+                  dismissNotice(true);
+                  undoState = savedStorage;
+                  var msg = 'Shared list loaded';
+                  if (pendingUrl.hashWasStale) msg += ' (some recipes could not be loaded)';
+                  showNotice(msg, { undo: true });
+                }
+              }
+            ]
+          }
+        );
+
+      } else {
+        // User hasn't modified — auto-clobber with undo
+        undoState = storageState;
+        applyUrlState(urlState);
+        cleanUrl();
+        saveState();
+        finishInit();
+        var msg = 'List updated from shared link';
+        if (urlState.hashWasStale) msg += ' (some recipes could not be loaded)';
+        showNotice(msg, { undo: true });
+      }
     }
 
     // Sync selectedIds from checkbox state
@@ -443,11 +683,6 @@
 
     // Click URL to select all
     document.getElementById('share-url').addEventListener('click', selectShareUrl);
-
-    // Initial render
-    updateGroceryList();
-    updateShareSection();
-    openAislesOnDesktop();
 
   });
 })();
