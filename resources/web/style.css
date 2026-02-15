@@ -82,11 +82,14 @@ body::before {
     );
 }
 
-/* Promote to compositor layer on touch devices to prevent
-   position:fixed shift during layout reflows (details toggle, etc.) */
+/* On touch devices, shrink to viewport size (fits within mobile GPU texture
+   limits) and force a compositor layer to prevent position:fixed shift during
+   layout reflows (details toggle, etc.) */
 @media (pointer: coarse) {
   body::before {
-    will-change: transform;
+    width: 100vw;
+    height: 100vh;
+    transform: translateZ(0);
   }
 }
 
