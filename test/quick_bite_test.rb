@@ -79,4 +79,22 @@ class QuickBiteTest < Minitest::Test
 
     assert_equal text, qb.text_source
   end
+
+  def test_ingredients_with_quantities_returns_nil_amounts
+    qb = QuickBite.new(text_source: "PB&J: Peanut butter, Jelly, Bread", category: "Sandwiches")
+    iwq = qb.ingredients_with_quantities
+
+    assert_equal 3, iwq.length
+    iwq.each do |name, amounts|
+      assert_equal [nil], amounts, "#{name} should have [nil] amounts"
+    end
+  end
+
+  def test_ingredients_with_quantities_names_match_all_ingredient_names
+    qb = QuickBite.new(text_source: "Salad: Lettuce, Tomato", category: "Sides")
+    iwq = qb.ingredients_with_quantities
+    names = iwq.map { |name, _| name }
+
+    assert_equal qb.all_ingredient_names, names
+  end
 end

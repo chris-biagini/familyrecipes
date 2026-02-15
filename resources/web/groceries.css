@@ -491,6 +491,11 @@
   transition: opacity 0.15s ease;
 }
 
+.qty {
+  font-style: italic;
+  color: #888;
+}
+
 /* Desktop layout */
 @media (min-width: 700px) {
   #recipe-selector {

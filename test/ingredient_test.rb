@@ -127,6 +127,33 @@ class IngredientTest < Minitest::Test
     assert_nil ingredient.quantity_unit
   end
 
+  # Fraction tests - 1/3, 2/3, 3/4
+  def test_quantity_value_fraction_third
+    ingredient = Ingredient.new(name: "Cream", quantity: "1/3 cup")
+    assert_equal "0.333", ingredient.quantity_value
+  end
+
+  def test_quantity_value_fraction_two_thirds
+    ingredient = Ingredient.new(name: "Cream", quantity: "2/3 cup")
+    assert_equal "0.667", ingredient.quantity_value
+  end
+
+  def test_quantity_value_fraction_three_quarters
+    ingredient = Ingredient.new(name: "Cream", quantity: "3/4 cup")
+    assert_equal "0.75", ingredient.quantity_value
+  end
+
+  # Unit normalization tests - ounce/ounces -> oz
+  def test_quantity_unit_normalizes_ounce
+    ingredient = Ingredient.new(name: "Cheese", quantity: "3 ounce")
+    assert_equal "oz", ingredient.quantity_unit
+  end
+
+  def test_quantity_unit_normalizes_ounces
+    ingredient = Ingredient.new(name: "Cheese", quantity: "10 ounces")
+    assert_equal "oz", ingredient.quantity_unit
+  end
+
   # Normalized name tests
   def test_normalized_name_returns_original_when_no_alias
     ingredient = Ingredient.new(name: "Flour")

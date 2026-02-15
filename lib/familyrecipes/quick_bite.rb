@@ -28,4 +28,8 @@ class QuickBite
   def all_ingredient_names
     @ingredients.uniq
   end
+
+  def ingredients_with_quantities
+    all_ingredient_names.map { |name| [name, [nil]] }
+  end
 end

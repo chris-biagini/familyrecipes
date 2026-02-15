@@ -27,7 +27,7 @@
         <ul>
         <%- recipes.each do |recipe| -%>
           <li>
-            <input type="checkbox" id="<%= recipe.id %>-checkbox" data-title="<%= h.call(recipe.title) %>" data-ingredients="<%= h.call(recipe.all_ingredient_names.to_json) %>">
+            <input type="checkbox" id="<%= recipe.id %>-checkbox" data-title="<%= h.call(recipe.title) %>" data-ingredients="<%= h.call(recipe.ingredients_with_quantities.to_json) %>">
             <label for="<%= recipe.id %>-checkbox" title="Ingredients: <%= h.call(recipe.all_ingredient_names.join(', ')) %>"><%= recipe.title %></label>
             <a href="<%= recipe.id %>" class="recipe-link" title="Open <%= recipe.title %> in new tab" target="_blank">→</a>
           </li>
@@ -46,7 +46,7 @@
             <ul>
             <%- items.each do |item| -%>
               <li>
-                <input type="checkbox" id="<%= item.id %>-checkbox" data-title="<%= h.call(item.title) %>" data-ingredients="<%= h.call(item.all_ingredient_names.to_json) %>">
+                <input type="checkbox" id="<%= item.id %>-checkbox" data-title="<%= h.call(item.title) %>" data-ingredients="<%= h.call(item.ingredients_with_quantities.to_json) %>">
                 <label for="<%= item.id %>-checkbox" title="Ingredients: <%= h.call(item.all_ingredient_names.join(', ')) %>"><%= item.title %></label>
               </li>
             <%- end -%>
@@ -95,7 +95,7 @@
             <li data-item="<%= h.call(ingredient[:name]) %>" hidden>
               <label class="check-off">
                 <input type="checkbox">
-                <span><%= ingredient[:name] %></span>
+                <span><%= ingredient[:name] %><span class="qty"></span></span>
               </label>
             </li>
           <%- end -%>

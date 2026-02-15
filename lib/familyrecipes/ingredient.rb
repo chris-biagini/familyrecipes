@@ -19,12 +19,17 @@ class Ingredient
   # Fraction-to-decimal conversions for quantity parsing
   QUANTITY_FRACTIONS = {
     "1/2" => "0.5",
-    "1/4" => "0.25"
+    "1/4" => "0.25",
+    "1/3" => "0.333",
+    "2/3" => "0.667",
+    "3/4" => "0.75"
   }.freeze
 
-  # Unit normalizations (singular -> plural)
+  # Unit normalizations
   UNIT_NORMALIZATIONS = {
-    "clove" => "cloves"
+    "clove" => "cloves",
+    "ounce" => "oz",
+    "ounces" => "oz"
   }.freeze
 
   # name is required, quantity and prep_note are optional

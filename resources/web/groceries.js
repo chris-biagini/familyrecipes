@@ -248,8 +248,66 @@
 
   // --- Grocery list logic ---
 
+  function formatQtyNumber(val) {
+    return parseFloat(val.toFixed(2)).toString();
+  }
+
+  function aggregateQuantities(info) {
+    var recipes = info.recipes; // Map of title -> amounts array
+    if (recipes.size === 0) return { display: null, tooltip: null };
+
+    // Collect all amounts across all recipes
+    var sums = {};       // unit (or "") -> total
+    var hasNull = false;  // any unquantified occurrence
+    var perRecipe = [];   // for tooltip
+
+    recipes.forEach(function(amounts, title) {
+      var recipeParts = [];
+      amounts.forEach(function(a) {
+        if (a === null) {
+          hasNull = true;
+        } else {
+          var val = a[0];
+          var unit = a[1] || '';
+          sums[unit] = (sums[unit] || 0) + val;
+          var part = formatQtyNumber(val);
+          if (unit) part += '\u00a0' + unit;
+          recipeParts.push(part);
+        }
+      });
+      if (recipeParts.length > 0) {
+        perRecipe.push(recipeParts.join(' + ') + ' from ' + title);
+      }
+    });
+
+    // Build display string
+    var parts = [];
+    var units = Object.keys(sums);
+    for (var i = 0; i < units.length; i++) {
+      var unit = units[i];
+      var str = formatQtyNumber(sums[unit]);
+      if (unit) str += '\u00a0' + unit;
+      parts.push(str);
+    }
+
+    var display = null;
+    if (parts.length > 0) {
+      display = ' (' + parts.join(' + ') + (hasNull ? '+' : '') + ')';
+    }
+
+    // Build tooltip
+    var tooltip = null;
+    if (perRecipe.length > 1) {
+      tooltip = perRecipe.join(', ');
+    } else if (perRecipe.length === 0 && recipes.size > 0) {
+      tooltip = 'Needed for: ' + Array.from(recipes.keys()).join(', ');
+    }
+
+    return { display: display, tooltip: tooltip };
+  }
+
   function updateGroceryList() {
-    // Build map of needed ingredients: name -> Set of recipe titles
+    // Build map of needed ingredients: name -> { recipes: Map<title, amounts> }
     var neededMap = new Map();
 
     // From checked recipe checkboxes
@@ -257,15 +315,17 @@
       if (!cb.checked) return;
       var recipeTitle = cb.dataset.title;
       var items = JSON.parse(cb.dataset.ingredients);
-      items.forEach(function(name) {
-        if (!neededMap.has(name)) neededMap.set(name, new Set());
-        neededMap.get(name).add(recipeTitle);
+      items.forEach(function(entry) {
+        var name = entry[0];
+        var amounts = entry[1];
+        if (!neededMap.has(name)) neededMap.set(name, { recipes: new Map() });
+        neededMap.get(name).recipes.set(recipeTitle, amounts);
       });
     });
 
     // From custom items
     state.customItems.forEach(function(name) {
-      if (!neededMap.has(name)) neededMap.set(name, new Set());
+      if (!neededMap.has(name)) neededMap.set(name, { recipes: new Map() });
     });
 
     // Show/hide static list items and match against neededMap
@@ -273,9 +333,14 @@
       var name = li.getAttribute('data-item');
       if (neededMap.has(name)) {
         li.hidden = false;
-        var titles = neededMap.get(name);
-        if (titles.size > 0) {
-          li.setAttribute('title', 'Needed for: ' + Array.from(titles).join(', '));
+        var info = neededMap.get(name);
+        var qty = aggregateQuantities(info);
+        var qtySpan = li.querySelector('.qty');
+        if (qtySpan) qtySpan.textContent = qty.display || '';
+        if (qty.tooltip) {
+          li.setAttribute('title', qty.tooltip);
+        } else if (info.recipes.size > 0) {
+          li.setAttribute('title', 'Needed for: ' + Array.from(info.recipes.keys()).join(', '));
         } else {
           li.removeAttribute('title');
         }
@@ -283,6 +348,8 @@
       } else {
         li.hidden = true;
         li.removeAttribute('title');
+        var qtySpan = li.querySelector('.qty');
+        if (qtySpan) qtySpan.textContent = '';
         // Uncheck when hidden
         var cb = li.querySelector('input[type="checkbox"]');
         if (cb) cb.checked = false;
@@ -292,7 +359,7 @@
     // Leftovers go to Miscellaneous
     var misc = document.getElementById('misc-items');
     misc.innerHTML = '';
-    neededMap.forEach(function(titles, name) {
+    neededMap.forEach(function(info, name) {
       var li = document.createElement('li');
       li.setAttribute('data-item', name);
       var label = document.createElement('label');
@@ -300,12 +367,19 @@
       var checkbox = document.createElement('input');
       checkbox.type = 'checkbox';
       var span = document.createElement('span');
+      var qty = aggregateQuantities(info);
       span.textContent = name;
+      var qtySpan = document.createElement('span');
+      qtySpan.className = 'qty';
+      qtySpan.textContent = qty.display || '';
+      span.appendChild(qtySpan);
       label.appendChild(checkbox);
       label.appendChild(span);
       li.appendChild(label);
-      if (titles.size > 0) {
-        li.setAttribute('title', 'Needed for: ' + Array.from(titles).join(', '));
+      if (qty.tooltip) {
+        li.setAttribute('title', qty.tooltip);
+      } else if (info.recipes.size > 0) {
+        li.setAttribute('title', 'Needed for: ' + Array.from(info.recipes.keys()).join(', '));
       }
       misc.appendChild(li);
     });

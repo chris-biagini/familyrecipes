@@ -61,7 +61,49 @@ class Recipe
       .uniq
   end
 
+  def ingredients_with_quantities
+    # Group all ingredients by normalized name, preserving first-seen order
+    groups = {}
+    @steps.flat_map(&:ingredients).each do |ingredient|
+      name = ingredient.normalized_name
+      (groups[name] ||= []) << ingredient
+    end
+
+    groups.map do |name, ingredients|
+      [name, aggregate_amounts(ingredients)]
+    end
+  end
+
   private
+
+  def aggregate_amounts(ingredients)
+    sums = {}        # unit -> numeric sum
+    has_unquantified = false
+
+    ingredients.each do |ingredient|
+      raw_value = ingredient.quantity_value
+      unit = ingredient.quantity_unit
+      unit = Ingredient::UNIT_NORMALIZATIONS[unit] || unit if unit
+
+      numeric = begin
+        Float(raw_value)
+      rescue StandardError
+        nil
+      end if raw_value
+
+      if numeric
+        sums[unit] = (sums[unit] || 0.0) + numeric
+      else
+        has_unquantified = true
+      end
+    end
+
+    result = sums.map { |unit, value| [value, unit] }
+    result << nil if has_unquantified
+    result = [nil] if result.empty?
+    result
+  end
+
 
   def parse_recipe
     # Use the new two-phase parser
