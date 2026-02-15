@@ -8,6 +8,28 @@
     checkedOff: new Set()
   };
 
+  // --- Recipe index mapping (for compact URLs) ---
+
+  var recipeIdList = [];   // index -> id
+  var recipeIndexMap = {}; // id -> index
+
+  function buildRecipeIndex() {
+    document.querySelectorAll('input[type="checkbox"][data-ingredients]').forEach(function(cb) {
+      var id = cb.id.replace(/-checkbox$/, '');
+      recipeIndexMap[id] = recipeIdList.length;
+      recipeIdList.push(id);
+    });
+  }
+
+  function recipeListHash() {
+    var str = recipeIdList.join(',');
+    var h = 0;
+    for (var i = 0; i < str.length; i++) {
+      h = ((h << 5) - h + str.charCodeAt(i)) | 0;
+    }
+    return (h >>> 0).toString(36).slice(0, 4);
+  }
+
   // --- State persistence ---
 
   function saveState() {
@@ -36,12 +58,19 @@
     var params = new URLSearchParams(window.location.search);
     var r = params.get('r');
     var c = params.get('c');
+    var h = params.get('h');
     if (!r && !c) return false;
 
-    if (r) {
-      r.split(',').forEach(function(id) {
-        if (id.trim()) state.selectedIds.add(id.trim());
-      });
+    if (r && h) {
+      if (h === recipeListHash()) {
+        r.split('.').forEach(function(idx) {
+          var i = parseInt(idx, 10);
+          if (i >= 0 && i < recipeIdList.length) {
+            state.selectedIds.add(recipeIdList[i]);
+          }
+        });
+      }
+      // Stale hash: silently skip recipe selections
     }
     if (c) {
       c.split('|').forEach(function(item) {
@@ -187,7 +216,7 @@
     saveState();
   }
 
-  // --- Custom items chip UI ---
+  // --- Custom items ---
 
   function addCustomItem(name) {
     name = name.trim();
@@ -197,6 +226,7 @@
     renderChips();
     saveState();
     updateGroceryList();
+    updateShareSection();
   }
 
   function removeCustomItem(name) {
@@ -204,23 +234,25 @@
     renderChips();
     saveState();
     updateGroceryList();
+    updateShareSection();
   }
 
   function renderChips() {
-    var container = document.getElementById('custom-chips');
+    var container = document.getElementById('custom-items-list');
     container.innerHTML = '';
     state.customItems.forEach(function(name) {
-      var chip = document.createElement('span');
-      chip.className = 'chip';
-      chip.textContent = name;
+      var li = document.createElement('li');
+      var span = document.createElement('span');
+      span.textContent = name;
       var btn = document.createElement('button');
-      btn.className = 'chip-remove';
+      btn.className = 'custom-item-remove';
       btn.type = 'button';
       btn.textContent = '\u00d7';
       btn.setAttribute('aria-label', 'Remove ' + name);
       btn.addEventListener('click', function() { removeCustomItem(name); });
-      chip.appendChild(btn);
-      container.appendChild(chip);
+      li.appendChild(span);
+      li.appendChild(btn);
+      container.appendChild(li);
     });
   }
 
@@ -229,39 +261,102 @@
   function buildShareUrl() {
     var url = new URL(window.location.pathname, window.location.origin);
     var ids = Array.from(state.selectedIds);
-    if (ids.length > 0) url.searchParams.set('r', ids.join(','));
-    if (state.customItems.length > 0) url.searchParams.set('c', state.customItems.join('|'));
+    if (ids.length > 0) {
+      var indices = [];
+      ids.forEach(function(id) {
+        if (recipeIndexMap[id] !== undefined) indices.push(recipeIndexMap[id]);
+      });
+      url.searchParams.set('h', recipeListHash());
+      url.searchParams.set('r', indices.join('.'));
+    }
+    if (state.customItems.length > 0) {
+      url.searchParams.set('c', state.customItems.join('|'));
+    }
     return url.toString();
   }
 
-  function handleShare() {
-    var ids = Array.from(state.selectedIds);
-    if (ids.length === 0 && state.customItems.length === 0) return;
+  function qrToSvg(qr, border) {
+    var size = qr.size + border * 2;
+    var parts = [];
+    for (var y = 0; y < qr.size; y++) {
+      for (var x = 0; x < qr.size; x++) {
+        if (qr.getModule(x, y))
+          parts.push('M' + (x + border) + ',' + (y + border) + 'h1v1h-1z');
+      }
+    }
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + size + ' ' + size + '">'
+      + '<rect width="100%" height="100%" fill="#fff"/>'
+      + '<path d="' + parts.join(' ') + '" fill="#000"/></svg>';
+  }
 
+  var ICON_SHARE = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+    + '<path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>'
+    + '<polyline points="16 6 12 2 8 6"/>'
+    + '<line x1="12" y1="2" x2="12" y2="15"/></svg>';
+
+  var ICON_COPY = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+    + '<rect x="9" y="9" width="13" height="13" rx="2"/>'
+    + '<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+
+  var canShare = typeof navigator.share === 'function';
+
+  function updateShareSection() {
     var url = buildShareUrl();
 
-    if (navigator.share) {
+    // Update URL display
+    document.getElementById('share-url').textContent = url;
+
+    // Update QR code
+    var container = document.getElementById('qr-container');
+    try {
+      var qr = qrcodegen.QrCode.encodeText(url, qrcodegen.QrCode.Ecc.LOW);
+      container.innerHTML = qrToSvg(qr, 2);
+    } catch(e) {
+      container.innerHTML = '';
+    }
+
+    // Clear any previous feedback
+    document.getElementById('share-feedback').hidden = true;
+  }
+
+  function copyToClipboard(text) {
+    // Try the modern API first (requires secure context)
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text);
+    }
+    // Fallback for non-secure contexts (e.g. HTTP dev server)
+    var textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+    return Promise.resolve();
+  }
+
+  function handleShareAction() {
+    var url = buildShareUrl();
+    var feedback = document.getElementById('share-feedback');
+
+    if (canShare) {
       navigator.share({ title: 'Grocery List', url: url }).catch(function() {});
     } else {
-      showQrCode(url);
+      copyToClipboard(url).then(function() {
+        feedback.textContent = 'Copied to clipboard';
+        feedback.hidden = false;
+        setTimeout(function() { feedback.hidden = true; }, 2000);
+      });
     }
   }
 
-  function showQrCode(url) {
-    var container = document.getElementById('qr-container');
-
-    // Toggle off if already showing
-    if (container.querySelector('svg')) {
-      container.innerHTML = '';
-      return;
-    }
-
-    try {
-      var qr = qrcodegen.QrCode.encodeText(url, qrcodegen.QrCode.Ecc.LOW);
-      container.innerHTML = qr.toSvgString(2);
-    } catch(e) {
-      container.textContent = 'Could not generate QR code.';
-    }
+  function selectShareUrl() {
+    var range = document.createRange();
+    range.selectNodeContents(document.getElementById('share-url'));
+    var sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
   }
 
   // --- Desktop aisle behavior ---
@@ -274,14 +369,6 @@
     }
   }
 
-  // --- Service worker ---
-
-  function registerServiceWorker() {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js').catch(function() {});
-    }
-  }
-
   // --- Init ---
 
   document.addEventListener('DOMContentLoaded', function() {
@@ -290,12 +377,25 @@
       el.classList.remove('hidden-until-js');
     });
 
+    // Build recipe index mapping (must happen before URL loading)
+    buildRecipeIndex();
+
     // Load state: URL params take priority, then localStorage
-    if (!loadStateFromUrl()) {
+    var loadedFromUrl = loadStateFromUrl();
+    if (!loadedFromUrl) {
       loadStateFromStorage();
+    } else {
+      saveState();
     }
     applyStateToCheckboxes();
     renderChips();
+
+    if (loadedFromUrl) {
+      var notice = document.getElementById('url-loaded-notice');
+      notice.textContent = 'List loaded from shared link';
+      notice.hidden = false;
+      setTimeout(function() { notice.hidden = true; }, 3000);
+    }
 
     // Sync selectedIds from checkbox state
     function syncSelectedIds() {
@@ -313,6 +413,7 @@
         syncSelectedIds();
         saveState();
         updateGroceryList();
+        updateShareSection();
       });
     });
 
@@ -335,14 +436,18 @@
       }
     });
 
-    // Share button
-    document.getElementById('share-button').addEventListener('click', handleShare);
+    // Share/copy button — set icon based on platform capability
+    var shareBtn = document.getElementById('share-action');
+    shareBtn.innerHTML = canShare ? ICON_SHARE : ICON_COPY;
+    shareBtn.addEventListener('click', handleShareAction);
 
-    // Initial grocery list render
+    // Click URL to select all
+    document.getElementById('share-url').addEventListener('click', selectShareUrl);
+
+    // Initial render
     updateGroceryList();
+    updateShareSection();
     openAislesOnDesktop();
 
-    // Register service worker
-    registerServiceWorker();
   });
 })();

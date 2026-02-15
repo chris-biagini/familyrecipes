@@ -10,6 +10,15 @@
   margin-bottom: 1.5rem;
 }
 
+/* URL-loaded notification */
+#url-loaded-notice {
+  font-size: 0.85rem;
+  color: #666;
+  font-style: italic;
+  text-align: center;
+  margin: -0.5rem 0 0.5rem;
+}
+
 /* Recipe Selector */
 #recipe-selector {
   margin-bottom: 2rem;
@@ -206,100 +215,157 @@
 #custom-input-row {
   display: flex;
   gap: 0.5rem;
-  margin-bottom: 0.75rem;
 }
 
 #custom-input {
   flex: 1;
-  max-width: 300px;
   padding: 0.5rem 0.75rem;
   font-family: inherit;
-  font-size: 0.95rem;
+  font-size: 16px;
   border: 1px solid #ccc;
   border-radius: 4px;
 }
 
 #custom-input:focus {
   outline: none;
-  border-color: #2a5a3a;
+  border-color: #999;
 }
 
 #custom-add {
-  padding: 0.5rem 1rem;
-  font-family: inherit;
-  font-size: 0.95rem;
-  background: #2a5a3a;
-  color: white;
-  border: none;
-  border-radius: 4px;
+  appearance: none;
+  -webkit-appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  background: none;
+  color: #999;
+  border: 1px solid #ccc;
+  border-radius: 50%;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 #custom-add:hover {
-  background: #1e4a2e;
+  color: #555;
+  border-color: #999;
 }
 
-#custom-chips {
+#custom-items-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+#custom-items-list li {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-}
-
-.chip {
-  display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  padding: 0.3rem 0.6rem;
-  background: #f0ede8;
-  border: 1px solid #d4c9b8;
-  border-radius: 1rem;
-  font-size: 0.85rem;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.95rem;
+  border-bottom: 1px solid #eee;
 }
 
-.chip-remove {
+#custom-items-list li:first-child {
+  border-top: 1px solid #eee;
+  margin-top: 0.75rem;
+}
+
+.custom-item-remove {
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 1.25rem;
   line-height: 1;
-  color: #999;
-  padding: 0 0.1rem;
+  color: #bbb;
+  padding: 0.5rem;
+  margin: -0.5rem -0.25rem -0.5rem 0;
 }
 
-.chip-remove:hover {
+.custom-item-remove:hover {
   color: #c00;
 }
 
 /* Share Section */
 #share-section {
-  text-align: center;
   margin-bottom: 2rem;
   padding-top: 1.5rem;
   border-top: 2px solid #ddd;
 }
 
-#share-button {
-  padding: 0.6rem 1.5rem;
-  font-family: inherit;
+#share-section h2 {
   font-size: 1rem;
-  background: #2a5a3a;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #666;
+  margin-bottom: 0.5rem;
 }
 
-#share-button:hover {
-  background: #1e4a2e;
+#share-hint {
+  font-size: 0.85rem;
+  color: #888;
+  margin-bottom: 1rem;
 }
 
 #qr-container {
-  margin-top: 1rem;
+  text-align: center;
+  margin-bottom: 1rem;
 }
 
 #qr-container svg {
-  max-width: 200px;
+  max-width: 160px;
   height: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 0.5rem;
+  background: #fff;
+}
+
+#share-url-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+  background: #fafafa;
+}
+
+#share-url {
+  flex: 1;
+  font-size: 0.8rem;
+  color: #555;
+  word-break: break-all;
+  font-family: ui-monospace, "Cascadia Code", "Menlo", monospace;
+}
+
+#share-action {
+  appearance: none;
+  -webkit-appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: #999;
+  cursor: pointer;
+  padding: 0.4rem;
+  flex-shrink: 0;
+}
+
+#share-action:hover {
+  color: #555;
+}
+
+#share-feedback {
+  font-size: 0.85rem;
+  color: #666;
+  font-style: italic;
+  text-align: center;
+  margin-top: 0.5rem;
 }
 
 /* Shopping List Preview */
@@ -436,11 +502,6 @@
 
 /* Desktop layout */
 @media (min-width: 700px) {
-  main {
-    max-width: 60rem;
-    margin: 0 auto;
-  }
-
   #recipe-selector {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -452,23 +513,6 @@
     grid-column: 1 / -1;
   }
 
-  #recipe-selector .quick-bites .subsections {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  #grocery-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 0.75rem;
-    align-items: start;
-  }
-
-  #grocery-list details.aisle {
-    margin-bottom: 0;
-  }
-}
-
-@media (min-width: 900px) {
   #recipe-selector .quick-bites .subsections {
     grid-template-columns: repeat(3, 1fr);
   }
