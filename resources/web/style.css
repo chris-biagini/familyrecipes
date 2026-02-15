@@ -82,6 +82,14 @@ body::before {
     );
 }
 
+/* Promote to compositor layer on touch devices to prevent
+   position:fixed shift during layout reflows (details toggle, etc.) */
+@media (pointer: coarse) {
+  body::before {
+    will-change: transform;
+  }
+}
+
 nav {
   position: relative;
   left: calc(-1 * var(--breathing-room));
