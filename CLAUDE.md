@@ -24,7 +24,7 @@ This parses all recipes, generates HTML files in `output/web/`, and copies stati
 rake test
 ```
 
-Runs all tests in `test/` via Minitest (90 tests across 7 files).
+Runs all tests in `test/` via Minitest (142 tests across 10 files).
 
 ## Dev Server
 

@@ -152,4 +152,114 @@ class RecipeTest < Minitest::Test
     assert_equal 3.0, amounts[0][0]
     assert_nil amounts[0][1]
   end
+
+  # --- Full recipe parsing ---
+
+  def full_recipe_markdown
+    <<~MD
+      # Hard-Boiled Eggs
+
+      Protein!
+
+      ## Make ice bath.
+
+      - Water
+      - Ice
+
+      Make ice bath in large bowl.
+
+      ## Cook eggs.
+
+      - Eggs
+
+      Fill steamer pot with water and bring to a boil.
+
+      ---
+
+      Based on a recipe from Serious Eats.
+    MD
+  end
+
+  def test_parses_title
+    recipe = make_recipe(full_recipe_markdown)
+    assert_equal "Hard-Boiled Eggs", recipe.title
+  end
+
+  def test_parses_description
+    recipe = make_recipe(full_recipe_markdown)
+    assert_equal "Protein!", recipe.description
+  end
+
+  def test_parses_steps
+    recipe = make_recipe(full_recipe_markdown)
+    assert_equal 2, recipe.steps.size
+    assert_equal "Make ice bath.", recipe.steps[0].tldr
+    assert_equal "Cook eggs.", recipe.steps[1].tldr
+  end
+
+  def test_parses_step_ingredients
+    recipe = make_recipe(full_recipe_markdown)
+    names = recipe.steps[0].ingredients.map(&:name)
+    assert_equal ["Water", "Ice"], names
+  end
+
+  def test_parses_footer
+    recipe = make_recipe(full_recipe_markdown)
+    assert_match(/Serious Eats/, recipe.footer)
+  end
+
+  def test_all_ingredients_deduplicates
+    markdown = <<~MD
+      # Test Recipe
+
+      ## Step 1 (prep)
+
+      - Salt
+      - Butter, 50 g
+
+      Mix.
+
+      ## Step 2 (finish)
+
+      - Salt
+
+      Season.
+    MD
+
+    recipe = make_recipe(markdown)
+    names = recipe.all_ingredients.map(&:name)
+    assert_equal ["Salt", "Butter"], names
+  end
+
+  def test_all_ingredient_names
+    recipe = make_recipe(full_recipe_markdown)
+    names = recipe.all_ingredient_names
+    assert_includes names, "Water"
+    assert_includes names, "Ice"
+    assert_includes names, "Eggs"
+    assert_equal 3, names.size
+  end
+
+  def test_relative_url_returns_id
+    recipe = make_recipe(full_recipe_markdown)
+    assert_equal "test-recipe", recipe.relative_url
+  end
+
+  def test_version_hash_is_deterministic
+    recipe_a = make_recipe(full_recipe_markdown)
+    recipe_b = make_recipe(full_recipe_markdown)
+    assert_equal recipe_a.version_hash, recipe_b.version_hash
+  end
+
+  def test_version_hash_changes_when_source_changes
+    recipe_a = make_recipe(full_recipe_markdown)
+    recipe_b = make_recipe(full_recipe_markdown.sub("Protein!", "Healthy!"))
+    refute_equal recipe_a.version_hash, recipe_b.version_hash
+  end
+
+  def test_raises_on_recipe_with_no_steps
+    assert_raises(StandardError) do
+      make_recipe("# Title\n\nJust a description, no steps.\n")
+    end
+  end
 end

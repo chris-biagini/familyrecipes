@@ -1,11 +1,6 @@
 require_relative 'test_helper'
 
 class IngredientTest < Minitest::Test
-  def setup
-    # Reset alias map for clean tests
-    Ingredient.alias_map = {}
-  end
-
   # Pluralization tests
   def test_pluralize_regular_word
     assert_equal ["apples"], Ingredient.pluralize("apple")
