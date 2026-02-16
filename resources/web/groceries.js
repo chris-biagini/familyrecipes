@@ -5,8 +5,7 @@
   var state = {
     selectedIds: new Set(),
     customItems: [],
-    checkedOff: new Set(),
-    sourceSnapshot: null
+    checkedOff: new Set()
   };
 
   // --- Recipe index mapping (for compact URLs) ---
@@ -22,23 +21,13 @@
     });
   }
 
-  function recipeListHash() {
-    var str = recipeIdList.join(',');
-    var h = 0;
-    for (var i = 0; i < str.length; i++) {
-      h = ((h << 5) - h + str.charCodeAt(i)) | 0;
-    }
-    return (h >>> 0).toString(36).slice(0, 4);
-  }
-
   // --- State persistence ---
 
   function saveState() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       selectedIds: Array.from(state.selectedIds),
       customItems: state.customItems,
-      checkedOff: Array.from(state.checkedOff),
-      sourceSnapshot: state.sourceSnapshot
+      checkedOff: Array.from(state.checkedOff)
     }));
   }
 
@@ -50,8 +39,7 @@
       return {
         selectedIds: data.selectedIds || [],
         customItems: data.customItems || [],
-        checkedOff: data.checkedOff || [],
-        sourceSnapshot: data.sourceSnapshot || null
+        checkedOff: data.checkedOff || []
       };
     } catch(e) {
       return null;
@@ -62,23 +50,16 @@
     var params = new URLSearchParams(window.location.search);
     var r = params.get('r');
     var c = params.get('c');
-    var h = params.get('h');
     if (!r && !c) return null;
 
     var selectedIds = [];
-    var hashWasStale = false;
-
-    if (r && h) {
-      if (h === recipeListHash()) {
-        r.split('.').forEach(function(idx) {
-          var i = parseInt(idx, 10);
-          if (i >= 0 && i < recipeIdList.length) {
-            selectedIds.push(recipeIdList[i]);
-          }
-        });
-      } else {
-        hashWasStale = true;
-      }
+    if (r) {
+      r.split('.').forEach(function(idx) {
+        var i = parseInt(idx, 10);
+        if (i >= 0 && i < recipeIdList.length) {
+          selectedIds.push(recipeIdList[i]);
+        }
+      });
     }
 
     var customItems = [];
@@ -90,8 +71,7 @@
 
     return {
       selectedIds: selectedIds,
-      customItems: customItems,
-      hashWasStale: hashWasStale
+      customItems: customItems
     };
   }
 
@@ -114,14 +94,12 @@
     state.selectedIds = new Set(urlState.selectedIds);
     state.customItems = urlState.customItems.slice();
     state.checkedOff = new Set();
-    state.sourceSnapshot = computeSnapshot(urlState.selectedIds, urlState.customItems);
   }
 
   function applyStorageState(storageState) {
     state.selectedIds = new Set(storageState.selectedIds);
     state.customItems = storageState.customItems.slice();
     state.checkedOff = new Set(storageState.checkedOff);
-    state.sourceSnapshot = storageState.sourceSnapshot;
   }
 
   function applyStateToCheckboxes() {
@@ -497,7 +475,6 @@
       ids.forEach(function(id) {
         if (recipeIndexMap[id] !== undefined) indices.push(recipeIndexMap[id]);
       });
-      url.searchParams.set('h', recipeListHash());
       url.searchParams.set('r', indices.join('.'));
     }
     if (state.customItems.length > 0) {
@@ -632,9 +609,7 @@
       cleanUrl();
       saveState();
       finishInit();
-      var msg = 'List loaded from shared link';
-      if (urlState.hashWasStale) msg += ' (some recipes could not be loaded)';
-      showNotice(msg);
+      showNotice('List loaded from shared link');
 
     } else if (selectionsMatch(urlState, storageState)) {
       // URL matches current selections — keep localStorage (preserves check-offs)
@@ -642,74 +617,56 @@
       cleanUrl();
       finishInit();
 
-    } else {
-      // Different selections — check if user has modified since last URL load
-      var userModified = true; // default to prompting (no snapshot = migration)
-      if (storageState.sourceSnapshot) {
-        var currentSnap = computeSnapshot(storageState.selectedIds, storageState.customItems);
-        userModified = currentSnap !== storageState.sourceSnapshot
-                    || storageState.checkedOff.length > 0;
-      }
+    } else if (storageState.checkedOff.length > 0) {
+      // Different selections, but user is mid-shopping — prompt before replacing
+      applyStorageState(storageState);
+      cleanUrl();
+      finishInit();
 
-      if (userModified) {
-        // User modified or no snapshot (migration) — prompt
-        applyStorageState(storageState);
-        cleanUrl();
-        finishInit();
+      var checkedCount = storageState.checkedOff.length;
+      var savedStorage = storageState;
+      var pendingUrl = urlState;
 
-        var checkedCount = storageState.checkedOff.length;
-        var detailLine = checkedCount > 0
-          ? 'You\u2019ll lose your current progress (' + checkedCount + ' item' + (checkedCount === 1 ? '' : 's') + ' checked off)'
-          : null;
-        var savedStorage = storageState;
-        var pendingUrl = urlState;
-
-        showNotice(
-          'A different grocery list was shared with you, but yours has been modified. Load the shared list instead?',
-          {
-            persistent: true,
-            detailLine: detailLine,
-            buttons: [
-              {
-                label: 'Keep current list',
-                style: 'notice-btn-primary',
-                action: function() {
-                  dismissNotice(true);
-                  showNotice('Keeping your current list');
-                }
-              },
-              {
-                label: 'Load shared list',
-                style: 'notice-btn-secondary',
-                action: function() {
-                  applyUrlState(pendingUrl);
-                  applyStateToCheckboxes();
-                  renderChips();
-                  saveState();
-                  updateGroceryList();
-                  updateShareSection();
-                  dismissNotice(true);
-                  undoState = savedStorage;
-                  var msg = 'Shared list loaded';
-                  if (pendingUrl.hashWasStale) msg += ' (some recipes could not be loaded)';
-                  showNotice(msg, { undo: true });
-                }
+      showNotice(
+        'You\u2019re in the middle of shopping. Load this shared list instead?',
+        {
+          persistent: true,
+          detailLine: checkedCount + ' item' + (checkedCount === 1 ? '' : 's') + ' checked off',
+          buttons: [
+            {
+              label: 'Keep my list',
+              style: 'notice-btn-primary',
+              action: function() {
+                dismissNotice();
               }
-            ]
-          }
-        );
+            },
+            {
+              label: 'Load shared list',
+              style: 'notice-btn-secondary',
+              action: function() {
+                applyUrlState(pendingUrl);
+                applyStateToCheckboxes();
+                renderChips();
+                saveState();
+                updateGroceryList();
+                updateShareSection();
+                dismissNotice(true);
+                undoState = savedStorage;
+                showNotice('Shared list loaded', { undo: true });
+              }
+            }
+          ]
+        }
+      );
 
-      } else {
-        // User hasn't modified — auto-clobber with undo
-        undoState = storageState;
-        applyUrlState(urlState);
-        cleanUrl();
-        saveState();
-        finishInit();
-        var msg = 'List updated from shared link';
-        if (urlState.hashWasStale) msg += ' (some recipes could not be loaded)';
-        showNotice(msg, { undo: true });
-      }
+    } else {
+      // Different selections, no checked items — auto-clobber with undo
+      undoState = storageState;
+      applyUrlState(urlState);
+      cleanUrl();
+      saveState();
+      finishInit();
+      showNotice('List updated from shared link', { undo: true });
     }
 
     // Sync selectedIds from checkbox state
