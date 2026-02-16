@@ -59,11 +59,11 @@ All templates use relative paths resolved via an HTML `<base>` tag, so the site 
 - `Recipe` - Parses markdown recipe files into structured data (title, description, steps, footer)
 - `Step` - A recipe step containing a tldr summary, ingredients list, and instructions
 - `Ingredient` - Individual ingredient with name, quantity, and prep note
-- `QuickBite` - Simple recipe from Quick Bites.txt (name and ingredients only)
+- `QuickBite` - Simple recipe from Quick Bites.md (name and ingredients only)
 
 **Data Flow**:
 1. `bin/generate` creates a `SiteGenerator` and calls `generate`
-2. `SiteGenerator` reads `.txt` files from `recipes/` subdirectories
+2. `SiteGenerator` reads `.md` files from `recipes/` subdirectories
 3. Each file is parsed by `Recipe` class using markdown conventions
 4. ERB templates in `templates/web/` render HTML output
 5. Static assets from `resources/web/` are copied to output
@@ -113,7 +113,7 @@ Optional footer content (notes, source, etc.)
 
 ## Quick Bites
 
-`recipes/Quick Bites.txt` uses a different format for simple recipes:
+`recipes/Quick Bites.md` uses a different format for simple recipes:
 ```
 ## Category Name
   - Recipe Name: Ingredient1, Ingredient2
