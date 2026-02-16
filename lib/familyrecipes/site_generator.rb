@@ -1,12 +1,14 @@
 module FamilyRecipes
   class SiteGenerator
-    def initialize(project_root)
+    def initialize(project_root, recipes: nil, quick_bites: nil)
       @project_root     = project_root
       @recipes_dir      = File.join(project_root, "recipes")
       @template_dir     = File.join(project_root, "templates/web")
       @resources_dir    = File.join(project_root, "resources/web")
       @output_dir       = File.join(project_root, "output/web")
       @grocery_info_path = File.join(project_root, "resources/grocery-info.yaml")
+      @recipes     = recipes
+      @quick_bites = quick_bites
 
       FamilyRecipes.template_dir = @template_dir
     end
@@ -42,46 +44,20 @@ module FamilyRecipes
     end
 
     def parse_recipes
-      print "Parsing recipes from #{recipes_dir}..."
-
-      quick_bites_filename = CONFIG[:quick_bites_filename]
-
-      recipe_files = Dir.glob(File.join(recipes_dir, "**", "*")).select do |file|
-        File.file?(file) && File.basename(file) != quick_bites_filename
-      end
-
-      @recipes = recipe_files.map do |file|
-        source = File.read(file)
-        id = FamilyRecipes.slugify(File.basename(file, ".*"))
-        category = File.basename(File.dirname(file)).sub(/^./, &:upcase)
-        Recipe.new(markdown_source: source, id: id, category: category)
+      if @recipes
+        print "Using pre-parsed recipes..."
+      else
+        print "Parsing recipes from #{recipes_dir}..."
+        @recipes = FamilyRecipes.parse_recipes(recipes_dir)
       end
     end
 
     def parse_quick_bites
-      quick_bites_filename = CONFIG[:quick_bites_filename]
-      quick_bites_category = CONFIG[:quick_bites_category]
-      file_path = File.join(recipes_dir, quick_bites_filename)
-
-      quick_bite_specs = []
-      current_subcat = nil
-
-      File.foreach(file_path) do |line|
-        case line
-        when /^##\s+(.*)/
-          current_subcat = $1.strip
-        when /^\s*-\s+(.*)/
-          text = $1.strip
-          category = [quick_bites_category, current_subcat].compact.join(": ")
-          quick_bite_specs << { text: text, category: category }
-        end
+      unless @quick_bites
+        @quick_bites = FamilyRecipes.parse_quick_bites(recipes_dir)
       end
 
-      @quick_bites = quick_bite_specs.map do |spec|
-        QuickBite.new(text_source: spec[:text], category: spec[:category])
-      end
-
-      print "done! (Parsed #{@recipes.size} recipes and #{@quick_bites.size} quick bites.)\n"
+      print "done! (#{@recipes.size} recipes, #{@quick_bites.size} quick bites.)\n"
     end
 
     def generate_recipe_pages

@@ -132,6 +132,47 @@ module FamilyRecipes
     known
   end
 
+  # Parse all recipe files from the given directory into Recipe objects
+  def self.parse_recipes(recipes_dir)
+    quick_bites_filename = CONFIG[:quick_bites_filename]
+
+    recipe_files = Dir.glob(File.join(recipes_dir, "**", "*")).select do |file|
+      File.file?(file) && File.basename(file) != quick_bites_filename
+    end
+
+    recipe_files.map do |file|
+      source = File.read(file)
+      id = slugify(File.basename(file, ".*"))
+      category = File.basename(File.dirname(file)).sub(/^./, &:upcase)
+      Recipe.new(markdown_source: source, id: id, category: category)
+    end
+  end
+
+  # Parse Quick Bites file into QuickBite objects
+  def self.parse_quick_bites(recipes_dir)
+    quick_bites_filename = CONFIG[:quick_bites_filename]
+    quick_bites_category = CONFIG[:quick_bites_category]
+    file_path = File.join(recipes_dir, quick_bites_filename)
+
+    quick_bite_specs = []
+    current_subcat = nil
+
+    File.foreach(file_path) do |line|
+      case line
+      when /^##\s+(.*)/
+        current_subcat = $1.strip
+      when /^\s*-\s+(.*)/
+        text = $1.strip
+        category = [quick_bites_category, current_subcat].compact.join(": ")
+        quick_bite_specs << { text: text, category: category }
+      end
+    end
+
+    quick_bite_specs.map do |spec|
+      QuickBite.new(text_source: spec[:text], category: spec[:category])
+    end
+  end
+
   # Write file only if content has changed
   def self.write_file_if_changed(path, content)
     if File.exist?(path)

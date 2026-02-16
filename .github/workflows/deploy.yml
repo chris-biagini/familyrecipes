@@ -26,15 +26,14 @@ jobs:
           bundler-cache: true
 
       - uses: typst-community/setup-typst@v4
+        with:
+          typst-version: "0.13"
 
       - name: Run tests
         run: bundle exec rake test
 
       - name: Build site
         run: bin/generate
-
-      - name: Copy PDF to web output
-        run: cp output/pdf/cookbook.pdf output/web/cookbook.pdf
 
       - uses: actions/upload-pages-artifact@v3
         with:

@@ -1,12 +1,14 @@
 module FamilyRecipes
   class PdfGenerator
-    def initialize(project_root)
+    def initialize(project_root, recipes: nil, quick_bites: nil)
       @project_root      = project_root
       @recipes_dir       = File.join(project_root, "recipes")
       @template_dir      = File.join(project_root, "templates/pdf")
       @resources_dir     = File.join(project_root, "resources/pdf")
       @output_dir        = File.join(project_root, "output/pdf")
       @grocery_info_path = File.join(project_root, "resources/grocery-info.yaml")
+      @recipes     = recipes
+      @quick_bites = quick_bites
     end
 
     def generate
@@ -27,19 +29,11 @@ module FamilyRecipes
     end
 
     def parse_recipes
-      print "PDF: Parsing recipes..."
-
-      quick_bites_filename = CONFIG[:quick_bites_filename]
-
-      recipe_files = Dir.glob(File.join(@recipes_dir, "**", "*")).select do |file|
-        File.file?(file) && File.basename(file) != quick_bites_filename
-      end
-
-      @recipes = recipe_files.map do |file|
-        source = File.read(file)
-        id = FamilyRecipes.slugify(File.basename(file, ".*"))
-        category = File.basename(File.dirname(file)).sub(/^./, &:upcase)
-        Recipe.new(markdown_source: source, id: id, category: category)
+      if @recipes
+        print "PDF: Using pre-parsed recipes..."
+      else
+        print "PDF: Parsing recipes..."
+        @recipes = FamilyRecipes.parse_recipes(@recipes_dir)
       end
 
       @recipes_by_category = @recipes
@@ -50,28 +44,11 @@ module FamilyRecipes
     end
 
     def parse_quick_bites
-      quick_bites_filename = CONFIG[:quick_bites_filename]
+      unless @quick_bites
+        @quick_bites = FamilyRecipes.parse_quick_bites(@recipes_dir)
+      end
+
       quick_bites_category = CONFIG[:quick_bites_category]
-      file_path = File.join(@recipes_dir, quick_bites_filename)
-
-      quick_bite_specs = []
-      current_subcat = nil
-
-      File.foreach(file_path) do |line|
-        case line
-        when /^##\s+(.*)/
-          current_subcat = $1.strip
-        when /^\s*-\s+(.*)/
-          text = $1.strip
-          category = [quick_bites_category, current_subcat].compact.join(": ")
-          quick_bite_specs << { text: text, category: category }
-        end
-      end
-
-      @quick_bites = quick_bite_specs.map do |spec|
-        QuickBite.new(text_source: spec[:text], category: spec[:category])
-      end
-
       quick_bites_prefix = /^#{Regexp.escape(quick_bites_category)}(: )?/
       @quick_bites_by_category = @quick_bites
         .group_by(&:category)
