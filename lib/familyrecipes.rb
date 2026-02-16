@@ -15,7 +15,7 @@ require 'tempfile'
 module FamilyRecipes
   # Configuration constants
   CONFIG = {
-    quick_bites_filename: 'Quick Bites.txt',
+    quick_bites_filename: 'Quick Bites.md',
     quick_bites_category: 'Quick Bites',
     templates: {
       recipe: 'recipe-template.html.erb',

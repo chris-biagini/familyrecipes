@@ -5,6 +5,12 @@ Rake::TestTask.new(:test) do |t|
   t.test_files = FileList["test/**/*_test.rb"]
 end
 
+desc "Remove generated output"
+task :clean do
+  rm_rf "output"
+  puts "Cleaned output/"
+end
+
 task default: :test
 
 desc "Build the site"

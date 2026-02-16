@@ -25,10 +25,10 @@ class SiteGeneratorTest < Minitest::Test
     assert File.exist?(File.join(output_dir, 'manifest.json')), 'PWA manifest should exist'
     assert File.exist?(File.join(output_dir, 'sw.js')), 'service worker should exist'
 
-    # Should have at least one recipe HTML + TXT pair
+    # Should have at least one recipe HTML + MD pair
     html_files = Dir.glob(File.join(output_dir, '*.html')).reject { |f| f.end_with?('index.html', '404.html') }
-    txt_files = Dir.glob(File.join(output_dir, '*.txt'))
+    md_files = Dir.glob(File.join(output_dir, '*.md'))
     assert html_files.size > 0, 'should generate recipe HTML files'
-    assert txt_files.size > 0, 'should generate recipe TXT files'
+    assert md_files.size > 0, 'should generate recipe MD files'
   end
 end

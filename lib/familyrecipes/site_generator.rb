@@ -89,7 +89,7 @@ module FamilyRecipes
       print "Generating output files in #{output_dir}..."
 
       @recipes.each do |recipe|
-        text_path = File.join(output_dir, "#{recipe.id}.txt")
+        text_path = File.join(output_dir, "#{recipe.id}.md")
         FamilyRecipes.write_file_if_changed(text_path, recipe.source)
 
         template_path = File.join(template_dir, "recipe-template.html.erb")

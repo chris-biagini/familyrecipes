@@ -27,7 +27,7 @@ class FamilyRecipesTest < Minitest::Test
   end
 
   def test_config_has_quick_bites_filename
-    assert_equal 'Quick Bites.txt', FamilyRecipes::CONFIG[:quick_bites_filename]
+    assert_equal 'Quick Bites.md', FamilyRecipes::CONFIG[:quick_bites_filename]
   end
 
   def test_config_has_templates
