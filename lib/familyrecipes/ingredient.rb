@@ -5,13 +5,6 @@
 class Ingredient
   attr_reader :name, :quantity, :prep_note
 
-  # Class-level alias map, set during build
-  # Uses class instance variable instead of @@ to avoid inheritance issues
-  class << self
-    attr_accessor :alias_map
-  end
-  @alias_map = {}
-
   # Irregular plural/singular mappings not handled by standard rules
   IRREGULAR_PLURALS = { "leaf" => "leaves" }.freeze
   IRREGULAR_SINGULARS = { "leaves" => "leaf" }.freeze
@@ -39,13 +32,8 @@ class Ingredient
     @prep_note = prep_note
   end
 
-  def normalized_name
-    # First check the alias map (includes explicit aliases and auto-plurals)
-    alias_map = self.class.alias_map
-    return alias_map[@name] if alias_map.key?(@name)
-
-    # Otherwise return the original name
-    @name
+  def normalized_name(alias_map = {})
+    alias_map.key?(@name) ? alias_map[@name] : @name
   end
 
   # Generate plural forms of a word for automatic matching

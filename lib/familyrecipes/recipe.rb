@@ -8,8 +8,6 @@ class Recipe
   # Shared markdown renderer with SmartyPants for typographic quotes/dashes
   MARKDOWN = Redcarpet::Markdown.new(
     Redcarpet::Render::SmartyHTML.new,
-    tables: true,
-    fenced_code_blocks: true,
     autolink: true,
     no_intra_emphasis: true
   )
@@ -49,61 +47,31 @@ class Recipe
     )
   end
 
-  def all_ingredients
-    # magic ruby syntax, returns a flat array of all unique ingredients
-    @steps.flat_map(&:ingredients).uniq { |ingredient| ingredient.normalized_name }
+  def all_ingredients(alias_map = {})
+    @steps.flat_map(&:ingredients).uniq { |ingredient| ingredient.normalized_name(alias_map) }
   end
 
-  def all_ingredient_names
+  def all_ingredient_names(alias_map = {})
     @steps
       .flat_map(&:ingredients)
-      .map(&:normalized_name)
+      .map { |ingredient| ingredient.normalized_name(alias_map) }
       .uniq
   end
 
-  def ingredients_with_quantities
+  def ingredients_with_quantities(alias_map = {})
     # Group all ingredients by normalized name, preserving first-seen order
     groups = {}
     @steps.flat_map(&:ingredients).each do |ingredient|
-      name = ingredient.normalized_name
+      name = ingredient.normalized_name(alias_map)
       (groups[name] ||= []) << ingredient
     end
 
     groups.map do |name, ingredients|
-      [name, aggregate_amounts(ingredients)]
+      [name, IngredientAggregator.aggregate_amounts(ingredients)]
     end
   end
 
   private
-
-  def aggregate_amounts(ingredients)
-    sums = {}        # unit -> numeric sum
-    has_unquantified = false
-
-    ingredients.each do |ingredient|
-      raw_value = ingredient.quantity_value
-      unit = ingredient.quantity_unit
-      unit = Ingredient::UNIT_NORMALIZATIONS[unit] || unit if unit
-
-      numeric = begin
-        Float(raw_value)
-      rescue StandardError
-        nil
-      end if raw_value
-
-      if numeric
-        sums[unit] = (sums[unit] || 0.0) + numeric
-      else
-        has_unquantified = true
-      end
-    end
-
-    result = sums.map { |unit, value| [value, unit] }
-    result << nil if has_unquantified
-    result = [nil] if result.empty?
-    result
-  end
-
 
   def parse_recipe
     # Use the new two-phase parser

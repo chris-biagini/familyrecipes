@@ -24,8 +24,7 @@ module FamilyRecipes
 
     def load_ingredient_aliases
       grocery_aisles = FamilyRecipes.parse_grocery_info(@grocery_info_path)
-      alias_map = FamilyRecipes.build_alias_map(grocery_aisles)
-      Ingredient.alias_map = alias_map
+      @alias_map = FamilyRecipes.build_alias_map(grocery_aisles)
     end
 
     def parse_recipes
@@ -60,8 +59,8 @@ module FamilyRecipes
     def build_ingredient_index
       index = Hash.new { |h, k| h[k] = [] }
       @recipes.each do |recipe|
-        recipe.all_ingredients.each do |ingredient|
-          index[ingredient.normalized_name] << recipe
+        recipe.all_ingredients(@alias_map).each do |ingredient|
+          index[ingredient.normalized_name(@alias_map)] << recipe
         end
       end
 

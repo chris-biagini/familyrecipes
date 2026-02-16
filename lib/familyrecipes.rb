@@ -188,6 +188,7 @@ end
 
 require_relative 'familyrecipes/scalable_number_preprocessor'
 require_relative 'familyrecipes/ingredient'
+require_relative 'familyrecipes/ingredient_aggregator'
 require_relative 'familyrecipes/ingredient_parser'
 require_relative 'familyrecipes/line_classifier'
 require_relative 'familyrecipes/recipe_builder'

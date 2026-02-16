@@ -156,8 +156,8 @@ class IngredientTest < Minitest::Test
   end
 
   def test_normalized_name_returns_canonical_when_alias_exists
-    Ingredient.alias_map = { "Flour (all-purpose)" => "Flour" }
+    alias_map = { "Flour (all-purpose)" => "Flour" }
     ingredient = Ingredient.new(name: "Flour (all-purpose)")
-    assert_equal "Flour", ingredient.normalized_name
+    assert_equal "Flour", ingredient.normalized_name(alias_map)
   end
 end

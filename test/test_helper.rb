@@ -6,10 +6,3 @@ require_relative '../lib/familyrecipes'
 # Set template directory for tests that need it
 FamilyRecipes.template_dir = File.join(File.dirname(__FILE__), '..', 'templates', 'web')
 
-# Reset global state before every test to prevent cross-test pollution
-class Minitest::Test
-  def before_setup
-    super
-    Ingredient.alias_map = {}
-  end
-end

@@ -27,8 +27,8 @@
         <ul>
         <%- recipes.each do |recipe| -%>
           <li>
-            <input type="checkbox" id="<%= recipe.id %>-checkbox" data-title="<%= h.call(recipe.title) %>" data-ingredients="<%= h.call(recipe.ingredients_with_quantities.to_json) %>">
-            <label for="<%= recipe.id %>-checkbox" title="Ingredients: <%= h.call(recipe.all_ingredient_names.join(', ')) %>"><%= recipe.title %></label>
+            <input type="checkbox" id="<%= recipe.id %>-checkbox" data-title="<%= h.call(recipe.title) %>" data-ingredients="<%= h.call(recipe.ingredients_with_quantities(alias_map).to_json) %>">
+            <label for="<%= recipe.id %>-checkbox" title="Ingredients: <%= h.call(recipe.all_ingredient_names(alias_map).join(', ')) %>"><%= recipe.title %></label>
             <a href="<%= recipe.id %>" class="recipe-link" title="Open <%= recipe.title %> in new tab" target="_blank">→</a>
           </li>
         <%- end -%>

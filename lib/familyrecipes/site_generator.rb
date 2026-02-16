@@ -39,7 +39,6 @@ module FamilyRecipes
       @grocery_aisles = FamilyRecipes.parse_grocery_info(grocery_info_path)
       @alias_map = FamilyRecipes.build_alias_map(@grocery_aisles)
       @known_ingredients = FamilyRecipes.build_known_ingredients(@grocery_aisles, @alias_map)
-      Ingredient.alias_map = @alias_map
       print "done!\n"
     end
 
@@ -116,8 +115,8 @@ module FamilyRecipes
 
       recipes_by_ingredient = Hash.new { |hash, key| hash[key] = [] }
       @recipes.each do |recipe|
-        recipe.all_ingredients.each do |ingredient|
-          recipes_by_ingredient[ingredient.normalized_name] << recipe
+        recipe.all_ingredients(@alias_map).each do |ingredient|
+          recipes_by_ingredient[ingredient.normalized_name(@alias_map)] << recipe
         end
       end
       sorted_ingredients = recipes_by_ingredient.sort_by { |name, _| name.downcase }
@@ -189,6 +188,7 @@ module FamilyRecipes
         regular_recipes: regular_recipes,
         quick_bites_by_subsection: quick_bites_by_subsection,
         ingredient_database: grocery_info,
+        alias_map: @alias_map,
         render: render
       )
 
