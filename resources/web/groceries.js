@@ -21,6 +21,42 @@
     });
   }
 
+  // --- Compact URL encoding ---
+
+  function encodeIndices(indices) {
+    var sorted = indices.slice().sort(function(a, b) { return a - b; });
+    var str = '';
+    for (var i = 0; i < sorted.length; i++) {
+      str += String.fromCharCode(97 + Math.floor(sorted[i] / 26))
+           + String.fromCharCode(97 + sorted[i] % 26);
+    }
+    return str;
+  }
+
+  function decodeIndices(str) {
+    var indices = [];
+    for (var i = 0; i + 1 < str.length; i += 2) {
+      indices.push((str.charCodeAt(i) - 97) * 26 + str.charCodeAt(i + 1) - 97);
+    }
+    return indices;
+  }
+
+  function encodeCustomItem(text) {
+    return encodeURIComponent(text)
+      .replace(/-/g, '%2D')
+      .replace(/\./g, '%2E')
+      .replace(/%20/g, '-');
+  }
+
+  function decodeCustomItem(str) {
+    return decodeURIComponent(str.replace(/-/g, '%20'));
+  }
+
+  function getRawParam(name) {
+    var match = window.location.search.match(new RegExp('[?&]' + name + '=([^&]*)'));
+    return match ? match[1] : null;
+  }
+
   // --- State persistence ---
 
   function saveState() {
@@ -47,15 +83,13 @@
   }
 
   function parseStateFromUrl() {
-    var params = new URLSearchParams(window.location.search);
-    var r = params.get('r');
-    var c = params.get('c');
-    if (!r && !c) return null;
+    var s = getRawParam('s');
+    var c = getRawParam('c');
+    if (!s && !c) return null;
 
     var selectedIds = [];
-    if (r) {
-      r.split('.').forEach(function(idx) {
-        var i = parseInt(idx, 10);
+    if (s) {
+      decodeIndices(s).forEach(function(i) {
         if (i >= 0 && i < recipeIdList.length) {
           selectedIds.push(recipeIdList[i]);
         }
@@ -64,8 +98,8 @@
 
     var customItems = [];
     if (c) {
-      c.split('|').forEach(function(item) {
-        if (item.trim()) customItems.push(item.trim());
+      c.split('.').forEach(function(encoded) {
+        if (encoded) customItems.push(decodeCustomItem(encoded));
       });
     }
 
@@ -468,19 +502,24 @@
   // --- Sharing ---
 
   function buildShareUrl() {
-    var url = new URL(window.location.pathname, window.location.origin);
+    var base = window.location.origin + window.location.pathname;
+    var params = [];
+
     var ids = Array.from(state.selectedIds);
     if (ids.length > 0) {
       var indices = [];
       ids.forEach(function(id) {
         if (recipeIndexMap[id] !== undefined) indices.push(recipeIndexMap[id]);
       });
-      url.searchParams.set('r', indices.join('.'));
+      if (indices.length > 0) params.push('s=' + encodeIndices(indices));
     }
+
     if (state.customItems.length > 0) {
-      url.searchParams.set('c', state.customItems.join('|'));
+      var encoded = state.customItems.map(encodeCustomItem);
+      params.push('c=' + encoded.join('.'));
     }
-    return url.toString();
+
+    return params.length > 0 ? base + '?' + params.join('&') : base;
   }
 
   function qrToSvg(qr, border) {
