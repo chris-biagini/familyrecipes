@@ -25,7 +25,7 @@ Let rise until approximately doubled in size.
 
 Preheat oven to 450° convection roast.
 
-Turn dough out onto floured surface. Split dough evenly in two. Pre-shape into two short logs, then let rest for 20 minutes.
+Turn dough out onto floured surface. Split dough evenly in two*. Pre-shape into two* short logs, then let rest for 20 minutes.
 
 ## Shape and bake.
 

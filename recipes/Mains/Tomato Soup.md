@@ -31,7 +31,7 @@ Bring soup to a gentle simmer.
 
 Preheat griddle. Add a few pats of butter and spread around with spatula.
 
-Place down four slices of bread, top with cheese, then top with four remaining slices of bread. Grill for a few minutes, flip, and grill for a few minutes more.
+Place down four* slices of bread, top with cheese, then top with four* remaining slices of bread. Grill for a few minutes, flip, and grill for a few minutes more.
 
 ## Finish and serve.
 

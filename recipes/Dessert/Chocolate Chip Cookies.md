@@ -20,7 +20,7 @@ Add butter to small saucepan. Cook gently over medium heat until solids are brow
 
 ## Preheat oven; prep pans.
 
-Preheat oven to 350° with convection. Line two half-sheet pans with parchment paper.
+Preheat oven to 350° with convection. Line two* half-sheet pans with parchment paper.
 
 ## Finish dough.
 

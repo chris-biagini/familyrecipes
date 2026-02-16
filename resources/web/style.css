@@ -188,12 +188,14 @@ header .yield-line {
   margin-top: -0.5rem;
 }
 
-.scalable {
-  border-bottom: 1px dotted rgb(150, 150, 150);
+.scalable.scaled {
+  background-color: rgba(255, 243, 205, 0.6);
+  border-radius: 2px;
+  padding: 0 1px;
 }
 
-.yield-line .scalable {
-  border-bottom: none;
+.yield-line .scalable.scaled {
+  background-color: transparent;
 }
 
 .toc_nav {
@@ -403,7 +405,7 @@ footer small {
     text-decoration: none;
   }
 
-  .scalable {
-    border-bottom: none;
+  .scalable.scaled {
+    background-color: transparent;
   }
 }

@@ -40,7 +40,7 @@ Refrigerate for at least 10 minutes, and up to 24 hours.
 
 Preheat oven to 350°.
 
-Portion as desired. A half-ounce #60 scoop (pink) works well and makes 24 cookies.
+Portion as desired. A half-ounce #60 scoop (pink) works well and makes 24* cookies.
 
 Arrange on cookie sheets lined with parchment paper.
 

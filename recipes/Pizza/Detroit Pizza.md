@@ -35,9 +35,9 @@ Add garlic to oil and cook gently over low heat. Add tomatoes to pan. Use stick 
 - Butter, 30 g: Melted.
 - Olive oil, 30 g
 
-A few hours before baking, remove dough from fridge, divide in half, and form into two neat balls.
+A few hours before baking, remove dough from fridge, divide in half, and form into two* neat balls.
 
-Stir together butter and olive oil. Use pastry brush to grease two large Detroit-style pizza pans with mixture. Add a dough ball to each pan and flip twice to coat. Spread dough as far as possible without tearing. Allow to rest and spread again, repeating as necessary to cover bottom of pan.
+Stir together butter and olive oil. Use pastry brush to grease two* large Detroit-style pizza pans with mixture. Add a dough ball to each pan and flip twice to coat. Spread dough as far as possible without tearing. Allow to rest and spread again, repeating as necessary to cover bottom of pan.
 
 ## Assemble and bake.
 

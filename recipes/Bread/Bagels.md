@@ -10,7 +10,7 @@
 
 Whisk together flour, water, and yeast in a medium bowl. Let sit on counter overnight.
 
-Note that you only need 1000 g of poolish the next day; making extra now accounts for residue on your bowl and utensils.
+Note that you only need 1000* g of poolish the next day; making extra now accounts for residue on your bowl and utensils.
 
 ## Saturday morning, around 10 AM: Make dough and bulk ferment.
 
@@ -30,7 +30,7 @@ Form dough into a neat ball and place back in bowl. Cover the bowl tightly and l
 
 ## Saturday: Shape and refrigerate overnight.
 
-Divide dough into twelve 130 g portions. Pre-shape portions into balls and keep covered. Let rest for 20 minutes or so.
+Divide dough into twelve* 130 g portions. Pre-shape portions into balls and keep covered. Let rest for 20 minutes or so.
 
 Form each portion into a bagel by pinching through the center and stretching it into a wide ring. Place finished bagels in proofing boxes.
 
@@ -47,7 +47,7 @@ Preheat oven to 450° convection roast.
 
 Fill large pot with water. Stir in a spoonful of sodium carbonate (or baking soda) and a spoonful of salt. Bring to a boil.
 
-Line two half-sheet pans with parchment paper, then dust with cornmeal. Place seeds or other toppings in a quarter-sheet pan.
+Line two* half-sheet pans with parchment paper, then dust with cornmeal. Place seeds or other toppings in a quarter-sheet pan.
 
 Working in batches, drop the bagels into the water and boil for 60 seconds, then flip and boil for another 60 seconds. Dip each bagel in toppings, then transfer to sheet pans.
 

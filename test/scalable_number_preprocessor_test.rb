@@ -48,6 +48,14 @@ class ScalableNumberPreprocessorTest < Minitest::Test
     assert_equal "Bake at 400 for 25 minutes.", result
   end
 
+  def test_word_number_twelve
+    result = ScalableNumberPreprocessor.process_instructions("Divide into twelve* portions.")
+    assert_includes result, 'data-base-value="12"'
+    assert_includes result, 'data-original-text="twelve"'
+    assert_includes result, ">twelve</span>"
+    refute_includes result, "twelve*"
+  end
+
   def test_unmarked_words_left_alone
     result = ScalableNumberPreprocessor.process_instructions("Let it cool for one hour.")
     refute_includes result, "scalable"

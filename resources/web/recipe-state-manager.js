@@ -153,6 +153,8 @@ class RecipeStateManager {
     document.querySelectorAll('.scalable[data-base-value]').forEach(span => {
       if (factor === 1) {
         span.textContent = span.dataset.originalText;
+        span.classList.remove('scaled');
+        span.removeAttribute('title');
       } else {
         const base = parseFloat(span.dataset.baseValue);
         const scaled = base * factor;
@@ -160,6 +162,8 @@ class RecipeStateManager {
           ? scaled
           : Math.round(scaled * 100) / 100;
         span.textContent = String(pretty);
+        span.classList.add('scaled');
+        span.title = 'Originally: ' + span.dataset.originalText;
       }
     });
   }
