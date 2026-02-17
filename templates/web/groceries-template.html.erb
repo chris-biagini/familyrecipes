@@ -27,8 +27,9 @@
         <ul>
         <%- recipes.each do |recipe| -%>
           <li>
-            <input type="checkbox" id="<%= recipe.id %>-checkbox" data-title="<%= h.call(recipe.title) %>" data-ingredients="<%= h.call(recipe.ingredients_with_quantities(alias_map).to_json) %>">
-            <label for="<%= recipe.id %>-checkbox" title="Ingredients: <%= h.call(recipe.all_ingredient_names(alias_map).join(', ')) %>"><%= recipe.title %></label>
+            <%- filtered_ingredients = recipe.ingredients_with_quantities(alias_map).reject { |name, _| omitted_ingredients.include?(name.downcase) } -%>
+            <input type="checkbox" id="<%= recipe.id %>-checkbox" data-title="<%= h.call(recipe.title) %>" data-ingredients="<%= h.call(filtered_ingredients.to_json) %>">
+            <label for="<%= recipe.id %>-checkbox" title="Ingredients: <%= h.call(filtered_ingredients.map(&:first).join(', ')) %>"><%= recipe.title %></label>
             <a href="<%= recipe.id %>" class="recipe-link" title="Open <%= recipe.title %> in new tab" target="_blank">→</a>
           </li>
         <%- end -%>
@@ -46,8 +47,9 @@
             <ul>
             <%- items.each do |item| -%>
               <li>
-                <input type="checkbox" id="<%= item.id %>-checkbox" data-title="<%= h.call(item.title) %>" data-ingredients="<%= h.call(item.ingredients_with_quantities.to_json) %>">
-                <label for="<%= item.id %>-checkbox" title="Ingredients: <%= h.call(item.all_ingredient_names.join(', ')) %>"><%= item.title %></label>
+                <%- filtered_ingredients = item.ingredients_with_quantities.reject { |name, _| omitted_ingredients.include?(name.downcase) } -%>
+                <input type="checkbox" id="<%= item.id %>-checkbox" data-title="<%= h.call(item.title) %>" data-ingredients="<%= h.call(filtered_ingredients.to_json) %>">
+                <label for="<%= item.id %>-checkbox" title="Ingredients: <%= h.call(filtered_ingredients.map(&:first).join(', ')) %>"><%= item.title %></label>
               </li>
             <%- end -%>
             </ul>

@@ -145,7 +145,7 @@ module FamilyRecipes
         end
       end
 
-      unknown_ingredients = ingredients_to_recipes.keys.to_set - @known_ingredients
+      unknown_ingredients = ingredients_to_recipes.keys.reject { |name| @known_ingredients.include?(name.downcase) }.to_set
       if unknown_ingredients.any?
         puts "\n"
         puts "WARNING: The following ingredients are not in grocery-info.yaml:"
@@ -168,7 +168,15 @@ module FamilyRecipes
       grocery_info = {}
       @grocery_aisles.each do |aisle, items|
         grocery_info[aisle] = items.map do |item|
-          { name: item[:name], staple: item[:staple] }
+          { name: item[:name] }
+        end
+      end
+
+      omitted_ingredients = Set.new
+      if @grocery_aisles["Omit_From_List"]
+        @grocery_aisles["Omit_From_List"].each do |item|
+          omitted_ingredients << item[:name].downcase
+          item[:aliases].each { |al| omitted_ingredients << al.downcase }
         end
       end
 
@@ -189,6 +197,7 @@ module FamilyRecipes
         quick_bites_by_subsection: quick_bites_by_subsection,
         ingredient_database: grocery_info,
         alias_map: @alias_map,
+        omitted_ingredients: omitted_ingredients,
         render: render
       )
 

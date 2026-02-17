@@ -75,22 +75,17 @@ module FamilyRecipes
     raw.each do |aisle, items|
       aisles[aisle] = items.map do |item|
         if item.is_a?(Hash)
-          name = item['name'].chomp('*')
-          aliases = item['aliases'] || []
-          staple = item['name'].end_with?('*')
+          { name: item['name'], aliases: item['aliases'] || [] }
         else
-          name = item.chomp('*')
-          aliases = []
-          staple = item.end_with?('*')
+          { name: item, aliases: [] }
         end
-        { name: name, aliases: aliases, staple: staple }
       end
     end
 
     aisles
   end
 
-  # Build a reverse lookup map: alias -> canonical name
+  # Build a reverse lookup map: alias -> canonical name (all keys downcased)
   def self.build_alias_map(grocery_aisles)
     alias_map = {}
 
@@ -98,17 +93,20 @@ module FamilyRecipes
       items.each do |item|
         canonical = item[:name]
 
+        # Map canonical name's downcase to itself
+        alias_map[canonical.downcase] = canonical
+
         item[:aliases].each do |al|
-          alias_map[al] = canonical
+          alias_map[al.downcase] = canonical
         end
 
         Ingredient.singularize(canonical).each do |singular|
-          alias_map[singular] = canonical unless singular == canonical
+          alias_map[singular.downcase] = canonical unless singular == canonical
         end
 
         item[:aliases].each do |al|
           Ingredient.singularize(al).each do |singular|
-            alias_map[singular] = canonical unless singular == al
+            alias_map[singular.downcase] = canonical unless singular == al
           end
         end
       end
@@ -117,14 +115,14 @@ module FamilyRecipes
     alias_map
   end
 
-  # Build set of all known ingredient names (canonical + aliases)
+  # Build set of all known ingredient names (all entries downcased)
   def self.build_known_ingredients(grocery_aisles, alias_map)
     known = Set.new
 
     grocery_aisles.each do |aisle, items|
       items.each do |item|
-        known << item[:name]
-        known.merge(item[:aliases])
+        known << item[:name].downcase
+        item[:aliases].each { |al| known << al.downcase }
       end
     end
 

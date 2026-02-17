@@ -33,7 +33,7 @@ class Ingredient
   end
 
   def normalized_name(alias_map = {})
-    alias_map.key?(@name) ? alias_map[@name] : @name
+    alias_map[@name.downcase] || @name
   end
 
   # Generate plural forms of a word for automatic matching

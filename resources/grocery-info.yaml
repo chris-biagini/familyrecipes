@@ -1,6 +1,5 @@
 # Grocery Information
 # Items can be simple strings or have a 'name' and 'aliases' list
-# An asterisk after the name marks it as a staple (always on the list)
 
 Fresh Bakery:
   - Bread
