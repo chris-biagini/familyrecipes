@@ -1,5 +1,6 @@
 (function() {
   var STORAGE_KEY = 'groceries-state';
+  var initComplete = false;
 
   // Central state
   var state = {
@@ -21,7 +22,17 @@
     });
   }
 
-  // --- Compact URL encoding ---
+  // --- Aisle index mapping (for localStorage collapse persistence) ---
+
+  var aisleElements = [];  // index -> details element
+
+  function buildAisleIndex() {
+    document.querySelectorAll('#grocery-list details.aisle').forEach(function(details) {
+      aisleElements.push(details);
+    });
+  }
+
+  // --- Compact encoding ---
 
   function encodeIndices(indices) {
     var sorted = indices.slice().sort(function(a, b) { return a - b; });
@@ -57,26 +68,109 @@
     return match ? match[1] : null;
   }
 
+  // --- Unified state encode/decode ---
+
+  function encodeState() {
+    var encoded = {};
+
+    var ids = Array.from(state.selectedIds);
+    if (ids.length > 0) {
+      var indices = [];
+      ids.forEach(function(id) {
+        if (recipeIndexMap[id] !== undefined) indices.push(recipeIndexMap[id]);
+      });
+      if (indices.length > 0) encoded.s = encodeIndices(indices);
+    }
+
+    if (state.customItems.length > 0) {
+      encoded.c = state.customItems.map(encodeCustomItem).join('.');
+    }
+
+    if (state.checkedOff.size > 0) {
+      encoded.x = Array.from(state.checkedOff).map(encodeCustomItem).join('.');
+    }
+
+    return encoded;
+  }
+
+  function decodeState(obj) {
+    var result = { selectedIds: [], customItems: [], checkedOff: [] };
+
+    if (obj.s) {
+      decodeIndices(obj.s).forEach(function(i) {
+        if (i >= 0 && i < recipeIdList.length) {
+          result.selectedIds.push(recipeIdList[i]);
+        }
+      });
+    }
+
+    if (obj.c) {
+      obj.c.split('.').forEach(function(encoded) {
+        if (encoded) result.customItems.push(decodeCustomItem(encoded));
+      });
+    }
+
+    if (obj.x) {
+      obj.x.split('.').forEach(function(encoded) {
+        if (encoded) result.checkedOff.push(decodeCustomItem(encoded));
+      });
+    }
+
+    return result;
+  }
+
+  function applyState(decoded) {
+    state.selectedIds = new Set(decoded.selectedIds);
+    state.customItems = decoded.customItems.slice();
+    state.checkedOff = new Set(decoded.checkedOff);
+  }
+
+  function snapshotState() {
+    return {
+      selectedIds: Array.from(state.selectedIds),
+      customItems: state.customItems.slice(),
+      checkedOff: Array.from(state.checkedOff)
+    };
+  }
+
+  // --- Aisle state ---
+
+  function encodeAisleState() {
+    var collapsed = [];
+    for (var i = 0; i < aisleElements.length; i++) {
+      if (!aisleElements[i].hidden && !aisleElements[i].open) {
+        collapsed.push(i);
+      }
+    }
+    return collapsed.length > 0 ? encodeIndices(collapsed) : undefined;
+  }
+
+  function restoreAisleState(encoded) {
+    if (!encoded) return;
+    var indices = decodeIndices(encoded);
+    indices.forEach(function(i) {
+      if (i >= 0 && i < aisleElements.length && !aisleElements[i].hidden) {
+        aisleElements[i].open = false;
+      }
+    });
+  }
+
   // --- State persistence ---
 
   function saveState() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      selectedIds: Array.from(state.selectedIds),
-      customItems: state.customItems,
-      checkedOff: Array.from(state.checkedOff)
-    }));
+    var encoded = encodeState();
+    var aisles = encodeAisleState();
+    if (aisles) encoded.a = aisles;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(encoded));
   }
 
-  function loadStateFromStorageRaw() {
+  function loadFromStorage() {
     var raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     try {
-      var data = JSON.parse(raw);
-      return {
-        selectedIds: data.selectedIds || [],
-        customItems: data.customItems || [],
-        checkedOff: data.checkedOff || []
-      };
+      var obj = JSON.parse(raw);
+      if (!obj.s && !obj.c && !obj.x && !obj.a) return null;
+      return { decoded: decodeState(obj), aisles: obj.a || null };
     } catch(e) {
       return null;
     }
@@ -85,55 +179,28 @@
   function parseStateFromUrl() {
     var s = getRawParam('s');
     var c = getRawParam('c');
+    var x = getRawParam('x');
     if (!s && !c) return null;
 
-    var selectedIds = [];
-    if (s) {
-      decodeIndices(s).forEach(function(i) {
-        if (i >= 0 && i < recipeIdList.length) {
-          selectedIds.push(recipeIdList[i]);
-        }
-      });
-    }
-
-    var customItems = [];
-    if (c) {
-      c.split('.').forEach(function(encoded) {
-        if (encoded) customItems.push(decodeCustomItem(encoded));
-      });
-    }
-
-    return {
-      selectedIds: selectedIds,
-      customItems: customItems
-    };
+    return decodeState({ s: s, c: c, x: x });
   }
 
   function cleanUrl() {
     history.replaceState(null, '', window.location.pathname);
   }
 
-  function computeSnapshot(selectedIds, customItems) {
-    var ids = selectedIds.slice().sort();
-    var items = customItems.slice().sort();
-    return JSON.stringify({ s: ids, c: items });
-  }
+  function statesMatch(a, b) {
+    var aIds = a.selectedIds.slice().sort();
+    var bIds = b.selectedIds.slice().sort();
+    if (JSON.stringify(aIds) !== JSON.stringify(bIds)) return false;
 
-  function selectionsMatch(urlState, storageState) {
-    return computeSnapshot(urlState.selectedIds, urlState.customItems)
-        === computeSnapshot(storageState.selectedIds, storageState.customItems);
-  }
+    var aItems = a.customItems.slice().sort();
+    var bItems = b.customItems.slice().sort();
+    if (JSON.stringify(aItems) !== JSON.stringify(bItems)) return false;
 
-  function applyUrlState(urlState) {
-    state.selectedIds = new Set(urlState.selectedIds);
-    state.customItems = urlState.customItems.slice();
-    state.checkedOff = new Set();
-  }
-
-  function applyStorageState(storageState) {
-    state.selectedIds = new Set(storageState.selectedIds);
-    state.customItems = storageState.customItems.slice();
-    state.checkedOff = new Set(storageState.checkedOff);
+    var aChecked = a.checkedOff.slice().sort();
+    var bChecked = b.checkedOff.slice().sort();
+    return JSON.stringify(aChecked) === JSON.stringify(bChecked);
   }
 
   function applyStateToCheckboxes() {
@@ -155,40 +222,14 @@
     var bar = document.getElementById('state-notice');
     bar.innerHTML = '';
     bar.hidden = false;
-    bar.className = options.persistent ? 'notice-persistent' : 'notice-transient';
 
-    if (options.detailLine) {
-      var msgWrap = document.createElement('div');
-      msgWrap.className = 'notice-messages';
-      var main = document.createElement('span');
-      main.className = 'notice-message';
-      main.textContent = message;
-      var detail = document.createElement('span');
-      detail.className = 'notice-detail';
-      detail.textContent = options.detailLine;
-      msgWrap.appendChild(main);
-      msgWrap.appendChild(detail);
-      bar.appendChild(msgWrap);
-    } else {
-      var msg = document.createElement('span');
-      msg.className = 'notice-message';
-      msg.textContent = message;
-      bar.appendChild(msg);
-    }
+    var msg = document.createElement('span');
+    msg.className = 'notice-message';
+    msg.textContent = message;
+    bar.appendChild(msg);
 
     var actions = document.createElement('span');
     actions.className = 'notice-actions';
-
-    if (options.buttons) {
-      options.buttons.forEach(function(btn) {
-        var b = document.createElement('button');
-        b.type = 'button';
-        b.textContent = btn.label;
-        b.className = 'notice-btn ' + (btn.style || 'notice-btn-secondary');
-        b.addEventListener('click', btn.action);
-        actions.appendChild(b);
-      });
-    }
 
     if (options.undo) {
       var undoBtn = document.createElement('button');
@@ -197,7 +238,7 @@
       undoBtn.className = 'notice-btn notice-btn-undo';
       undoBtn.addEventListener('click', function() {
         if (undoState) {
-          applyStorageState(undoState);
+          applyState(undoState);
           applyStateToCheckboxes();
           renderChips();
           saveState();
@@ -210,23 +251,21 @@
       actions.appendChild(undoBtn);
     }
 
-    if (!options.persistent) {
-      var dismiss = document.createElement('button');
-      dismiss.type = 'button';
-      dismiss.className = 'notice-dismiss';
-      dismiss.textContent = '\u00d7';
-      dismiss.setAttribute('aria-label', 'Dismiss');
-      dismiss.addEventListener('click', function() {
-        undoState = null;
-        dismissNotice();
-      });
-      actions.appendChild(dismiss);
+    var dismiss = document.createElement('button');
+    dismiss.type = 'button';
+    dismiss.className = 'notice-dismiss';
+    dismiss.textContent = '\u00d7';
+    dismiss.setAttribute('aria-label', 'Dismiss');
+    dismiss.addEventListener('click', function() {
+      undoState = null;
+      dismissNotice();
+    });
+    actions.appendChild(dismiss);
 
-      noticeTimer = setTimeout(function() {
-        undoState = null;
-        dismissNotice();
-      }, 4000);
-    }
+    noticeTimer = setTimeout(function() {
+      undoState = null;
+      dismissNotice();
+    }, 5000);
 
     bar.appendChild(actions);
 
@@ -396,40 +435,90 @@
       misc.appendChild(li);
     });
 
-    // Hide empty aisles, update counts
-    var totalItems = 0;
+    // Hide empty aisles, only force-open newly visible ones
     document.querySelectorAll('#grocery-list details.aisle').forEach(function(details) {
       var visibleItems = details.querySelectorAll('li:not([hidden])');
       var count = visibleItems.length;
-      totalItems += count;
 
       if (count === 0) {
         details.hidden = true;
       } else {
+        var wasHidden = details.hidden;
         details.hidden = false;
-        details.open = true;
-        var countSpan = details.querySelector('.aisle-count');
-        if (countSpan) countSpan.textContent = '(' + count + ')';
+        if (wasHidden) details.open = true;
       }
     });
 
-    // Update total count and empty state
+    // Restore check-off states
+    restoreCheckOffs();
+
+    // Update item count display
+    updateItemCount();
+  }
+
+  // --- Item count ---
+
+  function getItemCountInfo() {
+    var total = 0;
+    var checked = 0;
+    document.querySelectorAll('#grocery-list li:not([hidden])').forEach(function(li) {
+      total++;
+      var cb = li.querySelector('.check-off input[type="checkbox"]');
+      if (cb && cb.checked) checked++;
+    });
+    return { total: total, checked: checked, remaining: total - checked };
+  }
+
+  function updateAisleCounts() {
+    document.querySelectorAll('#grocery-list details.aisle:not([hidden])').forEach(function(details) {
+      var total = 0;
+      var checked = 0;
+      details.querySelectorAll('li:not([hidden])').forEach(function(li) {
+        total++;
+        var cb = li.querySelector('.check-off input[type="checkbox"]');
+        if (cb && cb.checked) checked++;
+      });
+      var countSpan = details.querySelector('.aisle-count');
+      if (!countSpan) return;
+      var remaining = total - checked;
+      if (remaining === 0 && total > 0) {
+        countSpan.textContent = '\u2713';
+        countSpan.classList.add('aisle-done');
+      } else {
+        countSpan.textContent = '(' + remaining + ')';
+        countSpan.classList.remove('aisle-done');
+      }
+    });
+  }
+
+  function updateItemCount() {
+    updateAisleCounts();
+    var info = getItemCountInfo();
     var countEl = document.getElementById('item-count');
     var emptyEl = document.getElementById('grocery-preview-empty');
     var groceryList = document.getElementById('grocery-list');
 
-    if (totalItems > 0) {
-      countEl.textContent = totalItems + (totalItems === 1 ? ' item' : ' items');
+    if (info.total > 0) {
       emptyEl.style.display = 'none';
       groceryList.style.display = '';
+
+      if (info.remaining === 0) {
+        countEl.textContent = '\u2713 All done!';
+        countEl.classList.add('all-done');
+      } else {
+        countEl.classList.remove('all-done');
+        if (info.checked > 0) {
+          countEl.textContent = info.remaining + ' of ' + info.total + ' items needed';
+        } else {
+          countEl.textContent = info.total + (info.total === 1 ? ' item' : ' items');
+        }
+      }
     } else {
       countEl.textContent = '';
+      countEl.classList.remove('all-done');
       emptyEl.style.display = '';
       groceryList.style.display = 'none';
     }
-
-    // Restore check-off states
-    restoreCheckOffs();
   }
 
   // --- Check-off ---
@@ -457,6 +546,119 @@
       state.checkedOff.delete(name);
     }
     saveState();
+    updateItemCount();
+    updateShareSection();
+
+    // Auto-collapse/expand aisle
+    var details = li.closest('details.aisle');
+    if (details) {
+      if (cb.checked) {
+        var allChecked = true;
+        details.querySelectorAll('li:not([hidden])').forEach(function(item) {
+          var itemCb = item.querySelector('.check-off input[type="checkbox"]');
+          if (itemCb && !itemCb.checked) allChecked = false;
+        });
+        if (allChecked && details.open) {
+          animateCollapse(details);
+        }
+      } else {
+        if (!details.open) {
+          animateExpand(details);
+        }
+      }
+    }
+  }
+
+  // --- Aisle animation ---
+
+  function cleanupAnimation(details) {
+    var ul = details.querySelector('ul');
+    if (!ul) return;
+    details.classList.remove('aisle-collapsing', 'aisle-expanding');
+    ul.style.height = '';
+    ul.style.overflow = '';
+    ul.style.opacity = '';
+    ul.style.paddingBottom = '';
+  }
+
+  function animateCollapse(details) {
+    var ul = details.querySelector('ul');
+    if (!ul) { details.open = false; return; }
+
+    cleanupAnimation(details);
+
+    var startHeight = ul.scrollHeight;
+    ul.style.height = startHeight + 'px';
+    ul.style.overflow = 'hidden';
+    ul.offsetHeight; // force reflow
+
+    details.classList.add('aisle-collapsing');
+    ul.style.height = '0';
+    ul.style.opacity = '0';
+    ul.style.paddingBottom = '0';
+
+    function onEnd(e) {
+      if (e.target !== ul) return;
+      ul.removeEventListener('transitionend', onEnd);
+      details.classList.remove('aisle-collapsing');
+      ul.style.height = '';
+      ul.style.overflow = '';
+      ul.style.opacity = '';
+      ul.style.paddingBottom = '';
+      details.open = false;
+    }
+    ul.addEventListener('transitionend', onEnd);
+
+    // Fallback in case transitionend doesn't fire
+    setTimeout(function() {
+      if (details.classList.contains('aisle-collapsing')) {
+        details.classList.remove('aisle-collapsing');
+        ul.style.height = '';
+        ul.style.overflow = '';
+        ul.style.opacity = '';
+        ul.style.paddingBottom = '';
+        details.open = false;
+      }
+    }, 400);
+  }
+
+  function animateExpand(details) {
+    var ul = details.querySelector('ul');
+    if (!ul) { details.open = true; return; }
+
+    cleanupAnimation(details);
+
+    details.open = true;
+    var targetHeight = ul.scrollHeight;
+    ul.style.height = '0';
+    ul.style.opacity = '0';
+    ul.style.overflow = 'hidden';
+    ul.style.paddingBottom = '0';
+    ul.offsetHeight; // force reflow
+
+    details.classList.add('aisle-expanding');
+    ul.style.height = targetHeight + 'px';
+    ul.style.opacity = '1';
+    ul.style.paddingBottom = '';
+
+    function onEnd(e) {
+      if (e.target !== ul) return;
+      ul.removeEventListener('transitionend', onEnd);
+      details.classList.remove('aisle-expanding');
+      ul.style.height = '';
+      ul.style.overflow = '';
+      ul.style.opacity = '';
+    }
+    ul.addEventListener('transitionend', onEnd);
+
+    setTimeout(function() {
+      if (details.classList.contains('aisle-expanding')) {
+        details.classList.remove('aisle-expanding');
+        ul.style.height = '';
+        ul.style.overflow = '';
+        ul.style.opacity = '';
+      }
+    }, 400);
   }
 
   // --- Custom items ---
@@ -502,22 +704,13 @@
   // --- Sharing ---
 
   function buildShareUrl() {
+    var encoded = encodeState();
     var base = window.location.origin + window.location.pathname;
     var params = [];
 
-    var ids = Array.from(state.selectedIds);
-    if (ids.length > 0) {
-      var indices = [];
-      ids.forEach(function(id) {
-        if (recipeIndexMap[id] !== undefined) indices.push(recipeIndexMap[id]);
-      });
-      if (indices.length > 0) params.push('s=' + encodeIndices(indices));
-    }
-
-    if (state.customItems.length > 0) {
-      var encoded = state.customItems.map(encodeCustomItem);
-      params.push('c=' + encoded.join('.'));
-    }
+    if (encoded.s) params.push('s=' + encoded.s);
+    if (encoded.c) params.push('c=' + encoded.c);
+    if (encoded.x) params.push('x=' + encoded.x);
 
     return params.length > 0 ? base + '?' + params.join('&') : base;
   }
@@ -606,14 +799,6 @@
     sel.addRange(range);
   }
 
-  // --- Aisle behavior ---
-
-  function openAisles() {
-    document.querySelectorAll('#grocery-list details.aisle:not([hidden])').forEach(function(d) {
-      d.open = true;
-    });
-  }
-
   // --- Init ---
 
   document.addEventListener('DOMContentLoaded', function() {
@@ -622,91 +807,71 @@
       el.classList.remove('hidden-until-js');
     });
 
-    // Build recipe index mapping (must happen before URL parsing)
+    // Build index mappings (must happen before state parsing)
     buildRecipeIndex();
+    buildAisleIndex();
 
-    // Parse state sources without applying
+    // Mark all aisles hidden so updateGroceryList treats them as "new"
+    // and opens them when they first gain items
+    aisleElements.forEach(function(d) { d.hidden = true; });
+
+    // Parse state sources
     var urlState = parseStateFromUrl();
-    var storageState = loadStateFromStorageRaw();
+    var stored = loadFromStorage();
+    var storedAisles = null;
 
     function finishInit() {
       applyStateToCheckboxes();
       renderChips();
       updateGroceryList();
       updateShareSection();
-      openAisles();
     }
 
     if (!urlState) {
-      // No URL params — load from localStorage silently
-      if (storageState) applyStorageState(storageState);
+      // Branch 1: No URL params — load from localStorage silently
+      if (stored) {
+        applyState(stored.decoded);
+        storedAisles = stored.aisles;
+      }
       finishInit();
-
-    } else if (!storageState) {
-      // URL params present, no localStorage — auto-load from URL
-      applyUrlState(urlState);
-      cleanUrl();
-      saveState();
-      finishInit();
-      showNotice('List loaded from shared link');
-
-    } else if (selectionsMatch(urlState, storageState)) {
-      // URL matches current selections — keep localStorage (preserves check-offs)
-      applyStorageState(storageState);
-      cleanUrl();
-      finishInit();
-
-    } else if (storageState.checkedOff.length > 0) {
-      // Different selections, but user is mid-shopping — prompt before replacing
-      applyStorageState(storageState);
-      cleanUrl();
-      finishInit();
-
-      var checkedCount = storageState.checkedOff.length;
-      var savedStorage = storageState;
-      var pendingUrl = urlState;
-
-      showNotice(
-        'You\u2019re in the middle of shopping. Load this shared list instead?',
-        {
-          persistent: true,
-          detailLine: checkedCount + ' item' + (checkedCount === 1 ? '' : 's') + ' checked off',
-          buttons: [
-            {
-              label: 'Keep my list',
-              style: 'notice-btn-primary',
-              action: function() {
-                dismissNotice();
-              }
-            },
-            {
-              label: 'Load shared list',
-              style: 'notice-btn-secondary',
-              action: function() {
-                applyUrlState(pendingUrl);
-                applyStateToCheckboxes();
-                renderChips();
-                saveState();
-                updateGroceryList();
-                updateShareSection();
-                dismissNotice(true);
-                undoState = savedStorage;
-                showNotice('Shared list loaded', { undo: true });
-              }
-            }
-          ]
-        }
-      );
+      if (storedAisles) restoreAisleState(storedAisles);
 
     } else {
-      // Different selections, no checked items — auto-clobber with undo
-      undoState = storageState;
-      applyUrlState(urlState);
-      cleanUrl();
-      saveState();
-      finishInit();
-      showNotice('List updated from shared link', { undo: true });
+      var storedDecoded = stored ? stored.decoded : null;
+
+      if (storedDecoded && statesMatch(urlState, storedDecoded)) {
+        // Branch 2: URL matches stored state — load silently
+        applyState(storedDecoded);
+        storedAisles = stored.aisles;
+        cleanUrl();
+        finishInit();
+        if (storedAisles) restoreAisleState(storedAisles);
+
+      } else {
+        // Branch 3: URL differs (or no stored state) — clobber with undo
+        if (storedDecoded) undoState = storedDecoded;
+
+        applyState(urlState);
+        cleanUrl();
+        finishInit();
+
+        var info = getItemCountInfo();
+        var message = 'List loaded.';
+        if (info.total > 0) {
+          if (info.checked > 0) {
+            message += ' ' + info.remaining + ' of ' + info.total + ' items needed.';
+          } else {
+            message += ' ' + info.total + (info.total === 1 ? ' item.' : ' items.');
+          }
+        }
+
+        showNotice(message, { undo: !!storedDecoded });
+      }
     }
+
+    // Init complete — enable aisle toggle persistence
+    initComplete = true;
+    saveState();
 
     // Sync selectedIds from checkbox state
     function syncSelectedIds() {
@@ -730,6 +895,13 @@
 
     // Check-off changes (delegated)
     document.getElementById('grocery-list').addEventListener('change', handleCheckOff);
+
+    // Aisle toggle persistence
+    document.querySelectorAll('#grocery-list details.aisle').forEach(function(details) {
+      details.addEventListener('toggle', function() {
+        if (initComplete) saveState();
+      });
+    });
 
     // Custom item input
     var customInput = document.getElementById('custom-input');

@@ -385,6 +385,13 @@
   font-size: 0.9rem;
   color: #888;
   font-style: italic;
+  transition: color 0.3s ease;
+}
+
+#grocery-preview-header .item-count.all-done {
+  color: #2a5a3a;
+  font-style: normal;
+  font-weight: 600;
 }
 
 #grocery-preview-empty {
@@ -441,6 +448,17 @@
   font-weight: 400;
   color: #999;
   font-size: 0.75rem;
+  transition: color 0.3s ease;
+}
+
+.aisle-count.aisle-done {
+  color: #2a5a3a;
+}
+
+/* Aisle auto-collapse/expand animation */
+#grocery-list details.aisle-collapsing > ul,
+#grocery-list details.aisle-expanding > ul {
+  transition: height 0.3s ease, opacity 0.3s ease, padding-bottom 0.3s ease;
 }
 
 #grocery-list ul {
@@ -550,25 +568,6 @@
   opacity: 1;
 }
 
-#state-notice.notice-persistent {
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 0.6rem;
-  padding: 1rem 1.25rem;
-}
-
-.notice-messages {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-}
-
-.notice-detail {
-  font-size: 0.8rem;
-  color: #666;
-}
-
 .notice-actions {
   display: flex;
   align-items: center;
@@ -586,25 +585,6 @@
   font-size: 0.85rem;
   cursor: pointer;
   white-space: nowrap;
-}
-
-.notice-btn-primary {
-  background: rgb(190, 12, 30);
-  color: #fff;
-}
-
-.notice-btn-primary:hover {
-  background: rgb(160, 10, 25);
-}
-
-.notice-btn-secondary {
-  background: rgb(255, 252, 249);
-  color: #333;
-  border: 1px solid rgba(190, 12, 30, 0.4);
-}
-
-.notice-btn-secondary:hover {
-  border-color: rgba(190, 12, 30, 0.7);
 }
 
 .notice-btn-undo {
