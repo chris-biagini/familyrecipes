@@ -12,10 +12,26 @@
   --content-background-color: rgb(255, 252, 249);
 
   --breathing-room: 3rem;
+
+  /* Gingham */
+  --gingham-base: rgb(249, 246, 243);
+  --gingham-stripe-color: rgba(190, 12, 30, 0.5);
+  --gingham-stripe-width: 75px;
+  --weave-color: rgba(150, 150, 150, 0.05);
+  --weave-stripe-width: 1.5px;
+
+  /* Shared UI colors */
+  --checked-color: #2a5a3a;
+  --muted-text: #666;
+  --muted-text-light: #888;
+  --border-light: #ccc;
+  --border-muted: #999;
+  --separator-color: #ddd;
+  --surface-alt: #fafafa;
 }
 
 html {
-  font-size: 16px;
+  font-size: 18px;
   touch-action: manipulation; /* Should prevent double-tap zoom, but maybe doesn't? */
 }
 
@@ -43,12 +59,7 @@ body::before {
   width: 10000px;
   height: 10000px;
   z-index: -1;
-
-  --gingham-base: rgb(249, 246, 243);
-  --gingham-stripe-color: rgba(190, 12, 30, 0.5);
-  --gingham-stripe-width: 75px;
-  --weave-color: rgba(150, 150, 150, 0.05);
-  --weave-stripe-width: 1.5px;
+  transform: translateZ(0);
 
   background-color: var(--gingham-base);
   background-position: top left;
@@ -82,21 +93,8 @@ body::before {
     );
 }
 
-/* On touch devices, shrink to viewport size (fits within mobile GPU texture
-   limits) and force a compositor layer to prevent position:fixed shift during
-   layout reflows (details toggle, etc.) */
-@media (pointer: coarse) {
-  body::before {
-    width: 100vw;
-    height: 100vh;
-    transform: translateZ(0);
-  }
-}
-
 nav {
-  position: relative;
-  left: calc(-1 * var(--breathing-room));
-  width: calc(100% + (2 * var(--breathing-room))); /* Compensate for body padding */
+  margin: 0 calc(-1 * var(--breathing-room));
   display: flex;
   justify-content: space-between;
 
@@ -171,13 +169,13 @@ header {
 header h1 {
   /* font-family: 'quigleywigglyregular', cursive; */
   font-family: "Futura", sans-serif;
-  font-size: 3rem;
+  font-size: 2.5rem;
   margin: 0 0 1rem 0;
 }
 
 header p {
   font-style: italic;
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   margin-top: 0;
 }
 
@@ -337,7 +335,7 @@ footer small {
   }
 
   html {
-    font-size: 14px;
+    font-size: 16px;
   }
 }
 

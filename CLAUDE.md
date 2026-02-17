@@ -10,6 +10,14 @@ Recipe source files should be perfectly readable in plaintext form, and look lik
 
 HTML should be valid, minimal, and semantic. JavaScript should be used very sparingly, and only for optional features (e.g., scaling, state preservation) that progressively enhance the base content. Every page should be readable with both JavaScript and CSS disabled. HTML, CSS, and JavaScript should be minimal so that the pages load as fast as possible, without going overboard by doing things like stripping whitespace and shortening variable names. The code should be indented nicely and human-readable. Third-party libraries, scripts, stylesheets, fonts, etc. should be avoided unless they're clearly the best solution to a problem--but you should ask before resorting to them. An exception to all this is the grocery list builder (groceries-template.html.erb)--for that page, you can have a little more fun, and go a little heavier on the JavaScript, but you should still try to avoid third-party stuff.
 
+## Workflow Preferences
+
+### GitHub Issues
+If I mention a GitHub issue (e.g., by referring explicitly to one, or by way of a shorthand like "gh #99" or "#99"), review the issue and start a plan to fix it. Once I confirm the fix, make sure to include a note in the commit message so that the issue is closed.
+
+### Challenge me where appropriate
+It's always welcome for you to challenge my assumptions and misconceptions, and push back on my ideas if you see opportunities to improve the end product. You should also suggest any quality-of-life, performance, or feature improvements that come to mind. In plan mode, interviewing me is highly encouraged. Make recommendations where there is an option you believe is best.  
+
 ## Build Command
 
 ```bash
