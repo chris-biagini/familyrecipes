@@ -210,93 +210,6 @@
     });
   }
 
-  // --- Notification UI ---
-
-  var noticeTimer = null;
-  var undoState = null;
-
-  function showNotice(message, options) {
-    options = options || {};
-    dismissNotice(true);
-
-    var bar = document.getElementById('state-notice');
-    bar.innerHTML = '';
-    bar.hidden = false;
-
-    var msg = document.createElement('span');
-    msg.className = 'notice-message';
-    msg.textContent = message;
-    bar.appendChild(msg);
-
-    var actions = document.createElement('span');
-    actions.className = 'notice-actions';
-
-    if (options.undo) {
-      var undoBtn = document.createElement('button');
-      undoBtn.type = 'button';
-      undoBtn.textContent = 'Undo';
-      undoBtn.className = 'notice-btn notice-btn-undo';
-      undoBtn.addEventListener('click', function() {
-        if (undoState) {
-          applyState(undoState);
-          applyStateToCheckboxes();
-          renderChips();
-          saveState();
-          updateGroceryList();
-          updateShareSection();
-        }
-        undoState = null;
-        dismissNotice();
-      });
-      actions.appendChild(undoBtn);
-    }
-
-    var dismiss = document.createElement('button');
-    dismiss.type = 'button';
-    dismiss.className = 'notice-dismiss';
-    dismiss.textContent = '\u00d7';
-    dismiss.setAttribute('aria-label', 'Dismiss');
-    dismiss.addEventListener('click', function() {
-      undoState = null;
-      dismissNotice();
-    });
-    actions.appendChild(dismiss);
-
-    noticeTimer = setTimeout(function() {
-      undoState = null;
-      dismissNotice();
-    }, 5000);
-
-    bar.appendChild(actions);
-
-    // Trigger slide-in animation
-    bar.offsetHeight;
-    bar.classList.add('notice-visible');
-  }
-
-  function dismissNotice(instant) {
-    if (noticeTimer) {
-      clearTimeout(noticeTimer);
-      noticeTimer = null;
-    }
-    var bar = document.getElementById('state-notice');
-    if (!bar || bar.hidden) return;
-    if (instant) {
-      bar.hidden = true;
-      bar.classList.remove('notice-visible');
-      return;
-    }
-    bar.classList.remove('notice-visible');
-    var dismissed = false;
-    bar.addEventListener('transitionend', function handler() {
-      bar.removeEventListener('transitionend', handler);
-      if (!dismissed) { dismissed = true; bar.hidden = true; }
-    });
-    setTimeout(function() {
-      if (!dismissed) { dismissed = true; bar.hidden = true; }
-    }, 400);
-  }
-
   // --- Grocery list logic ---
 
   function formatQtyNumber(val) {
@@ -849,8 +762,6 @@
 
       } else {
         // Branch 3: URL differs (or no stored state) — clobber with undo
-        if (storedDecoded) undoState = storedDecoded;
-
         applyState(urlState);
         cleanUrl();
         finishInit();
@@ -865,7 +776,16 @@
           }
         }
 
-        showNotice(message, { undo: !!storedDecoded });
+        Notify.show(message, {
+          action: storedDecoded ? { label: 'Undo', callback: function() {
+            applyState(storedDecoded);
+            applyStateToCheckboxes();
+            renderChips();
+            saveState();
+            updateGroceryList();
+            updateShareSection();
+          }} : null
+        });
       }
     }
 
