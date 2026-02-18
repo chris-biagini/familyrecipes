@@ -13,29 +13,29 @@ class CrossReferenceTest < Minitest::Test
   end
 
   def test_parses_cross_reference_with_integer_multiplier
-    result = IngredientParser.parse("2 @[Pizza Dough]")
+    result = IngredientParser.parse("@[Pizza Dough], 2")
 
     assert result[:cross_reference]
     assert_equal "Pizza Dough", result[:target_title]
     assert_equal 2.0, result[:multiplier]
   end
 
-  def test_parses_cross_reference_with_x_multiplier
-    result = IngredientParser.parse("2x @[Pizza Dough]")
+  def test_parses_cross_reference_with_fraction_multiplier
+    result = IngredientParser.parse("@[Pizza Dough], 1/2")
 
     assert result[:cross_reference]
-    assert_equal 2.0, result[:multiplier]
+    assert_equal 0.5, result[:multiplier]
   end
 
-  def test_parses_cross_reference_with_fraction_multiplier
-    result = IngredientParser.parse("1/2 @[Pizza Dough]")
+  def test_parses_cross_reference_with_decimal_multiplier
+    result = IngredientParser.parse("@[Pizza Dough], 0.5")
 
     assert result[:cross_reference]
     assert_equal 0.5, result[:multiplier]
   end
 
   def test_parses_cross_reference_with_prep_note
-    result = IngredientParser.parse("2 @[Pizza Dough]: Let rest 30 min.")
+    result = IngredientParser.parse("@[Pizza Dough], 2: Let rest 30 min.")
 
     assert result[:cross_reference]
     assert_equal 2.0, result[:multiplier]
@@ -51,11 +51,27 @@ class CrossReferenceTest < Minitest::Test
   end
 
   def test_parses_cross_reference_with_multiplier_and_trailing_period
-    result = IngredientParser.parse("1 @[Pizza Dough].")
+    result = IngredientParser.parse("@[Pizza Dough]., 1")
 
     assert result[:cross_reference]
     assert_equal "Pizza Dough", result[:target_title]
     assert_equal 1.0, result[:multiplier]
+  end
+
+  def test_old_syntax_quantity_before_reference_raises_error
+    error = assert_raises(RuntimeError) do
+      IngredientParser.parse("2 @[Pizza Dough]")
+    end
+
+    assert_match(/Invalid cross-reference syntax/, error.message)
+  end
+
+  def test_old_syntax_quantity_with_x_before_reference_raises_error
+    error = assert_raises(RuntimeError) do
+      IngredientParser.parse("2x @[Pizza Dough]")
+    end
+
+    assert_match(/Invalid cross-reference syntax/, error.message)
   end
 
   def test_regular_ingredient_not_detected_as_cross_reference
@@ -132,7 +148,7 @@ class CrossReferenceTest < Minitest::Test
 
   def test_recipe_all_ingredients_with_quantities_scales_sub_recipe
     dough = make_recipe("# Pizza Dough\n\n## Mix (make dough)\n\n- Flour, 500 g\n\nKnead.", id: "pizza-dough")
-    pizza = make_recipe("# White Pizza\n\n## Dough (make dough)\n\n- 2 @[Pizza Dough]\n\nStretch.")
+    pizza = make_recipe("# White Pizza\n\n## Dough (make dough)\n\n- @[Pizza Dough], 2\n\nStretch.")
     recipe_map = { "pizza-dough" => dough }
 
     expanded = pizza.all_ingredients_with_quantities({}, recipe_map)

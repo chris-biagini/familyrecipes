@@ -31,7 +31,7 @@ HTML
             <ul>
               <%- step.ingredient_list_items.each do |item| -%>
               <%- if item.is_a?(CrossReference) -%>
-              <li class="cross-reference"><% if item.multiplier != 1.0 %><%= item.multiplier == item.multiplier.to_i ? item.multiplier.to_i : item.multiplier %>&times; <% end %><b><a href="<%= item.target_slug %>"><%= item.target_title %></a></b>
+              <li class="cross-reference"><b><a href="<%= item.target_slug %>"><%= item.target_title %></a></b><% if item.multiplier != 1.0 %>, <span class="quantity"><%= item.multiplier == item.multiplier.to_i ? item.multiplier.to_i : item.multiplier %></span><% end %>
               <%- if item.prep_note -%>
                 <small><%= item.prep_note %></small>
               <%- end -%>
