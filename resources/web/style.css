@@ -217,7 +217,7 @@ header .yield-line {
 .toc_nav {
   font-family: "Futura", sans-serif;
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
   padding: 1.5rem;
 }
 
@@ -252,7 +252,7 @@ header .yield-line {
 }
 
 section {
-  margin-top: 2rem;
+  margin-top: 2.5rem;
   break-inside: avoid;
 }
 
@@ -271,7 +271,7 @@ section h2 {
   font-family: "Futura", sans-serif;
   font-size: 1.25rem;
   margin-top: 0;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
   border-bottom: 1.5px solid var(--border-color);
   padding-bottom: 0.25rem;
 }
@@ -349,7 +349,7 @@ footer small {
 /* small mobiles only */
 @media screen and (max-width: 600px) and (pointer: coarse) {
   :root {
-    --breathing-room: 1rem;
+    --breathing-room: 0.75rem;
   }
 
   html {
@@ -359,6 +359,14 @@ footer small {
 
 /* anything with a narrow window */
 @media screen and (max-width: 600px) {
+  :root {
+    --breathing-room: 1.5rem;
+  }
+
+  main {
+    padding: 1.5rem;
+  }
+
   section > div:has(.ingredients):has(.instructions) {
     grid-template-columns: 1fr;
     gap: 0.5rem;
