@@ -1,4 +1,4 @@
-var CACHE_NAME = 'groceries-v1';
+var CACHE_NAME = 'groceries-v2';
 var PRECACHE_URLS = [
   './groceries/',
   './groceries.css',

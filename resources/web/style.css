@@ -35,55 +35,18 @@
 html {
   font-size: 18px;
   touch-action: manipulation; /* Should prevent double-tap zoom, but maybe doesn't? */
-  background-color: var(--gingham-base); /* Prevents white flash in iOS overscroll */
-}
 
-body,
-html {
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  padding: 0 var(--breathing-room);
-
-  font-family: "Bodoni 72", Georgia, serif;
-  color: var(--text-color);
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-/* Gingham pattern background */
-/* Appearance inspired by <https://www.penguinrandomhouse.com/books/13304/better-homes-and-gardens-new-cookbook-by-better-homes-and-gardens-editors/> */
-/* Implementation inspired by <https://www.gradientmagic.com/collection/gingham/gradient/1575939528284> */
-body::before {
-  content: "";
-  position: fixed;
-  top: -50px;
-  left: -50px;
-  /* Viewport units cause the gingham pattern to shift slightly on desktop
-     resize because CSS recomputes diagonal gradient origins from the element
-     dimensions.  Fixed pixel sizes (e.g. 10000px) would prevent this, but
-     risk exceeding mobile GPU texture limits — and mobile is the primary use
-     case.  The subtle desktop shift is an acceptable trade-off. */
-  /* Oversized to cover iOS Safari's dynamic viewport and overscroll bounce */
-  width: calc(100vw + 100px);
-  height: calc(100dvh + 100px);
-  z-index: -1;
-  transform: translateZ(0);
-
-  background-color: var(--gingham-base);
-  background-position: top left;
+  /* Gingham pattern background — applied directly to the root element
+     so the browser paints it across the entire canvas (CSS spec), filling
+     every pixel of the physical screen including behind iOS Safari's
+     status bar and toolbar.  background-attachment: fixed keeps it
+     stationary on desktop; iOS ignores that and falls back to scroll,
+     but the repeating pattern makes the movement imperceptible. */
+  /* Overscroll/edge color: the pink you get compositing one gingham
+     stripe over the base.  Visible during iOS rubber-band bounce and
+     in any sliver the gradient layers can't reach. */
+  background-color: rgb(205, 71, 84);
+  background-attachment: fixed;
   background-image: repeating-linear-gradient(
       135deg,
       var(--gingham-stripe-color) 0,
@@ -111,8 +74,39 @@ body::before {
       var(--weave-color) var(--weave-stripe-width),
       transparent var(--weave-stripe-width),
       transparent calc(2 * var(--weave-stripe-width))
-    );
+    ),
+    /* Opaque base layer — keeps the gingham appearance unchanged
+       despite the pink background-color underneath. */
+    linear-gradient(var(--gingham-base), var(--gingham-base));
 }
+
+body,
+html {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  padding: env(safe-area-inset-top, 0px) var(--breathing-room) 0;
+
+  font-family: "Bodoni 72", Georgia, serif;
+  color: var(--text-color);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Gingham appearance inspired by <https://www.penguinrandomhouse.com/books/13304/better-homes-and-gardens-new-cookbook-by-better-homes-and-gardens-editors/> */
+/* Implementation inspired by <https://www.gradientmagic.com/collection/gingham/gradient/1575939528284> */
 
 nav {
   margin: 0 calc(-1 * var(--breathing-room));
@@ -473,7 +467,7 @@ footer small {
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
-  padding: 0.75rem 1rem;
+  padding: 0.75rem 1rem env(safe-area-inset-bottom, 0px);
   background: var(--frosted-glass-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -529,6 +523,7 @@ footer small {
     font-size: 12pt;
     margin: 0;
     padding: 0;
+    background: white;
   }
 
   body {
