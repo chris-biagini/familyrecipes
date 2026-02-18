@@ -32,7 +32,7 @@ This parses all recipes, generates HTML files in `output/web/`, and copies stati
 rake test
 ```
 
-Runs all tests in `test/` via Minitest (142 tests across 10 files).
+Runs all tests in `test/` via Minitest.
 
 ## Dev Server
 
@@ -68,6 +68,13 @@ All templates use relative paths resolved via an HTML `<base>` tag, so the site 
 - `Step` - A recipe step containing a tldr summary, ingredients list, and instructions
 - `Ingredient` - Individual ingredient with name, quantity, and prep note
 - `QuickBite` - Simple recipe from Quick Bites.md (name and ingredients only)
+- `LineClassifier` - Classifies raw recipe text lines into typed tokens (title, step header, ingredient, etc.)
+- `RecipeBuilder` - Consumes LineTokens and produces a structured document hash for Recipe
+- `IngredientParser` - Parses ingredient line text into structured data; also detects cross-references
+- `IngredientAggregator` - Sums ingredient quantities by unit for grocery list display
+- `CrossReference` - A reference from one recipe to another (e.g., `@[Pizza Dough]`), renders as a link
+- `ScalableNumberPreprocessor` - Wraps numbers in `<span class="scalable">` tags for client-side scaling
+- `PdfGenerator` - Generates PDF output (uses templates in `templates/pdf/`)
 
 **Data Flow**:
 1. `bin/generate` creates a `SiteGenerator` and calls `generate`
@@ -82,10 +89,20 @@ All templates use relative paths resolved via an HTML `<base>` tag, so the site 
 - Ingredient index (index-template.html.erb)
 - Grocery list builder (groceries-template.html.erb)
 
+**Shared Partials**:
+- `_head.html.erb` - Common HTML head (doctype, meta, base tag, stylesheet, favicon)
+- `_nav.html.erb` - Site navigation bar (Home, Index, Groceries)
+
 **Resources**:
 - `resources/grocery-info.yaml` contains mappings between ingredients and grocery store aisles
+- `resources/web/style.css` - main site stylesheet
+- `resources/web/recipe-state-manager.js` - client-side scaling, cross-off, and state persistence for recipe pages
 - `resources/web/groceries.css` - page-specific styles for the grocery list builder
 - `resources/web/groceries.js` - client-side logic for the grocery list builder (selections, localStorage, print layout)
+- `resources/web/sw.js` - service worker for offline support and caching
+- `resources/web/wake-lock.js` - keeps screen awake while cooking
+- `resources/web/notify.js` - notification support (e.g., timer alerts)
+- `resources/web/qrcodegen.js` - QR code generation for sharing recipes
 
 ## Recipe Format
 
