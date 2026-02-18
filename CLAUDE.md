@@ -2,13 +2,27 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Project Goals
+## Design Philosophy
 
-This project is designed with an eye toward simplicity and elegance. 
+Recipes are **documents first**. Think of them as the spiritual successors to what Tim Berners-Lee was putting on his server at CERN—marked-up text that a browser can render, not an app that happens to contain text.
 
-Recipe source files should be perfectly readable in plaintext form, and look like they're written for a person, not a parsing script (hence the use of Markdown as a base). The source files follow a relatively strict format to make parsing easier.
+### Source files
 
-HTML should be valid, minimal, and semantic. JavaScript should be used very sparingly, and only for optional features (e.g., scaling, state preservation) that progressively enhance the base content. Every page should be readable with both JavaScript and CSS disabled. HTML, CSS, and JavaScript should be minimal so that the pages load as fast as possible, without going overboard by doing things like stripping whitespace and shortening variable names. The code should be indented nicely and human-readable. Third-party libraries, scripts, stylesheets, fonts, etc. should be avoided unless they're clearly the best solution to a problem--but you should ask before resorting to them. An exception to all this is the grocery list builder (groceries-template.html.erb)--for that page, you can have a little more fun, and go a little heavier on the JavaScript, but you should still try to avoid third-party stuff.
+- Recipe source files are Markdown. They should read naturally in plaintext, as if written for a person, not a parser. Some custom syntax is necessary but should be limited.
+- Source files follow a strict, consistent format to keep parsing reliable.
+
+### HTML, CSS, and JavaScript
+
+- HTML should be valid, minimal, and semantic.
+- CSS and JS are progressive enhancements. Every page must be readable and functional with both disabled.
+- JavaScript is used sparingly and only for optional features (scaling, state preservation, cross-off). These are guilty indulgences—they must not interfere with the document nature of the page.
+- Prefer native HTML elements that browsers already know how to handle. Introduce as close to zero custom UI as possible.
+- Code should be clean and human-readable: proper indentation, clear variable names. Don't strip whitespace or minify. Fast page loads come from writing less code, not obfuscating it.
+- No third-party libraries, scripts, stylesheets, or fonts unless clearly the best solution to a problem—and ask before adding any.
+
+### The groceries page is the exception
+
+`groceries-template.html.erb` has a looser mandate. Heavier JavaScript is fine there. Custom UI is fine there. Third-party dependencies should still be avoided, but the overall restraint is relaxed. Go ham.
 
 ## Workflow Preferences
 
@@ -117,6 +131,7 @@ Optional description line.
 
 - Ingredient name, quantity: prep note
 - Another ingredient
+- @[Different Recipe], 2: Recipe cross-reference, with optional quantity and prep note.
 
 Instructions for this step as prose.
 
