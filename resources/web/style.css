@@ -68,6 +68,11 @@ body::before {
   position: fixed;
   top: 0;
   left: 0;
+  /* Viewport units cause the gingham pattern to shift slightly on desktop
+     resize because CSS recomputes diagonal gradient origins from the element
+     dimensions.  Fixed pixel sizes (e.g. 10000px) would prevent this, but
+     risk exceeding mobile GPU texture limits — and mobile is the primary use
+     case.  The subtle desktop shift is an acceptable trade-off. */
   width: 100vw;
   height: 100vh;
   z-index: -1;
