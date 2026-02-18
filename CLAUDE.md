@@ -6,6 +6,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Recipes are **documents first**. Think of them as the spiritual successors to what Tim Berners-Lee was putting on his server at CERN—marked-up text that a browser can render, not an app that happens to contain text.
 
+### Visual language
+
+The site's visual identity draws from two things: **red-checked tablecloths** (the Better Homes and Gardens cookbook, red-sauce Italian restaurants) and **mid-century cookbooks** (dog-eared pages, serif type, warm off-white paper).
+
+The central metaphor is a cookbook page laid on a tablecloth. The `<main>` content card is the page; the gingham background is the tablecloth peeking out around it. UI elements exist in this same physical world:
+
+- **Nav bar and notification bar** are paired bookends — frosted glass with a gingham-stripe border, one at the top and one at the bottom. They should share the same translucent background treatment.
+- **Buttons** (`.btn`) are small, practical, and warm — like a label clipped to a recipe card. Off-white background, muted border, understated hover. This is the one shared button style across the site.
+- **Navigation and index links** are typographic, not widget-like. They should feel like part of the document — a table of contents, not a toolbar.
+- **Section headers** on list pages (homepage, groceries) use uppercase with letter-spacing for a clean, catalog feel.
+
+When designing new UI elements, ask: would this feel at home in a well-loved cookbook from the 1960s that somehow learned a few new tricks?
+
 ### Source files
 
 - Recipe source files are Markdown. They should read naturally in plaintext, as if written for a person, not a parser. Some custom syntax is necessary but should be limited.
