@@ -47,6 +47,12 @@ class Recipe
     )
   end
 
+  # All cross-references across all steps
+  def cross_references
+    @steps.flat_map(&:cross_references)
+  end
+
+  # Own ingredients only (excludes sub-recipe ingredients) — used for ingredient index
   def all_ingredients(alias_map = {})
     @steps.flat_map(&:ingredients).uniq { |ingredient| ingredient.normalized_name(alias_map) }
   end
@@ -56,6 +62,11 @@ class Recipe
       .flat_map(&:ingredients)
       .map { |ingredient| ingredient.normalized_name(alias_map) }
       .uniq
+  end
+
+  # Own ingredients with aggregated quantities (excludes sub-recipe ingredients)
+  def own_ingredients_with_quantities(alias_map = {})
+    ingredients_with_quantities(alias_map)
   end
 
   def ingredients_with_quantities(alias_map = {})
@@ -71,7 +82,49 @@ class Recipe
     end
   end
 
+  # Ingredients with quantities including expanded cross-references — used for grocery list
+  def all_ingredients_with_quantities(alias_map, recipe_map)
+    own = ingredients_with_quantities(alias_map)
+
+    # Merge in cross-reference ingredients
+    merged = {}
+    own.each { |name, amounts| merged[name] = amounts }
+
+    cross_references.each do |xref|
+      xref.expanded_ingredients(recipe_map, alias_map).each do |name, amounts|
+        if merged.key?(name)
+          merged[name] = merge_amounts(merged[name], amounts)
+        else
+          merged[name] = amounts
+        end
+      end
+    end
+
+    merged.map { |name, amounts| [name, amounts] }
+  end
+
   private
+
+  def merge_amounts(existing, new_amounts)
+    # Combine amount arrays, summing matching units
+    sums = {}
+    has_nil = false
+
+    [existing, new_amounts].each do |amounts|
+      amounts.each do |amount|
+        if amount.nil?
+          has_nil = true
+        else
+          value, unit = amount
+          sums[unit] = (sums[unit] || 0.0) + value
+        end
+      end
+    end
+
+    result = sums.map { |unit, value| [value, unit] }
+    result << nil if has_nil
+    result
+  end
 
   def parse_recipe
     # Use the new two-phase parser
@@ -95,20 +148,28 @@ class Recipe
     step_data.map do |data|
       Step.new(
         tldr: data[:tldr],
-        ingredients: build_ingredients(data[:ingredients]),
+        ingredient_list_items: build_ingredient_items(data[:ingredients]),
         instructions: data[:instructions]
       )
     end
   end
 
-  # Convert ingredient hashes from IngredientParser into Ingredient objects
-  def build_ingredients(ingredient_data)
+  # Convert ingredient hashes from IngredientParser into Ingredient or CrossReference objects
+  def build_ingredient_items(ingredient_data)
     ingredient_data.map do |data|
-      Ingredient.new(
-        name: data[:name],
-        quantity: data[:quantity],
-        prep_note: data[:prep_note]
-      )
+      if data[:cross_reference]
+        CrossReference.new(
+          target_title: data[:target_title],
+          multiplier: data[:multiplier],
+          prep_note: data[:prep_note]
+        )
+      else
+        Ingredient.new(
+          name: data[:name],
+          quantity: data[:quantity],
+          prep_note: data[:prep_note]
+        )
+      end
     end
   end
 end

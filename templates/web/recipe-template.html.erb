@@ -26,16 +26,24 @@ HTML
       <section>
         <h2><%= step.tldr %></h2>
         <div>
-          <%- unless step.ingredients.empty? -%>
+          <%- unless step.ingredient_list_items.empty? -%>
           <div class="ingredients">
             <ul>
-              <%- step.ingredients.each do |ingredient| -%>
-              <li<% if ingredient.quantity_value %> data-quantity-value="<%= ingredient.quantity_value %>" data-quantity-unit="<%= ingredient.quantity_unit %>"<% end %>>
-                <b><%= ingredient.name %></b><% if ingredient.quantity %>, <span class="quantity"><%= ingredient.quantity%></span><% end %>
-              <%- if ingredient.prep_note -%>
-                <small><%= ingredient.prep_note %></small>
+              <%- step.ingredient_list_items.each do |item| -%>
+              <%- if item.is_a?(CrossReference) -%>
+              <li class="cross-reference"><% if item.multiplier != 1.0 %><%= item.multiplier == item.multiplier.to_i ? item.multiplier.to_i : item.multiplier %>&times; <% end %><a href="<%= item.target_slug %>"><%= item.target_title %></a>
+              <%- if item.prep_note -%>
+                <small><%= item.prep_note %></small>
               <%- end -%>
               </li>
+              <%- else -%>
+              <li<% if item.quantity_value %> data-quantity-value="<%= item.quantity_value %>" data-quantity-unit="<%= item.quantity_unit %>"<% end %>>
+                <b><%= item.name %></b><% if item.quantity %>, <span class="quantity"><%= item.quantity%></span><% end %>
+              <%- if item.prep_note -%>
+                <small><%= item.prep_note %></small>
+              <%- end -%>
+              </li>
+              <%- end -%>
               <%- end -%>
             </ul>
           </div>

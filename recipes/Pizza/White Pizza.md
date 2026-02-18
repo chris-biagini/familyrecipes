@@ -2,6 +2,10 @@
 
 Makes enough for 2 pizzas.
 
+## Make dough.
+
+- @[Pizza Dough]
+
 ## Make poached garlic.
 
 - Garlic, 30 g

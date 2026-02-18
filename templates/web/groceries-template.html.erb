@@ -27,7 +27,7 @@
         <ul>
         <%- recipes.each do |recipe| -%>
           <li>
-            <%- filtered_ingredients = recipe.ingredients_with_quantities(alias_map).reject { |name, _| omitted_ingredients.include?(name.downcase) } -%>
+            <%- filtered_ingredients = recipe.all_ingredients_with_quantities(alias_map, recipe_map).reject { |name, _| omitted_ingredients.include?(name.downcase) } -%>
             <input type="checkbox" id="<%= recipe.id %>-checkbox" data-title="<%= h.call(recipe.title) %>" data-ingredients="<%= h.call(filtered_ingredients.to_json) %>">
             <label for="<%= recipe.id %>-checkbox" title="Ingredients: <%= h.call(filtered_ingredients.map(&:first).join(', ')) %>"><%= recipe.title %></label>
             <a href="<%= recipe.id %>" class="recipe-link" title="Open <%= recipe.title %> in new tab" target="_blank">→</a>

@@ -131,7 +131,9 @@ Baking:
   - Cornstarch
   - Diastatic malt powder
   - Flour (00)
-  - Flour (all-purpose)
+  - name: Flour (all-purpose)
+    aliases:
+      - Flour (All purpose)
   - Flour (bread)
   - Flour (rye)
   - Flour (semolina)

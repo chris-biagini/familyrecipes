@@ -17,6 +17,8 @@ module FamilyRecipes
       load_grocery_info
       parse_recipes
       parse_quick_bites
+      build_recipe_map
+      validate_cross_references
       generate_recipe_pages
       copy_resources
       generate_homepage
@@ -57,6 +59,54 @@ module FamilyRecipes
       end
 
       print "done! (#{@recipes.size} recipes, #{@quick_bites.size} quick bites.)\n"
+    end
+
+    def build_recipe_map
+      @recipe_map = {}
+      @recipes.each do |recipe|
+        @recipe_map[recipe.id] = recipe
+      end
+    end
+
+    def validate_cross_references
+      print "Validating cross-references..."
+
+      # Validate title/filename slug match
+      @recipes.each do |recipe|
+        title_slug = FamilyRecipes.slugify(recipe.title)
+        if title_slug != recipe.id
+          raise StandardError, "Title/filename mismatch: \"#{recipe.title}\" (slug: #{title_slug}) vs filename slug: #{recipe.id}"
+        end
+      end
+
+      # Validate all cross-references resolve and detect cycles
+      @recipes.each do |recipe|
+        recipe.cross_references.each do |xref|
+          unless @recipe_map.key?(xref.target_slug)
+            raise StandardError, "Unresolved cross-reference in \"#{recipe.title}\": @[#{xref.target_title}] (slug: #{xref.target_slug})"
+          end
+        end
+      end
+
+      # Detect circular references via DFS
+      @recipes.each do |recipe|
+        detect_cycles(recipe, [])
+      end
+
+      print "done!\n"
+    end
+
+    def detect_cycles(recipe, visited)
+      if visited.include?(recipe.id)
+        cycle = visited[visited.index(recipe.id)..] + [recipe.id]
+        raise StandardError, "Circular cross-reference detected: #{cycle.join(' -> ')}"
+      end
+
+      recipe.cross_references.each do |xref|
+        target = @recipe_map[xref.target_slug]
+        next unless target
+        detect_cycles(target, visited + [recipe.id])
+      end
     end
 
     def generate_recipe_pages
@@ -198,6 +248,7 @@ module FamilyRecipes
         ingredient_database: grocery_info,
         alias_map: @alias_map,
         omitted_ingredients: omitted_ingredients,
+        recipe_map: @recipe_map,
         render: render
       )
 

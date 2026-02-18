@@ -53,10 +53,14 @@ _<%= typst_escape.call(recipe.yield_line) %>_
 <%- recipe.steps.each do |step| -%>
 
 === <%= typst_escape.call(step.tldr) %>
-<%- unless step.ingredients.empty? -%>
+<%- unless step.ingredient_list_items.empty? -%>
 
-<%- step.ingredients.each do |ing| -%>
-- *<%= typst_escape.call(ing.name) %>*<%= ing.quantity ? ", #{typst_escape.call(ing.quantity)}" : "" %><%= ing.prep_note ? ": _#{typst_escape.call(ing.prep_note)}_" : "" %>
+<%- step.ingredient_list_items.each do |item| -%>
+<%- if item.is_a?(CrossReference) -%>
+- #sym.arrow.r <%= typst_escape.call(item.target_title) %> (p.~#page-ref(<<%= item.target_slug %>>))<%= item.prep_note ? ": _#{typst_escape.call(item.prep_note)}_" : "" %>
+<%- else -%>
+- *<%= typst_escape.call(item.name) %>*<%= item.quantity ? ", #{typst_escape.call(item.quantity)}" : "" %><%= item.prep_note ? ": _#{typst_escape.call(item.prep_note)}_" : "" %>
+<%- end -%>
 <%- end -%>
 <%- end -%>
 <%- if step.instructions && !step.instructions.strip.empty? -%>
