@@ -82,12 +82,21 @@ class RecipeStateManager {
   }
 
   setupEventListeners() {
-    // cross-off on click
+    // cross-off on click or keyboard
     this.crossableItemNodes.forEach(node => {
+      node.tabIndex = 0;
       node.addEventListener('click', (e) => {
         if (e.target.closest('a')) return;
         node.classList.toggle('crossed-off');
         this.saveRecipeState();
+      });
+      node.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          if (e.target.closest('a')) return;
+          e.preventDefault();
+          node.classList.toggle('crossed-off');
+          this.saveRecipeState();
+        }
       });
     });
 

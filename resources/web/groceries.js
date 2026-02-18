@@ -180,7 +180,7 @@
     var s = getRawParam('s');
     var c = getRawParam('c');
     var x = getRawParam('x');
-    if (!s && !c) return null;
+    if (!s && !c && !x) return null;
 
     return decodeState({ s: s, c: c, x: x });
   }
@@ -579,7 +579,8 @@
   function addCustomItem(name) {
     name = name.trim();
     if (!name) return;
-    if (state.customItems.indexOf(name) !== -1) return;
+    var lowerName = name.toLowerCase();
+    if (state.customItems.some(function(item) { return item.toLowerCase() === lowerName; })) return;
     state.customItems.push(name);
     renderChips();
     saveState();
@@ -665,7 +666,11 @@
       var qr = qrcodegen.QrCode.encodeText(url, qrcodegen.QrCode.Ecc.LOW);
       container.innerHTML = qrToSvg(qr, 2);
     } catch(e) {
-      container.innerHTML = '';
+      container.textContent = '';
+      var msg = document.createElement('p');
+      msg.style.cssText = 'color: var(--muted-text); font-size: 0.85rem; text-align: center;';
+      msg.textContent = 'List too large for QR code. Use the link below instead.';
+      container.appendChild(msg);
     }
 
     // Clear any previous feedback

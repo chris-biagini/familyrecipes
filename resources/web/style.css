@@ -48,6 +48,18 @@ body {
   color: var(--text-color);
 }
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* Gingham pattern background */
 /* Appearance inspired by <https://www.penguinrandomhouse.com/books/13304/better-homes-and-gardens-new-cookbook-by-better-homes-and-gardens-editors/> */
 /* Implementation inspired by <https://www.gradientmagic.com/collection/gingham/gradient/1575939528284> */
@@ -56,8 +68,8 @@ body::before {
   position: fixed;
   top: 0;
   left: 0;
-  width: 10000px;
-  height: 10000px;
+  width: 100vw;
+  height: 100vh;
   z-index: -1;
   transform: translateZ(0);
 
@@ -127,9 +139,10 @@ nav a:focus {
   color: #0077ff;
 }
 
-/* Prevent the dotted outline from sticking */
-nav a:focus {
-  outline: none;
+nav a:focus-visible {
+  outline: 2px solid #0077ff;
+  outline-offset: 2px;
+  border-radius: 2px;
 }
 
 nav a.home::before {
