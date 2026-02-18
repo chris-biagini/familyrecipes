@@ -84,7 +84,8 @@ class RecipeStateManager {
   setupEventListeners() {
     // cross-off on click
     this.crossableItemNodes.forEach(node => {
-      node.addEventListener('click', () => {
+      node.addEventListener('click', (e) => {
+        if (e.target.closest('a')) return;
         node.classList.toggle('crossed-off');
         this.saveRecipeState();
       });
