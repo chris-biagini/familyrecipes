@@ -35,6 +35,7 @@
 html {
   font-size: 18px;
   touch-action: manipulation; /* Should prevent double-tap zoom, but maybe doesn't? */
+  background-color: var(--gingham-base); /* Prevents white flash in iOS overscroll */
 }
 
 body,
@@ -68,15 +69,16 @@ body {
 body::before {
   content: "";
   position: fixed;
-  top: 0;
-  left: 0;
+  top: -50px;
+  left: -50px;
   /* Viewport units cause the gingham pattern to shift slightly on desktop
      resize because CSS recomputes diagonal gradient origins from the element
      dimensions.  Fixed pixel sizes (e.g. 10000px) would prevent this, but
      risk exceeding mobile GPU texture limits — and mobile is the primary use
      case.  The subtle desktop shift is an acceptable trade-off. */
-  width: 100vw;
-  height: 100vh;
+  /* Oversized to cover iOS Safari's dynamic viewport and overscroll bounce */
+  width: calc(100vw + 100px);
+  height: calc(100dvh + 100px);
   z-index: -1;
   transform: translateZ(0);
 
