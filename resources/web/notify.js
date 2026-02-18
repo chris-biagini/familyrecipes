@@ -55,7 +55,7 @@ var Notify = (function() {
       var actionBtn = document.createElement('button');
       actionBtn.type = 'button';
       actionBtn.textContent = options.action.label;
-      actionBtn.className = 'notify-btn notify-btn-action';
+      actionBtn.className = 'btn';
       actionBtn.addEventListener('click', function() {
         options.action.callback();
         dismiss();

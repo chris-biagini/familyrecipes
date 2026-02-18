@@ -8,7 +8,7 @@
   --border-color: rgb(25, 25, 25);
   --text-color: rgb(50, 50, 50);
 
-  --nav-background-color: rgba(252, 252, 252, 0.8);
+  --frosted-glass-bg: rgba(255, 252, 249, 0.75);
   --content-background-color: rgb(255, 252, 249);
 
   --breathing-room: 3rem;
@@ -115,9 +115,10 @@ nav {
   display: flex;
   justify-content: space-between;
 
-  background-color: var(--nav-background-color);
+  background-color: var(--frosted-glass-bg);
   border-bottom: 1px solid var(--gingham-stripe-color);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 
   box-shadow:
     0 2px 4px rgba(0, 0, 0, 0.08),
@@ -136,7 +137,32 @@ nav a {
 }
 
 nav button {
-  margin: 0.5rem;
+  margin: 0.4rem 0.5rem;
+}
+
+/* Buttons — the one shared interactive style across the site */
+.btn {
+  appearance: none;
+  -webkit-appearance: none;
+  font-family: ui-sans-serif, sans-serif;
+  font-size: 0.85rem;
+  background: var(--content-background-color);
+  border: 1px solid var(--border-muted);
+  border-radius: 3px;
+  padding: 0.3rem 0.75rem;
+  color: var(--text-color);
+  cursor: pointer;
+  line-height: 1.5;
+}
+
+.btn:hover {
+  border-color: var(--border-color);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.btn:focus-visible {
+  outline: 2px solid #0077ff;
+  outline-offset: 2px;
 }
 
 nav a:hover,
@@ -215,40 +241,46 @@ header .yield-line {
 }
 
 .toc_nav {
-  font-family: "Futura", sans-serif;
   text-align: center;
   margin-bottom: 2.5rem;
-  padding: 1.5rem;
+  padding: 1.25rem 0;
+  border-top: 1px solid var(--separator-color);
+  border-bottom: 1px solid var(--separator-color);
 }
 
 .toc_nav ul {
   list-style: none;
   padding: 0;
   margin: 0;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.625rem; /* 10px equivalent */
+  line-height: 2;
 }
 
 .toc_nav ul li {
-  display: inline-block;
+  display: inline;
   margin: 0;
 }
 
+.toc_nav ul li:not(:last-child)::after {
+  content: " \00b7 ";
+  color: var(--muted-text-light);
+}
+
 .toc_nav ul li a {
-  display: inline-block;
-  padding: 0.75rem 1.125rem; /* 12px 18px equivalent */
-  border-radius: 0.5rem;
-  text-decoration: none;
-  color: #333;
-  box-shadow: 0.125rem 0.125rem 0.3125rem rgba(0, 0, 0, 0.1);
-  border: 0.0625rem solid rgba(0, 0, 0, 0.1);
-  background-image: linear-gradient(135deg, #fcfcfc, #f2f2f2);
+  text-decoration: underline;
+  text-decoration-color: var(--border-muted);
+  text-underline-offset: 3px;
+  color: var(--text-color);
+  font-style: italic;
 }
 
 .toc_nav ul li a:hover {
-  background-image: linear-gradient(135deg, #f2f2f2, #e6e6e6);
+  color: #0077ff;
+}
+
+.toc_nav ul li a:focus-visible {
+  outline: 2px solid #0077ff;
+  outline-offset: 2px;
+  border-radius: 2px;
 }
 
 section {
@@ -274,6 +306,16 @@ section h2 {
   margin-bottom: 0.75rem;
   border-bottom: 1.5px solid var(--border-color);
   padding-bottom: 0.25rem;
+}
+
+/* Homepage category headers match the groceries page heading treatment */
+.homepage section h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 0.4rem;
 }
 
 section > div:has(.ingredients):has(.instructions) {
@@ -399,9 +441,9 @@ footer small {
   justify-content: center;
   gap: 0.75rem;
   padding: 0.75rem 1rem;
-  background: rgba(252, 252, 252, 0.8);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: var(--frosted-glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-top: 1px solid var(--gingham-stripe-color);
   box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.08), 0 -1px 2px rgba(0, 0, 0, 0.04);
   font-family: ui-sans-serif, sans-serif;
@@ -424,24 +466,6 @@ footer small {
   flex-shrink: 0;
 }
 
-.notify-btn {
-  appearance: none;
-  -webkit-appearance: none;
-  border: none;
-  border-radius: 4px;
-  padding: 0.4rem 0.9rem;
-  font-family: inherit;
-  font-size: 0.85rem;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.notify-btn-action {
-  background: none;
-  color: rgb(190, 12, 30);
-  text-decoration: underline;
-  padding: 0.4rem 0.5rem;
-}
 
 .notify-dismiss {
   appearance: none;
