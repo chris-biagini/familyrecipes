@@ -176,60 +176,6 @@ class CrossReferenceTest < Minitest::Test
     assert_instance_of Ingredient, items[2]
   end
 
-  # --- Validation ---
-
-  def test_site_generator_detects_unresolved_cross_reference
-    dough_md = "# Pizza Dough\n\n## Mix (make dough)\n\n- Flour, 500 g\n\nKnead."
-    pizza_md = "# Test Pizza\n\n## Dough (make dough)\n\n- @[Nonexistent Recipe]\n\nStretch."
-
-    dough = Recipe.new(markdown_source: dough_md, id: 'pizza-dough', category: 'Pizza')
-    pizza = Recipe.new(markdown_source: pizza_md, id: 'test-pizza', category: 'Pizza')
-
-    generator = FamilyRecipes::SiteGenerator.new(
-      File.expand_path('..', __dir__),
-      recipes: [dough, pizza],
-      quick_bites: []
-    )
-
-    error = assert_raises(StandardError) { generator.generate }
-
-    assert_match(/Unresolved cross-reference/, error.message)
-    assert_match(/Nonexistent Recipe/, error.message)
-  end
-
-  def test_site_generator_detects_circular_reference
-    a_md = "# Recipe A\n\n## Step (do it)\n\n- @[Recipe B]\n\nDo."
-    b_md = "# Recipe B\n\n## Step (do it)\n\n- @[Recipe A]\n\nDo."
-
-    a = Recipe.new(markdown_source: a_md, id: 'recipe-a', category: 'Test')
-    b = Recipe.new(markdown_source: b_md, id: 'recipe-b', category: 'Test')
-
-    generator = FamilyRecipes::SiteGenerator.new(
-      File.expand_path('..', __dir__),
-      recipes: [a, b],
-      quick_bites: []
-    )
-
-    error = assert_raises(StandardError) { generator.generate }
-
-    assert_match(/Circular cross-reference/, error.message)
-  end
-
-  def test_site_generator_detects_title_filename_mismatch
-    md = "# Actual Title\n\n## Step (do it)\n\n- Flour, 500 g\n\nMix."
-    recipe = Recipe.new(markdown_source: md, id: 'wrong-slug', category: 'Test')
-
-    generator = FamilyRecipes::SiteGenerator.new(
-      File.expand_path('..', __dir__),
-      recipes: [recipe],
-      quick_bites: []
-    )
-
-    error = assert_raises(StandardError) { generator.generate }
-
-    assert_match(%r{Title/filename mismatch}, error.message)
-  end
-
   private
 
   def make_recipe(markdown, id: 'test-recipe')

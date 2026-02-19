@@ -21,13 +21,13 @@ module FamilyRecipes
       parse_recipes
       parse_quick_bites
       build_recipe_map
-      validate_cross_references
+      build_validator.validate_cross_references
       generate_recipe_pages
       copy_resources
       generate_homepage
       generate_index
-      validate_ingredients
-      validate_nutrition
+      build_validator.validate_ingredients
+      build_validator.validate_nutrition
       generate_groceries_page
     end
 
@@ -82,45 +82,16 @@ module FamilyRecipes
       @recipe_map = @recipes.to_h { |recipe| [recipe.id, recipe] }
     end
 
-    def validate_cross_references
-      print 'Validating cross-references...'
-
-      # Validate title/filename slug match
-      @recipes.each do |recipe|
-        title_slug = FamilyRecipes.slugify(recipe.title)
-        if title_slug != recipe.id
-          raise StandardError,
-                "Title/filename mismatch: \"#{recipe.title}\" (slug: #{title_slug}) vs filename slug: #{recipe.id}"
-        end
-
-        # Validate all cross-references resolve and detect cycles
-        recipe.cross_references.each do |xref|
-          next if @recipe_map.key?(xref.target_slug)
-
-          raise StandardError,
-                "Unresolved cross-reference in \"#{recipe.title}\": " \
-                "@[#{xref.target_title}] (slug: #{xref.target_slug})"
-        end
-
-        # Detect circular references via DFS
-        detect_cycles(recipe, [])
-      end
-
-      print "done!\n"
-    end
-
-    def detect_cycles(recipe, visited)
-      if visited.include?(recipe.id)
-        cycle = visited[visited.index(recipe.id)..] + [recipe.id]
-        raise StandardError, "Circular cross-reference detected: #{cycle.join(' -> ')}"
-      end
-
-      recipe.cross_references.each do |xref|
-        target = @recipe_map[xref.target_slug]
-        next unless target
-
-        detect_cycles(target, visited + [recipe.id])
-      end
+    def build_validator
+      @build_validator ||= BuildValidator.new(
+        recipes: @recipes,
+        quick_bites: @quick_bites,
+        recipe_map: @recipe_map,
+        alias_map: @alias_map,
+        known_ingredients: @known_ingredients,
+        omit_set: @omit_set,
+        nutrition_calculator: @nutrition_calculator
+      )
     end
 
     def generate_recipe_pages
@@ -192,116 +163,6 @@ module FamilyRecipes
                                     render: render)
 
       print "done!\n"
-    end
-
-    def validate_ingredients
-      print 'Validating ingredients...'
-
-      ingredients_to_recipes = Hash.new { |h, k| h[k] = [] }
-      @recipes.each do |recipe|
-        recipe.all_ingredients.each do |ingredient|
-          ingredients_to_recipes[ingredient.name] << recipe.title
-        end
-      end
-      @quick_bites.each do |quick_bite|
-        quick_bite.ingredients.each do |ingredient_name|
-          ingredients_to_recipes[ingredient_name] << quick_bite.title
-        end
-      end
-
-      unknown_ingredients = ingredients_to_recipes.keys.reject do |name|
-        @known_ingredients.include?(name.downcase)
-      end.to_set
-      if unknown_ingredients.any?
-        puts "\n"
-        puts 'WARNING: The following ingredients are not in grocery-info.yaml:'
-        unknown_ingredients.sort.each do |ing|
-          recipes = ingredients_to_recipes[ing].uniq.sort
-          puts "  - #{ing} (in: #{recipes.join(', ')})"
-        end
-        puts 'Add them to grocery-info.yaml or add as aliases to existing items.'
-        puts ''
-      else
-        print "done! (All ingredients validated.)\n"
-      end
-    end
-
-    def validate_nutrition # rubocop:disable Metrics
-      return unless @nutrition_calculator
-
-      print 'Validating nutrition data...'
-
-      ingredients_to_recipes = @recipes.each_with_object(Hash.new { |h, k| h[k] = [] }) do |recipe, index|
-        recipe.all_ingredient_names(@alias_map).each do |name|
-          index[name] << recipe.title unless @omit_set.include?(name.downcase)
-        end
-      end
-
-      # Category 1: Missing nutrition data (no YAML entry at all)
-      missing = ingredients_to_recipes.keys.reject { |name| @nutrition_calculator.nutrition_data.key?(name) }
-
-      # Category 2: Missing unit conversions (entry exists, but unit can't be resolved)
-      unresolvable = Hash.new { |h, k| h[k] = { units: Set.new, recipes: [] } }
-      # Category 3: Unquantified ingredients (listed without a quantity, not counted)
-      unquantified = Hash.new { |h, k| h[k] = [] }
-      @recipes.each do |recipe|
-        recipe.all_ingredients_with_quantities(@alias_map, @recipe_map).each do |name, amounts|
-          next if @omit_set.include?(name.downcase)
-
-          entry = @nutrition_calculator.nutrition_data[name]
-          next unless entry
-
-          non_nil_amounts = amounts.compact
-          unquantified[name] |= [recipe.title] if non_nil_amounts.empty?
-
-          non_nil_amounts.each do |quantity|
-            next if quantity.value.nil?
-
-            next if @nutrition_calculator.resolvable?(quantity.value, quantity.unit, entry)
-
-            info = unresolvable[name]
-            info[:units] << (quantity.unit || '(bare count)')
-            info[:recipes] |= [recipe.title]
-          end
-        end
-      end
-
-      has_warnings = missing.any? || unresolvable.any? || unquantified.any?
-
-      if missing.any?
-        puts "\n"
-        puts 'WARNING: Missing nutrition data:'
-        missing.sort.each do |name|
-          recipes = ingredients_to_recipes[name].uniq.sort
-          puts "  - #{name} (in: #{recipes.join(', ')})"
-        end
-      end
-
-      if unresolvable.any?
-        puts "\n" unless missing.any?
-        puts 'WARNING: Missing unit conversions:'
-        unresolvable.sort_by { |name, _| name }.each do |name, info|
-          recipes = info[:recipes].sort
-          units = info[:units].to_a.sort.join(', ')
-          puts "  - #{name}: '#{units}' (in: #{recipes.join(', ')})"
-        end
-      end
-
-      if unquantified.any?
-        puts "\n" unless missing.any? || unresolvable.any?
-        puts 'NOTE: Unquantified ingredients (not counted in nutrition):'
-        unquantified.sort_by { |name, _| name }.each do |name, recipes|
-          puts "  - #{name} (in: #{recipes.sort.join(', ')})"
-        end
-      end
-
-      if has_warnings
-        puts ''
-        puts 'Use bin/nutrition-entry to add data, or edit resources/nutrition-data.yaml directly.'
-        puts ''
-      else
-        print "done! (All ingredients have nutrition data.)\n"
-      end
     end
 
     def generate_groceries_page
