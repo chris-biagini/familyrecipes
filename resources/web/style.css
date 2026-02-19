@@ -129,7 +129,7 @@ nav a {
   font-family: "Futura", sans-serif;
   display: inline-block;
   text-decoration: none;
-  font-weight: normal;
+  font-weight: 600;
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
@@ -266,7 +266,6 @@ header p {
 header .yield-line {
   font-style: normal;
   font-size: 1.1rem;
-  color: rgb(100, 100, 100);
   margin-top: -0.5rem;
 }
 

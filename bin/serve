@@ -12,6 +12,16 @@ unless File.directory?(document_root)
   exit 1
 end
 
+# Bail out if something is already listening on the target port.
+require 'socket'
+begin
+  TCPSocket.new('127.0.0.1', port).close
+  puts "Port #{port} is already in use — dev server already running?"
+  exit 0
+rescue Errno::ECONNREFUSED
+  # Port is free, carry on.
+end
+
 # Subclass FileHandler to serve .html files for extensionless URLs,
 # matching the Apache behavior in production.
 class CleanURLHandler < WEBrick::HTTPServlet::FileHandler

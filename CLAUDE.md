@@ -67,11 +67,13 @@ Runs all tests in `test/` via Minitest.
 bin/serve [port]
 ```
 
-Starts a WEBrick server (default port 8888) that serves `output/web/` with clean/extensionless URLs and the custom 404 page, matching the GitHub Pages behavior in production. Binds to `0.0.0.0` so it's accessible across the LAN. The typical dev workflow is:
+Starts a WEBrick server (default port 8888) that serves `output/web/` with clean/extensionless URLs and the custom 404 page, matching the GitHub Pages behavior in production. Binds to `0.0.0.0` so it's accessible across the LAN. The script detects if the port is already in use and exits cleanly, so it's safe to call repeatedly. The typical dev workflow is:
 
 ```bash
 bin/generate && bin/serve
 ```
+
+**Only start the dev server once per session.** Before running `bin/serve`, check whether a server is already running (e.g., `ss -tlnp | grep 8888`). After `bin/generate`, the running server will already pick up changes from `output/web/` — no restart needed. Do not try alternate ports; just reuse the existing server.
 
 ## Deployment
 
