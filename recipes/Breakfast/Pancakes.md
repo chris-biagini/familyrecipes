@@ -1,5 +1,7 @@
 # Pancakes
 
+Makes 12 pancakes.
+
 ## Prep dry ingredients.
 
 - Flour (all-purpose), 200 g
@@ -27,7 +29,7 @@ Make well in center of dry ingredients; add wet ingredients. Whisk to combine.
 - Butter
 - Maple syrup
 
-Cook on 350° griddle. Scant #24 scoops will make servings of 3 pancakes each. A very light swipe of butter on the griddle before each batch gives them a nice look.
+Cook on 350° griddle. Use scant #24 scoops to portion pancakes. A very light swipe of butter on the griddle before each batch gives them a nice look.
 
 If using inclusions, add immediately after pouring batter on griddle. Flip each pancake after the bottom has taken on enough color and holes on top begin to set without closing.
 
