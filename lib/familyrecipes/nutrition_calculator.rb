@@ -66,11 +66,9 @@ module FamilyRecipes
 
         amounts.each do |amount|
           next if amount.nil?
+          next if amount.value.nil?
 
-          value, unit = amount
-          next if value.nil?
-
-          grams = to_grams(value, unit, entry)
+          grams = to_grams(amount.value, amount.unit, entry)
           if grams.nil?
             partial << name unless partial.include?(name)
             next

@@ -254,13 +254,13 @@ module FamilyRecipes
           non_nil_amounts = amounts.compact
           unquantified[name] |= [recipe.title] if non_nil_amounts.empty?
 
-          non_nil_amounts.each do |value, unit|
-            next if value.nil?
+          non_nil_amounts.each do |quantity|
+            next if quantity.value.nil?
 
-            next if @nutrition_calculator.resolvable?(value, unit, entry)
+            next if @nutrition_calculator.resolvable?(quantity.value, quantity.unit, entry)
 
             info = unresolvable[name]
-            info[:units] << (unit || '(bare count)')
+            info[:units] << (quantity.unit || '(bare count)')
             info[:recipes] |= [recipe.title]
           end
         end
