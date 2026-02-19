@@ -4,20 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Design Philosophy
 
-Recipes are **documents first**. Think of them as the spiritual successors to what Tim Berners-Lee was putting on his server at CERN—marked-up text that a browser can render, not an app that happens to contain text.
+Recipes are **documents first**. They are marked-up text that a browser can render, not an app that happens to contain text.
 
 ### Visual language
 
-The site's visual identity draws from two things: **red-checked tablecloths** (the Better Homes and Gardens cookbook, red-sauce Italian restaurants) and **mid-century cookbooks** (dog-eared pages, serif type, warm off-white paper).
-
-The central metaphor is a cookbook page laid on a tablecloth. The `<main>` content card is the page; the gingham background is the tablecloth peeking out around it. UI elements exist in this same physical world:
-
-- **Nav bar and notification bar** are paired bookends — frosted glass with a gingham-stripe border, one at the top and one at the bottom. They should share the same translucent background treatment.
-- **Buttons** (`.btn`) are small, practical, and warm — like a label clipped to a recipe card. Off-white background, muted border, understated hover. This is the one shared button style across the site.
-- **Navigation and index links** are typographic, not widget-like. They should feel like part of the document — a table of contents, not a toolbar.
-- **Section headers** on list pages (homepage, groceries) use uppercase with letter-spacing for a clean, catalog feel.
-
-When designing new UI elements, ask: would this feel at home in a well-loved cookbook from the 1960s that somehow learned a few new tricks?
+The visual identity blends **red-checked tablecloths** and **mid-century cookbooks** — the `<main>` content card is a cookbook page; the gingham background is the tablecloth peeking out around it. When designing new UI elements, ask: would this feel at home in a well-loved cookbook from the 1960s that somehow learned a few new tricks?
 
 ### Source files
 
@@ -26,39 +17,123 @@ When designing new UI elements, ask: would this feel at home in a well-loved coo
 
 ### HTML, CSS, and JavaScript
 
-- HTML should be valid, minimal, and semantic.
 - CSS and JS are progressive enhancements. Every page must be readable and functional with both disabled.
 - JavaScript is used sparingly and only for optional features (scaling, state preservation, cross-off). These are guilty indulgences—they must not interfere with the document nature of the page.
-- Prefer native HTML elements that browsers already know how to handle. Introduce as close to zero custom UI as possible.
-- Code should be clean and human-readable: proper indentation, clear variable names. Don't strip whitespace or minify. Fast page loads come from writing less code, not obfuscating it.
-- No third-party libraries, scripts, stylesheets, or fonts unless clearly the best solution to a problem—and ask before adding any.
-
-### Ruby
-
-Write idiomatic Ruby. Let the language do the work.
-
-- **Prefer Enumerable chains over procedural accumulation.** If you write `result = []; things.each { |t| result << f(t) }; result`, rewrite it. The right method is almost always already in Enumerable: `map`, `select`, `reject`, `flat_map`, `group_by`, `each_with_object`, `reduce`, `to_h { }`. The initialize-loop-return pattern is the single most common Ruby smell.
-- **Use `transform_values` / `transform_keys`** when mapping over a hash's values or keys without changing the structure. Don't build a new hash in a loop.
-- **Build hashes with `.to_h { |x| [key, value] }`**, not `hash = {}; each { hash[k] = v }; hash`.
-- **Guard clauses over nested conditionals.** Prefer `return nil if x` / `next if x` / `raise "msg" if x` at the top of a block. Flatten the happy path leftward.
-- **Trailing conditionals for one-liners.** `raise ArgumentError, "bad" if input.nil?` reads better than a three-line `if` block wrapping a single expression.
-- **`unless` for simple negated conditions, `until` for simple negated loops.** Don't use either with compound boolean expressions (`&&`, `||`, `!`)—that hurts readability.
-- **Implicit returns.** Never write `return` at the end of a method. Only use `return` for early exits mid-method.
-- **`||=` for conditional initialization.** `@x ||= compute` instead of `@x = compute unless @x`.
-- **`&:method` shorthand.** `.map(&:to_s)` instead of `.map { |x| x.to_s }`. Only works for zero-argument calls.
-- **`each_value` / `each_key`** when you don't need both key and value. Don't write `hash.each { |_, v| ... }`.
-- **`?` on boolean methods.** `empty?`, `valid?`, `resolvable?`—not `is_empty`, `check_valid`.
-- **`String#[]` with a regex** for simple extraction. `line[/\d+/]` instead of `m = line.match(/\d+/); m ? m[0] : nil`.
-- **2-space indentation, `snake_case` methods/variables, `CamelCase` classes.** Standard Ruby formatting, no exceptions.
+- Prefer native HTML elements. Introduce as close to zero custom UI as possible.
+- No third-party libraries, scripts, stylesheets, or fonts unless clearly the best solution—and ask before adding any.
 
 ### The groceries page is the exception
 
-`groceries-template.html.erb` has a looser mandate. Heavier JavaScript is fine there. Custom UI is fine there. Third-party dependencies should still be avoided, but the overall restraint is relaxed. Go ham.
+`groceries-template.html.erb` has a looser mandate. Slightly heavier JavaScript is more permissible there. Custom UI is ok. Third-party dependencies should still be avoided, but the overall restraint is relaxed.
+
+## Ruby code conventions
+
+This is a Ruby project. Write idiomatic, expressive Ruby — not Python or JavaScript translated into Ruby syntax. Ruby code should read like English.
+
+### Enumerable over imperative loops — this is non-negotiable
+
+NEVER build collections with `each` + an accumulator. Use the right Enumerable method:
+```ruby
+# WRONG — Claude's default, and it's unacceptable
+result = []
+items.each { |item| result << item.name if item.active? }
+result
+
+# RIGHT — idiomatic Ruby
+items.select(&:active?).map(&:name)
+```
+
+Use `map` for transformation, `select`/`reject` for filtering, `flat_map` for nested flattening, `each_with_object` for building hashes, `any?`/`all?`/`none?` for boolean reduction, `tally` for counting, `group_by` for categorization, `sum` for totals. Always use `&:method_name` (Symbol#to_proc) when the block just calls one method.
+
+### Method design
+
+- Methods should be ≤ 5 lines. Extract smaller methods with descriptive names instead of adding comments.
+- NEVER use explicit `return` at the end of a method. Ruby returns the last expression implicitly.
+- Use guard clauses and early returns to flatten conditionals. Never nest more than 2 levels.
+- Use postfix `if`/`unless` for single-line expressions: `return if list.empty?`
+- Use `unless` for negative conditions. Never use `unless` with `else`.
+- Prefer keyword arguments over positional arguments for clarity at call sites.
+
+```ruby
+# WRONG
+def process(user)
+  if user
+    if user.active?
+      result = do_work(user)
+      return result
+    end
+  end
+end
+
+# RIGHT
+def process(user)
+  return unless user&.active?
+
+  do_work(user)
+end
+```
+
+### Ruby's object model — trust it
+
+- Use duck typing. Never check `is_a?` or `.class` — call the method or use `respond_to?`.
+- Use `Hash#fetch` instead of `Hash#[]` when the key must exist. Use `fetch(:key, default)` for defaults.
+- Only `false` and `nil` are falsy in Ruby. Never write `if x != nil` or `if x == true` — write `if x`.
+- Use `&.` (safe navigation) instead of `x && x.method`.
+- Prefer composition with modules over deep inheritance hierarchies.
+
+### Error handling
+
+- Use `raise`/`rescue`, not generic exception handling.
+- Rescue specific exceptions, never bare `rescue` or `rescue Exception`.
+- Use method-level rescue (no extra `begin`/`end` wrapping the whole method body).
+- Name the error variable `error`, not `e`.
+
+```ruby
+# WRONG
+def read_recipe(path)
+  begin
+    content = File.read(path)
+    parse(content)
+  rescue => e
+    puts e.message
+  end
+end
+
+# RIGHT
+def read_recipe(path)
+  content = File.read(path)
+  parse(content)
+rescue Errno::ENOENT => error
+  log_missing_file(path, error)
+end
+```
+
+### Modern Ruby features — use them
+
+- `# frozen_string_literal: true` at the top of every file.
+- Pattern matching (`case/in`) for complex data destructuring.
+- Endless methods (`def full_name = "#{first} #{last}"`) for trivial one-liners.
+- `Data.define` for immutable value objects.
+- `Hash#except` to drop keys. `Array#tally` for frequency counts.
+- String interpolation always — never concatenate with `+`.
+- Use symbol keys for hashes (`{ name: "value" }`), not string keys.
+
+### Naming
+
+- `snake_case` for methods, variables, files. `CamelCase` for classes/modules. `SCREAMING_SNAKE_CASE` for constants.
+- Predicate methods end with `?`. Dangerous/mutating methods end with `!`.
+- Never prefix with `get_` or `is_`. Use `name` not `get_name`. Use `valid?` not `is_valid?`.
+- Prefer `map` over `collect`, `select` over `find_all`, `size` over `length`, `key?` over `has_key?`.
+
+### Comments
+
+- Never write comments that restate what the code does. If code needs a comment explaining *what*, extract a method with a descriptive name instead.
+- Comments explain *why* — business rules, non-obvious constraints, or links to external references.
 
 ## Workflow Preferences
 
 ### GitHub Issues
-If I mention a GitHub issue (e.g., by referring explicitly to one, or by way of a shorthand like "gh #99" or "#99"), review the issue and start a plan to fix it. Once I confirm the fix, make sure to include a note in the commit message so that the issue is closed.
+If I mention a GitHub issue (e.g., "#99"), review it and plan a fix. Close it via the commit message once confirmed.
 
 ### Challenge me where appropriate
 It's always welcome for you to challenge my assumptions and misconceptions, and push back on my ideas if you see opportunities to improve the end product. You should also suggest any quality-of-life, performance, or feature improvements that come to mind. In plan mode, interviewing me is highly encouraged. Make recommendations where there is an option you believe is best.  
@@ -69,7 +144,7 @@ It's always welcome for you to challenge my assumptions and misconceptions, and 
 bin/generate
 ```
 
-This parses all recipes, generates HTML files in `output/web/`, and copies static resources. Dependencies are managed via `Gemfile` (Ruby, Bundler, and `bundle install` required).
+This parses all recipes, generates HTML files in `output/web/`, and copies static resources. Dependencies are managed via `Gemfile` (Ruby 3.2+, Bundler, and `bundle install` required).
 
 ## Test Command
 
@@ -85,13 +160,7 @@ Runs all tests in `test/` via Minitest. `rake clean` removes the `output/` direc
 bin/serve [port]
 ```
 
-Starts a WEBrick server (default port 8888) that serves `output/web/` with clean/extensionless URLs and the custom 404 page, matching the GitHub Pages behavior in production. Binds to `0.0.0.0` so it's accessible across the LAN. The script detects if the port is already in use and exits cleanly, so it's safe to call repeatedly. The typical dev workflow is:
-
-```bash
-bin/generate && bin/serve
-```
-
-**Only start the dev server once per session.** Before running `bin/serve`, check whether a server is already running (e.g., `ss -tlnp | grep 8888`). After `bin/generate`, the running server will already pick up changes from `output/web/` — no restart needed. Do not try alternate ports; just reuse the existing server.
+WEBrick server (default port 8888) serving `output/web/` with clean/extensionless URLs, matching GitHub Pages behavior. Binds `0.0.0.0` (LAN-accessible). Exits cleanly if port is taken. Typical dev workflow: `bin/generate && bin/serve` (reuse the existing server if it's already running).
 
 ## Deployment
 
@@ -143,16 +212,11 @@ All templates use relative paths resolved via an HTML `<base>` tag, so the site 
 - `_nav.html.erb` - Site navigation bar (Home, Index, Groceries)
 
 **Resources**:
-- `resources/grocery-info.yaml` contains mappings between ingredients and grocery store aisles
-- `resources/nutrition-data.yaml` contains per-serving nutrition facts (from package labels), serving sizes, and portion weights for ingredients
-- `resources/web/style.css` - main site stylesheet
-- `resources/web/recipe-state-manager.js` - client-side scaling, cross-off, and state persistence for recipe pages
-- `resources/web/groceries.css` - page-specific styles for the grocery list builder
-- `resources/web/groceries.js` - client-side logic for the grocery list builder (selections, localStorage, print layout)
-- `resources/web/sw.js` - service worker for offline support and caching
-- `resources/web/wake-lock.js` - keeps screen awake while cooking
-- `resources/web/notify.js` - notification support (e.g., timer alerts)
-- `resources/web/qrcodegen.js` - QR code generation for sharing recipes
+- `resources/grocery-info.yaml` - ingredient-to-aisle mappings
+- `resources/nutrition-data.yaml` - per-serving nutrition facts, serving sizes, and portion weights
+- `resources/web/style.css` - main stylesheet; `groceries.css` for the grocery page
+- `resources/web/recipe-state-manager.js` - scaling, cross-off, state persistence; `groceries.js` for the grocery page
+- `resources/web/` also contains: service worker (`sw.js`), wake lock, notifications, QR codes, PWA manifest, 404 page, favicons
 
 ## Recipe Format
 
