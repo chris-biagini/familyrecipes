@@ -147,11 +147,11 @@ module FamilyRecipes
         relative_path = source_file.sub("#{resources_dir}/", '')
         dest_file = File.join(output_dir, relative_path)
 
-        if !File.exist?(dest_file) || !FileUtils.identical?(source_file, dest_file)
-          FileUtils.mkdir_p(File.dirname(dest_file))
-          FileUtils.cp(source_file, dest_file)
-          puts "Copied: #{relative_path}"
-        end
+        next if File.exist?(dest_file) && FileUtils.identical?(source_file, dest_file)
+
+        FileUtils.mkdir_p(File.dirname(dest_file))
+        FileUtils.cp(source_file, dest_file)
+        puts "Copied: #{relative_path}"
       end
 
       print "done!\n"
@@ -176,10 +176,9 @@ module FamilyRecipes
     def generate_index
       print "Generating index..."
 
-      recipes_by_ingredient = Hash.new { |hash, key| hash[key] = [] }
-      @recipes.each do |recipe|
+      recipes_by_ingredient = @recipes.each_with_object(Hash.new { |h, k| h[k] = [] }) do |recipe, index|
         recipe.all_ingredients(@alias_map).each do |ingredient|
-          recipes_by_ingredient[ingredient.normalized_name(@alias_map)] << recipe
+          index[ingredient.normalized_name(@alias_map)] << recipe
         end
       end
       sorted_ingredients = recipes_by_ingredient.sort_by { |name, _| name.downcase }
@@ -228,10 +227,9 @@ module FamilyRecipes
 
       print "Validating nutrition data..."
 
-      ingredients_to_recipes = Hash.new { |h, k| h[k] = [] }
-      @recipes.each do |recipe|
+      ingredients_to_recipes = @recipes.each_with_object(Hash.new { |h, k| h[k] = [] }) do |recipe, index|
         recipe.all_ingredient_names(@alias_map).each do |name|
-          ingredients_to_recipes[name] << recipe.title unless @omit_set.include?(name.downcase)
+          index[name] << recipe.title unless @omit_set.include?(name.downcase)
         end
       end
 
@@ -248,11 +246,10 @@ module FamilyRecipes
           entry = @nutrition_calculator.nutrition_data[name]
           next unless entry
 
-          has_quantity = false
-          amounts.each do |amount|
-            next if amount.nil?
-            has_quantity = true
-            value, unit = amount
+          non_nil_amounts = amounts.compact
+          unquantified[name] |= [recipe.title] if non_nil_amounts.empty?
+
+          non_nil_amounts.each do |value, unit|
             next if value.nil?
 
             unless @nutrition_calculator.resolvable?(value, unit, entry)
@@ -261,8 +258,6 @@ module FamilyRecipes
               info[:recipes] |= [recipe.title]
             end
           end
-
-          unquantified[name] |= [recipe.title] unless has_quantity
         end
       end
 

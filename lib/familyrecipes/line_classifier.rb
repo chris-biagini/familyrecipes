@@ -35,13 +35,13 @@ module LineClassifier
   def self.classify(text)
     lines = text.split("\n")
 
-    lines.each_with_index.map do |line, index|
+    lines.map.with_index(1) do |line, line_number|
       type, content = classify_line(line)
 
       LineToken.new(
         type: type,
         content: content,
-        line_number: index + 1
+        line_number: line_number
       )
     end
   end

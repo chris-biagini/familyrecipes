@@ -54,10 +54,9 @@ module FamilyRecipes
     end
 
     def build_ingredient_index
-      index = Hash.new { |h, k| h[k] = [] }
-      @recipes.each do |recipe|
+      index = @recipes.each_with_object(Hash.new { |h, k| h[k] = [] }) do |recipe, idx|
         recipe.all_ingredients(@alias_map).each do |ingredient|
-          index[ingredient.normalized_name(@alias_map)] << recipe
+          idx[ingredient.normalized_name(@alias_map)] << recipe
         end
       end
 

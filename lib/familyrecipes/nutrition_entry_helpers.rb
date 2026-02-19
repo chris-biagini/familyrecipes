@@ -91,7 +91,7 @@ module FamilyRecipes
     end
 
     def self.volume_to_ml(unit)
-      { 'cup' => 236.588, 'tbsp' => 14.787, 'tsp' => 4.929, 'ml' => 1, 'l' => 1000 }[unit] || 1
+      NutritionCalculator::VOLUME_TO_ML[unit] || 1
     end
   end
 end

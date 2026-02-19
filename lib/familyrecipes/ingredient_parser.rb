@@ -57,13 +57,10 @@ module IngredientParser
 
   def self.parse_multiplier(str)
     return 1.0 if str.nil?
+    return str.to_f unless str.include?('/')
 
-    if str.include?('/')
-      num, den = str.split('/')
-      num.to_f / den.to_f
-    else
-      str.to_f
-    end
+    num, den = str.split('/')
+    num.to_f / den.to_f
   end
 
   private_class_method :parse_multiplier

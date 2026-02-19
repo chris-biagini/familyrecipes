@@ -60,92 +60,63 @@ class Ingredient
     alias_map[@name.downcase] || @name
   end
 
-  # Generate plural forms of a word for automatic matching
   def self.pluralize(word)
     return [word] if word.nil? || word.empty?
 
     lower = word.downcase
+    return [IRREGULAR_PLURALS[lower].sub(/^./) { |m| word[0] == word[0].upcase ? m.upcase : m }] if IRREGULAR_PLURALS.key?(lower)
 
-    # Check irregulars first
-    if IRREGULAR_PLURALS.key?(lower)
-      return [IRREGULAR_PLURALS[lower].sub(/^./) { |m| word[0] == word[0].upcase ? m.upcase : m }]
+    case lower
+    when /[^aeiou]y$/      then [word[0..-2] + "ies"]
+    when /(s|x|z|ch|sh)$/  then [word + "es"]
+    when /[^aeiou]o$/      then [word + "es"]
+    else [word + "s"]
     end
-
-    # Words ending in consonant + y -> ies
-    if lower =~ /[^aeiou]y$/
-      return [word[0..-2] + "ies"]
-    end
-
-    # Words ending in s, x, z, ch, sh -> es
-    if lower =~ /(s|x|z|ch|sh)$/
-      return [word + "es"]
-    end
-
-    # Words ending in o (after consonant) -> es
-    if lower =~ /[^aeiou]o$/
-      return [word + "es"]
-    end
-
-    # Default: add s
-    [word + "s"]
   end
 
-  # Generate singular forms from a plural word
   def self.singularize(word)
     return [word] if word.nil? || word.empty?
 
     lower = word.downcase
+    return [IRREGULAR_SINGULARS[lower].sub(/^./) { |m| word[0] == word[0].upcase ? m.upcase : m }] if IRREGULAR_SINGULARS.key?(lower)
 
-    if IRREGULAR_SINGULARS.key?(lower)
-      return [IRREGULAR_SINGULARS[lower].sub(/^./) { |m| word[0] == word[0].upcase ? m.upcase : m }]
+    case lower
+    when /ies$/              then [word[0..-4] + "y"]
+    when /(s|x|z|ch|sh)es$/ then [word[0..-3]]
+    when /oes$/              then [word[0..-3]]
+    when /s$/                then [word[0..-2]]
+    else [word]
     end
-
-    # Words ending in ies -> y
-    if lower =~ /ies$/
-      return [word[0..-4] + "y"]
-    end
-
-    # Words ending in es (after s, x, z, ch, sh) -> remove es
-    if lower =~ /(s|x|z|ch|sh)es$/
-      return [word[0..-3]]
-    end
-
-    # Words ending in oes -> o
-    if lower =~ /oes$/
-      return [word[0..-3]]
-    end
-
-    # Words ending in s -> remove s
-    if lower =~ /s$/
-      return [word[0..-2]]
-    end
-
-    [word]
   end
   
   def quantity_value
-    return nil if @quantity.nil? || @quantity.strip.empty?
+    return nil if quantity_blank?
 
-    parts = @quantity.strip.split(' ', 2)
-    value_str = parts[0]
+    value_str = parsed_quantity[0]
 
     # If the value is a range (e.g., "2-5" or "2–5"), take the high end.
-    if value_str =~ /[-–]/
-      range_parts = value_str.split(/[-–]/).map(&:strip)
-      value_str = range_parts.last
-    end
+    value_str = value_str.split(/[-–]/).last.strip if value_str =~ /[-–]/
 
     QUANTITY_FRACTIONS[value_str] || value_str
   end
 
   def quantity_unit
-    return nil if @quantity.nil? || @quantity.strip.empty?
+    return nil if quantity_blank?
 
-    parts = @quantity.strip.split(' ', 2)
-    raw_unit = parts[1]
+    raw_unit = parsed_quantity[1]
     return nil if raw_unit.nil?
 
     cleaned = raw_unit.strip.downcase.chomp('.')
     UNIT_NORMALIZATIONS[cleaned] || cleaned
+  end
+
+  private
+
+  def quantity_blank?
+    @quantity.nil? || @quantity.strip.empty?
+  end
+
+  def parsed_quantity
+    @parsed_quantity ||= @quantity.strip.split(' ', 2)
   end
 end

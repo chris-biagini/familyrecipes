@@ -45,7 +45,7 @@ class RecipeBuilder
 
   # Skip blank lines
   def skip_blanks
-    advance while !at_end? && peek.type == :blank
+    advance while peek&.type == :blank
   end
 
   # Parse the title (first non-blank line must be a title)
@@ -55,7 +55,7 @@ class RecipeBuilder
     token = advance
     if token.nil? || token.type != :title
       line_num = token&.line_number || 1
-      raise StandardError, "Invalid recipe format at line #{line_num}: The first line must be a level-one header (# Toasted Bread)."
+      raise "Invalid recipe format at line #{line_num}: The first line must be a level-one header (# Toasted Bread)."
     end
 
     # Title content is an array: [captured_text]
@@ -69,11 +69,7 @@ class RecipeBuilder
     return nil if at_end?
     return nil if peek.type == :step_header
 
-    if peek.type == :prose && !peek.content.match?(/\A(Makes|Serves)\b/i)
-      advance.content
-    else
-      nil
-    end
+    advance.content if peek.type == :prose && !peek.content.match?(/\A(Makes|Serves)\b/i)
   end
 
   # Parse optional yield line ("Makes 30 gougères." / "Serves 4.")
@@ -81,9 +77,7 @@ class RecipeBuilder
     skip_blanks
     return nil if at_end?
     return nil if peek.type != :prose
-    if peek.content.match?(/\A(Makes|Serves)\b/i)
-      advance.content
-    end
+    advance.content if peek.content.match?(/\A(Makes|Serves)\b/i)
   end
 
   # Parse all steps until divider or end

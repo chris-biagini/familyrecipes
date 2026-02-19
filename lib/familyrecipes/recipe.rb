@@ -78,15 +78,11 @@ class Recipe
 
   # Ingredients with quantities including expanded cross-references — used for grocery list
   def all_ingredients_with_quantities(alias_map, recipe_map)
-    merged = ingredients_with_quantities(alias_map).to_h
-
-    cross_references.each do |xref|
+    cross_references.each_with_object(ingredients_with_quantities(alias_map).to_h) do |xref, merged|
       xref.expanded_ingredients(recipe_map, alias_map).each do |name, amounts|
         merged[name] = merged.key?(name) ? merge_amounts(merged[name], amounts) : amounts
       end
-    end
-
-    merged.to_a
+    end.to_a
   end
 
   private
@@ -104,7 +100,7 @@ class Recipe
   end
 
   def parse_recipe
-    # Use the new two-phase parser
+    # Two-phase parse: classify lines, then build document
     tokens = LineClassifier.classify(@source)
     builder = RecipeBuilder.new(tokens)
     doc = builder.build

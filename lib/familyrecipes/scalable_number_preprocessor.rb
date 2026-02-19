@@ -37,45 +37,26 @@ module ScalableNumberPreprocessor
   module_function
 
   def process_instructions(text)
-    text.gsub(INSTRUCTION_PATTERN) do
-      if $1
-        # Word number
-        word = $1
-        value = WORD_VALUES[word.downcase]
-        build_span(value, word)
-      else
-        # Numeral
-        numeral = $2
-        value = parse_numeral(numeral)
-        build_span(value, numeral)
-      end
-    end
+    text.gsub(INSTRUCTION_PATTERN) { span_from_match($1, $2) }
   end
 
   def process_yield_line(text)
-    replaced = false
-    text.sub(YIELD_NUMBER_PATTERN) do
-      next $& if replaced
-      replaced = true
-      if $1
-        word = $1
-        value = WORD_VALUES[word.downcase]
-        build_span(value, word)
-      else
-        numeral = $2
-        value = parse_numeral(numeral)
-        build_span(value, numeral)
-      end
+    text.sub(YIELD_NUMBER_PATTERN) { span_from_match($1, $2) }
+  end
+
+  def span_from_match(word_match, numeral_match)
+    if word_match
+      build_span(WORD_VALUES[word_match.downcase], word_match)
+    else
+      build_span(parse_numeral(numeral_match), numeral_match)
     end
   end
 
   def parse_numeral(str)
-    if str.include?("/")
-      parts = str.split("/")
-      parts[0].to_f / parts[1].to_f
-    else
-      str.to_f
-    end
+    return str.to_f unless str.include?("/")
+
+    numerator, denominator = str.split("/")
+    numerator.to_f / denominator.to_f
   end
 
   def build_span(value, original_text)

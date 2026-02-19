@@ -84,7 +84,7 @@ module FamilyRecipes
 
   # Build a reverse lookup map: alias -> canonical name (all keys downcased)
   def self.build_alias_map(grocery_aisles)
-    grocery_aisles.each_with_object({}) do |(_, items), alias_map|
+    grocery_aisles.each_value.with_object({}) do |items, alias_map|
       items.each do |item|
         canonical = item[:name]
 
@@ -109,7 +109,7 @@ module FamilyRecipes
 
   # Build set of all known ingredient names (all entries downcased)
   def self.build_known_ingredients(grocery_aisles, alias_map)
-    grocery_aisles.each_with_object(Set.new) do |(_, items), known|
+    grocery_aisles.each_value.with_object(Set.new) do |items, known|
       items.each do |item|
         known << item[:name].downcase
         item[:aliases].each { |al| known << al.downcase }
@@ -139,7 +139,7 @@ module FamilyRecipes
     quick_bites_category = CONFIG[:quick_bites_category]
     file_path = File.join(recipes_dir, quick_bites_filename)
 
-    quick_bite_specs = []
+    quick_bites = []
     current_subcat = nil
 
     File.foreach(file_path) do |line|
@@ -147,15 +147,12 @@ module FamilyRecipes
       when /^##\s+(.*)/
         current_subcat = $1.strip
       when /^\s*-\s+(.*)/
-        text = $1.strip
         category = [quick_bites_category, current_subcat].compact.join(": ")
-        quick_bite_specs << { text: text, category: category }
+        quick_bites << QuickBite.new(text_source: $1.strip, category: category)
       end
     end
 
-    quick_bite_specs.map do |spec|
-      QuickBite.new(text_source: spec[:text], category: spec[:category])
-    end
+    quick_bites
   end
 
   # Write file only if content has changed

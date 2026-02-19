@@ -30,21 +30,20 @@ module FamilyRecipes
     attr_reader :nutrition_data
 
     def initialize(nutrition_data, omit_set: Set.new)
-      @nutrition_data = {}
       @omit_set = omit_set
 
-      nutrition_data.each do |name, entry|
+      @nutrition_data = nutrition_data.select do |name, entry|
         serving_grams = entry.dig('serving', 'grams')
         unless serving_grams.is_a?(Numeric) && serving_grams > 0
           warn "WARNING: Nutrition entry '#{name}' has invalid serving.grams (#{serving_grams.inspect}), skipping."
-          next
+          next false
         end
         unless entry['per_serving'].is_a?(Hash)
           warn "WARNING: Nutrition entry '#{name}' has invalid per_serving (#{entry['per_serving'].inspect}), skipping."
-          next
+          next false
         end
-        @nutrition_data[name] = entry
-      end
+        true
+      end.to_h
     end
 
     def calculate(recipe, alias_map, recipe_map)
@@ -150,7 +149,7 @@ module FamilyRecipes
     end
 
     def parse_serving_count(yield_line)
-      return nil if yield_line.nil? || yield_line.strip.empty?
+      return nil if yield_line.to_s.strip.empty?
       yield_line[/\d+/]&.to_i
     end
   end

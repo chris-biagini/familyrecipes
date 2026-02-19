@@ -1,16 +1,12 @@
 class QuickBite
-  attr_reader :text_source, :category, :title, :id, :ingredients 
+  attr_reader :text_source, :category, :title, :id, :ingredients
 
   def initialize(text_source:, category:)
     @text_source = text_source
     @category = category
 
-    if text_source.include?(":")
-      title, rest = text_source.split(":", 2).map(&:strip)
-    else
-      title = text_source.strip
-      rest = ""
-    end
+    title, rest = text_source.split(":", 2).map(&:strip)
+    rest ||= ""
     
     @title = title
     @id = FamilyRecipes.slugify(title)

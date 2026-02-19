@@ -8,14 +8,12 @@ class Step
   def initialize(tldr:, ingredient_list_items: [], instructions:)
     raise ArgumentError, "Step must have a tldr." if tldr.nil? || tldr.strip.empty?
 
-    if ingredient_list_items.empty? && (instructions.nil? || instructions.strip.empty?)
-      raise ArgumentError, "Step must have either ingredients or instructions."
-    end
+    raise ArgumentError, "Step must have either ingredients or instructions." if ingredient_list_items.empty? && (instructions.nil? || instructions.strip.empty?)
 
     @tldr = tldr
     @ingredient_list_items = ingredient_list_items
-    @ingredients = ingredient_list_items.select { |i| i.is_a?(Ingredient) }
-    @cross_references = ingredient_list_items.select { |i| i.is_a?(CrossReference) }
+    @ingredients = ingredient_list_items.grep(Ingredient)
+    @cross_references = ingredient_list_items.grep(CrossReference)
     @instructions = instructions
   end
 end

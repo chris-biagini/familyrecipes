@@ -6,30 +6,22 @@ module IngredientAggregator
   # Given an array of Ingredient objects with the same name,
   # returns an array of [numeric_value, unit] pairs (plus nil for unquantified).
   def self.aggregate_amounts(ingredients)
-    sums = {}        # unit -> numeric sum
-    has_unquantified = false
-
-    ingredients.each do |ingredient|
-      raw_value = ingredient.quantity_value
+    parsed = ingredients.map do |ingredient|
       unit = ingredient.quantity_unit
       unit = Ingredient::UNIT_NORMALIZATIONS[unit] || unit if unit
-
-      numeric = begin
-        Float(raw_value)
-      rescue StandardError
-        nil
-      end if raw_value
-
-      if numeric
-        sums[unit] = (sums[unit] || 0.0) + numeric
-      else
-        has_unquantified = true
-      end
+      numeric = Float(ingredient.quantity_value) rescue nil if ingredient.quantity_value
+      [unit, numeric]
     end
 
-    result = sums.map { |unit, value| [value, unit] }
-    result << nil if has_unquantified
-    result = [nil] if result.empty?
-    result
+    sums = parsed
+      .select { |_, numeric| numeric }
+      .group_by { |unit, _| unit }
+      .transform_values { |pairs| pairs.sum { |_, n| n } }
+
+    has_unquantified = parsed.any? { |_, numeric| numeric.nil? }
+
+    amounts = sums.map { |unit, value| [value, unit] }
+    amounts << nil if has_unquantified
+    amounts.empty? ? [nil] : amounts
   end
 end
