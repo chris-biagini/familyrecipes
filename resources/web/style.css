@@ -413,6 +413,8 @@ footer small {
 
 .nutrition-facts table {
   width: 100%;
+  max-width: 22rem;
+  margin-inline: auto;
   border-collapse: collapse;
   font-size: 0.9rem;
 }
@@ -441,6 +443,18 @@ footer small {
 .nutrition-facts td:first-child {
   text-align: left;
   font-weight: bold;
+}
+
+.nutrition-facts tr[class^="indent-"] td:first-child {
+  font-weight: normal;
+}
+
+.nutrition-facts tr.indent-1 td:first-child {
+  padding-left: 1em;
+}
+
+.nutrition-facts tr.indent-2 td:first-child {
+  padding-left: 2em;
 }
 
 .nutrition-facts tr:last-child td {

@@ -80,19 +80,19 @@ HTML
           </thead>
           <tbody>
             <%- [
-              ['Calories', :calories, ''],
-              ['Total Fat', :fat, 'g'],
-              ['Sat. Fat', :saturated_fat, 'g'],
-              ['Trans Fat', :trans_fat, 'g'],
-              ['Cholesterol', :cholesterol, 'mg'],
-              ['Sodium', :sodium, 'mg'],
-              ['Total Carbs', :carbs, 'g'],
-              ['Fiber', :fiber, 'g'],
-              ['Total Sugars', :total_sugars, 'g'],
-              ['Added Sugars', :added_sugars, 'g'],
-              ['Protein', :protein, 'g'],
-            ].each do |label, key, unit| -%>
-            <tr>
+              ['Calories', :calories, '', 0],
+              ['Total Fat', :fat, 'g', 0],
+              ['Sat. Fat', :saturated_fat, 'g', 1],
+              ['Trans Fat', :trans_fat, 'g', 1],
+              ['Cholesterol', :cholesterol, 'mg', 0],
+              ['Sodium', :sodium, 'mg', 0],
+              ['Total Carbs', :carbs, 'g', 0],
+              ['Fiber', :fiber, 'g', 1],
+              ['Total Sugars', :total_sugars, 'g', 1],
+              ['Added Sugars', :added_sugars, 'g', 2],
+              ['Protein', :protein, 'g', 0],
+            ].each do |label, key, unit, indent| -%>
+            <tr<%= %( class="indent-#{indent}") if indent > 0 %>>
               <td><%= label %></td>
               <%- if has_serving -%>
               <td><%= nutrition.per_serving[key].round %><%= unit %></td>
