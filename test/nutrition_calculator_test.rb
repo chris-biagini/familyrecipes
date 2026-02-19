@@ -4,7 +4,6 @@ class NutritionCalculatorTest < Minitest::Test
   def setup
     @nutrition_data = {
       'Flour (all-purpose)' => {
-        'fdc_id' => 169761,
         'per_100g' => {
           'calories' => 364,
           'protein' => 10.33,
@@ -19,7 +18,6 @@ class NutritionCalculatorTest < Minitest::Test
         }
       },
       'Eggs' => {
-        'fdc_id' => 171287,
         'per_100g' => {
           'calories' => 143,
           'protein' => 12.56,
@@ -33,7 +31,6 @@ class NutritionCalculatorTest < Minitest::Test
         }
       },
       'Butter' => {
-        'fdc_id' => 173410,
         'per_100g' => {
           'calories' => 717,
           'protein' => 0.85,
@@ -48,7 +45,6 @@ class NutritionCalculatorTest < Minitest::Test
         }
       },
       'Olive oil' => {
-        'fdc_id' => 171413,
         'per_100g' => {
           'calories' => 884,
           'protein' => 0,
@@ -62,7 +58,6 @@ class NutritionCalculatorTest < Minitest::Test
         }
       },
       'Sugar (white)' => {
-        'fdc_id' => 169655,
         'per_100g' => {
           'calories' => 387,
           'protein' => 0,

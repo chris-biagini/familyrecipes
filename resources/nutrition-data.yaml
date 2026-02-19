@@ -1,6 +1,5 @@
 ---
 Flour (all-purpose):
-  fdc_id: 169761
   per_100g:
     calories: 364
     protein: 10.33
@@ -13,7 +12,6 @@ Flour (all-purpose):
     Tbsp: 8
     tsp: 2.6
 Eggs:
-  fdc_id: 171287
   per_100g:
     calories: 143
     protein: 12.56
@@ -24,7 +22,6 @@ Eggs:
   portions:
     "~unitless": 50
 Butter:
-  fdc_id: 173410
   per_100g:
     calories: 717
     protein: 0.85
@@ -37,7 +34,6 @@ Butter:
     cup: 227
     stick: 113
 Olive oil:
-  fdc_id: 171413
   per_100g:
     calories: 884
     protein: 0
@@ -50,7 +46,6 @@ Olive oil:
     tsp: 4.5
     cup: 216
 Sugar (white):
-  fdc_id: 169655
   per_100g:
     calories: 387
     protein: 0
@@ -63,7 +58,6 @@ Sugar (white):
     Tbsp: 12.5
     tsp: 4.2
 American cheese:
-  fdc_id: 170856
   per_100g:
     calories: 331
     protein: 20
@@ -74,7 +68,6 @@ American cheese:
   portions:
     slice: 21
 Artichokes (jarred):
-  fdc_id: 169311
   per_100g:
     calories: 51
     protein: 3
@@ -86,7 +79,6 @@ Artichokes (jarred):
     cup: 168
     item: 120
 Asparagus:
-  fdc_id: 168389
   per_100g:
     calories: 20
     protein: 2
@@ -98,7 +90,6 @@ Asparagus:
     cup: 134
     unitless: 24
 Baby spinach:
-  fdc_id: 168462
   per_100g:
     calories: 23
     protein: 3
@@ -109,7 +100,6 @@ Baby spinach:
   portions:
     cup: 30
 Baking powder:
-  fdc_id: 172804
   per_100g:
     calories: 51
     protein: 0
@@ -121,7 +111,6 @@ Baking powder:
     tsp: 4.6
     Tbsp: 13.8
 Baking soda:
-  fdc_id: 175040
   per_100g:
     calories: 0
     protein: 0
@@ -132,7 +121,6 @@ Baking soda:
   portions:
     tsp: 4.6
 Basil:
-  fdc_id: 172232
   per_100g:
     calories: 23
     protein: 3
@@ -144,7 +132,6 @@ Basil:
     tbsp: 2.65
     cup: 24
 Black beans (canned):
-  fdc_id: 175188
   per_100g:
     calories: 91
     protein: 6
@@ -155,7 +142,6 @@ Black beans (canned):
   portions:
     cup: 240
 Black pepper:
-  fdc_id: 170931
   per_100g:
     calories: 251
     protein: 10
@@ -167,7 +153,6 @@ Black pepper:
     Tbsp: 6.9
     tsp: 2.3
 Blueberries:
-  fdc_id: 171711
   per_100g:
     calories: 57
     protein: 1
@@ -178,7 +163,6 @@ Blueberries:
   portions:
     cup: 148
 Bouillon:
-  fdc_id: 171562
   per_100g:
     calories: 267
     protein: 17
@@ -189,7 +173,6 @@ Bouillon:
   portions:
     tsp: 2
 Bread:
-  fdc_id: 174913
   per_100g:
     calories: 259
     protein: 9
@@ -198,7 +181,6 @@ Bread:
     fiber: 2
     sodium: 618
 Broccoli:
-  fdc_id: 170379
   per_100g:
     calories: 34
     protein: 3
@@ -209,7 +191,6 @@ Broccoli:
   portions:
     cup: 88
 Buttermilk:
-  fdc_id: 172225
   per_100g:
     calories: 62
     protein: 3
@@ -220,7 +201,6 @@ Buttermilk:
   portions:
     cup: 245
 Carrots:
-  fdc_id: 170393
   per_100g:
     calories: 41
     protein: 1
@@ -231,7 +211,6 @@ Carrots:
   portions:
     cup: 110
 Celery:
-  fdc_id: 169988
   per_100g:
     calories: 14
     protein: 1
@@ -244,7 +223,6 @@ Celery:
     stalk: 40
     cup: 101
 Cheddar:
-  fdc_id: 328637
   per_100g:
     calories: 408
     protein: 23
@@ -256,7 +234,6 @@ Cheddar:
     ounce: 28
     cup: 113
 Chocolate:
-  fdc_id: 167976
   per_100g:
     calories: 480
     protein: 4
@@ -267,7 +244,6 @@ Chocolate:
   portions:
     cup: 173
 Cinnamon:
-  fdc_id: 171320
   per_100g:
     calories: 247
     protein: 4
@@ -279,7 +255,6 @@ Cinnamon:
     tsp: 2.6
     Tbsp: 7.8
 Cornmeal:
-  fdc_id: 168867
   per_100g:
     calories: 370
     protein: 7
@@ -290,7 +265,6 @@ Cornmeal:
   portions:
     cup: 157
 Cornstarch:
-  fdc_id: 169698
   per_100g:
     calories: 381
     protein: 0
@@ -301,7 +275,6 @@ Cornstarch:
   portions:
     cup: 128
 Cream cheese:
-  fdc_id: 173418
   per_100g:
     calories: 350
     protein: 6
@@ -313,7 +286,6 @@ Cream cheese:
     cup: 232
     Tbsp: 10
 Flour (bread):
-  fdc_id: 790146
   per_100g:
     calories: 363
     protein: 14
@@ -324,7 +296,6 @@ Flour (bread):
   portions:
     cup: 140
 Frank's Red Hot:
-  fdc_id: 171604
   per_100g:
     calories: 21
     protein: 1
@@ -336,7 +307,6 @@ Frank's Red Hot:
     Tbsp: 15
     cup: 245
 Frozen spinach:
-  fdc_id: 169288
   per_100g:
     calories: 34
     protein: 4
@@ -347,7 +317,6 @@ Frozen spinach:
   portions:
     cup: 190
 Garlic:
-  fdc_id: 169230
   per_100g:
     calories: 149
     protein: 6
@@ -358,7 +327,6 @@ Garlic:
   portions:
     tsp: 2.8
 Gouda:
-  fdc_id: 171241
   per_100g:
     calories: 356
     protein: 25
@@ -369,7 +337,6 @@ Gouda:
   portions:
     oz: 28
 Green onions:
-  fdc_id: 170006
   per_100g:
     calories: 27
     protein: 1
@@ -381,7 +348,6 @@ Green onions:
     cup: 71
     Tbsp: 6
 Heavy cream:
-  fdc_id: 170859
   per_100g:
     calories: 340
     protein: 3
@@ -393,7 +359,6 @@ Heavy cream:
     cup: 120
     Tbsp: 15
 Honey:
-  fdc_id: 169640
   per_100g:
     calories: 304
     protein: 0
@@ -405,7 +370,6 @@ Honey:
     cup: 339
     Tbsp: 21
 Hot sauce:
-  fdc_id: 171186
   per_100g:
     calories: 93
     protein: 2
@@ -416,7 +380,6 @@ Hot sauce:
   portions:
     tsp: 6.5
 Ice cream:
-  fdc_id: 167575
   per_100g:
     calories: 207
     protein: 4
@@ -427,7 +390,6 @@ Ice cream:
   portions:
     cup: 66
 Lentils:
-  fdc_id: 172420
   per_100g:
     calories: 352
     protein: 25
@@ -439,7 +401,6 @@ Lentils:
     Tbsp: 12
     cup: 192
 Limes:
-  fdc_id: 168155
   per_100g:
     calories: 30
     protein: 1
@@ -450,7 +411,6 @@ Limes:
   portions:
     unitless: 67
 Maldon salt:
-  fdc_id: 173468
   per_100g:
     calories: 0
     protein: 0
@@ -462,7 +422,6 @@ Maldon salt:
     tsp: 6
     Tbsp: 18
 Malt syrup:
-  fdc_id: 169660
   per_100g:
     calories: 318
     protein: 6
@@ -474,7 +433,6 @@ Malt syrup:
     Tbsp: 21
     cup: 332
 Maple syrup:
-  fdc_id: 169661
   per_100g:
     calories: 260
     protein: 0
@@ -486,7 +444,6 @@ Maple syrup:
     Tbsp: 20
     cup: 315
 Mayonnaise:
-  fdc_id: 171009
   per_100g:
     calories: 680
     protein: 1
@@ -498,7 +455,6 @@ Mayonnaise:
     Tbsp: 13.8
     cup: 220
 Mexican oregano:
-  fdc_id: 171328
   per_100g:
     calories: 265
     protein: 9
@@ -509,7 +465,6 @@ Mexican oregano:
   portions:
     tsp: 1
 Mozzarella (low-moisture):
-  fdc_id: 329370
   per_100g:
     calories: 298
     protein: 24
@@ -520,7 +475,6 @@ Mozzarella (low-moisture):
   portions:
     cup: 132
 Muenster:
-  fdc_id: 171245
   per_100g:
     calories: 368
     protein: 23
@@ -531,7 +485,6 @@ Muenster:
   portions:
     cup: 113
 Olive oil (mild):
-  fdc_id: 171413
   per_100g:
     calories: 884
     protein: 0
@@ -544,7 +497,6 @@ Olive oil (mild):
     Tbsp: 13.5
     cup: 216
 Onions:
-  fdc_id: 170000
   per_100g:
     calories: 40
     protein: 1
@@ -556,7 +508,6 @@ Onions:
     cup: 160
     Tbsp: 10
 Oregano:
-  fdc_id: 171328
   per_100g:
     calories: 265
     protein: 9
@@ -568,7 +519,6 @@ Oregano:
     tsp: 1
     tbsp: 3
 Parmesan:
-  fdc_id: 325036
   per_100g:
     calories: 421
     protein: 30
@@ -580,7 +530,6 @@ Parmesan:
     Tbsp: 5
     cup: 100
 Pasta:
-  fdc_id: 169736
   per_100g:
     calories: 371
     protein: 13
@@ -591,7 +540,6 @@ Pasta:
   portions:
     cup: 64
 Peas and carrots (frozen):
-  fdc_id: 170425
   per_100g:
     calories: 53
     protein: 3
@@ -602,7 +550,6 @@ Peas and carrots (frozen):
   portions:
     cup: 140
 Pecans:
-  fdc_id: 170182
   per_100g:
     calories: 691
     protein: 9
@@ -613,7 +560,6 @@ Pecans:
   portions:
     cup: 109
 Queso Quesadilla:
-  fdc_id: 169035
   per_100g:
     calories: 368
     protein: 16
@@ -624,7 +570,6 @@ Queso Quesadilla:
   portions:
     "~unitless": 280
 Queso fresco:
-  fdc_id: 172223
   per_100g:
     calories: 299
     protein: 18
@@ -635,7 +580,6 @@ Queso fresco:
   portions:
     cup: 122
 Raisins:
-  fdc_id: 168166
   per_100g:
     calories: 296
     protein: 3
@@ -646,7 +590,6 @@ Raisins:
   portions:
     cup: 165
 Red bell peppers:
-  fdc_id: 170108
   per_100g:
     calories: 26
     protein: 1
@@ -659,7 +602,6 @@ Red bell peppers:
     Tbsp: 9.3
     cup: 92
 Red pepper flakes:
-  fdc_id: 170932
   per_100g:
     calories: 318
     protein: 12
@@ -671,7 +613,6 @@ Red pepper flakes:
     Tbsp: 5.3
     tsp: 1.8
 Ricotta:
-  fdc_id: 170851
   per_100g:
     calories: 150
     protein: 8
@@ -682,7 +623,6 @@ Ricotta:
   portions:
     cup: 248
 Ritz crackers:
-  fdc_id: 173258
   per_100g:
     calories: 492
     protein: 7
@@ -693,7 +633,6 @@ Ritz crackers:
   portions:
     serving: 30
 Salt:
-  fdc_id: 173468
   per_100g:
     calories: 0
     protein: 0
@@ -706,7 +645,6 @@ Salt:
     Tbsp: 18
     cup: 292
 Sesame seeds:
-  fdc_id: 170150
   per_100g:
     calories: 573
     protein: 18
@@ -718,7 +656,6 @@ Sesame seeds:
     cup: 144
     tbsp: 9
 Smoked paprika:
-  fdc_id: 171329
   per_100g:
     calories: 282
     protein: 14
@@ -730,7 +667,6 @@ Smoked paprika:
     Tbsp: 6.8
     tsp: 2.3
 Sour cream:
-  fdc_id: 171257
   per_100g:
     calories: 198
     protein: 2
@@ -742,7 +678,6 @@ Sour cream:
     Tbsp: 12
     cup: 230
 Soy sauce:
-  fdc_id: 174277
   per_100g:
     calories: 53
     protein: 8
@@ -755,7 +690,6 @@ Soy sauce:
     tsp: 5.3
     cup: 255
 Thyme:
-  fdc_id: 170938
   per_100g:
     calories: 276
     protein: 9
@@ -767,7 +701,6 @@ Thyme:
     tsp: 1
     Tbsp: 4.3
 Tomato passata:
-  fdc_id: 170051
   per_100g:
     calories: 16
     protein: 1
@@ -779,7 +712,6 @@ Tomato passata:
     cup: 240
     Tbsp: 15
 Tomato paste:
-  fdc_id: 170459
   per_100g:
     calories: 82
     protein: 4
@@ -791,7 +723,6 @@ Tomato paste:
     Tbsp: 16
     cup: 264
 Tomato salsa:
-  fdc_id: 746777
   per_100g:
     calories: 29
     protein: 1
@@ -802,7 +733,6 @@ Tomato salsa:
   portions:
     Tbsp: 17.85
 Tomatoes (canned):
-  fdc_id: 170501
   per_100g:
     calories: 32
     protein: 2
@@ -813,7 +743,6 @@ Tomatoes (canned):
   portions:
     cup: 242
 Tortillas (corn):
-  fdc_id: 175036
   per_100g:
     calories: 218
     protein: 6
@@ -824,7 +753,6 @@ Tortillas (corn):
   portions:
     tortilla: 32
 Tortillas (large flour):
-  fdc_id: 167535
   per_100g:
     calories: 297
     protein: 8
@@ -833,7 +761,6 @@ Tortillas (large flour):
     fiber: 2
     sodium: 742
 Vanilla extract:
-  fdc_id: 173471
   per_100g:
     calories: 288
     protein: 0
@@ -846,7 +773,6 @@ Vanilla extract:
     Tbsp: 13
     cup: 208
 Walnuts:
-  fdc_id: 170187
   per_100g:
     calories: 654
     protein: 15
@@ -858,7 +784,6 @@ Walnuts:
     cup: 80
     Tbsp: 8
 Watermelon:
-  fdc_id: 167765
   per_100g:
     calories: 30
     protein: 1
@@ -869,7 +794,6 @@ Watermelon:
   portions:
     cup: 152
 Whipped cream:
-  fdc_id: 170859
   per_100g:
     calories: 340
     protein: 3
@@ -881,7 +805,6 @@ Whipped cream:
     Tbsp: 15
     cup: 120
 Yeast:
-  fdc_id: 175042
   per_100g:
     calories: 105
     protein: 8
