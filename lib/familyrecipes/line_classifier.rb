@@ -7,7 +7,7 @@
 
 module LineClassifier
   # A single classified line with its type, content, and line number
-  LineToken = Struct.new(:type, :content, :line_number, keyword_init: true)
+  LineToken = Data.define(:type, :content, :line_number)
 
   # Pattern map for line classification (order matters for some edge cases)
   LINE_PATTERNS = {
