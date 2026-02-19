@@ -578,7 +578,11 @@ class NutritionCalculatorTest < Minitest::Test
     entry = @nutrition_data['Flour (all-purpose)']
     assert @calculator.resolvable?(1, 'cup', entry)
     assert @calculator.resolvable?(1, 'g', entry)
-    assert @calculator.resolvable?(1, nil, entry)  # bare count
+  end
+
+  def test_resolvable_bare_count_with_unitless
+    entry = @nutrition_data['Eggs']
+    assert @calculator.resolvable?(1, nil, entry)
   end
 
   def test_not_resolvable_with_unknown_unit
@@ -610,5 +614,152 @@ class NutritionCalculatorTest < Minitest::Test
     # 1 tbsp butter = 14.2g; (100.38/14)*14.2 = 101.8 cal
     assert_in_delta 101.8, result.totals[:calories], 1
     assert result.partial_ingredients.empty?
+  end
+
+  # --- Bare count without ~unitless (#2 fix) ---
+
+  def test_bare_count_without_unitless_reported_as_partial
+    recipe = make_recipe(<<~MD)
+      # Test
+
+      ## Mix (combine)
+
+      - Flour (all-purpose), 4
+
+      Mix.
+    MD
+
+    result = @calculator.calculate(recipe, @alias_map, @recipe_map)
+
+    # Flour has no ~unitless portion, so bare "4" should be partial
+    assert_includes result.partial_ingredients, 'Flour (all-purpose)'
+    refute result.complete?
+  end
+
+  def test_bare_count_not_resolvable_without_unitless
+    entry = @nutrition_data['Flour (all-purpose)']
+    refute @calculator.resolvable?(1, nil, entry)
+  end
+
+  # --- New nutrients (#9) ---
+
+  def test_new_nutrients_calculated
+    nutrition_data = {
+      'Butter' => {
+        'serving' => { 'grams' => 14 },
+        'per_serving' => {
+          'calories' => 100, 'fat' => 11, 'saturated_fat' => 7, 'trans_fat' => 0.5,
+          'cholesterol' => 30, 'sodium' => 90, 'carbs' => 0, 'fiber' => 0,
+          'total_sugars' => 0, 'added_sugars' => 0, 'protein' => 0.1
+        },
+        'portions' => { 'tbsp' => 14 }
+      }
+    }
+    calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data)
+
+    recipe = make_recipe(<<~MD)
+      # Test
+
+      ## Mix (combine)
+
+      - Butter, 28 g
+
+      Mix.
+    MD
+
+    result = calculator.calculate(recipe, @alias_map, @recipe_map)
+
+    # 28g = 2 servings worth
+    assert_in_delta 1.0, result.totals[:trans_fat], 0.01
+    assert_in_delta 60, result.totals[:cholesterol], 0.1
+    assert_in_delta 0, result.totals[:total_sugars], 0.01
+    assert_in_delta 0, result.totals[:added_sugars], 0.01
+  end
+
+  def test_missing_new_nutrient_keys_default_to_zero
+    # Old-style entry without new nutrients
+    nutrition_data = {
+      'Flour (all-purpose)' => {
+        'serving' => { 'grams' => 30 },
+        'per_serving' => {
+          'calories' => 109.2, 'protein' => 3.0, 'fat' => 0.3,
+          'saturated_fat' => 0.05, 'carbs' => 22.9, 'fiber' => 0.8, 'sodium' => 0.6
+        },
+        'portions' => { 'cup' => 125 }
+      }
+    }
+    calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data)
+
+    recipe = make_recipe(<<~MD)
+      # Test
+
+      ## Mix (combine)
+
+      - Flour (all-purpose), 100 g
+
+      Mix.
+    MD
+
+    result = calculator.calculate(recipe, @alias_map, @recipe_map)
+
+    # New keys missing from YAML → default to 0
+    assert_equal 0, result.totals[:trans_fat]
+    assert_equal 0, result.totals[:cholesterol]
+    assert_equal 0, result.totals[:total_sugars]
+    assert_equal 0, result.totals[:added_sugars]
+    # Old keys still work
+    assert result.totals[:calories] > 0
+  end
+
+  # --- Schema validation (#11) ---
+
+  def test_malformed_entry_missing_serving_grams
+    nutrition_data = {
+      'Good' => {
+        'serving' => { 'grams' => 30 },
+        'per_serving' => { 'calories' => 100 }
+      },
+      'Bad' => {
+        'serving' => {},
+        'per_serving' => { 'calories' => 100 }
+      }
+    }
+
+    _out, err = capture_io do
+      calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data)
+      assert calculator.nutrition_data.key?('Good')
+      refute calculator.nutrition_data.key?('Bad')
+    end
+    assert_match(/Bad/, err)
+  end
+
+  def test_malformed_entry_invalid_per_serving
+    nutrition_data = {
+      'Bad2' => {
+        'serving' => { 'grams' => 30 },
+        'per_serving' => 'not a hash'
+      }
+    }
+
+    _out, err = capture_io do
+      calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data)
+      refute calculator.nutrition_data.key?('Bad2')
+    end
+    assert_match(/Bad2/, err)
+  end
+
+  def test_zero_serving_grams_skipped
+    nutrition_data = {
+      'ZeroGrams' => {
+        'serving' => { 'grams' => 0 },
+        'per_serving' => { 'calories' => 100 }
+      }
+    }
+
+    _out, err = capture_io do
+      calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data)
+      refute calculator.nutrition_data.key?('ZeroGrams')
+    end
+    assert_match(/ZeroGrams/, err)
   end
 end

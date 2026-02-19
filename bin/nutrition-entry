@@ -7,25 +7,22 @@ NUTRITION_PATH = File.join(PROJECT_ROOT, "resources/nutrition-data.yaml")
 GROCERY_PATH = File.join(PROJECT_ROOT, "resources/grocery-info.yaml")
 RECIPES_DIR = File.join(PROJECT_ROOT, "recipes")
 
-NUTRIENTS = %w[calories protein fat saturated_fat carbs fiber sodium].freeze
-NUTRIENT_LABELS = {
-  'calories' => 'cal', 'protein' => 'protein', 'fat' => 'fat',
-  'saturated_fat' => 'sat_fat', 'carbs' => 'carbs', 'fiber' => 'fiber',
-  'sodium' => 'sodium'
-}.freeze
+Helpers = FamilyRecipes::NutritionEntryHelpers
 
-KNOWN_VOLUME_UNITS = %w[cup cups tbsp tablespoon tablespoons tsp teaspoon teaspoons ml l liter liters].freeze
-
-# Singular forms for auto-portion unit names
-SINGULARIZE = {
-  "crackers" => "cracker", "slices" => "slice", "pieces" => "piece",
-  "cloves" => "clove", "stalks" => "stalk", "sticks" => "stick",
-  "items" => "item", "eggs" => "~unitless", "tortillas" => "tortilla",
-  "cookies" => "cookie", "chips" => "chip", "sheets" => "sheet",
-  "strips" => "strip", "cubes" => "cube", "rings" => "ring",
-  "patties" => "patty", "balls" => "ball", "links" => "link",
-  "servings" => "serving"
-}.freeze
+# FDA label order: 11 nutrients
+NUTRIENTS = [
+  { key: 'calories',      label: 'Calories',       unit: '',   indent: 0 },
+  { key: 'fat',           label: 'Total fat',       unit: 'g',  indent: 0 },
+  { key: 'saturated_fat', label: 'Saturated fat',   unit: 'g',  indent: 1 },
+  { key: 'trans_fat',     label: 'Trans fat',       unit: 'g',  indent: 1 },
+  { key: 'cholesterol',   label: 'Cholesterol',     unit: 'mg', indent: 0 },
+  { key: 'sodium',        label: 'Sodium',          unit: 'mg', indent: 0 },
+  { key: 'carbs',         label: 'Total carbs',     unit: 'g',  indent: 0 },
+  { key: 'fiber',         label: 'Fiber',           unit: 'g',  indent: 1 },
+  { key: 'total_sugars',  label: 'Total sugars',    unit: 'g',  indent: 1 },
+  { key: 'added_sugars',  label: 'Added sugars',    unit: 'g',  indent: 2 },
+  { key: 'protein',       label: 'Protein',         unit: 'g',  indent: 0 },
+].freeze
 
 def load_nutrition_data
   if File.exist?(NUTRITION_PATH)
@@ -36,116 +33,102 @@ def load_nutrition_data
 end
 
 def save_nutrition_data(data)
-  File.write(NUTRITION_PATH, YAML.dump(data))
+  # Sort by key for stable output
+  sorted = data.sort_by { |k, _| k.downcase }.to_h
+
+  # Round floats to avoid ugly precision artifacts
+  sorted.each do |_, entry|
+    if entry['per_serving'].is_a?(Hash)
+      entry['per_serving'].each do |k, v|
+        entry['per_serving'][k] = v.round(4) if v.is_a?(Float)
+      end
+    end
+    if entry['portions'].is_a?(Hash)
+      entry['portions'].each do |k, v|
+        entry['portions'][k] = v.round(2) if v.is_a?(Float)
+      end
+    end
+    if entry.dig('serving', 'grams').is_a?(Float)
+      entry['serving']['grams'] = entry['serving']['grams'].round(2)
+    end
+  end
+
+  File.write(NUTRITION_PATH, YAML.dump(sorted))
   puts "Saved to #{NUTRITION_PATH}"
 end
 
-def parse_fraction(str)
-  if str.include?('/')
-    num, den = str.split('/')
-    return nil if den.to_f == 0
-    num.to_f / den.to_f
-  else
-    Float(str) rescue nil
+def prompt_number(prompt_text, allow_empty_zero: true)
+  loop do
+    print prompt_text
+    input = $stdin.gets&.strip
+    return nil if input.nil?  # EOF
+    return :quit if input.downcase == 'q'
+
+    if input.empty?
+      return 0.0 if allow_empty_zero
+      puts "  Value required. Enter a number, or 'q' to quit."
+      next
+    end
+
+    value = Float(input) rescue nil
+    if value
+      return value
+    else
+      puts "  Not a number, try again:"
+    end
   end
 end
 
-def parse_serving_size(input)
-  # Extract gram weight: "30g", "(30g)", "(3.3g)"
-  grams_match = input.match(/(\d+(?:\.\d+)?)\s*g\b/)
-  return nil unless grams_match
+def prompt_serving_size
+  loop do
+    print "\nServing size: "
+    input = $stdin.gets&.strip
+    return nil if input.nil? || input.empty?
+    return :quit if input.downcase == 'q'
 
-  grams = grams_match[1].to_f
-  return nil if grams <= 0
-
-  result = { grams: grams }
-
-  # Get the descriptor: everything before the gram portion (parenthetical or slash-separated)
-  descriptor = input.sub(/[\/(]?\s*\d+(?:\.\d+)?\s*g\b[)\s]*/, '').strip
-
-  # Strip "about" prefix
-  descriptor = descriptor.sub(/\A(?:about|approximately|approx\.?)\s+/i, '').strip
-
-  return result if descriptor.empty?
-
-  # Parse descriptor for amount + unit
-  match = descriptor.match(/\A(\d+(?:[\/\.]\d+)?)\s+(.+)\z/)
-  return result unless match
-
-  amount = parse_fraction(match[1])
-  return result unless amount && amount > 0
-
-  raw_unit = match[2].strip
-
-  # Strip size modifiers: "3.5 inch piece" → "piece"
-  raw_unit = raw_unit.sub(/\d+\.?\d*\s*(?:inch|in|cm|mm)\s+/i, '').strip
-
-  unit_down = raw_unit.downcase.chomp('.')
-
-  # Classify: volume unit or discrete portion?
-  if KNOWN_VOLUME_UNITS.include?(unit_down)
-    # Normalize to canonical volume unit
-    canonical = case unit_down
-                when 'cups' then 'cup'
-                when 'tablespoon', 'tablespoons' then 'tbsp'
-                when 'teaspoon', 'teaspoons' then 'tsp'
-                when 'liter', 'liters' then 'l'
-                else unit_down
-                end
-    result[:volume_amount] = amount
-    result[:volume_unit] = canonical
-  else
-    # Discrete unit → create auto-portion
-    singular = SINGULARIZE[unit_down] || singularize_simple(unit_down)
-    grams_per_one = (grams / amount).round(2)
-    result[:auto_portion] = { unit: singular, grams: grams_per_one }
-  end
-
-  result
-end
-
-def singularize_simple(word)
-  # Very basic singularization for auto-portions
-  return word if word.length < 3
-  if word.end_with?('ies')
-    word[0..-4] + 'y'
-  elsif word.end_with?('ses', 'xes', 'zes', 'ches', 'shes')
-    word[0..-3]
-  elsif word.end_with?('s') && !word.end_with?('ss')
-    word[0..-2]
-  else
-    word
+    parsed = Helpers.parse_serving_size(input)
+    if parsed
+      return parsed
+    else
+      puts "Could not extract gram weight from '#{input}'."
+      puts "Include the gram weight, e.g. '30g', '1/4 cup (30g)', '1 slice (21g)', '30 grams'"
+      puts "Try again, or 'q' to quit:"
+    end
   end
 end
 
 def prompt_nutrients
-  puts "\nPer serving (cal protein fat sat_fat carbs fiber sodium):"
-  print "> "
-  input = $stdin.gets&.strip
-  return nil if input.nil? || input.empty?
-
-  values = input.split(/\s+/)
-  if values.length != 7
-    puts "Expected 7 values (cal protein fat sat_fat carbs fiber sodium), got #{values.length}."
-    return nil
-  end
+  puts "\nPer serving (Enter = 0, 'q' = quit):"
 
   result = {}
-  NUTRIENTS.each_with_index do |nutrient, i|
-    result[nutrient] = Float(values[i]) rescue 0.0
+  NUTRIENTS.each do |nutrient|
+    indent = '  ' * nutrient[:indent]
+    unit_str = nutrient[:unit].empty? ? '' : " (#{nutrient[:unit]})"
+    prompt_text = "#{indent}#{nutrient[:label]}#{unit_str}: "
+
+    value = prompt_number(prompt_text)
+    return nil if value.nil?
+    return nil if value == :quit
+    result[nutrient[:key]] = value
   end
   result
 end
 
-def prompt_portions(auto_portions, volume_info)
+def prompt_portions(auto_portions, volume_info, needed_units)
   portions = {}
 
   puts "\nPortions (grams per 1 unit):"
   puts "  Enter = accept, '-' = skip, 'done' = finish"
 
+  if needed_units && needed_units.any?
+    needed_str = needed_units.map { |u| u || '(bare count)' }.sort.join(', ')
+    puts "  Recipes use: #{needed_str}"
+  end
+
   # Auto-portions from serving size
   auto_portions.each do |unit, grams|
-    print "  #{unit} [#{grams}] (from label): "
+    needed_tag = needed_units&.include?(unit) ? ' *' : ''
+    print "  #{unit} [#{grams}] (from label)#{needed_tag}: "
     input = $stdin.gets&.strip
     return portions if input&.downcase == 'done'
     if input != '-'
@@ -160,12 +143,13 @@ def prompt_portions(auto_portions, volume_info)
 
   # Density-derived volume portions
   if volume_info
-    density = volume_info[:grams].to_f / (volume_info[:volume_amount] * volume_to_ml(volume_info[:volume_unit]))
+    density = volume_info[:grams].to_f / (volume_info[:volume_amount] * Helpers.volume_to_ml(volume_info[:volume_unit]))
     %w[cup tbsp tsp].each do |vol_unit|
       next if auto_portions.key?(vol_unit)
       next if portions.key?(vol_unit)
-      derived = (density * volume_to_ml(vol_unit)).round(1)
-      print "  #{vol_unit} [#{derived}] (from density): "
+      derived = (density * Helpers.volume_to_ml(vol_unit)).round(1)
+      needed_tag = needed_units&.include?(vol_unit) ? ' *' : ''
+      print "  #{vol_unit} [#{derived}] (from density)#{needed_tag}: "
       input = $stdin.gets&.strip
       return portions if input&.downcase == 'done'
       if input != '-'
@@ -184,12 +168,29 @@ def prompt_portions(auto_portions, volume_info)
   common.each do |unit|
     next if portions.key?(unit)
     next if auto_portions.key?(unit)
-    print "  #{unit}: "
+    needed_tag = needed_units&.include?(unit) ? ' *' : ''
+    print "  #{unit}#{needed_tag}: "
     input = $stdin.gets&.strip
     break if input&.downcase == 'done'
     next if input.nil? || input.empty? || input == '-'
     value = Float(input) rescue nil
     portions[unit] = value if value
+  end
+
+  # Prompt for any needed units not yet covered
+  if needed_units
+    needed_units.each do |unit|
+      next if unit.nil?  # bare count, handled by ~unitless
+      next if portions.key?(unit)
+      next if common.include?(unit)
+      next if auto_portions.key?(unit)
+      print "  #{unit} *: "
+      input = $stdin.gets&.strip
+      break if input&.downcase == 'done'
+      next if input.nil? || input.empty? || input == '-'
+      value = Float(input) rescue nil
+      portions[unit] = value if value
+    end
   end
 
   # Custom units
@@ -207,8 +208,44 @@ def prompt_portions(auto_portions, volume_info)
   portions
 end
 
-def volume_to_ml(unit)
-  { 'cup' => 236.588, 'tbsp' => 14.787, 'tsp' => 4.929, 'ml' => 1, 'l' => 1000 }[unit] || 1
+def find_needed_units(name)
+  grocery_aisles = FamilyRecipes.parse_grocery_info(GROCERY_PATH)
+  alias_map = FamilyRecipes.build_alias_map(grocery_aisles)
+  recipes = FamilyRecipes.parse_recipes(RECIPES_DIR)
+  recipe_map = {}
+  recipes.each { |r| recipe_map[r.id] = r }
+
+  units = Set.new
+  recipes.each do |recipe|
+    recipe.all_ingredients_with_quantities(alias_map, recipe_map).each do |ing_name, amounts|
+      next unless ing_name == name
+      amounts.each do |amount|
+        next if amount.nil?
+        _, unit = amount
+        units << unit
+      end
+    end
+  end
+  units.to_a
+end
+
+def resolve_name(raw_name)
+  grocery_aisles = FamilyRecipes.parse_grocery_info(GROCERY_PATH)
+  alias_map = FamilyRecipes.build_alias_map(grocery_aisles)
+
+  canonical = alias_map[raw_name.downcase]
+  if canonical
+    if canonical != raw_name
+      puts "  -> Resolved to \"#{canonical}\""
+    end
+    return canonical
+  end
+
+  puts "  \"#{raw_name}\" not found in grocery-info.yaml. Recipes won't match this entry."
+  print "  Continue anyway? (y/n): "
+  input = $stdin.gets&.strip
+  return nil unless input&.downcase == 'y'
+  raw_name
 end
 
 def enter_ingredient(name, nutrition_data)
@@ -225,21 +262,14 @@ def enter_ingredient(name, nutrition_data)
   end
 
   puts "\n--- #{name} ---"
-  print "\nServing size: "
-  serving_input = $stdin.gets&.strip
-  return if serving_input.nil? || serving_input.empty?
 
-  parsed = parse_serving_size(serving_input)
-  unless parsed
-    puts "Could not extract gram weight from '#{serving_input}'."
-    puts "Please include the gram weight, e.g. '30g', '1/4 cup (30g)', '1 slice (21g)'"
-    return
-  end
+  parsed = prompt_serving_size
+  return if parsed.nil? || parsed == :quit
 
   # Display parsed result
-  display = "  → #{parsed[:grams]}g"
+  display = "  -> #{parsed[:grams]}g"
   display += " | #{parsed[:volume_amount]} #{parsed[:volume_unit]}" if parsed[:volume_amount]
-  display += "\n  → auto-portion: #{parsed[:auto_portion][:unit]} = #{parsed[:auto_portion][:grams]}g" if parsed[:auto_portion]
+  display += "\n  -> auto-portion: #{parsed[:auto_portion][:unit]} = #{parsed[:auto_portion][:grams]}g" if parsed[:auto_portion]
   puts display
 
   per_serving = prompt_nutrients
@@ -247,7 +277,19 @@ def enter_ingredient(name, nutrition_data)
 
   # Show per-100g for verification
   factor = 100.0 / parsed[:grams]
-  puts "\n  (Per 100g: #{per_serving.map { |k, v| "#{NUTRIENT_LABELS[k]}=#{(v * factor).round(1)}" }.join(', ')})"
+  summary = NUTRIENTS.map { |n| "#{n[:key]}=#{(per_serving[n[:key]] * factor).round(1)}" }.join(', ')
+  puts "\n  (Per 100g: #{summary})"
+
+  # Prompt for source/brand
+  print "\nBrand/product (optional): "
+  source = $stdin.gets&.strip
+  source = nil if source&.empty?
+
+  # Find needed recipe units
+  needed_units = find_needed_units(name)
+  if needed_units.any?
+    puts "\n  Recipes use units: #{needed_units.map { |u| u || '(bare count)' }.sort.join(', ')}"
+  end
 
   # Build auto-portions from serving size
   auto_portions = {}
@@ -255,7 +297,6 @@ def enter_ingredient(name, nutrition_data)
     auto_portions[parsed[:auto_portion][:unit]] = parsed[:auto_portion][:grams]
   end
   if parsed[:volume_amount] && parsed[:volume_unit]
-    # Volume from label → derive portion for that exact unit
     grams_per_one = (parsed[:grams] / parsed[:volume_amount]).round(1)
     auto_portions[parsed[:volume_unit]] = grams_per_one
   end
@@ -264,7 +305,7 @@ def enter_ingredient(name, nutrition_data)
     { grams: parsed[:grams], volume_amount: parsed[:volume_amount], volume_unit: parsed[:volume_unit] }
   end
 
-  portions = prompt_portions(auto_portions, volume_info)
+  portions = prompt_portions(auto_portions, volume_info, needed_units)
 
   # Build entry
   serving = { 'grams' => parsed[:grams] }
@@ -276,6 +317,7 @@ def enter_ingredient(name, nutrition_data)
     'per_serving' => per_serving
   }
   entry['portions'] = portions unless portions.empty?
+  entry['source'] = source if source
 
   puts "\nFinal entry for #{name}:"
   puts YAML.dump({ name => entry }).lines[1..].join
@@ -355,12 +397,14 @@ if ARGV.include?('--help') || ARGV.include?('-h')
   puts ""
   puts "Serving size examples:"
   puts "  100g                     Just gram weight"
+  puts "  30 grams                 Spelled-out gram weight"
   puts "  1/4 cup (30g)            Volume + grams"
   puts "  2 Tbsp (30g)             Volume + grams"
   puts "  1 slice (21g)            Discrete + grams (auto-portion created)"
   puts "  About 14 crackers (30g)  Count + grams (auto-portion: cracker = 2.14g)"
   puts ""
-  puts "Nutrient entry is one line: cal protein fat sat_fat carbs fiber sodium"
+  puts "Nutrients are entered one at a time in FDA label order."
+  puts "Enter = 0 for quick entry of zero-value fields."
   exit 0
 end
 
@@ -391,7 +435,6 @@ if ARGV.include?('--missing')
   if missing.empty? && unresolvable.empty?
     puts "All ingredients have nutrition data and resolvable units!"
   else
-    total = missing.length + unresolvable.length
     puts "#{missing.length} missing data, #{unresolvable.length} missing conversions."
   end
 else
@@ -407,5 +450,9 @@ else
     exit 1
   end
 
-  enter_ingredient(ingredient_name, nutrition_data)
+  # Resolve name via alias map
+  resolved = resolve_name(ingredient_name)
+  exit 0 unless resolved
+
+  enter_ingredient(resolved, nutrition_data)
 end

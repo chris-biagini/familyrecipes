@@ -250,27 +250,38 @@ module FamilyRecipes
 
       # Category 2: Missing unit conversions (entry exists, but unit can't be resolved)
       unresolvable = Hash.new { |h, k| h[k] = { units: Set.new, recipes: [] } }
+      # Category 3: Unquantified ingredients (listed without a quantity, not counted)
+      unquantified = Hash.new { |h, k| h[k] = [] }
       @recipes.each do |recipe|
         recipe.all_ingredients_with_quantities(@alias_map, @recipe_map).each do |name, amounts|
           next if @omit_set.include?(name.downcase)
           entry = @nutrition_calculator.nutrition_data[name]
           next unless entry
 
+          has_quantity = false
           amounts.each do |amount|
-            next if amount.nil?
-            value, unit = amount
-            next if value.nil?
+            if amount.nil?
+              next
+            else
+              has_quantity = true
+              value, unit = amount
+              next if value.nil?
 
-            unless @nutrition_calculator.resolvable?(value, unit, entry)
-              info = unresolvable[name]
-              info[:units] << (unit || '(bare count)')
-              info[:recipes] |= [recipe.title]
+              unless @nutrition_calculator.resolvable?(value, unit, entry)
+                info = unresolvable[name]
+                info[:units] << (unit || '(bare count)')
+                info[:recipes] |= [recipe.title]
+              end
             end
+          end
+
+          unless has_quantity
+            unquantified[name] |= [recipe.title]
           end
         end
       end
 
-      has_warnings = missing.any? || unresolvable.any?
+      has_warnings = missing.any? || unresolvable.any? || unquantified.any?
 
       if missing.any?
         puts "\n"
@@ -288,6 +299,14 @@ module FamilyRecipes
           recipes = info[:recipes].sort
           units = info[:units].to_a.sort.join(', ')
           puts "  - #{name}: '#{units}' (in: #{recipes.join(', ')})"
+        end
+      end
+
+      if unquantified.any?
+        puts "\n" unless missing.any? || unresolvable.any?
+        puts "NOTE: Unquantified ingredients (not counted in nutrition):"
+        unquantified.sort_by { |name, _| name }.each do |name, recipes|
+          puts "  - #{name} (in: #{recipes.sort.join(', ')})"
         end
       end
 

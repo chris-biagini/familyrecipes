@@ -80,20 +80,24 @@ HTML
           </thead>
           <tbody>
             <%- [
-              ['Calories', :calories, 'kcal'],
-              ['Protein', :protein, 'g'],
-              ['Fat', :fat, 'g'],
+              ['Calories', :calories, ''],
+              ['Total Fat', :fat, 'g'],
               ['Sat. Fat', :saturated_fat, 'g'],
-              ['Carbs', :carbs, 'g'],
+              ['Trans Fat', :trans_fat, 'g'],
+              ['Cholesterol', :cholesterol, 'mg'],
+              ['Sodium', :sodium, 'mg'],
+              ['Total Carbs', :carbs, 'g'],
               ['Fiber', :fiber, 'g'],
-              ['Sodium', :sodium, 'mg']
+              ['Total Sugars', :total_sugars, 'g'],
+              ['Added Sugars', :added_sugars, 'g'],
+              ['Protein', :protein, 'g'],
             ].each do |label, key, unit| -%>
             <tr>
               <td><%= label %></td>
               <%- if has_serving -%>
-              <td><%= nutrition.per_serving[key].round %><%= unit unless key == :calories %></td>
+              <td><%= nutrition.per_serving[key].round %><%= unit %></td>
               <%- end -%>
-              <td data-nutrient="<%= key %>" data-base-value="<%= nutrition.totals[key].round(1) %>"><%= nutrition.totals[key].round %><%= unit unless key == :calories %></td>
+              <td data-nutrient="<%= key %>" data-base-value="<%= nutrition.totals[key].round(1) %>"><%= nutrition.totals[key].round %><%= unit %></td>
             </tr>
             <%- end -%>
           </tbody>

@@ -6,7 +6,8 @@
 
 module FamilyRecipes
   class NutritionCalculator
-    NUTRIENTS = [:calories, :protein, :fat, :saturated_fat, :carbs, :fiber, :sodium].freeze
+    NUTRIENTS = [:calories, :fat, :saturated_fat, :trans_fat, :cholesterol, :sodium,
+                 :carbs, :fiber, :total_sugars, :added_sugars, :protein].freeze
 
     WEIGHT_CONVERSIONS = {
       'g' => 1, 'oz' => 28.3495, 'lb' => 453.592, 'kg' => 1000
@@ -29,8 +30,21 @@ module FamilyRecipes
     attr_reader :nutrition_data
 
     def initialize(nutrition_data, omit_set: Set.new)
-      @nutrition_data = nutrition_data
+      @nutrition_data = {}
       @omit_set = omit_set
+
+      nutrition_data.each do |name, entry|
+        serving_grams = entry.dig('serving', 'grams')
+        unless serving_grams.is_a?(Numeric) && serving_grams > 0
+          warn "WARNING: Nutrition entry '#{name}' has invalid serving.grams (#{serving_grams.inspect}), skipping."
+          next
+        end
+        unless entry['per_serving'].is_a?(Hash)
+          warn "WARNING: Nutrition entry '#{name}' has invalid per_serving (#{entry['per_serving'].inspect}), skipping."
+          next
+        end
+        @nutrition_data[name] = entry
+      end
     end
 
     def calculate(recipe, alias_map, recipe_map)
@@ -99,7 +113,7 @@ module FamilyRecipes
       # 1. Bare count with no unit (e.g. "Eggs, 3") — use ~unitless portion
       if unit.nil?
         grams_per_unit = portions['~unitless']
-        return grams_per_unit ? value * grams_per_unit : value
+        return grams_per_unit ? value * grams_per_unit : nil
       end
 
       unit_down = unit.downcase

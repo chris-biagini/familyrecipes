@@ -164,7 +164,7 @@ class RecipeStateManager {
       const base = parseFloat(td.dataset.baseValue);
       const scaled = base * factor;
       const nutrient = td.dataset.nutrient;
-      const unit = nutrient === 'sodium' ? 'mg' : (nutrient === 'calories' ? '' : 'g');
+      const unit = (nutrient === 'sodium' || nutrient === 'cholesterol') ? 'mg' : (nutrient === 'calories' ? '' : 'g');
       td.textContent = Math.round(scaled) + unit;
     });
 
