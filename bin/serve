@@ -1,14 +1,15 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 require 'webrick'
 
-project_root = File.expand_path("..", __dir__)
-document_root = File.join(project_root, "output", "web")
+project_root = File.expand_path('..', __dir__)
+document_root = File.join(project_root, 'output', 'web')
 port = (ARGV[0] || 8888).to_i
 
 unless File.directory?(document_root)
   puts "Output directory not found: #{document_root}"
-  puts "Run bin/generate first."
+  puts 'Run bin/generate first.'
   exit 1
 end
 
@@ -27,9 +28,7 @@ end
 class CleanURLHandler < WEBrick::HTTPServlet::FileHandler
   def service(req, res)
     path = File.join(@root, req.path_info)
-    if !File.exist?(path) && !File.directory?(path) && File.exist?(path + '.html')
-      req.path_info += '.html'
-    end
+    req.path_info += '.html' if !File.exist?(path) && !File.directory?(path) && File.exist?("#{path}.html")
     super
   rescue WEBrick::HTTPStatus::NotFound
     res.status = 404

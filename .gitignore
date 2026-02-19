@@ -14,5 +14,9 @@ output/
 # Claude Code local data
 .claude/
 
+# Bundler config and local gem installs
+.bundle/
+vendor/bundle/
+
 # Environment secrets
 .env

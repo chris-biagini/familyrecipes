@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # RecipeBuilder class
 #
 # Consumes LineTokens from LineClassifier and produces a structured
@@ -77,6 +79,7 @@ class RecipeBuilder
     skip_blanks
     return nil if at_end?
     return nil if peek.type != :prose
+
     advance.content if peek.content.match?(/\A(Makes|Serves)\b/i)
   end
 
@@ -147,16 +150,16 @@ class RecipeBuilder
       token = advance
       next if token.type == :blank && footer_lines.empty? # skip leading blanks
 
-      if token.type == :blank
-        # Keep blank lines as paragraph separators
-        footer_lines << ""
-      else
-        footer_lines << token.content
-      end
+      footer_lines << if token.type == :blank
+                        # Keep blank lines as paragraph separators
+                        ''
+                      else
+                        token.content
+                      end
     end
 
     # Remove trailing blank lines
-    footer_lines.pop while footer_lines.last == ""
+    footer_lines.pop while footer_lines.last == ''
 
     return nil if footer_lines.empty?
 

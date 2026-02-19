@@ -1,0 +1,59 @@
+AllCops:
+  TargetRubyVersion: 3.2
+  NewCops: enable
+  SuggestExtensions: false
+  Exclude:
+    - vendor/**/*
+
+plugins:
+  - rubocop-minitest
+
+# Project doesn't use class-level documentation comments
+Style/Documentation:
+  Enabled: false
+
+# CLAUDE.md says frozen_string_literal on every file
+Style/FrozenStringLiteralComment:
+  EnforcedStyle: always
+
+# 120 is a reasonable line length for modern screens
+Layout/LineLength:
+  Max: 120
+
+# Relax metrics to accommodate existing parsing/validation methods.
+# bin/ scripts and tests are exempt — they're inherently procedural.
+Metrics/MethodLength:
+  Max: 35
+  Exclude:
+    - bin/*
+    - test/**/*
+
+Metrics/AbcSize:
+  Max: 40
+  Exclude:
+    - bin/*
+    - test/**/*
+
+Metrics/CyclomaticComplexity:
+  Max: 15
+  Exclude:
+    - bin/*
+    - test/**/*
+
+Metrics/PerceivedComplexity:
+  Max: 15
+  Exclude:
+    - bin/*
+    - test/**/*
+
+Metrics/ClassLength:
+  Max: 275
+  Exclude:
+    - test/**/*
+
+Metrics/ModuleLength:
+  Max: 120
+
+# Tests naturally have many assertions per case
+Minitest/MultipleAssertions:
+  Max: 12

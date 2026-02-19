@@ -1,12 +1,14 @@
+# frozen_string_literal: true
+
 module FamilyRecipes
   class PdfGenerator
     def initialize(project_root, recipes: nil, quick_bites: nil)
       @project_root      = project_root
-      @recipes_dir       = File.join(project_root, "recipes")
-      @template_dir      = File.join(project_root, "templates/pdf")
-      @resources_dir     = File.join(project_root, "resources/pdf")
-      @output_dir        = File.join(project_root, "output/pdf")
-      @grocery_info_path = File.join(project_root, "resources/grocery-info.yaml")
+      @recipes_dir       = File.join(project_root, 'recipes')
+      @template_dir      = File.join(project_root, 'templates/pdf')
+      @resources_dir     = File.join(project_root, 'resources/pdf')
+      @output_dir        = File.join(project_root, 'output/pdf')
+      @grocery_info_path = File.join(project_root, 'resources/grocery-info.yaml')
       @recipes     = recipes
       @quick_bites = quick_bites
     end
@@ -29,16 +31,16 @@ module FamilyRecipes
 
     def parse_recipes
       if @recipes
-        print "PDF: Using pre-parsed recipes..."
+        print 'PDF: Using pre-parsed recipes...'
       else
-        print "PDF: Parsing recipes..."
+        print 'PDF: Parsing recipes...'
         @recipes = FamilyRecipes.parse_recipes(@recipes_dir)
       end
 
       @recipes_by_category = @recipes
-        .group_by(&:category)
-        .sort_by { |cat, _| cat }
-        .to_h
+                             .group_by(&:category)
+                             .sort_by { |cat, _| cat }
+                             .to_h
       @recipes_by_category.each_value { |recipes| recipes.sort_by!(&:title) }
     end
 
@@ -47,8 +49,12 @@ module FamilyRecipes
       quick_bites_category = CONFIG[:quick_bites_category]
       quick_bites_prefix = /^#{Regexp.escape(quick_bites_category)}(: )?/
       @quick_bites_by_category = @quick_bites
-        .group_by(&:category)
-        .transform_keys { |cat| cat.sub(quick_bites_prefix, '').then { |n| n.empty? ? 'Other' : n } }
+                                 .group_by(&:category)
+                                 .transform_keys do |cat|
+                                   cat.sub(quick_bites_prefix, '').then do |n|
+                                     n.empty? ? 'Other' : n
+                                   end
+      end
 
       print "done! (#{@recipes.size} recipes, #{@quick_bites.size} quick bites)\n"
     end
@@ -61,14 +67,18 @@ module FamilyRecipes
       end
 
       @ingredient_index = index
-        .sort_by { |name, _| name.downcase }
-        .map { |name, recipes| [name, recipes.uniq(&:id).sort_by(&:title)] }
+                          .sort_by { |name, _| name.downcase }
+                          .map do |name, recipes|
+                            [
+                              name, recipes.uniq(&:id).sort_by(&:title)
+                            ]
+      end
     end
 
     def render_typst
-      print "PDF: Rendering Typst source..."
+      print 'PDF: Rendering Typst source...'
 
-      template_path = File.join(@template_dir, "cookbook.typ.erb")
+      template_path = File.join(@template_dir, 'cookbook.typ.erb')
       template = ERB.new(File.read(template_path), trim_mode: '-')
 
       @typst_content = template.result_with_hash(
@@ -83,23 +93,23 @@ module FamilyRecipes
     end
 
     def compile_pdf
-      unless system("which typst > /dev/null 2>&1")
-        puts "PDF: WARNING — typst CLI not found. Skipping PDF compilation."
-        puts "     Install Typst (https://typst.app) to generate cookbook.pdf."
+      unless system('which typst > /dev/null 2>&1')
+        puts 'PDF: WARNING — typst CLI not found. Skipping PDF compilation.'
+        puts '     Install Typst (https://typst.app) to generate cookbook.pdf.'
         return
       end
 
-      print "PDF: Compiling cookbook.pdf..."
+      print 'PDF: Compiling cookbook.pdf...'
 
       FileUtils.mkdir_p(@output_dir)
-      font_path = File.join(@resources_dir, "fonts")
-      pdf_path = File.join(@output_dir, "cookbook.pdf")
+      font_path = File.join(@resources_dir, 'fonts')
+      pdf_path = File.join(@output_dir, 'cookbook.pdf')
 
       Tempfile.create(['cookbook', '.typ']) do |typst_file|
         typst_file.write(@typst_content)
         typst_file.flush
 
-        success = system("typst", "compile", "--font-path", font_path, typst_file.path, pdf_path)
+        success = system('typst', 'compile', '--font-path', font_path, typst_file.path, pdf_path)
         if success
           print "done!\n"
           puts "PDF: Generated #{pdf_path}"
@@ -112,6 +122,7 @@ module FamilyRecipes
     # Escape all Typst special characters (for titles, ingredient names, etc.)
     def typst_escape(text)
       return '' if text.nil?
+
       text.gsub(/[#*_`$@<>~\\]/) { |c| "\\#{c}" }
     end
 
@@ -126,7 +137,7 @@ module FamilyRecipes
       parts.map do |part|
         if part =~ /\A\[([^\]]+)\]\(([^)]+)\)\z/
           # Convert markdown link to Typst link
-          "#link(\"#{$2}\")[#{$1}]"
+          "#link(\"#{::Regexp.last_match(2)}\")[#{::Regexp.last_match(1)}]"
         else
           # Escape special chars but preserve _ for italic
           part.gsub(/[#*`$@<>~\\]/) { |c| "\\#{c}" }

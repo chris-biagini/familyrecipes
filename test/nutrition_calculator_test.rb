@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'test_helper'
 
 class NutritionCalculatorTest < Minitest::Test
@@ -209,7 +211,7 @@ class NutritionCalculatorTest < Minitest::Test
     result = @calculator.calculate(recipe, @alias_map, @recipe_map)
 
     assert_includes result.missing_ingredients, 'Unicorn dust'
-    refute result.complete?
+    refute_predicate result, :complete?
   end
 
   def test_unknown_unit_reported_as_partial
@@ -226,7 +228,7 @@ class NutritionCalculatorTest < Minitest::Test
     result = @calculator.calculate(recipe, @alias_map, @recipe_map)
 
     assert_includes result.partial_ingredients, 'Flour (all-purpose)'
-    refute result.complete?
+    refute_predicate result, :complete?
   end
 
   # --- Omit_From_List ingredients ---
@@ -326,6 +328,7 @@ class NutritionCalculatorTest < Minitest::Test
     MD
 
     result = @calculator.calculate(recipe, @alias_map, @recipe_map)
+
     assert_equal 32, result.serving_count
   end
 
@@ -343,6 +346,7 @@ class NutritionCalculatorTest < Minitest::Test
     MD
 
     result = @calculator.calculate(recipe, @alias_map, @recipe_map)
+
     assert_equal 2, result.serving_count
   end
 
@@ -447,7 +451,7 @@ class NutritionCalculatorTest < Minitest::Test
 
     # "Flour (All purpose)" aliases to "Flour (all-purpose)"
     assert_in_delta 728, result.totals[:calories], 1
-    assert result.missing_ingredients.empty?
+    assert_empty result.missing_ingredients
   end
 
   # --- Complete? ---
@@ -466,7 +470,7 @@ class NutritionCalculatorTest < Minitest::Test
 
     result = @calculator.calculate(recipe, @alias_map, @recipe_map)
 
-    assert result.complete?
+    assert_predicate result, :complete?
   end
 
   # --- Weight conversions (oz, lb, kg) ---
@@ -486,7 +490,7 @@ class NutritionCalculatorTest < Minitest::Test
 
     # 4 oz * 28.3495 g/oz = 113.398g; (100.38/14)*113.398 = 813.1 cal
     assert_in_delta 813.1, result.totals[:calories], 2
-    assert result.partial_ingredients.empty?
+    assert_empty result.partial_ingredients
   end
 
   def test_lb_uses_weight_conversion
@@ -504,7 +508,7 @@ class NutritionCalculatorTest < Minitest::Test
 
     # 1 lbs → normalized to lb → 453.592g; (109.2/30)*453.592 = 1651 cal
     assert_in_delta 1651, result.totals[:calories], 2
-    assert result.partial_ingredients.empty?
+    assert_empty result.partial_ingredients
   end
 
   # --- Volumetric with density fallback ---
@@ -528,8 +532,9 @@ class NutritionCalculatorTest < Minitest::Test
     # (123.76/14) * (236.588 * 14/14.787) = 8.84 * 224.0 = 1980 cal approx
     expected_grams = 236.588 * (14.0 / 14.787)
     expected_cal = (123.76 / 14.0) * expected_grams
+
     assert_in_delta expected_cal, result.totals[:calories], 2
-    assert result.partial_ingredients.empty?
+    assert_empty result.partial_ingredients
   end
 
   def test_portion_takes_priority_over_density
@@ -549,6 +554,7 @@ class NutritionCalculatorTest < Minitest::Test
 
     # Uses portion: 1 * 14.2g, NOT density-derived
     expected_cal = (100.38 / 14.0) * 14.2
+
     assert_in_delta expected_cal, result.totals[:calories], 1
   end
 
@@ -569,6 +575,7 @@ class NutritionCalculatorTest < Minitest::Test
 
     # (7.17/14)*100 = 51.21g sat fat
     expected = (7.17 / 14.0) * 100
+
     assert_in_delta expected, result.totals[:saturated_fat], 0.5
   end
 
@@ -576,17 +583,20 @@ class NutritionCalculatorTest < Minitest::Test
 
   def test_resolvable_with_known_unit
     entry = @nutrition_data['Flour (all-purpose)']
+
     assert @calculator.resolvable?(1, 'cup', entry)
     assert @calculator.resolvable?(1, 'g', entry)
   end
 
   def test_resolvable_bare_count_with_unitless
     entry = @nutrition_data['Eggs']
+
     assert @calculator.resolvable?(1, nil, entry)
   end
 
   def test_not_resolvable_with_unknown_unit
     entry = @nutrition_data['Flour (all-purpose)']
+
     refute @calculator.resolvable?(1, 'bushel', entry)
   end
 
@@ -613,7 +623,7 @@ class NutritionCalculatorTest < Minitest::Test
 
     # 1 tbsp butter = 14.2g; (100.38/14)*14.2 = 101.8 cal
     assert_in_delta 101.8, result.totals[:calories], 1
-    assert result.partial_ingredients.empty?
+    assert_empty result.partial_ingredients
   end
 
   # --- Bare count without ~unitless (#2 fix) ---
@@ -633,11 +643,12 @@ class NutritionCalculatorTest < Minitest::Test
 
     # Flour has no ~unitless portion, so bare "4" should be partial
     assert_includes result.partial_ingredients, 'Flour (all-purpose)'
-    refute result.complete?
+    refute_predicate result, :complete?
   end
 
   def test_bare_count_not_resolvable_without_unitless
     entry = @nutrition_data['Flour (all-purpose)']
+
     refute @calculator.resolvable?(1, nil, entry)
   end
 
@@ -708,7 +719,7 @@ class NutritionCalculatorTest < Minitest::Test
     assert_equal 0, result.totals[:total_sugars]
     assert_equal 0, result.totals[:added_sugars]
     # Old keys still work
-    assert result.totals[:calories] > 0
+    assert_predicate result.totals[:calories], :positive?
   end
 
   # --- Schema validation (#11) ---
@@ -727,9 +738,11 @@ class NutritionCalculatorTest < Minitest::Test
 
     _out, err = capture_io do
       calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data)
+
       assert calculator.nutrition_data.key?('Good')
       refute calculator.nutrition_data.key?('Bad')
     end
+
     assert_match(/Bad/, err)
   end
 
@@ -743,8 +756,10 @@ class NutritionCalculatorTest < Minitest::Test
 
     _out, err = capture_io do
       calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data)
+
       refute calculator.nutrition_data.key?('Bad2')
     end
+
     assert_match(/Bad2/, err)
   end
 
@@ -758,8 +773,10 @@ class NutritionCalculatorTest < Minitest::Test
 
     _out, err = capture_io do
       calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data)
+
       refute calculator.nutrition_data.key?('ZeroGrams')
     end
+
     assert_match(/ZeroGrams/, err)
   end
 end

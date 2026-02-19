@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # ScalableNumberPreprocessor
 #
 # Wraps numbers in <span class="scalable"> tags so they can be scaled
@@ -9,39 +11,39 @@
 
 module ScalableNumberPreprocessor
   WORD_VALUES = {
-    "zero" => 0, "one" => 1, "two" => 2, "three" => 3, "four" => 4,
-    "five" => 5, "six" => 6, "seven" => 7, "eight" => 8, "nine" => 9,
-    "ten" => 10, "eleven" => 11, "twelve" => 12
+    'zero' => 0, 'one' => 1, 'two' => 2, 'three' => 3, 'four' => 4,
+    'five' => 5, 'six' => 6, 'seven' => 7, 'eight' => 8, 'nine' => 9,
+    'ten' => 10, 'eleven' => 11, 'twelve' => 12
   }.freeze
 
-  WORD_PATTERN = WORD_VALUES.keys.join("|")
+  WORD_PATTERN = WORD_VALUES.keys.join('|')
 
   # Match word* or numeral* (fraction or decimal or integer, followed by *)
-  INSTRUCTION_PATTERN = /
+  INSTRUCTION_PATTERN = %r{
     (?:
       (#{WORD_PATTERN})\*                  # word number with asterisk
     |
-      (\d+(?:\.\d+)?(?:\/\d+(?:\.\d+)?)?)\* # numeral (int, decimal, or fraction) with asterisk
+      (\d+(?:\.\d+)?(?:/\d+(?:\.\d+)?)?)\* # numeral (int, decimal, or fraction) with asterisk
     )
-  /ix
+  }ix
 
   # Match the first number (word or numeral) in a yield line
-  YIELD_NUMBER_PATTERN = /
+  YIELD_NUMBER_PATTERN = %r{
     (?:
       \b(#{WORD_PATTERN})\b     # word number
     |
-      \b(\d+(?:\.\d+)?(?:\/\d+(?:\.\d+)?)?)\b  # numeral
+      \b(\d+(?:\.\d+)?(?:/\d+(?:\.\d+)?)?)\b  # numeral
     )
-  /ix
+  }ix
 
   module_function
 
   def process_instructions(text)
-    text.gsub(INSTRUCTION_PATTERN) { span_from_match($1, $2) }
+    text.gsub(INSTRUCTION_PATTERN) { span_from_match(::Regexp.last_match(1), ::Regexp.last_match(2)) }
   end
 
   def process_yield_line(text)
-    text.sub(YIELD_NUMBER_PATTERN) { span_from_match($1, $2) }
+    text.sub(YIELD_NUMBER_PATTERN) { span_from_match(::Regexp.last_match(1), ::Regexp.last_match(2)) }
   end
 
   def span_from_match(word_match, numeral_match)
@@ -53,10 +55,10 @@ module ScalableNumberPreprocessor
   end
 
   def parse_numeral(str)
-    return str.to_f unless str.include?("/")
+    return str.to_f unless str.include?('/')
 
-    numerator, denominator = str.split("/")
-    numerator.to_f / denominator.to_f
+    numerator, denominator = str.split('/')
+    numerator.to_f / denominator.to_i
   end
 
   def build_span(value, original_text)

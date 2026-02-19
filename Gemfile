@@ -1,5 +1,12 @@
-source "https://rubygems.org"
+# frozen_string_literal: true
 
-gem "redcarpet"
-gem "minitest"
-gem "rake"
+source 'https://rubygems.org'
+
+gem 'minitest'
+gem 'rake'
+gem 'redcarpet'
+
+group :development do
+  gem 'rubocop', require: false
+  gem 'rubocop-minitest', require: false
+end

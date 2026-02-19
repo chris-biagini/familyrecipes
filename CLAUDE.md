@@ -146,6 +146,14 @@ bin/generate
 
 This parses all recipes, generates HTML files in `output/web/`, and copies static resources. Dependencies are managed via `Gemfile` (Ruby 3.2+, Bundler, and `bundle install` required).
 
+## Lint Command
+
+```bash
+rake lint
+```
+
+Runs RuboCop on all Ruby files. Configuration is in `.rubocop.yml`. The default `rake` task runs both lint and test. CI also runs `bundle exec rubocop` before tests.
+
 ## Test Command
 
 ```bash
@@ -166,9 +174,10 @@ WEBrick server (default port 8888) serving `output/web/` with clean/extensionles
 
 The site is hosted on **GitHub Pages** at `biaginifamily.recipes`. Pushing to `main` automatically triggers a build and deploy via GitHub Actions (`.github/workflows/deploy.yml`). The workflow:
 
-1. Runs `bundle exec rake test` (build fails if tests don't pass)
-2. Runs `bin/generate` to build the site
-3. Deploys `output/web/` to GitHub Pages
+1. Runs `bundle exec rubocop` (build fails if linting doesn't pass)
+2. Runs `bundle exec rake test` (build fails if tests don't pass)
+3. Runs `bin/generate` to build the site
+4. Deploys `output/web/` to GitHub Pages
 
 The custom domain is configured in the repo's GitHub Pages settings, not in the workflow file, so forks don't need to modify the workflow.
 

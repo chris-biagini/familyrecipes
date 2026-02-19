@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # NutritionCalculator
 #
 # Calculates nutrition facts for a recipe by looking up each ingredient
@@ -6,8 +8,8 @@
 
 module FamilyRecipes
   class NutritionCalculator
-    NUTRIENTS = [:calories, :fat, :saturated_fat, :trans_fat, :cholesterol, :sodium,
-                 :carbs, :fiber, :total_sugars, :added_sugars, :protein].freeze
+    NUTRIENTS = %i[calories fat saturated_fat trans_fat cholesterol sodium
+                   carbs fiber total_sugars added_sugars protein].freeze
 
     WEIGHT_CONVERSIONS = {
       'g' => 1, 'oz' => 28.3495, 'lb' => 453.592, 'kg' => 1000
@@ -34,7 +36,7 @@ module FamilyRecipes
 
       @nutrition_data = nutrition_data.select do |name, entry|
         serving_grams = entry.dig('serving', 'grams')
-        unless serving_grams.is_a?(Numeric) && serving_grams > 0
+        unless serving_grams.is_a?(Numeric) && serving_grams.positive?
           warn "WARNING: Nutrition entry '#{name}' has invalid serving.grams (#{serving_grams.inspect}), skipping."
           next false
         end
@@ -81,9 +83,7 @@ module FamilyRecipes
       end
 
       serving_count = parse_serving_count(recipe.yield_line)
-      per_serving = if serving_count
-        NUTRIENTS.to_h { |n| [n, totals[n] / serving_count] }
-      end
+      per_serving = (NUTRIENTS.to_h { |n| [n, totals[n] / serving_count] } if serving_count)
 
       Result.new(
         totals: totals,
@@ -103,6 +103,7 @@ module FamilyRecipes
     def nutrient_per_gram(entry, nutrient)
       serving_grams = entry.dig('serving', 'grams')
       return 0 if serving_grams.nil? || serving_grams <= 0
+
       (entry.dig('per_serving', nutrient.to_s) || 0) / serving_grams.to_f
     end
 
@@ -141,15 +142,19 @@ module FamilyRecipes
       serving = entry['serving']
       return nil unless serving
       return nil unless serving['volume_amount'] && serving['volume_unit']
+
       ml_factor = VOLUME_TO_ML[serving['volume_unit'].to_s.downcase]
       return nil unless ml_factor
+
       volume_ml = serving['volume_amount'] * ml_factor
       return nil if volume_ml <= 0
+
       serving['grams'] / volume_ml
     end
 
     def parse_serving_count(yield_line)
       return nil if yield_line.to_s.strip.empty?
+
       yield_line[/\d+/]&.to_i
     end
   end

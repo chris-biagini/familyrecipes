@@ -1,25 +1,28 @@
+# frozen_string_literal: true
+
 module FamilyRecipes
   module NutritionEntryHelpers
     KNOWN_VOLUME_UNITS = %w[cup cups tbsp tablespoon tablespoons tsp teaspoon teaspoons ml l liter liters].freeze
 
     SINGULARIZE_MAP = {
-      "crackers" => "cracker", "slices" => "slice", "pieces" => "piece",
-      "cloves" => "clove", "stalks" => "stalk", "sticks" => "stick",
-      "items" => "item", "eggs" => "~unitless", "tortillas" => "tortilla",
-      "cookies" => "cookie", "chips" => "chip", "sheets" => "sheet",
-      "strips" => "strip", "cubes" => "cube", "rings" => "ring",
-      "patties" => "patty", "balls" => "ball", "links" => "link",
-      "servings" => "serving"
+      'crackers' => 'cracker', 'slices' => 'slice', 'pieces' => 'piece',
+      'cloves' => 'clove', 'stalks' => 'stalk', 'sticks' => 'stick',
+      'items' => 'item', 'eggs' => '~unitless', 'tortillas' => 'tortilla',
+      'cookies' => 'cookie', 'chips' => 'chip', 'sheets' => 'sheet',
+      'strips' => 'strip', 'cubes' => 'cube', 'rings' => 'ring',
+      'patties' => 'patty', 'balls' => 'ball', 'links' => 'link',
+      'servings' => 'serving'
     }.freeze
 
     def self.parse_fraction(str)
       str = str.to_s.strip
       if str.include?('/')
         num, den = str.split('/')
-        return nil if den.nil? || den.to_f == 0
-        num.to_f / den.to_f
+        return nil if den.nil? || den.to_f.zero?
+
+        num.to_f / den.to_i
       else
-        Float(str) rescue nil
+        Float(str, exception: false)
       end
     end
 
@@ -34,7 +37,7 @@ module FamilyRecipes
       result = { grams: grams }
 
       # Get the descriptor: everything before the gram portion (parenthetical or slash-separated)
-      descriptor = input.sub(/[\/(]?\s*\d+(?:\.\d+)?\s*(?:grams?|g)\b[)\s]*/, '').strip
+      descriptor = input.sub(%r{[/(]?\s*\d+(?:\.\d+)?\s*(?:grams?|g)\b[)\s]*}, '').strip
 
       # Strip "about" prefix
       descriptor = descriptor.sub(/\A(?:about|approximately|approx\.?)\s+/i, '').strip
@@ -42,11 +45,11 @@ module FamilyRecipes
       return result if descriptor.empty?
 
       # Parse descriptor for amount + unit
-      match = descriptor.match(/\A(\d+(?:[\/\.]\d+)?)\s+(.+)\z/)
+      match = descriptor.match(%r{\A(\d+(?:[/.]\d+)?)\s+(.+)\z})
       return result unless match
 
       amount = parse_fraction(match[1])
-      return result unless amount && amount > 0
+      return result unless amount&.positive?
 
       raw_unit = match[2].strip
 
@@ -79,8 +82,9 @@ module FamilyRecipes
 
     def self.singularize_simple(word)
       return word if word.length < 3
+
       if word.end_with?('ies')
-        word[0..-4] + 'y'
+        "#{word[0..-4]}y"
       elsif word.end_with?('ses', 'xes', 'zes', 'ches', 'shes')
         word[0..-3]
       elsif word.end_with?('s') && !word.end_with?('ss')

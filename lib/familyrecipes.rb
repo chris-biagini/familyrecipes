@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # This file handles loading all required libraries and classes
 
 # libraries
@@ -8,7 +10,6 @@ require 'redcarpet'
 require 'digest'
 require 'json'
 require 'yaml'
-require 'set'
 require 'tempfile'
 
 # Shared utilities
@@ -35,7 +36,7 @@ module FamilyRecipes
   # Render a partial template with local variables
   # Usage: FamilyRecipes.render_partial('head', title: 'My Page')
   def self.render_partial(name, locals = {})
-    raise "template_dir not set" unless @template_dir
+    raise 'template_dir not set' unless @template_dir
 
     partial_path = File.join(@template_dir, "_#{name}.html.erb")
     partial_content = File.read(partial_path)
@@ -45,7 +46,7 @@ module FamilyRecipes
   # Render a template and write to output file (only if content changed)
   # Usage: FamilyRecipes.render_template(:homepage, output_path, locals)
   def self.render_template(template_key, output_path, locals = {})
-    raise "template_dir not set" unless @template_dir
+    raise 'template_dir not set' unless @template_dir
 
     template_name = CONFIG[:templates][template_key]
     raise "Unknown template: #{template_key}" unless template_name
@@ -63,7 +64,7 @@ module FamilyRecipes
       .unicode_normalize(:nfkd)
       .downcase
       .gsub(/\s+/, '-')
-      .gsub(/[^a-z0-9\-]/, '')
+      .gsub(/[^a-z0-9-]/, '')
   end
 
   # Parse grocery-info.yaml into structured data
@@ -121,13 +122,13 @@ module FamilyRecipes
   def self.parse_recipes(recipes_dir)
     quick_bites_filename = CONFIG[:quick_bites_filename]
 
-    recipe_files = Dir.glob(File.join(recipes_dir, "**", "*")).select do |file|
+    recipe_files = Dir.glob(File.join(recipes_dir, '**', '*')).select do |file|
       File.file?(file) && File.basename(file) != quick_bites_filename
     end
 
     recipe_files.map do |file|
       source = File.read(file)
-      id = slugify(File.basename(file, ".*"))
+      id = slugify(File.basename(file, '.*'))
       category = File.basename(File.dirname(file)).sub(/^./, &:upcase)
       Recipe.new(markdown_source: source, id: id, category: category)
     end
@@ -145,10 +146,10 @@ module FamilyRecipes
     File.foreach(file_path) do |line|
       case line
       when /^##\s+(.*)/
-        current_subcat = $1.strip
+        current_subcat = ::Regexp.last_match(1).strip
       when /^\s*-\s+(.*)/
-        category = [quick_bites_category, current_subcat].compact.join(": ")
-        quick_bites << QuickBite.new(text_source: $1.strip, category: category)
+        category = [quick_bites_category, current_subcat].compact.join(': ')
+        quick_bites << QuickBite.new(text_source: ::Regexp.last_match(1).strip, category: category)
       end
     end
 

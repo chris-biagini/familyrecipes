@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # IngredientParser module
 #
 # Parses ingredient line text into structured data.
@@ -7,10 +9,10 @@
 module IngredientParser
   # Pattern for cross-reference: @[Title] first, then optional ", quantity", then optional ": prep note"
   # Multiplier can be: integer (2), decimal (0.5), fraction (1/2)
-  CROSS_REF_PATTERN = /\A@\[(.+?)\](?:\.\s*)?(?:,\s*(\d+(?:\/\d+)?(?:\.\d+)?))?\s*(?::\s*(.+))?\z/
+  CROSS_REF_PATTERN = %r{\A@\[(.+?)\](?:\.\s*)?(?:,\s*(\d+(?:/\d+)?(?:\.\d+)?))?\s*(?::\s*(.+))?\z}
 
   # Detect old quantity-first syntax so we can raise a helpful error
-  OLD_CROSS_REF_PATTERN = /\A\d+(?:\/\d+)?(?:\.\d+)?x?\s*@\[/
+  OLD_CROSS_REF_PATTERN = %r{\A\d+(?:/\d+)?(?:\.\d+)?x?\s*@\[}
 
   # Parse an ingredient line into a hash of attributes
   # Input: "Walnuts, 75 g: Roughly chop."
@@ -22,7 +24,7 @@ module IngredientParser
   def self.parse(text)
     if text.match?(OLD_CROSS_REF_PATTERN)
       raise "Invalid cross-reference syntax: \"#{text}\". " \
-            "Use @[Recipe Title], quantity (quantity after reference), not quantity before."
+            'Use @[Recipe Title], quantity (quantity after reference), not quantity before.'
     end
 
     if (match = text.match(CROSS_REF_PATTERN))
@@ -60,7 +62,7 @@ module IngredientParser
     return str.to_f unless str.include?('/')
 
     num, den = str.split('/')
-    num.to_f / den.to_f
+    num.to_f / den.to_i
   end
 
   private_class_method :parse_multiplier

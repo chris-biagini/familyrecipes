@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # CrossReference class
 #
 # Represents a reference from one recipe to another (e.g., "- @[Pizza Dough]").
@@ -23,6 +25,7 @@ class CrossReference
     recipe.own_ingredients_with_quantities(alias_map).map do |name, amounts|
       scaled = amounts.map do |amount|
         next nil if amount.nil?
+
         value, unit = amount
         [value * @multiplier, unit]
       end

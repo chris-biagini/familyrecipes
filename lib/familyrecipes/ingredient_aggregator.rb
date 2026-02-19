@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # IngredientAggregator module
 #
 # Sums ingredient quantities by unit for grocery list display
@@ -9,14 +11,14 @@ module IngredientAggregator
     parsed = ingredients.map do |ingredient|
       unit = ingredient.quantity_unit
       unit = Ingredient::UNIT_NORMALIZATIONS[unit] || unit if unit
-      numeric = Float(ingredient.quantity_value) rescue nil if ingredient.quantity_value
+      numeric = Float(ingredient.quantity_value, exception: false) if ingredient.quantity_value
       [unit, numeric]
     end
 
     sums = parsed
-      .select { |_, numeric| numeric }
-      .group_by { |unit, _| unit }
-      .transform_values { |pairs| pairs.sum { |_, n| n } }
+           .select { |_, numeric| numeric }
+           .group_by { |unit, _| unit }
+           .transform_values { |pairs| pairs.sum { |_, n| n } }
 
     has_unquantified = parsed.any? { |_, numeric| numeric.nil? }
 

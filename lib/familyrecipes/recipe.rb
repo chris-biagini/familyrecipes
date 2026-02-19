@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Recipe class
 #
 # Parses and encapsulates an entire recipe
@@ -72,8 +74,8 @@ class Recipe
 
   def ingredients_with_quantities(alias_map = {})
     @steps.flat_map(&:ingredients)
-      .group_by { |i| i.normalized_name(alias_map) }
-      .map { |name, ingredients| [name, IngredientAggregator.aggregate_amounts(ingredients)] }
+          .group_by { |i| i.normalized_name(alias_map) }
+          .map { |name, ingredients| [name, IngredientAggregator.aggregate_amounts(ingredients)] }
   end
 
   # Ingredients with quantities including expanded cross-references — used for grocery list
@@ -111,7 +113,7 @@ class Recipe
     @steps = build_steps(doc[:steps])
     @footer = doc[:footer]
 
-    raise StandardError, "Invalid recipe format: Must have at least one step." if @steps.empty?
+    raise StandardError, 'Invalid recipe format: Must have at least one step.' if @steps.empty?
   end
 
   # Convert step hashes from RecipeBuilder into Step objects

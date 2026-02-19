@@ -1,12 +1,14 @@
+# frozen_string_literal: true
+
 module FamilyRecipes
   class SiteGenerator
     def initialize(project_root, recipes: nil, quick_bites: nil)
       @project_root     = project_root
-      @recipes_dir      = File.join(project_root, "recipes")
-      @template_dir     = File.join(project_root, "templates/web")
-      @resources_dir    = File.join(project_root, "resources/web")
-      @output_dir       = File.join(project_root, "output/web")
-      @grocery_info_path = File.join(project_root, "resources/grocery-info.yaml")
+      @recipes_dir      = File.join(project_root, 'recipes')
+      @template_dir     = File.join(project_root, 'templates/web')
+      @resources_dir    = File.join(project_root, 'resources/web')
+      @output_dir       = File.join(project_root, 'output/web')
+      @grocery_info_path = File.join(project_root, 'resources/grocery-info.yaml')
       @recipes     = recipes
       @quick_bites = quick_bites
 
@@ -43,17 +45,18 @@ module FamilyRecipes
       @grocery_aisles = FamilyRecipes.parse_grocery_info(grocery_info_path)
       @alias_map = FamilyRecipes.build_alias_map(@grocery_aisles)
       @known_ingredients = FamilyRecipes.build_known_ingredients(@grocery_aisles, @alias_map)
-      @omit_set = (@grocery_aisles["Omit_From_List"] || []).flat_map { |item|
+      @omit_set = (@grocery_aisles['Omit_From_List'] || []).flat_map do |item|
         [item[:name], *item[:aliases]].map(&:downcase)
-      }.to_set
+      end.to_set
       print "done!\n"
     end
 
     def load_nutrition_data
-      nutrition_path = File.join(project_root, "resources/nutrition-data.yaml")
+      nutrition_path = File.join(project_root, 'resources/nutrition-data.yaml')
       if File.exist?(nutrition_path)
-        print "Loading nutrition data..."
-        nutrition_data = YAML.safe_load_file(nutrition_path, permitted_classes: [], permitted_symbols: [], aliases: false) || {}
+        print 'Loading nutrition data...'
+        nutrition_data = YAML.safe_load_file(nutrition_path, permitted_classes: [], permitted_symbols: [],
+                                                             aliases: false) || {}
         @nutrition_calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data, omit_set: @omit_set)
         print "done! (#{nutrition_data.size} ingredients.)\n"
       else
@@ -63,7 +66,7 @@ module FamilyRecipes
 
     def parse_recipes
       if @recipes
-        print "Using pre-parsed recipes..."
+        print 'Using pre-parsed recipes...'
       else
         print "Parsing recipes from #{recipes_dir}..."
         @recipes = FamilyRecipes.parse_recipes(recipes_dir)
@@ -80,27 +83,26 @@ module FamilyRecipes
     end
 
     def validate_cross_references
-      print "Validating cross-references..."
+      print 'Validating cross-references...'
 
       # Validate title/filename slug match
       @recipes.each do |recipe|
         title_slug = FamilyRecipes.slugify(recipe.title)
         if title_slug != recipe.id
-          raise StandardError, "Title/filename mismatch: \"#{recipe.title}\" (slug: #{title_slug}) vs filename slug: #{recipe.id}"
+          raise StandardError,
+                "Title/filename mismatch: \"#{recipe.title}\" (slug: #{title_slug}) vs filename slug: #{recipe.id}"
         end
-      end
 
-      # Validate all cross-references resolve and detect cycles
-      @recipes.each do |recipe|
+        # Validate all cross-references resolve and detect cycles
         recipe.cross_references.each do |xref|
-          unless @recipe_map.key?(xref.target_slug)
-            raise StandardError, "Unresolved cross-reference in \"#{recipe.title}\": @[#{xref.target_title}] (slug: #{xref.target_slug})"
-          end
-        end
-      end
+          next if @recipe_map.key?(xref.target_slug)
 
-      # Detect circular references via DFS
-      @recipes.each do |recipe|
+          raise StandardError,
+                "Unresolved cross-reference in \"#{recipe.title}\": " \
+                "@[#{xref.target_title}] (slug: #{xref.target_slug})"
+        end
+
+        # Detect circular references via DFS
         detect_cycles(recipe, [])
       end
 
@@ -116,6 +118,7 @@ module FamilyRecipes
       recipe.cross_references.each do |xref|
         target = @recipe_map[xref.target_slug]
         next unless target
+
         detect_cycles(target, visited + [recipe.id])
       end
     end
@@ -130,9 +133,10 @@ module FamilyRecipes
 
         nutrition = @nutrition_calculator&.calculate(recipe, @alias_map, @recipe_map)
 
-        template_path = File.join(template_dir, "recipe-template.html.erb")
+        template_path = File.join(template_dir, 'recipe-template.html.erb')
         html_path = File.join(output_dir, "#{recipe.id}.html")
-        FamilyRecipes.write_file_if_changed(html_path, recipe.to_html(erb_template_path: template_path, nutrition: nutrition))
+        FamilyRecipes.write_file_if_changed(html_path,
+                                            recipe.to_html(erb_template_path: template_path, nutrition: nutrition))
       end
 
       print "done!\n"
@@ -163,18 +167,17 @@ module FamilyRecipes
       @recipes_by_category = @recipes.group_by(&:category)
       @quick_bites_by_category = @quick_bites.group_by(&:category)
 
-      homepage_path = File.join(output_dir, "index.html")
+      homepage_path = File.join(output_dir, 'index.html')
       FamilyRecipes.render_template(:homepage, homepage_path,
-        grouped_recipes: @recipes_by_category,
-        render: render,
-        slugify: FamilyRecipes.method(:slugify)
-      )
+                                    grouped_recipes: @recipes_by_category,
+                                    render: render,
+                                    slugify: FamilyRecipes.method(:slugify))
 
       print "done!\n"
     end
 
     def generate_index
-      print "Generating index..."
+      print 'Generating index...'
 
       recipes_by_ingredient = @recipes.each_with_object(Hash.new { |h, k| h[k] = [] }) do |recipe, index|
         recipe.all_ingredients(@alias_map).each do |ingredient|
@@ -183,17 +186,16 @@ module FamilyRecipes
       end
       sorted_ingredients = recipes_by_ingredient.sort_by { |name, _| name.downcase }
 
-      index_path = File.join(output_dir, "index", "index.html")
+      index_path = File.join(output_dir, 'index', 'index.html')
       FamilyRecipes.render_template(:index, index_path,
-        sorted_ingredients: sorted_ingredients,
-        render: render
-      )
+                                    sorted_ingredients: sorted_ingredients,
+                                    render: render)
 
       print "done!\n"
     end
 
     def validate_ingredients
-      print "Validating ingredients..."
+      print 'Validating ingredients...'
 
       ingredients_to_recipes = Hash.new { |h, k| h[k] = [] }
       @recipes.each do |recipe|
@@ -207,25 +209,27 @@ module FamilyRecipes
         end
       end
 
-      unknown_ingredients = ingredients_to_recipes.keys.reject { |name| @known_ingredients.include?(name.downcase) }.to_set
+      unknown_ingredients = ingredients_to_recipes.keys.reject do |name|
+        @known_ingredients.include?(name.downcase)
+      end.to_set
       if unknown_ingredients.any?
         puts "\n"
-        puts "WARNING: The following ingredients are not in grocery-info.yaml:"
+        puts 'WARNING: The following ingredients are not in grocery-info.yaml:'
         unknown_ingredients.sort.each do |ing|
           recipes = ingredients_to_recipes[ing].uniq.sort
           puts "  - #{ing} (in: #{recipes.join(', ')})"
         end
-        puts "Add them to grocery-info.yaml or add as aliases to existing items."
-        puts ""
+        puts 'Add them to grocery-info.yaml or add as aliases to existing items.'
+        puts ''
       else
         print "done! (All ingredients validated.)\n"
       end
     end
 
-    def validate_nutrition
+    def validate_nutrition # rubocop:disable Metrics
       return unless @nutrition_calculator
 
-      print "Validating nutrition data..."
+      print 'Validating nutrition data...'
 
       ingredients_to_recipes = @recipes.each_with_object(Hash.new { |h, k| h[k] = [] }) do |recipe, index|
         recipe.all_ingredient_names(@alias_map).each do |name|
@@ -243,6 +247,7 @@ module FamilyRecipes
       @recipes.each do |recipe|
         recipe.all_ingredients_with_quantities(@alias_map, @recipe_map).each do |name, amounts|
           next if @omit_set.include?(name.downcase)
+
           entry = @nutrition_calculator.nutrition_data[name]
           next unless entry
 
@@ -252,11 +257,11 @@ module FamilyRecipes
           non_nil_amounts.each do |value, unit|
             next if value.nil?
 
-            unless @nutrition_calculator.resolvable?(value, unit, entry)
-              info = unresolvable[name]
-              info[:units] << (unit || '(bare count)')
-              info[:recipes] |= [recipe.title]
-            end
+            next if @nutrition_calculator.resolvable?(value, unit, entry)
+
+            info = unresolvable[name]
+            info[:units] << (unit || '(bare count)')
+            info[:recipes] |= [recipe.title]
           end
         end
       end
@@ -265,7 +270,7 @@ module FamilyRecipes
 
       if missing.any?
         puts "\n"
-        puts "WARNING: Missing nutrition data:"
+        puts 'WARNING: Missing nutrition data:'
         missing.sort.each do |name|
           recipes = ingredients_to_recipes[name].uniq.sort
           puts "  - #{name} (in: #{recipes.join(', ')})"
@@ -274,7 +279,7 @@ module FamilyRecipes
 
       if unresolvable.any?
         puts "\n" unless missing.any?
-        puts "WARNING: Missing unit conversions:"
+        puts 'WARNING: Missing unit conversions:'
         unresolvable.sort_by { |name, _| name }.each do |name, info|
           recipes = info[:recipes].sort
           units = info[:units].to_a.sort.join(', ')
@@ -284,23 +289,23 @@ module FamilyRecipes
 
       if unquantified.any?
         puts "\n" unless missing.any? || unresolvable.any?
-        puts "NOTE: Unquantified ingredients (not counted in nutrition):"
+        puts 'NOTE: Unquantified ingredients (not counted in nutrition):'
         unquantified.sort_by { |name, _| name }.each do |name, recipes|
           puts "  - #{name} (in: #{recipes.sort.join(', ')})"
         end
       end
 
       if has_warnings
-        puts ""
-        puts "Use bin/nutrition-entry to add data, or edit resources/nutrition-data.yaml directly."
-        puts ""
+        puts ''
+        puts 'Use bin/nutrition-entry to add data, or edit resources/nutrition-data.yaml directly.'
+        puts ''
       else
         print "done! (All ingredients have nutrition data.)\n"
       end
     end
 
     def generate_groceries_page
-      print "Generating groceries page..."
+      print 'Generating groceries page...'
 
       quick_bites_category = CONFIG[:quick_bites_category]
 
@@ -319,16 +324,15 @@ module FamilyRecipes
         name.empty? ? 'Other' : name
       end
 
-      groceries_path = File.join(output_dir, "groceries", "index.html")
+      groceries_path = File.join(output_dir, 'groceries', 'index.html')
       FamilyRecipes.render_template(:groceries, groceries_path,
-        regular_recipes: regular_recipes,
-        quick_bites_by_subsection: quick_bites_by_subsection,
-        ingredient_database: grocery_info,
-        alias_map: @alias_map,
-        omitted_ingredients: @omit_set,
-        recipe_map: @recipe_map,
-        render: render
-      )
+                                    regular_recipes: regular_recipes,
+                                    quick_bites_by_subsection: quick_bites_by_subsection,
+                                    ingredient_database: grocery_info,
+                                    alias_map: @alias_map,
+                                    omitted_ingredients: @omit_set,
+                                    recipe_map: @recipe_map,
+                                    render: render)
 
       print "done!\n"
     end

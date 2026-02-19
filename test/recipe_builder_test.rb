@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'test_helper'
 
 class RecipeBuilderTest < Minitest::Test
@@ -17,7 +19,7 @@ class RecipeBuilderTest < Minitest::Test
 
     result = build_recipe(text)
 
-    assert_equal "Simple Recipe", result[:title]
+    assert_equal 'Simple Recipe', result[:title]
     assert_nil result[:description]
     assert_equal 1, result[:steps].length
     assert_nil result[:footer]
@@ -36,8 +38,8 @@ class RecipeBuilderTest < Minitest::Test
 
     result = build_recipe(text)
 
-    assert_equal "Cookies", result[:title]
-    assert_equal "Delicious chocolate chip cookies.", result[:description]
+    assert_equal 'Cookies', result[:title]
+    assert_equal 'Delicious chocolate chip cookies.', result[:description]
     assert_equal 1, result[:steps].length
   end
 
@@ -52,7 +54,7 @@ class RecipeBuilderTest < Minitest::Test
 
     result = build_recipe(text)
 
-    assert_equal "Prepare the dough", result[:steps][0][:tldr]
+    assert_equal 'Prepare the dough', result[:steps][0][:tldr]
   end
 
   def test_parses_step_ingredients
@@ -71,9 +73,9 @@ class RecipeBuilderTest < Minitest::Test
     ingredients = result[:steps][0][:ingredients]
 
     assert_equal 2, ingredients.length
-    assert_equal "Flour", ingredients[0][:name]
-    assert_equal "250 g", ingredients[0][:quantity]
-    assert_equal "Sugar", ingredients[1][:name]
+    assert_equal 'Flour', ingredients[0][:name]
+    assert_equal '250 g', ingredients[0][:quantity]
+    assert_equal 'Sugar', ingredients[1][:name]
   end
 
   def test_parses_step_instructions
@@ -91,8 +93,8 @@ class RecipeBuilderTest < Minitest::Test
 
     result = build_recipe(text)
 
-    assert_includes result[:steps][0][:instructions], "Mix everything together."
-    assert_includes result[:steps][0][:instructions], "Stir until combined."
+    assert_includes result[:steps][0][:instructions], 'Mix everything together.'
+    assert_includes result[:steps][0][:instructions], 'Stir until combined.'
   end
 
   def test_builds_multiple_steps
@@ -115,9 +117,9 @@ class RecipeBuilderTest < Minitest::Test
     result = build_recipe(text)
 
     assert_equal 3, result[:steps].length
-    assert_equal "Step one", result[:steps][0][:tldr]
-    assert_equal "Step two", result[:steps][1][:tldr]
-    assert_equal "Step three", result[:steps][2][:tldr]
+    assert_equal 'Step one', result[:steps][0][:tldr]
+    assert_equal 'Step two', result[:steps][1][:tldr]
+    assert_equal 'Step three', result[:steps][2][:tldr]
   end
 
   def test_builds_recipe_with_footer
@@ -135,7 +137,7 @@ class RecipeBuilderTest < Minitest::Test
 
     result = build_recipe(text)
 
-    assert_equal "This is a footer note.", result[:footer]
+    assert_equal 'This is a footer note.', result[:footer]
   end
 
   def test_builds_recipe_with_multiline_footer
@@ -155,8 +157,8 @@ class RecipeBuilderTest < Minitest::Test
 
     result = build_recipe(text)
 
-    assert_includes result[:footer], "First paragraph."
-    assert_includes result[:footer], "Second paragraph."
+    assert_includes result[:footer], 'First paragraph.'
+    assert_includes result[:footer], 'Second paragraph.'
   end
 
   def test_raises_error_when_title_missing
@@ -166,7 +168,7 @@ class RecipeBuilderTest < Minitest::Test
       build_recipe(text)
     end
 
-    assert_includes error.message, "first line must be a level-one header"
+    assert_includes error.message, 'first line must be a level-one header'
   end
 
   def test_handles_empty_step
@@ -183,7 +185,7 @@ class RecipeBuilderTest < Minitest::Test
     result = build_recipe(text)
 
     assert_equal 2, result[:steps].length
-    assert_equal "", result[:steps][0][:instructions]
+    assert_equal '', result[:steps][0][:instructions]
   end
 
   def test_parses_ingredient_with_prep_note
@@ -198,9 +200,9 @@ class RecipeBuilderTest < Minitest::Test
     result = build_recipe(text)
     ingredient = result[:steps][0][:ingredients][0]
 
-    assert_equal "Walnuts", ingredient[:name]
-    assert_equal "75 g", ingredient[:quantity]
-    assert_equal "Roughly chop.", ingredient[:prep_note]
+    assert_equal 'Walnuts', ingredient[:name]
+    assert_equal '75 g', ingredient[:quantity]
+    assert_equal 'Roughly chop.', ingredient[:prep_note]
   end
 
   def test_parses_yield_line_with_makes
@@ -218,8 +220,8 @@ class RecipeBuilderTest < Minitest::Test
 
     result = build_recipe(text)
 
-    assert_equal "Delicious cookies.", result[:description]
-    assert_equal "Makes about 32 cookies.", result[:yield_line]
+    assert_equal 'Delicious cookies.', result[:description]
+    assert_equal 'Makes about 32 cookies.', result[:yield_line]
     assert_equal 1, result[:steps].length
   end
 
@@ -238,8 +240,8 @@ class RecipeBuilderTest < Minitest::Test
 
     result = build_recipe(text)
 
-    assert_equal "A hearty dish.", result[:description]
-    assert_equal "Serves 4.", result[:yield_line]
+    assert_equal 'A hearty dish.', result[:description]
+    assert_equal 'Serves 4.', result[:yield_line]
   end
 
   def test_parses_yield_line_without_description
@@ -256,7 +258,7 @@ class RecipeBuilderTest < Minitest::Test
     result = build_recipe(text)
 
     assert_nil result[:description]
-    assert_equal "Makes enough for 2 pizzas.", result[:yield_line]
+    assert_equal 'Makes enough for 2 pizzas.', result[:yield_line]
     assert_equal 1, result[:steps].length
   end
 
@@ -287,7 +289,7 @@ class RecipeBuilderTest < Minitest::Test
 
     result = build_recipe(text)
 
-    assert_equal "Delicious chocolate chip cookies.", result[:description]
+    assert_equal 'Delicious chocolate chip cookies.', result[:description]
     assert_nil result[:yield_line]
   end
 end

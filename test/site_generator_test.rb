@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'test_helper'
 require 'tmpdir'
 require 'fileutils'
@@ -12,15 +14,15 @@ class SiteGeneratorTest < Minitest::Test
   end
 
   def test_generate_produces_expected_output_files
-    assert File.exist?(File.join(@output_dir, 'index.html')), 'homepage should exist'
-    assert File.exist?(File.join(@output_dir, 'index', 'index.html')), 'ingredient index should exist'
-    assert File.exist?(File.join(@output_dir, 'groceries', 'index.html')), 'groceries page should exist'
-    assert File.exist?(File.join(@output_dir, 'style.css')), 'stylesheet should exist'
-    assert File.exist?(File.join(@output_dir, 'groceries.css')), 'groceries CSS should exist'
-    assert File.exist?(File.join(@output_dir, 'groceries.js')), 'groceries JS should exist'
-    assert File.exist?(File.join(@output_dir, 'qrcodegen.js')), 'QR code library should exist'
-    assert File.exist?(File.join(@output_dir, 'manifest.json')), 'PWA manifest should exist'
-    assert File.exist?(File.join(@output_dir, 'sw.js')), 'service worker should exist'
+    assert_path_exists File.join(@output_dir, 'index.html'), 'homepage should exist'
+    assert_path_exists File.join(@output_dir, 'index', 'index.html'), 'ingredient index should exist'
+    assert_path_exists File.join(@output_dir, 'groceries', 'index.html'), 'groceries page should exist'
+    assert_path_exists File.join(@output_dir, 'style.css'), 'stylesheet should exist'
+    assert_path_exists File.join(@output_dir, 'groceries.css'), 'groceries CSS should exist'
+    assert_path_exists File.join(@output_dir, 'groceries.js'), 'groceries JS should exist'
+    assert_path_exists File.join(@output_dir, 'qrcodegen.js'), 'QR code library should exist'
+    assert_path_exists File.join(@output_dir, 'manifest.json'), 'PWA manifest should exist'
+    assert_path_exists File.join(@output_dir, 'sw.js'), 'service worker should exist'
   end
 
   def test_recipe_count_matches_source_files
@@ -34,15 +36,17 @@ class SiteGeneratorTest < Minitest::Test
     end
 
     assert_equal source_files.size, output_html.size,
-      "number of recipe HTML files should match number of source files"
+                 'number of recipe HTML files should match number of source files'
   end
 
   def test_recipe_html_has_expected_structure
     # Spot-check a known recipe
     html_file = File.join(@output_dir, 'hard-boiled-eggs.html')
-    assert File.exist?(html_file), 'hard-boiled-eggs.html should exist'
+
+    assert_path_exists html_file, 'hard-boiled-eggs.html should exist'
 
     html = File.read(html_file)
+
     assert_match(/<h1[^>]*>.*Hard-Boiled Eggs/m, html, 'should have title in h1')
     assert_match(/<li.*Water/m, html, 'should list ingredients')
     assert_match(/<h2/, html, 'should have step headers')
@@ -58,8 +62,9 @@ class SiteGeneratorTest < Minitest::Test
 
     source_files.each do |f|
       slug = FamilyRecipes.slugify(File.basename(f, '.*'))
+
       assert_match(/href="#{Regexp.escape(slug)}(\.html)?"/, homepage,
-        "homepage should link to #{slug}")
+                   "homepage should link to #{slug}")
     end
   end
 

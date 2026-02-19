@@ -1,75 +1,77 @@
+# frozen_string_literal: true
+
 require_relative 'test_helper'
 
 class StepTest < Minitest::Test
   def test_valid_with_ingredients_and_instructions
     step = Step.new(
-      tldr: "Mix dough",
-      ingredient_list_items: [Ingredient.new(name: "Flour", quantity: "250 g")],
-      instructions: "Combine everything."
+      tldr: 'Mix dough',
+      ingredient_list_items: [Ingredient.new(name: 'Flour', quantity: '250 g')],
+      instructions: 'Combine everything.'
     )
 
-    assert_equal "Mix dough", step.tldr
+    assert_equal 'Mix dough', step.tldr
     assert_equal 1, step.ingredients.size
-    assert_equal "Combine everything.", step.instructions
+    assert_equal 'Combine everything.', step.instructions
   end
 
   def test_valid_with_ingredients_only
     step = Step.new(
-      tldr: "Prep ingredients",
-      ingredient_list_items: [Ingredient.new(name: "Salt")],
+      tldr: 'Prep ingredients',
+      ingredient_list_items: [Ingredient.new(name: 'Salt')],
       instructions: nil
     )
 
-    assert_equal "Prep ingredients", step.tldr
+    assert_equal 'Prep ingredients', step.tldr
     assert_equal 1, step.ingredients.size
     assert_nil step.instructions
   end
 
   def test_valid_with_instructions_only
     step = Step.new(
-      tldr: "Preheat oven",
+      tldr: 'Preheat oven',
       ingredient_list_items: [],
-      instructions: "Preheat oven to 400F."
+      instructions: 'Preheat oven to 400F.'
     )
 
-    assert_equal "Preheat oven", step.tldr
+    assert_equal 'Preheat oven', step.tldr
     assert_empty step.ingredients
-    assert_equal "Preheat oven to 400F.", step.instructions
+    assert_equal 'Preheat oven to 400F.', step.instructions
   end
 
   def test_raises_on_nil_tldr
     assert_raises(ArgumentError) do
-      Step.new(tldr: nil, ingredient_list_items: [Ingredient.new(name: "Salt")], instructions: "Season.")
+      Step.new(tldr: nil, ingredient_list_items: [Ingredient.new(name: 'Salt')], instructions: 'Season.')
     end
   end
 
   def test_raises_on_blank_tldr
     assert_raises(ArgumentError) do
-      Step.new(tldr: "  ", ingredient_list_items: [Ingredient.new(name: "Salt")], instructions: "Season.")
+      Step.new(tldr: '  ', ingredient_list_items: [Ingredient.new(name: 'Salt')], instructions: 'Season.')
     end
   end
 
   def test_raises_when_no_ingredients_and_no_instructions
     assert_raises(ArgumentError) do
-      Step.new(tldr: "Empty step", ingredient_list_items: [], instructions: nil)
+      Step.new(tldr: 'Empty step', ingredient_list_items: [], instructions: nil)
     end
   end
 
   def test_raises_when_no_ingredients_and_blank_instructions
     assert_raises(ArgumentError) do
-      Step.new(tldr: "Empty step", ingredient_list_items: [], instructions: "   ")
+      Step.new(tldr: 'Empty step', ingredient_list_items: [], instructions: '   ')
     end
   end
 
   def test_derives_ingredients_and_cross_references
-    flour = Ingredient.new(name: "Flour", quantity: "500 g")
-    xref = CrossReference.new(target_title: "Pizza Dough")
-    salt = Ingredient.new(name: "Salt")
+    flour = Ingredient.new(name: 'Flour', quantity: '500 g')
+    xref = CrossReference.new(target_title: 'Pizza Dough')
+    salt = Ingredient.new(name: 'Salt')
 
     step = Step.new(
-      tldr: "Mix",
+      tldr: 'Mix',
       ingredient_list_items: [flour, xref, salt],
-      instructions: "Combine."
+      instructions: 'Combine.'
     )
 
     assert_equal [flour, salt], step.ingredients

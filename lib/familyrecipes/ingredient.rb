@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Ingredient Class
 #
 # Handles parsing and providing information about individual ingredient lines in a Step
@@ -6,47 +8,47 @@ class Ingredient
   attr_reader :name, :quantity, :prep_note
 
   # Irregular plural/singular mappings not handled by standard rules
-  IRREGULAR_PLURALS = { "leaf" => "leaves" }.freeze
-  IRREGULAR_SINGULARS = { "leaves" => "leaf" }.freeze
+  IRREGULAR_PLURALS = { 'leaf' => 'leaves' }.freeze
+  IRREGULAR_SINGULARS = { 'leaves' => 'leaf' }.freeze
 
   # Fraction-to-decimal conversions for quantity parsing
   QUANTITY_FRACTIONS = {
-    "1/2" => "0.5",
-    "1/4" => "0.25",
-    "1/3" => "0.333",
-    "2/3" => "0.667",
-    "3/4" => "0.75"
+    '1/2' => '0.5',
+    '1/4' => '0.25',
+    '1/3' => '0.333',
+    '2/3' => '0.667',
+    '3/4' => '0.75'
   }.freeze
 
   # Unit normalizations (applied after downcasing and period-stripping)
   UNIT_NORMALIZATIONS = {
     # Volume
-    "tablespoon" => "tbsp", "tablespoons" => "tbsp",
-    "teaspoon" => "tsp", "teaspoons" => "tsp",
-    "cups" => "cup",
-    "liter" => "l", "liters" => "l",
+    'tablespoon' => 'tbsp', 'tablespoons' => 'tbsp',
+    'teaspoon' => 'tsp', 'teaspoons' => 'tsp',
+    'cups' => 'cup',
+    'liter' => 'l', 'liters' => 'l',
 
     # Weight
-    "gram" => "g", "grams" => "g",
-    "ounce" => "oz", "ounces" => "oz",
-    "lbs" => "lb", "pound" => "lb", "pounds" => "lb",
+    'gram' => 'g', 'grams' => 'g',
+    'ounce' => 'oz', 'ounces' => 'oz',
+    'lbs' => 'lb', 'pound' => 'lb', 'pounds' => 'lb',
 
     # Discrete (plural → singular)
-    "cloves" => "clove",
-    "slices" => "slice",
-    "pieces" => "piece",
-    "stalks" => "stalk",
-    "bunches" => "bunch",
-    "cans" => "can",
-    "sticks" => "stick",
-    "items" => "item",
-    "tortillas" => "tortilla",
+    'cloves' => 'clove',
+    'slices' => 'slice',
+    'pieces' => 'piece',
+    'stalks' => 'stalk',
+    'bunches' => 'bunch',
+    'cans' => 'can',
+    'sticks' => 'stick',
+    'items' => 'item',
+    'tortillas' => 'tortilla',
 
     # Multi-word
-    "small slices" => "slice",
+    'small slices' => 'slice',
 
     # Special
-    "gō" => "go",
+    'gō' => 'go'
   }.freeze
 
   # name is required, quantity and prep_note are optional
@@ -64,13 +66,16 @@ class Ingredient
     return [word] if word.nil? || word.empty?
 
     lower = word.downcase
-    return [IRREGULAR_PLURALS[lower].sub(/^./) { |m| word[0] == word[0].upcase ? m.upcase : m }] if IRREGULAR_PLURALS.key?(lower)
+    if IRREGULAR_PLURALS.key?(lower)
+      return [IRREGULAR_PLURALS[lower].sub(/^./) do |m|
+        word[0] == word[0].upcase ? m.upcase : m
+      end]
+    end
 
     case lower
-    when /[^aeiou]y$/      then [word[0..-2] + "ies"]
-    when /(s|x|z|ch|sh)$/  then [word + "es"]
-    when /[^aeiou]o$/      then [word + "es"]
-    else [word + "s"]
+    when /[^aeiou]y$/      then ["#{word[0..-2]}ies"]
+    when /(s|x|z|ch|sh)$/, /[^aeiou]o$/ then ["#{word}es"]
+    else ["#{word}s"]
     end
   end
 
@@ -78,17 +83,20 @@ class Ingredient
     return [word] if word.nil? || word.empty?
 
     lower = word.downcase
-    return [IRREGULAR_SINGULARS[lower].sub(/^./) { |m| word[0] == word[0].upcase ? m.upcase : m }] if IRREGULAR_SINGULARS.key?(lower)
+    if IRREGULAR_SINGULARS.key?(lower)
+      return [IRREGULAR_SINGULARS[lower].sub(/^./) do |m|
+        word[0] == word[0].upcase ? m.upcase : m
+      end]
+    end
 
     case lower
-    when /ies$/              then [word[0..-4] + "y"]
-    when /(s|x|z|ch|sh)es$/ then [word[0..-3]]
-    when /oes$/              then [word[0..-3]]
+    when /ies$/ then ["#{word[0..-4]}y"]
+    when /(s|x|z|ch|sh)es$/, /oes$/ then [word[0..-3]]
     when /s$/                then [word[0..-2]]
     else [word]
     end
   end
-  
+
   def quantity_value
     return nil if quantity_blank?
 

@@ -1,17 +1,19 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
+
 require 'bundler/setup'
 require_relative '../lib/familyrecipes'
 
-PROJECT_ROOT = File.expand_path("..", __dir__)
-NUTRITION_PATH = File.join(PROJECT_ROOT, "resources/nutrition-data.yaml")
-GROCERY_PATH = File.join(PROJECT_ROOT, "resources/grocery-info.yaml")
-RECIPES_DIR = File.join(PROJECT_ROOT, "recipes")
+PROJECT_ROOT = File.expand_path('..', __dir__)
+NUTRITION_PATH = File.join(PROJECT_ROOT, 'resources/nutrition-data.yaml')
+GROCERY_PATH = File.join(PROJECT_ROOT, 'resources/grocery-info.yaml')
+RECIPES_DIR = File.join(PROJECT_ROOT, 'recipes')
 
 Helpers = FamilyRecipes::NutritionEntryHelpers
 
 # FDA label order: 11 nutrients
 NUTRIENTS = [
-  { key: 'calories',      label: 'Calories',       unit: '',   indent: 0 },
+  { key: 'calories',      label: 'Calories', unit: '', indent: 0 },
   { key: 'fat',           label: 'Total fat',       unit: 'g',  indent: 0 },
   { key: 'saturated_fat', label: 'Saturated fat',   unit: 'g',  indent: 1 },
   { key: 'trans_fat',     label: 'Trans fat',       unit: 'g',  indent: 1 },
@@ -21,7 +23,7 @@ NUTRIENTS = [
   { key: 'fiber',         label: 'Fiber',           unit: 'g',  indent: 1 },
   { key: 'total_sugars',  label: 'Total sugars',    unit: 'g',  indent: 1 },
   { key: 'added_sugars',  label: 'Added sugars',    unit: 'g',  indent: 2 },
-  { key: 'protein',       label: 'Protein',         unit: 'g',  indent: 0 },
+  { key: 'protein',       label: 'Protein',         unit: 'g',  indent: 0 }
 ].freeze
 
 def load_nutrition_data
@@ -51,21 +53,20 @@ def prompt_number(prompt_text, allow_empty_zero: true)
   loop do
     print prompt_text
     input = $stdin.gets&.strip
-    return nil if input.nil?  # EOF
+    return nil if input.nil? # EOF
     return :quit if input.downcase == 'q'
 
     if input.empty?
       return 0.0 if allow_empty_zero
+
       puts "  Value required. Enter a number, or 'q' to quit."
       next
     end
 
-    value = Float(input) rescue nil
-    if value
-      return value
-    else
-      puts "  Not a number, try again:"
-    end
+    value = Float(input, exception: false)
+    return value if value
+
+    puts '  Not a number, try again:'
   end
 end
 
@@ -77,13 +78,11 @@ def prompt_serving_size
     return :quit if input.downcase == 'q'
 
     parsed = Helpers.parse_serving_size(input)
-    if parsed
-      return parsed
-    else
-      puts "Could not extract gram weight from '#{input}'."
-      puts "Include the gram weight, e.g. '30g', '1/4 cup (30g)', '1 slice (21g)', '30 grams'"
-      puts "Try again, or 'q' to quit:"
-    end
+    return parsed if parsed
+
+    puts "Could not extract gram weight from '#{input}'."
+    puts "Include the gram weight, e.g. '30g', '1/4 cup (30g)', '1 slice (21g)', '30 grams'"
+    puts "Try again, or 'q' to quit:"
   end
 end
 
@@ -99,6 +98,7 @@ def prompt_nutrients
     value = prompt_number(prompt_text)
     return nil if value.nil?
     return nil if value == :quit
+
     result[nutrient[:key]] = value
   end
   result
@@ -110,7 +110,7 @@ def prompt_portions(auto_portions, volume_info, needed_units)
   puts "\nPortions (grams per 1 unit):"
   puts "  Enter = accept, '-' = skip, 'done' = finish"
 
-  if needed_units && needed_units.any?
+  if needed_units&.any?
     needed_str = needed_units.map { |u| u || '(bare count)' }.sort.join(', ')
     puts "  Recipes use: #{needed_str}"
   end
@@ -121,11 +121,12 @@ def prompt_portions(auto_portions, volume_info, needed_units)
     print "  #{unit} [#{grams}] (from label)#{needed_tag}: "
     input = $stdin.gets&.strip
     return portions if input&.downcase == 'done'
+
     if input != '-'
       if input.nil? || input.empty?
         portions[unit] = grams
       else
-        value = Float(input) rescue nil
+        value = Float(input, exception: false)
         portions[unit] = value if value
       end
     end
@@ -137,16 +138,18 @@ def prompt_portions(auto_portions, volume_info, needed_units)
     %w[cup tbsp tsp].each do |vol_unit|
       next if auto_portions.key?(vol_unit)
       next if portions.key?(vol_unit)
+
       derived = (density * Helpers.volume_to_ml(vol_unit)).round(1)
       needed_tag = needed_units&.include?(vol_unit) ? ' *' : ''
       print "  #{vol_unit} [#{derived}] (from density)#{needed_tag}: "
       input = $stdin.gets&.strip
       return portions if input&.downcase == 'done'
+
       if input != '-'
         if input.nil? || input.empty?
           portions[vol_unit] = derived
         else
-          value = Float(input) rescue nil
+          value = Float(input, exception: false)
           portions[vol_unit] = value if value
         end
       end
@@ -158,40 +161,42 @@ def prompt_portions(auto_portions, volume_info, needed_units)
   common.each do |unit|
     next if portions.key?(unit)
     next if auto_portions.key?(unit)
+
     needed_tag = needed_units&.include?(unit) ? ' *' : ''
     print "  #{unit}#{needed_tag}: "
     input = $stdin.gets&.strip
     break if input&.downcase == 'done'
     next if input.nil? || input.empty? || input == '-'
-    value = Float(input) rescue nil
+
+    value = Float(input, exception: false)
     portions[unit] = value if value
   end
 
   # Prompt for any needed units not yet covered
-  if needed_units
-    needed_units.each do |unit|
-      next if unit.nil?  # bare count, handled by ~unitless
-      next if portions.key?(unit)
-      next if common.include?(unit)
-      next if auto_portions.key?(unit)
-      print "  #{unit} *: "
-      input = $stdin.gets&.strip
-      break if input&.downcase == 'done'
-      next if input.nil? || input.empty? || input == '-'
-      value = Float(input) rescue nil
-      portions[unit] = value if value
-    end
+  needed_units&.each do |unit|
+    next if unit.nil? # bare count, handled by ~unitless
+    next if portions.key?(unit)
+    next if common.include?(unit)
+    next if auto_portions.key?(unit)
+
+    print "  #{unit} *: "
+    input = $stdin.gets&.strip
+    break if input&.downcase == 'done'
+    next if input.nil? || input.empty? || input == '-'
+
+    value = Float(input, exception: false)
+    portions[unit] = value if value
   end
 
   # Custom units
   loop do
-    print "  Additional unit (or Enter to finish): "
+    print '  Additional unit (or Enter to finish): '
     input = $stdin.gets&.strip
     break if input.nil? || input.empty?
 
     print "    grams per 1 #{input}: "
     value_str = $stdin.gets&.strip
-    value = Float(value_str) rescue nil
+    value = Float(value_str, exception: false)
     portions[input] = value if value
   end
 
@@ -208,8 +213,10 @@ def find_needed_units(name)
   recipes.each do |recipe|
     recipe.all_ingredients_with_quantities(alias_map, recipe_map).each do |ing_name, amounts|
       next unless ing_name == name
+
       amounts.each do |amount|
         next if amount.nil?
+
         _, unit = amount
         units << unit
       end
@@ -229,9 +236,10 @@ def resolve_name(raw_name)
   end
 
   puts "  \"#{raw_name}\" not found in grocery-info.yaml. Recipes won't match this entry."
-  print "  Continue anyway? (y/n): "
+  print '  Continue anyway? (y/n): '
   input = $stdin.gets&.strip
   return nil unless input&.downcase == 'y'
+
   raw_name
 end
 
@@ -239,11 +247,9 @@ def enter_ingredient(name, nutrition_data)
   existing = nutrition_data[name]
   if existing
     puts "\n#{name} already has data."
-    if existing['per_serving']
-      puts "  per_serving: #{existing['per_serving'].map { |k, v| "#{k}=#{v}" }.join(', ')}"
-    end
+    puts "  per_serving: #{existing['per_serving'].map { |k, v| "#{k}=#{v}" }.join(', ')}" if existing['per_serving']
     puts "  portions: #{(existing['portions'] || {}).map { |k, v| "#{k}=#{v}g" }.join(', ')}"
-    print "Overwrite? (y/n): "
+    print 'Overwrite? (y/n): '
     input = $stdin.gets&.strip
     return unless input&.downcase == 'y'
   end
@@ -256,7 +262,9 @@ def enter_ingredient(name, nutrition_data)
   # Display parsed result
   display = "  -> #{parsed[:grams]}g"
   display += " | #{parsed[:volume_amount]} #{parsed[:volume_unit]}" if parsed[:volume_amount]
-  display += "\n  -> auto-portion: #{parsed[:auto_portion][:unit]} = #{parsed[:auto_portion][:grams]}g" if parsed[:auto_portion]
+  if parsed[:auto_portion]
+    display += "\n  -> auto-portion: #{parsed[:auto_portion][:unit]} = #{parsed[:auto_portion][:grams]}g"
+  end
   puts display
 
   per_serving = prompt_nutrients
@@ -274,23 +282,19 @@ def enter_ingredient(name, nutrition_data)
 
   # Find needed recipe units
   needed_units = find_needed_units(name)
-  if needed_units.any?
-    puts "\n  Recipes use units: #{needed_units.map { |u| u || '(bare count)' }.sort.join(', ')}"
-  end
+  puts "\n  Recipes use units: #{needed_units.map { |u| u || '(bare count)' }.sort.join(', ')}" if needed_units.any?
 
   # Build auto-portions from serving size
   auto_portions = {}
-  if parsed[:auto_portion]
-    auto_portions[parsed[:auto_portion][:unit]] = parsed[:auto_portion][:grams]
-  end
+  auto_portions[parsed[:auto_portion][:unit]] = parsed[:auto_portion][:grams] if parsed[:auto_portion]
   if parsed[:volume_amount] && parsed[:volume_unit]
     grams_per_one = (parsed[:grams] / parsed[:volume_amount]).round(1)
     auto_portions[parsed[:volume_unit]] = grams_per_one
   end
 
   volume_info = if parsed[:volume_amount]
-    { grams: parsed[:grams], volume_amount: parsed[:volume_amount], volume_unit: parsed[:volume_unit] }
-  end
+                  { grams: parsed[:grams], volume_amount: parsed[:volume_amount], volume_unit: parsed[:volume_unit] }
+                end
 
   portions = prompt_portions(auto_portions, volume_info, needed_units)
 
@@ -315,7 +319,7 @@ def enter_ingredient(name, nutrition_data)
     nutrition_data[name] = entry
     save_nutrition_data(nutrition_data)
   else
-    puts "Discarded."
+    puts 'Discarded.'
   end
 end
 
@@ -324,9 +328,9 @@ def find_missing_ingredients(nutrition_data)
   alias_map = FamilyRecipes.build_alias_map(grocery_aisles)
   recipes = FamilyRecipes.parse_recipes(RECIPES_DIR)
 
-  omit_set = (grocery_aisles["Omit_From_List"] || []).flat_map { |item|
+  omit_set = (grocery_aisles['Omit_From_List'] || []).flat_map do |item|
     [item[:name], *item[:aliases]].map(&:downcase)
-  }.to_set
+  end.to_set
 
   ingredients_to_recipes = Hash.new { |h, k| h[k] = [] }
   recipes.each do |recipe|
@@ -346,19 +350,21 @@ def find_missing_ingredients(nutrition_data)
   recipes.each do |recipe|
     recipe.all_ingredients_with_quantities(alias_map, recipe_map).each do |name, amounts|
       next if omit_set.include?(name.downcase)
+
       entry = nutrition_data[name]
       next unless entry
 
       amounts.each do |amount|
         next if amount.nil?
+
         value, unit = amount
         next if value.nil?
 
-        unless calculator.resolvable?(value, unit, entry)
-          info = unresolvable[name]
-          info[:units] << (unit || '(bare count)')
-          info[:recipes] |= [recipe.title]
-        end
+        next if calculator.resolvable?(value, unit, entry)
+
+        info = unresolvable[name]
+        info[:units] << (unit || '(bare count)')
+        info[:recipes] |= [recipe.title]
       end
     end
   end
@@ -369,24 +375,24 @@ end
 # --- Main ---
 
 if ARGV.include?('--help') || ARGV.include?('-h')
-  puts "Usage:"
-  puts "  bin/nutrition-entry                    Enter data interactively (prompts for ingredient)"
-  puts "  bin/nutrition-entry \"Cream cheese\"     Enter data for a specific ingredient"
-  puts "  bin/nutrition-entry --missing           List ingredients missing nutrition data"
-  puts ""
-  puts "Nutrition values are entered from package labels (per-serving) and"
-  puts "stored as per_serving in resources/nutrition-data.yaml."
-  puts ""
-  puts "Serving size examples:"
-  puts "  100g                     Just gram weight"
-  puts "  30 grams                 Spelled-out gram weight"
-  puts "  1/4 cup (30g)            Volume + grams"
-  puts "  2 Tbsp (30g)             Volume + grams"
-  puts "  1 slice (21g)            Discrete + grams (auto-portion created)"
-  puts "  About 14 crackers (30g)  Count + grams (auto-portion: cracker = 2.14g)"
-  puts ""
-  puts "Nutrients are entered one at a time in FDA label order."
-  puts "Enter = 0 for quick entry of zero-value fields."
+  puts 'Usage:'
+  puts '  bin/nutrition-entry                    Enter data interactively (prompts for ingredient)'
+  puts '  bin/nutrition-entry "Cream cheese"     Enter data for a specific ingredient'
+  puts '  bin/nutrition-entry --missing           List ingredients missing nutrition data'
+  puts ''
+  puts 'Nutrition values are entered from package labels (per-serving) and'
+  puts 'stored as per_serving in resources/nutrition-data.yaml.'
+  puts ''
+  puts 'Serving size examples:'
+  puts '  100g                     Just gram weight'
+  puts '  30 grams                 Spelled-out gram weight'
+  puts '  1/4 cup (30g)            Volume + grams'
+  puts '  2 Tbsp (30g)             Volume + grams'
+  puts '  1 slice (21g)            Discrete + grams (auto-portion created)'
+  puts '  About 14 crackers (30g)  Count + grams (auto-portion: cracker = 2.14g)'
+  puts ''
+  puts 'Nutrients are entered one at a time in FDA label order.'
+  puts 'Enter = 0 for quick entry of zero-value fields.'
   exit 0
 end
 
@@ -396,26 +402,26 @@ if ARGV.include?('--missing')
   missing, ingredients_to_recipes, unresolvable = find_missing_ingredients(nutrition_data)
 
   if missing.any?
-    puts "WARNING: Missing nutrition data:"
+    puts 'WARNING: Missing nutrition data:'
     missing.each do |name|
       recipes = ingredients_to_recipes[name].uniq.sort
       puts "  - #{name} (in: #{recipes.join(', ')})"
     end
-    puts ""
+    puts ''
   end
 
   if unresolvable.any?
-    puts "WARNING: Missing unit conversions:"
+    puts 'WARNING: Missing unit conversions:'
     unresolvable.sort_by { |name, _| name }.each do |name, info|
       recipes = info[:recipes].sort
       units = info[:units].to_a.sort.join(', ')
       puts "  - #{name}: '#{units}' (in: #{recipes.join(', ')})"
     end
-    puts ""
+    puts ''
   end
 
   if missing.empty? && unresolvable.empty?
-    puts "All ingredients have nutrition data and resolvable units!"
+    puts 'All ingredients have nutrition data and resolvable units!'
   else
     puts "#{missing.length} missing data, #{unresolvable.length} missing conversions."
   end
@@ -423,12 +429,12 @@ else
   ingredient_name = ARGV.reject { |a| a.start_with?('-') }.first
 
   unless ingredient_name
-    print "Ingredient name: "
+    print 'Ingredient name: '
     ingredient_name = $stdin.gets&.strip
   end
 
   if ingredient_name.nil? || ingredient_name.empty?
-    $stderr.puts "No ingredient name provided."
+    warn 'No ingredient name provided.'
     exit 1
   end
 

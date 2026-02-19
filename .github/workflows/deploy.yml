@@ -29,6 +29,9 @@ jobs:
         with:
           typst-version: "0.13"
 
+      - name: Lint
+        run: bundle exec rubocop
+
       - name: Run tests
         run: bundle exec rake test
 

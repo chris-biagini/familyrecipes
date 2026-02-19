@@ -1,11 +1,13 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
+
 require 'bundler/setup'
 require_relative '../lib/familyrecipes'
 
-project_root = File.expand_path("..", __dir__)
-recipes_dir = File.join(project_root, "recipes")
+project_root = File.expand_path('..', __dir__)
+recipes_dir = File.join(project_root, 'recipes')
 
-print "Parsing recipes..."
+print 'Parsing recipes...'
 recipes = FamilyRecipes.parse_recipes(recipes_dir)
 quick_bites = FamilyRecipes.parse_quick_bites(recipes_dir)
 puts "done! (#{recipes.size} recipes, #{quick_bites.size} quick bites)"
@@ -14,9 +16,9 @@ FamilyRecipes::SiteGenerator.new(project_root, recipes: recipes, quick_bites: qu
 FamilyRecipes::PdfGenerator.new(project_root, recipes: recipes, quick_bites: quick_bites).generate
 
 # Copy PDF to web output for deployment
-pdf_path = File.join(project_root, "output/pdf/cookbook.pdf")
+pdf_path = File.join(project_root, 'output/pdf/cookbook.pdf')
 if File.exist?(pdf_path)
-  web_pdf_path = File.join(project_root, "output/web/cookbook.pdf")
+  web_pdf_path = File.join(project_root, 'output/web/cookbook.pdf')
   FileUtils.cp(pdf_path, web_pdf_path)
   puts "Copied cookbook.pdf to #{web_pdf_path}"
 end
