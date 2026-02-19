@@ -217,16 +217,17 @@ def call_claude(prompt, model: 'haiku')
     '--max-budget-usd', '0.05'
   ]
 
-  stdout, status = Open3.capture2(*cmd)
+  # Strip CLAUDECODE env var so claude CLI doesn't refuse to run inside a session
+  env = { 'CLAUDECODE' => nil }
+  stdout, status = Open3.capture2(env, *cmd)
   unless status.success?
     $stderr.puts "Claude CLI error (exit #{status.exitstatus})"
     return nil
   end
 
   parsed = JSON.parse(stdout)
-  # --output-format json wraps the response; extract the text result
-  text = parsed['result'] || stdout
-  JSON.parse(text)
+  # --output-format json wraps the response; structured_output has the schema-constrained data
+  parsed['structured_output']
 rescue JSON::ParserError => e
   $stderr.puts "Failed to parse Claude response: #{e.message}"
   nil
