@@ -115,6 +115,10 @@ nav {
   align-items: center;
   min-height: 2.75rem;
 
+  position: sticky;
+  top: 0;
+  z-index: 10;
+
   background-color: var(--frosted-glass-bg);
   border-bottom: 1px solid var(--gingham-stripe-color);
   backdrop-filter: blur(12px);
@@ -166,7 +170,8 @@ nav > div:first-child a + a::before {
   content: "\00b7";
   position: absolute;
   left: 0;
-  transform: translateX(-50%);
+  top: 50%;
+  transform: translate(-50%, -50%);
   color: var(--border-muted);
   font-size: 1rem;
   letter-spacing: 0;
