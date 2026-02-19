@@ -104,6 +104,7 @@ All templates use relative paths resolved via an HTML `<base>` tag, so the site 
 - `CrossReference` - A reference from one recipe to another (e.g., `@[Pizza Dough]`), renders as a link
 - `ScalableNumberPreprocessor` - Wraps numbers in `<span class="scalable">` tags for client-side scaling
 - `NutritionCalculator` - Calculates per-recipe and per-serving nutrition facts from ingredient quantities
+- `NutritionEntryHelpers` - Shared helpers for nutrition entry: serving size parsing, fractions, singularization
 - `PdfGenerator` - Generates PDF output (uses templates in `templates/pdf/`)
 
 **Data Flow**:
@@ -125,7 +126,7 @@ All templates use relative paths resolved via an HTML `<base>` tag, so the site 
 
 **Resources**:
 - `resources/grocery-info.yaml` contains mappings between ingredients and grocery store aisles
-- `resources/nutrition-data.yaml` contains per-100g nutrition facts and portion weights for ingredients
+- `resources/nutrition-data.yaml` contains per-serving nutrition facts (from package labels), serving sizes, and portion weights for ingredients
 - `resources/web/style.css` - main site stylesheet
 - `resources/web/recipe-state-manager.js` - client-side scaling, cross-off, and state persistence for recipe pages
 - `resources/web/groceries.css` - page-specific styles for the grocery list builder
@@ -178,7 +179,7 @@ Optional footer content (notes, source, etc.)
 
 ## Nutrition Data
 
-`bin/nutrition-entry` is an interactive CLI for adding nutrition facts from package labels. It converts per-serving values to per-100g for storage in `resources/nutrition-data.yaml`. Usage:
+`bin/nutrition-entry` is an interactive CLI for adding nutrition facts from package labels. It stores per-serving values in `resources/nutrition-data.yaml`, prompting for 11 FDA-label nutrients individually (Enter = 0 for zeros). It auto-resolves ingredient names via the grocery-info.yaml alias map and shows which units recipes need during portion entry. Usage:
 
 ```bash
 bin/nutrition-entry "Cream cheese"   # Enter data for a specific ingredient
