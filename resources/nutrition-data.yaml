@@ -1,0 +1,894 @@
+---
+Flour (all-purpose):
+  fdc_id: 169761
+  per_100g:
+    calories: 364
+    protein: 10.33
+    fat: 0.98
+    carbs: 76.31
+    fiber: 2.7
+    sodium: 2
+  portions:
+    cup: 125
+    Tbsp: 8
+    tsp: 2.6
+Eggs:
+  fdc_id: 171287
+  per_100g:
+    calories: 143
+    protein: 12.56
+    fat: 9.51
+    carbs: 0.72
+    fiber: 0
+    sodium: 142
+  portions:
+    "~unitless": 50
+Butter:
+  fdc_id: 173410
+  per_100g:
+    calories: 717
+    protein: 0.85
+    fat: 81.11
+    carbs: 0.06
+    fiber: 0
+    sodium: 643
+  portions:
+    Tbsp: 14.2
+    cup: 227
+    stick: 113
+Olive oil:
+  fdc_id: 171413
+  per_100g:
+    calories: 884
+    protein: 0
+    fat: 100
+    carbs: 0
+    fiber: 0
+    sodium: 2
+  portions:
+    Tbsp: 13.5
+    tsp: 4.5
+    cup: 216
+Sugar (white):
+  fdc_id: 169655
+  per_100g:
+    calories: 387
+    protein: 0
+    fat: 0
+    carbs: 100
+    fiber: 0
+    sodium: 1
+  portions:
+    cup: 200
+    Tbsp: 12.5
+    tsp: 4.2
+American cheese:
+  fdc_id: 170856
+  per_100g:
+    calories: 331
+    protein: 20
+    fat: 25
+    carbs: 8
+    fiber: 0
+    sodium: 966
+  portions:
+    slice: 21
+Artichokes (jarred):
+  fdc_id: 169311
+  per_100g:
+    calories: 51
+    protein: 3
+    fat: 0
+    carbs: 11
+    fiber: 6
+    sodium: 296
+  portions:
+    cup: 168
+    item: 120
+Asparagus:
+  fdc_id: 168389
+  per_100g:
+    calories: 20
+    protein: 2
+    fat: 0
+    carbs: 4
+    fiber: 2
+    sodium: 2
+  portions:
+    cup: 134
+    unitless: 24
+Baby spinach:
+  fdc_id: 168462
+  per_100g:
+    calories: 23
+    protein: 3
+    fat: 0
+    carbs: 4
+    fiber: 2
+    sodium: 79
+  portions:
+    cup: 30
+Baking powder:
+  fdc_id: 172804
+  per_100g:
+    calories: 51
+    protein: 0
+    fat: 0
+    carbs: 24
+    fiber: 0
+    sodium: 7890
+  portions:
+    tsp: 4.6
+    Tbsp: 13.8
+Baking soda:
+  fdc_id: 175040
+  per_100g:
+    calories: 0
+    protein: 0
+    fat: 0
+    carbs: 0
+    fiber: 0
+    sodium: 27400
+  portions:
+    tsp: 4.6
+Basil:
+  fdc_id: 172232
+  per_100g:
+    calories: 23
+    protein: 3
+    fat: 1
+    carbs: 3
+    fiber: 2
+    sodium: 4
+  portions:
+    tbsp: 2.65
+    cup: 24
+Black beans (canned):
+  fdc_id: 175188
+  per_100g:
+    calories: 91
+    protein: 6
+    fat: 0
+    carbs: 17
+    fiber: 7
+    sodium: 384
+  portions:
+    cup: 240
+Black pepper:
+  fdc_id: 170931
+  per_100g:
+    calories: 251
+    protein: 10
+    fat: 3
+    carbs: 64
+    fiber: 25
+    sodium: 20
+  portions:
+    Tbsp: 6.9
+    tsp: 2.3
+Blueberries:
+  fdc_id: 171711
+  per_100g:
+    calories: 57
+    protein: 1
+    fat: 0
+    carbs: 15
+    fiber: 2
+    sodium: 1
+  portions:
+    cup: 148
+Bouillon:
+  fdc_id: 171562
+  per_100g:
+    calories: 267
+    protein: 17
+    fat: 14
+    carbs: 18
+    fiber: 0
+    sodium: 23900
+  portions:
+    tsp: 2
+Bread:
+  fdc_id: 174913
+  per_100g:
+    calories: 259
+    protein: 9
+    fat: 3
+    carbs: 48
+    fiber: 2
+    sodium: 618
+Broccoli:
+  fdc_id: 170379
+  per_100g:
+    calories: 34
+    protein: 3
+    fat: 0
+    carbs: 7
+    fiber: 3
+    sodium: 33
+  portions:
+    cup: 88
+Buttermilk:
+  fdc_id: 172225
+  per_100g:
+    calories: 62
+    protein: 3
+    fat: 3
+    carbs: 5
+    fiber: 0
+    sodium: 105
+  portions:
+    cup: 245
+Carrots:
+  fdc_id: 170393
+  per_100g:
+    calories: 41
+    protein: 1
+    fat: 0
+    carbs: 10
+    fiber: 3
+    sodium: 69
+  portions:
+    cup: 110
+Celery:
+  fdc_id: 169988
+  per_100g:
+    calories: 14
+    protein: 1
+    fat: 0
+    carbs: 3
+    fiber: 2
+    sodium: 80
+  portions:
+    Tbsp: 7.5
+    stalk: 40
+    cup: 101
+Cheddar:
+  fdc_id: 328637
+  per_100g:
+    calories: 408
+    protein: 23
+    fat: 34
+    carbs: 2
+    fiber: 0
+    sodium: 654
+  portions:
+    ounce: 28
+    cup: 113
+Chocolate:
+  fdc_id: 167976
+  per_100g:
+    calories: 480
+    protein: 4
+    fat: 30
+    carbs: 64
+    fiber: 6
+    sodium: 11
+  portions:
+    cup: 173
+Cinnamon:
+  fdc_id: 171320
+  per_100g:
+    calories: 247
+    protein: 4
+    fat: 1
+    carbs: 81
+    fiber: 53
+    sodium: 10
+  portions:
+    tsp: 2.6
+    Tbsp: 7.8
+Cornmeal:
+  fdc_id: 168867
+  per_100g:
+    calories: 370
+    protein: 7
+    fat: 2
+    carbs: 79
+    fiber: 4
+    sodium: 7
+  portions:
+    cup: 157
+Cornstarch:
+  fdc_id: 169698
+  per_100g:
+    calories: 381
+    protein: 0
+    fat: 0
+    carbs: 91
+    fiber: 1
+    sodium: 9
+  portions:
+    cup: 128
+Cream cheese:
+  fdc_id: 173418
+  per_100g:
+    calories: 350
+    protein: 6
+    fat: 34
+    carbs: 6
+    fiber: 0
+    sodium: 314
+  portions:
+    cup: 232
+    Tbsp: 10
+Flour (bread):
+  fdc_id: 790146
+  per_100g:
+    calories: 363
+    protein: 14
+    fat: 2
+    carbs: 73
+    fiber: 0
+    sodium: 3
+  portions:
+    cup: 140
+Frank's Red Hot:
+  fdc_id: 171604
+  per_100g:
+    calories: 21
+    protein: 1
+    fat: 1
+    carbs: 4
+    fiber: 1
+    sodium: 25
+  portions:
+    Tbsp: 15
+    cup: 245
+Frozen spinach:
+  fdc_id: 169288
+  per_100g:
+    calories: 34
+    protein: 4
+    fat: 1
+    carbs: 5
+    fiber: 4
+    sodium: 97
+  portions:
+    cup: 190
+Garlic:
+  fdc_id: 169230
+  per_100g:
+    calories: 149
+    protein: 6
+    fat: 1
+    carbs: 33
+    fiber: 2
+    sodium: 17
+  portions:
+    tsp: 2.8
+Gouda:
+  fdc_id: 171241
+  per_100g:
+    calories: 356
+    protein: 25
+    fat: 27
+    carbs: 2
+    fiber: 0
+    sodium: 819
+  portions:
+    oz: 28
+Green onions:
+  fdc_id: 170006
+  per_100g:
+    calories: 27
+    protein: 1
+    fat: 0
+    carbs: 6
+    fiber: 2
+    sodium: 15
+  portions:
+    cup: 71
+    Tbsp: 6
+Heavy cream:
+  fdc_id: 170859
+  per_100g:
+    calories: 340
+    protein: 3
+    fat: 36
+    carbs: 3
+    fiber: 0
+    sodium: 27
+  portions:
+    cup: 120
+    Tbsp: 15
+Honey:
+  fdc_id: 169640
+  per_100g:
+    calories: 304
+    protein: 0
+    fat: 0
+    carbs: 82
+    fiber: 0
+    sodium: 4
+  portions:
+    cup: 339
+    Tbsp: 21
+Hot sauce:
+  fdc_id: 171186
+  per_100g:
+    calories: 93
+    protein: 2
+    fat: 1
+    carbs: 19
+    fiber: 2
+    sodium: 2120
+  portions:
+    tsp: 6.5
+Ice cream:
+  fdc_id: 167575
+  per_100g:
+    calories: 207
+    protein: 4
+    fat: 11
+    carbs: 24
+    fiber: 1
+    sodium: 80
+  portions:
+    cup: 66
+Lentils:
+  fdc_id: 172420
+  per_100g:
+    calories: 352
+    protein: 25
+    fat: 1
+    carbs: 63
+    fiber: 11
+    sodium: 6
+  portions:
+    Tbsp: 12
+    cup: 192
+Limes:
+  fdc_id: 168155
+  per_100g:
+    calories: 30
+    protein: 1
+    fat: 0
+    carbs: 11
+    fiber: 3
+    sodium: 2
+  portions:
+    unitless: 67
+Maldon salt:
+  fdc_id: 173468
+  per_100g:
+    calories: 0
+    protein: 0
+    fat: 0
+    carbs: 0
+    fiber: 0
+    sodium: 38800
+  portions:
+    tsp: 6
+    Tbsp: 18
+Malt syrup:
+  fdc_id: 169660
+  per_100g:
+    calories: 318
+    protein: 6
+    fat: 0
+    carbs: 71
+    fiber: 0
+    sodium: 35
+  portions:
+    Tbsp: 21
+    cup: 332
+Maple syrup:
+  fdc_id: 169661
+  per_100g:
+    calories: 260
+    protein: 0
+    fat: 0
+    carbs: 67
+    fiber: 0
+    sodium: 12
+  portions:
+    Tbsp: 20
+    cup: 315
+Mayonnaise:
+  fdc_id: 171009
+  per_100g:
+    calories: 680
+    protein: 1
+    fat: 75
+    carbs: 1
+    fiber: 0
+    sodium: 635
+  portions:
+    Tbsp: 13.8
+    cup: 220
+Mexican oregano:
+  fdc_id: 171328
+  per_100g:
+    calories: 265
+    protein: 9
+    fat: 4
+    carbs: 69
+    fiber: 43
+    sodium: 25
+  portions:
+    tsp: 1
+Mozzarella (low-moisture):
+  fdc_id: 329370
+  per_100g:
+    calories: 298
+    protein: 24
+    fat: 20
+    carbs: 4
+    fiber: 0
+    sodium: 699
+  portions:
+    cup: 132
+Muenster:
+  fdc_id: 171245
+  per_100g:
+    calories: 368
+    protein: 23
+    fat: 30
+    carbs: 1
+    fiber: 0
+    sodium: 628
+  portions:
+    cup: 113
+Olive oil (mild):
+  fdc_id: 171413
+  per_100g:
+    calories: 884
+    protein: 0
+    fat: 100
+    carbs: 0
+    fiber: 0
+    sodium: 2
+  portions:
+    tsp: 4.5
+    Tbsp: 13.5
+    cup: 216
+Onions:
+  fdc_id: 170000
+  per_100g:
+    calories: 40
+    protein: 1
+    fat: 0
+    carbs: 9
+    fiber: 2
+    sodium: 4
+  portions:
+    cup: 160
+    Tbsp: 10
+Oregano:
+  fdc_id: 171328
+  per_100g:
+    calories: 265
+    protein: 9
+    fat: 4
+    carbs: 69
+    fiber: 43
+    sodium: 25
+  portions:
+    tsp: 1
+    tbsp: 3
+Parmesan:
+  fdc_id: 325036
+  per_100g:
+    calories: 421
+    protein: 30
+    fat: 28
+    carbs: 12
+    fiber: 0
+    sodium: 1750
+  portions:
+    Tbsp: 5
+    cup: 100
+Pasta:
+  fdc_id: 169736
+  per_100g:
+    calories: 371
+    protein: 13
+    fat: 2
+    carbs: 75
+    fiber: 3
+    sodium: 6
+  portions:
+    cup: 64
+Peas and carrots (frozen):
+  fdc_id: 170425
+  per_100g:
+    calories: 53
+    protein: 3
+    fat: 0
+    carbs: 11
+    fiber: 3
+    sodium: 79
+  portions:
+    cup: 140
+Pecans:
+  fdc_id: 170182
+  per_100g:
+    calories: 691
+    protein: 9
+    fat: 72
+    carbs: 14
+    fiber: 10
+    sodium: 0
+  portions:
+    cup: 109
+Queso Quesadilla:
+  fdc_id: 169035
+  per_100g:
+    calories: 368
+    protein: 16
+    fat: 23
+    carbs: 24
+    fiber: 2
+    sodium: 701
+  portions:
+    "~unitless": 280
+Queso fresco:
+  fdc_id: 172223
+  per_100g:
+    calories: 299
+    protein: 18
+    fat: 24
+    carbs: 3
+    fiber: 0
+    sodium: 751
+  portions:
+    cup: 122
+Raisins:
+  fdc_id: 168166
+  per_100g:
+    calories: 296
+    protein: 3
+    fat: 1
+    carbs: 79
+    fiber: 7
+    sodium: 28
+  portions:
+    cup: 165
+Red bell peppers:
+  fdc_id: 170108
+  per_100g:
+    calories: 26
+    protein: 1
+    fat: 0
+    carbs: 6
+    fiber: 2
+    sodium: 4
+  portions:
+    unitless: 164
+    Tbsp: 9.3
+    cup: 92
+Red pepper flakes:
+  fdc_id: 170932
+  per_100g:
+    calories: 318
+    protein: 12
+    fat: 17
+    carbs: 57
+    fiber: 27
+    sodium: 30
+  portions:
+    Tbsp: 5.3
+    tsp: 1.8
+Ricotta:
+  fdc_id: 170851
+  per_100g:
+    calories: 150
+    protein: 8
+    fat: 10
+    carbs: 7
+    fiber: 0
+    sodium: 110
+  portions:
+    cup: 248
+Ritz crackers:
+  fdc_id: 173258
+  per_100g:
+    calories: 492
+    protein: 7
+    fat: 23
+    carbs: 64
+    fiber: 2
+    sodium: 882
+  portions:
+    serving: 30
+Salt:
+  fdc_id: 173468
+  per_100g:
+    calories: 0
+    protein: 0
+    fat: 0
+    carbs: 0
+    fiber: 0
+    sodium: 38800
+  portions:
+    tsp: 6
+    Tbsp: 18
+    cup: 292
+Sesame seeds:
+  fdc_id: 170150
+  per_100g:
+    calories: 573
+    protein: 18
+    fat: 50
+    carbs: 23
+    fiber: 12
+    sodium: 11
+  portions:
+    cup: 144
+    tbsp: 9
+Smoked paprika:
+  fdc_id: 171329
+  per_100g:
+    calories: 282
+    protein: 14
+    fat: 13
+    carbs: 54
+    fiber: 35
+    sodium: 68
+  portions:
+    Tbsp: 6.8
+    tsp: 2.3
+Sour cream:
+  fdc_id: 171257
+  per_100g:
+    calories: 198
+    protein: 2
+    fat: 19
+    carbs: 5
+    fiber: 0
+    sodium: 31
+  portions:
+    Tbsp: 12
+    cup: 230
+Soy sauce:
+  fdc_id: 174277
+  per_100g:
+    calories: 53
+    protein: 8
+    fat: 1
+    carbs: 5
+    fiber: 1
+    sodium: 5490
+  portions:
+    Tbsp: 16
+    tsp: 5.3
+    cup: 255
+Thyme:
+  fdc_id: 170938
+  per_100g:
+    calories: 276
+    protein: 9
+    fat: 7
+    carbs: 64
+    fiber: 37
+    sodium: 55
+  portions:
+    tsp: 1
+    Tbsp: 4.3
+Tomato passata:
+  fdc_id: 170051
+  per_100g:
+    calories: 16
+    protein: 1
+    fat: 0
+    carbs: 3
+    fiber: 2
+    sodium: 115
+  portions:
+    cup: 240
+    Tbsp: 15
+Tomato paste:
+  fdc_id: 170459
+  per_100g:
+    calories: 82
+    protein: 4
+    fat: 0
+    carbs: 19
+    fiber: 4
+    sodium: 59
+  portions:
+    Tbsp: 16
+    cup: 264
+Tomato salsa:
+  fdc_id: 746777
+  per_100g:
+    calories: 29
+    protein: 1
+    fat: 0
+    carbs: 7
+    fiber: 2
+    sodium: 656
+  portions:
+    Tbsp: 17.85
+Tomatoes (canned):
+  fdc_id: 170501
+  per_100g:
+    calories: 32
+    protein: 2
+    fat: 0
+    carbs: 7
+    fiber: 2
+    sodium: 186
+  portions:
+    cup: 242
+Tortillas (corn):
+  fdc_id: 175036
+  per_100g:
+    calories: 218
+    protein: 6
+    fat: 3
+    carbs: 45
+    fiber: 6
+    sodium: 45
+  portions:
+    tortilla: 32
+Tortillas (large flour):
+  fdc_id: 167535
+  per_100g:
+    calories: 297
+    protein: 8
+    fat: 8
+    carbs: 49
+    fiber: 2
+    sodium: 742
+Vanilla extract:
+  fdc_id: 173471
+  per_100g:
+    calories: 288
+    protein: 0
+    fat: 0
+    carbs: 13
+    fiber: 0
+    sodium: 9
+  portions:
+    tsp: 4.2
+    Tbsp: 13
+    cup: 208
+Walnuts:
+  fdc_id: 170187
+  per_100g:
+    calories: 654
+    protein: 15
+    fat: 65
+    carbs: 14
+    fiber: 7
+    sodium: 2
+  portions:
+    cup: 80
+    Tbsp: 8
+Watermelon:
+  fdc_id: 167765
+  per_100g:
+    calories: 30
+    protein: 1
+    fat: 0
+    carbs: 8
+    fiber: 0
+    sodium: 1
+  portions:
+    cup: 152
+Whipped cream:
+  fdc_id: 170859
+  per_100g:
+    calories: 340
+    protein: 3
+    fat: 36
+    carbs: 3
+    fiber: 0
+    sodium: 27
+  portions:
+    Tbsp: 15
+    cup: 120
+Yeast:
+  fdc_id: 175042
+  per_100g:
+    calories: 105
+    protein: 8
+    fat: 2
+    carbs: 18
+    fiber: 8
+    sodium: 30
+  portions:
+    tsp: 5
+    tbsp: 10

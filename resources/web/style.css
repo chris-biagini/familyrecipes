@@ -389,6 +389,72 @@ footer small {
   display: block; /* Ensures it takes up a full line for alignment to work */
 }
 
+/************************/
+/* Nutrition facts card */
+/************************/
+
+.nutrition-facts {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--separator-color);
+}
+
+.nutrition-facts h2 {
+  font-family: "Futura", sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  text-align: center;
+  margin: 0 0 1rem 0;
+  border: none;
+  padding: 0;
+}
+
+.nutrition-facts table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.nutrition-facts thead th {
+  font-family: "Futura", sans-serif;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  text-align: right;
+  padding: 0.25rem 0;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.nutrition-facts thead th:first-child {
+  text-align: left;
+}
+
+.nutrition-facts td {
+  padding: 0.3rem 0;
+  border-bottom: 1px solid var(--separator-color);
+  text-align: right;
+}
+
+.nutrition-facts td:first-child {
+  text-align: left;
+  font-weight: bold;
+}
+
+.nutrition-facts tr:last-child td {
+  border-bottom: 2px solid var(--border-color);
+}
+
+.nutrition-note {
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--muted-text);
+  text-align: center;
+  margin: 0.75rem 0 0;
+}
+
 /******************************************************/
 /* Styles for interactivity, applies to screen media */
 /*****************************************************/

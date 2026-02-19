@@ -15,6 +15,7 @@ module FamilyRecipes
 
     def generate
       load_grocery_info
+      load_nutrition_data
       parse_recipes
       parse_quick_bites
       build_recipe_map
@@ -42,6 +43,25 @@ module FamilyRecipes
       @alias_map = FamilyRecipes.build_alias_map(@grocery_aisles)
       @known_ingredients = FamilyRecipes.build_known_ingredients(@grocery_aisles, @alias_map)
       print "done!\n"
+    end
+
+    def load_nutrition_data
+      nutrition_path = File.join(project_root, "resources/nutrition-data.yaml")
+      if File.exist?(nutrition_path)
+        print "Loading nutrition data..."
+        nutrition_data = YAML.safe_load_file(nutrition_path, permitted_classes: [], permitted_symbols: [], aliases: false)
+        omit_set = Set.new
+        if @grocery_aisles["Omit_From_List"]
+          @grocery_aisles["Omit_From_List"].each do |item|
+            omit_set << item[:name].downcase
+            item[:aliases].each { |al| omit_set << al.downcase }
+          end
+        end
+        @nutrition_calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data, omit_set: omit_set)
+        print "done! (#{nutrition_data.size} ingredients.)\n"
+      else
+        @nutrition_calculator = nil
+      end
     end
 
     def parse_recipes
@@ -117,9 +137,11 @@ module FamilyRecipes
         text_path = File.join(output_dir, "#{recipe.id}.md")
         FamilyRecipes.write_file_if_changed(text_path, recipe.source)
 
+        nutrition = @nutrition_calculator&.calculate(recipe, @alias_map, @recipe_map)
+
         template_path = File.join(template_dir, "recipe-template.html.erb")
         html_path = File.join(output_dir, "#{recipe.id}.html")
-        FamilyRecipes.write_file_if_changed(html_path, recipe.to_html(erb_template_path: template_path))
+        FamilyRecipes.write_file_if_changed(html_path, recipe.to_html(erb_template_path: template_path, nutrition: nutrition))
       end
 
       print "done!\n"

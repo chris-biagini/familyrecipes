@@ -159,6 +159,15 @@ class RecipeStateManager {
         if (span) span.textContent = pretty + (unit ? ' ' + unit : '');
       });
 
+    // Scale nutrition facts total column
+    document.querySelectorAll('.nutrition-facts td[data-nutrient]').forEach(td => {
+      const base = parseFloat(td.dataset.baseValue);
+      const scaled = base * factor;
+      const nutrient = td.dataset.nutrient;
+      const unit = nutrient === 'sodium' ? 'mg' : (nutrient === 'calories' ? '' : 'g');
+      td.textContent = Math.round(scaled) + unit;
+    });
+
     // Scale marked numbers (yield line + instruction numbers)
     document.querySelectorAll('.scalable[data-base-value]').forEach(span => {
       if (factor === 1) {

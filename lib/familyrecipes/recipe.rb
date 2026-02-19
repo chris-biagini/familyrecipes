@@ -32,7 +32,7 @@ class Recipe
     @id
   end
 
-  def to_html(erb_template_path:)
+  def to_html(erb_template_path:, nutrition: nil)
     template = File.read(erb_template_path)
     ERB.new(template, trim_mode: '-').result_with_hash(
       markdown: MARKDOWN,
@@ -43,7 +43,8 @@ class Recipe
       steps: @steps,
       footer: @footer,
       id: @id,
-      version_hash: @version_hash
+      version_hash: @version_hash,
+      nutrition: nutrition
     )
   end
 

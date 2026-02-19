@@ -13,3 +13,6 @@ output/
 
 # Claude Code local data
 .claude/
+
+# Environment secrets
+.env

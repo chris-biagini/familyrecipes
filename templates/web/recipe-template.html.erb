@@ -63,6 +63,45 @@ HTML
         <%= markdown.render(footer) %>
         <%- end -%>
       </footer>
+
+      <%- if nutrition && nutrition.totals.values.any? { |v| v > 0 } -%>
+      <aside class="nutrition-facts">
+        <h2>Nutrition Facts</h2>
+        <%- has_serving = nutrition.per_serving -%>
+        <table>
+          <thead>
+            <tr>
+              <th></th>
+              <%- if has_serving -%>
+              <th>Per Serving (1/<%= nutrition.serving_count %>)</th>
+              <%- end -%>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <%- [
+              ['Calories', :calories, 'kcal'],
+              ['Protein', :protein, 'g'],
+              ['Fat', :fat, 'g'],
+              ['Carbs', :carbs, 'g'],
+              ['Fiber', :fiber, 'g'],
+              ['Sodium', :sodium, 'mg']
+            ].each do |label, key, unit| -%>
+            <tr>
+              <td><%= label %></td>
+              <%- if has_serving -%>
+              <td><%= nutrition.per_serving[key].round %><%= unit unless key == :calories %></td>
+              <%- end -%>
+              <td data-nutrient="<%= key %>" data-base-value="<%= nutrition.totals[key].round(1) %>"><%= nutrition.totals[key].round %><%= unit unless key == :calories %></td>
+            </tr>
+            <%- end -%>
+          </tbody>
+        </table>
+        <%- unless nutrition.complete? -%>
+        <p class="nutrition-note">*Approximate. Data unavailable for: <%= (nutrition.missing_ingredients + nutrition.partial_ingredients).uniq.join(', ') %>.</p>
+        <%- end -%>
+      </aside>
+      <%- end -%>
     </article>
   </main>
   <script src="notify.js" defer></script>
