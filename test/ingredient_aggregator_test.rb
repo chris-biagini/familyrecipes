@@ -11,8 +11,8 @@ class IngredientAggregatorTest < Minitest::Test
     result = IngredientAggregator.aggregate_amounts(ingredients)
 
     assert_equal 1, result.length
-    assert_in_delta(200.0, result[0][0])
-    assert_equal 'g', result[0][1]
+    assert_in_delta 200.0, result[0].value
+    assert_equal 'g', result[0].unit
   end
 
   def test_keeps_different_units_separate
@@ -23,7 +23,7 @@ class IngredientAggregatorTest < Minitest::Test
     result = IngredientAggregator.aggregate_amounts(ingredients)
 
     assert_equal 2, result.length
-    units = result.map { |a| a[1] }.sort
+    units = result.map(&:unit).sort
 
     assert_includes units, 'g'
     assert_includes units, 'tbsp'
@@ -35,9 +35,9 @@ class IngredientAggregatorTest < Minitest::Test
       Ingredient.new(name: 'Oil')
     ]
     result = IngredientAggregator.aggregate_amounts(ingredients)
-    numeric = result.find { |a| a.is_a?(Array) }
+    numeric = result.find { |a| a.is_a?(Quantity) }
 
-    assert_equal [50.0, 'g'], numeric
+    assert_equal Quantity[50.0, 'g'], numeric
     assert_includes result, nil
   end
 
@@ -58,7 +58,7 @@ class IngredientAggregatorTest < Minitest::Test
     result = IngredientAggregator.aggregate_amounts(ingredients)
 
     assert_equal 1, result.length
-    assert_in_delta(3.0, result[0][0])
-    assert_nil result[0][1]
+    assert_in_delta 3.0, result[0].value
+    assert_nil result[0].unit
   end
 end
