@@ -17,6 +17,7 @@
   --gingham-base: rgb(249, 246, 243);
   --gingham-stripe-color: rgba(190, 12, 30, 0.5);
   --gingham-stripe-width: 75px;
+  --gingham-tile-size: calc(var(--gingham-stripe-width) * 2 * 1.41421356);
   --weave-color: rgba(150, 150, 150, 0.05);
   --weave-stripe-width: 1.5px;
 
@@ -41,12 +42,28 @@ html {
      every pixel of the physical screen including behind iOS Safari's
      status bar and toolbar.  background-attachment: fixed keeps it
      stationary on desktop; iOS ignores that and falls back to scroll,
-     but the repeating pattern makes the movement imperceptible. */
+     but the repeating pattern makes the movement imperceptible.
+
+     background-size tiles each gradient in a fixed-size box (≈212px for
+     the gingham, one stripe-period for the weave).  Without it, the
+     repeating-linear-gradient is computed across the full viewport, and
+     its gradient line passes through the viewport's center — so any
+     change in viewport height (window resize, page navigation, content
+     reflow from collapsing grocery aisles) shifts the center and moves
+     the entire pattern relative to the content card.  Tiling in a
+     constant-size box makes the pattern independent of viewport and
+     document dimensions. */
   /* Overscroll/edge color: the pink you get compositing one gingham
      stripe over the base.  Visible during iOS rubber-band bounce and
      in any sliver the gradient layers can't reach. */
   background-color: rgb(205, 71, 84);
   background-attachment: fixed;
+  background-size:
+    var(--gingham-tile-size) var(--gingham-tile-size),
+    var(--gingham-tile-size) var(--gingham-tile-size),
+    auto calc(2 * var(--weave-stripe-width)),
+    calc(2 * var(--weave-stripe-width)) auto,
+    auto;
   background-image: repeating-linear-gradient(
       135deg,
       var(--gingham-stripe-color) 0,
