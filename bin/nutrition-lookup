@@ -437,17 +437,47 @@ end
 
 if ARGV.include?('--help') || ARGV.include?('-h')
   puts "Usage:"
-  puts "  bin/nutrition-lookup \"Ingredient Name\"    Look up one ingredient"
-  puts "  bin/nutrition-lookup --missing              Find and fill unmapped ingredients"
+  puts "  bin/nutrition-lookup \"Ingredient Name\"    Look up one ingredient interactively"
+  puts "  bin/nutrition-lookup --missing              Find and fill unmapped ingredients interactively"
+  puts "  bin/nutrition-lookup --auto                 Fill all missing ingredients using AI (Claude CLI)"
+  puts "  bin/nutrition-lookup --auto --model sonnet  Use a specific Claude model (default: haiku)"
   puts ""
   puts "Requires USDA_API_KEY environment variable (free from https://api.data.gov/signup/)"
+  puts "--auto mode also requires the Claude CLI (claude) to be installed and authenticated."
   exit 0
 end
 
 check_api_key!
 nutrition_data = load_nutrition_data
 
-if ARGV.include?('--missing')
+if ARGV.include?('--auto')
+  model_idx = ARGV.index('--model')
+  model = model_idx ? ARGV[model_idx + 1] || 'haiku' : 'haiku'
+
+  missing = find_missing_ingredients(nutrition_data)
+  if missing.empty?
+    puts "All ingredients are mapped!"
+    exit 0
+  end
+
+  puts "#{missing.length} unmapped ingredients. Running auto-lookup with model: #{model}\n\n"
+
+  added = 0
+  skipped = 0
+  missing.each_with_index do |name, i|
+    puts "[#{i + 1}/#{missing.length}] #{name}"
+    result = auto_lookup(name, nutrition_data, model: model)
+    if result
+      save_nutrition_data(nutrition_data)
+      added += 1
+    else
+      skipped += 1
+    end
+  end
+
+  puts "\nDone. Added #{added}/#{missing.length} ingredients. #{skipped} skipped."
+  puts "Review: git diff resources/nutrition-data.yaml"
+elsif ARGV.include?('--missing')
   missing = find_missing_ingredients(nutrition_data)
 
   if missing.empty?
