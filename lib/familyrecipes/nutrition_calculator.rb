@@ -19,10 +19,9 @@ module FamilyRecipes
       'cup' => 236.588, 'tbsp' => 14.787, 'tsp' => 4.929, 'ml' => 1, 'l' => 1000
     }.freeze
 
-    Result = Struct.new(
+    Result = Data.define(
       :totals, :serving_count, :per_serving,
-      :missing_ingredients, :partial_ingredients,
-      keyword_init: true
+      :missing_ingredients, :partial_ingredients
     ) do
       def complete?
         missing_ingredients.empty? && partial_ingredients.empty?
