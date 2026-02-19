@@ -57,7 +57,7 @@ module FamilyRecipes
       nutrition_path = File.join(project_root, "resources/nutrition-data.yaml")
       if File.exist?(nutrition_path)
         print "Loading nutrition data..."
-        nutrition_data = YAML.safe_load_file(nutrition_path, permitted_classes: [], permitted_symbols: [], aliases: false)
+        nutrition_data = YAML.safe_load_file(nutrition_path, permitted_classes: [], permitted_symbols: [], aliases: false) || {}
         @nutrition_calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data, omit_set: @omit_set)
         print "done! (#{nutrition_data.size} ingredients.)\n"
       else
@@ -245,15 +245,54 @@ module FamilyRecipes
         end
       end
 
+      # Category 1: Missing nutrition data (no YAML entry at all)
       missing = ingredients_to_recipes.keys.reject { |name| @nutrition_calculator.nutrition_data.key?(name) }
+
+      # Category 2: Missing unit conversions (entry exists, but unit can't be resolved)
+      unresolvable = Hash.new { |h, k| h[k] = { units: Set.new, recipes: [] } }
+      @recipes.each do |recipe|
+        recipe.all_ingredients_with_quantities(@alias_map, @recipe_map).each do |name, amounts|
+          next if @omit_set.include?(name.downcase)
+          entry = @nutrition_calculator.nutrition_data[name]
+          next unless entry
+
+          amounts.each do |amount|
+            next if amount.nil?
+            value, unit = amount
+            next if value.nil?
+
+            unless @nutrition_calculator.resolvable?(value, unit, entry)
+              info = unresolvable[name]
+              info[:units] << (unit || '(bare count)')
+              info[:recipes] |= [recipe.title]
+            end
+          end
+        end
+      end
+
+      has_warnings = missing.any? || unresolvable.any?
 
       if missing.any?
         puts "\n"
-        puts "WARNING: The following ingredients are missing nutrition data:"
+        puts "WARNING: Missing nutrition data:"
         missing.sort.each do |name|
           recipes = ingredients_to_recipes[name].uniq.sort
           puts "  - #{name} (in: #{recipes.join(', ')})"
         end
+      end
+
+      if unresolvable.any?
+        puts "\n" unless missing.any?
+        puts "WARNING: Missing unit conversions:"
+        unresolvable.sort_by { |name, _| name }.each do |name, info|
+          recipes = info[:recipes].sort
+          units = info[:units].to_a.sort.join(', ')
+          puts "  - #{name}: '#{units}' (in: #{recipes.join(', ')})"
+        end
+      end
+
+      if has_warnings
+        puts ""
         puts "Use bin/nutrition-entry to add data, or edit resources/nutrition-data.yaml directly."
         puts ""
       else

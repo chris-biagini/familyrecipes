@@ -18,11 +18,35 @@ class Ingredient
     "3/4" => "0.75"
   }.freeze
 
-  # Unit normalizations
+  # Unit normalizations (applied after downcasing and period-stripping)
   UNIT_NORMALIZATIONS = {
-    "clove" => "cloves",
-    "ounce" => "oz",
-    "ounces" => "oz"
+    # Volume
+    "tablespoon" => "tbsp", "tablespoons" => "tbsp",
+    "teaspoon" => "tsp", "teaspoons" => "tsp",
+    "cups" => "cup",
+    "liter" => "l", "liters" => "l",
+
+    # Weight
+    "gram" => "g", "grams" => "g",
+    "ounce" => "oz", "ounces" => "oz",
+    "lbs" => "lb", "pound" => "lb", "pounds" => "lb",
+
+    # Discrete (plural → singular)
+    "cloves" => "clove",
+    "slices" => "slice",
+    "pieces" => "piece",
+    "stalks" => "stalk",
+    "bunches" => "bunch",
+    "cans" => "can",
+    "sticks" => "stick",
+    "items" => "item",
+    "tortillas" => "tortilla",
+
+    # Multi-word
+    "small slices" => "slice",
+
+    # Special
+    "gō" => "go",
   }.freeze
 
   # name is required, quantity and prep_note are optional
@@ -118,6 +142,10 @@ class Ingredient
     return nil if @quantity.nil? || @quantity.strip.empty?
 
     parts = @quantity.strip.split(' ', 2)
-    UNIT_NORMALIZATIONS[parts[1]] || parts[1]
+    raw_unit = parts[1]
+    return nil if raw_unit.nil?
+
+    cleaned = raw_unit.strip.downcase.chomp('.')
+    UNIT_NORMALIZATIONS[cleaned] || cleaned
   end
 end

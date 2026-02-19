@@ -21,7 +21,7 @@ class IngredientAggregatorTest < Minitest::Test
     assert_equal 2, result.length
     units = result.map { |a| a[1] }.sort
     assert_includes units, "g"
-    assert_includes units, "Tbsp"
+    assert_includes units, "tbsp"
   end
 
   def test_mixed_quantified_and_unquantified

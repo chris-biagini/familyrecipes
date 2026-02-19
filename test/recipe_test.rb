@@ -88,7 +88,7 @@ class RecipeTest < Minitest::Test
     assert_equal 2, amounts.length
     units = amounts.map { |a| a[1] }.sort
     assert_includes units, "g"
-    assert_includes units, "Tbsp"
+    assert_includes units, "tbsp"
   end
 
   def test_ingredients_with_quantities_all_unquantified

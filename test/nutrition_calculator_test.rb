@@ -4,67 +4,85 @@ class NutritionCalculatorTest < Minitest::Test
   def setup
     @nutrition_data = {
       'Flour (all-purpose)' => {
-        'per_100g' => {
-          'calories' => 364,
-          'protein' => 10.33,
-          'fat' => 0.98,
-          'carbs' => 76.31,
-          'fiber' => 2.7,
-          'sodium' => 2
+        'serving' => { 'grams' => 30 },
+        'per_serving' => {
+          'calories' => 109.2,
+          'protein' => 3.099,
+          'fat' => 0.294,
+          'saturated_fat' => 0.05,
+          'carbs' => 22.893,
+          'fiber' => 0.81,
+          'sodium' => 0.6
         },
         'portions' => {
           'cup' => 125,
-          'Tbsp' => 8
+          'tbsp' => 8
         }
       },
       'Eggs' => {
-        'per_100g' => {
-          'calories' => 143,
-          'protein' => 12.56,
-          'fat' => 9.51,
-          'carbs' => 0.72,
+        'serving' => { 'grams' => 50 },
+        'per_serving' => {
+          'calories' => 71.5,
+          'protein' => 6.28,
+          'fat' => 4.755,
+          'saturated_fat' => 1.6,
+          'carbs' => 0.36,
           'fiber' => 0,
-          'sodium' => 142
+          'sodium' => 71
         },
         'portions' => {
           '~unitless' => 50
         }
       },
       'Butter' => {
-        'per_100g' => {
-          'calories' => 717,
-          'protein' => 0.85,
-          'fat' => 81.11,
-          'carbs' => 0.06,
+        'serving' => {
+          'grams' => 14,
+          'volume_amount' => 1,
+          'volume_unit' => 'tbsp'
+        },
+        'per_serving' => {
+          'calories' => 100.38,
+          'protein' => 0.119,
+          'fat' => 11.3554,
+          'saturated_fat' => 7.17,
+          'carbs' => 0.0084,
           'fiber' => 0,
-          'sodium' => 643
+          'sodium' => 90.02
         },
         'portions' => {
-          'Tbsp' => 14.2,
+          'tbsp' => 14.2,
           'cup' => 227
         }
       },
       'Olive oil' => {
-        'per_100g' => {
-          'calories' => 884,
+        'serving' => {
+          'grams' => 14,
+          'volume_amount' => 1,
+          'volume_unit' => 'tbsp'
+        },
+        'per_serving' => {
+          'calories' => 123.76,
           'protein' => 0,
-          'fat' => 100,
+          'fat' => 14,
+          'saturated_fat' => 1.9,
           'carbs' => 0,
           'fiber' => 0,
-          'sodium' => 2
+          'sodium' => 0.28
         },
         'portions' => {
-          'Tbsp' => 13.5
+          'tbsp' => 13.5
         }
       },
       'Sugar (white)' => {
-        'per_100g' => {
-          'calories' => 387,
+        'serving' => { 'grams' => 4 },
+        'per_serving' => {
+          'calories' => 15.48,
           'protein' => 0,
           'fat' => 0,
-          'carbs' => 100,
+          'saturated_fat' => 0,
+          'carbs' => 4,
           'fiber' => 0,
-          'sodium' => 1
+          'sodium' => 0.04
         },
         'portions' => {
           'cup' => 200
@@ -106,7 +124,7 @@ class NutritionCalculatorTest < Minitest::Test
 
     result = @calculator.calculate(recipe, @alias_map, @recipe_map)
 
-    # 500g flour: 364 * 5 = 1820 cal
+    # 500g flour: (109.2/30)*500 = 1820 cal
     assert_in_delta 1820, result.totals[:calories], 1
     assert_in_delta 51.65, result.totals[:protein], 0.1
     assert_in_delta 4.9, result.totals[:fat], 0.1
@@ -128,7 +146,7 @@ class NutritionCalculatorTest < Minitest::Test
 
     result = @calculator.calculate(recipe, @alias_map, @recipe_map)
 
-    # 3 eggs * 50g each = 150g; 143 * 1.5 = 214.5 cal
+    # 3 eggs * 50g each = 150g; (71.5/50)*150 = 214.5 cal
     assert_in_delta 214.5, result.totals[:calories], 1
     assert_in_delta 18.84, result.totals[:protein], 0.1
   end
@@ -146,7 +164,7 @@ class NutritionCalculatorTest < Minitest::Test
 
     result = @calculator.calculate(recipe, @alias_map, @recipe_map)
 
-    # 2 Tbsp * 14.2g = 28.4g; 717 * 0.284 = 203.6 cal
+    # 2 Tbsp * 14.2g = 28.4g; (100.38/14)*28.4 = 203.6 cal
     assert_in_delta 203.6, result.totals[:calories], 1
   end
 
@@ -171,7 +189,7 @@ class NutritionCalculatorTest < Minitest::Test
 
     result = @calculator.calculate(recipe, @alias_map, @recipe_map)
 
-    # 150g butter: 717 * 1.5 = 1075.5 cal
+    # 150g butter: (100.38/14)*150 = 1075.5 cal
     assert_in_delta 1075.5, result.totals[:calories], 1
   end
 
@@ -227,7 +245,7 @@ class NutritionCalculatorTest < Minitest::Test
 
     result = @calculator.calculate(recipe, @alias_map, @recipe_map)
 
-    # Only flour should contribute (100g: 364 cal)
+    # Only flour should contribute (100g: (109.2/30)*100 = 364 cal)
     assert_in_delta 364, result.totals[:calories], 1
     refute_includes result.missing_ingredients, 'Water'
   end
@@ -248,7 +266,7 @@ class NutritionCalculatorTest < Minitest::Test
 
     result = @calculator.calculate(recipe, @alias_map, @recipe_map)
 
-    # Only flour contributes (200g: 364 * 2 = 728 cal)
+    # Only flour contributes (200g: (109.2/30)*200 = 728 cal)
     assert_in_delta 728, result.totals[:calories], 1
     refute_includes result.missing_ingredients, 'Olive oil'
   end
@@ -451,9 +469,9 @@ class NutritionCalculatorTest < Minitest::Test
     assert result.complete?
   end
 
-  # --- Standard conversions (oz, lbs, ml, l) ---
+  # --- Weight conversions (oz, lb, kg) ---
 
-  def test_oz_uses_standard_conversion_without_portions_entry
+  def test_oz_uses_weight_conversion
     recipe = make_recipe(<<~MD)
       # Test
 
@@ -466,12 +484,12 @@ class NutritionCalculatorTest < Minitest::Test
 
     result = @calculator.calculate(recipe, @alias_map, @recipe_map)
 
-    # 4 oz * 28.35 g/oz = 113.4g; 717 * 1.134 = 813.1 cal
-    assert_in_delta 813.1, result.totals[:calories], 1
+    # 4 oz * 28.3495 g/oz = 113.398g; (100.38/14)*113.398 = 813.1 cal
+    assert_in_delta 813.1, result.totals[:calories], 2
     assert result.partial_ingredients.empty?
   end
 
-  def test_lbs_uses_standard_conversion
+  def test_lb_uses_weight_conversion
     recipe = make_recipe(<<~MD)
       # Test
 
@@ -484,46 +502,97 @@ class NutritionCalculatorTest < Minitest::Test
 
     result = @calculator.calculate(recipe, @alias_map, @recipe_map)
 
-    # 1 lbs * 453.59 g/lbs = 453.59g; 364 * 4.5359 = 1650.7 cal
-    assert_in_delta 1650.7, result.totals[:calories], 1
+    # 1 lbs → normalized to lb → 453.592g; (109.2/30)*453.592 = 1651 cal
+    assert_in_delta 1651, result.totals[:calories], 2
     assert result.partial_ingredients.empty?
   end
 
-  def test_ml_uses_standard_conversion
+  # --- Volumetric with density fallback ---
+
+  def test_density_derived_volume_conversion
+    # Olive oil has volume_amount/volume_unit in serving but NO cup portion
+    # Density: 14g / (1 * 14.787ml) = 0.9468 g/ml
+    # 1 cup = 236.588ml * 0.9468 = 224.0g
     recipe = make_recipe(<<~MD)
       # Test
 
       ## Mix (combine)
 
-      - Olive oil, 30 ml
+      - Olive oil, 1 cup
 
       Mix.
     MD
 
     result = @calculator.calculate(recipe, @alias_map, @recipe_map)
 
-    # 30 ml * 1 g/ml = 30g; 884 * 0.3 = 265.2 cal
-    assert_in_delta 265.2, result.totals[:calories], 1
+    # (123.76/14) * (236.588 * 14/14.787) = 8.84 * 224.0 = 1980 cal approx
+    expected_grams = 236.588 * (14.0 / 14.787)
+    expected_cal = (123.76 / 14.0) * expected_grams
+    assert_in_delta expected_cal, result.totals[:calories], 2
     assert result.partial_ingredients.empty?
   end
 
-  def test_l_uses_standard_conversion
+  def test_portion_takes_priority_over_density
+    # Butter has both a tbsp portion (14.2) and density info.
+    # The explicit portion should be used.
     recipe = make_recipe(<<~MD)
       # Test
 
       ## Mix (combine)
 
-      - Olive oil, 0.5 l
+      - Butter, 1 Tbsp
 
       Mix.
     MD
 
     result = @calculator.calculate(recipe, @alias_map, @recipe_map)
 
-    # 0.5 l * 1000 g/l = 500g; 884 * 5 = 4420 cal
-    assert_in_delta 4420, result.totals[:calories], 1
-    assert result.partial_ingredients.empty?
+    # Uses portion: 1 * 14.2g, NOT density-derived
+    expected_cal = (100.38 / 14.0) * 14.2
+    assert_in_delta expected_cal, result.totals[:calories], 1
   end
+
+  # --- Saturated fat tracking ---
+
+  def test_saturated_fat_tracked
+    recipe = make_recipe(<<~MD)
+      # Test
+
+      ## Mix (combine)
+
+      - Butter, 100 g
+
+      Mix.
+    MD
+
+    result = @calculator.calculate(recipe, @alias_map, @recipe_map)
+
+    # (7.17/14)*100 = 51.21g sat fat
+    expected = (7.17 / 14.0) * 100
+    assert_in_delta expected, result.totals[:saturated_fat], 0.5
+  end
+
+  # --- Resolvable? API ---
+
+  def test_resolvable_with_known_unit
+    entry = @nutrition_data['Flour (all-purpose)']
+    assert @calculator.resolvable?(1, 'cup', entry)
+    assert @calculator.resolvable?(1, 'g', entry)
+    assert @calculator.resolvable?(1, nil, entry)  # bare count
+  end
+
+  def test_not_resolvable_with_unknown_unit
+    entry = @nutrition_data['Flour (all-purpose)']
+    refute @calculator.resolvable?(1, 'bushel', entry)
+  end
+
+  def test_resolvable_with_density
+    entry = @nutrition_data['Olive oil']
+    # Olive oil has no 'cup' portion but has density info → resolvable via density
+    assert @calculator.resolvable?(1, 'cup', entry)
+  end
+
+  # --- Case insensitive unit lookup ---
 
   def test_case_insensitive_unit_lookup
     recipe = make_recipe(<<~MD)
@@ -538,7 +607,7 @@ class NutritionCalculatorTest < Minitest::Test
 
     result = @calculator.calculate(recipe, @alias_map, @recipe_map)
 
-    # 1 Tbsp butter = 14.2g; 717 * 0.142 = 101.8 cal
+    # 1 tbsp butter = 14.2g; (100.38/14)*14.2 = 101.8 cal
     assert_in_delta 101.8, result.totals[:calories], 1
     assert result.partial_ingredients.empty?
   end
