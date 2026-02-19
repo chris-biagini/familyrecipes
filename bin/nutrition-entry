@@ -37,20 +37,10 @@ def save_nutrition_data(data)
   sorted = data.sort_by { |k, _| k.downcase }.to_h
 
   # Round floats to avoid ugly precision artifacts
-  sorted.each do |_, entry|
-    if entry['per_serving'].is_a?(Hash)
-      entry['per_serving'].each do |k, v|
-        entry['per_serving'][k] = v.round(4) if v.is_a?(Float)
-      end
-    end
-    if entry['portions'].is_a?(Hash)
-      entry['portions'].each do |k, v|
-        entry['portions'][k] = v.round(2) if v.is_a?(Float)
-      end
-    end
-    if entry.dig('serving', 'grams').is_a?(Float)
-      entry['serving']['grams'] = entry['serving']['grams'].round(2)
-    end
+  sorted.each_value do |entry|
+    entry['per_serving'].transform_values! { |v| v.is_a?(Float) ? v.round(4) : v } if entry['per_serving'].is_a?(Hash)
+    entry['portions'].transform_values! { |v| v.is_a?(Float) ? v.round(2) : v } if entry['portions'].is_a?(Hash)
+    entry['serving']['grams'] = entry['serving']['grams'].round(2) if entry.dig('serving', 'grams').is_a?(Float)
   end
 
   File.write(NUTRITION_PATH, YAML.dump(sorted))
@@ -212,8 +202,7 @@ def find_needed_units(name)
   grocery_aisles = FamilyRecipes.parse_grocery_info(GROCERY_PATH)
   alias_map = FamilyRecipes.build_alias_map(grocery_aisles)
   recipes = FamilyRecipes.parse_recipes(RECIPES_DIR)
-  recipe_map = {}
-  recipes.each { |r| recipe_map[r.id] = r }
+  recipe_map = recipes.to_h { |r| [r.id, r] }
 
   units = Set.new
   recipes.each do |recipe|
@@ -235,9 +224,7 @@ def resolve_name(raw_name)
 
   canonical = alias_map[raw_name.downcase]
   if canonical
-    if canonical != raw_name
-      puts "  -> Resolved to \"#{canonical}\""
-    end
+    puts "  -> Resolved to \"#{canonical}\"" if canonical != raw_name
     return canonical
   end
 
@@ -337,13 +324,9 @@ def find_missing_ingredients(nutrition_data)
   alias_map = FamilyRecipes.build_alias_map(grocery_aisles)
   recipes = FamilyRecipes.parse_recipes(RECIPES_DIR)
 
-  omit_set = Set.new
-  if grocery_aisles["Omit_From_List"]
-    grocery_aisles["Omit_From_List"].each do |item|
-      omit_set << item[:name].downcase
-      item[:aliases].each { |al| omit_set << al.downcase }
-    end
-  end
+  omit_set = (grocery_aisles["Omit_From_List"] || []).flat_map { |item|
+    [item[:name], *item[:aliases]].map(&:downcase)
+  }.to_set
 
   ingredients_to_recipes = Hash.new { |h, k| h[k] = [] }
   recipes.each do |recipe|
@@ -356,8 +339,7 @@ def find_missing_ingredients(nutrition_data)
 
   # Find ingredients with entries but unresolvable units
   calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data, omit_set: omit_set)
-  recipe_map = {}
-  recipes.each { |r| recipe_map[r.id] = r }
+  recipe_map = recipes.to_h { |r| [r.id, r] }
 
   unresolvable = Hash.new { |h, k| h[k] = { units: Set.new, recipes: [] } }
 

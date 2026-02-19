@@ -48,7 +48,7 @@ module FamilyRecipes
     end
 
     def calculate(recipe, alias_map, recipe_map)
-      totals = NUTRIENTS.each_with_object({}) { |n, h| h[n] = 0.0 }
+      totals = NUTRIENTS.to_h { |n| [n, 0.0] }
       missing = []
       partial = []
 
@@ -83,7 +83,7 @@ module FamilyRecipes
 
       serving_count = parse_serving_count(recipe.yield_line)
       per_serving = if serving_count
-        NUTRIENTS.each_with_object({}) { |n, h| h[n] = totals[n] / serving_count }
+        NUTRIENTS.to_h { |n| [n, totals[n] / serving_count] }
       end
 
       Result.new(
@@ -151,8 +151,7 @@ module FamilyRecipes
 
     def parse_serving_count(yield_line)
       return nil if yield_line.nil? || yield_line.strip.empty?
-      match = yield_line.match(/\d+/)
-      match ? match[0].to_i : nil
+      yield_line[/\d+/]&.to_i
     end
   end
 end

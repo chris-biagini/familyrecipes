@@ -33,6 +33,24 @@ When designing new UI elements, ask: would this feel at home in a well-loved coo
 - Code should be clean and human-readable: proper indentation, clear variable names. Don't strip whitespace or minify. Fast page loads come from writing less code, not obfuscating it.
 - No third-party libraries, scripts, stylesheets, or fonts unless clearly the best solution to a problem—and ask before adding any.
 
+### Ruby
+
+Write idiomatic Ruby. Let the language do the work.
+
+- **Prefer Enumerable chains over procedural accumulation.** If you write `result = []; things.each { |t| result << f(t) }; result`, rewrite it. The right method is almost always already in Enumerable: `map`, `select`, `reject`, `flat_map`, `group_by`, `each_with_object`, `reduce`, `to_h { }`. The initialize-loop-return pattern is the single most common Ruby smell.
+- **Use `transform_values` / `transform_keys`** when mapping over a hash's values or keys without changing the structure. Don't build a new hash in a loop.
+- **Build hashes with `.to_h { |x| [key, value] }`**, not `hash = {}; each { hash[k] = v }; hash`.
+- **Guard clauses over nested conditionals.** Prefer `return nil if x` / `next if x` / `raise "msg" if x` at the top of a block. Flatten the happy path leftward.
+- **Trailing conditionals for one-liners.** `raise ArgumentError, "bad" if input.nil?` reads better than a three-line `if` block wrapping a single expression.
+- **`unless` for simple negated conditions, `until` for simple negated loops.** Don't use either with compound boolean expressions (`&&`, `||`, `!`)—that hurts readability.
+- **Implicit returns.** Never write `return` at the end of a method. Only use `return` for early exits mid-method.
+- **`||=` for conditional initialization.** `@x ||= compute` instead of `@x = compute unless @x`.
+- **`&:method` shorthand.** `.map(&:to_s)` instead of `.map { |x| x.to_s }`. Only works for zero-argument calls.
+- **`each_value` / `each_key`** when you don't need both key and value. Don't write `hash.each { |_, v| ... }`.
+- **`?` on boolean methods.** `empty?`, `valid?`, `resolvable?`—not `is_empty`, `check_valid`.
+- **`String#[]` with a regex** for simple extraction. `line[/\d+/]` instead of `m = line.match(/\d+/); m ? m[0] : nil`.
+- **2-space indentation, `snake_case` methods/variables, `CamelCase` classes.** Standard Ruby formatting, no exceptions.
+
 ### The groceries page is the exception
 
 `groceries-template.html.erb` has a looser mandate. Heavier JavaScript is fine there. Custom UI is fine there. Third-party dependencies should still be avoided, but the overall restraint is relaxed. Go ham.
@@ -59,7 +77,7 @@ This parses all recipes, generates HTML files in `output/web/`, and copies stati
 rake test
 ```
 
-Runs all tests in `test/` via Minitest.
+Runs all tests in `test/` via Minitest. `rake clean` removes the `output/` directory if you need a fresh build.
 
 ## Dev Server
 
@@ -108,7 +126,7 @@ All templates use relative paths resolved via an HTML `<base>` tag, so the site 
 - `PdfGenerator` - Generates PDF output (uses templates in `templates/pdf/`)
 
 **Data Flow**:
-1. `bin/generate` creates a `SiteGenerator` and calls `generate`
+1. `bin/generate` creates a `SiteGenerator` and calls `generate`, then a `PdfGenerator` (requires `typst` CLI; skips gracefully if not installed)
 2. `SiteGenerator` reads `.md` files from `recipes/` subdirectories
 3. Each file is parsed by `Recipe` class using markdown conventions
 4. ERB templates in `templates/web/` render HTML output
@@ -145,6 +163,8 @@ Recipes are plain text files using this markdown structure:
 
 Optional description line.
 
+Makes 4 servings.
+
 ## Step Name (short summary)
 
 - Ingredient name, quantity: prep note
@@ -168,6 +188,10 @@ Optional footer content (notes, source, etc.)
 - `- Eggs, 4: Lightly scrambled.`
 - `- Salt`
 - `- Garlic, 4 cloves`
+
+**Yield line**: An optional line like `Makes 30 gougères.` or `Serves 4.` between the description and first step. Must start with "Makes" or "Serves". Used for per-serving nutrition calculations.
+
+**Recipe categories** are derived from directory names under `recipes/` (e.g., `recipes/Bread/` → category "Bread"). To add a new category, create a new subdirectory.
 
 ## Quick Bites
 

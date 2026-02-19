@@ -6,9 +6,7 @@ class Step
   attr_reader :tldr, :ingredients, :cross_references, :instructions, :ingredient_list_items
 
   def initialize(tldr:, ingredient_list_items: [], instructions:)
-    if tldr.nil? || tldr.strip.empty?
-      raise ArgumentError, "Step must have a tldr."
-    end
+    raise ArgumentError, "Step must have a tldr." if tldr.nil? || tldr.strip.empty?
 
     if ingredient_list_items.empty? && (instructions.nil? || instructions.strip.empty?)
       raise ArgumentError, "Step must have either ingredients or instructions."

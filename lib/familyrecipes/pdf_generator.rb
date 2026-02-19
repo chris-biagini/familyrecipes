@@ -43,10 +43,7 @@ module FamilyRecipes
     end
 
     def parse_quick_bites
-      unless @quick_bites
-        @quick_bites = FamilyRecipes.parse_quick_bites(@recipes_dir)
-      end
-
+      @quick_bites ||= FamilyRecipes.parse_quick_bites(@recipes_dir)
       quick_bites_category = CONFIG[:quick_bites_category]
       quick_bites_prefix = /^#{Regexp.escape(quick_bites_category)}(: )?/
       @quick_bites_by_category = @quick_bites

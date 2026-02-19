@@ -70,10 +70,9 @@ module FamilyRecipes
   # Items can be simple strings or hashes with 'name' and 'aliases' keys
   def self.parse_grocery_info(yaml_path)
     raw = YAML.safe_load_file(yaml_path, permitted_classes: [], permitted_symbols: [], aliases: false)
-    aisles = {}
 
-    raw.each do |aisle, items|
-      aisles[aisle] = items.map do |item|
+    raw.transform_values do |items|
+      items.map do |item|
         if item.is_a?(Hash)
           { name: item['name'], aliases: item['aliases'] || [] }
         else
@@ -81,19 +80,14 @@ module FamilyRecipes
         end
       end
     end
-
-    aisles
   end
 
   # Build a reverse lookup map: alias -> canonical name (all keys downcased)
   def self.build_alias_map(grocery_aisles)
-    alias_map = {}
-
-    grocery_aisles.each do |aisle, items|
+    grocery_aisles.each_with_object({}) do |(_, items), alias_map|
       items.each do |item|
         canonical = item[:name]
 
-        # Map canonical name's downcase to itself
         alias_map[canonical.downcase] = canonical
 
         item[:aliases].each do |al|
@@ -111,23 +105,16 @@ module FamilyRecipes
         end
       end
     end
-
-    alias_map
   end
 
   # Build set of all known ingredient names (all entries downcased)
   def self.build_known_ingredients(grocery_aisles, alias_map)
-    known = Set.new
-
-    grocery_aisles.each do |aisle, items|
+    grocery_aisles.each_with_object(Set.new) do |(_, items), known|
       items.each do |item|
         known << item[:name].downcase
         item[:aliases].each { |al| known << al.downcase }
       end
-    end
-
-    known.merge(alias_map.keys)
-    known
+    end.merge(alias_map.keys)
   end
 
   # Parse all recipe files from the given directory into Recipe objects
@@ -173,9 +160,7 @@ module FamilyRecipes
 
   # Write file only if content has changed
   def self.write_file_if_changed(path, content)
-    if File.exist?(path)
-      return if File.read(path) == content
-    end
+    return if File.exist?(path) && File.read(path) == content
 
     File.write(path, content)
     puts "Updated: #{path}"

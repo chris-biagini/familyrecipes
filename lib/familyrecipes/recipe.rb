@@ -71,55 +71,31 @@ class Recipe
   end
 
   def ingredients_with_quantities(alias_map = {})
-    # Group all ingredients by normalized name, preserving first-seen order
-    groups = {}
-    @steps.flat_map(&:ingredients).each do |ingredient|
-      name = ingredient.normalized_name(alias_map)
-      (groups[name] ||= []) << ingredient
-    end
-
-    groups.map do |name, ingredients|
-      [name, IngredientAggregator.aggregate_amounts(ingredients)]
-    end
+    @steps.flat_map(&:ingredients)
+      .group_by { |i| i.normalized_name(alias_map) }
+      .map { |name, ingredients| [name, IngredientAggregator.aggregate_amounts(ingredients)] }
   end
 
   # Ingredients with quantities including expanded cross-references — used for grocery list
   def all_ingredients_with_quantities(alias_map, recipe_map)
-    own = ingredients_with_quantities(alias_map)
-
-    # Merge in cross-reference ingredients
-    merged = {}
-    own.each { |name, amounts| merged[name] = amounts }
+    merged = ingredients_with_quantities(alias_map).to_h
 
     cross_references.each do |xref|
       xref.expanded_ingredients(recipe_map, alias_map).each do |name, amounts|
-        if merged.key?(name)
-          merged[name] = merge_amounts(merged[name], amounts)
-        else
-          merged[name] = amounts
-        end
+        merged[name] = merged.key?(name) ? merge_amounts(merged[name], amounts) : amounts
       end
     end
 
-    merged.map { |name, amounts| [name, amounts] }
+    merged.to_a
   end
 
   private
 
   def merge_amounts(existing, new_amounts)
-    # Combine amount arrays, summing matching units
-    sums = {}
-    has_nil = false
-
-    [existing, new_amounts].each do |amounts|
-      amounts.each do |amount|
-        if amount.nil?
-          has_nil = true
-        else
-          value, unit = amount
-          sums[unit] = (sums[unit] || 0.0) + value
-        end
-      end
+    all = existing + new_amounts
+    has_nil = all.include?(nil)
+    sums = all.compact.each_with_object(Hash.new(0.0)) do |(value, unit), h|
+      h[unit] += value
     end
 
     result = sums.map { |unit, value| [value, unit] }
@@ -139,9 +115,7 @@ class Recipe
     @steps = build_steps(doc[:steps])
     @footer = doc[:footer]
 
-    if @steps.empty?
-      raise StandardError, "Invalid recipe format: Must have at least one step."
-    end
+    raise StandardError, "Invalid recipe format: Must have at least one step." if @steps.empty?
   end
 
   # Convert step hashes from RecipeBuilder into Step objects

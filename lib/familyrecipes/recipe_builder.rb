@@ -149,7 +149,7 @@ class RecipeBuilder
 
     footer_lines = []
 
-    while !at_end?
+    until at_end?
       token = advance
       next if token.type == :blank && footer_lines.empty? # skip leading blanks
 

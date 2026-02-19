@@ -43,13 +43,9 @@ module FamilyRecipes
       @grocery_aisles = FamilyRecipes.parse_grocery_info(grocery_info_path)
       @alias_map = FamilyRecipes.build_alias_map(@grocery_aisles)
       @known_ingredients = FamilyRecipes.build_known_ingredients(@grocery_aisles, @alias_map)
-      @omit_set = Set.new
-      if @grocery_aisles["Omit_From_List"]
-        @grocery_aisles["Omit_From_List"].each do |item|
-          @omit_set << item[:name].downcase
-          item[:aliases].each { |al| @omit_set << al.downcase }
-        end
-      end
+      @omit_set = (@grocery_aisles["Omit_From_List"] || []).flat_map { |item|
+        [item[:name], *item[:aliases]].map(&:downcase)
+      }.to_set
       print "done!\n"
     end
 
@@ -75,18 +71,12 @@ module FamilyRecipes
     end
 
     def parse_quick_bites
-      unless @quick_bites
-        @quick_bites = FamilyRecipes.parse_quick_bites(recipes_dir)
-      end
-
+      @quick_bites ||= FamilyRecipes.parse_quick_bites(recipes_dir)
       print "done! (#{@recipes.size} recipes, #{@quick_bites.size} quick bites.)\n"
     end
 
     def build_recipe_map
-      @recipe_map = {}
-      @recipes.each do |recipe|
-        @recipe_map[recipe.id] = recipe
-      end
+      @recipe_map = @recipes.to_h { |recipe| [recipe.id, recipe] }
     end
 
     def validate_cross_references
@@ -260,24 +250,19 @@ module FamilyRecipes
 
           has_quantity = false
           amounts.each do |amount|
-            if amount.nil?
-              next
-            else
-              has_quantity = true
-              value, unit = amount
-              next if value.nil?
+            next if amount.nil?
+            has_quantity = true
+            value, unit = amount
+            next if value.nil?
 
-              unless @nutrition_calculator.resolvable?(value, unit, entry)
-                info = unresolvable[name]
-                info[:units] << (unit || '(bare count)')
-                info[:recipes] |= [recipe.title]
-              end
+            unless @nutrition_calculator.resolvable?(value, unit, entry)
+              info = unresolvable[name]
+              info[:units] << (unit || '(bare count)')
+              info[:recipes] |= [recipe.title]
             end
           end
 
-          unless has_quantity
-            unquantified[name] |= [recipe.title]
-          end
+          unquantified[name] |= [recipe.title] unless has_quantity
         end
       end
 
@@ -324,11 +309,8 @@ module FamilyRecipes
 
       quick_bites_category = CONFIG[:quick_bites_category]
 
-      grocery_info = {}
-      @grocery_aisles.each do |aisle, items|
-        grocery_info[aisle] = items.map do |item|
-          { name: item[:name] }
-        end
+      grocery_info = @grocery_aisles.transform_values do |items|
+        items.map { |item| { name: item[:name] } }
       end
 
       combined = @recipes_by_category.merge(@quick_bites_by_category)
