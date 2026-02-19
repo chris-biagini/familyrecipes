@@ -25,6 +25,7 @@ module FamilyRecipes
       generate_homepage
       generate_index
       validate_ingredients
+      validate_nutrition
       generate_groceries_page
     end
 
@@ -42,6 +43,13 @@ module FamilyRecipes
       @grocery_aisles = FamilyRecipes.parse_grocery_info(grocery_info_path)
       @alias_map = FamilyRecipes.build_alias_map(@grocery_aisles)
       @known_ingredients = FamilyRecipes.build_known_ingredients(@grocery_aisles, @alias_map)
+      @omit_set = Set.new
+      if @grocery_aisles["Omit_From_List"]
+        @grocery_aisles["Omit_From_List"].each do |item|
+          @omit_set << item[:name].downcase
+          item[:aliases].each { |al| @omit_set << al.downcase }
+        end
+      end
       print "done!\n"
     end
 
@@ -50,14 +58,7 @@ module FamilyRecipes
       if File.exist?(nutrition_path)
         print "Loading nutrition data..."
         nutrition_data = YAML.safe_load_file(nutrition_path, permitted_classes: [], permitted_symbols: [], aliases: false)
-        omit_set = Set.new
-        if @grocery_aisles["Omit_From_List"]
-          @grocery_aisles["Omit_From_List"].each do |item|
-            omit_set << item[:name].downcase
-            item[:aliases].each { |al| omit_set << al.downcase }
-          end
-        end
-        @nutrition_calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data, omit_set: omit_set)
+        @nutrition_calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data, omit_set: @omit_set)
         print "done! (#{nutrition_data.size} ingredients.)\n"
       else
         @nutrition_calculator = nil
@@ -232,6 +233,34 @@ module FamilyRecipes
       end
     end
 
+    def validate_nutrition
+      return unless @nutrition_calculator
+
+      print "Validating nutrition data..."
+
+      ingredients_to_recipes = Hash.new { |h, k| h[k] = [] }
+      @recipes.each do |recipe|
+        recipe.all_ingredient_names(@alias_map).each do |name|
+          ingredients_to_recipes[name] << recipe.title unless @omit_set.include?(name.downcase)
+        end
+      end
+
+      missing = ingredients_to_recipes.keys.reject { |name| @nutrition_calculator.nutrition_data.key?(name) }
+
+      if missing.any?
+        puts "\n"
+        puts "WARNING: The following ingredients are missing nutrition data:"
+        missing.sort.each do |name|
+          recipes = ingredients_to_recipes[name].uniq.sort
+          puts "  - #{name} (in: #{recipes.join(', ')})"
+        end
+        puts "Use bin/nutrition-entry to add data, or edit resources/nutrition-data.yaml directly."
+        puts ""
+      else
+        print "done! (All ingredients have nutrition data.)\n"
+      end
+    end
+
     def generate_groceries_page
       print "Generating groceries page..."
 
@@ -241,14 +270,6 @@ module FamilyRecipes
       @grocery_aisles.each do |aisle, items|
         grocery_info[aisle] = items.map do |item|
           { name: item[:name] }
-        end
-      end
-
-      omitted_ingredients = Set.new
-      if @grocery_aisles["Omit_From_List"]
-        @grocery_aisles["Omit_From_List"].each do |item|
-          omitted_ingredients << item[:name].downcase
-          item[:aliases].each { |al| omitted_ingredients << al.downcase }
         end
       end
 
@@ -269,7 +290,7 @@ module FamilyRecipes
         quick_bites_by_subsection: quick_bites_by_subsection,
         ingredient_database: grocery_info,
         alias_map: @alias_map,
-        omitted_ingredients: omitted_ingredients,
+        omitted_ingredients: @omit_set,
         recipe_map: @recipe_map,
         render: render
       )

@@ -28,6 +28,8 @@ module FamilyRecipes
       end
     end
 
+    attr_reader :nutrition_data
+
     def initialize(nutrition_data, omit_set: Set.new)
       @nutrition_data = nutrition_data
       @omit_set = omit_set
