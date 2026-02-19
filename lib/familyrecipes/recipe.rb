@@ -92,11 +92,11 @@ class Recipe
   def merge_amounts(existing, new_amounts)
     all = existing + new_amounts
     has_nil = all.include?(nil)
-    sums = all.compact.each_with_object(Hash.new(0.0)) do |(value, unit), h|
-      h[unit] += value
+    sums = all.compact.each_with_object(Hash.new(0.0)) do |quantity, h|
+      h[quantity.unit] += quantity.value
     end
 
-    result = sums.map { |unit, value| [value, unit] }
+    result = sums.map { |unit, value| Quantity[value, unit] }
     result << nil if has_nil
     result
   end

@@ -32,8 +32,8 @@ class RecipeTest < Minitest::Test
     amounts = butter[1]
 
     assert_equal 1, amounts.length
-    assert_in_delta(200.0, amounts[0][0])
-    assert_equal 'g', amounts[0][1]
+    assert_in_delta 200.0, amounts[0].value
+    assert_equal 'g', amounts[0].unit
   end
 
   def test_ingredients_with_quantities_mixed_quantified_and_unquantified
@@ -60,9 +60,9 @@ class RecipeTest < Minitest::Test
     refute_nil oil
     amounts = oil[1]
     # Should have [50.0, "g"] and nil
-    numeric = amounts.find { |a| a.is_a?(Array) }
+    numeric = amounts.find { |a| a.is_a?(Quantity) }
 
-    assert_equal [50.0, 'g'], numeric
+    assert_equal Quantity[50.0, 'g'], numeric
     assert_includes amounts, nil
   end
 
@@ -91,7 +91,7 @@ class RecipeTest < Minitest::Test
     amounts = butter[1]
 
     assert_equal 2, amounts.length
-    units = amounts.map { |a| a[1] }.sort
+    units = amounts.map(&:unit).sort
 
     assert_includes units, 'g'
     assert_includes units, 'tbsp'
@@ -156,8 +156,8 @@ class RecipeTest < Minitest::Test
     amounts = egg[1]
 
     assert_equal 1, amounts.length
-    assert_in_delta(3.0, amounts[0][0])
-    assert_nil amounts[0][1]
+    assert_in_delta 3.0, amounts[0].value
+    assert_nil amounts[0].unit
   end
 
   # --- Full recipe parsing ---

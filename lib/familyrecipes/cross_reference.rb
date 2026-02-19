@@ -26,8 +26,7 @@ class CrossReference
       scaled = amounts.map do |amount|
         next nil if amount.nil?
 
-        value, unit = amount
-        [value * @multiplier, unit]
+        Quantity[amount.value * @multiplier, amount.unit]
       end
       [name, scaled]
     end

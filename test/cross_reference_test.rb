@@ -108,12 +108,12 @@ class CrossReferenceTest < Minitest::Test
     flour = expanded.find { |name, _| name == 'Flour' }
 
     refute_nil flour
-    assert_in_delta(1000.0, flour[1].find { |a| a&.first }&.first)
+    assert_in_delta 1000.0, flour[1].find { |a| a.is_a?(Quantity) }.value
 
     water = expanded.find { |name, _| name == 'Water' }
 
     refute_nil water
-    assert_in_delta(650.0, water[1].find { |a| a&.first }&.first)
+    assert_in_delta 650.0, water[1].find { |a| a.is_a?(Quantity) }.value
 
     # Unquantified ingredient (Salt) should have nil amount preserved
     salt = expanded.find { |name, _| name == 'Salt' }
@@ -162,7 +162,7 @@ class CrossReferenceTest < Minitest::Test
     flour = expanded.find { |name, _| name == 'Flour' }
 
     refute_nil flour
-    assert_in_delta(1000.0, flour[1].find { |a| a&.first }&.first)
+    assert_in_delta 1000.0, flour[1].find { |a| a.is_a?(Quantity) }.value
   end
 
   def test_step_ingredient_list_items_preserves_order
