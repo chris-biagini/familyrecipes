@@ -311,26 +311,13 @@ def show_unit_coverage(name, entry, needed_units)
   end
 end
 
-def build_non_volume_portions(classified, needed_units)
+def build_non_volume_portions(classified)
   portions = {}
 
   classified[:non_volume].each do |p|
-    # Use modifier as portion name, normalize
     unit = p[:modifier].downcase.sub(/\s*\(.*\)/, '').strip
     grams = (p[:grams] / p[:amount]).round(2)
-
-    # Map "large", "medium", "small" + item to ~unitless if it looks like a countable
-    if unit.match?(/\A(large|medium|small|extra large)\z/i)
-      portions['~unitless'] ||= grams
-      next
-    end
-
     portions[unit] = grams
-  end
-
-  # If recipes use bare count and no ~unitless yet, check if there's exactly one non-volume portion
-  if needed_units.include?(nil) && !portions.key?('~unitless') && classified[:non_volume].size == 1
-    portions['~unitless'] = (classified[:non_volume].first[:grams] / classified[:non_volume].first[:amount]).round(2)
   end
 
   portions
@@ -357,7 +344,7 @@ def process_ingredient(api_key, name, nutrition_data)
   classified = classify_portions(food_detail)
   density = pick_density(classified[:volume])
   needed_units = find_needed_units(name)
-  portions = build_non_volume_portions(classified, needed_units)
+  portions = build_non_volume_portions(classified)
 
   display_nutrients(nutrients)
   display_density(density)
