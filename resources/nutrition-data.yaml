@@ -1,4 +1,23 @@
 ---
+Baking powder:
+  nutrients:
+    basis_grams: 100.0
+    calories: 53.0
+    fat: 0.0
+    saturated_fat: 0.0
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 10600.0
+    carbs: 27.7
+    fiber: 0.2
+    total_sugars: 0.0
+    protein: 0.0
+    added_sugars: 0.0
+  density:
+    grams: 4.6
+    volume: 1.0
+    unit: tsp
+  source: USDA SR Legacy (FDC 172803)
 Baking soda:
   nutrients:
     basis_grams: 100.0
@@ -18,6 +37,25 @@ Baking soda:
     volume: 1.0
     unit: tsp
   source: USDA SR Legacy (FDC 175040)
+Beans (any dry):
+  nutrients:
+    basis_grams: 100.0
+    calories: 333.0
+    fat: 0.83
+    saturated_fat: 0.12
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 24.0
+    carbs: 60.01
+    fiber: 24.9
+    total_sugars: 2.23
+    protein: 23.58
+    added_sugars: 0.0
+  density:
+    grams: 184.0
+    volume: 1.0
+    unit: cup
+  source: USDA SR Legacy (FDC 175193)
 Black pepper:
   nutrients:
     basis_grams: 100.0
@@ -35,6 +73,25 @@ Black pepper:
   portions:
     dash: 0.1
   source: USDA SR Legacy (FDC 170931)
+Bouillon:
+  nutrients:
+    calories: 25.0
+    fat: 1.0
+    saturated_fat: 0.0
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 630.0
+    carbs: 3.0
+    fiber: 0.0
+    total_sugars: 1.0
+    added_sugars: 0.25
+    protein: 0.0
+    basis_grams: 12.0
+  density:
+    grams: 12.0
+    volume: 2.0
+    unit: tsp
+  source: Wegmans Broth Concentrate, Chicken-Less Vegetarian
 Bread:
   nutrients:
     basis_grams: 100.0
@@ -96,6 +153,101 @@ Butter (unsalted):
     pat: 5.0
     stick: 113.0
   source: USDA SR Legacy (FDC 173430)
+Buttermilk:
+  nutrients:
+    basis_grams: 100.0
+    calories: 62.0
+    fat: 3.31
+    saturated_fat: 1.899
+    trans_fat: 0.0
+    cholesterol: 11.0
+    sodium: 105.0
+    carbs: 4.88
+    fiber: 0.0
+    total_sugars: 4.88
+    protein: 3.21
+    added_sugars: 0.0
+  density:
+    grams: 245.0
+    volume: 1.0
+    unit: cup
+  source: USDA SR Legacy (FDC 172225)
+Carrots:
+  nutrients:
+    basis_grams: 100.0
+    calories: 41.0
+    fat: 0.24
+    saturated_fat: 0.032
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 69.0
+    carbs: 9.58
+    fiber: 2.8
+    total_sugars: 4.74
+    protein: 0.93
+    added_sugars: 0.0
+  portions:
+    small: 50.0
+    medium: 61.0
+    large: 72.0
+    cup chopped: 128.0
+    "~unitless": 72.0
+  source: USDA SR Legacy (FDC 170393)
+Cheddar:
+  nutrients:
+    basis_grams: 100.0
+    calories: 410.0
+    fat: 33.82
+    saturated_fat: 19.368
+    trans_fat: 1.179
+    cholesterol: 99.0
+    sodium: 644.0
+    carbs: 2.13
+    fiber: 0.0
+    total_sugars: 0.27
+    protein: 24.25
+    added_sugars: 0.0
+  portions:
+    slice: 19.0
+  source: USDA SR Legacy (FDC 170899)
+Cinnamon:
+  nutrients:
+    basis_grams: 100.0
+    calories: 247.0
+    fat: 1.24
+    saturated_fat: 0.345
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 10.0
+    carbs: 80.59
+    fiber: 53.1
+    total_sugars: 2.17
+    protein: 3.99
+    added_sugars: 0.0
+  density:
+    grams: 7.8
+    volume: 1.0
+    unit: tbsp
+  source: USDA SR Legacy (FDC 171320)
+Cornmeal:
+  nutrients:
+    basis_grams: 100.0
+    calories: 362.0
+    fat: 3.59
+    saturated_fat: 0.505
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 35.0
+    carbs: 76.89
+    fiber: 7.3
+    total_sugars: 0.64
+    protein: 8.12
+    added_sugars: 0.0
+  density:
+    grams: 122.0
+    volume: 1.0
+    unit: cup
+  source: USDA SR Legacy (FDC 169697)
 Eggs:
   nutrients:
     basis_grams: 100.0
@@ -122,6 +274,25 @@ Eggs:
     large: 50.0
     "~unitless": 50.0
   source: USDA SR Legacy (FDC 171287)
+Flour (00):
+  nutrients:
+    basis_grams: 100.0
+    calories: 364.0
+    fat: 0.98
+    saturated_fat: 0.155
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 2.0
+    carbs: 76.31
+    fiber: 2.7
+    total_sugars: 0.27
+    protein: 10.33
+    added_sugars: 0.0
+  density:
+    grams: 125.0
+    volume: 1.0
+    unit: cup
+  source: USDA SR Legacy (FDC 168936)
 Flour (all-purpose):
   nutrients:
     basis_grams: 30.0
@@ -141,6 +312,40 @@ Flour (all-purpose):
     volume: 0.25
     unit: cup
   source: King Arthur Flour All-Purpose
+Flour (bread):
+  nutrients:
+    basis_grams: 100.0
+    calories: 361.0
+    fat: 1.66
+    saturated_fat: 0.244
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 2.0
+    carbs: 72.53
+    fiber: 2.4
+    total_sugars: 0.31
+    protein: 11.98
+    added_sugars: 0.0
+  source: USDA SR Legacy (FDC 168913)
+Flour (semolina):
+  nutrients:
+    basis_grams: 100.0
+    calories: 360.0
+    fat: 1.05
+    saturated_fat: 0.15
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 1.0
+    carbs: 72.83
+    fiber: 3.9
+    total_sugars: 0.0
+    protein: 12.68
+    added_sugars: 0.0
+  density:
+    grams: 167.0
+    volume: 1.0
+    unit: cup
+  source: USDA SR Legacy (FDC 168933)
 Garlic:
   nutrients:
     basis_grams: 100.0
@@ -162,6 +367,25 @@ Garlic:
   portions:
     clove: 3.0
   source: USDA SR Legacy (FDC 169230)
+Honey:
+  nutrients:
+    basis_grams: 100.0
+    calories: 304.0
+    fat: 0.0
+    saturated_fat: 0.0
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 4.0
+    carbs: 82.4
+    fiber: 0.2
+    total_sugars: 82.12
+    protein: 0.3
+    added_sugars: 0.0
+  density:
+    grams: 339.0
+    volume: 1.0
+    unit: cup
+  source: USDA SR Legacy (FDC 169640)
 Jasmine rice:
   nutrients:
     basis_grams: 100.0
@@ -183,6 +407,78 @@ Jasmine rice:
   source: USDA SR Legacy (FDC 168879)
   portions:
     go: 148.4
+Lemons:
+  nutrients:
+    basis_grams: 100.0
+    calories: 29.0
+    fat: 0.3
+    saturated_fat: 0.039
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 2.0
+    carbs: 9.32
+    fiber: 2.8
+    total_sugars: 2.5
+    protein: 1.1
+    added_sugars: 0.0
+  portions:
+    "~unitless": 58.0
+  source: USDA SR Legacy (FDC 167746)
+Limes:
+  nutrients:
+    basis_grams: 100.0
+    calories: 30.0
+    fat: 0.2
+    saturated_fat: 0.022
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 2.0
+    carbs: 10.54
+    fiber: 2.8
+    total_sugars: 1.69
+    protein: 0.7
+    added_sugars: 0.0
+  portions:
+    "~unitless": 67.0
+  source: USDA SR Legacy (FDC 168155)
+Malt syrup:
+  nutrients:
+    basis_grams: 100.0
+    calories: 318.0
+    fat: 0.0
+    saturated_fat: 0.0
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 35.0
+    carbs: 71.3
+    fiber: 0.0
+    total_sugars: 71.3
+    protein: 6.2
+    added_sugars: 0.0
+  density:
+    grams: 332.0
+    volume: 1.0
+    unit: cup
+  source: USDA SR Legacy (FDC 169660)
+Milk:
+  nutrients:
+    basis_grams: 100.0
+    calories: 64.0
+    fat: 3.66
+    saturated_fat: 2.278
+    trans_fat: 0.0
+    cholesterol: 14.0
+    sodium: 49.0
+    carbs: 4.65
+    fiber: 0.0
+    total_sugars: 0.0
+    protein: 3.28
+    added_sugars: 0.0
+  density:
+    grams: 244.0
+    volume: 1.0
+    unit: cup
+  source: USDA SR Legacy (FDC 171266)
 Mozzarella (low-moisture):
   nutrients:
     basis_grams: 100.0
@@ -199,6 +495,25 @@ Mozzarella (low-moisture):
     added_sugars: 0.0
   source: USDA SR Legacy (FDC 170845)
 Olive oil:
+  nutrients:
+    basis_grams: 100.0
+    calories: 884.0
+    fat: 100.0
+    saturated_fat: 13.808
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 2.0
+    carbs: 0.0
+    fiber: 0.0
+    total_sugars: 0.0
+    protein: 0.0
+    added_sugars: 0.0
+  density:
+    grams: 216.0
+    volume: 1.0
+    unit: cup
+  source: USDA SR Legacy (FDC 171413)
+Olive oil (mild):
   nutrients:
     basis_grams: 100.0
     calories: 884.0
@@ -267,6 +582,30 @@ Parmesan:
     protein: 35.75
     added_sugars: 0.0
   source: USDA SR Legacy (FDC 170848)
+Red bell peppers:
+  nutrients:
+    basis_grams: 100.0
+    calories: 26.0
+    fat: 0.3
+    saturated_fat: 0.059
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 4.0
+    carbs: 6.03
+    fiber: 2.1
+    total_sugars: 4.2
+    protein: 0.99
+    added_sugars: 0.0
+  density:
+    grams: 9.3
+    volume: 1.0
+    unit: tbsp
+  portions:
+    large: 164.0
+    medium: 119.0
+    small: 74.0
+    "~unitless": 164.0
+  source: USDA SR Legacy (FDC 170108)
 Salt:
   nutrients:
     basis_grams: 100.0
@@ -322,6 +661,46 @@ Sugar (white):
     volume: 2.0
     unit: tsp
   source: Wegmans Granulated White Sugar
+Tomato passata:
+  nutrients:
+    basis_grams: 100.0
+    calories: 32.0
+    fat: 0.39
+    saturated_fat: 0.055
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 15.0
+    carbs: 7.09
+    fiber: 1.4
+    total_sugars: 0.0
+    protein: 1.32
+    added_sugars: 0.0
+  density:
+    grams: 244.0
+    volume: 1.0
+    unit: cup
+  source: USDA SR Legacy (FDC 170463)
+Tomato paste:
+  nutrients:
+    basis_grams: 100.0
+    calories: 82.0
+    fat: 0.47
+    saturated_fat: 0.1
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 59.0
+    carbs: 18.91
+    fiber: 4.1
+    total_sugars: 12.18
+    protein: 4.32
+    added_sugars: 0.0
+  density:
+    grams: 262.0
+    volume: 1.0
+    unit: cup
+  portions:
+    can: 170.0
+  source: USDA SR Legacy (FDC 170459)
 Vanilla extract:
   nutrients:
     basis_grams: 100.0
