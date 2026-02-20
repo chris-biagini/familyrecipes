@@ -765,3 +765,58 @@ def run_missing_mode(nutrition_data, ctx, api_key:)
     puts ''
   end
 end
+
+# --- Main ---
+
+if ARGV.include?('--help') || ARGV.include?('-h')
+  puts 'Usage:'
+  puts '  bin/nutrition                        Interactive prompt'
+  puts '  bin/nutrition "Cream cheese"         Enter/edit data for an ingredient'
+  puts '  bin/nutrition --missing              Report + batch iterate missing data'
+  puts '  bin/nutrition --manual "Flour"       Force manual entry (skip USDA)'
+  puts ''
+  puts 'Auto-detects USDA_API_KEY for USDA-first mode. Without a key, defaults'
+  puts 'to manual entry from package labels.'
+  puts ''
+  puts 'USDA setup: set USDA_API_KEY in .env or environment.'
+  puts '  Free key: https://fdc.nal.usda.gov/api-key-signup'
+  puts ''
+  puts 'Serving size examples (manual mode):'
+  puts '  100g                     Just gram weight'
+  puts '  1/4 cup (30g)            Volume + grams (creates density)'
+  puts '  1 slice (21g)            Discrete + grams (auto-portion)'
+  exit 0
+end
+
+api_key = load_api_key
+manual_mode = ARGV.include?('--manual')
+
+if api_key
+  puts 'USDA mode (API key found). Use --manual to enter from labels instead.' unless manual_mode
+else
+  puts 'No USDA_API_KEY found. Using manual entry mode. See --help for USDA setup.'
+end
+
+nutrition_data = load_nutrition_data
+ctx = load_context
+
+if ARGV.include?('--missing')
+  run_missing_mode(nutrition_data, ctx, api_key: manual_mode ? nil : api_key)
+else
+  ingredient_name = ARGV.reject { |a| a.start_with?('-') }.first
+
+  unless ingredient_name
+    print 'Ingredient name: '
+    ingredient_name = $stdin.gets&.strip
+  end
+
+  if ingredient_name.nil? || ingredient_name.empty?
+    warn 'No ingredient name provided.'
+    exit 1
+  end
+
+  resolved = resolve_name(ingredient_name, ctx)
+  exit 0 unless resolved
+
+  handle_ingredient(resolved, nutrition_data, ctx, api_key: manual_mode ? nil : api_key, manual: manual_mode)
+end
