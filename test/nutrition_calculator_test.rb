@@ -6,89 +6,45 @@ class NutritionCalculatorTest < Minitest::Test
   def setup
     @nutrition_data = {
       'Flour (all-purpose)' => {
-        'serving' => { 'grams' => 30 },
-        'per_serving' => {
-          'calories' => 109.2,
-          'protein' => 3.099,
-          'fat' => 0.294,
-          'saturated_fat' => 0.05,
-          'carbs' => 22.893,
-          'fiber' => 0.81,
-          'sodium' => 0.6
+        'nutrients' => {
+          'basis_grams' => 30,
+          'calories' => 109.2, 'protein' => 3.099, 'fat' => 0.294,
+          'saturated_fat' => 0.05, 'carbs' => 22.893, 'fiber' => 0.81, 'sodium' => 0.6
         },
-        'portions' => {
-          'cup' => 125,
-          'tbsp' => 8
-        }
+        'density' => { 'grams' => 125, 'volume' => 1, 'unit' => 'cup' }
       },
       'Eggs' => {
-        'serving' => { 'grams' => 50 },
-        'per_serving' => {
-          'calories' => 71.5,
-          'protein' => 6.28,
-          'fat' => 4.755,
-          'saturated_fat' => 1.6,
-          'carbs' => 0.36,
-          'fiber' => 0,
-          'sodium' => 71
+        'nutrients' => {
+          'basis_grams' => 50,
+          'calories' => 71.5, 'protein' => 6.28, 'fat' => 4.755,
+          'saturated_fat' => 1.6, 'carbs' => 0.36, 'fiber' => 0, 'sodium' => 71
         },
-        'portions' => {
-          '~unitless' => 50
-        }
+        'portions' => { '~unitless' => 50 }
       },
       'Butter' => {
-        'serving' => {
-          'grams' => 14,
-          'volume_amount' => 1,
-          'volume_unit' => 'tbsp'
+        'nutrients' => {
+          'basis_grams' => 14,
+          'calories' => 100.38, 'protein' => 0.119, 'fat' => 11.3554,
+          'saturated_fat' => 7.17, 'carbs' => 0.0084, 'fiber' => 0, 'sodium' => 90.02
         },
-        'per_serving' => {
-          'calories' => 100.38,
-          'protein' => 0.119,
-          'fat' => 11.3554,
-          'saturated_fat' => 7.17,
-          'carbs' => 0.0084,
-          'fiber' => 0,
-          'sodium' => 90.02
-        },
-        'portions' => {
-          'tbsp' => 14.2,
-          'cup' => 227
-        }
+        'density' => { 'grams' => 227, 'volume' => 1, 'unit' => 'cup' },
+        'portions' => { 'stick' => 113.0 }
       },
       'Olive oil' => {
-        'serving' => {
-          'grams' => 14,
-          'volume_amount' => 1,
-          'volume_unit' => 'tbsp'
+        'nutrients' => {
+          'basis_grams' => 14,
+          'calories' => 123.76, 'protein' => 0, 'fat' => 14,
+          'saturated_fat' => 1.9, 'carbs' => 0, 'fiber' => 0, 'sodium' => 0.28
         },
-        'per_serving' => {
-          'calories' => 123.76,
-          'protein' => 0,
-          'fat' => 14,
-          'saturated_fat' => 1.9,
-          'carbs' => 0,
-          'fiber' => 0,
-          'sodium' => 0.28
-        },
-        'portions' => {
-          'tbsp' => 13.5
-        }
+        'density' => { 'grams' => 14, 'volume' => 1, 'unit' => 'tbsp' }
       },
       'Sugar (white)' => {
-        'serving' => { 'grams' => 4 },
-        'per_serving' => {
-          'calories' => 15.48,
-          'protein' => 0,
-          'fat' => 0,
-          'saturated_fat' => 0,
-          'carbs' => 4,
-          'fiber' => 0,
-          'sodium' => 0.04
+        'nutrients' => {
+          'basis_grams' => 4,
+          'calories' => 15.48, 'protein' => 0, 'fat' => 0,
+          'saturated_fat' => 0, 'carbs' => 4, 'fiber' => 0, 'sodium' => 0.04
         },
-        'portions' => {
-          'cup' => 200
-        }
+        'density' => { 'grams' => 200, 'volume' => 1, 'unit' => 'cup' }
       }
     }
 
@@ -166,8 +122,12 @@ class NutritionCalculatorTest < Minitest::Test
 
     result = @calculator.calculate(recipe, @alias_map, @recipe_map)
 
-    # 2 Tbsp * 14.2g = 28.4g; (100.38/14)*28.4 = 203.6 cal
-    assert_in_delta 203.6, result.totals[:calories], 1
+    # 2 Tbsp via density: 227g/cup, 1 cup = 236.588ml, 1 tbsp = 14.787ml
+    # 2 * 14.787ml * (227/236.588) g/ml = 28.37g; (100.38/14)*28.37 = 203.3 cal
+    expected_grams = 2 * 14.787 * (227.0 / 236.588)
+    expected_cal = (100.38 / 14.0) * expected_grams
+
+    assert_in_delta expected_cal, result.totals[:calories], 1
   end
 
   # --- Aggregation across steps ---
@@ -398,8 +358,12 @@ class NutritionCalculatorTest < Minitest::Test
 
     result = @calculator.calculate(pizza_recipe, @alias_map, recipe_map)
 
-    # Flour: 500g = 1820 cal, Olive oil: 2 Tbsp = 27g = 238.7 cal
-    assert_in_delta 2058.7, result.totals[:calories], 2
+    # Flour: 500g = 1820 cal, Olive oil: 2 Tbsp via density (14g/tbsp) = 28g = 247.5 cal
+    flour_cal = (109.2 / 30.0) * 500
+    oil_grams = 2 * 14.787 * (14.0 / 14.787) # density: 14g per 1 tbsp
+    oil_cal = (123.76 / 14.0) * oil_grams
+
+    assert_in_delta flour_cal + oil_cal, result.totals[:calories], 2
   end
 
   def test_cross_reference_with_multiplier
@@ -514,7 +478,7 @@ class NutritionCalculatorTest < Minitest::Test
   # --- Volumetric with density fallback ---
 
   def test_density_derived_volume_conversion
-    # Olive oil has volume_amount/volume_unit in serving but NO cup portion
+    # Olive oil has density hash (14g per 1 tbsp) but no cup portion
     # Density: 14g / (1 * 14.787ml) = 0.9468 g/ml
     # 1 cup = 236.588ml * 0.9468 = 224.0g
     recipe = make_recipe(<<~MD)
@@ -537,23 +501,22 @@ class NutritionCalculatorTest < Minitest::Test
     assert_empty result.partial_ingredients
   end
 
-  def test_portion_takes_priority_over_density
-    # Butter has both a tbsp portion (14.2) and density info.
-    # The explicit portion should be used.
+  def test_named_portion_resolves
+    # Butter has a 'stick' portion (113g) — resolves via named portion
     recipe = make_recipe(<<~MD)
       # Test
 
       ## Mix (combine)
 
-      - Butter, 1 Tbsp
+      - Butter, 1 stick
 
       Mix.
     MD
 
     result = @calculator.calculate(recipe, @alias_map, @recipe_map)
 
-    # Uses portion: 1 * 14.2g, NOT density-derived
-    expected_cal = (100.38 / 14.0) * 14.2
+    # 1 stick = 113g; (100.38/14)*113 = 810.2 cal
+    expected_cal = (100.38 / 14.0) * 113.0
 
     assert_in_delta expected_cal, result.totals[:calories], 1
   end
@@ -621,8 +584,12 @@ class NutritionCalculatorTest < Minitest::Test
 
     result = @calculator.calculate(recipe, @alias_map, @recipe_map)
 
-    # 1 tbsp butter = 14.2g; (100.38/14)*14.2 = 101.8 cal
-    assert_in_delta 101.8, result.totals[:calories], 1
+    # 1 tbsp butter via density: 14.787ml * (227/236.588) g/ml = 14.19g
+    # (100.38/14)*14.19 = 101.7 cal
+    expected_grams = 14.787 * (227.0 / 236.588)
+    expected_cal = (100.38 / 14.0) * expected_grams
+
+    assert_in_delta expected_cal, result.totals[:calories], 1
     assert_empty result.partial_ingredients
   end
 
@@ -657,13 +624,13 @@ class NutritionCalculatorTest < Minitest::Test
   def test_new_nutrients_calculated
     nutrition_data = {
       'Butter' => {
-        'serving' => { 'grams' => 14 },
-        'per_serving' => {
+        'nutrients' => {
+          'basis_grams' => 14,
           'calories' => 100, 'fat' => 11, 'saturated_fat' => 7, 'trans_fat' => 0.5,
           'cholesterol' => 30, 'sodium' => 90, 'carbs' => 0, 'fiber' => 0,
           'total_sugars' => 0, 'added_sugars' => 0, 'protein' => 0.1
         },
-        'portions' => { 'tbsp' => 14 }
+        'portions' => { 'stick' => 113 }
       }
     }
     calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data)
@@ -688,15 +655,15 @@ class NutritionCalculatorTest < Minitest::Test
   end
 
   def test_missing_new_nutrient_keys_default_to_zero
-    # Old-style entry without new nutrients
+    # Entry without new nutrients (trans_fat, cholesterol, etc.)
     nutrition_data = {
       'Flour (all-purpose)' => {
-        'serving' => { 'grams' => 30 },
-        'per_serving' => {
+        'nutrients' => {
+          'basis_grams' => 30,
           'calories' => 109.2, 'protein' => 3.0, 'fat' => 0.3,
           'saturated_fat' => 0.05, 'carbs' => 22.9, 'fiber' => 0.8, 'sodium' => 0.6
         },
-        'portions' => { 'cup' => 125 }
+        'density' => { 'grams' => 125, 'volume' => 1, 'unit' => 'cup' }
       }
     }
     calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data)
@@ -724,15 +691,13 @@ class NutritionCalculatorTest < Minitest::Test
 
   # --- Schema validation (#11) ---
 
-  def test_malformed_entry_missing_serving_grams
+  def test_malformed_entry_missing_basis_grams
     nutrition_data = {
       'Good' => {
-        'serving' => { 'grams' => 30 },
-        'per_serving' => { 'calories' => 100 }
+        'nutrients' => { 'basis_grams' => 30, 'calories' => 100 }
       },
       'Bad' => {
-        'serving' => {},
-        'per_serving' => { 'calories' => 100 }
+        'nutrients' => { 'calories' => 100 }
       }
     }
 
@@ -746,11 +711,10 @@ class NutritionCalculatorTest < Minitest::Test
     assert_match(/Bad/, err)
   end
 
-  def test_malformed_entry_invalid_per_serving
+  def test_malformed_entry_invalid_nutrients
     nutrition_data = {
       'Bad2' => {
-        'serving' => { 'grams' => 30 },
-        'per_serving' => 'not a hash'
+        'nutrients' => 'not a hash'
       }
     }
 
@@ -763,11 +727,10 @@ class NutritionCalculatorTest < Minitest::Test
     assert_match(/Bad2/, err)
   end
 
-  def test_zero_serving_grams_skipped
+  def test_zero_basis_grams_skipped
     nutrition_data = {
       'ZeroGrams' => {
-        'serving' => { 'grams' => 0 },
-        'per_serving' => { 'calories' => 100 }
+        'nutrients' => { 'basis_grams' => 0, 'calories' => 100 }
       }
     }
 

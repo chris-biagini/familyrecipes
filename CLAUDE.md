@@ -199,7 +199,7 @@ All templates use relative paths resolved via an HTML `<base>` tag, so the site 
 - `IngredientAggregator` - Sums ingredient quantities by unit for grocery list display
 - `CrossReference` - A reference from one recipe to another (e.g., `@[Pizza Dough]`), renders as a link
 - `ScalableNumberPreprocessor` - Wraps numbers in `<span class="scalable">` tags for client-side scaling
-- `NutritionCalculator` - Calculates per-recipe and per-serving nutrition facts from ingredient quantities
+- `NutritionCalculator` - Calculates nutrition facts using density-first data model (nutrients/basis_grams + density)
 - `NutritionEntryHelpers` - Shared helpers for nutrition entry: serving size parsing, fractions, singularization
 - `PdfGenerator` - Generates PDF output (uses templates in `templates/pdf/`)
 
@@ -222,7 +222,7 @@ All templates use relative paths resolved via an HTML `<base>` tag, so the site 
 
 **Resources**:
 - `resources/grocery-info.yaml` - ingredient-to-aisle mappings
-- `resources/nutrition-data.yaml` - per-serving nutrition facts, serving sizes, and portion weights
+- `resources/nutrition-data.yaml` - density-first nutrition data (nutrients per basis_grams, density, portions)
 - `resources/web/style.css` - main stylesheet; `groceries.css` for the grocery page
 - `resources/web/recipe-state-manager.js` - scaling, cross-off, state persistence; `groceries.js` for the grocery page
 - `resources/web/` also contains: service worker (`sw.js`), wake lock, notifications, QR codes, PWA manifest, 404 page, favicons
@@ -276,11 +276,42 @@ Optional footer content (notes, source, etc.)
 
 ## Nutrition Data
 
-`bin/nutrition-entry` is an interactive CLI for adding nutrition facts from package labels. It stores per-serving values in `resources/nutrition-data.yaml`, prompting for 11 FDA-label nutrients individually (Enter = 0 for zeros). It auto-resolves ingredient names via the grocery-info.yaml alias map and shows which units recipes need during portion entry. Usage:
+Nutrition data uses a **density-first model** stored in `resources/nutrition-data.yaml`. Each entry has:
+
+```yaml
+Flour (all-purpose):
+  nutrients:
+    basis_grams: 30.0        # gram weight these nutrient values are based on
+    calories: 110.0           # 11 FDA-label nutrients follow
+    fat: 0.0
+    # ... (saturated_fat, trans_fat, cholesterol, sodium, carbs, fiber,
+    #       total_sugars, added_sugars, protein)
+  density:                    # optional — enables volume unit resolution
+    grams: 30.0
+    volume: 0.25
+    unit: cup
+  portions:                   # optional — non-volume named portions only
+    stick: 113.0              # e.g., "1 stick" = 113g
+    ~unitless: 50             # bare count (e.g., "Eggs, 3")
+  source: King Arthur Flour   # optional provenance note
+```
+
+**Key principles:**
+- `basis_grams` is the gram weight the nutrient values correspond to (not necessarily 100g)
+- Volume units (cup, tbsp, tsp) are **derived from `density` at build time** — never stored as portions
+- `portions` only holds non-volume units like `stick`, `~unitless`, `slice`, etc.
+- `NutritionCalculator` resolves units in order: weight > named portion > density-derived volume
+
+**Two entry tools:**
 
 ```bash
-bin/nutrition-entry "Cream cheese"   # Enter data for a specific ingredient
-bin/nutrition-entry --missing         # List ingredients missing nutrition data
+bin/nutrition-entry "Cream cheese"   # Manual entry from package labels
+bin/nutrition-entry --missing         # List ingredients missing data
+
+bin/nutrition-usda "Butter"          # Import from USDA SR Legacy database
+bin/nutrition-usda --missing          # Batch: iterate missing ingredients
 ```
+
+`bin/nutrition-usda` queries the USDA FoodData Central API (SR Legacy dataset), extracts per-100g nutrients, derives density from volume portions, and maps non-volume portions. Requires `USDA_API_KEY` in `.env` (free at https://fdc.nal.usda.gov/api-key-signup).
 
 During `bin/generate`, the build validates that all recipe ingredients have nutrition data and prints warnings for any that are missing.
