@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Your goal is a high-quality, well-crafted user experience. Improve the end product. Make it delightful, charming, and fun. Finish the back of the cabinet even though no one will see it. Always feel free to challenge assumptions, misconceptions, and poor design decisions. Be as opinionated as this document and push back on my ideas when you need to. Suggest any quality-of-life, performance, or feature improvements that come to mind. Always use the superpowers skill and plan mode when getting ready to write code or build a new feature. 
 
+Note that I would like to someday start serving this project via Rails, and upgrading it to allow web-based editing of data. I'd also like to someday package it for deployment in Docker for homelab users. Don't prematurely optimize, but keep these goals in mind when planning.  
+
 ### Visual language
 
 The visual identity evokes **red-checked tablecloths** and **mid-century cookbooks** — the `<main>` content card is a cookbook page; the gingham background is the tablecloth peeking out around it. When designing new UI elements, ask: would this feel at home in a well-loved cookbook from the 1960s that somehow learned a few new tricks?
