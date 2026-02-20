@@ -10,7 +10,6 @@ module IngredientAggregator
   def self.aggregate_amounts(ingredients)
     parsed = ingredients.map do |ingredient|
       unit = ingredient.quantity_unit
-      unit = FamilyRecipes::Inflector.normalize_unit(unit) if unit
       numeric = Float(ingredient.quantity_value, exception: false) if ingredient.quantity_value
       [unit, numeric]
     end
