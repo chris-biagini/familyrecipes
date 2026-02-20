@@ -101,36 +101,39 @@ class FamilyRecipesTest < Minitest::Test
   def test_build_alias_map
     grocery_aisles = {
       'Produce' => [
-        { name: 'Apples', aliases: ['Granny Smith apples', 'Gala apples'] }
+        { name: 'Apple', aliases: ['Granny Smith apple', 'Gala apple'] }
       ]
     }
 
     alias_map = FamilyRecipes.build_alias_map(grocery_aisles)
 
     # Canonical name downcased maps to canonical
-    assert_equal 'Apples', alias_map['apples']
+    assert_equal 'Apple', alias_map['apple']
 
     # Direct aliases (downcased) should map to canonical
-    assert_equal 'Apples', alias_map['granny smith apples']
-    assert_equal 'Apples', alias_map['gala apples']
+    assert_equal 'Apple', alias_map['granny smith apple']
+    assert_equal 'Apple', alias_map['gala apple']
 
-    # Singular (downcased) should map to canonical
-    assert_equal 'Apples', alias_map['apple']
+    # Plural (downcased) should map to canonical
+    assert_equal 'Apple', alias_map['apples']
+    assert_equal 'Apple', alias_map['granny smith apples']
+    assert_equal 'Apple', alias_map['gala apples']
   end
 
   def test_build_known_ingredients
     grocery_aisles = {
       'Produce' => [
-        { name: 'Apples', aliases: ['Gala apples'] }
+        { name: 'Apple', aliases: ['Gala apple'] }
       ]
     }
-    alias_map = { 'gala apples' => 'Apples', 'apple' => 'Apples' }
+    alias_map = { 'gala apple' => 'Apple', 'apples' => 'Apple', 'gala apples' => 'Apple' }
 
     known = FamilyRecipes.build_known_ingredients(grocery_aisles, alias_map)
 
+    assert_includes known, 'apple'
+    assert_includes known, 'gala apple'
     assert_includes known, 'apples'
     assert_includes known, 'gala apples'
-    assert_includes known, 'apple'
   end
 
   def test_write_file_if_changed_writes_new_file

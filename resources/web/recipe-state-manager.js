@@ -150,8 +150,10 @@ class RecipeStateManager {
       .querySelectorAll('li[data-quantity-value]')
       .forEach(li => {
         const orig = parseFloat(li.dataset.quantityValue);
-        const unit = li.dataset.quantityUnit || '';
+        const unitSingular = li.dataset.quantityUnit || '';
+        const unitPlural = li.dataset.quantityUnitPlural || unitSingular;
         const scaled = orig * factor;
+        const unit = (scaled === 1) ? unitSingular : unitPlural;
         const pretty = Number.isInteger(scaled)
           ? scaled
           : Math.round(scaled * 100) / 100;

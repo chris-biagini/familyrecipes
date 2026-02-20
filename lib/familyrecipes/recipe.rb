@@ -39,6 +39,7 @@ class Recipe
     ERB.new(template, trim_mode: '-').result_with_hash(
       markdown: MARKDOWN,
       render: ->(name, locals = {}) { FamilyRecipes.render_partial(name, locals) },
+      inflector: FamilyRecipes::Inflector,
       title: @title,
       description: @description,
       yield_line: @yield_line,

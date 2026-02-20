@@ -98,7 +98,7 @@
             <li data-item="<%= h.call(ingredient[:name]) %>" hidden>
               <label class="check-off">
                 <input type="checkbox">
-                <span><%= ingredient[:name] %><span class="qty"></span></span>
+                <span><%= ingredient[:display_name] %><span class="qty"></span></span>
               </label>
             </li>
           <%- end -%>
@@ -114,6 +114,9 @@
     </div>
   </main>
 
+<script>
+  window.UNIT_PLURALS = <%= unit_plurals.to_json %>;
+</script>
 <script src="notify.js" defer></script>
 <script src="wake-lock.js" defer></script>
 <script src="qrcodegen.js" defer></script>

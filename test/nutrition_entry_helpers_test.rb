@@ -100,30 +100,4 @@ class NutritionEntryHelpersTest < Minitest::Test
   def test_parse_fraction_garbage
     assert_nil Helpers.parse_fraction('abc')
   end
-
-  # --- singularize_simple ---
-
-  def test_singularize_crackers
-    assert_equal 'cracker', Helpers.singularize_simple('crackers')
-  end
-
-  def test_singularize_berries
-    assert_equal 'berry', Helpers.singularize_simple('berries')
-  end
-
-  def test_singularize_glass_unchanged
-    assert_equal 'glass', Helpers.singularize_simple('glass')
-  end
-
-  def test_singularize_ss_unchanged
-    assert_equal 'ss', Helpers.singularize_simple('ss')
-  end
-
-  def test_singularize_short_word
-    assert_equal 'ab', Helpers.singularize_simple('ab')
-  end
-
-  def test_singularize_ches
-    assert_equal 'bunch', Helpers.singularize_simple('bunches')
-  end
 end

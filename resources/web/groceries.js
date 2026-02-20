@@ -216,6 +216,12 @@
     return parseFloat(val.toFixed(2)).toString();
   }
 
+  function displayUnit(unit, qty) {
+    if (!unit) return '';
+    if (qty === 1) return unit;
+    return (window.UNIT_PLURALS && window.UNIT_PLURALS[unit]) || unit;
+  }
+
   function aggregateQuantities(info) {
     var recipes = info.recipes; // Map of title -> amounts array
     if (recipes.size === 0) return { display: null, tooltip: null };
@@ -235,7 +241,7 @@
           var unit = a[1] || '';
           sums[unit] = (sums[unit] || 0) + val;
           var part = formatQtyNumber(val);
-          if (unit) part += '\u00a0' + unit;
+          if (unit) part += '\u00a0' + displayUnit(unit, val);
           recipeParts.push(part);
         }
       });
@@ -250,7 +256,7 @@
     for (var i = 0; i < units.length; i++) {
       var unit = units[i];
       var str = formatQtyNumber(sums[unit]);
-      if (unit) str += '\u00a0' + unit;
+      if (unit) str += '\u00a0' + displayUnit(unit, sums[unit]);
       parts.push(str);
     }
 

@@ -171,8 +171,10 @@ module FamilyRecipes
       quick_bites_category = CONFIG[:quick_bites_category]
 
       grocery_info = @grocery_aisles.transform_values do |items|
-        items.map { |item| { name: item[:name] } }
+        items.map { |item| { name: item[:name], display_name: Inflector.name_for_grocery(item[:name]) } }
       end
+
+      unit_plurals = collect_unit_plurals
 
       combined = @recipes_by_category.merge(@quick_bites_by_category)
 
@@ -193,9 +195,18 @@ module FamilyRecipes
                                     alias_map: @alias_map,
                                     omitted_ingredients: @omit_set,
                                     recipe_map: @recipe_map,
-                                    render: render)
+                                    render: render,
+                                    unit_plurals: unit_plurals)
 
       print "done!\n"
+    end
+
+    def collect_unit_plurals
+      @recipes
+        .flat_map { |r| r.all_ingredients_with_quantities(@alias_map, @recipe_map) }
+        .flat_map { |_, amounts| amounts.compact.filter_map(&:unit) }
+        .uniq
+        .to_h { |u| [u, Inflector.unit_display(u, 2)] }
     end
   end
 end
