@@ -129,3 +129,155 @@ def load_api_key
   end
   nil
 end
+
+# --- USDA API interaction ---
+
+def search_usda(api_key, query)
+  uri = URI('https://api.nal.usda.gov/fdc/v1/foods/search')
+  body = {
+    query: query,
+    dataType: ['SR Legacy'],
+    pageSize: 10
+  }.to_json
+
+  request = Net::HTTP::Post.new(uri, 'Content-Type' => 'application/json')
+  request['X-Api-Key'] = api_key
+  request.body = body
+
+  response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(request) }
+  JSON.parse(response.body)
+end
+
+def fetch_usda_detail(api_key, fdc_id)
+  uri = URI("https://api.nal.usda.gov/fdc/v1/food/#{fdc_id}")
+  request = Net::HTTP::Get.new(uri)
+  request['X-Api-Key'] = api_key
+
+  response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(request) }
+  JSON.parse(response.body)
+end
+
+# --- USDA data extraction ---
+
+def extract_nutrients(food_detail)
+  nutrients = { 'basis_grams' => 100.0 }
+  NUTRIENT_MAP.each_value { |key| nutrients[key] = 0.0 }
+
+  food_detail['foodNutrients']&.each do |fn|
+    number = fn.dig('nutrient', 'number')
+    next unless number
+
+    our_key = NUTRIENT_MAP[number]
+    next unless our_key
+
+    nutrients[our_key] = (fn['amount'] || 0.0).round(4)
+  end
+
+  # added_sugars not in SR Legacy — default to 0
+  nutrients['added_sugars'] = 0.0
+
+  nutrients
+end
+
+def volume_unit?(modifier)
+  clean = modifier.to_s.downcase.sub(/\s*\(.*\)/, '').strip
+  VOLUME_UNITS.include?(clean)
+end
+
+def normalize_volume_unit(modifier)
+  clean = modifier.to_s.downcase.sub(/\s*\(.*\)/, '').strip
+  case clean
+  when 'cups' then 'cup'
+  when 'tablespoon', 'tablespoons' then 'tbsp'
+  when 'teaspoon', 'teaspoons' then 'tsp'
+  else clean
+  end
+end
+
+def classify_portions(food_detail)
+  volume = []
+  non_volume = []
+
+  food_detail['foodPortions']&.each do |portion|
+    modifier = portion['modifier'].to_s
+    next if modifier.empty?
+
+    grams = portion['gramWeight']
+    amount = portion['amount'] || 1.0
+    next unless grams&.positive?
+
+    entry = { modifier: modifier, grams: grams, amount: amount }
+
+    if volume_unit?(modifier)
+      volume << entry
+    else
+      non_volume << entry
+    end
+  end
+
+  { volume: volume, non_volume: non_volume }
+end
+
+def pick_density(volume_portions)
+  return nil if volume_portions.empty?
+
+  best = volume_portions.max_by { |p| p[:grams] }
+  unit = normalize_volume_unit(best[:modifier])
+
+  { 'grams' => best[:grams].round(2), 'volume' => best[:amount], 'unit' => unit }
+end
+
+def build_non_volume_portions(classified)
+  classified[:non_volume].to_h do |p|
+    unit = p[:modifier].downcase.sub(/\s*\(.*\)/, '').strip
+    grams = (p[:grams] / p[:amount]).round(2)
+    [unit, grams]
+  end
+end
+
+# --- Display helpers ---
+
+def display_entry(name, entry)
+  puts "\n--- #{name} ---"
+
+  basis = entry.dig('nutrients', 'basis_grams') || '?'
+  puts "  Nutrients (per #{basis}g):"
+  NUTRIENTS.each do |n|
+    indent = '  ' * n[:indent]
+    value = entry.dig('nutrients', n[:key]) || 0
+    unit_str = n[:unit].empty? ? '' : " #{n[:unit]}"
+    puts "    #{indent}#{n[:label]}: #{value}#{unit_str}"
+  end
+
+  density = entry['density']
+  if density
+    puts "  Density: #{density['grams']}g per #{density['volume']} #{density['unit']}"
+  else
+    puts '  Density: none'
+  end
+
+  portions = entry['portions'] || {}
+  if portions.any?
+    puts "  Portions: #{portions.map { |k, v| "#{k}=#{v}g" }.join(', ')}"
+  else
+    puts '  Portions: none'
+  end
+
+  puts "  Source: #{entry['source']}" if entry['source']
+end
+
+def display_unit_coverage(name, entry, needed_units)
+  return if needed_units.empty?
+
+  calculator = FamilyRecipes::NutritionCalculator.new({ name => entry })
+  entry_data = calculator.nutrition_data[name]
+  return unless entry_data
+
+  puts "\n  Unit coverage for recipes:"
+  needed_units.each do |unit|
+    label = unit || '(bare count)'
+    resolved = calculator.resolvable?(1, unit, entry_data)
+    status = resolved ? 'OK' : 'MISSING'
+    puts "    #{label}: #{status}"
+  end
+end
