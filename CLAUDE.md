@@ -302,16 +302,14 @@ Flour (all-purpose):
 - `portions` only holds non-volume units like `stick`, `~unitless`, `slice`, etc.
 - `NutritionCalculator` resolves units in order: weight > named portion > density-derived volume
 
-**Two entry tools:**
+**Entry tool:**
 
 ```bash
-bin/nutrition-entry "Cream cheese"   # Manual entry from package labels
-bin/nutrition-entry --missing         # List ingredients missing data
-
-bin/nutrition-usda "Butter"          # Import from USDA SR Legacy database
-bin/nutrition-usda --missing          # Batch: iterate missing ingredients
+bin/nutrition "Cream cheese"   # Enter/edit data (USDA-first or manual)
+bin/nutrition --missing         # Report + batch iterate missing ingredients
+bin/nutrition --manual "Flour"  # Force manual entry from package labels
 ```
 
-`bin/nutrition-usda` queries the USDA FoodData Central API (SR Legacy dataset), extracts per-100g nutrients, derives density from volume portions, and maps non-volume portions. Requires `USDA_API_KEY` in `.env` (free at https://fdc.nal.usda.gov/api-key-signup).
+`bin/nutrition` auto-detects `USDA_API_KEY` (from `.env` or environment): when present, it searches the USDA SR Legacy dataset first and falls back to manual entry; when absent, it defaults to manual entry from package labels. Existing entries open in an edit menu for surgical fixes (e.g., adding missing portions). Requires `USDA_API_KEY` for USDA mode (free at https://fdc.nal.usda.gov/api-key-signup).
 
 During `bin/generate`, the build validates that all recipe ingredients have nutrition data and prints warnings for any that are missing.

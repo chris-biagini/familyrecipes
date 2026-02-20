@@ -46,6 +46,11 @@ Metrics/PerceivedComplexity:
     - bin/*
     - test/**/*
 
+Metrics/BlockLength:
+  Exclude:
+    - bin/*
+    - test/**/*
+
 Metrics/ClassLength:
   Max: 275
   Exclude:
