@@ -4,15 +4,7 @@ module FamilyRecipes
   module NutritionEntryHelpers
     KNOWN_VOLUME_UNITS = %w[cup cups tbsp tablespoon tablespoons tsp teaspoon teaspoons ml l liter liters].freeze
 
-    SINGULARIZE_MAP = {
-      'crackers' => 'cracker', 'slices' => 'slice', 'pieces' => 'piece',
-      'cloves' => 'clove', 'stalks' => 'stalk', 'sticks' => 'stick',
-      'items' => 'item', 'eggs' => '~unitless', 'tortillas' => 'tortilla',
-      'cookies' => 'cookie', 'chips' => 'chip', 'sheets' => 'sheet',
-      'strips' => 'strip', 'cubes' => 'cube', 'rings' => 'ring',
-      'patties' => 'patty', 'balls' => 'ball', 'links' => 'link',
-      'servings' => 'serving'
-    }.freeze
+    NUTRITION_UNIT_OVERRIDES = { 'eggs' => '~unitless' }.freeze
 
     def self.parse_fraction(str)
       str = str.to_s.strip
@@ -72,26 +64,12 @@ module FamilyRecipes
         result[:volume_unit] = canonical
       else
         # Discrete unit -> create auto-portion
-        singular = SINGULARIZE_MAP[unit_down] || singularize_simple(unit_down)
+        singular = NUTRITION_UNIT_OVERRIDES[unit_down] || Inflector.normalize_unit(unit_down)
         grams_per_one = (grams / amount).round(2)
         result[:auto_portion] = { unit: singular, grams: grams_per_one }
       end
 
       result
-    end
-
-    def self.singularize_simple(word)
-      return word if word.length < 3
-
-      if word.end_with?('ies')
-        "#{word[0..-4]}y"
-      elsif word.end_with?('ses', 'xes', 'zes', 'ches', 'shes')
-        word[0..-3]
-      elsif word.end_with?('s') && !word.end_with?('ss')
-        word[0..-2]
-      else
-        word
-      end
     end
 
     def self.volume_to_ml(unit)
