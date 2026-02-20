@@ -169,6 +169,7 @@ end
 
 require_relative 'familyrecipes/quantity'
 require_relative 'familyrecipes/scalable_number_preprocessor'
+require_relative 'familyrecipes/inflector'
 require_relative 'familyrecipes/ingredient'
 require_relative 'familyrecipes/ingredient_aggregator'
 require_relative 'familyrecipes/ingredient_parser'
