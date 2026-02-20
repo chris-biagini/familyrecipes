@@ -17,7 +17,11 @@ Baking powder:
     grams: 4.6
     volume: 1.0
     unit: tsp
-  source: USDA SR Legacy (FDC 172803)
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 172803
+    description: Leavening agents, baking powder, double-acting, sodium aluminum sulfate
 Baking soda:
   nutrients:
     basis_grams: 100.0
@@ -36,7 +40,11 @@ Baking soda:
     grams: 4.6
     volume: 1.0
     unit: tsp
-  source: USDA SR Legacy (FDC 175040)
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 175040
+    description: Leavening agents, baking soda
 Beans (any dry):
   nutrients:
     basis_grams: 100.0
@@ -55,7 +63,11 @@ Beans (any dry):
     grams: 184.0
     volume: 1.0
     unit: cup
-  source: USDA SR Legacy (FDC 175193)
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 175193
+    description: Beans, kidney, all types, mature seeds, raw
 Black pepper:
   nutrients:
     basis_grams: 100.0
@@ -72,7 +84,11 @@ Black pepper:
     added_sugars: 0.0
   portions:
     dash: 0.1
-  source: USDA SR Legacy (FDC 170931)
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 170931
+    description: Spices, pepper, black
 Bouillon:
   nutrients:
     calories: 25.0
@@ -91,7 +107,9 @@ Bouillon:
     grams: 12.0
     volume: 2.0
     unit: tsp
-  source: Wegmans Broth Concentrate, Chicken-Less Vegetarian
+  sources:
+  - type: label
+    product: Wegmans Broth Concentrate, Chicken-Less Vegetarian
 Bread:
   nutrients:
     basis_grams: 100.0
@@ -108,7 +126,11 @@ Bread:
     added_sugars: 0.0
   portions:
     slice: 28.0
-  source: USDA SR Legacy (FDC 167532)
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 167532
+    description: Bread, white wheat
 Butter:
   nutrients:
     basis_grams: 100.0
@@ -130,7 +152,11 @@ Butter:
   portions:
     pat: 5.0
     stick: 113.0
-  source: USDA SR Legacy (FDC 173410)
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 173410
+    description: Butter, salted
 Butter (unsalted):
   nutrients:
     basis_grams: 100.0
@@ -152,7 +178,11 @@ Butter (unsalted):
   portions:
     pat: 5.0
     stick: 113.0
-  source: USDA SR Legacy (FDC 173430)
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 173430
+    description: Butter, without salt
 Buttermilk:
   nutrients:
     basis_grams: 100.0
@@ -171,7 +201,11 @@ Buttermilk:
     grams: 245.0
     volume: 1.0
     unit: cup
-  source: USDA SR Legacy (FDC 172225)
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 172225
+    description: Milk, buttermilk, fluid, whole
 Carrots:
   nutrients:
     basis_grams: 100.0
@@ -192,7 +226,11 @@ Carrots:
     large: 72.0
     cup chopped: 128.0
     "~unitless": 72.0
-  source: USDA SR Legacy (FDC 170393)
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 170393
+    description: Carrots, raw
 Cheddar:
   nutrients:
     basis_grams: 100.0
@@ -209,7 +247,11 @@ Cheddar:
     added_sugars: 0.0
   portions:
     slice: 19.0
-  source: USDA SR Legacy (FDC 170899)
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 170899
+    description: Cheese, cheddar, sharp, sliced
 Cinnamon:
   nutrients:
     basis_grams: 100.0
@@ -228,7 +270,11 @@ Cinnamon:
     grams: 7.8
     volume: 1.0
     unit: tbsp
-  source: USDA SR Legacy (FDC 171320)
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 171320
+    description: Spices, cinnamon, ground
 Cornmeal:
   nutrients:
     basis_grams: 100.0
@@ -247,7 +293,11 @@ Cornmeal:
     grams: 122.0
     volume: 1.0
     unit: cup
-  source: USDA SR Legacy (FDC 169697)
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 169697
+    description: Cornmeal, whole-grain, yellow
 Eggs:
   nutrients:
     basis_grams: 100.0
@@ -273,7 +323,11 @@ Eggs:
     jumbo: 63.0
     large: 50.0
     "~unitless": 50.0
-  source: USDA SR Legacy (FDC 171287)
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 171287
+    description: Egg, whole, raw, fresh
 Flour (00):
   nutrients:
     basis_grams: 100.0
@@ -292,7 +346,11 @@ Flour (00):
     grams: 125.0
     volume: 1.0
     unit: cup
-  source: USDA SR Legacy (FDC 168936)
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 168936
+    description: Wheat flour, white, all-purpose, enriched, unbleached
 Flour (all-purpose):
   nutrients:
     basis_grams: 30.0
@@ -311,7 +369,9 @@ Flour (all-purpose):
     grams: 30.0
     volume: 0.25
     unit: cup
-  source: King Arthur Flour All-Purpose
+  sources:
+  - type: label
+    product: King Arthur Flour All-Purpose
 Flour (bread):
   nutrients:
     basis_grams: 100.0
@@ -326,7 +386,11 @@ Flour (bread):
     total_sugars: 0.31
     protein: 11.98
     added_sugars: 0.0
-  source: USDA SR Legacy (FDC 168913)
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 168913
+    description: Wheat flours, bread, unenriched
 Flour (semolina):
   nutrients:
     basis_grams: 100.0
@@ -345,7 +409,11 @@ Flour (semolina):
     grams: 167.0
     volume: 1.0
     unit: cup
-  source: USDA SR Legacy (FDC 168933)
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 168933
+    description: Semolina, unenriched
 Garlic:
   nutrients:
     basis_grams: 100.0
@@ -366,7 +434,11 @@ Garlic:
     unit: cup
   portions:
     clove: 3.0
-  source: USDA SR Legacy (FDC 169230)
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 169230
+    description: Garlic, raw
 Honey:
   nutrients:
     basis_grams: 100.0
@@ -385,7 +457,11 @@ Honey:
     grams: 339.0
     volume: 1.0
     unit: cup
-  source: USDA SR Legacy (FDC 169640)
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 169640
+    description: Honey
 Jasmine rice:
   nutrients:
     basis_grams: 100.0
@@ -404,9 +480,13 @@ Jasmine rice:
     grams: 195.0
     volume: 1.0
     unit: cup
-  source: USDA SR Legacy (FDC 168879)
   portions:
     go: 148.4
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 168879
+    description: Rice, white, medium-grain, raw, enriched
 Lemons:
   nutrients:
     basis_grams: 100.0
@@ -423,7 +503,11 @@ Lemons:
     added_sugars: 0.0
   portions:
     "~unitless": 58.0
-  source: USDA SR Legacy (FDC 167746)
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 167746
+    description: Lemons, raw, without peel
 Limes:
   nutrients:
     basis_grams: 100.0
@@ -440,7 +524,32 @@ Limes:
     added_sugars: 0.0
   portions:
     "~unitless": 67.0
-  source: USDA SR Legacy (FDC 168155)
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 168155
+    description: Limes, raw
+Maldon salt:
+  nutrients:
+    calories: 0.0
+    fat: 0.0
+    saturated_fat: 0.0
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 580.0
+    carbs: 0.0
+    fiber: 0.0
+    total_sugars: 0.0
+    added_sugars: 0.0
+    protein: 0.0
+    basis_grams: 1.5
+  density:
+    grams: 1.5
+    volume: 0.25
+    unit: tsp
+  sources:
+  - type: label
+    product: Maldon Salt (nutrition facts label)
 Malt syrup:
   nutrients:
     basis_grams: 100.0
@@ -459,7 +568,11 @@ Malt syrup:
     grams: 332.0
     volume: 1.0
     unit: cup
-  source: USDA SR Legacy (FDC 169660)
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 169660
+    description: Syrups, malt
 Milk:
   nutrients:
     basis_grams: 100.0
@@ -478,7 +591,11 @@ Milk:
     grams: 244.0
     volume: 1.0
     unit: cup
-  source: USDA SR Legacy (FDC 171266)
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 171266
+    description: Milk, producer, fluid, 3.7% milkfat
 Mozzarella (low-moisture):
   nutrients:
     basis_grams: 100.0
@@ -493,7 +610,11 @@ Mozzarella (low-moisture):
     total_sugars: 0.0
     protein: 22.17
     added_sugars: 0.0
-  source: USDA SR Legacy (FDC 170845)
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 170845
+    description: Cheese, mozzarella, whole milk
 Olive oil:
   nutrients:
     basis_grams: 100.0
@@ -512,7 +633,11 @@ Olive oil:
     grams: 216.0
     volume: 1.0
     unit: cup
-  source: USDA SR Legacy (FDC 171413)
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 171413
+    description: Oil, olive, salad or cooking
 Olive oil (mild):
   nutrients:
     basis_grams: 100.0
@@ -531,7 +656,11 @@ Olive oil (mild):
     grams: 216.0
     volume: 1.0
     unit: cup
-  source: USDA SR Legacy (FDC 171413)
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 171413
+    description: Oil, olive, salad or cooking
 Onions:
   nutrients:
     basis_grams: 100.0
@@ -551,7 +680,11 @@ Onions:
     large: 150.0
     small: 70.0
     "~unitless": 150.0
-  source: USDA SR Legacy (FDC 170000)
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 170000
+    description: Onions, raw
 Oregano:
   nutrients:
     basis_grams: 100.0
@@ -566,7 +699,11 @@ Oregano:
     total_sugars: 4.09
     protein: 9.0
     added_sugars: 0.0
-  source: USDA SR Legacy (FDC 171328)
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 171328
+    description: Spices, oregano, dried
 Parmesan:
   nutrients:
     basis_grams: 100.0
@@ -581,7 +718,11 @@ Parmesan:
     total_sugars: 0.11
     protein: 35.75
     added_sugars: 0.0
-  source: USDA SR Legacy (FDC 170848)
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 170848
+    description: Cheese, parmesan, hard
 Red bell peppers:
   nutrients:
     basis_grams: 100.0
@@ -605,7 +746,11 @@ Red bell peppers:
     medium: 119.0
     small: 74.0
     "~unitless": 164.0
-  source: USDA SR Legacy (FDC 170108)
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 170108
+    description: Peppers, sweet, red, raw
 Salt:
   nutrients:
     basis_grams: 100.0
@@ -626,7 +771,11 @@ Salt:
     unit: cup
   portions:
     dash: 0.4
-  source: USDA SR Legacy (FDC 173468)
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 173468
+    description: Salt, table
 Sugar (brown):
   nutrients:
     basis_grams: 100.0
@@ -641,7 +790,11 @@ Sugar (brown):
     total_sugars: 97.02
     protein: 0.12
     added_sugars: 0.0
-  source: USDA SR Legacy (FDC 168833)
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 168833
+    description: Sugars, brown
 Sugar (white):
   nutrients:
     basis_grams: 8.0
@@ -660,7 +813,9 @@ Sugar (white):
     grams: 8.0
     volume: 2.0
     unit: tsp
-  source: Wegmans Granulated White Sugar
+  sources:
+  - type: label
+    product: Wegmans Granulated White Sugar
 Tomato passata:
   nutrients:
     basis_grams: 100.0
@@ -679,7 +834,11 @@ Tomato passata:
     grams: 244.0
     volume: 1.0
     unit: cup
-  source: USDA SR Legacy (FDC 170463)
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 170463
+    description: Tomato products, canned, sauce, with tomato tidbits
 Tomato paste:
   nutrients:
     basis_grams: 100.0
@@ -700,7 +859,12 @@ Tomato paste:
     unit: cup
   portions:
     can: 170.0
-  source: USDA SR Legacy (FDC 170459)
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 170459
+    description: Tomato products, canned, paste, without salt added (Includes foods
+      for USDA's Food Distribution Program)
 Vanilla extract:
   nutrients:
     basis_grams: 100.0
@@ -719,7 +883,11 @@ Vanilla extract:
     grams: 208.0
     volume: 1.0
     unit: cup
-  source: USDA SR Legacy (FDC 173471)
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 173471
+    description: Vanilla extract
 Yeast:
   nutrients:
     basis_grams: 100.0
@@ -740,4 +908,8 @@ Yeast:
     unit: tbsp
   portions:
     packet: 7.2
-  source: USDA SR Legacy (FDC 175043)
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 175043
+    description: Leavening agents, yeast, baker's, active dry
