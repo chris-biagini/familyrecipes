@@ -206,7 +206,7 @@ Buttermilk:
     dataset: SR Legacy
     fdc_id: 172225
     description: Milk, buttermilk, fluid, whole
-Carrots:
+Carrot:
   nutrients:
     basis_grams: 100.0
     calories: 41.0
@@ -298,7 +298,7 @@ Cornmeal:
     dataset: SR Legacy
     fdc_id: 169697
     description: Cornmeal, whole-grain, yellow
-Eggs:
+Egg:
   nutrients:
     basis_grams: 100.0
     calories: 143.0
@@ -487,7 +487,7 @@ Jasmine rice:
     dataset: SR Legacy
     fdc_id: 168879
     description: Rice, white, medium-grain, raw, enriched
-Lemons:
+Lemon:
   nutrients:
     basis_grams: 100.0
     calories: 29.0
@@ -508,7 +508,7 @@ Lemons:
     dataset: SR Legacy
     fdc_id: 167746
     description: Lemons, raw, without peel
-Limes:
+Lime:
   nutrients:
     basis_grams: 100.0
     calories: 30.0
@@ -661,7 +661,7 @@ Olive oil (mild):
     dataset: SR Legacy
     fdc_id: 171413
     description: Oil, olive, salad or cooking
-Onions:
+Onion:
   nutrients:
     basis_grams: 100.0
     calories: 40.0
@@ -723,7 +723,7 @@ Parmesan:
     dataset: SR Legacy
     fdc_id: 170848
     description: Cheese, parmesan, hard
-Red bell peppers:
+Red bell pepper:
   nutrients:
     basis_grams: 100.0
     calories: 26.0
