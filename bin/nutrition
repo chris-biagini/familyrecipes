@@ -582,13 +582,89 @@ def review_and_save(name, entry, needed_units, nutrition_data, api_key: nil)
   end
 end
 
-# --- Placeholders (implemented in Task 5) ---
+# --- Edit mode ---
 
 def edit_entry(name, entry, needed_units, api_key: nil)
-  puts '  (edit not yet implemented)'
-  entry
+  loop do
+    display_entry(name, entry)
+    display_unit_coverage(name, entry, needed_units)
+
+    puts "\n  Edit:"
+    puts '  1. Re-import from USDA' if api_key
+    puts '  2. Nutrients'
+    puts '  3. Density'
+    puts '  4. Portions'
+    puts '  5. Source'
+    puts '  s. Done editing'
+    print "\nAction: "
+    choice = $stdin.gets&.strip
+
+    case choice
+    when '1'
+      next unless api_key
+
+      new_entry = enter_usda(api_key, name, needed_units)
+      entry = new_entry if new_entry && new_entry != :manual
+    when '2'
+      new_nutrients = prompt_nutrients(defaults: entry['nutrients']&.except('basis_grams'))
+      if new_nutrients
+        basis = entry.dig('nutrients', 'basis_grams') || 100.0
+        entry['nutrients'] = new_nutrients.merge('basis_grams' => basis)
+      end
+    when '3'
+      parsed = prompt_serving_size
+      if parsed && parsed != :quit
+        entry['nutrients']['basis_grams'] = parsed[:grams] if entry['nutrients']
+        if parsed[:volume_amount]
+          entry['density'] = {
+            'grams' => parsed[:grams],
+            'volume' => parsed[:volume_amount],
+            'unit' => parsed[:volume_unit]
+          }
+        else
+          entry.delete('density')
+        end
+      end
+    when '4'
+      auto_portions = {}
+      existing = entry['portions'] || {}
+      entry['portions'] = prompt_portions(auto_portions, needed_units, existing: existing)
+      entry.delete('portions') if entry['portions'].empty?
+    when '5'
+      print "\nSource [#{entry['source']}]: "
+      input = $stdin.gets&.strip
+      entry['source'] = input unless input.nil? || input.empty?
+    when 's'
+      return entry
+    end
+  end
 end
 
+# --- New ingredient entry ---
+
 def enter_new_ingredient(name, needed_units, nutrition_data, api_key:, manual: false)
-  puts '  (enter_new_ingredient not yet implemented)'
+  entry = nil
+
+  if api_key && !manual
+    entry = enter_usda(api_key, name, needed_units)
+    entry = nil if entry == :manual
+  end
+
+  entry ||= enter_manual(name, needed_units)
+  return unless entry
+
+  review_and_save(name, entry, needed_units, nutrition_data, api_key: api_key)
+end
+
+# --- Main dispatcher ---
+
+def handle_ingredient(name, nutrition_data, ctx, api_key:, manual: false)
+  needed_units = find_needed_units(name, ctx)
+  existing = nutrition_data[name]
+
+  if existing
+    review_and_save(name, existing.dup, needed_units, nutrition_data, api_key: api_key)
+  else
+    enter_new_ingredient(name, needed_units, nutrition_data, api_key: api_key, manual: manual)
+  end
 end
