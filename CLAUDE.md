@@ -8,7 +8,7 @@ Your goal is a high-quality, well-crafted user experience. Improve the end produ
 
 ### Visual language
 
-The visual identity blends **red-checked tablecloths** and **mid-century cookbooks** — the `<main>` content card is a cookbook page; the gingham background is the tablecloth peeking out around it. When designing new UI elements, ask: would this feel at home in a well-loved cookbook from the 1960s that somehow learned a few new tricks?
+The visual identity evokes **red-checked tablecloths** and **mid-century cookbooks** — the `<main>` content card is a cookbook page; the gingham background is the tablecloth peeking out around it. When designing new UI elements, ask: would this feel at home in a well-loved cookbook from the 1960s that somehow learned a few new tricks?
 
 ### Source files
 
@@ -291,7 +291,11 @@ Flour (all-purpose):
   portions:                   # optional — non-volume named portions only
     stick: 113.0              # e.g., "1 stick" = 113g
     ~unitless: 50             # bare count (e.g., "Eggs, 3")
-  source: King Arthur Flour   # optional provenance note
+  sources:                    # provenance metadata (array of typed objects)
+    - type: usda              # usda | label | other
+      dataset: SR Legacy      # FDC dataset name
+      fdc_id: 168913          # FoodData Central ID
+      description: "Wheat flour, white, all-purpose, enriched, unbleached"
 ```
 
 **Key principles:**
