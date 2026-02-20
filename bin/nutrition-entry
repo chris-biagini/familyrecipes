@@ -339,7 +339,8 @@ def find_missing_ingredients(nutrition_data)
     end
   end
 
-  missing = ingredients_to_recipes.keys.reject { |name| nutrition_data.key?(name) }.sort
+  missing = ingredients_to_recipes.keys.reject { |name| nutrition_data.key?(name) }
+  missing.sort_by! { |name| [-ingredients_to_recipes[name].uniq.size, name] }
 
   # Find ingredients with entries but unresolvable units
   calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data, omit_set: omit_set)
@@ -405,17 +406,19 @@ if ARGV.include?('--missing')
     puts 'WARNING: Missing nutrition data:'
     missing.each do |name|
       recipes = ingredients_to_recipes[name].uniq.sort
-      puts "  - #{name} (in: #{recipes.join(', ')})"
+      count_label = recipes.size == 1 ? '1 recipe' : "#{recipes.size} recipes"
+      puts "  - #{name} (#{count_label}: #{recipes.join(', ')})"
     end
     puts ''
   end
 
   if unresolvable.any?
     puts 'WARNING: Missing unit conversions:'
-    unresolvable.sort_by { |name, _| name }.each do |name, info|
+    unresolvable.sort_by { |name, info| [-info[:recipes].size, name] }.each do |name, info|
       recipes = info[:recipes].sort
       units = info[:units].to_a.sort.join(', ')
-      puts "  - #{name}: '#{units}' (in: #{recipes.join(', ')})"
+      count_label = recipes.size == 1 ? '1 recipe' : "#{recipes.size} recipes"
+      puts "  - #{name}: '#{units}' (#{count_label}: #{recipes.join(', ')})"
     end
     puts ''
   end
