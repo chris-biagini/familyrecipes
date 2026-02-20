@@ -469,9 +469,13 @@ def enter_manual(name, needed_units)
   summary = NUTRIENTS.map { |n| "#{n[:key]}=#{(per_serving[n[:key]] * factor).round(1)}" }.join(', ')
   puts "\n  (Per 100g: #{summary})"
 
-  print "\nBrand/product (optional): "
-  source = $stdin.gets&.strip
-  source = nil if source&.empty?
+  print "\nBrand (optional): "
+  brand = $stdin.gets&.strip
+  brand = nil if brand&.empty?
+
+  print 'Product (optional): '
+  product = $stdin.gets&.strip
+  product = nil if product&.empty?
 
   auto_portions = {}
   auto_portions[parsed[:auto_portion][:unit]] = parsed[:auto_portion][:grams] if parsed[:auto_portion]
@@ -489,7 +493,12 @@ def enter_manual(name, needed_units)
     }
   end
   entry['portions'] = portions unless portions.empty?
-  entry['source'] = source if source
+  if brand || product
+    label_source = { 'type' => 'label' }
+    label_source['brand'] = brand if brand
+    label_source['product'] = product if product
+    entry['sources'] = [label_source]
+  end
 
   entry
 end
