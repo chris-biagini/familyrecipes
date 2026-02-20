@@ -1,0 +1,131 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'bundler/setup'
+require 'net/http'
+require 'json'
+require_relative '../lib/familyrecipes'
+
+PROJECT_ROOT = File.expand_path('..', __dir__)
+NUTRITION_PATH = File.join(PROJECT_ROOT, 'resources/nutrition-data.yaml')
+GROCERY_PATH = File.join(PROJECT_ROOT, 'resources/grocery-info.yaml')
+RECIPES_DIR = File.join(PROJECT_ROOT, 'recipes')
+
+Helpers = FamilyRecipes::NutritionEntryHelpers
+
+# FDA label order: 11 nutrients
+NUTRIENTS = [
+  { key: 'calories',      label: 'Calories', unit: '', indent: 0 },
+  { key: 'fat',           label: 'Total fat',       unit: 'g',  indent: 0 },
+  { key: 'saturated_fat', label: 'Saturated fat',   unit: 'g',  indent: 1 },
+  { key: 'trans_fat',     label: 'Trans fat',       unit: 'g',  indent: 1 },
+  { key: 'cholesterol',   label: 'Cholesterol',     unit: 'mg', indent: 0 },
+  { key: 'sodium',        label: 'Sodium',          unit: 'mg', indent: 0 },
+  { key: 'carbs',         label: 'Total carbs',     unit: 'g',  indent: 0 },
+  { key: 'fiber',         label: 'Fiber',           unit: 'g',  indent: 1 },
+  { key: 'total_sugars',  label: 'Total sugars',    unit: 'g',  indent: 1 },
+  { key: 'added_sugars',  label: 'Added sugars',    unit: 'g',  indent: 2 },
+  { key: 'protein',       label: 'Protein',         unit: 'g',  indent: 0 }
+].freeze
+
+# USDA nutrient number -> our key (per 100g basis)
+NUTRIENT_MAP = {
+  '208' => 'calories',      # Energy (kcal)
+  '204' => 'fat',           # Total lipid (fat)
+  '606' => 'saturated_fat', # Fatty acids, total saturated
+  '605' => 'trans_fat',     # Fatty acids, total trans
+  '601' => 'cholesterol',   # Cholesterol
+  '307' => 'sodium',        # Sodium
+  '205' => 'carbs',         # Carbohydrate, by difference
+  '291' => 'fiber',         # Fiber, total dietary
+  '269' => 'total_sugars',  # Sugars, total
+  '203' => 'protein'        # Protein
+}.freeze
+
+VOLUME_UNITS = %w[cup cups tbsp tablespoon tablespoons tsp teaspoon teaspoons].freeze
+
+# --- Data I/O ---
+
+def load_nutrition_data
+  return {} unless File.exist?(NUTRITION_PATH)
+
+  YAML.safe_load_file(NUTRITION_PATH, permitted_classes: [], permitted_symbols: [], aliases: false) || {}
+end
+
+def save_nutrition_data(data)
+  sorted = data.sort_by { |k, _| k.downcase }.to_h
+
+  sorted.each_value do |entry|
+    entry['nutrients'].transform_values! { |v| v.is_a?(Float) ? v.round(4) : v } if entry['nutrients'].is_a?(Hash)
+    entry['portions'].transform_values! { |v| v.is_a?(Float) ? v.round(2) : v } if entry['portions'].is_a?(Hash)
+    next unless entry['density'].is_a?(Hash)
+
+    entry['density']['grams'] = entry['density']['grams'].round(2) if entry['density']['grams'].is_a?(Float)
+    entry['density']['volume'] = entry['density']['volume'].round(4) if entry['density']['volume'].is_a?(Float)
+  end
+
+  File.write(NUTRITION_PATH, YAML.dump(sorted))
+  puts "Saved to #{NUTRITION_PATH}"
+end
+
+# --- Context loading and name resolution ---
+
+def load_context
+  grocery_aisles = FamilyRecipes.parse_grocery_info(GROCERY_PATH)
+  alias_map = FamilyRecipes.build_alias_map(grocery_aisles)
+  recipes = FamilyRecipes.parse_recipes(RECIPES_DIR)
+  recipe_map = recipes.to_h { |r| [r.id, r] }
+  omit_set = (grocery_aisles['Omit_From_List'] || []).flat_map do |item|
+    [item[:name], *item[:aliases]].map(&:downcase)
+  end.to_set
+
+  { grocery_aisles: grocery_aisles, alias_map: alias_map, recipes: recipes,
+    recipe_map: recipe_map, omit_set: omit_set }
+end
+
+def resolve_name(raw_name, ctx)
+  canonical = ctx[:alias_map][raw_name.downcase]
+  if canonical
+    puts "  -> Resolved to \"#{canonical}\"" if canonical != raw_name
+    return canonical
+  end
+
+  puts "  \"#{raw_name}\" not found in grocery-info.yaml. Recipes won't match this entry."
+  print '  Continue anyway? (y/n): '
+  input = $stdin.gets&.strip
+  return nil unless input&.downcase == 'y'
+
+  raw_name
+end
+
+def find_needed_units(name, ctx)
+  units = Set.new
+  ctx[:recipes].each do |recipe|
+    recipe.all_ingredients_with_quantities(ctx[:alias_map], ctx[:recipe_map]).each do |ing_name, amounts|
+      next unless ing_name == name
+
+      amounts.each do |amount|
+        next if amount.nil?
+
+        _, unit = amount
+        units << unit
+      end
+    end
+  end
+  units.to_a
+end
+
+# --- API key ---
+
+def load_api_key
+  return ENV['USDA_API_KEY'] if ENV['USDA_API_KEY']
+
+  env_path = File.join(PROJECT_ROOT, '.env')
+  return nil unless File.exist?(env_path)
+
+  File.readlines(env_path).each do |line|
+    key, value = line.strip.split('=', 2)
+    return value if key == 'USDA_API_KEY' && value && !value.empty?
+  end
+  nil
+end
