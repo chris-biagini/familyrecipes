@@ -281,3 +281,216 @@ def display_unit_coverage(name, entry, needed_units)
     puts "    #{label}: #{status}"
   end
 end
+
+# --- Prompts ---
+
+def prompt_number(prompt_text, allow_empty_zero: true)
+  loop do
+    print prompt_text
+    input = $stdin.gets&.strip
+    return nil if input.nil?
+    return :quit if input.downcase == 'q'
+
+    if input.empty?
+      return 0.0 if allow_empty_zero
+
+      puts "  Value required. Enter a number, or 'q' to quit."
+      next
+    end
+
+    value = Float(input, exception: false)
+    return value if value
+
+    puts '  Not a number, try again:'
+  end
+end
+
+def prompt_serving_size
+  loop do
+    print "\nServing size: "
+    input = $stdin.gets&.strip
+    return nil if input.nil? || input.empty?
+    return :quit if input.downcase == 'q'
+
+    parsed = Helpers.parse_serving_size(input)
+    return parsed if parsed
+
+    puts "Could not extract gram weight from '#{input}'."
+    puts "Include the gram weight, e.g. '30g', '1/4 cup (30g)', '1 slice (21g)', '30 grams'"
+    puts "Try again, or 'q' to quit:"
+  end
+end
+
+def prompt_nutrients(defaults: nil)
+  if defaults
+    puts "\nNutrients (Enter = keep current, 'q' = quit):"
+  else
+    puts "\nPer serving (Enter = 0, 'q' = quit):"
+  end
+
+  result = {}
+  NUTRIENTS.each do |nutrient|
+    indent = '  ' * nutrient[:indent]
+    unit_str = nutrient[:unit].empty? ? '' : " (#{nutrient[:unit]})"
+    current = defaults&.dig(nutrient[:key])
+    default_str = current ? " [#{current}]" : ''
+    prompt_text = "#{indent}#{nutrient[:label]}#{unit_str}#{default_str}: "
+
+    if defaults
+      print prompt_text
+      input = $stdin.gets&.strip
+      return nil if input.nil?
+      return nil if input.downcase == 'q'
+
+      if input.empty?
+        result[nutrient[:key]] = current || 0.0
+      else
+        value = Float(input, exception: false)
+        result[nutrient[:key]] = value || (current || 0.0)
+      end
+    else
+      value = prompt_number(prompt_text)
+      return nil if value.nil? || value == :quit
+
+      result[nutrient[:key]] = value
+    end
+  end
+  result
+end
+
+def prompt_portions(auto_portions, needed_units, existing: {})
+  portions = existing.dup
+
+  puts "\nPortions (grams per 1 unit — volume units derived from density):"
+  puts "  Enter = accept, '-' = skip/remove, 'done' = finish"
+
+  if needed_units&.any?
+    needed_str = needed_units.map { |u| u || '(bare count)' }.sort.join(', ')
+    puts "  Recipes use: #{needed_str}"
+  end
+
+  # Auto-portions from serving size (discrete items like "1 slice")
+  auto_portions.each do |unit, grams|
+    next if portions.key?(unit)
+
+    needed_tag = needed_units&.include?(unit) ? ' *' : ''
+    print "  #{unit} [#{grams}] (from label)#{needed_tag}: "
+    input = $stdin.gets&.strip
+    return portions if input&.downcase == 'done'
+
+    if input != '-'
+      if input.nil? || input.empty?
+        portions[unit] = grams
+      else
+        value = Float(input, exception: false)
+        portions[unit] = value if value
+      end
+    end
+  end
+
+  # Show existing portions (edit mode)
+  portions.each do |unit, grams|
+    next if auto_portions.key?(unit)
+
+    needed_tag = needed_units&.include?(unit) || (unit == '~unitless' && needed_units&.include?(nil)) ? ' *' : ''
+    print "  #{unit} [#{grams}]#{needed_tag}: "
+    input = $stdin.gets&.strip
+    return portions if input&.downcase == 'done'
+
+    if input == '-'
+      portions.delete(unit)
+    elsif input && !input.empty?
+      value = Float(input, exception: false)
+      portions[unit] = value if value
+    end
+  end
+
+  # ~unitless prompt if not already present
+  unless portions.key?('~unitless')
+    needed_tag = needed_units&.include?(nil) ? ' *' : ''
+    print "  ~unitless#{needed_tag}: "
+    input = $stdin.gets&.strip
+    unless input&.downcase == 'done' || input.nil? || input.empty? || input == '-'
+      value = Float(input, exception: false)
+      portions['~unitless'] = value if value
+    end
+  end
+
+  # Prompt for non-volume needed units not yet covered
+  volume_units = %w[cup tbsp tsp ml l]
+  needed_units&.each do |unit|
+    next if unit.nil?
+    next if portions.key?(unit)
+    next if volume_units.include?(unit.downcase)
+
+    print "  #{unit} *: "
+    input = $stdin.gets&.strip
+    break if input&.downcase == 'done'
+    next if input.nil? || input.empty? || input == '-'
+
+    value = Float(input, exception: false)
+    portions[unit] = value if value
+  end
+
+  # Custom units
+  loop do
+    print '  Additional unit (or Enter to finish): '
+    input = $stdin.gets&.strip
+    break if input.nil? || input.empty?
+
+    print "    grams per 1 #{input}: "
+    value_str = $stdin.gets&.strip
+    value = Float(value_str, exception: false)
+    portions[input] = value if value
+  end
+
+  portions
+end
+
+# --- Manual entry ---
+
+def enter_manual(name, needed_units)
+  puts "\n--- #{name} (manual entry) ---"
+
+  parsed = prompt_serving_size
+  return nil if parsed.nil? || parsed == :quit
+
+  display = "  -> #{parsed[:grams]}g"
+  display += " | #{parsed[:volume_amount]} #{parsed[:volume_unit]}" if parsed[:volume_amount]
+  if parsed[:auto_portion]
+    display += "\n  -> auto-portion: #{parsed[:auto_portion][:unit]} = #{parsed[:auto_portion][:grams]}g"
+  end
+  puts display
+
+  per_serving = prompt_nutrients
+  return nil unless per_serving
+
+  # Per-100g cross-check
+  factor = 100.0 / parsed[:grams]
+  summary = NUTRIENTS.map { |n| "#{n[:key]}=#{(per_serving[n[:key]] * factor).round(1)}" }.join(', ')
+  puts "\n  (Per 100g: #{summary})"
+
+  print "\nBrand/product (optional): "
+  source = $stdin.gets&.strip
+  source = nil if source&.empty?
+
+  auto_portions = {}
+  auto_portions[parsed[:auto_portion][:unit]] = parsed[:auto_portion][:grams] if parsed[:auto_portion]
+
+  portions = prompt_portions(auto_portions, needed_units)
+
+  # Build entry
+  nutrients = per_serving.merge('basis_grams' => parsed[:grams])
+  entry = { 'nutrients' => nutrients }
+  if parsed[:volume_amount]
+    entry['density'] = {
+      'grams' => parsed[:grams],
+      'volume' => parsed[:volume_amount],
+      'unit' => parsed[:volume_unit]
+    }
+  end
+  entry['portions'] = portions unless portions.empty?
+  entry['source'] = source if source
+
+  entry
+end
