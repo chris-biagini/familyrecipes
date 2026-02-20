@@ -1,10 +1,7 @@
 ---
 Flour (all-purpose):
-  serving:
-    grams: 30.0
-    volume_amount: 0.25
-    volume_unit: cup
-  per_serving:
+  nutrients:
+    basis_grams: 30.0
     calories: 110.0
     fat: 0.0
     saturated_fat: 0.0
@@ -16,17 +13,14 @@ Flour (all-purpose):
     total_sugars: 0.0
     added_sugars: 0.0
     protein: 4.0
-  portions:
-    cup: 120.0
-    tbsp: 7.5
-    tsp: 2.5
+  density:
+    grams: 30.0
+    volume: 0.25
+    unit: cup
   source: King Arthur Flour All-Purpose
 Sugar (white):
-  serving:
-    grams: 8.0
-    volume_amount: 2.0
-    volume_unit: tsp
-  per_serving:
+  nutrients:
+    basis_grams: 8.0
     calories: 30.0
     fat: 0.0
     saturated_fat: 0.0
@@ -38,8 +32,8 @@ Sugar (white):
     total_sugars: 8.0
     added_sugars: 0.0
     protein: 0.0
-  portions:
-    tsp: 4.0
-    cup: 192.0
-    tbsp: 12.0
+  density:
+    grams: 8.0
+    volume: 2.0
+    unit: tsp
   source: Wegmans Granulated White Sugar
