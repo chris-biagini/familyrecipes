@@ -536,7 +536,7 @@ def search_and_pick(api_key, name)
   end
 end
 
-def enter_usda(api_key, name, needed_units)
+def enter_usda(api_key, name)
   food_detail = search_and_pick(api_key, name)
   return :manual if food_detail == :manual
   return nil unless food_detail
@@ -602,7 +602,7 @@ def edit_entry(name, entry, needed_units, api_key: nil)
     when '1'
       next unless api_key
 
-      new_entry = enter_usda(api_key, name, needed_units)
+      new_entry = enter_usda(api_key, name)
       entry = new_entry if new_entry && new_entry != :manual
     when '2'
       new_nutrients = prompt_nutrients(defaults: entry['nutrients']&.except('basis_grams'))
@@ -645,7 +645,7 @@ def enter_new_ingredient(name, needed_units, nutrition_data, api_key:, manual: f
   entry = nil
 
   if api_key && !manual
-    entry = enter_usda(api_key, name, needed_units)
+    entry = enter_usda(api_key, name)
     entry = nil if entry == :manual
   end
 
