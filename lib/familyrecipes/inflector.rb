@@ -123,7 +123,7 @@ module FamilyRecipes
     def self.pluralize_by_rules(word)
       case word.downcase
       when /[^aeiou]y$/ then "#{word[0..-2]}ies"
-      when /(s|x|z|ch|sh)$/, /[^aeiou]o$/ then "#{word}es"
+      when /(s|x|z|ch|sh)$/, /[bcdfghjklmnpqrstvwxyz]o$/i then "#{word}es"
       else "#{word}s"
       end
     end
