@@ -40,9 +40,9 @@ def save_nutrition_data(data)
 
   # Round floats to avoid ugly precision artifacts
   sorted.each_value do |entry|
-    entry['per_serving'].transform_values! { |v| v.is_a?(Float) ? v.round(4) : v } if entry['per_serving'].is_a?(Hash)
+    entry['nutrients'].transform_values! { |v| v.is_a?(Float) ? v.round(4) : v } if entry['nutrients'].is_a?(Hash)
     entry['portions'].transform_values! { |v| v.is_a?(Float) ? v.round(2) : v } if entry['portions'].is_a?(Hash)
-    entry['serving']['grams'] = entry['serving']['grams'].round(2) if entry.dig('serving', 'grams').is_a?(Float)
+    entry.dig('density', 'grams')&.then { |g| entry['density']['grams'] = g.round(2) if g.is_a?(Float) }
   end
 
   File.write(NUTRITION_PATH, YAML.dump(sorted))
@@ -104,10 +104,10 @@ def prompt_nutrients
   result
 end
 
-def prompt_portions(auto_portions, volume_info, needed_units)
+def prompt_portions(auto_portions, needed_units)
   portions = {}
 
-  puts "\nPortions (grams per 1 unit):"
+  puts "\nPortions (grams per 1 unit — volume units derived from density):"
   puts "  Enter = accept, '-' = skip, 'done' = finish"
 
   if needed_units&.any?
@@ -115,7 +115,7 @@ def prompt_portions(auto_portions, volume_info, needed_units)
     puts "  Recipes use: #{needed_str}"
   end
 
-  # Auto-portions from serving size
+  # Auto-portions from serving size (discrete items like "1 slice")
   auto_portions.each do |unit, grams|
     needed_tag = needed_units&.include?(unit) ? ' *' : ''
     print "  #{unit} [#{grams}] (from label)#{needed_tag}: "
@@ -132,52 +132,24 @@ def prompt_portions(auto_portions, volume_info, needed_units)
     end
   end
 
-  # Density-derived volume portions
-  if volume_info
-    density = volume_info[:grams].to_f / (volume_info[:volume_amount] * Helpers.volume_to_ml(volume_info[:volume_unit]))
-    %w[cup tbsp tsp].each do |vol_unit|
-      next if auto_portions.key?(vol_unit)
-      next if portions.key?(vol_unit)
-
-      derived = (density * Helpers.volume_to_ml(vol_unit)).round(1)
-      needed_tag = needed_units&.include?(vol_unit) ? ' *' : ''
-      print "  #{vol_unit} [#{derived}] (from density)#{needed_tag}: "
-      input = $stdin.gets&.strip
-      return portions if input&.downcase == 'done'
-
-      if input != '-'
-        if input.nil? || input.empty?
-          portions[vol_unit] = derived
-        else
-          value = Float(input, exception: false)
-          portions[vol_unit] = value if value
-        end
-      end
+  # ~unitless prompt (bare count)
+  unless portions.key?('~unitless') || auto_portions.key?('~unitless')
+    needed_tag = needed_units&.include?(nil) ? ' *' : ''
+    print "  ~unitless#{needed_tag}: "
+    input = $stdin.gets&.strip
+    unless input&.downcase == 'done' || input.nil? || input.empty? || input == '-'
+      value = Float(input, exception: false)
+      portions['~unitless'] = value if value
     end
   end
 
-  # Common units not yet covered
-  common = %w[cup tbsp tsp ~unitless]
-  common.each do |unit|
-    next if portions.key?(unit)
-    next if auto_portions.key?(unit)
-
-    needed_tag = needed_units&.include?(unit) ? ' *' : ''
-    print "  #{unit}#{needed_tag}: "
-    input = $stdin.gets&.strip
-    break if input&.downcase == 'done'
-    next if input.nil? || input.empty? || input == '-'
-
-    value = Float(input, exception: false)
-    portions[unit] = value if value
-  end
-
-  # Prompt for any needed units not yet covered
+  # Prompt for non-volume needed units not yet covered
+  volume_units = %w[cup tbsp tsp ml l]
   needed_units&.each do |unit|
-    next if unit.nil? # bare count, handled by ~unitless
+    next if unit.nil?
     next if portions.key?(unit)
-    next if common.include?(unit)
     next if auto_portions.key?(unit)
+    next if volume_units.include?(unit.downcase)
 
     print "  #{unit} *: "
     input = $stdin.gets&.strip
@@ -247,7 +219,9 @@ def enter_ingredient(name, nutrition_data)
   existing = nutrition_data[name]
   if existing
     puts "\n#{name} already has data."
-    puts "  per_serving: #{existing['per_serving'].map { |k, v| "#{k}=#{v}" }.join(', ')}" if existing['per_serving']
+    if existing['nutrients']
+      puts "  nutrients: #{existing['nutrients'].except('basis_grams').map { |k, v| "#{k}=#{v}" }.join(', ')}"
+    end
     puts "  portions: #{(existing['portions'] || {}).map { |k, v| "#{k}=#{v}g" }.join(', ')}"
     print 'Overwrite? (y/n): '
     input = $stdin.gets&.strip
@@ -287,26 +261,19 @@ def enter_ingredient(name, nutrition_data)
   # Build auto-portions from serving size
   auto_portions = {}
   auto_portions[parsed[:auto_portion][:unit]] = parsed[:auto_portion][:grams] if parsed[:auto_portion]
-  if parsed[:volume_amount] && parsed[:volume_unit]
-    grams_per_one = (parsed[:grams] / parsed[:volume_amount]).round(1)
-    auto_portions[parsed[:volume_unit]] = grams_per_one
-  end
 
-  volume_info = if parsed[:volume_amount]
-                  { grams: parsed[:grams], volume_amount: parsed[:volume_amount], volume_unit: parsed[:volume_unit] }
-                end
-
-  portions = prompt_portions(auto_portions, volume_info, needed_units)
+  portions = prompt_portions(auto_portions, needed_units)
 
   # Build entry
-  serving = { 'grams' => parsed[:grams] }
-  serving['volume_amount'] = parsed[:volume_amount] if parsed[:volume_amount]
-  serving['volume_unit'] = parsed[:volume_unit] if parsed[:volume_unit]
-
-  entry = {
-    'serving' => serving,
-    'per_serving' => per_serving
-  }
+  nutrients = per_serving.merge('basis_grams' => parsed[:grams])
+  entry = { 'nutrients' => nutrients }
+  if parsed[:volume_amount]
+    entry['density'] = {
+      'grams' => parsed[:grams],
+      'volume' => parsed[:volume_amount],
+      'unit' => parsed[:volume_unit]
+    }
+  end
   entry['portions'] = portions unless portions.empty?
   entry['source'] = source if source
 
@@ -381,7 +348,7 @@ if ARGV.include?('--help') || ARGV.include?('-h')
   puts '  bin/nutrition-entry --missing           List ingredients missing nutrition data'
   puts ''
   puts 'Nutrition values are entered from package labels (per-serving) and'
-  puts 'stored as per_serving in resources/nutrition-data.yaml.'
+  puts 'stored in resources/nutrition-data.yaml.'
   puts ''
   puts 'Serving size examples:'
   puts '  100g                     Just gram weight'
