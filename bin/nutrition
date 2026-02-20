@@ -549,7 +549,12 @@ def enter_usda(api_key, name)
   entry = { 'nutrients' => nutrients }
   entry['density'] = density if density
   entry['portions'] = portions unless portions.empty?
-  entry['source'] = "USDA SR Legacy (FDC #{food_detail['fdcId']})"
+  entry['sources'] = [{
+    'type' => 'usda',
+    'dataset' => food_detail['dataType'] || 'SR Legacy',
+    'fdc_id' => food_detail['fdcId'],
+    'description' => food_detail['description']
+  }]
 
   entry
 end
