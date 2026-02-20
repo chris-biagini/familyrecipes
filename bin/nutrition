@@ -628,6 +628,96 @@ end
 
 # --- Edit mode ---
 
+def edit_sources(sources)
+  loop do
+    puts "\n  Sources:"
+    if sources.empty?
+      puts '    (none)'
+    else
+      sources.each_with_index { |s, i| puts "    #{i + 1}. #{format_source(s)}" }
+    end
+
+    puts "\n  a. Add source"
+    puts '  r. Remove source' if sources.any?
+    puts '  d. Done'
+    print '  Action: '
+    choice = $stdin.gets&.strip&.downcase
+
+    case choice
+    when 'a'
+      new_source = prompt_new_source
+      sources << new_source if new_source
+    when 'r'
+      next if sources.empty?
+
+      print "  Remove which? (1-#{sources.size}): "
+      idx = $stdin.gets&.strip.to_i - 1
+      sources.delete_at(idx) if idx >= 0 && idx < sources.size
+    when 'd'
+      return sources
+    end
+  end
+end
+
+def prompt_new_source
+  puts "\n  Source type:"
+  puts '    1. USDA'
+  puts '    2. Label (nutrition facts)'
+  puts '    3. Other'
+  print '  Type: '
+  choice = $stdin.gets&.strip
+
+  case choice
+  when '1' then prompt_usda_source
+  when '2' then prompt_label_source
+  when '3' then prompt_other_source
+  end
+end
+
+def prompt_usda_source
+  source = { 'type' => 'usda' }
+  print '  Dataset (e.g. SR Legacy): '
+  source['dataset'] = $stdin.gets&.strip
+  print '  FDC ID: '
+  id_input = $stdin.gets&.strip
+  source['fdc_id'] = id_input.to_i if id_input && !id_input.empty?
+  print '  Description: '
+  desc = $stdin.gets&.strip
+  source['description'] = desc if desc && !desc.empty?
+  print '  Note (optional): '
+  note = $stdin.gets&.strip
+  source['note'] = note if note && !note.empty?
+  source
+end
+
+def prompt_label_source
+  source = { 'type' => 'label' }
+  print '  Brand (optional): '
+  brand = $stdin.gets&.strip
+  source['brand'] = brand if brand && !brand.empty?
+  print '  Product (optional): '
+  product = $stdin.gets&.strip
+  source['product'] = product if product && !product.empty?
+  print '  Note (optional): '
+  note = $stdin.gets&.strip
+  source['note'] = note if note && !note.empty?
+  source
+end
+
+def prompt_other_source
+  source = { 'type' => 'other' }
+  print '  Name: '
+  name = $stdin.gets&.strip
+  source['name'] = name if name && !name.empty?
+  print '  Detail (optional): '
+  detail = $stdin.gets&.strip
+  source['detail'] = detail if detail && !detail.empty?
+  print '  Note (optional): '
+  note = $stdin.gets&.strip
+  source['note'] = note if note && !note.empty?
+  source
+end
+
 def edit_entry(name, entry, needed_units, api_key: nil)
   loop do
     display_entry(name, entry)
@@ -638,7 +728,7 @@ def edit_entry(name, entry, needed_units, api_key: nil)
     puts '  2. Nutrients'
     puts '  3. Density'
     puts '  4. Portions'
-    puts '  5. Source'
+    puts '  5. Sources'
     puts '  s. Done editing'
     print "\nAction: "
     choice = $stdin.gets&.strip
@@ -675,9 +765,7 @@ def edit_entry(name, entry, needed_units, api_key: nil)
       entry['portions'] = prompt_portions(auto_portions, needed_units, existing: existing)
       entry.delete('portions') if entry['portions'].empty?
     when '5'
-      print "\nSource [#{entry['source']}]: "
-      input = $stdin.gets&.strip
-      entry['source'] = input unless input.nil? || input.empty?
+      entry['sources'] = edit_sources(entry['sources'] || [])
     when 's'
       return entry
     end
