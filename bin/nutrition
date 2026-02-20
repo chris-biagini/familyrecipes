@@ -107,8 +107,7 @@ def find_needed_units(name, ctx)
       amounts.each do |amount|
         next if amount.nil?
 
-        _, unit = amount
-        units << unit
+        units << amount.unit
       end
     end
   end
