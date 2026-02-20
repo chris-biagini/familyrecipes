@@ -494,3 +494,101 @@ def enter_manual(name, needed_units)
 
   entry
 end
+
+# --- USDA entry ---
+
+def search_and_pick(api_key, name)
+  default_query = name.sub(/\s*\(.*\)/, '').strip
+
+  loop do
+    print "\nSearch USDA [#{default_query}]: "
+    input = $stdin.gets&.strip
+    return :manual if input&.downcase == 'q'
+
+    query = input.nil? || input.empty? ? default_query : input
+
+    puts "Searching for \"#{query}\"..."
+    result = search_usda(api_key, query)
+    foods = result['foods'] || []
+
+    if foods.empty?
+      puts '  No results found. Try a different search, or q for manual entry.'
+      next
+    end
+
+    puts "\nResults:"
+    foods.each_with_index do |food, idx|
+      puts "  #{idx + 1}. [#{food['fdcId']}] #{food['description']}"
+    end
+    puts '  s. Search again'
+    puts '  q. Manual entry instead'
+
+    print "\nPick (1-#{foods.size}): "
+    choice = $stdin.gets&.strip
+    return :manual if choice&.downcase == 'q'
+    next if choice&.downcase == 's'
+
+    idx = choice.to_i - 1
+    next unless idx >= 0 && idx < foods.size
+
+    fdc_id = foods[idx]['fdcId']
+    puts "\nFetching detail for #{foods[idx]['description']}..."
+    return fetch_usda_detail(api_key, fdc_id)
+  end
+end
+
+def enter_usda(api_key, name, needed_units)
+  food_detail = search_and_pick(api_key, name)
+  return :manual if food_detail == :manual
+  return nil unless food_detail
+
+  nutrients = extract_nutrients(food_detail)
+  classified = classify_portions(food_detail)
+  density = pick_density(classified[:volume])
+  portions = build_non_volume_portions(classified)
+
+  entry = { 'nutrients' => nutrients }
+  entry['density'] = density if density
+  entry['portions'] = portions unless portions.empty?
+  entry['source'] = "USDA SR Legacy (FDC #{food_detail['fdcId']})"
+
+  entry
+end
+
+# --- Review ---
+
+def review_and_save(name, entry, needed_units, nutrition_data, api_key: nil)
+  loop do
+    display_entry(name, entry)
+    display_unit_coverage(name, entry, needed_units)
+
+    puts "\n  s. Save"
+    puts '  e. Edit'
+    puts '  d. Discard and start fresh'
+    print "\nAction: "
+    choice = $stdin.gets&.strip&.downcase
+
+    case choice
+    when 's'
+      nutrition_data[name] = entry
+      save_nutrition_data(nutrition_data)
+      return
+    when 'd'
+      puts 'Starting fresh...'
+      return enter_new_ingredient(name, needed_units, nutrition_data, api_key: api_key)
+    when 'e'
+      entry = edit_entry(name, entry, needed_units, api_key: api_key)
+    end
+  end
+end
+
+# --- Placeholders (implemented in Task 5) ---
+
+def edit_entry(name, entry, needed_units, api_key: nil)
+  puts '  (edit not yet implemented)'
+  entry
+end
+
+def enter_new_ingredient(name, needed_units, nutrition_data, api_key:, manual: false)
+  puts '  (enter_new_ingredient not yet implemented)'
+end
