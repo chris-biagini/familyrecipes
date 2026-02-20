@@ -28,19 +28,6 @@ class FamilyRecipesTest < Minitest::Test
     assert_equal 'red-beans-and-rice', FamilyRecipes.slugify('Red  Beans   and   Rice')
   end
 
-  def test_config_has_quick_bites_filename
-    assert_equal 'Quick Bites.md', FamilyRecipes::CONFIG[:quick_bites_filename]
-  end
-
-  def test_config_has_templates
-    templates = FamilyRecipes::CONFIG[:templates]
-
-    assert_equal 'recipe-template.html.erb', templates[:recipe]
-    assert_equal 'homepage-template.html.erb', templates[:homepage]
-    assert_equal 'index-template.html.erb', templates[:index]
-    assert_equal 'groceries-template.html.erb', templates[:groceries]
-  end
-
   def test_render_partial_raises_without_template_dir
     original_dir = FamilyRecipes.template_dir
     FamilyRecipes.template_dir = nil

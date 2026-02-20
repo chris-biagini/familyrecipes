@@ -74,4 +74,23 @@ class SiteGeneratorTest < Minitest::Test
     assert_match(/Salt/, index_html, 'index should contain Salt')
     assert_match(/Butter/, index_html, 'index should contain Butter')
   end
+
+  def test_recipe_html_includes_nutrition_facts
+    html = File.read(File.join(@output_dir, 'gougeres.html'))
+
+    assert_match(/class="nutrition-facts"/, html, 'recipe with full nutrition data should have nutrition section')
+  end
+
+  def test_recipe_html_includes_plural_unit_data_attributes
+    html = File.read(File.join(@output_dir, 'gougeres.html'))
+
+    assert_match(/data-quantity-unit-plural/, html,
+                 'quantified ingredient should have data-quantity-unit-plural attribute')
+  end
+
+  def test_recipe_html_has_cross_reference_links
+    html = File.read(File.join(@output_dir, 'white-pizza.html'))
+
+    assert_match(/href="pizza-dough"/, html, 'cross-reference should render as a link to the target recipe')
+  end
 end

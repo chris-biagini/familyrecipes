@@ -292,4 +292,27 @@ class RecipeBuilderTest < Minitest::Test
     assert_equal 'Delicious chocolate chip cookies.', result[:description]
     assert_nil result[:yield_line]
   end
+
+  def test_consecutive_blank_lines_ignored
+    text = <<~RECIPE
+      # Recipe
+
+
+      ## Step one
+
+      First thing.
+
+
+
+      ## Step two
+
+      Second thing.
+    RECIPE
+
+    result = build_recipe(text)
+
+    assert_equal 2, result[:steps].length
+    assert_equal 'Step one', result[:steps][0][:tldr]
+    assert_equal 'Step two', result[:steps][1][:tldr]
+  end
 end

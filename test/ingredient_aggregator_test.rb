@@ -61,4 +61,16 @@ class IngredientAggregatorTest < Minitest::Test
     assert_in_delta 3.0, result[0].value
     assert_nil result[0].unit
   end
+
+  def test_fractional_quantities_sum
+    ingredients = [
+      Ingredient.new(name: 'Cream', quantity: '1/2 cup'),
+      Ingredient.new(name: 'Cream', quantity: '1/4 cup')
+    ]
+    result = IngredientAggregator.aggregate_amounts(ingredients)
+
+    assert_equal 1, result.length
+    assert_in_delta 0.75, result[0].value
+    assert_equal 'cup', result[0].unit
+  end
 end

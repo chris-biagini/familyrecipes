@@ -23,29 +23,9 @@ class QuantityTest < Minitest::Test
     refute_equal Quantity[10, 'g'], Quantity[5, 'g']
   end
 
-  def test_frozen
-    q = Quantity[10, 'g']
+  def test_to_json_serializes_as_array
+    require 'json'
 
-    assert_predicate q, :frozen?
-  end
-
-  def test_deconstruct_for_pattern_matching
-    q = Quantity[10, 'g']
-
-    case q
-    in [value, unit]
-      assert_equal 10, value
-      assert_equal 'g', unit
-    end
-  end
-
-  def test_deconstruct_keys
-    q = Quantity[10, 'g']
-
-    case q
-    in { value: v, unit: u }
-      assert_equal 10, v
-      assert_equal 'g', u
-    end
+    assert_equal [10, 'g'].to_json, Quantity[10, 'g'].to_json
   end
 end

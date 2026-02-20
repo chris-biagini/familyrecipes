@@ -279,4 +279,48 @@ class RecipeTest < Minitest::Test
       make_recipe("# Title\n\nJust a description, no steps.\n")
     end
   end
+
+  def test_all_ingredients_with_quantities_merges_overlapping_sub_recipe
+    dough_md = <<~MD
+      # Pizza Dough
+
+      ## Mix (make dough)
+
+      - Flour, 500 g
+      - Salt, 10 g
+
+      Knead.
+    MD
+
+    pizza_md = <<~MD
+      # Test Pizza
+
+      ## Prep (prep toppings)
+
+      - Flour, 50 g: For dusting.
+
+      Dust the counter.
+
+      ## Dough (make dough)
+
+      - @[Pizza Dough]
+
+      Stretch.
+    MD
+
+    dough = Recipe.new(markdown_source: dough_md, id: 'pizza-dough', category: 'Test')
+    pizza = Recipe.new(markdown_source: pizza_md, id: 'test-pizza', category: 'Test')
+    recipe_map = { 'pizza-dough' => dough, 'test-pizza' => pizza }
+
+    iwq = pizza.all_ingredients_with_quantities({}, recipe_map)
+    flour = iwq.find { |name, _| name == 'Flour' }
+
+    refute_nil flour, 'Flour should appear in merged ingredients'
+    amounts = flour[1]
+
+    # 50g own + 500g from cross-reference = 550g
+    g_amount = amounts.find { |a| a&.unit == 'g' }
+
+    assert_in_delta 550.0, g_amount.value
+  end
 end
