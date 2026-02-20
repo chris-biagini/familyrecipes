@@ -236,6 +236,37 @@ end
 
 # --- Display helpers ---
 
+def format_source(source)
+  case source['type']
+  when 'usda'
+    parts = ["USDA #{source['dataset']} (FDC #{source['fdc_id']})"]
+    parts << source['description'] if source['description']
+    parts << "Note: #{source['note']}" if source['note']
+    parts.join(' — ')
+  when 'label'
+    parts = [source['brand'], source['product']].compact
+    label = parts.any? ? parts.join(' — ') : 'Unknown product'
+    label += " (#{source['note']})" if source['note']
+    "Label: #{label}"
+  when 'other'
+    parts = [source['name'], source['detail']].compact
+    label = parts.any? ? parts.join(': ') : 'Unknown'
+    label += " (#{source['note']})" if source['note']
+    label
+  else
+    source.to_s
+  end
+end
+
+def display_sources(sources)
+  if sources.size == 1
+    puts "  Source: #{format_source(sources.first)}"
+  else
+    puts '  Sources:'
+    sources.each { |s| puts "    - #{format_source(s)}" }
+  end
+end
+
 def display_entry(name, entry)
   puts "\n--- #{name} ---"
 
@@ -262,7 +293,7 @@ def display_entry(name, entry)
     puts '  Portions: none'
   end
 
-  puts "  Source: #{entry['source']}" if entry['source']
+  display_sources(entry['sources']) if entry['sources']&.any?
 end
 
 def display_unit_coverage(name, entry, needed_units)
