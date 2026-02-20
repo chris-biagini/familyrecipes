@@ -668,3 +668,100 @@ def handle_ingredient(name, nutrition_data, ctx, api_key:, manual: false)
     enter_new_ingredient(name, needed_units, nutrition_data, api_key: api_key, manual: manual)
   end
 end
+
+# --- Missing mode ---
+
+def find_missing_ingredients(nutrition_data, ctx)
+  ingredients_to_recipes = Hash.new { |h, k| h[k] = [] }
+  ctx[:recipes].each do |recipe|
+    recipe.all_ingredient_names(ctx[:alias_map]).each do |name|
+      ingredients_to_recipes[name] << recipe.title unless ctx[:omit_set].include?(name.downcase)
+    end
+  end
+
+  missing = ingredients_to_recipes.keys.reject { |name| nutrition_data.key?(name) }
+  missing.sort_by! { |name| [-ingredients_to_recipes[name].uniq.size, name] }
+
+  # Find entries with unresolvable units
+  calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data, omit_set: ctx[:omit_set])
+
+  unresolvable = Hash.new { |h, k| h[k] = { units: Set.new, recipes: [] } }
+
+  ctx[:recipes].each do |recipe|
+    recipe.all_ingredients_with_quantities(ctx[:alias_map], ctx[:recipe_map]).each do |name, amounts|
+      next if ctx[:omit_set].include?(name.downcase)
+
+      entry = nutrition_data[name]
+      next unless entry
+      next unless calculator.nutrition_data.key?(name)
+
+      amounts.each do |amount|
+        next if amount.nil?
+        next if amount.value.nil?
+
+        next if calculator.resolvable?(amount.value, amount.unit, calculator.nutrition_data[name])
+
+        info = unresolvable[name]
+        info[:units] << (amount.unit || '(bare count)')
+        info[:recipes] |= [recipe.title]
+      end
+    end
+  end
+
+  { missing: missing, ingredients_to_recipes: ingredients_to_recipes, unresolvable: unresolvable }
+end
+
+def run_missing_mode(nutrition_data, ctx, api_key:)
+  result = find_missing_ingredients(nutrition_data, ctx)
+  missing = result[:missing]
+  recipes_map = result[:ingredients_to_recipes]
+  unresolvable = result[:unresolvable]
+
+  # Phase 1: Report
+  if missing.any?
+    puts "Missing nutrition data (#{missing.size}):"
+    missing.each do |name|
+      recipes = recipes_map[name].uniq.sort
+      count_label = recipes.size == 1 ? '1 recipe' : "#{recipes.size} recipes"
+      puts "  - #{name} (#{count_label}: #{recipes.join(', ')})"
+    end
+    puts ''
+  end
+
+  if unresolvable.any?
+    puts "Missing unit conversions (#{unresolvable.size}):"
+    unresolvable.sort_by { |name, info| [-info[:recipes].size, name] }.each do |name, info|
+      recipes = info[:recipes].sort
+      units = info[:units].to_a.sort.join(', ')
+      count_label = recipes.size == 1 ? '1 recipe' : "#{recipes.size} recipes"
+      puts "  - #{name}: '#{units}' (#{count_label}: #{recipes.join(', ')})"
+    end
+    puts ''
+  end
+
+  if missing.empty? && unresolvable.empty?
+    puts 'All ingredients have nutrition data and resolvable units!'
+    return
+  end
+
+  puts "#{missing.size} missing data, #{unresolvable.size} missing conversions.\n\n"
+
+  # Phase 2: Batch iterate
+  print 'Enter data? (y/n): '
+  input = $stdin.gets&.strip
+  return unless input&.downcase == 'y'
+
+  # Iterate missing entries (most-used first — already sorted)
+  missing.each do |name|
+    puts "\n=== #{name} ==="
+    handle_ingredient(name, nutrition_data, ctx, api_key: api_key)
+    puts ''
+  end
+
+  # Iterate unresolvable entries (edit mode for portions)
+  unresolvable.sort_by { |_, info| -info[:recipes].size }.each do |name, _info|
+    puts "\n=== #{name} (fix unit conversions) ==="
+    handle_ingredient(name, nutrition_data, ctx, api_key: api_key)
+    puts ''
+  end
+end
