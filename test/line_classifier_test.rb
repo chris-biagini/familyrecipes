@@ -103,6 +103,33 @@ class LineClassifierTest < Minitest::Test
     assert_equal :prose, tokens[13].type
   end
 
+  def test_classifies_category_front_matter
+    type, content = LineClassifier.classify_line('Category: Bread')
+
+    assert_equal :front_matter, type
+    assert_equal %w[Category Bread], content
+  end
+
+  def test_classifies_makes_front_matter
+    type, content = LineClassifier.classify_line('Makes: 12 pancakes')
+
+    assert_equal :front_matter, type
+    assert_equal ['Makes', '12 pancakes'], content
+  end
+
+  def test_classifies_serves_front_matter
+    type, content = LineClassifier.classify_line('Serves: 4')
+
+    assert_equal :front_matter, type
+    assert_equal %w[Serves 4], content
+  end
+
+  def test_front_matter_requires_colon_space
+    type, _content = LineClassifier.classify_line('Makes 30 gougères.')
+
+    assert_equal :prose, type
+  end
+
   def test_preserves_line_numbers
     tokens = LineClassifier.classify("# Title\n\n## Step")
 

@@ -15,6 +15,7 @@ module LineClassifier
     step_header: /^## (.+)$/,
     ingredient: /^- (.+)$/,
     divider: /^---\s*$/,
+    front_matter: /^(Category|Makes|Serves):\s+(.+)$/,
     blank: /^\s*$/
   }.freeze
 
