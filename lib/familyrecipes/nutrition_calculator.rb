@@ -4,7 +4,7 @@
 #
 # Calculates nutrition facts for a recipe by looking up each ingredient
 # in a nutrition data table and converting quantities to grams.
-# Expects per_serving schema with serving block and optional density.
+# Expects density-first schema with nutrients block and optional density.
 
 module FamilyRecipes
   class NutritionCalculator
@@ -34,13 +34,13 @@ module FamilyRecipes
       @omit_set = omit_set
 
       @nutrition_data = nutrition_data.select do |name, entry|
-        serving_grams = entry.dig('serving', 'grams')
-        unless serving_grams.is_a?(Numeric) && serving_grams.positive?
-          warn "WARNING: Nutrition entry '#{name}' has invalid serving.grams (#{serving_grams.inspect}), skipping."
+        unless entry['nutrients'].is_a?(Hash)
+          warn "WARNING: Nutrition entry '#{name}' has invalid nutrients (#{entry['nutrients'].inspect}), skipping."
           next false
         end
-        unless entry['per_serving'].is_a?(Hash)
-          warn "WARNING: Nutrition entry '#{name}' has invalid per_serving (#{entry['per_serving'].inspect}), skipping."
+        basis_grams = entry.dig('nutrients', 'basis_grams')
+        unless basis_grams.is_a?(Numeric) && basis_grams.positive?
+          warn "WARNING: Nutrition entry '#{name}' has invalid basis_grams (#{basis_grams.inspect}), skipping."
           next false
         end
         true
@@ -98,10 +98,10 @@ module FamilyRecipes
     private
 
     def nutrient_per_gram(entry, nutrient)
-      serving_grams = entry.dig('serving', 'grams')
-      return 0 if serving_grams.nil? || serving_grams <= 0
+      basis_grams = entry.dig('nutrients', 'basis_grams')
+      return 0 if basis_grams.nil? || basis_grams <= 0
 
-      (entry.dig('per_serving', nutrient.to_s) || 0) / serving_grams.to_f
+      (entry.dig('nutrients', nutrient.to_s) || 0) / basis_grams.to_f
     end
 
     def to_grams(value, unit, entry)
@@ -136,17 +136,17 @@ module FamilyRecipes
     end
 
     def derive_density(entry)
-      serving = entry['serving']
-      return nil unless serving
-      return nil unless serving['volume_amount'] && serving['volume_unit']
+      density = entry['density']
+      return nil unless density
+      return nil unless density['volume'] && density['unit']
 
-      ml_factor = VOLUME_TO_ML[serving['volume_unit'].to_s.downcase]
+      ml_factor = VOLUME_TO_ML[density['unit'].to_s.downcase]
       return nil unless ml_factor
 
-      volume_ml = serving['volume_amount'] * ml_factor
+      volume_ml = density['volume'] * ml_factor
       return nil if volume_ml <= 0
 
-      serving['grams'] / volume_ml
+      density['grams'] / volume_ml
     end
 
     def parse_serving_count(yield_line)
