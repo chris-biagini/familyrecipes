@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Design Philosophy
 
-Recipes are **documents first**. They are marked-up text that a browser can render, not an app that happens to contain text.
+Your goal is a high-quality, well-crafted user experience. Improve the end product. Make it delightful, charming, and fun. Finish the back of the cabinet even though no one will see it. Always feel free to challenge assumptions, misconceptions, and poor design decisions. Be as opinionated as this document and push back on my ideas when you need to. Suggest any quality-of-life, performance, or feature improvements that come to mind. Always use the superpowers skill and plan mode when getting ready to write code or build a new feature. 
 
 ### Visual language
 
@@ -17,6 +17,7 @@ The visual identity blends **red-checked tablecloths** and **mid-century cookboo
 
 ### HTML, CSS, and JavaScript
 
+- Recipes are **documents first**. They are marked-up text that a browser can render, not an app that happens to contain text.
 - CSS and JS are progressive enhancements. Every page must be readable and functional with both disabled.
 - JavaScript is used sparingly and only for optional features (scaling, state preservation, cross-off). These are guilty indulgences—they must not interfere with the document nature of the page.
 - Prefer native HTML elements. Introduce as close to zero custom UI as possible.
@@ -134,9 +135,6 @@ end
 
 ### GitHub Issues
 If I mention a GitHub issue (e.g., "#99"), review it and plan a fix. Close it via the commit message once confirmed.
-
-### Challenge me where appropriate
-It's always welcome for you to challenge my assumptions and misconceptions, and push back on my ideas if you see opportunities to improve the end product. You should also suggest any quality-of-life, performance, or feature improvements that come to mind. In plan mode, interviewing me is highly encouraged. Make recommendations where there is an option you believe is best.  
 
 ## Build Command
 
