@@ -16,6 +16,10 @@ Style/Documentation:
 Style/FrozenStringLiteralComment:
   EnforcedStyle: always
 
+# Project convention: rescued exceptions are named `error`, not `e`
+Naming/RescuedExceptionsVariableName:
+  PreferredName: error
+
 # 120 is a reasonable line length for modern screens
 Layout/LineLength:
   Max: 120

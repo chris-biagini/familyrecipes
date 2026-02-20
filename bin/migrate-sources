@@ -81,7 +81,7 @@ def fetch_food_detail(api_key, fdc_id)
 
   response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(request) }
   JSON.parse(response.body)
-rescue StandardError => error # rubocop:disable Naming/RescuedExceptionsVariableName
+rescue StandardError => error
   warn "  API error for FDC #{fdc_id}: #{error.message}"
   nil
 end
