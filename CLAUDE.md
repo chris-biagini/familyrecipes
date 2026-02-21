@@ -230,7 +230,7 @@ All templates use relative paths resolved via an HTML `<base>` tag, so the site 
 - `resources/nutrition-data.yaml` - density-first nutrition data (nutrients per basis_grams, density, portions)
 - `resources/web/style.css` - main stylesheet; `groceries.css` for the grocery page
 - `resources/web/recipe-state-manager.js` - scaling, cross-off, state persistence; `groceries.js` for the grocery page
-- `resources/web/` also contains: service worker (`sw.js`), wake lock, notifications, QR codes, 404 page, favicons
+- `resources/web/` also contains: wake lock, notifications, QR codes, 404 page, favicons
 
 **Design History**:
 - `docs/plans/` contains dated design documents for major features and architectural decisions
