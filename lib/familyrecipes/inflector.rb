@@ -77,41 +77,12 @@ module FamilyRecipes
       count == 1 ? unit : plural(unit)
     end
 
-    def self.name_for_grocery(name)
-      return name if uncountable_name?(name)
-
-      base, qualifier = split_qualified(name)
-      pluralized = plural(base)
-      qualifier ? "#{pluralized} (#{qualifier})" : pluralized
-    end
-
-    def self.name_for_count(name, count)
-      return name if uncountable_name?(name)
-      return name if count == 1
-
-      base, qualifier = split_qualified(name)
-      pluralized = plural(base)
-      qualifier ? "#{pluralized} (#{qualifier})" : pluralized
-    end
-
     # --- Private helpers ---
 
     def self.apply_case(original, replacement)
       original[0] == original[0].upcase ? replacement.capitalize : replacement
     end
     private_class_method :apply_case
-
-    def self.uncountable_name?(name)
-      base, = split_qualified(name)
-      uncountable?(base)
-    end
-    private_class_method :uncountable_name?
-
-    def self.split_qualified(name)
-      match = name.match(/\A(.+?)\s*\((.+)\)\z/)
-      match ? [match[1].strip, match[2]] : [name, nil]
-    end
-    private_class_method :split_qualified
 
     def self.singularize_by_rules(word)
       case word.downcase
