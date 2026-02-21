@@ -17,6 +17,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      BUNDLE_WITHOUT: database
     steps:
       - uses: actions/checkout@v4
 
