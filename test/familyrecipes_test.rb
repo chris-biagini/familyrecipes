@@ -88,38 +88,38 @@ class FamilyRecipesTest < Minitest::Test
   def test_build_alias_map
     grocery_aisles = {
       'Produce' => [
-        { name: 'Apple', aliases: ['Granny Smith apple', 'Gala apple'] }
+        { name: 'Apples', aliases: ['Granny Smith apples', 'Gala apples'] }
       ]
     }
 
     alias_map = FamilyRecipes.build_alias_map(grocery_aisles)
 
     # Canonical name downcased maps to canonical
-    assert_equal 'Apple', alias_map['apple']
+    assert_equal 'Apples', alias_map['apples']
 
     # Direct aliases (downcased) should map to canonical
-    assert_equal 'Apple', alias_map['granny smith apple']
-    assert_equal 'Apple', alias_map['gala apple']
+    assert_equal 'Apples', alias_map['granny smith apples']
+    assert_equal 'Apples', alias_map['gala apples']
 
-    # Plural (downcased) should map to canonical
-    assert_equal 'Apple', alias_map['apples']
-    assert_equal 'Apple', alias_map['granny smith apples']
-    assert_equal 'Apple', alias_map['gala apples']
+    # Singular forms (downcased) should map to canonical
+    assert_equal 'Apples', alias_map['apple']
+    assert_equal 'Apples', alias_map['granny smith apple']
+    assert_equal 'Apples', alias_map['gala apple']
   end
 
   def test_build_known_ingredients
     grocery_aisles = {
       'Produce' => [
-        { name: 'Apple', aliases: ['Gala apple'] }
+        { name: 'Apples', aliases: ['Gala apples'] }
       ]
     }
-    alias_map = { 'gala apple' => 'Apple', 'apples' => 'Apple', 'gala apples' => 'Apple' }
+    alias_map = { 'gala apples' => 'Apples', 'apple' => 'Apples', 'gala apple' => 'Apples' }
 
     known = FamilyRecipes.build_known_ingredients(grocery_aisles, alias_map)
 
-    assert_includes known, 'apple'
-    assert_includes known, 'gala apple'
     assert_includes known, 'apples'
     assert_includes known, 'gala apples'
+    assert_includes known, 'apple'
+    assert_includes known, 'gala apple'
   end
 end

@@ -93,12 +93,12 @@ module FamilyRecipes
 
         item[:aliases].each { |al| alias_map[al.downcase] = canonical }
 
-        plural = Inflector.name_for_grocery(canonical)
-        alias_map[plural.downcase] = canonical unless plural == canonical
+        singular = Inflector.singular(canonical)
+        alias_map[singular.downcase] = canonical unless singular.downcase == canonical.downcase
 
         item[:aliases].each do |al|
-          plural = Inflector.name_for_grocery(al)
-          alias_map[plural.downcase] = canonical unless plural == al
+          singular = Inflector.singular(al)
+          alias_map[singular.downcase] = canonical unless singular.downcase == al.downcase
         end
       end
     end
