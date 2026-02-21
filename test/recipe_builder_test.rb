@@ -205,13 +205,15 @@ class RecipeBuilderTest < Minitest::Test
     assert_equal 'Roughly chop.', ingredient[:prep_note]
   end
 
-  def test_parses_yield_line_with_makes
+  # --- Front matter parsing ---
+
+  def test_parses_category
     text = <<~RECIPE
       # Cookies
 
       Delicious cookies.
 
-      Makes about 32 cookies.
+      Category: Dessert
 
       ## Mix
 
@@ -220,18 +222,36 @@ class RecipeBuilderTest < Minitest::Test
 
     result = build_recipe(text)
 
-    assert_equal 'Delicious cookies.', result[:description]
-    assert_equal 'Makes about 32 cookies.', result[:yield_line]
-    assert_equal 1, result[:steps].length
+    assert_equal 'Dessert', result[:front_matter][:category]
   end
 
-  def test_parses_yield_line_with_serves
+  def test_parses_makes_with_unit_noun
+    text = <<~RECIPE
+      # Cookies
+
+      Delicious cookies.
+
+      Category: Dessert
+      Makes: 32 cookies
+
+      ## Mix
+
+      Mix them.
+    RECIPE
+
+    result = build_recipe(text)
+
+    assert_equal '32 cookies', result[:front_matter][:makes]
+  end
+
+  def test_parses_serves
     text = <<~RECIPE
       # Beans
 
       A hearty dish.
 
-      Serves 4.
+      Category: Mains
+      Serves: 4
 
       ## Cook
 
@@ -240,15 +260,36 @@ class RecipeBuilderTest < Minitest::Test
 
     result = build_recipe(text)
 
-    assert_equal 'A hearty dish.', result[:description]
-    assert_equal 'Serves 4.', result[:yield_line]
+    assert_equal '4', result[:front_matter][:serves]
   end
 
-  def test_parses_yield_line_without_description
+  def test_parses_all_front_matter_fields
+    text = <<~RECIPE
+      # Pizza Dough
+
+      Basic dough.
+
+      Category: Pizza
+      Makes: 6 dough balls
+      Serves: 4
+
+      ## Mix
+
+      Mix.
+    RECIPE
+
+    result = build_recipe(text)
+
+    assert_equal 'Pizza', result[:front_matter][:category]
+    assert_equal '6 dough balls', result[:front_matter][:makes]
+    assert_equal '4', result[:front_matter][:serves]
+  end
+
+  def test_front_matter_without_description
     text = <<~RECIPE
       # Pizza
 
-      Makes enough for 2 pizzas.
+      Category: Pizza
 
       ## Make dough
 
@@ -258,11 +299,10 @@ class RecipeBuilderTest < Minitest::Test
     result = build_recipe(text)
 
     assert_nil result[:description]
-    assert_equal 'Makes enough for 2 pizzas.', result[:yield_line]
-    assert_equal 1, result[:steps].length
+    assert_equal 'Pizza', result[:front_matter][:category]
   end
 
-  def test_no_yield_line_returns_nil
+  def test_no_front_matter_returns_empty_hash
     text = <<~RECIPE
       # Simple Recipe
 
@@ -273,14 +313,16 @@ class RecipeBuilderTest < Minitest::Test
 
     result = build_recipe(text)
 
-    assert_nil result[:yield_line]
+    assert_empty result[:front_matter]
   end
 
-  def test_description_not_consumed_as_yield_line
+  def test_description_not_consumed_as_front_matter
     text = <<~RECIPE
       # Cookies
 
       Delicious chocolate chip cookies.
+
+      Category: Dessert
 
       ## Mix
 
@@ -290,7 +332,23 @@ class RecipeBuilderTest < Minitest::Test
     result = build_recipe(text)
 
     assert_equal 'Delicious chocolate chip cookies.', result[:description]
-    assert_nil result[:yield_line]
+    assert_equal 'Dessert', result[:front_matter][:category]
+  end
+
+  def test_typo_in_front_matter_key_parsed_as_prose
+    text = <<~RECIPE
+      # Cookies
+
+      Categroy: Dessert
+
+      ## Mix
+
+      Mix them.
+    RECIPE
+
+    result = build_recipe(text)
+
+    assert_equal 'Categroy: Dessert', result[:description]
   end
 
   def test_consecutive_blank_lines_ignored

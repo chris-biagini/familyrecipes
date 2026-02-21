@@ -15,12 +15,12 @@ class RecipeBuilder
   end
 
   # Build a document hash from the tokens
-  # Returns: { title:, description:, yield_line:, steps:, footer: }
+  # Returns: { title:, description:, front_matter:, steps:, footer: }
   def build
     {
       title: parse_title,
       description: parse_description,
-      yield_line: parse_yield_line,
+      front_matter: parse_front_matter,
       steps: parse_steps,
       footer: parse_footer
     }
@@ -70,17 +70,23 @@ class RecipeBuilder
 
     return nil if at_end?
     return nil if peek.type == :step_header
+    return nil if peek.type == :front_matter
 
-    advance.content if peek.type == :prose && !peek.content.match?(/\A(Makes|Serves)\b/i)
+    advance.content if peek.type == :prose
   end
 
-  # Parse optional yield line ("Makes 30 gougères." / "Serves 4.")
-  def parse_yield_line
+  # Parse optional front matter fields (Category, Makes, Serves)
+  def parse_front_matter
+    fields = {}
     skip_blanks
-    return nil if at_end?
-    return nil if peek.type != :prose
 
-    advance.content if peek.content.match?(/\A(Makes|Serves)\b/i)
+    while !at_end? && peek.type == :front_matter
+      token = advance
+      key = token.content[0].downcase.to_sym
+      fields[key] = token.content[1]
+    end
+
+    fields
   end
 
   # Parse all steps until divider or end
