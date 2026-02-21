@@ -98,8 +98,8 @@ class CrossReferenceTest < Minitest::Test
   end
 
   def test_cross_reference_expanded_ingredients
-    dough = make_recipe("# Pizza Dough\n\n## Mix (make dough)\n\n- Flour, 500 g\n- Water, 325 g\n- Salt\n\nKnead.",
-                        id: 'pizza-dough')
+    md = "# Pizza Dough\n\nCategory: Test\n\n## Mix (make dough)\n\n- Flour, 500 g\n- Water, 325 g\n- Salt\n\nKnead."
+    dough = make_recipe(md, id: 'pizza-dough')
     recipe_map = { 'pizza-dough' => dough }
     xref = CrossReference.new(target_title: 'Pizza Dough', multiplier: 2.0)
 
@@ -125,14 +125,16 @@ class CrossReferenceTest < Minitest::Test
   # --- Recipe integration ---
 
   def test_recipe_with_cross_reference_has_cross_references
-    recipe = make_recipe("# White Pizza\n\n## Dough (make dough)\n\n- @[Pizza Dough]\n\nStretch.")
+    md = "# White Pizza\n\nCategory: Test\n\n## Dough (make dough)\n\n- @[Pizza Dough]\n\nStretch."
+    recipe = make_recipe(md)
 
     assert_equal 1, recipe.cross_references.size
     assert_equal 'Pizza Dough', recipe.cross_references.first.target_title
   end
 
   def test_recipe_cross_reference_not_in_own_ingredients
-    recipe = make_recipe("# White Pizza\n\n## Dough (make dough)\n\n- @[Pizza Dough]\n- Olive oil\n\nStretch.")
+    md = "# White Pizza\n\nCategory: Test\n\n## Dough (make dough)\n\n- @[Pizza Dough]\n- Olive oil\n\nStretch."
+    recipe = make_recipe(md)
 
     names = recipe.all_ingredient_names
 
@@ -141,8 +143,11 @@ class CrossReferenceTest < Minitest::Test
   end
 
   def test_recipe_all_ingredients_with_quantities_includes_sub_recipe
-    dough = make_recipe("# Pizza Dough\n\n## Mix (make dough)\n\n- Flour, 500 g\n- Salt\n\nKnead.", id: 'pizza-dough')
-    pizza = make_recipe("# White Pizza\n\n## Dough (make dough)\n\n- @[Pizza Dough]\n- Olive oil, 60 g\n\nStretch.")
+    dough_md = "# Pizza Dough\n\nCategory: Test\n\n## Mix (make dough)\n\n- Flour, 500 g\n- Salt\n\nKnead."
+    dough = make_recipe(dough_md, id: 'pizza-dough')
+    pizza_md = "# White Pizza\n\nCategory: Test\n\n## Dough (make dough)\n\n" \
+               "- @[Pizza Dough]\n- Olive oil, 60 g\n\nStretch."
+    pizza = make_recipe(pizza_md)
     recipe_map = { 'pizza-dough' => dough }
 
     expanded = pizza.all_ingredients_with_quantities({}, recipe_map)
@@ -154,8 +159,10 @@ class CrossReferenceTest < Minitest::Test
   end
 
   def test_recipe_all_ingredients_with_quantities_scales_sub_recipe
-    dough = make_recipe("# Pizza Dough\n\n## Mix (make dough)\n\n- Flour, 500 g\n\nKnead.", id: 'pizza-dough')
-    pizza = make_recipe("# White Pizza\n\n## Dough (make dough)\n\n- @[Pizza Dough], 2\n\nStretch.")
+    dough_md = "# Pizza Dough\n\nCategory: Test\n\n## Mix (make dough)\n\n- Flour, 500 g\n\nKnead."
+    dough = make_recipe(dough_md, id: 'pizza-dough')
+    pizza_md = "# White Pizza\n\nCategory: Test\n\n## Dough (make dough)\n\n- @[Pizza Dough], 2\n\nStretch."
+    pizza = make_recipe(pizza_md)
     recipe_map = { 'pizza-dough' => dough }
 
     expanded = pizza.all_ingredients_with_quantities({}, recipe_map)
@@ -166,7 +173,8 @@ class CrossReferenceTest < Minitest::Test
   end
 
   def test_step_ingredient_list_items_preserves_order
-    recipe = make_recipe("# Test\n\n## Cook (mix)\n\n- Olive oil, 60 g\n- @[Pizza Dough]\n- Salt\n\nMix.")
+    md = "# Test\n\nCategory: Test\n\n## Cook (mix)\n\n- Olive oil, 60 g\n- @[Pizza Dough]\n- Salt\n\nMix."
+    recipe = make_recipe(md)
 
     items = recipe.steps.first.ingredient_list_items
 

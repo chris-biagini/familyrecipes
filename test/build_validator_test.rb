@@ -4,8 +4,9 @@ require_relative 'test_helper'
 
 class BuildValidatorTest < Minitest::Test
   def test_detects_unresolved_cross_reference
-    dough = make_recipe("# Pizza Dough\n\n## Mix (make dough)\n\n- Flour, 500 g\n\nKnead.", id: 'pizza-dough')
-    pizza_md = "# Test Pizza\n\n## Dough (make dough)\n\n- @[Nonexistent Recipe]\n\nStretch."
+    dough_md = "# Pizza Dough\n\nCategory: Test\n\n## Mix (make dough)\n\n- Flour, 500 g\n\nKnead."
+    dough = make_recipe(dough_md, id: 'pizza-dough')
+    pizza_md = "# Test Pizza\n\nCategory: Test\n\n## Dough (make dough)\n\n- @[Nonexistent Recipe]\n\nStretch."
     pizza = make_recipe(pizza_md, id: 'test-pizza')
     validator = build_validator(recipes: [dough, pizza])
 
@@ -16,8 +17,8 @@ class BuildValidatorTest < Minitest::Test
   end
 
   def test_detects_circular_reference
-    a = make_recipe("# Recipe A\n\n## Step (do it)\n\n- @[Recipe B]\n\nDo.", id: 'recipe-a')
-    b = make_recipe("# Recipe B\n\n## Step (do it)\n\n- @[Recipe A]\n\nDo.", id: 'recipe-b')
+    a = make_recipe("# Recipe A\n\nCategory: Test\n\n## Step (do it)\n\n- @[Recipe B]\n\nDo.", id: 'recipe-a')
+    b = make_recipe("# Recipe B\n\nCategory: Test\n\n## Step (do it)\n\n- @[Recipe A]\n\nDo.", id: 'recipe-b')
     validator = build_validator(recipes: [a, b])
 
     error = assert_raises(StandardError) { validator.validate_cross_references }
@@ -26,7 +27,8 @@ class BuildValidatorTest < Minitest::Test
   end
 
   def test_detects_title_filename_mismatch
-    recipe = make_recipe("# Actual Title\n\n## Step (do it)\n\n- Flour, 500 g\n\nMix.", id: 'wrong-slug')
+    md = "# Actual Title\n\nCategory: Test\n\n## Step (do it)\n\n- Flour, 500 g\n\nMix."
+    recipe = make_recipe(md, id: 'wrong-slug')
     validator = build_validator(recipes: [recipe])
 
     error = assert_raises(StandardError) { validator.validate_cross_references }
@@ -35,15 +37,17 @@ class BuildValidatorTest < Minitest::Test
   end
 
   def test_valid_cross_references_pass
-    dough = make_recipe("# Pizza Dough\n\n## Mix (make dough)\n\n- Flour, 500 g\n\nKnead.", id: 'pizza-dough')
-    pizza = make_recipe("# Test Pizza\n\n## Dough (make dough)\n\n- @[Pizza Dough]\n\nStretch.", id: 'test-pizza')
+    dough_md = "# Pizza Dough\n\nCategory: Test\n\n## Mix (make dough)\n\n- Flour, 500 g\n\nKnead."
+    dough = make_recipe(dough_md, id: 'pizza-dough')
+    pizza_md = "# Test Pizza\n\nCategory: Test\n\n## Dough (make dough)\n\n- @[Pizza Dough]\n\nStretch."
+    pizza = make_recipe(pizza_md, id: 'test-pizza')
     validator = build_validator(recipes: [dough, pizza])
 
     validator.validate_cross_references
   end
 
   def test_self_referential_cross_reference
-    recipe = make_recipe("# Loopy\n\n## Step (do it)\n\n- @[Loopy]\n\nDo.", id: 'loopy')
+    recipe = make_recipe("# Loopy\n\nCategory: Test\n\n## Step (do it)\n\n- @[Loopy]\n\nDo.", id: 'loopy')
     validator = build_validator(recipes: [recipe])
 
     error = assert_raises(StandardError) { validator.validate_cross_references }
@@ -52,9 +56,9 @@ class BuildValidatorTest < Minitest::Test
   end
 
   def test_three_way_circular_reference
-    a = make_recipe("# Recipe A\n\n## Step (do it)\n\n- @[Recipe B]\n\nDo.", id: 'recipe-a')
-    b = make_recipe("# Recipe B\n\n## Step (do it)\n\n- @[Recipe C]\n\nDo.", id: 'recipe-b')
-    c = make_recipe("# Recipe C\n\n## Step (do it)\n\n- @[Recipe A]\n\nDo.", id: 'recipe-c')
+    a = make_recipe("# Recipe A\n\nCategory: Test\n\n## Step (do it)\n\n- @[Recipe B]\n\nDo.", id: 'recipe-a')
+    b = make_recipe("# Recipe B\n\nCategory: Test\n\n## Step (do it)\n\n- @[Recipe C]\n\nDo.", id: 'recipe-b')
+    c = make_recipe("# Recipe C\n\nCategory: Test\n\n## Step (do it)\n\n- @[Recipe A]\n\nDo.", id: 'recipe-c')
     validator = build_validator(recipes: [a, b, c])
 
     error = assert_raises(StandardError) { validator.validate_cross_references }
@@ -63,7 +67,7 @@ class BuildValidatorTest < Minitest::Test
   end
 
   def test_validate_ingredients_warns_on_unknown
-    md = "# Test Recipe\n\n## Step (do it)\n\n- Flour, 500 g\n- Unicorn dust\n\nMix."
+    md = "# Test Recipe\n\nCategory: Test\n\n## Step (do it)\n\n- Flour, 500 g\n- Unicorn dust\n\nMix."
     recipe = make_recipe(md, id: 'test-recipe')
     validator = build_validator(recipes: [recipe], known_ingredients: Set.new(%w[flour]))
 
@@ -73,7 +77,8 @@ class BuildValidatorTest < Minitest::Test
   end
 
   def test_validate_ingredients_passes_when_all_known
-    recipe = make_recipe("# Test Recipe\n\n## Step (do it)\n\n- Flour, 500 g\n- Salt\n\nMix.", id: 'test-recipe')
+    md = "# Test Recipe\n\nCategory: Test\n\n## Step (do it)\n\n- Flour, 500 g\n- Salt\n\nMix."
+    recipe = make_recipe(md, id: 'test-recipe')
     validator = build_validator(recipes: [recipe], known_ingredients: Set.new(%w[flour salt]))
 
     output = capture_io { validator.validate_ingredients }
@@ -82,7 +87,8 @@ class BuildValidatorTest < Minitest::Test
   end
 
   def test_validate_nutrition_warns_on_missing_data
-    recipe = make_recipe("# Test Recipe\n\n## Step (do it)\n\n- Flour, 500 g\n\nMix.", id: 'test-recipe')
+    md = "# Test Recipe\n\nCategory: Test\n\n## Step (do it)\n\n- Flour, 500 g\n\nMix."
+    recipe = make_recipe(md, id: 'test-recipe')
     nutrition_data = {}
     calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data)
     validator = build_validator(recipes: [recipe], nutrition_calculator: calculator)
@@ -94,7 +100,8 @@ class BuildValidatorTest < Minitest::Test
   end
 
   def test_validate_nutrition_passes_when_complete
-    recipe = make_recipe("# Test Recipe\n\n## Step (do it)\n\n- Flour, 500 g\n\nMix.", id: 'test-recipe')
+    md = "# Test Recipe\n\nCategory: Test\n\n## Step (do it)\n\n- Flour, 500 g\n\nMix."
+    recipe = make_recipe(md, id: 'test-recipe')
     nutrition_data = {
       'Flour' => {
         'nutrients' => { 'basis_grams' => 30.0, 'calories' => 110.0 },
