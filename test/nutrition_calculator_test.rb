@@ -64,7 +64,7 @@ class NutritionCalculatorTest < Minitest::Test
   end
 
   def make_recipe(markdown, id: 'test-recipe')
-    Recipe.new(markdown_source: markdown, id: id, category: 'Test')
+    FamilyRecipes::Recipe.new(markdown_source: markdown, id: id, category: 'Test')
   end
 
   # --- Basic calculations ---

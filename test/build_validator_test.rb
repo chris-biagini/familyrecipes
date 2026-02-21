@@ -119,7 +119,7 @@ class BuildValidatorTest < Minitest::Test
   private
 
   def make_recipe(markdown, id: 'test-recipe')
-    Recipe.new(markdown_source: markdown, id: id, category: 'Test')
+    FamilyRecipes::Recipe.new(markdown_source: markdown, id: id, category: 'Test')
   end
 
   def build_validator(recipes: [], quick_bites: [], known_ingredients: Set.new,

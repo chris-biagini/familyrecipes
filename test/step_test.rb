@@ -4,9 +4,9 @@ require_relative 'test_helper'
 
 class StepTest < Minitest::Test
   def test_valid_with_ingredients_and_instructions
-    step = Step.new(
+    step = FamilyRecipes::Step.new(
       tldr: 'Mix dough',
-      ingredient_list_items: [Ingredient.new(name: 'Flour', quantity: '250 g')],
+      ingredient_list_items: [FamilyRecipes::Ingredient.new(name: 'Flour', quantity: '250 g')],
       instructions: 'Combine everything.'
     )
 
@@ -16,9 +16,9 @@ class StepTest < Minitest::Test
   end
 
   def test_valid_with_ingredients_only
-    step = Step.new(
+    step = FamilyRecipes::Step.new(
       tldr: 'Prep ingredients',
-      ingredient_list_items: [Ingredient.new(name: 'Salt')],
+      ingredient_list_items: [FamilyRecipes::Ingredient.new(name: 'Salt')],
       instructions: nil
     )
 
@@ -28,7 +28,7 @@ class StepTest < Minitest::Test
   end
 
   def test_valid_with_instructions_only
-    step = Step.new(
+    step = FamilyRecipes::Step.new(
       tldr: 'Preheat oven',
       ingredient_list_items: [],
       instructions: 'Preheat oven to 400F.'
@@ -41,34 +41,40 @@ class StepTest < Minitest::Test
 
   def test_raises_on_nil_tldr
     assert_raises(ArgumentError) do
-      Step.new(tldr: nil, ingredient_list_items: [Ingredient.new(name: 'Salt')], instructions: 'Season.')
+      FamilyRecipes::Step.new(
+        tldr: nil, ingredient_list_items: [FamilyRecipes::Ingredient.new(name: 'Salt')],
+        instructions: 'Season.'
+      )
     end
   end
 
   def test_raises_on_blank_tldr
     assert_raises(ArgumentError) do
-      Step.new(tldr: '  ', ingredient_list_items: [Ingredient.new(name: 'Salt')], instructions: 'Season.')
+      FamilyRecipes::Step.new(
+        tldr: '  ', ingredient_list_items: [FamilyRecipes::Ingredient.new(name: 'Salt')],
+        instructions: 'Season.'
+      )
     end
   end
 
   def test_raises_when_no_ingredients_and_no_instructions
     assert_raises(ArgumentError) do
-      Step.new(tldr: 'Empty step', ingredient_list_items: [], instructions: nil)
+      FamilyRecipes::Step.new(tldr: 'Empty step', ingredient_list_items: [], instructions: nil)
     end
   end
 
   def test_raises_when_no_ingredients_and_blank_instructions
     assert_raises(ArgumentError) do
-      Step.new(tldr: 'Empty step', ingredient_list_items: [], instructions: '   ')
+      FamilyRecipes::Step.new(tldr: 'Empty step', ingredient_list_items: [], instructions: '   ')
     end
   end
 
   def test_derives_ingredients_and_cross_references
-    flour = Ingredient.new(name: 'Flour', quantity: '500 g')
-    xref = CrossReference.new(target_title: 'Pizza Dough')
-    salt = Ingredient.new(name: 'Salt')
+    flour = FamilyRecipes::Ingredient.new(name: 'Flour', quantity: '500 g')
+    xref = FamilyRecipes::CrossReference.new(target_title: 'Pizza Dough')
+    salt = FamilyRecipes::Ingredient.new(name: 'Salt')
 
-    step = Step.new(
+    step = FamilyRecipes::Step.new(
       tldr: 'Mix',
       ingredient_list_items: [flour, xref, salt],
       instructions: 'Combine.'

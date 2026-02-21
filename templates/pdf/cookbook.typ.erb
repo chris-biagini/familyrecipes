@@ -98,7 +98,7 @@ _<%= typst_escape.call(recipe.description) %>_
     #set text(size: 10pt)
     #set list(marker: text(fill: wine-red, size: 5pt, baseline: 1.5pt)[#sym.circle.filled], indent: 0pt, body-indent: 0.5em)
 <%- step.ingredient_list_items.each do |item| -%>
-<%- if item.is_a?(CrossReference) -%>
+<%- if item.is_a?(FamilyRecipes::CrossReference) -%>
     - *<%= typst_escape.call(item.target_title) %>* (p.~#page-ref(<<%= item.target_slug %>>))<%= item.prep_note ? " #linebreak() #text(size: 9pt, style: \"italic\")[#{typst_escape.call(item.prep_note)}]" : "" %>
 <%- else -%>
     - *<%= typst_escape.call(item.name) %>*<%= item.quantity ? ", #{typst_escape.call(item.quantity)}" : "" %><%= item.prep_note ? " #linebreak() #text(size: 9pt, style: \"italic\")[#{typst_escape.call(item.prep_note)}]" : "" %>
@@ -113,7 +113,7 @@ _<%= typst_escape.call(recipe.description) %>_
   #set text(size: 10pt)
   #set list(marker: text(fill: wine-red, size: 5pt, baseline: 1.5pt)[#sym.circle.filled], indent: 0pt, body-indent: 0.5em)
 <%- step.ingredient_list_items.each do |item| -%>
-<%- if item.is_a?(CrossReference) -%>
+<%- if item.is_a?(FamilyRecipes::CrossReference) -%>
   - *<%= typst_escape.call(item.target_title) %>* (p.~#page-ref(<<%= item.target_slug %>>))<%= item.prep_note ? " #linebreak() #text(size: 9pt, style: \"italic\")[#{typst_escape.call(item.prep_note)}]" : "" %>
 <%- else -%>
   - *<%= typst_escape.call(item.name) %>*<%= item.quantity ? ", #{typst_escape.call(item.quantity)}" : "" %><%= item.prep_note ? " #linebreak() #text(size: 9pt, style: \"italic\")[#{typst_escape.call(item.prep_note)}]" : "" %>

@@ -4,7 +4,7 @@ require_relative 'test_helper'
 
 class RecipeTest < Minitest::Test
   def make_recipe(markdown)
-    Recipe.new(markdown_source: markdown, id: 'test-recipe', category: 'Test')
+    FamilyRecipes::Recipe.new(markdown_source: markdown, id: 'test-recipe', category: 'Test')
   end
 
   def test_ingredients_with_quantities_sums_same_unit_across_steps
@@ -328,8 +328,8 @@ class RecipeTest < Minitest::Test
       Stretch.
     MD
 
-    dough = Recipe.new(markdown_source: dough_md, id: 'pizza-dough', category: 'Test')
-    pizza = Recipe.new(markdown_source: pizza_md, id: 'test-pizza', category: 'Test')
+    dough = FamilyRecipes::Recipe.new(markdown_source: dough_md, id: 'pizza-dough', category: 'Test')
+    pizza = FamilyRecipes::Recipe.new(markdown_source: pizza_md, id: 'test-pizza', category: 'Test')
     recipe_map = { 'pizza-dough' => dough, 'test-pizza' => pizza }
 
     iwq = pizza.all_ingredients_with_quantities({}, recipe_map)

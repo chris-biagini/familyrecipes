@@ -5,8 +5,8 @@ require_relative 'test_helper'
 class IngredientAggregatorTest < Minitest::Test
   def test_sums_same_unit
     ingredients = [
-      Ingredient.new(name: 'Butter', quantity: '60 g'),
-      Ingredient.new(name: 'Butter', quantity: '140 g')
+      FamilyRecipes::Ingredient.new(name: 'Butter', quantity: '60 g'),
+      FamilyRecipes::Ingredient.new(name: 'Butter', quantity: '140 g')
     ]
     result = IngredientAggregator.aggregate_amounts(ingredients)
 
@@ -17,8 +17,8 @@ class IngredientAggregatorTest < Minitest::Test
 
   def test_keeps_different_units_separate
     ingredients = [
-      Ingredient.new(name: 'Butter', quantity: '200 g'),
-      Ingredient.new(name: 'Butter', quantity: '3 Tbsp')
+      FamilyRecipes::Ingredient.new(name: 'Butter', quantity: '200 g'),
+      FamilyRecipes::Ingredient.new(name: 'Butter', quantity: '3 Tbsp')
     ]
     result = IngredientAggregator.aggregate_amounts(ingredients)
 
@@ -31,8 +31,8 @@ class IngredientAggregatorTest < Minitest::Test
 
   def test_mixed_quantified_and_unquantified
     ingredients = [
-      Ingredient.new(name: 'Oil', quantity: '50 g'),
-      Ingredient.new(name: 'Oil')
+      FamilyRecipes::Ingredient.new(name: 'Oil', quantity: '50 g'),
+      FamilyRecipes::Ingredient.new(name: 'Oil')
     ]
     result = IngredientAggregator.aggregate_amounts(ingredients)
     numeric = result.find { |a| a.is_a?(Quantity) }
@@ -43,7 +43,7 @@ class IngredientAggregatorTest < Minitest::Test
 
   def test_all_unquantified
     ingredients = [
-      Ingredient.new(name: 'Salt')
+      FamilyRecipes::Ingredient.new(name: 'Salt')
     ]
     result = IngredientAggregator.aggregate_amounts(ingredients)
 
@@ -52,8 +52,8 @@ class IngredientAggregatorTest < Minitest::Test
 
   def test_unitless_numeric_sums
     ingredients = [
-      Ingredient.new(name: 'Egg', quantity: '2'),
-      Ingredient.new(name: 'Egg', quantity: '1')
+      FamilyRecipes::Ingredient.new(name: 'Egg', quantity: '2'),
+      FamilyRecipes::Ingredient.new(name: 'Egg', quantity: '1')
     ]
     result = IngredientAggregator.aggregate_amounts(ingredients)
 
@@ -64,8 +64,8 @@ class IngredientAggregatorTest < Minitest::Test
 
   def test_fractional_quantities_sum
     ingredients = [
-      Ingredient.new(name: 'Cream', quantity: '1/2 cup'),
-      Ingredient.new(name: 'Cream', quantity: '1/4 cup')
+      FamilyRecipes::Ingredient.new(name: 'Cream', quantity: '1/2 cup'),
+      FamilyRecipes::Ingredient.new(name: 'Cream', quantity: '1/4 cup')
     ]
     result = IngredientAggregator.aggregate_amounts(ingredients)
 

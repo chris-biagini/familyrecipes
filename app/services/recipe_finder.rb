@@ -10,7 +10,7 @@ class RecipeFinder
 
     source = File.read(path)
     category = extract_category(source)
-    Recipe.new(markdown_source: source, id: slug, category: category)
+    FamilyRecipes::Recipe.new(markdown_source: source, id: slug, category: category)
   end
 
   def self.slug_to_path

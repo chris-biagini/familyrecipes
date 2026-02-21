@@ -86,13 +86,13 @@ class CrossReferenceTest < Minitest::Test
   # --- CrossReference object ---
 
   def test_cross_reference_slug_generation
-    xref = CrossReference.new(target_title: 'Pizza Dough')
+    xref = FamilyRecipes::CrossReference.new(target_title: 'Pizza Dough')
 
     assert_equal 'pizza-dough', xref.target_slug
   end
 
   def test_cross_reference_default_multiplier
-    xref = CrossReference.new(target_title: 'Pizza Dough')
+    xref = FamilyRecipes::CrossReference.new(target_title: 'Pizza Dough')
 
     assert_in_delta(1.0, xref.multiplier)
   end
@@ -101,7 +101,7 @@ class CrossReferenceTest < Minitest::Test
     md = "# Pizza Dough\n\nCategory: Test\n\n## Mix (make dough)\n\n- Flour, 500 g\n- Water, 325 g\n- Salt\n\nKnead."
     dough = make_recipe(md, id: 'pizza-dough')
     recipe_map = { 'pizza-dough' => dough }
-    xref = CrossReference.new(target_title: 'Pizza Dough', multiplier: 2.0)
+    xref = FamilyRecipes::CrossReference.new(target_title: 'Pizza Dough', multiplier: 2.0)
 
     expanded = xref.expanded_ingredients(recipe_map)
 
@@ -179,14 +179,14 @@ class CrossReferenceTest < Minitest::Test
     items = recipe.steps.first.ingredient_list_items
 
     assert_equal 3, items.size
-    assert_instance_of Ingredient, items[0]
-    assert_instance_of CrossReference, items[1]
-    assert_instance_of Ingredient, items[2]
+    assert_instance_of FamilyRecipes::Ingredient, items[0]
+    assert_instance_of FamilyRecipes::CrossReference, items[1]
+    assert_instance_of FamilyRecipes::Ingredient, items[2]
   end
 
   private
 
   def make_recipe(markdown, id: 'test-recipe')
-    Recipe.new(markdown_source: markdown, id: id, category: 'Test')
+    FamilyRecipes::Recipe.new(markdown_source: markdown, id: id, category: 'Test')
   end
 end
