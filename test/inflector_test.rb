@@ -119,6 +119,14 @@ class InflectorTest < Minitest::Test
     assert_equal 'loaves', FamilyRecipes::Inflector.plural('loaf')
   end
 
+  def test_plural_irregular_taco
+    assert_equal 'tacos', FamilyRecipes::Inflector.plural('taco')
+  end
+
+  def test_plural_abbreviated_form_unchanged
+    assert_equal 'ml', FamilyRecipes::Inflector.plural('ml')
+  end
+
   def test_plural_preserves_capitalization
     assert_equal 'Carrots', FamilyRecipes::Inflector.plural('Carrot')
   end

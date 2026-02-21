@@ -5,7 +5,8 @@ module FamilyRecipes
     IRREGULAR_SINGULAR_TO_PLURAL = {
       'cookie' => 'cookies',
       'leaf' => 'leaves',
-      'loaf' => 'loaves'
+      'loaf' => 'loaves',
+      'taco' => 'tacos'
     }.freeze
 
     IRREGULAR_PLURAL_TO_SINGULAR = IRREGULAR_SINGULAR_TO_PLURAL.invert.freeze
@@ -53,6 +54,7 @@ module FamilyRecipes
     def self.plural(word)
       return word if word.nil? || word.empty?
       return word if uncountable?(word)
+      return word if ABBREVIATED_FORMS.include?(word.downcase)
 
       irregular = IRREGULAR_SINGULAR_TO_PLURAL[word.downcase]
       return apply_case(word, irregular) if irregular
