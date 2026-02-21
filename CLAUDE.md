@@ -189,11 +189,11 @@ All templates use relative paths resolved via an HTML `<base>` tag, so the site 
 
 **Core Classes** (`lib/familyrecipes/`):
 - `SiteGenerator` - Orchestrates the full build: parsing, rendering, resource copying, and validation
-- `Recipe` - Parses markdown recipe files into structured data (title, description, steps, footer)
+- `Recipe` - Parses markdown recipe files into structured data (title, description, front matter, steps, footer)
 - `Step` - A recipe step containing a tldr summary, ingredients list, and instructions
 - `Ingredient` - Individual ingredient with name, quantity, and prep note
 - `QuickBite` - Simple recipe from Quick Bites.md (name and ingredients only)
-- `LineClassifier` - Classifies raw recipe text lines into typed tokens (title, step header, ingredient, etc.)
+- `LineClassifier` - Classifies raw recipe text lines into typed tokens (title, step header, ingredient, front_matter, etc.)
 - `RecipeBuilder` - Consumes LineTokens and produces a structured document hash for Recipe
 - `IngredientParser` - Parses ingredient line text into structured data; also detects cross-references
 - `IngredientAggregator` - Sums ingredient quantities by unit for grocery list display
@@ -236,7 +236,9 @@ Recipes are plain text files using this markdown structure:
 
 Optional description line.
 
-Makes 4 servings.
+Category: Bread
+Makes: 12 rolls
+Serves: 4
 
 ## Step Name (short summary)
 
@@ -262,9 +264,15 @@ Optional footer content (notes, source, etc.)
 - `- Salt`
 - `- Garlic, 4 cloves`
 
-**Yield line**: An optional line like `Makes 30 gougères.` or `Serves 4.` between the description and first step. Must start with "Makes" or "Serves". Used for per-serving nutrition calculations.
+**Front matter**: Structured `Key: value` lines between the description and first step. Parsed by `LineClassifier` as `:front_matter` tokens and consumed by `RecipeBuilder#parse_front_matter`.
+- **Category** (required) — must match the recipe's subdirectory name. Build error if missing or mismatched.
+- **Makes** (optional) — `Makes: <number> <unit noun>`. Unit noun required when present. Represents countable output (e.g., `Makes: 30 gougères`).
+- **Serves** (optional) — `Serves: <number>`. People count only, no unit noun.
+- A recipe can have both Makes and Serves, just one, or neither (Category is always required).
+- `NutritionCalculator` uses Serves (preferred) or Makes quantity for per-serving nutrition. `Recipe` exposes `makes_quantity` and `makes_unit_noun` for the parsed components.
+- In HTML, front matter renders as an inline metadata line: `Category · Makes X · Serves Y` (class `recipe-meta`), with the category linking to its homepage section.
 
-**Recipe categories** are derived from directory names under `recipes/` (e.g., `recipes/Bread/` → category "Bread"). To add a new category, create a new subdirectory.
+**Recipe categories** are derived from directory names under `recipes/` (e.g., `recipes/Bread/` → category "Bread") and validated against the `Category:` front matter field. To add a new category, create a new subdirectory.
 
 ## Quick Bites
 
