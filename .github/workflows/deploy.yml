@@ -35,7 +35,7 @@ jobs:
         run: bundle exec rubocop
 
       - name: Run tests
-        run: bundle exec rake test
+        run: bundle exec ruby -Itest -Ilib -e "Dir.glob('test/*_test.rb').each { |f| require File.expand_path(f) }"
 
       - name: Build site
         run: bin/generate
