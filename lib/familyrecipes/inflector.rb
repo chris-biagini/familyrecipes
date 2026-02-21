@@ -3,6 +3,7 @@
 module FamilyRecipes
   module Inflector
     IRREGULAR_SINGULAR_TO_PLURAL = {
+      'cookie' => 'cookies',
       'leaf' => 'leaves',
       'loaf' => 'loaves'
     }.freeze

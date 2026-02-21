@@ -775,4 +775,107 @@ class NutritionCalculatorTest < Minitest::Test
 
     assert_match(/ZeroGrams/, err)
   end
+
+  # --- Per-unit nutrition ---
+
+  def test_per_unit_with_makes
+    recipe = make_recipe(<<~MD)
+      # Test
+
+      Category: Test
+      Makes: 24 cookies
+
+      ## Mix (combine)
+
+      - Flour (all-purpose), 480 g
+
+      Mix.
+    MD
+
+    result = @calculator.calculate(recipe, @alias_map, @recipe_map)
+
+    assert_equal 24, result.makes_quantity
+    assert_equal 'cookie', result.makes_unit_singular
+    assert_equal 'cookies', result.makes_unit_plural
+    assert_in_delta 1820.0 * 480 / 500 / 24, result.per_unit[:calories], 1
+  end
+
+  def test_per_unit_nil_without_makes
+    recipe = make_recipe(<<~MD)
+      # Test
+
+      Category: Test
+      Serves: 4
+
+      ## Mix (combine)
+
+      - Flour (all-purpose), 400 g
+
+      Mix.
+    MD
+
+    result = @calculator.calculate(recipe, @alias_map, @recipe_map)
+
+    assert_nil result.per_unit
+    assert_nil result.makes_quantity
+  end
+
+  def test_units_per_serving_with_both
+    recipe = make_recipe(<<~MD)
+      # Test
+
+      Category: Test
+      Makes: 24 cookies
+      Serves: 4
+
+      ## Mix (combine)
+
+      - Flour (all-purpose), 480 g
+
+      Mix.
+    MD
+
+    result = @calculator.calculate(recipe, @alias_map, @recipe_map)
+
+    assert_in_delta 6.0, result.units_per_serving, 0.01
+  end
+
+  def test_units_per_serving_nil_without_both
+    recipe = make_recipe(<<~MD)
+      # Test
+
+      Category: Test
+      Makes: 12 bagels
+
+      ## Mix (combine)
+
+      - Flour (all-purpose), 480 g
+
+      Mix.
+    MD
+
+    result = @calculator.calculate(recipe, @alias_map, @recipe_map)
+
+    assert_nil result.units_per_serving
+  end
+
+  def test_per_unit_with_irregular_plural
+    recipe = make_recipe(<<~MD)
+      # Test
+
+      Category: Test
+      Makes: 2 loaves
+
+      ## Mix (combine)
+
+      - Flour (all-purpose), 500 g
+
+      Mix.
+    MD
+
+    result = @calculator.calculate(recipe, @alias_map, @recipe_map)
+
+    assert_equal 'loaf', result.makes_unit_singular
+    assert_equal 'loaves', result.makes_unit_plural
+  end
 end

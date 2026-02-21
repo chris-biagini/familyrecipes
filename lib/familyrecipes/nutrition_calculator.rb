@@ -20,7 +20,9 @@ module FamilyRecipes
     }.freeze
 
     Result = Data.define(
-      :totals, :serving_count, :per_serving,
+      :totals, :serving_count, :per_serving, :per_unit,
+      :makes_quantity, :makes_unit_singular, :makes_unit_plural,
+      :units_per_serving,
       :missing_ingredients, :partial_ingredients
     ) do
       def complete?
@@ -48,44 +50,14 @@ module FamilyRecipes
     end
 
     def calculate(recipe, alias_map, recipe_map)
-      totals = NUTRIENTS.to_h { |n| [n, 0.0] }
-      missing = []
-      partial = []
-
-      ingredient_amounts = recipe.all_ingredients_with_quantities(alias_map, recipe_map)
-
-      ingredient_amounts.each do |name, amounts|
-        next if @omit_set.include?(name.downcase)
-
-        entry = @nutrition_data[name]
-        unless entry
-          missing << name
-          next
-        end
-
-        amounts.each do |amount|
-          next if amount.nil?
-          next if amount.value.nil?
-
-          grams = to_grams(amount.value, amount.unit, entry)
-          if grams.nil?
-            partial << name unless partial.include?(name)
-            next
-          end
-
-          NUTRIENTS.each do |nutrient|
-            totals[nutrient] += nutrient_per_gram(entry, nutrient) * grams
-          end
-        end
-      end
-
+      totals, missing, partial = sum_totals(recipe, alias_map, recipe_map)
       serving_count = parse_serving_count(recipe)
-      per_serving = (NUTRIENTS.to_h { |n| [n, totals[n] / serving_count] } if serving_count)
 
       Result.new(
         totals: totals,
         serving_count: serving_count,
-        per_serving: per_serving,
+        per_serving: divide_nutrients(totals, serving_count),
+        **per_unit_metadata(recipe, totals, serving_count),
         missing_ingredients: missing,
         partial_ingredients: partial
       )
@@ -96,6 +68,58 @@ module FamilyRecipes
     end
 
     private
+
+    def sum_totals(recipe, alias_map, recipe_map)
+      totals = NUTRIENTS.to_h { |n| [n, 0.0] }
+      missing = []
+      partial = []
+
+      recipe.all_ingredients_with_quantities(alias_map, recipe_map).each do |name, amounts|
+        next if @omit_set.include?(name.downcase)
+
+        entry = @nutrition_data[name]
+        unless entry
+          missing << name
+          next
+        end
+
+        accumulate_amounts(totals, partial, name, amounts, entry)
+      end
+
+      [totals, missing, partial]
+    end
+
+    def accumulate_amounts(totals, partial, name, amounts, entry)
+      amounts.each do |amount|
+        next if amount.nil? || amount.value.nil?
+
+        grams = to_grams(amount.value, amount.unit, entry)
+        if grams.nil?
+          partial << name unless partial.include?(name)
+          next
+        end
+
+        NUTRIENTS.each { |nutrient| totals[nutrient] += nutrient_per_gram(entry, nutrient) * grams }
+      end
+    end
+
+    def divide_nutrients(totals, divisor)
+      NUTRIENTS.to_h { |n| [n, totals[n] / divisor] } if divisor
+    end
+
+    def per_unit_metadata(recipe, totals, serving_count)
+      makes_qty = recipe.makes_quantity&.to_i
+      makes_qty = nil unless makes_qty&.positive?
+      unit_singular = Inflector.singular(recipe.makes_unit_noun) if recipe.makes_unit_noun
+
+      {
+        per_unit: divide_nutrients(totals, makes_qty),
+        makes_quantity: makes_qty,
+        makes_unit_singular: unit_singular,
+        makes_unit_plural: (Inflector.plural(unit_singular) if unit_singular),
+        units_per_serving: (makes_qty.to_f / serving_count if makes_qty && recipe.serves)
+      }
+    end
 
     def nutrient_per_gram(entry, nutrient)
       basis_grams = entry.dig('nutrients', 'basis_grams')
