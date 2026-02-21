@@ -17,6 +17,13 @@ module Familyrecipes
     # (Familyrecipes) from the directory name.
     config.autoload_lib(ignore: %w[assets tasks familyrecipes])
 
+    # Skip models when ActiveRecord isn't loaded (e.g., CI static site builds)
+    unless defined?(ActiveRecord)
+      models_path = root.join('app/models').to_s
+      config.autoload_paths -= [models_path]
+      config.eager_load_paths -= [models_path]
+    end
+
     config.generators.system_tests = nil
   end
 end
