@@ -123,6 +123,14 @@ class InflectorTest < Minitest::Test
     assert_equal 'tacos', FamilyRecipes::Inflector.plural('taco')
   end
 
+  def test_plural_irregular_go
+    assert_equal 'go', FamilyRecipes::Inflector.plural('go')
+  end
+
+  def test_singular_irregular_go
+    assert_equal 'go', FamilyRecipes::Inflector.singular('go')
+  end
+
   def test_plural_abbreviated_form_unchanged
     assert_equal 'ml', FamilyRecipes::Inflector.plural('ml')
   end
@@ -344,5 +352,4 @@ class InflectorTest < Minitest::Test
   def test_unit_display_slice_plural
     assert_equal 'slices', FamilyRecipes::Inflector.unit_display('slice', 3)
   end
-
 end

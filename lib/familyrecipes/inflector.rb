@@ -4,6 +4,7 @@ module FamilyRecipes
   module Inflector
     IRREGULAR_SINGULAR_TO_PLURAL = {
       'cookie' => 'cookies',
+      'go' => 'go',
       'leaf' => 'leaves',
       'loaf' => 'loaves',
       'taco' => 'tacos'
