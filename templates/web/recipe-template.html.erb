@@ -69,15 +69,54 @@ HTML
       <%- if nutrition && nutrition.totals.values.any? { |v| v > 0 } -%>
       <aside class="nutrition-facts">
         <h2>Nutrition Facts</h2>
-        <%- has_serving = nutrition.per_serving -%>
+        <%- # Column logic
+            has_per_unit = nutrition.per_unit && nutrition.makes_quantity && nutrition.makes_quantity > 0
+            unit_qty_is_one = has_per_unit && nutrition.makes_quantity == 1
+            has_per_serving = nutrition.per_serving && nutrition.serving_count
+
+            # Build column list: [label, values_hash, is_scalable_total]
+            columns = []
+
+            if has_per_unit && !unit_qty_is_one
+              # Per Serving column (if serves exists)
+              if has_per_serving && nutrition.units_per_serving
+                ups = nutrition.units_per_serving
+                formatted_ups = FamilyRecipes::VulgarFractions.format(ups)
+                singular = FamilyRecipes::VulgarFractions.singular_noun?(ups)
+                ups_unit = singular ? nutrition.makes_unit_singular : nutrition.makes_unit_plural
+                columns << ["Per Serving (#{formatted_ups} #{ups_unit})", nutrition.per_serving, false]
+              end
+              # Per Unit column
+              columns << ["Per #{nutrition.makes_unit_singular.capitalize}", nutrition.per_unit, false]
+              # Total column
+              columns << ['Total', nutrition.totals, true]
+            elsif unit_qty_is_one
+              # Per Serving column (if serves exists)
+              if has_per_serving && nutrition.units_per_serving
+                ups = nutrition.units_per_serving
+                formatted_ups = FamilyRecipes::VulgarFractions.format(ups)
+                singular = FamilyRecipes::VulgarFractions.singular_noun?(ups)
+                ups_unit = singular ? nutrition.makes_unit_singular : nutrition.makes_unit_plural
+                columns << ["Per Serving (#{formatted_ups} #{ups_unit})", nutrition.per_serving, false]
+              end
+              # Relabel Total as Per Unit — NOT scalable (it's a fixed reference)
+              columns << ["Per #{nutrition.makes_unit_singular.capitalize}", nutrition.totals, false]
+            elsif has_per_serving
+              # Serves only, no Makes
+              columns << ['Per Serving', nutrition.per_serving, false]
+              columns << ['Total', nutrition.totals, true]
+            else
+              # Neither
+              columns << ['Total', nutrition.totals, true]
+            end
+        -%>
         <table>
           <thead>
             <tr>
               <th></th>
-              <%- if has_serving -%>
-              <th>Per Serving (1/<%= nutrition.serving_count %>)</th>
+              <%- columns.each do |label, _, _| -%>
+              <th><%= label %></th>
               <%- end -%>
-              <th>Total</th>
             </tr>
           </thead>
           <tbody>
@@ -96,10 +135,9 @@ HTML
             ].each do |label, key, unit, indent| -%>
             <tr<%= %( class="indent-#{indent}") if indent > 0 %>>
               <td><%= label %></td>
-              <%- if has_serving -%>
-              <td><%= nutrition.per_serving[key].round %><%= unit %></td>
+              <%- columns.each do |_, values, is_scalable| -%>
+              <td<%= %( data-nutrient="#{key}" data-base-value="#{values[key].round(1)}") if is_scalable %>><%= values[key].round %><%= unit %></td>
               <%- end -%>
-              <td data-nutrient="<%= key %>" data-base-value="<%= nutrition.totals[key].round(1) %>"><%= nutrition.totals[key].round %><%= unit %></td>
             </tr>
             <%- end -%>
           </tbody>
