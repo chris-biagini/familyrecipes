@@ -2,6 +2,9 @@
 
 source 'https://rubygems.org'
 
+gem 'puma', '>= 5'
+gem 'rails', '~> 8.0'
+
 gem 'minitest'
 gem 'rake'
 gem 'redcarpet'

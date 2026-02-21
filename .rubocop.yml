@@ -4,6 +4,7 @@ AllCops:
   SuggestExtensions: false
   Exclude:
     - vendor/**/*
+    - config/**/*
 
 plugins:
   - rubocop-minitest
