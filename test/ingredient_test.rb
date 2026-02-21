@@ -103,6 +103,27 @@ class IngredientTest < Minitest::Test
     assert_equal 'slice', ingredient.quantity_unit
   end
 
+  # quantity_unit_display preserves original characters
+  def test_quantity_unit_display_preserves_macron
+    ingredient = Ingredient.new(name: 'Jasmine rice', quantity: '3 gō')
+
+    assert_equal 'gō', ingredient.quantity_unit_display
+    assert_equal 'go', ingredient.quantity_unit
+  end
+
+  def test_quantity_unit_display_standard_unit
+    ingredient = Ingredient.new(name: 'Flour', quantity: '2 cups')
+
+    assert_equal 'cups', ingredient.quantity_unit_display
+    assert_equal 'cup', ingredient.quantity_unit
+  end
+
+  def test_quantity_unit_display_nil_when_no_unit
+    ingredient = Ingredient.new(name: 'Eggs', quantity: '4')
+
+    assert_nil ingredient.quantity_unit_display
+  end
+
   # Normalized name tests
   def test_normalized_name_returns_original_when_no_alias
     ingredient = Ingredient.new(name: 'Flour')

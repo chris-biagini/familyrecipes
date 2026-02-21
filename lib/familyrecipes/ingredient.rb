@@ -47,6 +47,17 @@ class Ingredient
     FamilyRecipes::Inflector.normalize_unit(raw_unit)
   end
 
+  # Raw unit after light cleanup, preserving original characters (e.g., macrons).
+  # Used for display in data attributes; quantity_unit is for nutrition lookup.
+  def quantity_unit_display
+    return nil if quantity_blank?
+
+    raw_unit = parsed_quantity[1]
+    return nil if raw_unit.nil?
+
+    raw_unit.strip.downcase.chomp('.')
+  end
+
   private
 
   def quantity_blank?
