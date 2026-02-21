@@ -2,6 +2,7 @@
 
 source 'https://rubygems.org'
 
+gem 'propshaft'
 gem 'puma', '>= 5'
 gem 'rails', '~> 8.0'
 
