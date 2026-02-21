@@ -202,6 +202,10 @@ All templates use relative paths resolved via an HTML `<base>` tag, so the site 
 - `NutritionCalculator` - Calculates nutrition facts using density-first data model (nutrients/basis_grams + density)
 - `NutritionEntryHelpers` - Shared helpers for nutrition entry: serving size parsing, fractions, singularization
 - `PdfGenerator` - Generates PDF output (uses templates in `templates/pdf/`)
+- `Inflector` - Pluralization/singularization with irregular forms and uncountables; used for ingredient canonicalization
+- `VulgarFractions` - Converts decimal quantities to Unicode vulgar fraction glyphs (½, ¾, etc.)
+- `BuildValidator` - Validates cross-references, ingredients, and nutrition data during site generation
+- `Quantity` - Immutable `Data.define` value object (value + unit) replacing bare tuples; has JSON serialization
 
 **Data Flow**:
 1. `bin/generate` creates a `SiteGenerator` and calls `generate`, then a `PdfGenerator` (requires `typst` CLI; skips gracefully if not installed)
@@ -227,6 +231,9 @@ All templates use relative paths resolved via an HTML `<base>` tag, so the site 
 - `resources/web/style.css` - main stylesheet; `groceries.css` for the grocery page
 - `resources/web/recipe-state-manager.js` - scaling, cross-off, state persistence; `groceries.js` for the grocery page
 - `resources/web/` also contains: service worker (`sw.js`), wake lock, notifications, QR codes, 404 page, favicons
+
+**Design History**:
+- `docs/plans/` contains dated design documents for major features and architectural decisions
 
 ## Recipe Format
 
