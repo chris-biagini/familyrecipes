@@ -186,7 +186,7 @@ module FamilyRecipes
       quick_bites_category = CONFIG[:quick_bites_category]
 
       grocery_info = @grocery_aisles.transform_values do |items|
-        items.map { |item| { name: item[:name], display_name: Inflector.name_for_grocery(item[:name]) } }
+        items.map { |item| { name: item[:name] } }
       end
 
       unit_plurals = collect_unit_plurals
