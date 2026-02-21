@@ -136,6 +136,12 @@ end
 
 ## Workflow Preferences
 
+### Worktree cleanup — ALWAYS cd first
+When a session runs inside a worktree, `git worktree remove` deletes the CWD and bricks the Bash tool for the rest of the session. **Before removing a worktree, always `cd` to the main repo first:**
+```bash
+cd /home/claude/familyrecipes && git worktree remove .claude/worktrees/<name> && git worktree prune
+```
+
 ### GitHub Issues
 If I mention a GitHub issue (e.g., "#99"), review it and plan a fix. Close it via the commit message once confirmed.
 
