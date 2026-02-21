@@ -79,10 +79,11 @@
 
 _<%= typst_escape.call(recipe.description) %>_
 <%- end -%>
-<%- if recipe.yield_line -%>
+<%- meta_parts = [recipe.category] -%>
+<%- meta_parts << "Makes #{recipe.makes}" if recipe.makes -%>
+<%- meta_parts << "Serves #{recipe.serves}" if recipe.serves -%>
 
-#text(size: 10pt, fill: muted)[<%= typst_escape.call(recipe.yield_line) %>]
-<%- end -%>
+#text(size: 10pt, fill: muted)[<%= typst_escape.call(meta_parts.join(' · ')) %>]
 <%- recipe.steps.each do |step| -%>
 <%- has_ingredients = !step.ingredient_list_items.empty? -%>
 <%- has_instructions = step.instructions && !step.instructions.strip.empty? -%>

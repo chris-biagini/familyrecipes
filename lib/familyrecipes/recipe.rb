@@ -52,6 +52,7 @@ class Recipe
     ERB.new(template, trim_mode: '-').result_with_hash(
       markdown: MARKDOWN,
       render: ->(name, locals = {}) { FamilyRecipes.render_partial(name, locals) },
+      slugify: FamilyRecipes.method(:slugify),
       inflector: FamilyRecipes::Inflector,
       title: @title,
       description: @description,
