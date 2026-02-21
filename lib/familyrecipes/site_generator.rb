@@ -17,6 +17,7 @@ module FamilyRecipes
     end
 
     def generate
+      clean_output
       load_site_config
       load_grocery_info
       load_nutrition_data
@@ -40,6 +41,11 @@ module FamilyRecipes
 
     def render
       @render ||= ->(name, locals = {}) { FamilyRecipes.render_partial(name, locals) }
+    end
+
+    def clean_output
+      FileUtils.rm_rf(output_dir)
+      FileUtils.mkdir_p(output_dir)
     end
 
     def load_site_config
@@ -104,7 +110,6 @@ module FamilyRecipes
     end
 
     def generate_recipe_pages
-      FileUtils.mkdir_p(output_dir)
       print "Generating output files in #{output_dir}..."
 
       @recipes.each do |recipe|
