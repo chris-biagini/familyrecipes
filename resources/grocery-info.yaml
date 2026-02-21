@@ -5,79 +5,79 @@ Fresh Bakery:
   - Bread
 
 Produce:
-  - Apple
+  - Apples
   - Asparagus
   - Baby spinach
-  - Banana
+  - Bananas
   - Basil
-  - Red bell pepper
-  - Green bell pepper
-  - Berry
-  - Blueberry
+  - Red bell peppers
+  - Green bell peppers
+  - Berries
+  - Blueberries
   - Broccoli
-  - Brussels sprout
-  - Carrot
+  - Brussels sprouts
+  - Carrots
   - Celery
-  - Cherry
-  - Clementine
-  - Cucumber
+  - Cherries
+  - Clementines
+  - Cucumbers
   - Fruit
   - Fruit juice
   - Garlic
-  - Grape
-  - Green onion
-  - Lemon
-  - Lime
-  - Mango
-  - Onion
-  - Orange
+  - Grapes
+  - Green onions
+  - Lemons
+  - Limes
+  - Mangoes
+  - Onions
+  - Oranges
   - Parsley
-  - Potato
-  - Red onion
+  - Potatoes
+  - Red onions
   - Salad greens
-  - Strawberry
-  - Tomato (fresh)
+  - Strawberries
+  - Tomatoes (fresh)
   - Watermelon
 
 Gourmet:
   - Bocconcini
-  - Calabrian chili
+  - Calabrian chilis
   - Gouda
   - Gruyère
   - Mozzarella (fresh)
-  - Olive
+  - Olives
   - name: Parmesan
     aliases: [Parmesan cheese]
   - Pecorino
 
 Bread:
-  - Hamburger bun
+  - Hamburger buns
   - Sandwich bread
 
 International:
   - Asian snacks
-  - Bean (any dry)
-  - Bean (any canned)
-  - Black bean (canned)
-  - Red bean (dry)
-  - Chickpea (canned)
+  - Beans (any dry)
+  - Beans (any canned)
+  - Black beans (canned)
+  - Red beans (dry)
+  - Chickpeas (canned)
   - Chipotles en adobo
   - Jasmine rice
   - Kombu
-  - Lentil
+  - Lentils
   - Muesli
-  - Pickled jalapeño
+  - Pickled jalapeños
   - Queso fresco
   - Queso Quesadilla
   - Rice
   - Soy sauce
   - Tomato salsa
-  - Tortilla (corn)
-  - Tortilla (large flour)
+  - Tortillas (corn)
+  - Tortillas (large flour)
 
 Health:
   - Protein shake mix
-  - RXBAR
+  - RXBARs
   - Vegan milk
 
 Refrigerated:
@@ -88,8 +88,8 @@ Refrigerated:
   - Cheddar
   - Chocolate milk
   - Cream cheese
-  - name: Egg
-    aliases: [Egg yolk, Egg white]
+  - name: Eggs
+    aliases: [Egg, Egg yolk, Egg white]
   - Greek yogurt
   - Heavy cream
   - Hummus
@@ -167,18 +167,18 @@ Spices:
 Snacks:
   - Candy
   - Chocolate
-  - Chocolate chip
-  - Cookie
+  - Chocolate chips
+  - Cookies
   - Dried fruit
   - Goldfish
-  - Hershey's Kiss
+  - Hershey's Kisses
   - Peanut butter pretzels
   - Peanut M&Ms
-  - Pretzel
-  - Ritz cracker
+  - Pretzels
+  - Ritz crackers
   - Salsa
-  - Tortilla chip
-  - Triscuit
+  - Tortilla chips
+  - Triscuits
 
 Condiments:
   - Frank's Red Hot
@@ -189,35 +189,35 @@ Condiments:
   - Veganaise
 
 Pantry:
-  - name: Artichoke (jarred)
-    aliases: [Marinated artichoke]
+  - name: Artichokes (jarred)
+    aliases: [Marinated artichokes]
   - Cavatappi
   - Coffee
   - Coffee (decaf)
   - Distilled water
   - Farro
   - Fruit preserves
-  - name: Jarred red pepper
-    aliases: [Roasted pepper (jarred)]
+  - name: Jarred red peppers
+    aliases: [Roasted peppers (jarred)]
   - Mezze rigatoni
   - Olive oil
   - Olive oil (mild)
   - Pasta
   - Pasta sauce (jarred)
   - Peanut butter
-  - Pecan
-  - Pickle
-  - Raisin
+  - Pecans
+  - Pickles
+  - Raisins
   - Small pasta
   - Spaghetti
   - Tomato passata
   - Tomato paste
-  - Tomato (canned)
+  - Tomatoes (canned)
   - Vinegar (balsamic)
   - Vinegar (sherry)
   - name: Vinegar (white)
     aliases: [White vinegar]
-  - Walnut
+  - Walnuts
 
 Beverages:
   - Diet Coke
@@ -231,17 +231,17 @@ Personal:
   - Shampoo
 
 Frozen:
-  - Chik'n nugget
+  - Chik'n nuggets
   - French fries
-  - Fro-yo bar
-  - Frozen potato
+  - Fro-yo bars
+  - Frozen potatoes
   - Frozen spinach
-  - Green bean
+  - Green beans
   - name: Ice cream
     aliases: [Ice cream (vanilla)]
-  - Impossible burger
+  - Impossible burgers
   - Peas and carrots (frozen)
-  - Soft pretzel
+  - Soft pretzels
   - Sorbet
   - Tater tots
 
