@@ -11,6 +11,8 @@ class RecipeTest < Minitest::Test
     markdown = <<~MD
       # Chocolate Chip Cookies
 
+      Category: Test
+
       ## Step 1 (mix sugar)
 
       - Butter, 60 g
@@ -39,6 +41,8 @@ class RecipeTest < Minitest::Test
   def test_ingredients_with_quantities_mixed_quantified_and_unquantified
     markdown = <<~MD
       # Test Recipe
+
+      Category: Test
 
       ## Step 1 (prep)
 
@@ -69,6 +73,8 @@ class RecipeTest < Minitest::Test
   def test_ingredients_with_quantities_different_units_kept_separate
     markdown = <<~MD
       # Test Recipe
+
+      Category: Test
 
       ## Step 1 (prep)
 
@@ -101,6 +107,8 @@ class RecipeTest < Minitest::Test
     markdown = <<~MD
       # Test Recipe
 
+      Category: Test
+
       ## Step 1 (cook)
 
       - Salt
@@ -119,6 +127,8 @@ class RecipeTest < Minitest::Test
   def test_ingredients_with_quantities_preserves_order
     markdown = <<~MD
       # Test Recipe
+
+      Category: Test
 
       ## Step 1 (prep)
 
@@ -139,6 +149,8 @@ class RecipeTest < Minitest::Test
   def test_ingredients_with_quantities_unitless_numeric
     markdown = <<~MD
       # Test Recipe
+
+      Category: Test
 
       ## Step 1 (prep)
 
@@ -167,6 +179,8 @@ class RecipeTest < Minitest::Test
       # Hard-Boiled Eggs
 
       Protein!
+
+      Category: Test
 
       ## Make ice bath.
 
@@ -224,6 +238,8 @@ class RecipeTest < Minitest::Test
     markdown = <<~MD
       # Test Recipe
 
+      Category: Test
+
       ## Step 1 (prep)
 
       - Salt
@@ -276,13 +292,15 @@ class RecipeTest < Minitest::Test
 
   def test_raises_on_recipe_with_no_steps
     assert_raises(StandardError) do
-      make_recipe("# Title\n\nJust a description, no steps.\n")
+      make_recipe("# Title\n\nCategory: Test\n\nJust a description, no steps.\n")
     end
   end
 
   def test_all_ingredients_with_quantities_merges_overlapping_sub_recipe
     dough_md = <<~MD
       # Pizza Dough
+
+      Category: Test
 
       ## Mix (make dough)
 
@@ -294,6 +312,8 @@ class RecipeTest < Minitest::Test
 
     pizza_md = <<~MD
       # Test Pizza
+
+      Category: Test
 
       ## Prep (prep toppings)
 
@@ -322,5 +342,126 @@ class RecipeTest < Minitest::Test
     g_amount = amounts.find { |a| a&.unit == 'g' }
 
     assert_in_delta 550.0, g_amount.value
+  end
+
+  # --- Front matter tests ---
+
+  def test_parses_category_from_front_matter
+    markdown = <<~MD
+      # Hard-Boiled Eggs
+
+      Protein!
+
+      Category: Test
+
+      ## Cook eggs.
+
+      - Eggs
+
+      Cook them.
+    MD
+
+    recipe = make_recipe(markdown)
+
+    assert_equal 'Test', recipe.category
+  end
+
+  def test_parses_makes
+    markdown = <<~MD
+      # Cookies
+
+      Category: Test
+      Makes: 32 cookies
+
+      ## Mix
+
+      - Flour, 250 g
+
+      Mix.
+    MD
+
+    recipe = make_recipe(markdown)
+
+    assert_equal '32 cookies', recipe.makes
+    assert_equal '32', recipe.makes_quantity
+    assert_equal 'cookies', recipe.makes_unit_noun
+  end
+
+  def test_parses_serves
+    markdown = <<~MD
+      # Beans
+
+      Category: Test
+      Serves: 4
+
+      ## Cook
+
+      - Beans
+
+      Cook.
+    MD
+
+    recipe = make_recipe(markdown)
+
+    assert_equal '4', recipe.serves
+  end
+
+  def test_category_mismatch_raises_error
+    markdown = <<~MD
+      # Cookies
+
+      Category: Dessert
+
+      ## Mix
+
+      - Flour
+
+      Mix.
+    MD
+
+    error = assert_raises(StandardError) do
+      make_recipe(markdown)
+    end
+
+    assert_includes error.message, 'Category'
+  end
+
+  def test_missing_category_raises_error
+    markdown = <<~MD
+      # Cookies
+
+      ## Mix
+
+      - Flour
+
+      Mix.
+    MD
+
+    error = assert_raises(StandardError) do
+      make_recipe(markdown)
+    end
+
+    assert_includes error.message, 'Category'
+  end
+
+  def test_makes_without_unit_noun_raises_error
+    markdown = <<~MD
+      # Cookies
+
+      Category: Test
+      Makes: 4
+
+      ## Mix
+
+      - Flour
+
+      Mix.
+    MD
+
+    error = assert_raises(StandardError) do
+      make_recipe(markdown)
+    end
+
+    assert_includes error.message, 'Makes'
   end
 end
