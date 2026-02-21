@@ -4,8 +4,6 @@ module FamilyRecipes
   module Inflector
     IRREGULAR_SINGULAR_TO_PLURAL = {
       'cookie' => 'cookies',
-      'go' => 'go',
-      'gō' => 'gō',
       'leaf' => 'leaves',
       'loaf' => 'loaves',
       'taco' => 'tacos'
@@ -26,6 +24,7 @@ module FamilyRecipes
 
     ABBREVIATIONS = {
       'g' => 'g', 'gram' => 'g', 'grams' => 'g',
+      'gō' => 'gō',
       'tbsp' => 'tbsp', 'tablespoon' => 'tbsp', 'tablespoons' => 'tbsp',
       'tsp' => 'tsp', 'teaspoon' => 'tsp', 'teaspoons' => 'tsp',
       'oz' => 'oz', 'ounce' => 'oz', 'ounces' => 'oz',
@@ -35,8 +34,7 @@ module FamilyRecipes
     }.freeze
 
     UNIT_ALIASES = {
-      'small slices' => 'slice',
-      'gō' => 'go'
+      'small slices' => 'slice'
     }.freeze
 
     ABBREVIATED_FORMS = ABBREVIATIONS.values.to_set.freeze

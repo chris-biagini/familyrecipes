@@ -41,7 +41,7 @@ HTML
               <%- end -%>
               </li>
               <%- else -%>
-              <li<% if item.quantity_value %> data-quantity-value="<%= item.quantity_value %>" data-quantity-unit="<%= item.quantity_unit_display %>"<%= %( data-quantity-unit-plural="#{inflector.unit_display(item.quantity_unit_display, 2)}") if item.quantity_unit %><% end %>>
+              <li<% if item.quantity_value %> data-quantity-value="<%= item.quantity_value %>" data-quantity-unit="<%= item.quantity_unit %>"<%= %( data-quantity-unit-plural="#{inflector.unit_display(item.quantity_unit, 2)}") if item.quantity_unit %><% end %>>
                 <b><%= item.name %></b><% if item.quantity %>, <span class="quantity"><%= item.quantity%></span><% end %>
               <%- if item.prep_note -%>
                 <small><%= item.prep_note %></small>

@@ -481,7 +481,7 @@ Jasmine rice:
     volume: 1.0
     unit: cup
   portions:
-    go: 148.4
+    gō: 148.4
   sources:
   - type: usda
     dataset: SR Legacy
