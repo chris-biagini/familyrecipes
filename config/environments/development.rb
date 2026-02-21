@@ -9,6 +9,9 @@ Rails.application.configure do
     root: Rails.root.join("output", "web"),
     html_fallback: false
 
+  # Allow LAN access by hostname (e.g., http://rika:3030/).
+  config.hosts.clear
+
   # Make code changes take effect immediately without server restart.
   config.enable_reloading = true
 

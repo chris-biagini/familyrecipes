@@ -1,13 +1,11 @@
 # frozen_string_literal: true
 
 class RecipesController < ApplicationController
-  layout false
-
   def show
-    @recipe = RecipeFinder.find_by_slug(params[:id])
+    recipe = RecipeFinder.find_by_slug(params[:id])
 
-    if @recipe
-      render :show
+    if recipe
+      render html: RecipeRenderer.render_html(recipe).html_safe
     else
       head :not_found
     end
