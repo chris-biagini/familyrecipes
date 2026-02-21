@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Your goal is a high-quality, well-crafted user experience. Improve the end product. Make it delightful, charming, and fun. Finish the back of the cabinet even though no one will see it. Always feel free to challenge assumptions, misconceptions, and poor design decisions. Be as opinionated as this document and push back on my ideas when you need to. Suggest any quality-of-life, performance, or feature improvements that come to mind. Always use the superpowers skill and plan mode when getting ready to write code or build a new feature. 
 
-Note that I would like to someday start serving this project via Rails, and upgrading it to allow web-based editing of data. I'd also like to someday package it for deployment in Docker for homelab users. Don't prematurely optimize, but keep these goals in mind when planning.  
+A Rails 8 migration is underway — the app already serves recipes dynamically alongside the static site generator. Next milestones: web-based recipe editing, and Docker packaging for homelab deployment. Don't prematurely optimize, but keep these goals in mind when planning.
 
 ### Visual language
 
@@ -113,6 +113,7 @@ end
 
 ### Modern Ruby features — use them
 
+- Single-quoted strings unless interpolation or special characters are needed (RuboCop enforces this).
 - `# frozen_string_literal: true` at the top of every file.
 - Pattern matching (`case/in`) for complex data destructuring.
 - Endless methods (`def full_name = "#{first} #{last}"`) for trivial one-liners.
@@ -162,13 +163,23 @@ rake test
 
 Runs all tests in `test/` via Minitest. `rake clean` removes the `output/` directory if you need a fresh build.
 
-## Dev Server
+## Dev Servers
+
+```bash
+bin/dev
+```
+
+Starts both servers side-by-side for development:
+- **WEBrick** on port 8888 — static site reference, matches GitHub Pages deploy
+- **Rails/Puma** on port 3030 — dynamic server under development
+
+Runs `bin/generate` first, cleans stale PID files, and tears down both servers on Ctrl-C (or if either dies). No external process manager needed.
 
 ```bash
 bin/serve [port]
 ```
 
-WEBrick server (default port 8888) serving `output/web/` with clean/extensionless URLs, matching GitHub Pages behavior. Binds `0.0.0.0` (LAN-accessible). Exits cleanly if port is taken. Typical dev workflow: `bin/generate && bin/serve` (reuse the existing server if it's already running).
+WEBrick-only server (default port 8888) serving `output/web/` with clean/extensionless URLs. Binds `0.0.0.0` (LAN-accessible). Exits cleanly if port is taken. Use `bin/generate && bin/serve` if you only need the static site.
 
 ## Deployment
 
@@ -207,7 +218,18 @@ All templates use relative paths resolved via an HTML `<base>` tag, so the site 
 - `BuildValidator` - Validates cross-references, ingredients, and nutrition data during site generation
 - `Quantity` - Immutable `Data.define` value object (value + unit) replacing bare tuples; has JSON serialization
 
-**Data Flow**:
+**Rails Layer** (serves recipes dynamically alongside the static generator):
+- `app/middleware/static_output_middleware.rb` — Rack middleware serving `output/web/` assets (CSS, JS, images); `html_fallback: false` so Rails routes handle HTML requests
+- `app/controllers/recipes_controller.rb` — renders recipes dynamically via `Recipe#to_html`
+- `app/services/recipe_finder.rb` — slug-to-path cache for recipe lookup, reset by file watcher
+- `app/views/recipes/show.html.erb` — recipe view (minimal; scaling/nutrition not yet wired up)
+- `config/initializers/familyrecipes.rb` — loads domain model (not Zeitwerk-autoloaded)
+- `config/initializers/recipe_watcher.rb` — watches `recipes/` for changes, regenerates static site and resets `RecipeFinder` cache
+- `lib/tasks/familyrecipes.rake` — custom Rake tasks (test, lint, clean, build)
+
+Note: The Rails app module is `Familyrecipes` (lowercase r); the domain module is `FamilyRecipes` (uppercase R). Different constants, no conflict.
+
+**Static Site Data Flow**:
 1. `bin/generate` creates a `SiteGenerator` and calls `generate`, then a `PdfGenerator` (requires `typst` CLI; skips gracefully if not installed)
 2. `SiteGenerator` reads `.md` files from `recipes/` subdirectories
 3. Each file is parsed by `Recipe` class using markdown conventions
