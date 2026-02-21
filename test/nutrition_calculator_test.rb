@@ -73,6 +73,8 @@ class NutritionCalculatorTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Test
 
+      Category: Test
+
       ## Mix (combine)
 
       - Flour (all-purpose), 500 g
@@ -95,6 +97,8 @@ class NutritionCalculatorTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Test
 
+      Category: Test
+
       ## Prep (crack eggs)
 
       - Eggs, 3
@@ -112,6 +116,8 @@ class NutritionCalculatorTest < Minitest::Test
   def test_portion_unit_conversion
     recipe = make_recipe(<<~MD)
       # Test
+
+      Category: Test
 
       ## Mix (combine)
 
@@ -135,6 +141,8 @@ class NutritionCalculatorTest < Minitest::Test
   def test_aggregation_across_steps
     recipe = make_recipe(<<~MD)
       # Test
+
+      Category: Test
 
       ## Step 1 (first)
 
@@ -161,6 +169,8 @@ class NutritionCalculatorTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Test
 
+      Category: Test
+
       ## Mix (combine)
 
       - Unicorn dust, 50 g
@@ -177,6 +187,8 @@ class NutritionCalculatorTest < Minitest::Test
   def test_unknown_unit_reported_as_partial
     recipe = make_recipe(<<~MD)
       # Test
+
+      Category: Test
 
       ## Mix (combine)
 
@@ -196,6 +208,8 @@ class NutritionCalculatorTest < Minitest::Test
   def test_omit_from_list_silently_skipped
     recipe = make_recipe(<<~MD)
       # Test
+
+      Category: Test
 
       ## Mix (combine)
 
@@ -218,6 +232,8 @@ class NutritionCalculatorTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Test
 
+      Category: Test
+
       ## Mix (combine)
 
       - Flour (all-purpose), 200 g
@@ -233,13 +249,14 @@ class NutritionCalculatorTest < Minitest::Test
     refute_includes result.missing_ingredients, 'Olive oil'
   end
 
-  # --- Yield line parsing ---
+  # --- Serving count from front matter ---
 
-  def test_yield_line_serves
+  def test_serves_field
     recipe = make_recipe(<<~MD)
       # Test
 
-      Serves 4.
+      Category: Test
+      Serves: 4
 
       ## Mix (combine)
 
@@ -251,15 +268,15 @@ class NutritionCalculatorTest < Minitest::Test
     result = @calculator.calculate(recipe, @alias_map, @recipe_map)
 
     assert_equal 4, result.serving_count
-    # 400g flour = 1456 cal total, 364 per serving
     assert_in_delta 364, result.per_serving[:calories], 1
   end
 
-  def test_yield_line_makes_count
+  def test_makes_field
     recipe = make_recipe(<<~MD)
       # Test
 
-      Makes 30 gougeres.
+      Category: Test
+      Makes: 30 gougeres
 
       ## Mix (combine)
 
@@ -274,11 +291,13 @@ class NutritionCalculatorTest < Minitest::Test
     refute_nil result.per_serving
   end
 
-  def test_yield_line_makes_about
+  def test_serves_preferred_over_makes_for_serving_count
     recipe = make_recipe(<<~MD)
       # Test
 
-      Makes about 32 cookies.
+      Category: Test
+      Makes: 12 cookies
+      Serves: 6
 
       ## Mix (combine)
 
@@ -289,30 +308,14 @@ class NutritionCalculatorTest < Minitest::Test
 
     result = @calculator.calculate(recipe, @alias_map, @recipe_map)
 
-    assert_equal 32, result.serving_count
+    assert_equal 6, result.serving_count
   end
 
-  def test_yield_line_makes_enough_for
+  def test_no_serves_or_makes_returns_nil_serving_count
     recipe = make_recipe(<<~MD)
       # Test
 
-      Makes enough for 2 pizzas.
-
-      ## Mix (combine)
-
-      - Flour (all-purpose), 500 g
-
-      Mix.
-    MD
-
-    result = @calculator.calculate(recipe, @alias_map, @recipe_map)
-
-    assert_equal 2, result.serving_count
-  end
-
-  def test_no_yield_line_returns_nil_serving_count
-    recipe = make_recipe(<<~MD)
-      # Test
+      Category: Test
 
       ## Mix (combine)
 
@@ -333,6 +336,8 @@ class NutritionCalculatorTest < Minitest::Test
     dough_recipe = make_recipe(<<~MD, id: 'pizza-dough')
       # Pizza Dough
 
+      Category: Test
+
       ## Dough (make dough)
 
       - Flour (all-purpose), 500 g
@@ -342,6 +347,8 @@ class NutritionCalculatorTest < Minitest::Test
 
     pizza_recipe = make_recipe(<<~MD, id: 'pizza')
       # Pizza
+
+      Category: Test
 
       ## Assemble (put together)
 
@@ -370,6 +377,8 @@ class NutritionCalculatorTest < Minitest::Test
     dough_recipe = make_recipe(<<~MD, id: 'pizza-dough')
       # Pizza Dough
 
+      Category: Test
+
       ## Dough (make dough)
 
       - Flour (all-purpose), 250 g
@@ -379,6 +388,8 @@ class NutritionCalculatorTest < Minitest::Test
 
     pizza_recipe = make_recipe(<<~MD, id: 'pizza')
       # Pizza
+
+      Category: Test
 
       ## Assemble (put together)
 
@@ -404,6 +415,8 @@ class NutritionCalculatorTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Test
 
+      Category: Test
+
       ## Mix (combine)
 
       - Flour (All purpose), 200 g
@@ -424,6 +437,8 @@ class NutritionCalculatorTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Test
 
+      Category: Test
+
       ## Mix (combine)
 
       - Flour (all-purpose), 200 g
@@ -443,6 +458,8 @@ class NutritionCalculatorTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Test
 
+      Category: Test
+
       ## Mix (combine)
 
       - Butter, 4 oz
@@ -460,6 +477,8 @@ class NutritionCalculatorTest < Minitest::Test
   def test_lb_uses_weight_conversion
     recipe = make_recipe(<<~MD)
       # Test
+
+      Category: Test
 
       ## Mix (combine)
 
@@ -484,6 +503,8 @@ class NutritionCalculatorTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Test
 
+      Category: Test
+
       ## Mix (combine)
 
       - Olive oil, 1 cup
@@ -506,6 +527,8 @@ class NutritionCalculatorTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Test
 
+      Category: Test
+
       ## Mix (combine)
 
       - Butter, 1 stick
@@ -526,6 +549,8 @@ class NutritionCalculatorTest < Minitest::Test
   def test_saturated_fat_tracked
     recipe = make_recipe(<<~MD)
       # Test
+
+      Category: Test
 
       ## Mix (combine)
 
@@ -575,6 +600,8 @@ class NutritionCalculatorTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Test
 
+      Category: Test
+
       ## Mix (combine)
 
       - Butter, 1 tbsp
@@ -598,6 +625,8 @@ class NutritionCalculatorTest < Minitest::Test
   def test_bare_count_without_unitless_reported_as_partial
     recipe = make_recipe(<<~MD)
       # Test
+
+      Category: Test
 
       ## Mix (combine)
 
@@ -638,6 +667,8 @@ class NutritionCalculatorTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Test
 
+      Category: Test
+
       ## Mix (combine)
 
       - Butter, 28 g
@@ -670,6 +701,8 @@ class NutritionCalculatorTest < Minitest::Test
 
     recipe = make_recipe(<<~MD)
       # Test
+
+      Category: Test
 
       ## Mix (combine)
 

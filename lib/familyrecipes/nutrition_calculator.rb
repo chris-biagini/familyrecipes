@@ -79,7 +79,7 @@ module FamilyRecipes
         end
       end
 
-      serving_count = parse_serving_count(recipe.yield_line)
+      serving_count = parse_serving_count(recipe)
       per_serving = (NUTRIENTS.to_h { |n| [n, totals[n] / serving_count] } if serving_count)
 
       Result.new(
@@ -149,10 +149,12 @@ module FamilyRecipes
       density['grams'] / volume_ml
     end
 
-    def parse_serving_count(yield_line)
-      return nil if yield_line.to_s.strip.empty?
-
-      yield_line[/\d+/]&.to_i
+    def parse_serving_count(recipe)
+      if recipe.serves
+        recipe.serves.to_i
+      elsif recipe.makes
+        recipe.makes_quantity&.to_i
+      end
     end
   end
 end
