@@ -9,7 +9,7 @@ AllCops:
   Exclude:
     - vendor/**/*
     - config/**/*
-    - db/schema.rb
+    - db/**/*
 
 plugins:
   - rubocop-minitest
