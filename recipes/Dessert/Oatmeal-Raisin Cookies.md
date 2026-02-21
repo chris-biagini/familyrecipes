@@ -2,6 +2,8 @@
 
 With browned butter
 
+Category: Dessert
+
 ## Prep dry ingredients.
 
 - Rolled oats, 150 g

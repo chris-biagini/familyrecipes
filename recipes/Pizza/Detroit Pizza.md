@@ -2,6 +2,8 @@
 
 The best pan pizza.
 
+Category: Pizza
+
 ## Prepare dough.
 
 - Honey, 32 g

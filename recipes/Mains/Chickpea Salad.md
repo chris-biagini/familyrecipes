@@ -2,6 +2,8 @@
 
 Fast summertime meal that travels well.
 
+Category: Mains
+
 ## Roast peppers.
 
 - Red bell pepper

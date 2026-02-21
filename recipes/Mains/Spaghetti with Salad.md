@@ -2,6 +2,8 @@
 
 Classic pasta, with a green salad.
 
+Category: Mains
+
 ## Make the sauce.
 
 - Olive oil, 75 g

@@ -2,6 +2,8 @@
 
 With caramel!
 
+Category: Dessert
+
 ## Prepare crumble topping.
 
 - Rolled oats, 200 g

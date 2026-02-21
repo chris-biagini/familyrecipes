@@ -2,6 +2,8 @@
 
 Mom's roasted vegetables on farro with a poached egg
 
+Category: Mains
+
 ## Advance prep: cook farro.
 
 - Farro, 2 gō: Rinsed until water runs clear.

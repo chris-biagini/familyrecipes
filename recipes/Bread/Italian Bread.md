@@ -2,6 +2,8 @@
 
 An attempt to replicate Brooklyn-style seeded bread.
 
+Category: Bread
+
 ## Make dough.
 
 - Flour (semolina), 50 g

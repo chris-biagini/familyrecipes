@@ -2,6 +2,8 @@
 
 Farro and beans in broth.
 
+Category: Mains
+
 ## Soak beans.
 
 - Beans (any dry), 225 g: Check for debris.

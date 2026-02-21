@@ -2,6 +2,8 @@
 
 Cheesy dumplings in tomato sauce.
 
+Category: Mains
+
 ## Prepare sauce.
 
 - Olive oil, 75 g

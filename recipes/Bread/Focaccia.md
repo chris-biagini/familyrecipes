@@ -2,6 +2,8 @@
 
 Just a little sweet.
 
+Category: Bread
+
 ## Make dough and bulk ferment.
 
 - Honey, 20 g

@@ -2,6 +2,8 @@
 
 Good as an after-school snack.
 
+Category: Snacks
+
 ## Prepare tomatoes.
 
 - Tomatoes (fresh): Can substitute canned.

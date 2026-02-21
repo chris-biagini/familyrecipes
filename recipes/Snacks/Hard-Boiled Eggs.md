@@ -2,6 +2,8 @@
 
 Protein!
 
+Category: Snacks
+
 ## Make ice bath.
 
 - Water

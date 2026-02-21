@@ -2,6 +2,8 @@
 
 Hearty and rustic.
 
+Category: Bread
+
 ## Make dough.
 
 - Flour (all-purpose), 225 g

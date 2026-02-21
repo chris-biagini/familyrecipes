@@ -2,6 +2,8 @@
 
 Rich tomato soup with grilled cheese.
 
+Category: Mains
+
 ## Saute aromatics.
 
 - Olive oil, 100 g

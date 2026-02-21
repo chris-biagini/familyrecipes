@@ -2,6 +2,8 @@
 
 🚧 A fun weekend baking project. 🚧
 
+Category: Bread
+
 ## Friday night, around 10 PM: Make poolish.
 
 - Flour (bread), 525 g

@@ -2,6 +2,8 @@
 
 NY-style toppings for Neapolitan dough.
 
+Category: Pizza
+
 ## Make sauce.
 
 - Tomato passata, 300 g

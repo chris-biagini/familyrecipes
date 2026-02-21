@@ -2,7 +2,8 @@
 
 Vaguely reminiscent of New Orleans red beans and rice.
 
-Serves 4.
+Category: Mains
+Serves: 4
 
 ## Soak beans.
 

@@ -2,6 +2,8 @@
 
 Vaguely Thai egg-fried rice.
 
+Category: Mains
+
 ## Cook rice.
 
 - Jasmine rice, 3 gō

@@ -2,6 +2,8 @@
 
 Vaguely reminiscent of Cuban or Mexican beans and rice.
 
+Category: Mains
+
 ## Soak beans.
 
 - Beans (any dry), 450 g: Check for debris.

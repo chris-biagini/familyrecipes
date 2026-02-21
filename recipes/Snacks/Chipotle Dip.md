@@ -2,6 +2,8 @@
 
 Vegan dip for crudités.
 
+Category: Snacks
+
 ## Assemble.
 
 - Veganaise, 12 oz

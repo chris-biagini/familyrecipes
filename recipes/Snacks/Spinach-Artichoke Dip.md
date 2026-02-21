@@ -2,6 +2,8 @@
 
 Indulgent, but a crowd-pleaser.
 
+Category: Snacks
+
 ## Cook spinach.
 
 - Olive oil, 1 Tbsp

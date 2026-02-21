@@ -2,6 +2,8 @@
 
 Remember pecan pie? It's back, in bar form!
 
+Category: Dessert
+
 ## Prepare pan.
 
 Line a 9"x13" pan with parchment: cut the corners out of a large piece of parchment, creating a cross shape with a central rectangle that is the same size as the bottom of the pan. Fold the legs of the cross over the edge of the pan and crease so they stay in place.

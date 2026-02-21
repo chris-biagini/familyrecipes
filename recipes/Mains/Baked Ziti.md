@@ -2,6 +2,8 @@
 
 Mom's famous baked pasta.
 
+Category: Mains
+
 ## Cook pasta and preheat oven.
 
 - Mezze rigatoni

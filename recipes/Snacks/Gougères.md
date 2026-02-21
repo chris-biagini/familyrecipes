@@ -2,7 +2,8 @@
 
 Fancy cheese puffs.
 
-Makes 30 gougères.
+Category: Snacks
+Makes: 30 gougères
 
 ## Make choux.
 

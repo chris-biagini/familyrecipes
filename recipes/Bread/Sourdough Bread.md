@@ -1,5 +1,7 @@
 # Sourdough Bread
 
+Category: Bread
+
 ## Feed starter.
 
 - Sourdough starter, 30 g: Existing, well-maintained.

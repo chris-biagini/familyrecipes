@@ -2,6 +2,8 @@
 
 Pasta and beans in a simple broth.
 
+Category: Mains
+
 ## Soak beans.
 
 - Beans (any dry), 450 g: Check for debris.

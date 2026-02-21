@@ -2,6 +2,8 @@
 
 Italian lemon liqueur.
 
+Category: Drinks
+
 ## Make lemon infusion.
 
 - Everclear 151, 750 mL

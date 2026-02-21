@@ -2,6 +2,8 @@
 
 Tender and garlicky.
 
+Category: Sides
+
 ## Prepare asparagus.
 
 - Asparagus

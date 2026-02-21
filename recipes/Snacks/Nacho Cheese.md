@@ -2,6 +2,8 @@
 
 Worth the effort.
 
+Category: Snacks
+
 ## Prepare.
 
 - Cheddar, 225 g: Cut into small cubes.

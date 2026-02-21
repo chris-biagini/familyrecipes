@@ -2,6 +2,8 @@
 
 Direct dough and simple toppings.
 
+Category: Pizza
+
 ## Advance Prep, around 10 am: Make dough.
 
 - Salt, 19 g

@@ -1,6 +1,7 @@
 # Pancakes
 
-Makes 12 pancakes.
+Category: Breakfast
+Makes: 12 pancakes
 
 ## Prep dry ingredients.
 

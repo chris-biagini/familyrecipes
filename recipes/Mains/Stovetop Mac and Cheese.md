@@ -2,6 +2,8 @@
 
 Better than the box.
 
+Category: Mains
+
 ## Make cheese sauce.
 
 - Milk, 425 g

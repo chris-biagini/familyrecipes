@@ -2,6 +2,8 @@
 
 Pasta with chickpeas in a garlicky tomato broth
 
+Category: Mains
+
 ## Prepare base of garlic, oil, and tomato paste.
 
 - Olive oil, 50 g

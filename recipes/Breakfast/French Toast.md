@@ -2,6 +2,8 @@
 
 Good way to use up stale bread.
 
+Category: Breakfast
+
 ## Make custard; soak bread.
 
 - Bread, 8 small slices: Lightly toast if needed.

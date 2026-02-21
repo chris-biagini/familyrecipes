@@ -2,6 +2,8 @@
 
 Simple soup with caramelized onions.
 
+Category: Mains
+
 ## Cook rice.
 
 - Jasmine rice, 1 gō

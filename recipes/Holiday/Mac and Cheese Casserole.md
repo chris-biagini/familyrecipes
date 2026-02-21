@@ -2,6 +2,8 @@
 
 Southern-style macaroni and cheese.
 
+Category: Holiday
+
 ## Preheat oven and pasta water; butter casserole dish.
 
 - Water

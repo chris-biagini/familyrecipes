@@ -1,6 +1,8 @@
 # Pizza Dough
 
-Basic, versatile pizza dough. 
+Basic, versatile pizza dough.
+
+Category: Pizza
 
 ## Advance Prep, around 10 am: Make dough.
 

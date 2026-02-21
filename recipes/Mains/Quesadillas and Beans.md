@@ -1,5 +1,7 @@
 # Quesadillas and Beans
 
+Category: Mains
+
 ## Make the beans.
 
 - Black beans (canned), 3 cans

@@ -2,6 +2,8 @@
 
 With browned butter and walnuts
 
+Category: Dessert
+
 ## Prepare sugar mixture.
 
 - Butter (unsalted), 60 g

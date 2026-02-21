@@ -2,6 +2,8 @@
 
 Low effort drop-style biscuits.
 
+Category: Bread
+
 ## Prep dry ingredients; cut in butter.
 
 - Flour (all-purpose), 320 g

@@ -2,6 +2,8 @@
 
 Super fast tacos with rice.
 
+Category: Mains
+
 ## Make rice.
 
 - Jasmine rice, 2 gō

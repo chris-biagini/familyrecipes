@@ -2,6 +2,8 @@
 
 ~
 
+Category: Sides
+
 ## Dress greens and serve.
 
 - Salad greens

@@ -2,6 +2,8 @@
 
 A simple everyday bread.
 
+Category: Bread
+
 ## Make dough.
 
 - Flour (bread), 500 g

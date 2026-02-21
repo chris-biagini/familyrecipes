@@ -2,6 +2,8 @@
 
 ~
 
+Category: Sides
+
 ## Prepare broccoli.
 
 - Broccoli: Cut into small florets.

@@ -2,6 +2,8 @@
 
 Super-fast summertime dessert.
 
+Category: Dessert
+
 ## Prepare berries.
 
 - Berries, 100 g

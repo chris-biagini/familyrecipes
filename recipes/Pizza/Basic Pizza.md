@@ -2,6 +2,8 @@
 
 Minimum viable pizza.
 
+Category: Pizza
+
 ## Advance Prep, around 10 am: Make dough.
 
 - Olive oil, 32 g

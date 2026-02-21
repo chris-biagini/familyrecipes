@@ -2,6 +2,8 @@
 
 A refreshing summer drink.
 
+Category: Drinks
+
 ## Blend all ingredients.
 
 - Watermelon, 100 g
