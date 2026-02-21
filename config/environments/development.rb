@@ -7,7 +7,7 @@ Rails.application.configure do
   require_relative "../../app/middleware/static_output_middleware"
   config.middleware.insert_after ActionDispatch::Static, StaticOutputMiddleware,
     root: Rails.root.join("output", "web"),
-    html_fallback: true
+    html_fallback: false
 
   # Make code changes take effect immediately without server restart.
   config.enable_reloading = true

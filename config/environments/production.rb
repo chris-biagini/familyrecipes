@@ -1,6 +1,9 @@
 require "active_support/core_ext/integer/time"
 
 Rails.application.configure do
+  # TODO: Add StaticOutputMiddleware for production deployment.
+  # Currently using GitHub Pages for production; Rails serves development only.
+
   # Settings specified here will take precedence over those in config/application.rb.
 
   # Code is not reloaded between requests.
