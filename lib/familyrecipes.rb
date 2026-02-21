@@ -43,7 +43,7 @@ module FamilyRecipes
     ERB.new(partial_content, trim_mode: '-').result_with_hash(locals)
   end
 
-  # Render a template and write to output file (only if content changed)
+  # Render a template and write to output file
   # Usage: FamilyRecipes.render_template(:homepage, output_path, locals)
   def self.render_template(template_key, output_path, locals = {})
     raise 'template_dir not set' unless @template_dir
@@ -55,7 +55,7 @@ module FamilyRecipes
     erb_template = ERB.new(File.read(template_path), trim_mode: '-')
 
     FileUtils.mkdir_p(File.dirname(output_path))
-    write_file_if_changed(output_path, erb_template.result_with_hash(locals))
+    File.write(output_path, erb_template.result_with_hash(locals))
   end
 
   # Generate a URL-safe slug from a title string
@@ -150,14 +150,6 @@ module FamilyRecipes
     end
 
     quick_bites
-  end
-
-  # Write file only if content has changed
-  def self.write_file_if_changed(path, content)
-    return if File.exist?(path) && File.read(path) == content
-
-    File.write(path, content)
-    puts "Updated: #{path}"
   end
 end
 

@@ -114,14 +114,13 @@ module FamilyRecipes
 
       @recipes.each do |recipe|
         text_path = File.join(output_dir, "#{recipe.id}.md")
-        FamilyRecipes.write_file_if_changed(text_path, recipe.source)
+        File.write(text_path, recipe.source)
 
         nutrition = @nutrition_calculator&.calculate(recipe, @alias_map, @recipe_map)
 
         template_path = File.join(template_dir, 'recipe-template.html.erb')
         html_path = File.join(output_dir, "#{recipe.id}.html")
-        FamilyRecipes.write_file_if_changed(html_path,
-                                            recipe.to_html(erb_template_path: template_path, nutrition: nutrition))
+        File.write(html_path, recipe.to_html(erb_template_path: template_path, nutrition: nutrition))
       end
 
       print "done!\n"

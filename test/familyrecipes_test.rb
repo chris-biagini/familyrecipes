@@ -122,41 +122,4 @@ class FamilyRecipesTest < Minitest::Test
     assert_includes known, 'apples'
     assert_includes known, 'gala apples'
   end
-
-  def test_write_file_if_changed_writes_new_file
-    Dir.mktmpdir do |dir|
-      path = File.join(dir, 'new-file.txt')
-
-      FamilyRecipes.write_file_if_changed(path, 'Hello, world!')
-
-      assert_path_exists path
-      assert_equal 'Hello, world!', File.read(path)
-    end
-  end
-
-  def test_write_file_if_changed_skips_unchanged
-    Dir.mktmpdir do |dir|
-      path = File.join(dir, 'existing.txt')
-      File.write(path, 'Original content')
-      original_mtime = File.mtime(path)
-
-      sleep 0.01 # Ensure time passes
-
-      FamilyRecipes.write_file_if_changed(path, 'Original content')
-
-      # File should not have been modified
-      assert_equal original_mtime, File.mtime(path)
-    end
-  end
-
-  def test_write_file_if_changed_updates_changed
-    Dir.mktmpdir do |dir|
-      path = File.join(dir, 'existing.txt')
-      File.write(path, 'Original content')
-
-      FamilyRecipes.write_file_if_changed(path, 'New content')
-
-      assert_equal 'New content', File.read(path)
-    end
-  end
 end
