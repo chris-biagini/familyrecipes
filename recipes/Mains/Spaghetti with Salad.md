@@ -3,6 +3,7 @@
 Classic pasta, with a green salad.
 
 Category: Mains
+Serves: 4
 
 ## Make the sauce.
 

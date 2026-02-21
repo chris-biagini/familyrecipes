@@ -3,6 +3,7 @@
 A simple everyday bread.
 
 Category: Bread
+Makes: 2 loaves
 
 ## Make dough.
 

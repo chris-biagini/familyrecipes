@@ -3,6 +3,7 @@
 Farro and beans in broth.
 
 Category: Mains
+Serves: 4
 
 ## Soak beans.
 

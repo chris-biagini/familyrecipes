@@ -3,6 +3,7 @@
 Low effort drop-style biscuits.
 
 Category: Bread
+Makes: 10 biscuits
 
 ## Prep dry ingredients; cut in butter.
 

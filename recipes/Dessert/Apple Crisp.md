@@ -3,6 +3,7 @@
 With caramel!
 
 Category: Dessert
+Serves: 6
 
 ## Prepare crumble topping.
 

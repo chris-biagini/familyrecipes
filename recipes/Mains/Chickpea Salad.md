@@ -3,6 +3,7 @@
 Fast summertime meal that travels well.
 
 Category: Mains
+Serves: 4
 
 ## Roast peppers.
 

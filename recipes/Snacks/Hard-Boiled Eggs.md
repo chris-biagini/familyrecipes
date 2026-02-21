@@ -3,6 +3,7 @@
 Protein!
 
 Category: Snacks
+Serves: 4
 
 ## Make ice bath.
 

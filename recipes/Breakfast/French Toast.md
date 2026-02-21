@@ -3,6 +3,8 @@
 Good way to use up stale bread.
 
 Category: Breakfast
+Makes: 4 slices
+Serves: 2
 
 ## Make custard; soak bread.
 

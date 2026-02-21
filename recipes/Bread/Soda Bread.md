@@ -3,6 +3,7 @@
 Hearty and rustic.
 
 Category: Bread
+Makes: 1 loaf
 
 ## Make dough.
 

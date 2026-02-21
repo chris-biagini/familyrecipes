@@ -3,6 +3,7 @@
 Pasta and beans in a simple broth.
 
 Category: Mains
+Serves: 4
 
 ## Soak beans.
 

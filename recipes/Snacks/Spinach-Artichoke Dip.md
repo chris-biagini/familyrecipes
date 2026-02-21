@@ -3,6 +3,7 @@
 Indulgent, but a crowd-pleaser.
 
 Category: Snacks
+Serves: 8
 
 ## Cook spinach.
 

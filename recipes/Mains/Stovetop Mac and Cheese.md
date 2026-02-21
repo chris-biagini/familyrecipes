@@ -3,6 +3,7 @@
 Better than the box.
 
 Category: Mains
+Serves: 4
 
 ## Make cheese sauce.
 

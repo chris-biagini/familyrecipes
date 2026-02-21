@@ -3,6 +3,8 @@
 Worth the effort.
 
 Category: Snacks
+Makes: 1 cup
+Serves: 4
 
 ## Prepare.
 

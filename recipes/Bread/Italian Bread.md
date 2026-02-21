@@ -3,6 +3,7 @@
 An attempt to replicate Brooklyn-style seeded bread.
 
 Category: Bread
+Makes: 2 loaves
 
 ## Make dough.
 

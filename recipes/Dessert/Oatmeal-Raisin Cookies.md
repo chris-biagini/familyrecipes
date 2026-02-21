@@ -3,6 +3,7 @@
 With browned butter
 
 Category: Dessert
+Makes: 24 cookies
 
 ## Prep dry ingredients.
 

@@ -3,6 +3,8 @@
 NY-style toppings for Neapolitan dough.
 
 Category: Pizza
+Makes: 2 pizzas
+Serves: 4
 
 ## Make sauce.
 

@@ -3,6 +3,8 @@
 Vegan dip for crudités.
 
 Category: Snacks
+Makes: 1 cup
+Serves: 4
 
 ## Assemble.
 

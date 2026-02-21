@@ -3,6 +3,8 @@
 The best pan pizza.
 
 Category: Pizza
+Makes: 2 pizzas
+Serves: 4
 
 ## Prepare dough.
 

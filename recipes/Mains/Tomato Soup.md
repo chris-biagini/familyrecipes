@@ -3,6 +3,8 @@
 Rich tomato soup with grilled cheese.
 
 Category: Mains
+Makes: 4 grilled cheese sandwiches
+Serves: 4
 
 ## Saute aromatics.
 

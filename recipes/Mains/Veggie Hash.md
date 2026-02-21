@@ -3,6 +3,7 @@
 Mom's roasted vegetables on farro with a poached egg
 
 Category: Mains
+Serves: 4
 
 ## Advance prep: cook farro.
 

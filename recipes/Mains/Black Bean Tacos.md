@@ -3,6 +3,8 @@
 Super fast tacos with rice.
 
 Category: Mains
+Makes: 6 tacos
+Serves: 3
 
 ## Make rice.
 

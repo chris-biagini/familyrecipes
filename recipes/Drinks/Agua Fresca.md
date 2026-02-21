@@ -3,6 +3,7 @@
 A refreshing summer drink.
 
 Category: Drinks
+Serves: 2
 
 ## Blend all ingredients.
 

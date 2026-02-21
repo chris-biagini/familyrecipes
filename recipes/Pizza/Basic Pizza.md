@@ -3,6 +3,8 @@
 Minimum viable pizza.
 
 Category: Pizza
+Makes: 2 pizzas
+Serves: 4
 
 ## Advance Prep, around 10 am: Make dough.
 

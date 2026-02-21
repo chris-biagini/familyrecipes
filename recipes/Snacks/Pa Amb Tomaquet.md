@@ -3,6 +3,7 @@
 Good as an after-school snack.
 
 Category: Snacks
+Serves: 1
 
 ## Prepare tomatoes.
 

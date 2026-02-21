@@ -3,6 +3,7 @@
 Simple soup with caramelized onions.
 
 Category: Mains
+Serves: 4
 
 ## Cook rice.
 

@@ -3,6 +3,8 @@
 Just a little sweet.
 
 Category: Bread
+Makes: 1 sheet
+Serves: 6
 
 ## Make dough and bulk ferment.
 

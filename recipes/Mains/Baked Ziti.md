@@ -3,6 +3,7 @@
 Mom's famous baked pasta.
 
 Category: Mains
+Serves: 4
 
 ## Cook pasta and preheat oven.
 
