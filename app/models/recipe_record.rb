@@ -8,7 +8,7 @@ class RecipeRecord < ApplicationRecord
   has_many :cross_reference_records, foreign_key: :recipe_id, dependent: :destroy, inverse_of: :recipe_record
   has_many :inbound_cross_references, class_name: 'CrossReferenceRecord',
                                       foreign_key: :target_recipe_id,
-                                      dependent: :nullify,
+                                      dependent: :restrict_with_error,
                                       inverse_of: :target_recipe
 
   validates :title, presence: true
