@@ -1,5 +1,9 @@
 # Unified Pluralization Design
 
+> **Note:** The singular-canonical YAML key decision was reversed on 2026-02-21.
+> See `2026-02-21-revert-grocery-pluralization-design.md` for rationale.
+> YAML keys now use natural display forms (the pre-migration convention).
+
 Addresses GitHub issues #54 (localization scaffolding) and #55 (unify pluralization handling).
 
 ## Problem
