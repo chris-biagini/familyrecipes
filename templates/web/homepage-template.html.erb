@@ -1,4 +1,4 @@
-<%= render.call('head', title: 'Biagini Family Recipes', base_path: './') %>
+<%= render.call('head', title: site_config['site_title'], base_path: './') %>
 
 <body>
 <%= render.call('nav') %>
@@ -6,8 +6,8 @@
   <main>
     <article class="homepage">
       <header>
-        <h1>Our Recipes</h1>
-        <p>A collection of our family's favorite recipes.</p>
+        <h1><%= site_config['homepage_heading'] %></h1>
+        <p><%= site_config['homepage_subtitle'] %></p>
       </header>
 
       <div class="toc_nav">
@@ -31,7 +31,7 @@
 
       <footer>
         <p>Download the <a href="cookbook.pdf">PDF cookbook</a>.</p>
-        <p>For more information, visit <a href="https://github.com/chris-biagini/familyrecipes">our project page on GitHub</a>.</p>
+        <p>For more information, visit <a href="<%= site_config['github_url'] %>">our project page on GitHub</a>.</p>
       </footer>
     </article>
   </main>

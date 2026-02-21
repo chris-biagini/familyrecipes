@@ -9,6 +9,7 @@ module FamilyRecipes
       @resources_dir    = File.join(project_root, 'resources/web')
       @output_dir       = File.join(project_root, 'output/web')
       @grocery_info_path = File.join(project_root, 'resources/grocery-info.yaml')
+      @site_config_path  = File.join(project_root, 'resources/site-config.yaml')
       @recipes     = recipes
       @quick_bites = quick_bites
 
@@ -16,6 +17,7 @@ module FamilyRecipes
     end
 
     def generate
+      load_site_config
       load_grocery_info
       load_nutrition_data
       parse_recipes
@@ -34,10 +36,17 @@ module FamilyRecipes
     private
 
     attr_reader :project_root, :recipes_dir, :template_dir, :resources_dir,
-                :output_dir, :grocery_info_path
+                :output_dir, :grocery_info_path, :site_config_path
 
     def render
       @render ||= ->(name, locals = {}) { FamilyRecipes.render_partial(name, locals) }
+    end
+
+    def load_site_config
+      print 'Loading site config...'
+      @site_config = YAML.safe_load_file(site_config_path, permitted_classes: [], permitted_symbols: [],
+                                                           aliases: false)
+      print "done!\n"
     end
 
     def load_grocery_info
@@ -141,6 +150,7 @@ module FamilyRecipes
       homepage_path = File.join(output_dir, 'index.html')
       FamilyRecipes.render_template(:homepage, homepage_path,
                                     grouped_recipes: @recipes_by_category,
+                                    site_config: @site_config,
                                     render: render,
                                     slugify: FamilyRecipes.method(:slugify))
 
@@ -160,6 +170,7 @@ module FamilyRecipes
       index_path = File.join(output_dir, 'index', 'index.html')
       FamilyRecipes.render_template(:index, index_path,
                                     sorted_ingredients: sorted_ingredients,
+                                    site_config: @site_config,
                                     render: render)
 
       print "done!\n"
@@ -191,6 +202,7 @@ module FamilyRecipes
       FamilyRecipes.render_template(:groceries, groceries_path,
                                     regular_recipes: regular_recipes,
                                     quick_bites_by_subsection: quick_bites_by_subsection,
+                                    site_config: @site_config,
                                     ingredient_database: grocery_info,
                                     alias_map: @alias_map,
                                     omitted_ingredients: @omit_set,

@@ -4,7 +4,7 @@
 <%# Page-specific styles -%>
 <%- extra_styles = '  <link rel="stylesheet" href="groceries.css">' -%>
 
-<%= render.call('head', title: 'Biagini Family Recipes: Groceries', extra_head: extra_styles, base_path: '../') %>
+<%= render.call('head', title: "#{site_config['site_title']}: Groceries", extra_head: extra_styles, base_path: '../') %>
 
 <body>
 <%= render.call('nav') %>
