@@ -221,11 +221,12 @@ All templates use relative paths resolved via an HTML `<base>` tag, so the site 
 - `_nav.html.erb` - Site navigation bar (Home, Index, Groceries)
 
 **Resources**:
+- `resources/site-config.yaml` - site identity (title, homepage heading/subtitle, GitHub URL); loaded by `SiteGenerator` and passed to homepage, index, and groceries templates
 - `resources/grocery-info.yaml` - ingredient-to-aisle mappings
 - `resources/nutrition-data.yaml` - density-first nutrition data (nutrients per basis_grams, density, portions)
 - `resources/web/style.css` - main stylesheet; `groceries.css` for the grocery page
 - `resources/web/recipe-state-manager.js` - scaling, cross-off, state persistence; `groceries.js` for the grocery page
-- `resources/web/` also contains: service worker (`sw.js`), wake lock, notifications, QR codes, PWA manifest, 404 page, favicons
+- `resources/web/` also contains: service worker (`sw.js`), wake lock, notifications, QR codes, 404 page, favicons
 
 ## Recipe Format
 

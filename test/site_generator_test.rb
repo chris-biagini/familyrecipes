@@ -21,7 +21,6 @@ class SiteGeneratorTest < Minitest::Test
     assert_path_exists File.join(@output_dir, 'groceries.css'), 'groceries CSS should exist'
     assert_path_exists File.join(@output_dir, 'groceries.js'), 'groceries JS should exist'
     assert_path_exists File.join(@output_dir, 'qrcodegen.js'), 'QR code library should exist'
-    assert_path_exists File.join(@output_dir, 'manifest.json'), 'PWA manifest should exist'
     assert_path_exists File.join(@output_dir, 'sw.js'), 'service worker should exist'
   end
 
