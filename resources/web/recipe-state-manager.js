@@ -1,3 +1,25 @@
+const VULGAR_FRACTIONS = [
+  [1/2, '\u00BD'], [1/3, '\u2153'], [2/3, '\u2154'],
+  [1/4, '\u00BC'], [3/4, '\u00BE'],
+  [1/8, '\u215B'], [3/8, '\u215C'], [5/8, '\u215D'], [7/8, '\u215E']
+];
+
+function formatVulgar(value) {
+  if (Number.isInteger(value)) return String(value);
+  const intPart = Math.floor(value);
+  const fracPart = value - intPart;
+  const match = VULGAR_FRACTIONS.find(([v]) => Math.abs(fracPart - v) < 0.001);
+  if (match) return intPart === 0 ? match[1] : `${intPart}${match[1]}`;
+  const rounded = Math.round(value * 100) / 100;
+  return String(rounded);
+}
+
+function isVulgarSingular(value) {
+  if (Math.abs(value - 1) < 0.001) return true;
+  if (value <= 0 || value >= 1) return false;
+  return VULGAR_FRACTIONS.some(([v]) => Math.abs(value - v) < 0.001);
+}
+
 class RecipeStateManager {
   constructor() {
     this.recipeId = document.body.dataset.recipeId;
@@ -170,8 +192,10 @@ class RecipeStateManager {
       td.textContent = Math.round(scaled) + unit;
     });
 
-    // Scale marked numbers (yield line + instruction numbers)
+    // Scale marked numbers (instruction numbers, standalone yield numbers)
+    // Skip scalable spans inside .yield containers — those are handled below
     document.querySelectorAll('.scalable[data-base-value]').forEach(span => {
+      if (span.closest('.yield')) return;
       if (factor === 1) {
         span.textContent = span.dataset.originalText;
         span.classList.remove('scaled');
@@ -185,6 +209,39 @@ class RecipeStateManager {
         span.textContent = String(pretty);
         span.classList.add('scaled');
         span.title = 'Originally: ' + span.dataset.originalText;
+      }
+    });
+
+    // Scale yield line with inflected unit nouns
+    document.querySelectorAll('.yield[data-base-value]').forEach(container => {
+      const base = parseFloat(container.dataset.baseValue);
+      const scaled = base * factor;
+      const singular = container.dataset.unitSingular || '';
+      const plural = container.dataset.unitPlural || singular;
+
+      const scalableSpan = container.querySelector('.scalable');
+      if (!scalableSpan) return;
+
+      if (factor === 1) {
+        scalableSpan.textContent = scalableSpan.dataset.originalText;
+        scalableSpan.classList.remove('scaled');
+        scalableSpan.removeAttribute('title');
+        // Restore original unit noun based on original value
+        const originalUnit = isVulgarSingular(base) ? singular : plural;
+        const textAfterSpan = scalableSpan.nextSibling;
+        if (textAfterSpan && textAfterSpan.nodeType === Node.TEXT_NODE) {
+          textAfterSpan.textContent = ' ' + originalUnit;
+        }
+      } else {
+        const pretty = formatVulgar(scaled);
+        const unit = isVulgarSingular(scaled) ? singular : plural;
+        scalableSpan.textContent = pretty;
+        scalableSpan.classList.add('scaled');
+        scalableSpan.title = 'Originally: ' + scalableSpan.dataset.originalText;
+        const textAfterSpan = scalableSpan.nextSibling;
+        if (textAfterSpan && textAfterSpan.nodeType === Node.TEXT_NODE) {
+          textAfterSpan.textContent = ' ' + unit;
+        }
       }
     });
   }
