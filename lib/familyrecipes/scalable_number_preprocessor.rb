@@ -46,6 +46,19 @@ module ScalableNumberPreprocessor
     text.sub(YIELD_NUMBER_PATTERN) { span_from_match(::Regexp.last_match(1), ::Regexp.last_match(2)) }
   end
 
+  def process_yield_with_unit(text, unit_singular, unit_plural)
+    match = text.match(YIELD_NUMBER_PATTERN)
+    return text unless match
+
+    value = match[1] ? WORD_VALUES[match[1].downcase] : parse_numeral(match[2])
+    inner_span = build_span(value, match[1] || match[2])
+    rest = text[match.end(0)..]
+    "#{text[...match.begin(0)]}" \
+      "<span class=\"yield\" data-base-value=\"#{value}\" " \
+      "data-unit-singular=\"#{unit_singular}\" data-unit-plural=\"#{unit_plural}\">" \
+      "#{inner_span}#{rest}</span>"
+  end
+
   def span_from_match(word_match, numeral_match)
     if word_match
       build_span(WORD_VALUES[word_match.downcase], word_match)

@@ -19,7 +19,9 @@ HTML
         <%- end -%>
         <p class="recipe-meta">
           <a href="index.html#<%= slugify.call(category) %>"><%= category %></a><%- if makes -%>
-          · Makes <%= ScalableNumberPreprocessor.process_yield_line(makes) %><%- end -%><%- if serves -%>
+          <%- if nutrition&.makes_unit_singular -%>
+          · Makes <%= ScalableNumberPreprocessor.process_yield_with_unit(makes, nutrition.makes_unit_singular, nutrition.makes_unit_plural) %><%- else -%>
+          · Makes <%= ScalableNumberPreprocessor.process_yield_line(makes) %><%- end -%><%- end -%><%- if serves -%>
           · Serves <%= ScalableNumberPreprocessor.process_yield_line(serves) %><%- end -%>
         </p>
       </header>

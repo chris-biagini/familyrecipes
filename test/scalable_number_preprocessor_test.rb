@@ -112,4 +112,33 @@ class ScalableNumberPreprocessorTest < Minitest::Test
 
     assert_equal '', result
   end
+
+  # --- process_yield_with_unit tests ---
+
+  def test_yield_with_unit_wraps_number_and_noun
+    result = ScalableNumberPreprocessor.process_yield_with_unit('12 pancakes', 'pancake', 'pancakes')
+
+    assert_includes result, 'class="yield"'
+    assert_includes result, 'data-base-value="12.0"'
+    assert_includes result, 'data-unit-singular="pancake"'
+    assert_includes result, 'data-unit-plural="pancakes"'
+    assert_includes result, '<span class="scalable"'
+    assert_includes result, '>12</span> pancakes'
+  end
+
+  def test_yield_with_unit_handles_word_numbers
+    result = ScalableNumberPreprocessor.process_yield_with_unit('two loaves', 'loaf', 'loaves')
+
+    assert_includes result, 'data-base-value="2"'
+    assert_includes result, 'data-unit-singular="loaf"'
+    assert_includes result, 'data-unit-plural="loaves"'
+    assert_includes result, '>two</span> loaves'
+  end
+
+  def test_yield_with_unit_handles_single_item
+    result = ScalableNumberPreprocessor.process_yield_with_unit('1 loaf', 'loaf', 'loaves')
+
+    assert_includes result, 'data-base-value="1.0"'
+    assert_includes result, '>1</span> loaf'
+  end
 end
