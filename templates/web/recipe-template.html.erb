@@ -79,16 +79,16 @@ HTML
             columns = []
 
             if has_per_unit
+              # Per Unit column
+              columns << ["Per #{nutrition.makes_unit_singular.capitalize}", nutrition.per_unit, false]
               # Per Serving column (if serves exists)
               if has_per_serving && nutrition.units_per_serving
                 ups = nutrition.units_per_serving
                 formatted_ups = FamilyRecipes::VulgarFractions.format(ups)
                 singular = FamilyRecipes::VulgarFractions.singular_noun?(ups)
                 ups_unit = singular ? nutrition.makes_unit_singular : nutrition.makes_unit_plural
-                columns << ["Per Serving (#{formatted_ups} #{ups_unit})", nutrition.per_serving, false]
+                columns << ["Per Serving<br>(#{formatted_ups} #{ups_unit})", nutrition.per_serving, false]
               end
-              # Per Unit column
-              columns << ["Per #{nutrition.makes_unit_singular.capitalize}", nutrition.per_unit, false]
               # Total column
               columns << ['Total', nutrition.totals, true]
             elsif has_per_serving
