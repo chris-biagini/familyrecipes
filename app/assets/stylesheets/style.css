@@ -236,6 +236,17 @@ nav > div:last-child:not(:first-child) {
   border-color: rgb(135, 8, 20);
 }
 
+.btn-danger {
+  color: var(--danger-color);
+  border-color: var(--danger-color);
+}
+
+.btn-danger:hover {
+  background: var(--danger-color);
+  color: white;
+  border-color: var(--danger-color);
+}
+
 nav a:hover,
 nav a:focus {
   color: var(--accent-color);
@@ -667,6 +678,10 @@ footer small {
   gap: 0.5rem;
   padding: 1rem 1.5rem;
   border-top: 1px solid var(--separator-color);
+}
+
+.editor-footer-spacer {
+  flex: 1;
 }
 
 /************************/
