@@ -7,9 +7,9 @@ require 'json'
 require_relative '../lib/familyrecipes'
 
 PROJECT_ROOT = File.expand_path('..', __dir__)
-NUTRITION_PATH = File.join(PROJECT_ROOT, 'resources/nutrition-data.yaml')
-GROCERY_PATH = File.join(PROJECT_ROOT, 'resources/grocery-info.yaml')
-RECIPES_DIR = File.join(PROJECT_ROOT, 'recipes')
+NUTRITION_PATH = File.join(PROJECT_ROOT, 'db/seeds/resources/nutrition-data.yaml')
+GROCERY_PATH = File.join(PROJECT_ROOT, 'db/seeds/resources/grocery-info.yaml')
+RECIPES_DIR = File.join(PROJECT_ROOT, 'db/seeds/recipes')
 
 Helpers = FamilyRecipes::NutritionEntryHelpers
 
