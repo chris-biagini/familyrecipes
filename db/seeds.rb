@@ -15,7 +15,9 @@ puts "Kitchen: #{kitchen.name} (#{kitchen.slug})"
 puts "User: #{user.name} (#{user.email})"
 
 # Import recipes
-recipes_dir = Rails.root.join('recipes')
+seeds_dir = Rails.root.join('db/seeds')
+recipes_dir = seeds_dir.join('recipes')
+resources_dir = seeds_dir.join('resources')
 quick_bites_filename = 'Quick Bites.md'
 
 recipe_files = Dir.glob(recipes_dir.join('**', '*.md')).reject do |path|
@@ -52,7 +54,7 @@ if File.exist?(quick_bites_path)
 end
 
 # Seed Grocery Aisles document (convert YAML to markdown)
-grocery_yaml_path = Rails.root.join('resources/grocery-info.yaml')
+grocery_yaml_path = resources_dir.join('grocery-info.yaml')
 if File.exist?(grocery_yaml_path)
   SiteDocument.find_or_create_by!(kitchen: kitchen, name: 'grocery_aisles') do |doc|
     raw = YAML.safe_load_file(grocery_yaml_path, permitted_classes: [], permitted_symbols: [], aliases: false)
@@ -66,4 +68,22 @@ if File.exist?(grocery_yaml_path)
     end.join("\n")
   end
   puts 'Grocery Aisles document loaded.'
+end
+
+# Seed Site Config document
+site_config_path = resources_dir.join('site-config.yaml')
+if File.exist?(site_config_path)
+  SiteDocument.find_or_create_by!(kitchen: kitchen, name: 'site_config') do |doc|
+    doc.content = File.read(site_config_path)
+  end
+  puts 'Site Config document loaded.'
+end
+
+# Seed Nutrition Data document
+nutrition_path = resources_dir.join('nutrition-data.yaml')
+if File.exist?(nutrition_path)
+  SiteDocument.find_or_create_by!(kitchen: kitchen, name: 'nutrition_data') do |doc|
+    doc.content = File.read(nutrition_path)
+  end
+  puts 'Nutrition Data document loaded.'
 end
