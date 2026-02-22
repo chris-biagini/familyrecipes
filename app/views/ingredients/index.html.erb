@@ -1,0 +1,18 @@
+<% content_for(:title) { 'Biagini Family Recipes: Index' } %>
+
+<article class="index">
+  <header>
+    <h1>Ingredient Index</h1>
+  </header>
+
+  <%- @ingredients_with_recipes.each do |ingredient, recipes| -%>
+  <section>
+    <h2><%= ingredient %></h2>
+    <ul>
+      <%- recipes.each do |recipe| -%>
+      <li><%= link_to recipe.title, recipe_path(recipe.slug), title: recipe.description %></li>
+      <%- end -%>
+    </ul>
+  </section>
+  <%- end -%>
+</article>
