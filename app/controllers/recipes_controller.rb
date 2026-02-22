@@ -89,7 +89,14 @@ class RecipesController < ApplicationController
   end
 
   def grocery_aisles
-    @grocery_aisles ||= FamilyRecipes.parse_grocery_info(Rails.root.join('resources/grocery-info.yaml'))
+    @grocery_aisles ||= load_grocery_aisles
+  end
+
+  def load_grocery_aisles
+    doc = SiteDocument.find_by(name: 'grocery_aisles')
+    return FamilyRecipes.parse_grocery_info(Rails.root.join('resources/grocery-info.yaml')) unless doc
+
+    FamilyRecipes.parse_grocery_aisles_markdown(doc.content)
   end
 
   def alias_map
@@ -97,9 +104,14 @@ class RecipesController < ApplicationController
   end
 
   def omit_set
-    @omit_set ||= (grocery_aisles['Omit_From_List'] || []).flat_map do |item|
-      [item[:name], *item[:aliases]].map(&:downcase)
-    end.to_set
+    @omit_set ||= build_omit_set
+  end
+
+  def build_omit_set
+    omit_key = grocery_aisles.keys.find { |k| k.downcase.tr('_', ' ') == 'omit from list' }
+    return Set.new unless omit_key
+
+    grocery_aisles[omit_key].to_set { |item| item[:name].downcase }
   end
 
   def recipe_map
