@@ -32,9 +32,10 @@ class MarkdownImporterTest < ActiveSupport::TestCase
   MARKDOWN
 
   setup do
+    @kitchen = Kitchen.find_or_create_by!(name: 'Test Kitchen', slug: 'test-kitchen')
+    ActsAsTenant.current_tenant = @kitchen
     Recipe.destroy_all
     Category.destroy_all
-    @kitchen = Kitchen.find_or_create_by!(name: 'Test Kitchen', slug: 'test-kitchen')
   end
 
   test 'imports a basic recipe from markdown' do

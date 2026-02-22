@@ -5,6 +5,7 @@ require 'test_helper'
 class CrossReferenceUpdaterTest < ActiveSupport::TestCase
   setup do
     @kitchen = Kitchen.find_or_create_by!(name: 'Test Kitchen', slug: 'test-kitchen')
+    ActsAsTenant.current_tenant = @kitchen
 
     Category.find_or_create_by!(slug: 'bread', kitchen: @kitchen) do |cat|
       cat.name = 'Bread'

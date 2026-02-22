@@ -15,6 +15,7 @@ module ActionDispatch
     def create_kitchen_and_user
       @kitchen = Kitchen.create!(name: 'Test Kitchen', slug: 'test-kitchen')
       @user = User.create!(name: 'Test User', email: 'test@example.com')
+      ActsAsTenant.current_tenant = @kitchen
       Membership.create!(kitchen: @kitchen, user: @user)
     end
 

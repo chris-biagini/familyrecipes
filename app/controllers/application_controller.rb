@@ -3,18 +3,25 @@
 class ApplicationController < ActionController::Base
   allow_browser versions: :modern
 
+  set_current_tenant_through_filter
+  before_action :set_kitchen_from_path
+
   helper_method :current_user, :current_kitchen, :logged_in?
 
   private
+
+  def set_kitchen_from_path
+    return unless params[:kitchen_slug]
+
+    set_current_tenant(Kitchen.find_by!(slug: params[:kitchen_slug]))
+  end
 
   def current_user
     @current_user ||= User.find_by(id: session[:user_id])
   end
 
   def current_kitchen
-    return @current_kitchen if defined?(@current_kitchen)
-
-    @current_kitchen = Kitchen.find_by!(slug: params[:kitchen_slug]) if params[:kitchen_slug]
+    ActsAsTenant.current_tenant
   end
 
   def logged_in?

@@ -59,7 +59,9 @@ class AuthTest < ActionDispatch::IntegrationTest
   test 'non-member cannot write to a kitchen' do
     outsider_kitchen = Kitchen.create!(name: 'Other Kitchen', slug: 'other-kitchen')
     outsider = User.create!(name: 'Outsider')
-    Membership.create!(kitchen: outsider_kitchen, user: outsider)
+    ActsAsTenant.with_tenant(outsider_kitchen) do
+      Membership.create!(kitchen: outsider_kitchen, user: outsider)
+    end
     get dev_login_path(id: outsider.id)
 
     post recipes_path(kitchen_slug: kitchen_slug),

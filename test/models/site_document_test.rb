@@ -5,6 +5,7 @@ require 'test_helper'
 class SiteDocumentTest < ActiveSupport::TestCase
   setup do
     @kitchen = Kitchen.find_or_create_by!(name: 'Test Kitchen', slug: 'test-kitchen')
+    ActsAsTenant.current_tenant = @kitchen
   end
 
   test 'requires name' do

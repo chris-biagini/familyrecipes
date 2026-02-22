@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 class Recipe < ApplicationRecord
+  acts_as_tenant :kitchen
   belongs_to :category
-  belongs_to :kitchen
 
   has_many :steps, -> { order(:position) }, dependent: :destroy, inverse_of: :recipe
   has_many :ingredients, through: :steps
