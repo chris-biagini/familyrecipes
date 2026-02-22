@@ -11,6 +11,8 @@ gem 'pg'
 gem 'rake'
 gem 'redcarpet'
 
+gem 'acts_as_tenant'
+
 group :development do
   gem 'rubocop', require: false
   gem 'rubocop-minitest', require: false
