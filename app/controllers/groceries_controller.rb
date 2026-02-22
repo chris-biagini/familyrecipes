@@ -13,6 +13,29 @@ class GroceriesController < ApplicationController
     @grocery_aisles_content = grocery_aisles_document&.content || ''
   end
 
+  def update_quick_bites
+    content = params[:content].to_s
+    return render json: { errors: ['Content cannot be blank.'] }, status: :unprocessable_entity if content.blank?
+
+    doc = SiteDocument.find_or_initialize_by(name: 'quick_bites')
+    doc.content = content
+    doc.save!
+
+    render json: { status: 'ok' }
+  end
+
+  def update_grocery_aisles
+    content = params[:content].to_s
+    errors = validate_grocery_aisles(content)
+    return render json: { errors: }, status: :unprocessable_entity if errors.any?
+
+    doc = SiteDocument.find_or_initialize_by(name: 'grocery_aisles')
+    doc.content = content
+    doc.save!
+
+    render json: { status: 'ok' }
+  end
+
   private
 
   def load_grocery_aisles
@@ -69,5 +92,16 @@ class GroceriesController < ApplicationController
 
   def grocery_aisles_document
     @grocery_aisles_document ||= SiteDocument.find_by(name: 'grocery_aisles')
+  end
+
+  def validate_grocery_aisles(content)
+    return ['Content cannot be blank.'] if content.blank?
+
+    parsed = FamilyRecipes.parse_grocery_aisles_markdown(content)
+    validations = {
+      'Must have at least one aisle (## Aisle Name).' => parsed.empty?
+    }
+
+    validations.select { |_msg, failed| failed }.keys
   end
 end

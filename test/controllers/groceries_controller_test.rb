@@ -129,6 +129,67 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test 'update_quick_bites saves valid content' do
+    SiteDocument.create!(name: 'quick_bites', content: 'old content')
+
+    patch groceries_quick_bites_path,
+          params: { content: "## Snacks\n  - Goldfish" },
+          as: :json
+
+    assert_response :success
+
+    doc = SiteDocument.find_by(name: 'quick_bites')
+
+    assert_equal "## Snacks\n  - Goldfish", doc.content
+  end
+
+  test 'update_quick_bites creates document if missing' do
+    patch groceries_quick_bites_path,
+          params: { content: "## Snacks\n  - Goldfish" },
+          as: :json
+
+    assert_response :success
+    assert SiteDocument.exists?(name: 'quick_bites')
+  end
+
+  test 'update_quick_bites rejects blank content' do
+    SiteDocument.create!(name: 'quick_bites', content: 'old content')
+
+    patch groceries_quick_bites_path,
+          params: { content: '' },
+          as: :json
+
+    assert_response :unprocessable_entity
+  end
+
+  test 'update_grocery_aisles saves valid content' do
+    SiteDocument.create!(name: 'grocery_aisles', content: 'old')
+
+    new_content = "## Produce\n- Apples\n\n## Baking\n- Flour"
+    patch groceries_grocery_aisles_path,
+          params: { content: new_content },
+          as: :json
+
+    assert_response :success
+
+    doc = SiteDocument.find_by(name: 'grocery_aisles')
+
+    assert_equal new_content, doc.content
+  end
+
+  test 'update_grocery_aisles rejects content with no aisles' do
+    SiteDocument.create!(name: 'grocery_aisles', content: 'old')
+
+    patch groceries_grocery_aisles_path,
+          params: { content: 'just some text with no headings' },
+          as: :json
+
+    assert_response :unprocessable_entity
+    json = JSON.parse(response.body)
+
+    assert_includes json['errors'], 'Must have at least one aisle (## Aisle Name).'
+  end
+
   test 'recipe checkboxes include ingredient data as JSON' do
     Category.create!(name: 'Bread', slug: 'bread', position: 0)
     MarkdownImporter.import(<<~MD)
