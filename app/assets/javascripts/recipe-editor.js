@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const recipeSlug = document.body.dataset.recipeId;
   const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
   let originalContent = textarea.value;
+  let saving = false;
 
   function isModified() {
     return textarea.value !== originalContent;
@@ -79,6 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (response.ok) {
         const data = await response.json();
+        saving = true;
         window.location = data.redirect_url;
       } else if (response.status === 422) {
         const data = await response.json();
@@ -99,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Warn on page navigation with unsaved changes
   window.addEventListener('beforeunload', (event) => {
-    if (dialog.open && isModified()) {
+    if (!saving && dialog.open && isModified()) {
       event.preventDefault();
     }
   });
