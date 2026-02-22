@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Your goal is a high-quality, well-crafted user experience. Improve the end product. Make it delightful, charming, and fun. Finish the back of the cabinet even though no one will see it. Always feel free to challenge assumptions, misconceptions, and poor design decisions. Be as opinionated as this document and push back on my ideas when you need to. Suggest any quality-of-life, performance, or feature improvements that come to mind. Always use the superpowers skill and plan mode when getting ready to write code or build a new feature. 
 
-A Rails 8 migration is underway — the app already serves recipes dynamically alongside the static site generator. Next milestones: web-based recipe editing, and Docker packaging for homelab deployment. Don't prematurely optimize, but keep these goals in mind when planning.
+This is a fully dynamic Rails 8 app backed by PostgreSQL. All pages render live from the database — there is no static site generator. Next milestones: web-based recipe editing, and Docker packaging for homelab deployment. Don't prematurely optimize, but keep these goals in mind when planning.
 
 ### Visual language
 
@@ -27,7 +27,7 @@ The visual identity evokes **red-checked tablecloths** and **mid-century cookboo
 
 ### The groceries page is the exception
 
-`groceries-template.html.erb` has a looser mandate. Slightly heavier JavaScript is more permissible there. Custom UI is ok. Third-party dependencies should still be avoided, but the overall restraint is relaxed.
+The groceries page (`app/views/groceries/show.html.erb`) has a looser mandate. Slightly heavier JavaScript is more permissible there. Custom UI is ok. Third-party dependencies should still be avoided, but the overall restraint is relaxed.
 
 ## Ruby code conventions
 
@@ -145,13 +145,13 @@ cd /home/claude/familyrecipes && git worktree remove .claude/worktrees/<name> &&
 ### GitHub Issues
 If I mention a GitHub issue (e.g., "#99"), review it and plan a fix. Close it via the commit message once confirmed.
 
-## Build Command
+## Database Setup
 
 ```bash
-bin/generate
+rails db:create db:migrate db:seed
 ```
 
-This parses all recipes, generates HTML files in `output/web/`, and copies static resources. Dependencies are managed via `Gemfile` (Ruby 3.2+, Bundler, and `bundle install` required).
+PostgreSQL is required. `db:seed` imports all markdown files from `recipes/` into the database via `MarkdownImporter`. The seed is idempotent — safe to re-run. Dependencies are managed via `Gemfile` (Ruby 3.2+, Bundler, and `bundle install` required).
 
 ## Lint Command
 
@@ -167,101 +167,114 @@ Runs RuboCop on all Ruby files. Configuration is in `.rubocop.yml`. The default 
 rake test
 ```
 
-Runs all tests in `test/` via Minitest. `rake clean` removes the `output/` directory if you need a fresh build.
+Runs all tests in `test/` via Minitest.
 
-## Dev Servers
+## Dev Server
 
 ```bash
 bin/dev
 ```
 
-Starts both servers side-by-side for development:
-- **WEBrick** on port 8888 — static site reference, matches GitHub Pages deploy
-- **Rails/Puma** on port 3030 — dynamic server under development
-
-Runs `bin/generate` first, cleans stale PID files, and tears down both servers on Ctrl-C (or if either dies). No external process manager needed.
-
-```bash
-bin/serve [port]
-```
-
-WEBrick-only server (default port 8888) serving `output/web/` with clean/extensionless URLs. Binds `0.0.0.0` (LAN-accessible). Exits cleanly if port is taken. Use `bin/generate && bin/serve` if you only need the static site.
+Starts Puma on port 3030, bound to `0.0.0.0` (LAN-accessible via `config/boot.rb`). This is the only dev server — there is no static site server.
 
 ## Deployment
 
-The site is hosted on **GitHub Pages** at `biaginifamily.recipes`. Pushing to `main` automatically triggers a build and deploy via GitHub Actions (`.github/workflows/deploy.yml`). The workflow:
+The `main` branch still deploys a static site to **GitHub Pages** at `biaginifamily.recipes` via `.github/workflows/deploy.yml`. The `rails-development` branch is the dynamic Rails app — deployment infrastructure (Docker, CI updates) is not yet in place. Do not merge `rails-development` to `main` until the deployment story is resolved.
 
-1. Runs `bundle exec rubocop` (build fails if linting doesn't pass)
-2. Runs `bundle exec rake test` (build fails if tests don't pass)
-3. Runs `bin/generate` to build the site
-4. Deploys `output/web/` to GitHub Pages
+## Routes
 
-The custom domain is configured in the repo's GitHub Pages settings, not in the workflow file, so forks don't need to modify the workflow.
-
-## URL Portability
-
-All templates use relative paths resolved via an HTML `<base>` tag, so the site works regardless of deployment root (e.g., `biaginifamily.recipes/` or `username.github.io/familyrecipes/`). Root-level pages use `<base href="./">` and subdirectory pages (`index/`, `groceries/`) use `<base href="../">`. When adding new links or asset references in templates, use relative paths (e.g., `style.css`, not `/style.css`).
+Views use Rails route helpers (`root_path`, `recipe_path(slug)`, `ingredients_path`, `groceries_path`) — no `<base>` tags or relative paths. When adding links, always use the `_path` helpers.
 
 ## Architecture
 
-**Core Classes** (`lib/familyrecipes/`):
-- `SiteGenerator` - Orchestrates the full build: parsing, rendering, resource copying, and validation
-- `Recipe` - Parses markdown recipe files into structured data (title, description, front matter, steps, footer)
-- `Step` - A recipe step containing a tldr summary, ingredients list, and instructions
-- `Ingredient` - Individual ingredient with name, quantity, and prep note
-- `QuickBite` - Simple recipe from Quick Bites.md (name and ingredients only)
-- `LineClassifier` - Classifies raw recipe text lines into typed tokens (title, step header, ingredient, front_matter, etc.)
-- `RecipeBuilder` - Consumes LineTokens and produces a structured document hash for Recipe
-- `IngredientParser` - Parses ingredient line text into structured data; also detects cross-references
-- `IngredientAggregator` - Sums ingredient quantities by unit for grocery list display
-- `CrossReference` - A reference from one recipe to another (e.g., `@[Pizza Dough]`), renders as a link
-- `ScalableNumberPreprocessor` - Wraps numbers in `<span class="scalable">` tags for client-side scaling
-- `NutritionCalculator` - Calculates nutrition facts using density-first data model (nutrients/basis_grams + density)
-- `NutritionEntryHelpers` - Shared helpers for nutrition entry: serving size parsing, fractions, singularization
-- `PdfGenerator` - Generates PDF output (uses templates in `templates/pdf/`)
-- `Inflector` - Pluralization/singularization with irregular forms and uncountables; used for ingredient canonicalization
-- `VulgarFractions` - Converts decimal quantities to Unicode vulgar fraction glyphs (½, ¾, etc.)
-- `BuildValidator` - Validates cross-references, ingredients, and nutrition data during site generation
-- `Quantity` - Immutable `Data.define` value object (value + unit) replacing bare tuples; has JSON serialization
+### Two namespaces, no conflict
 
-**Rails Layer** (serves recipes dynamically alongside the static generator):
-- `app/middleware/static_output_middleware.rb` — Rack middleware serving `output/web/` assets (CSS, JS, images); `html_fallback: false` so Rails routes handle HTML requests
-- `app/controllers/recipes_controller.rb` — renders recipes dynamically via `Recipe#to_html`
-- `app/services/recipe_finder.rb` — slug-to-path cache for recipe lookup, reset by file watcher
-- `app/views/recipes/show.html.erb` — recipe view (minimal; scaling/nutrition not yet wired up)
-- `config/initializers/familyrecipes.rb` — loads domain model (not Zeitwerk-autoloaded)
-- `config/initializers/recipe_watcher.rb` — watches `recipes/` for changes, regenerates static site and resets `RecipeFinder` cache
-- `lib/tasks/familyrecipes.rake` — custom Rake tasks (test, lint, clean, build)
+The Rails app module is `Familyrecipes` (lowercase r); the domain/parser module is `FamilyRecipes` (uppercase R). Different constants, no collision. Parser classes that would collide with ActiveRecord model names (`Recipe`, `Step`, `Ingredient`, `CrossReference`, `QuickBite`) are namespaced under `FamilyRecipes::`. Utility classes without collisions (`LineClassifier`, `RecipeBuilder`, etc.) remain top-level.
 
-Note: The Rails app module is `Familyrecipes` (lowercase r); the domain module is `FamilyRecipes` (uppercase R). Different constants, no conflict.
+### Database
 
-**Static Site Data Flow**:
-1. `bin/generate` creates a `SiteGenerator` and calls `generate`, then a `PdfGenerator` (requires `typst` CLI; skips gracefully if not installed)
-2. `SiteGenerator` reads `.md` files from `recipes/` subdirectories
-3. Each file is parsed by `Recipe` class using markdown conventions
-4. ERB templates in `templates/web/` render HTML output
-5. Static assets from `resources/web/` are copied to output
+PostgreSQL with five tables: `categories`, `recipes`, `steps`, `ingredients`, `recipe_dependencies`. See `db/schema.rb` for the full schema. Recipes are seeded from `recipes/*.md` via `MarkdownImporter`.
 
-**Output Pages**:
-- Individual recipe pages (from recipe-template.html.erb)
-- Homepage with recipes grouped by category (homepage-template.html.erb)
-- Ingredient index (index-template.html.erb)
-- Grocery list builder (groceries-template.html.erb)
+### ActiveRecord Models (`app/models/`)
 
-**Shared Partials**:
-- `_head.html.erb` - Common HTML head (doctype, meta, base tag, stylesheet, favicon)
-- `_nav.html.erb` - Site navigation bar (Home, Index, Groceries)
+- `Category` — has_many :recipes, ordered by position, auto-generates slug
+- `Recipe` — belongs_to :category, has_many :steps (ordered), has_many :ingredients (through steps), tracks outbound/inbound recipe dependencies
+- `Step` — belongs_to :recipe, has_many :ingredients (ordered)
+- `Ingredient` — belongs_to :step
+- `RecipeDependency` — join table tracking which recipes reference which (source → target)
 
-**Resources**:
-- `resources/site-config.yaml` - site identity (title, homepage heading/subtitle, GitHub URL); loaded by `SiteGenerator` and passed to homepage, index, and groceries templates
-- `resources/grocery-info.yaml` - ingredient-to-aisle mappings
-- `resources/nutrition-data.yaml` - density-first nutrition data (nutrients per basis_grams, density, portions)
-- `resources/web/style.css` - main stylesheet; `groceries.css` for the grocery page
-- `resources/web/recipe-state-manager.js` - scaling, cross-off, state persistence; `groceries.js` for the grocery page
-- `resources/web/` also contains: wake lock, notifications, QR codes, 404 page, favicons
+### Controllers (`app/controllers/`)
 
-**Design History**:
-- `docs/plans/` contains dated design documents for major features and architectural decisions
+All controllers are thin — load from ActiveRecord, pass to views:
+
+- `HomepageController#show` — categories with eager-loaded recipes, site config from YAML
+- `RecipesController#show` — uses the "parsed-recipe bridge" pattern (see below)
+- `IngredientsController#index` — all ingredients grouped by canonical name with recipe links
+- `GroceriesController#show` — recipe selector with ingredient JSON, aisle-organized grocery list
+
+### The parsed-recipe bridge
+
+`RecipesController` loads the AR `Recipe` but also re-parses the original markdown via the parser pipeline. This is because the parser produces interleaved ingredient/cross-reference lists, scalable number markup, and nutrition data that would be complex to replicate from structured AR data alone. The AR model stores canonical data; the parser handles rendering concerns. This is intentional for v1 — the editor may change this.
+
+### Parser / Domain Classes (`lib/familyrecipes/`)
+
+These are the import engine and render-time helpers. Loaded via `config/initializers/familyrecipes.rb` (not Zeitwerk-autoloaded).
+
+- `FamilyRecipes::Recipe` — parses markdown into structured data (title, description, front matter, steps, footer)
+- `FamilyRecipes::Step` — a recipe step containing a tldr summary, ingredients list, and instructions
+- `FamilyRecipes::Ingredient` — individual ingredient with name, quantity, and prep note
+- `FamilyRecipes::CrossReference` — a reference from one recipe to another (e.g., `@[Pizza Dough]`), renders as a link
+- `FamilyRecipes::QuickBite` — simple recipe from Quick Bites.md (name and ingredients only)
+- `LineClassifier` — classifies raw recipe text lines into typed tokens
+- `RecipeBuilder` — consumes LineTokens and produces a structured document hash
+- `IngredientParser` — parses ingredient line text into structured data; detects cross-references
+- `IngredientAggregator` — sums ingredient quantities by unit for grocery list display
+- `ScalableNumberPreprocessor` — wraps numbers in `<span class="scalable">` tags for client-side scaling
+- `NutritionCalculator` — calculates nutrition facts from YAML data at render time
+- `NutritionEntryHelpers` — shared helpers for nutrition entry tool
+- `BuildValidator` — validates cross-references, ingredients, and nutrition data
+- `Inflector` — pluralization/singularization for ingredient canonicalization
+- `VulgarFractions` — converts decimal quantities to Unicode vulgar fractions (½, ¾, etc.)
+- `Quantity` — immutable `Data.define` value object (value + unit)
+
+### Services (`app/services/`)
+
+- `MarkdownImporter` — bridges parser and database: parses markdown, upserts Recipe/Step/Ingredient rows, rebuilds `recipe_dependencies`. Used by `db/seeds.rb` and will be used by the future editor.
+
+### Views (`app/views/`)
+
+```
+layouts/application.html.erb    ← doctype, meta, Propshaft asset tags, nav, yield
+shared/_nav.html.erb            ← Home, Index, Groceries links
+homepage/show.html.erb          ← category TOC + recipe listings
+recipes/show.html.erb           ← recipe page (steps, ingredients, nutrition)
+recipes/_step.html.erb          ← step partial with ingredients and cross-references
+recipes/_nutrition_table.html.erb ← FDA-style nutrition facts
+ingredients/index.html.erb      ← alphabetical ingredient index with recipe links
+groceries/show.html.erb         ← recipe selector + aisle-organized grocery list
+```
+
+Views use `content_for` blocks for page-specific titles, head tags, body attributes, and scripts. Cross-references are rendered using duck typing (`respond_to?(:target_slug)`) per project conventions.
+
+### Assets (Propshaft)
+
+Propshaft serves fingerprinted assets from `app/assets/`. No build step, no bundling, no Node.
+
+- `app/assets/stylesheets/` — `style.css`, `groceries.css`
+- `app/assets/javascripts/` — `recipe-state-manager.js`, `groceries.js`, `notify.js`, `wake-lock.js`, `qrcodegen.js`
+- `app/assets/images/` — favicons
+
+Views use `stylesheet_link_tag`, `javascript_include_tag`, `asset_path`.
+
+### Data Files (`resources/`)
+
+- `site-config.yaml` — site identity (title, homepage heading/subtitle, GitHub URL)
+- `grocery-info.yaml` — ingredient-to-aisle mappings
+- `nutrition-data.yaml` — density-first nutrition data (see Nutrition Data section)
+
+### Design History
+
+`docs/plans/` contains dated design documents and implementation plans for major features and architectural decisions.
 
 ## Recipe Format
 
@@ -360,4 +373,4 @@ bin/nutrition --manual "Flour"  # Force manual entry from package labels
 
 `bin/nutrition` auto-detects `USDA_API_KEY` (from `.env` or environment): when present, it searches the USDA SR Legacy dataset first and falls back to manual entry; when absent, it defaults to manual entry from package labels. Existing entries open in an edit menu for surgical fixes (e.g., adding missing portions). Requires `USDA_API_KEY` for USDA mode (free at https://fdc.nal.usda.gov/api-key-signup).
 
-During `bin/generate`, the build validates that all recipe ingredients have nutrition data and prints warnings for any that are missing.
+During `db:seed`, `BuildValidator` checks that all recipe ingredients have nutrition data and prints warnings for any that are missing.
