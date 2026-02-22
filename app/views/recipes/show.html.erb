@@ -48,15 +48,8 @@
   <%- end -%>
 </article>
 
-<dialog id="recipe-editor">
-  <div class="editor-header">
-    <h2>Editing: <%= @recipe.title %></h2>
-    <button type="button" class="btn" id="editor-close" aria-label="Close">&times;</button>
-  </div>
-  <div id="editor-errors" hidden></div>
-  <textarea id="editor-textarea" spellcheck="false"><%= @recipe.markdown_source %></textarea>
-  <div class="editor-footer">
-    <button type="button" class="btn" id="editor-cancel">Cancel</button>
-    <button type="button" class="btn btn-primary" id="editor-save">Save</button>
-  </div>
-</dialog>
+<%= render 'editor_dialog',
+           mode: :edit,
+           content: @recipe.markdown_source,
+           action_url: recipe_path(@recipe.slug),
+           recipe: @recipe %>
