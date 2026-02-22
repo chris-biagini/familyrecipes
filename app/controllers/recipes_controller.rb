@@ -45,6 +45,20 @@ class RecipesController < ApplicationController
     head :not_found
   end
 
+  def destroy
+    @recipe = Recipe.find_by!(slug: params[:slug])
+
+    updated_references = CrossReferenceUpdater.strip_references(@recipe)
+    @recipe.destroy!
+    Category.left_joins(:recipes).where(recipes: { id: nil }).destroy_all
+
+    response_json = { redirect_url: root_path }
+    response_json[:updated_references] = updated_references if updated_references.any?
+    render json: response_json
+  rescue ActiveRecord::RecordNotFound
+    head :not_found
+  end
+
   private
 
   def title_changed?(old_title, new_title)

@@ -291,6 +291,56 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     assert_not_nil Recipe.find_by!(slug: 'ciabatta').edited_at
   end
 
+  test 'destroy deletes recipe and returns redirect to homepage' do
+    delete recipe_path('focaccia'), as: :json
+
+    assert_response :success
+    body = JSON.parse(response.body)
+
+    assert_equal root_path, body['redirect_url']
+    assert_nil Recipe.find_by(slug: 'focaccia')
+  end
+
+  test 'destroy cleans up empty categories' do
+    delete recipe_path('focaccia'), as: :json
+
+    assert_response :success
+    assert_nil Category.find_by(slug: 'bread')
+  end
+
+  test 'destroy strips cross-references from referencing recipes' do
+    MarkdownImporter.import(<<~MD)
+      # Panzanella
+
+      Category: Bread
+
+      ## Assemble (put it together)
+
+      - @[Focaccia], 1
+      - Tomatoes, 3
+
+      Tear bread and toss.
+    MD
+
+    delete recipe_path('focaccia'), as: :json
+
+    assert_response :success
+    body = JSON.parse(response.body)
+
+    assert_includes body['updated_references'], 'Panzanella'
+
+    panzanella = Recipe.find_by!(slug: 'panzanella')
+
+    assert_includes panzanella.markdown_source, 'Focaccia'
+    assert_not_includes panzanella.markdown_source, '@[Focaccia]'
+  end
+
+  test 'destroy returns 404 for unknown recipe' do
+    delete recipe_path('nonexistent'), as: :json
+
+    assert_response :not_found
+  end
+
   test 'full edit round-trip: edit, save, re-render' do
     updated_markdown = <<~MD
       # Focaccia
