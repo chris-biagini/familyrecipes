@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Your goal is a high-quality, well-crafted user experience. Improve the end product. Make it delightful, charming, and fun. Finish the back of the cabinet even though no one will see it. Always feel free to challenge assumptions, misconceptions, and poor design decisions. Be as opinionated as this document and push back on my ideas when you need to. Suggest any quality-of-life, performance, or feature improvements that come to mind. Always use the superpowers skill and plan mode when getting ready to write code or build a new feature. 
 
-This is a fully dynamic Rails 8 app backed by PostgreSQL. All pages render live from the database — there is no static site generator. Web-based editing is in place for recipes, Quick Bites, and grocery aisles. Next milestone: Docker packaging for homelab deployment. Don't prematurely optimize, but keep these goals in mind when planning.
+This is a fully dynamic Rails 8 app backed by PostgreSQL with multi-tenant "Kitchen" support. All pages render live from the database — there is no static site generator. Web-based editing is in place for recipes, Quick Bites, and grocery aisles. Dev-only auth is in place (Phase 1); next auth milestone is OmniAuth (Phase 2). Next infra milestone: Docker packaging for homelab deployment. Don't prematurely optimize, but keep these goals in mind when planning.
 
 ### Visual language
 
@@ -191,11 +191,11 @@ Starts Puma on port 3030, bound to `0.0.0.0` (LAN-accessible via `config/boot.rb
 
 ## Deployment
 
-The `main` branch still deploys a static site to **GitHub Pages** at `biaginifamily.recipes` via `.github/workflows/deploy.yml`. The `rails-development` branch is the dynamic Rails app — deployment infrastructure (Docker, CI updates) is not yet in place. Do not merge `rails-development` to `main` until the deployment story is resolved.
+The `main` branch still deploys a static site to **GitHub Pages** at `biaginifamily.recipes` via `.github/workflows/deploy.yml`. The `rails-development` branch is the dynamic Rails app with Kitchen multi-tenancy and dev auth — deployment infrastructure (Docker, CI updates) is not yet in place. Do not merge `rails-development` to `main` until the deployment story is resolved.
 
 ## Routes
 
-Views use Rails route helpers (`root_path`, `recipe_path(slug)`, `ingredients_path`, `groceries_path`) — no `<base>` tags or relative paths. When adding links, always use the `_path` helpers.
+All routes live under `/kitchens/:kitchen_slug/` except the landing page (`/`) and dev login. Views use Rails route helpers — `root_path` (landing), `kitchen_root_path` (kitchen homepage), `recipe_path(slug)`, `ingredients_path`, `groceries_path`. `ApplicationController#default_url_options` auto-fills `kitchen_slug` from `current_kitchen`, so most helpers work without explicitly passing it. When adding links, always use the `_path` helpers.
 
 ## Architecture
 
@@ -205,21 +205,27 @@ The Rails app module is `Familyrecipes` (lowercase r); the domain/parser module 
 
 ### Database
 
-PostgreSQL with six tables: `categories`, `recipes`, `steps`, `ingredients`, `recipe_dependencies`, `site_documents`. See `db/schema.rb` for the full schema. Recipes are seeded from `recipes/*.md` via `MarkdownImporter`.
+PostgreSQL with nine tables: `kitchens`, `users`, `memberships`, `categories`, `recipes`, `steps`, `ingredients`, `recipe_dependencies`, `site_documents`. All data tables have a `kitchen_id` FK. See `db/schema.rb` for the full schema. Recipes are seeded from `recipes/*.md` via `MarkdownImporter`.
 
 ### ActiveRecord Models (`app/models/`)
 
+- `Kitchen` — multi-tenant container; has_many :users (through :memberships), :categories, :recipes, :site_documents; `member?(user)` checks membership
+- `User` — has_many :kitchens (through :memberships); email optional with partial unique index
+- `Membership` — joins User to Kitchen; `role` column (default: "member") for future use
 - `Category` — has_many :recipes, ordered by position, auto-generates slug
-- `Recipe` — belongs_to :category, has_many :steps (ordered), has_many :ingredients (through steps), tracks outbound/inbound recipe dependencies
+- `Recipe` — belongs_to :kitchen and :category, has_many :steps (ordered), has_many :ingredients (through steps), tracks outbound/inbound recipe dependencies
 - `Step` — belongs_to :recipe, has_many :ingredients (ordered)
 - `Ingredient` — belongs_to :step
 - `RecipeDependency` — join table tracking which recipes reference which (source → target)
-- `SiteDocument` — key-value text blobs for editable site content (quick_bites, grocery_aisles); loaded by controllers with YAML file fallback
+- `SiteDocument` — kitchen-scoped key-value text blobs for editable site content (quick_bites, grocery_aisles); loaded by controllers with YAML file fallback
 
 ### Controllers (`app/controllers/`)
 
-All controllers are thin — load from ActiveRecord, pass to views:
+All controllers are thin — load from ActiveRecord, pass to views. All queries MUST go through `current_kitchen` (e.g., `current_kitchen.recipes.find_by!`). Never use unscoped model queries like `Recipe.find_by` — that crosses kitchen boundaries.
 
+- `ApplicationController` — provides `current_user`, `current_kitchen`, `logged_in?` helpers and `require_membership` before_action guard for write endpoints
+- `LandingController#show` — root page listing available kitchens
+- `DevSessionsController` — dev/test-only session login (`/dev/login/:id`) and logout (`/dev/logout`)
 - `HomepageController#show` — categories with eager-loaded recipes, site config from YAML
 - `RecipesController#show` — uses the "parsed-recipe bridge" pattern (see below)
 - `IngredientsController#index` — all ingredients grouped by canonical name with recipe links
@@ -252,13 +258,15 @@ These are the import engine and render-time helpers. Loaded via `config/initiali
 
 ### Services (`app/services/`)
 
-- `MarkdownImporter` — bridges parser and database: parses markdown, upserts Recipe/Step/Ingredient rows, rebuilds `recipe_dependencies`. Used by `db/seeds.rb` and will be used by the future editor.
+- `MarkdownImporter` — bridges parser and database: parses markdown, upserts Recipe/Step/Ingredient rows, rebuilds `recipe_dependencies`. Requires `kitchen:` keyword argument. Used by `db/seeds.rb` and the recipe editor.
+- `CrossReferenceUpdater` — updates `@[Title]` cross-references when recipes are renamed or deleted. `rename_references` requires `kitchen:` keyword; `strip_references` gets kitchen from the recipe.
 
 ### Views (`app/views/`)
 
 ```
 layouts/application.html.erb    ← doctype, meta, Propshaft asset tags, nav, yield
 shared/_nav.html.erb            ← Home, Index, Groceries links
+landing/show.html.erb           ← kitchen listing (root page)
 homepage/show.html.erb          ← category TOC + recipe listings
 recipes/show.html.erb           ← recipe page (steps, ingredients, nutrition)
 recipes/_step.html.erb          ← step partial with ingredients and cross-references
@@ -267,7 +275,7 @@ ingredients/index.html.erb      ← alphabetical ingredient index with recipe li
 groceries/show.html.erb         ← recipe selector + aisle-organized grocery list
 ```
 
-Views use `content_for` blocks for page-specific titles, head tags, body attributes, and scripts. Cross-references are rendered using duck typing (`respond_to?(:target_slug)`) per project conventions.
+Views use `content_for` blocks for page-specific titles, head tags, body attributes, and scripts. Cross-references are rendered using duck typing (`respond_to?(:target_slug)`) per project conventions. Edit buttons and editor dialogs are wrapped in `current_kitchen.member?(current_user)` checks — read-only visitors see no edit UI.
 
 ### Assets (Propshaft)
 
