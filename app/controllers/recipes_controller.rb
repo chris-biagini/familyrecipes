@@ -87,9 +87,7 @@ class RecipesController < ApplicationController
 
   def load_nutrition_data
     doc = current_kitchen.site_documents.find_by(name: 'nutrition_data')
-    if doc
-      return YAML.safe_load(doc.content, permitted_classes: [], permitted_symbols: [], aliases: false)
-    end
+    return YAML.safe_load(doc.content, permitted_classes: [], permitted_symbols: [], aliases: false) if doc
 
     path = Rails.root.join('db/seeds/resources/nutrition-data.yaml')
     return unless File.exist?(path)
