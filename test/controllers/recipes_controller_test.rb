@@ -4,8 +4,9 @@ require 'test_helper'
 
 class RecipesControllerTest < ActionDispatch::IntegrationTest
   setup do
-    Category.create!(name: 'Bread', slug: 'bread', position: 0)
-    MarkdownImporter.import(<<~MD)
+    create_kitchen_and_user
+    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
       # Focaccia
 
       A simple flatbread.
@@ -32,7 +33,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'renders a recipe page' do
-    get recipe_path('focaccia')
+    get recipe_path('focaccia', kitchen_slug: kitchen_slug)
 
     assert_response :success
     assert_select 'h1', 'Focaccia'
@@ -44,38 +45,42 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'returns 404 for unknown recipe' do
-    get recipe_path('nonexistent')
+    get recipe_path('nonexistent', kitchen_slug: kitchen_slug)
 
     assert_response :not_found
   end
 
   test 'includes recipe JavaScript' do
-    get recipe_path('focaccia')
+    get recipe_path('focaccia', kitchen_slug: kitchen_slug)
 
     assert_select 'script[src*="recipe-state-manager"]'
   end
 
-  test 'renders edit button' do
-    get recipe_path('focaccia')
+  test 'renders edit button for members' do
+    log_in
+
+    get recipe_path('focaccia', kitchen_slug: kitchen_slug)
 
     assert_select '#edit-button'
   end
 
   test 'renders editor dialog with markdown source' do
-    get recipe_path('focaccia')
+    log_in
+
+    get recipe_path('focaccia', kitchen_slug: kitchen_slug)
 
     assert_select '#recipe-editor'
     assert_select '.editor-textarea'
   end
 
   test 'renders scale button' do
-    get recipe_path('focaccia')
+    get recipe_path('focaccia', kitchen_slug: kitchen_slug)
 
     assert_select '#scale-button'
   end
 
   test 'renders ingredient data attributes for scaling' do
-    get recipe_path('focaccia')
+    get recipe_path('focaccia', kitchen_slug: kitchen_slug)
 
     assert_match(/data-quantity-value=/, response.body)
   end
@@ -106,14 +111,15 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
       A classic Italian bread.
     MD
 
-    patch recipe_path('focaccia'),
+    log_in
+    patch recipe_path('focaccia', kitchen_slug: kitchen_slug),
           params: { markdown_source: updated_markdown },
           as: :json
 
     assert_response :success
     body = JSON.parse(response.body)
 
-    assert_equal recipe_path('focaccia'), body['redirect_url']
+    assert_equal recipe_path('focaccia', kitchen_slug: kitchen_slug), body['redirect_url']
 
     recipe = Recipe.find_by!(slug: 'focaccia')
 
@@ -122,7 +128,8 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'update rejects invalid markdown' do
-    patch recipe_path('focaccia'),
+    log_in
+    patch recipe_path('focaccia', kitchen_slug: kitchen_slug),
           params: { markdown_source: 'not valid markdown' },
           as: :json
 
@@ -133,7 +140,8 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'update returns 404 for unknown recipe' do
-    patch recipe_path('nonexistent'),
+    log_in
+    patch recipe_path('nonexistent', kitchen_slug: kitchen_slug),
           params: { markdown_source: '# Whatever' },
           as: :json
 
@@ -156,14 +164,15 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
       Mix everything together.
     MD
 
-    patch recipe_path('focaccia'),
+    log_in
+    patch recipe_path('focaccia', kitchen_slug: kitchen_slug),
           params: { markdown_source: updated_markdown },
           as: :json
 
     assert_response :success
     body = JSON.parse(response.body)
 
-    assert_equal recipe_path('rosemary-focaccia'), body['redirect_url']
+    assert_equal recipe_path('rosemary-focaccia', kitchen_slug: kitchen_slug), body['redirect_url']
     assert_nil Recipe.find_by(slug: 'focaccia')
     assert Recipe.find_by(slug: 'rosemary-focaccia')
   end
@@ -181,7 +190,8 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
       Mix everything.
     MD
 
-    patch recipe_path('focaccia'),
+    log_in
+    patch recipe_path('focaccia', kitchen_slug: kitchen_slug),
           params: { markdown_source: updated_markdown },
           as: :json
 
@@ -191,7 +201,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'update returns updated_references when title changes and cross-references exist' do
-    MarkdownImporter.import(<<~MD)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
       # Panzanella
 
       Category: Bread
@@ -217,7 +227,8 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
       Mix everything together.
     MD
 
-    patch recipe_path('focaccia'),
+    log_in
+    patch recipe_path('focaccia', kitchen_slug: kitchen_slug),
           params: { markdown_source: updated_markdown },
           as: :json
 
@@ -248,19 +259,21 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
       Mix and rest overnight.
     MD
 
-    post recipes_path,
+    log_in
+    post recipes_path(kitchen_slug: kitchen_slug),
          params: { markdown_source: markdown },
          as: :json
 
     assert_response :success
     body = JSON.parse(response.body)
 
-    assert_equal recipe_path('ciabatta'), body['redirect_url']
+    assert_equal recipe_path('ciabatta', kitchen_slug: kitchen_slug), body['redirect_url']
     assert Recipe.find_by(slug: 'ciabatta')
   end
 
   test 'create rejects invalid markdown' do
-    post recipes_path,
+    log_in
+    post recipes_path(kitchen_slug: kitchen_slug),
          params: { markdown_source: 'not valid' },
          as: :json
 
@@ -283,7 +296,8 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
       Mix it.
     MD
 
-    post recipes_path,
+    log_in
+    post recipes_path(kitchen_slug: kitchen_slug),
          params: { markdown_source: markdown },
          as: :json
 
@@ -292,24 +306,26 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'destroy deletes recipe and returns redirect to homepage' do
-    delete recipe_path('focaccia'), as: :json
+    log_in
+    delete recipe_path('focaccia', kitchen_slug: kitchen_slug), as: :json
 
     assert_response :success
     body = JSON.parse(response.body)
 
-    assert_equal root_path, body['redirect_url']
+    assert_equal kitchen_root_path(kitchen_slug: kitchen_slug), body['redirect_url']
     assert_nil Recipe.find_by(slug: 'focaccia')
   end
 
   test 'destroy cleans up empty categories' do
-    delete recipe_path('focaccia'), as: :json
+    log_in
+    delete recipe_path('focaccia', kitchen_slug: kitchen_slug), as: :json
 
     assert_response :success
     assert_nil Category.find_by(slug: 'bread')
   end
 
   test 'destroy strips cross-references from referencing recipes' do
-    MarkdownImporter.import(<<~MD)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
       # Panzanella
 
       Category: Bread
@@ -322,7 +338,8 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
       Tear bread and toss.
     MD
 
-    delete recipe_path('focaccia'), as: :json
+    log_in
+    delete recipe_path('focaccia', kitchen_slug: kitchen_slug), as: :json
 
     assert_response :success
     body = JSON.parse(response.body)
@@ -336,7 +353,8 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'destroy returns 404 for unknown recipe' do
-    delete recipe_path('nonexistent'), as: :json
+    log_in
+    delete recipe_path('nonexistent', kitchen_slug: kitchen_slug), as: :json
 
     assert_response :not_found
   end
@@ -369,14 +387,15 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     MD
 
     # Save the edit
-    patch recipe_path('focaccia'),
+    log_in
+    patch recipe_path('focaccia', kitchen_slug: kitchen_slug),
           params: { markdown_source: updated_markdown },
           as: :json
 
     assert_response :success
 
     # Re-render the page
-    get recipe_path('focaccia')
+    get recipe_path('focaccia', kitchen_slug: kitchen_slug)
 
     assert_response :success
     assert_select 'h1', 'Focaccia'

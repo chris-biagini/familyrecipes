@@ -4,12 +4,14 @@ require 'test_helper'
 
 class CrossReferenceUpdaterTest < ActiveSupport::TestCase
   setup do
-    Category.find_or_create_by!(slug: 'bread') do |cat|
+    @kitchen = Kitchen.find_or_create_by!(name: 'Test Kitchen', slug: 'test-kitchen')
+
+    Category.find_or_create_by!(slug: 'bread', kitchen: @kitchen) do |cat|
       cat.name = 'Bread'
       cat.position = 0
     end
 
-    @dough = MarkdownImporter.import(<<~MD)
+    @dough = MarkdownImporter.import(<<~MD, kitchen: @kitchen)
       # Pizza Dough
 
       Category: Bread
@@ -21,7 +23,7 @@ class CrossReferenceUpdaterTest < ActiveSupport::TestCase
       Mix together.
     MD
 
-    @pizza = MarkdownImporter.import(<<~MD)
+    @pizza = MarkdownImporter.import(<<~MD, kitchen: @kitchen)
       # Margherita Pizza
 
       Category: Bread

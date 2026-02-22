@@ -3,9 +3,13 @@
 require 'test_helper'
 
 class IngredientsControllerTest < ActionDispatch::IntegrationTest
+  setup do
+    create_kitchen_and_user
+  end
+
   test 'renders ingredient index grouped by ingredient name' do
-    Category.create!(name: 'Bread', slug: 'bread', position: 0)
-    MarkdownImporter.import(<<~MD)
+    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
       # Focaccia
 
       Category: Bread
@@ -18,18 +22,18 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
       Mix well.
     MD
 
-    get ingredients_path
+    get ingredients_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
     assert_select 'h1', 'Ingredient Index'
     assert_select 'h2', 'Flour'
-    assert_select 'a[href=?]', recipe_path('focaccia'), text: 'Focaccia'
+    assert_select 'a[href=?]', recipe_path('focaccia', kitchen_slug: kitchen_slug), text: 'Focaccia'
   end
 
   test 'groups multiple recipes under the same ingredient' do
-    Category.create!(name: 'Bread', slug: 'bread', position: 0)
+    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
 
-    MarkdownImporter.import(<<~MD)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
       # Focaccia
 
       Category: Bread
@@ -41,7 +45,7 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
       Mix well.
     MD
 
-    MarkdownImporter.import(<<~MD)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
       # Pizza Dough
 
       Category: Bread
@@ -53,7 +57,7 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
       Knead well.
     MD
 
-    get ingredients_path
+    get ingredients_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
     assert_select 'article.index section' do |sections|
@@ -65,8 +69,8 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'sorts ingredients alphabetically' do
-    Category.create!(name: 'Bread', slug: 'bread', position: 0)
-    MarkdownImporter.import(<<~MD)
+    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
       # Focaccia
 
       Category: Bread
@@ -79,7 +83,7 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
       Mix well.
     MD
 
-    get ingredients_path
+    get ingredients_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
     headings = css_select('article.index h2').map(&:text)
@@ -88,8 +92,8 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'does not duplicate a recipe under the same ingredient' do
-    Category.create!(name: 'Bread', slug: 'bread', position: 0)
-    MarkdownImporter.import(<<~MD)
+    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
       # Focaccia
 
       Category: Bread
@@ -107,7 +111,7 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
       Add more flour.
     MD
 
-    get ingredients_path
+    get ingredients_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
     assert_select 'article.index section' do |sections|
@@ -119,8 +123,8 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'recipe links include description as title attribute' do
-    Category.create!(name: 'Bread', slug: 'bread', position: 0)
-    MarkdownImporter.import(<<~MD)
+    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
       # Focaccia
 
       A simple flatbread.
@@ -134,7 +138,7 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
       Mix well.
     MD
 
-    get ingredients_path
+    get ingredients_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
     assert_select 'a[title="A simple flatbread."]', text: 'Focaccia'

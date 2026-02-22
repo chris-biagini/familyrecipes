@@ -34,10 +34,11 @@ class MarkdownImporterTest < ActiveSupport::TestCase
   setup do
     Recipe.destroy_all
     Category.destroy_all
+    @kitchen = Kitchen.find_or_create_by!(name: 'Test Kitchen', slug: 'test-kitchen')
   end
 
   test 'imports a basic recipe from markdown' do
-    recipe = MarkdownImporter.import(BASIC_RECIPE)
+    recipe = MarkdownImporter.import(BASIC_RECIPE, kitchen: @kitchen)
 
     assert_equal 'Focaccia', recipe.title
     assert_equal 'focaccia', recipe.slug
@@ -50,7 +51,7 @@ class MarkdownImporterTest < ActiveSupport::TestCase
   end
 
   test 'imports steps with correct positions' do
-    recipe = MarkdownImporter.import(BASIC_RECIPE)
+    recipe = MarkdownImporter.import(BASIC_RECIPE, kitchen: @kitchen)
 
     assert_equal 2, recipe.steps.size
 
@@ -67,7 +68,7 @@ class MarkdownImporterTest < ActiveSupport::TestCase
   end
 
   test 'imports ingredients with quantity, unit, and prep note' do
-    recipe = MarkdownImporter.import(BASIC_RECIPE)
+    recipe = MarkdownImporter.import(BASIC_RECIPE, kitchen: @kitchen)
 
     flour = recipe.steps.first.ingredients.find_by(name: 'Flour')
 
@@ -92,7 +93,7 @@ class MarkdownImporterTest < ActiveSupport::TestCase
   end
 
   test 'imports makes and serves from front matter' do
-    recipe = MarkdownImporter.import(BASIC_RECIPE)
+    recipe = MarkdownImporter.import(BASIC_RECIPE, kitchen: @kitchen)
 
     assert_in_delta(1.0, recipe.makes_quantity)
     assert_equal 'loaf', recipe.makes_unit_noun
@@ -100,11 +101,11 @@ class MarkdownImporterTest < ActiveSupport::TestCase
   end
 
   test 'idempotent import updates instead of duplicating' do
-    first = MarkdownImporter.import(BASIC_RECIPE)
+    first = MarkdownImporter.import(BASIC_RECIPE, kitchen: @kitchen)
     first_id = first.id
 
     updated_source = BASIC_RECIPE.sub('A simple Italian flatbread.', 'The best flatbread ever.')
-    second = MarkdownImporter.import(updated_source)
+    second = MarkdownImporter.import(updated_source, kitchen: @kitchen)
 
     assert_equal first_id, second.id
     assert_equal 'The best flatbread ever.', second.description
@@ -112,11 +113,11 @@ class MarkdownImporterTest < ActiveSupport::TestCase
   end
 
   test 'idempotent import replaces steps cleanly' do
-    MarkdownImporter.import(BASIC_RECIPE)
+    MarkdownImporter.import(BASIC_RECIPE, kitchen: @kitchen)
 
     assert_equal 2, Recipe.find_by(slug: 'focaccia').steps.count
 
-    MarkdownImporter.import(BASIC_RECIPE)
+    MarkdownImporter.import(BASIC_RECIPE, kitchen: @kitchen)
 
     assert_equal 2, Recipe.find_by(slug: 'focaccia').steps.count
   end
@@ -136,7 +137,7 @@ class MarkdownImporterTest < ActiveSupport::TestCase
       Spread sauce on dough, top with cheese.
     MARKDOWN
 
-    recipe = MarkdownImporter.import(markdown_with_xref)
+    recipe = MarkdownImporter.import(markdown_with_xref, kitchen: @kitchen)
 
     step = recipe.steps.first
 
@@ -175,8 +176,8 @@ class MarkdownImporterTest < ActiveSupport::TestCase
       Spread sauce on dough, top with cheese.
     MARKDOWN
 
-    MarkdownImporter.import(dough_markdown)
-    pizza = MarkdownImporter.import(pizza_markdown)
+    MarkdownImporter.import(dough_markdown, kitchen: @kitchen)
+    pizza = MarkdownImporter.import(pizza_markdown, kitchen: @kitchen)
 
     assert_equal 1, pizza.outbound_dependencies.count
     assert_equal 'pizza-dough', pizza.referenced_recipes.first.slug
@@ -196,13 +197,13 @@ class MarkdownImporterTest < ActiveSupport::TestCase
       Cook and serve.
     MARKDOWN
 
-    recipe = MarkdownImporter.import(markdown_with_missing_ref)
+    recipe = MarkdownImporter.import(markdown_with_missing_ref, kitchen: @kitchen)
 
     assert_equal 0, recipe.outbound_dependencies.count
   end
 
   test 'quantity splitting handles various formats' do
-    importer = MarkdownImporter.new("# Dummy\n\nCategory: Test\n\n## Step\n\n- Salt\n\nText.")
+    importer = MarkdownImporter.new("# Dummy\n\nCategory: Test\n\n## Step\n\n- Salt\n\nText.", kitchen: @kitchen)
 
     assert_equal [nil, nil], importer.send(:split_quantity, nil)
     assert_equal [nil, nil], importer.send(:split_quantity, '')
@@ -225,7 +226,7 @@ class MarkdownImporterTest < ActiveSupport::TestCase
       Toss the lettuce.
     MARKDOWN
 
-    recipe = MarkdownImporter.import(simple_markdown)
+    recipe = MarkdownImporter.import(simple_markdown, kitchen: @kitchen)
 
     assert_nil recipe.makes_quantity
     assert_nil recipe.makes_unit_noun
@@ -245,7 +246,7 @@ class MarkdownImporterTest < ActiveSupport::TestCase
       Put the bread in the toaster.
     MARKDOWN
 
-    recipe = MarkdownImporter.import(minimal_markdown)
+    recipe = MarkdownImporter.import(minimal_markdown, kitchen: @kitchen)
 
     assert_nil recipe.description
     assert_nil recipe.footer
@@ -276,8 +277,8 @@ class MarkdownImporterTest < ActiveSupport::TestCase
       Mix everything.
     MARKDOWN
 
-    MarkdownImporter.import(bread1)
-    MarkdownImporter.import(bread2)
+    MarkdownImporter.import(bread1, kitchen: @kitchen)
+    MarkdownImporter.import(bread2, kitchen: @kitchen)
 
     assert_equal 1, Category.where(name: 'Bread').count
     assert_equal 2, Category.find_by(name: 'Bread').recipes.count

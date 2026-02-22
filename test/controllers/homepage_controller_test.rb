@@ -3,9 +3,13 @@
 require 'test_helper'
 
 class HomepageControllerTest < ActionDispatch::IntegrationTest
+  setup do
+    create_kitchen_and_user
+  end
+
   test 'renders the homepage with categories and recipes' do
-    Category.create!(name: 'Bread', slug: 'bread', position: 0)
-    MarkdownImporter.import(<<~MD)
+    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
       # Focaccia
 
       A simple flatbread.
@@ -19,18 +23,18 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
       Mix well.
     MD
 
-    get root_path
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
     assert_select 'h1', 'Our Recipes'
-    assert_select 'a[href=?]', recipe_path('focaccia'), text: 'Focaccia'
+    assert_select 'a[href=?]', recipe_path('focaccia', kitchen_slug: kitchen_slug), text: 'Focaccia'
   end
 
   test 'groups recipes by category with table of contents' do
-    Category.create!(name: 'Bread', slug: 'bread', position: 0)
-    Category.create!(name: 'Pasta', slug: 'pasta', position: 1)
+    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    Category.create!(name: 'Pasta', slug: 'pasta', position: 1, kitchen: @kitchen)
 
-    MarkdownImporter.import(<<~MD)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
       # Focaccia
 
       A simple flatbread.
@@ -44,7 +48,7 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
       Mix well.
     MD
 
-    MarkdownImporter.import(<<~MD)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
       # Cacio e Pepe
 
       Roman pasta classic.
@@ -58,7 +62,7 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
       Cook until al dente.
     MD
 
-    get root_path
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
     assert_select '.toc_nav a', count: 2
@@ -67,10 +71,10 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'skips empty categories' do
-    Category.create!(name: 'Bread', slug: 'bread', position: 0)
-    Category.create!(name: 'Empty', slug: 'empty', position: 1)
+    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    Category.create!(name: 'Empty', slug: 'empty', position: 1, kitchen: @kitchen)
 
-    MarkdownImporter.import(<<~MD)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
       # Focaccia
 
       A simple flatbread.
@@ -84,7 +88,7 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
       Mix well.
     MD
 
-    get root_path
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
     assert_select 'section#bread', count: 1
@@ -92,8 +96,8 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'recipe links include description as title attribute' do
-    Category.create!(name: 'Bread', slug: 'bread', position: 0)
-    MarkdownImporter.import(<<~MD)
+    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
       # Focaccia
 
       A simple flatbread.
@@ -107,7 +111,7 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
       Mix well.
     MD
 
-    get root_path
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
 
     assert_select 'a[title="A simple flatbread."]', text: 'Focaccia'
   end

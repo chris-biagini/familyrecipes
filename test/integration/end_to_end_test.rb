@@ -4,10 +4,12 @@ require 'test_helper'
 
 class EndToEndTest < ActionDispatch::IntegrationTest
   setup do
-    @bread = Category.create!(name: 'Bread', slug: 'bread', position: 0)
-    @pizza = Category.create!(name: 'Pizza', slug: 'pizza', position: 1)
+    create_kitchen_and_user
 
-    MarkdownImporter.import(<<~MD)
+    @bread = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    @pizza = Category.create!(name: 'Pizza', slug: 'pizza', position: 1, kitchen: @kitchen)
+
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
       # Pizza Dough
 
       A versatile dough for any pizza.
@@ -34,7 +36,7 @@ class EndToEndTest < ActionDispatch::IntegrationTest
       Adapted from a classic Neapolitan recipe.
     MD
 
-    MarkdownImporter.import(<<~MD)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
       # White Pizza
 
       A simple pizza bianca.
@@ -51,7 +53,7 @@ class EndToEndTest < ActionDispatch::IntegrationTest
       Top the dough and bake at 500* degrees for 12* minutes.
     MD
 
-    MarkdownImporter.import(<<~MD)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
       # Focaccia
 
       Just a little sweet.
@@ -73,7 +75,7 @@ class EndToEndTest < ActionDispatch::IntegrationTest
   # -- Layout --
 
   test 'layout includes nav with all three links' do
-    get root_path
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
 
     assert_select 'nav a.home', 'Home'
     assert_select 'nav a.index', 'Index'
@@ -81,7 +83,7 @@ class EndToEndTest < ActionDispatch::IntegrationTest
   end
 
   test 'layout includes meta tags and stylesheet' do
-    get root_path
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
 
     assert_select 'meta[charset="UTF-8"]'
     assert_select 'meta[name="viewport"]'
@@ -93,7 +95,7 @@ class EndToEndTest < ActionDispatch::IntegrationTest
   # -- Homepage --
 
   test 'homepage renders site title and subtitle from config' do
-    get root_path
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
     assert_select 'h1', 'Our Recipes'
@@ -101,26 +103,30 @@ class EndToEndTest < ActionDispatch::IntegrationTest
   end
 
   test 'homepage renders footer with GitHub link' do
-    get root_path
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
 
     assert_select 'footer a[href*="github"]'
   end
 
-  test 'homepage renders new recipe button' do
-    get root_path
+  test 'homepage renders new recipe button for members' do
+    log_in
+
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
 
     assert_select '#new-recipe-button'
   end
 
   test 'homepage renders editor dialog in create mode' do
-    get root_path
+    log_in
+
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
 
     assert_select '#recipe-editor[data-editor-method="POST"]'
     assert_select '.editor-textarea'
   end
 
   test 'homepage renders categories as sections with anchors' do
-    get root_path
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
 
     assert_select 'section#bread h2', 'Bread'
     assert_select 'section#pizza h2', 'Pizza'
@@ -131,66 +137,68 @@ class EndToEndTest < ActionDispatch::IntegrationTest
   # -- Recipe --
 
   test 'recipe page renders description' do
-    get recipe_path('focaccia')
+    get recipe_path('focaccia', kitchen_slug: kitchen_slug)
 
     assert_response :success
     assert_select 'header p', 'Just a little sweet.'
   end
 
   test 'recipe page renders footer content' do
-    get recipe_path('pizza-dough')
+    get recipe_path('pizza-dough', kitchen_slug: kitchen_slug)
 
     assert_response :success
     assert_select 'footer', /Adapted from a classic Neapolitan recipe/
   end
 
   test 'recipe page renders Makes metadata' do
-    get recipe_path('pizza-dough')
+    get recipe_path('pizza-dough', kitchen_slug: kitchen_slug)
 
     assert_select '.recipe-meta', /Makes/
     assert_select '.recipe-meta', /dough balls/
   end
 
   test 'recipe page renders Serves metadata' do
-    get recipe_path('focaccia')
+    get recipe_path('focaccia', kitchen_slug: kitchen_slug)
 
     assert_select '.recipe-meta', /Serves/
   end
 
   test 'recipe page renders category link in metadata' do
-    get recipe_path('focaccia')
+    get recipe_path('focaccia', kitchen_slug: kitchen_slug)
 
     assert_select '.recipe-meta a[href*="#bread"]', 'Bread'
   end
 
   test 'recipe page renders scalable numbers in instructions' do
-    get recipe_path('pizza-dough')
+    get recipe_path('pizza-dough', kitchen_slug: kitchen_slug)
 
     assert_select '.instructions .scalable'
   end
 
   test 'recipe page renders ingredient prep notes' do
-    get recipe_path('pizza-dough')
+    get recipe_path('pizza-dough', kitchen_slug: kitchen_slug)
 
     assert_select '.ingredients small', 'Warm.'
   end
 
   test 'recipe page renders cross-reference as link' do
-    get recipe_path('white-pizza')
+    get recipe_path('white-pizza', kitchen_slug: kitchen_slug)
 
     assert_response :success
-    assert_select 'li.cross-reference a[href=?]', recipe_path('pizza-dough'), text: 'Pizza Dough'
+    dough_path = recipe_path('pizza-dough', kitchen_slug: kitchen_slug)
+
+    assert_select 'li.cross-reference a[href=?]', dough_path, text: 'Pizza Dough'
   end
 
   test 'recipe page includes body data attributes for state manager' do
-    get recipe_path('focaccia')
+    get recipe_path('focaccia', kitchen_slug: kitchen_slug)
 
     assert_match(/data-recipe-id="focaccia"/, response.body)
     assert_match(/data-version-hash=/, response.body)
   end
 
   test 'recipe page renders step-only sections without ingredients' do
-    get recipe_path('pizza-dough')
+    get recipe_path('pizza-dough', kitchen_slug: kitchen_slug)
 
     assert_select 'h2', text: /rise/i
   end
@@ -198,7 +206,7 @@ class EndToEndTest < ActionDispatch::IntegrationTest
   # -- Ingredients Index --
 
   test 'ingredients index lists all ingredients from all recipes' do
-    get ingredients_path
+    get ingredients_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
     assert_select 'h2', 'Mozzarella'
@@ -206,16 +214,16 @@ class EndToEndTest < ActionDispatch::IntegrationTest
   end
 
   test 'ingredients index links back to recipe pages' do
-    get ingredients_path
+    get ingredients_path(kitchen_slug: kitchen_slug)
 
-    assert_select 'a[href=?]', recipe_path('pizza-dough')
-    assert_select 'a[href=?]', recipe_path('focaccia')
+    assert_select 'a[href=?]', recipe_path('pizza-dough', kitchen_slug: kitchen_slug)
+    assert_select 'a[href=?]', recipe_path('focaccia', kitchen_slug: kitchen_slug)
   end
 
   # -- Groceries --
 
   test 'groceries page renders recipe checkboxes grouped by category' do
-    get groceries_path
+    get groceries_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
     assert_select '#recipe-selector .category h2', 'Bread'
@@ -225,7 +233,7 @@ class EndToEndTest < ActionDispatch::IntegrationTest
   end
 
   test 'groceries page recipe checkboxes contain ingredient JSON' do
-    get groceries_path
+    get groceries_path(kitchen_slug: kitchen_slug)
 
     checkbox = css_select('input[data-title="Focaccia"]').first
 
@@ -236,14 +244,14 @@ class EndToEndTest < ActionDispatch::IntegrationTest
   end
 
   test 'groceries page renders aisle details elements' do
-    get groceries_path
+    get groceries_path(kitchen_slug: kitchen_slug)
 
     assert_select 'details.aisle'
     assert_select '#misc-aisle'
   end
 
   test 'groceries page includes noscript fallback' do
-    get groceries_path
+    get groceries_path(kitchen_slug: kitchen_slug)
 
     assert_select 'noscript', /JavaScript/
   end
@@ -251,7 +259,7 @@ class EndToEndTest < ActionDispatch::IntegrationTest
   # -- Navigation between pages --
 
   test 'clicking a recipe from homepage leads to valid recipe page' do
-    get root_path
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
 
     recipe_link = css_select('a[href*="/recipes/focaccia"]').first
 
@@ -264,9 +272,9 @@ class EndToEndTest < ActionDispatch::IntegrationTest
   end
 
   test 'recipe page links back to homepage category anchor' do
-    get recipe_path('focaccia')
+    get recipe_path('focaccia', kitchen_slug: kitchen_slug)
 
-    assert_select '.recipe-meta a[href=?]', root_path(anchor: 'bread')
+    assert_select '.recipe-meta a[href=?]', kitchen_root_path(kitchen_slug: kitchen_slug, anchor: 'bread')
   end
 
   # -- Create / Delete --
@@ -287,7 +295,8 @@ class EndToEndTest < ActionDispatch::IntegrationTest
       Mix and bulk ferment.
     MD
 
-    post recipes_path,
+    log_in
+    post recipes_path(kitchen_slug: kitchen_slug),
          params: { markdown_source: markdown },
          as: :json
 
@@ -303,45 +312,48 @@ class EndToEndTest < ActionDispatch::IntegrationTest
   # -- Quick Bites / Aisles editing --
 
   test 'edit and save Quick Bites document' do
-    SiteDocument.create!(name: 'quick_bites', content: "## Snacks\n  - Goldfish")
+    SiteDocument.create!(name: 'quick_bites', content: "## Snacks\n  - Goldfish", kitchen: @kitchen)
 
-    patch groceries_quick_bites_path,
+    log_in
+    patch groceries_quick_bites_path(kitchen_slug: kitchen_slug),
           params: { content: "## Snacks\n  - Goldfish\n  - Pretzels" },
           as: :json
 
     assert_response :success
 
-    get groceries_path
+    get groceries_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
     assert_select 'input[data-title="Pretzels"]'
   end
 
   test 'edit and save grocery aisles document' do
-    SiteDocument.create!(name: 'grocery_aisles', content: "## Produce\n- Apples")
+    SiteDocument.create!(name: 'grocery_aisles', content: "## Produce\n- Apples", kitchen: @kitchen)
 
-    patch groceries_grocery_aisles_path,
+    log_in
+    patch groceries_grocery_aisles_path(kitchen_slug: kitchen_slug),
           params: { content: "## Produce\n- Apples\n- Bananas\n\n## Baking\n- Flour" },
           as: :json
 
     assert_response :success
 
-    get groceries_path
+    get groceries_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
     assert_select 'details.aisle summary', /Baking/
   end
 
   test 'delete recipe removes it from homepage' do
-    get root_path
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
 
     assert_select 'a', text: /Focaccia/
 
-    delete recipe_path('focaccia'), as: :json
+    log_in
+    delete recipe_path('focaccia', kitchen_slug: kitchen_slug), as: :json
 
     assert_response :success
 
-    get root_path
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
 
     assert_select 'a', text: /Focaccia/, count: 0
   end
