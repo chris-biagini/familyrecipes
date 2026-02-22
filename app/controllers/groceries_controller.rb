@@ -48,7 +48,7 @@ class GroceriesController < ApplicationController
   end
 
   def fallback_grocery_aisles
-    yaml_path = Rails.root.join('resources/grocery-info.yaml')
+    yaml_path = Rails.root.join('db/seeds/resources/grocery-info.yaml')
     return {} unless File.exist?(yaml_path)
 
     FamilyRecipes.parse_grocery_info(yaml_path)
