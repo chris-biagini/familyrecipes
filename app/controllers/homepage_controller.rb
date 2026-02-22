@@ -8,7 +8,7 @@ class HomepageController < ApplicationController
 
   private
 
-  def load_site_config = YAML.load_file(Rails.root.join('resources/site-config.yaml'))
+  def load_site_config = YAML.safe_load_file(Rails.root.join('resources/site-config.yaml'))
 
   def categories_with_recipes
     Category.ordered.includes(:recipes).reject { |cat| cat.recipes.empty? }

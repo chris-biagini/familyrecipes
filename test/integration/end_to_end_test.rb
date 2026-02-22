@@ -100,10 +100,9 @@ class EndToEndTest < ActionDispatch::IntegrationTest
     assert_select 'header p'
   end
 
-  test 'homepage renders footer with PDF link and GitHub link' do
+  test 'homepage renders footer with GitHub link' do
     get root_path
 
-    assert_select 'footer a[href="cookbook.pdf"]'
     assert_select 'footer a[href*="github"]'
   end
 
