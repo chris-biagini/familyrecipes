@@ -4,59 +4,18 @@
 
 # libraries
 
-require 'fileutils'
 require 'erb'
 require 'redcarpet'
 require 'digest'
 require 'json'
 require 'yaml'
-require 'tempfile'
 
 # Shared utilities
 module FamilyRecipes
-  # Configuration constants
   CONFIG = {
     quick_bites_filename: 'Quick Bites.md',
-    quick_bites_category: 'Quick Bites',
-    templates: {
-      recipe: 'recipe-template.html.erb',
-      homepage: 'homepage-template.html.erb',
-      index: 'index-template.html.erb',
-      groceries: 'groceries-template.html.erb'
-    }
+    quick_bites_category: 'Quick Bites'
   }.freeze
-
-  # Default template directory (can be overridden)
-  @template_dir = nil
-
-  class << self
-    attr_accessor :template_dir
-  end
-
-  # Render a partial template with local variables
-  # Usage: FamilyRecipes.render_partial('head', title: 'My Page')
-  def self.render_partial(name, locals = {})
-    raise 'template_dir not set' unless @template_dir
-
-    partial_path = File.join(@template_dir, "_#{name}.html.erb")
-    partial_content = File.read(partial_path)
-    ERB.new(partial_content, trim_mode: '-').result_with_hash(locals)
-  end
-
-  # Render a template and write to output file
-  # Usage: FamilyRecipes.render_template(:homepage, output_path, locals)
-  def self.render_template(template_key, output_path, locals = {})
-    raise 'template_dir not set' unless @template_dir
-
-    template_name = CONFIG[:templates][template_key]
-    raise "Unknown template: #{template_key}" unless template_name
-
-    template_path = File.join(@template_dir, template_name)
-    erb_template = ERB.new(File.read(template_path), trim_mode: '-')
-
-    FileUtils.mkdir_p(File.dirname(output_path))
-    File.write(output_path, erb_template.result_with_hash(locals))
-  end
 
   # Generate a URL-safe slug from a title string
   def self.slugify(title)
@@ -171,5 +130,3 @@ require_relative 'familyrecipes/nutrition_entry_helpers'
 require_relative 'familyrecipes/nutrition_calculator'
 require_relative 'familyrecipes/vulgar_fractions'
 require_relative 'familyrecipes/build_validator'
-require_relative 'familyrecipes/site_generator'
-require_relative 'familyrecipes/pdf_generator'

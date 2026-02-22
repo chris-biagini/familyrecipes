@@ -14,5 +14,4 @@ gem 'redcarpet'
 group :development do
   gem 'rubocop', require: false
   gem 'rubocop-minitest', require: false
-  gem 'webrick'
 end

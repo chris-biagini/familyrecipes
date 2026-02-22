@@ -28,27 +28,6 @@ class FamilyRecipesTest < Minitest::Test
     assert_equal 'red-beans-and-rice', FamilyRecipes.slugify('Red  Beans   and   Rice')
   end
 
-  def test_render_partial_raises_without_template_dir
-    original_dir = FamilyRecipes.template_dir
-    FamilyRecipes.template_dir = nil
-
-    error = assert_raises(RuntimeError) do
-      FamilyRecipes.render_partial('head', title: 'Test')
-    end
-
-    assert_includes error.message, 'template_dir not set'
-  ensure
-    FamilyRecipes.template_dir = original_dir
-  end
-
-  def test_render_template_raises_for_unknown_template
-    error = assert_raises(RuntimeError) do
-      FamilyRecipes.render_template(:nonexistent, '/tmp/output.html', {})
-    end
-
-    assert_includes error.message, 'Unknown template'
-  end
-
   def test_parse_grocery_info_returns_aisles
     # Create a temp YAML file for testing
     yaml_content = <<~YAML

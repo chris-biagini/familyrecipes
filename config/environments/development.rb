@@ -3,12 +3,6 @@ require "active_support/core_ext/integer/time"
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
-  # Serve the pre-built static site from output/web/ through our middleware.
-  require_relative "../../app/middleware/static_output_middleware"
-  config.middleware.insert_after ActionDispatch::Static, StaticOutputMiddleware,
-    root: Rails.root.join("output", "web"),
-    html_fallback: false
-
   # Allow LAN access by hostname (e.g., http://rika:3030/).
   config.hosts.clear
 

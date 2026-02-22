@@ -10,15 +10,4 @@ end
 
 RuboCop::RakeTask.new(:lint)
 
-desc 'Remove generated output'
-task :clean do
-  rm_rf 'output'
-  puts 'Cleaned output/'
-end
-
-desc 'Build the static site'
-task :build do
-  ruby 'bin/generate'
-end
-
 task default: %i[lint test]

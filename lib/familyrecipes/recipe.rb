@@ -48,26 +48,6 @@ module FamilyRecipes
       @makes.match(/\A\S+\s+(.+)/)&.captures&.first
     end
 
-    def to_html(erb_template_path:, nutrition: nil)
-      template = File.read(erb_template_path)
-      ERB.new(template, trim_mode: '-').result_with_hash(
-        markdown: MARKDOWN,
-        render: ->(name, locals = {}) { FamilyRecipes.render_partial(name, locals) },
-        slugify: FamilyRecipes.method(:slugify),
-        inflector: FamilyRecipes::Inflector,
-        title: @title,
-        description: @description,
-        category: @category,
-        makes: @makes,
-        serves: @serves,
-        steps: @steps,
-        footer: @footer,
-        id: @id,
-        version_hash: @version_hash,
-        nutrition: nutrition
-      )
-    end
-
     # All cross-references across all steps
     def cross_references
       @steps.flat_map(&:cross_references)
