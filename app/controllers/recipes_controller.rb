@@ -9,6 +9,22 @@ class RecipesController < ApplicationController
     head :not_found
   end
 
+  def update
+    @recipe = Recipe.find_by!(slug: params[:slug])
+
+    errors = MarkdownValidator.validate(params[:markdown_source])
+    return render json: { errors: errors }, status: :unprocessable_entity if errors.any?
+
+    recipe = MarkdownImporter.import(params[:markdown_source])
+    @recipe.destroy! if recipe.slug != @recipe.slug
+    recipe.update!(edited_at: Time.current)
+    Category.left_joins(:recipes).where(recipes: { id: nil }).destroy_all
+
+    render json: { redirect_url: recipe_path(recipe.slug) }
+  rescue ActiveRecord::RecordNotFound
+    head :not_found
+  end
+
   private
 
   def parse_recipe
