@@ -163,7 +163,7 @@ If I mention a GitHub issue (e.g., "#99"), review it and plan a fix. Close it vi
 rails db:create db:migrate db:seed
 ```
 
-PostgreSQL is required. `db:seed` imports all markdown files from `recipes/` into the database via `MarkdownImporter`. The seed is idempotent — safe to re-run. Dependencies are managed via `Gemfile` (Ruby 3.2+, Bundler, and `bundle install` required).
+PostgreSQL is required. `db:seed` imports all markdown files from `db/seeds/recipes/` into the database via `MarkdownImporter`. The seed is idempotent — safe to re-run. Dependencies are managed via `Gemfile` (Ruby 3.2+, Bundler, and `bundle install` required).
 
 ## Lint Command
 
@@ -205,7 +205,7 @@ The Rails app module is `Familyrecipes` (lowercase r); the domain/parser module 
 
 ### Database
 
-PostgreSQL with nine tables: `kitchens`, `users`, `memberships`, `categories`, `recipes`, `steps`, `ingredients`, `recipe_dependencies`, `site_documents`. All data tables have a `kitchen_id` FK. See `db/schema.rb` for the full schema. Recipes are seeded from `recipes/*.md` via `MarkdownImporter`.
+PostgreSQL with nine tables: `kitchens`, `users`, `memberships`, `categories`, `recipes`, `steps`, `ingredients`, `recipe_dependencies`, `site_documents`. All data tables have a `kitchen_id` FK. See `db/schema.rb` for the full schema. Recipes are seeded from `db/seeds/recipes/*.md` via `MarkdownImporter`.
 
 ### ActiveRecord Models (`app/models/`)
 
@@ -217,7 +217,7 @@ PostgreSQL with nine tables: `kitchens`, `users`, `memberships`, `categories`, `
 - `Step` — belongs_to :recipe, has_many :ingredients (ordered)
 - `Ingredient` — belongs_to :step
 - `RecipeDependency` — join table tracking which recipes reference which (source → target)
-- `SiteDocument` — kitchen-scoped key-value text blobs for editable site content (quick_bites, grocery_aisles); loaded by controllers with YAML file fallback
+- `SiteDocument` — kitchen-scoped key-value text blobs for editable site content (quick_bites, grocery_aisles) and seed-loaded configuration (site_config, nutrition_data); loaded by controllers with YAML file fallback
 
 ### Controllers (`app/controllers/`)
 
@@ -226,7 +226,7 @@ All controllers are thin — load from ActiveRecord, pass to views. All queries 
 - `ApplicationController` — provides `current_user`, `current_kitchen`, `logged_in?` helpers and `require_membership` before_action guard for write endpoints
 - `LandingController#show` — root page listing available kitchens
 - `DevSessionsController` — dev/test-only session login (`/dev/login/:id`) and logout (`/dev/logout`)
-- `HomepageController#show` — categories with eager-loaded recipes, site config from YAML
+- `HomepageController#show` — categories with eager-loaded recipes, site config from SiteDocument (seeded from YAML)
 - `RecipesController#show` — uses the "parsed-recipe bridge" pattern (see below)
 - `IngredientsController#index` — all ingredients grouped by canonical name with recipe links
 - `GroceriesController#show` — recipe selector with ingredient JSON, aisle-organized grocery list, Quick Bites section, editor dialogs for quick bites and aisles
@@ -249,7 +249,7 @@ These are the import engine and render-time helpers. Loaded via `config/initiali
 - `IngredientParser` — parses ingredient line text into structured data; detects cross-references
 - `IngredientAggregator` — sums ingredient quantities by unit for grocery list display
 - `ScalableNumberPreprocessor` — wraps numbers in `<span class="scalable">` tags for client-side scaling
-- `NutritionCalculator` — calculates nutrition facts from YAML data at render time
+- `NutritionCalculator` — calculates nutrition facts from SiteDocument data at render time
 - `NutritionEntryHelpers` — shared helpers for nutrition entry tool
 - `BuildValidator` — validates cross-references, ingredients, and nutrition data
 - `Inflector` — pluralization/singularization for ingredient canonicalization
@@ -287,11 +287,11 @@ Propshaft serves fingerprinted assets from `app/assets/`. No build step, no bund
 
 Views use `stylesheet_link_tag`, `javascript_include_tag`, `asset_path`.
 
-### Data Files (`resources/`)
+### Data Files (`db/seeds/resources/`)
 
-- `site-config.yaml` — site identity (title, homepage heading/subtitle, GitHub URL)
+- `site-config.yaml` — site identity (title, homepage heading/subtitle, GitHub URL); seeded into `site_documents` table as `site_config`
 - `grocery-info.yaml` — ingredient-to-aisle mappings (fallback; primary source is `site_documents` table)
-- `nutrition-data.yaml` — density-first nutrition data (see Nutrition Data section)
+- `nutrition-data.yaml` — density-first nutrition data (see Nutrition Data section); seeded into `site_documents` table as `nutrition_data`
 
 ### Editor dialogs
 
@@ -346,11 +346,11 @@ Optional footer content (notes, source, etc.)
 - `NutritionCalculator` uses Serves (preferred) or Makes quantity for per-serving nutrition. `Recipe` exposes `makes_quantity` and `makes_unit_noun` for the parsed components.
 - In HTML, front matter renders as an inline metadata line: `Category · Makes X · Serves Y` (class `recipe-meta`), with the category linking to its homepage section.
 
-**Recipe categories** are derived from directory names under `recipes/` (e.g., `recipes/Bread/` → category "Bread") and validated against the `Category:` front matter field. To add a new category, create a new subdirectory.
+**Recipe categories** are derived from directory names under `db/seeds/recipes/` (e.g., `db/seeds/recipes/Bread/` → category "Bread") and validated against the `Category:` front matter field. To add a new category, create a new subdirectory.
 
 ## Quick Bites
 
-Quick Bites are "grocery bundles" (not recipes) — simple name + ingredient lists for quick shopping. They live on the **groceries page**, not the homepage. Source format in `recipes/Quick Bites.md`:
+Quick Bites are "grocery bundles" (not recipes) — simple name + ingredient lists for quick shopping. They live on the **groceries page**, not the homepage. Source format in `db/seeds/recipes/Quick Bites.md`:
 ```
 ## Category Name
   - Recipe Name: Ingredient1, Ingredient2
@@ -359,7 +359,7 @@ At seed time, the file content is stored in `site_documents` (name: `quick_bites
 
 ## Nutrition Data
 
-Nutrition data uses a **density-first model** stored in `resources/nutrition-data.yaml`. Each entry has:
+Nutrition data uses a **density-first model** stored in `db/seeds/resources/nutrition-data.yaml`. Each entry has:
 
 ```yaml
 Flour (all-purpose):
