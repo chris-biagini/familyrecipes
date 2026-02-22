@@ -1,0 +1,18 @@
+<% content_for(:title) { 'Family Recipes' } %>
+
+<article class="landing">
+  <header>
+    <h1>Family Recipes</h1>
+    <p>A place for your family's recipes.</p>
+  </header>
+
+  <% if @kitchens.any? %>
+  <nav class="kitchen-list">
+    <ul>
+      <% @kitchens.each do |kitchen| %>
+      <li><%= link_to kitchen.name, kitchen_root_path(kitchen_slug: kitchen.slug) %></li>
+      <% end %>
+    </ul>
+  </nav>
+  <% end %>
+</article>

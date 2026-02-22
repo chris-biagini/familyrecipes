@@ -1,9 +1,11 @@
 <% content_for(:title) { @site_config['site_title'] } %>
 
+<% if current_kitchen.member?(current_user) %>
 <% content_for(:extra_nav) do %>
     <div>
       <button type="button" id="new-recipe-button" class="btn">+ New</button>
     </div>
+<% end %>
 <% end %>
 
 <% content_for(:scripts) do %>
@@ -41,7 +43,9 @@
   </footer>
 </article>
 
+<% if current_kitchen.member?(current_user) %>
 <%= render 'recipes/editor_dialog',
            mode: :create,
            content: "# Recipe Title\n\nOptional description.\n\nCategory: \nMakes: \nServes: \n\n## Step Name (short summary)\n\n- Ingredient, quantity: prep note\n\nInstructions here.\n\n---\n\nOptional notes or source.",
            action_url: recipes_path %>
+<% end %>

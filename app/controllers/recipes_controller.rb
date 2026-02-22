@@ -1,8 +1,10 @@
 # frozen_string_literal: true
 
 class RecipesController < ApplicationController
+  before_action :require_membership, only: %i[create update destroy]
+
   def show
-    @recipe = Recipe.includes(steps: :ingredients).find_by!(slug: params[:slug])
+    @recipe = current_kitchen.recipes.includes(steps: :ingredients).find_by!(slug: params[:slug])
     @parsed_recipe = parse_recipe
     @nutrition = calculate_nutrition
   rescue ActiveRecord::RecordNotFound
@@ -13,20 +15,20 @@ class RecipesController < ApplicationController
     errors = MarkdownValidator.validate(params[:markdown_source])
     return render json: { errors: errors }, status: :unprocessable_entity if errors.any?
 
-    recipe = MarkdownImporter.import(params[:markdown_source])
+    recipe = MarkdownImporter.import(params[:markdown_source], kitchen: current_kitchen)
     recipe.update!(edited_at: Time.current)
 
     render json: { redirect_url: recipe_path(recipe.slug) }
   end
 
   def update
-    @recipe = Recipe.find_by!(slug: params[:slug])
+    @recipe = current_kitchen.recipes.find_by!(slug: params[:slug])
 
     errors = MarkdownValidator.validate(params[:markdown_source])
     return render json: { errors: errors }, status: :unprocessable_entity if errors.any?
 
     old_title = @recipe.title
-    recipe = MarkdownImporter.import(params[:markdown_source])
+    recipe = MarkdownImporter.import(params[:markdown_source], kitchen: current_kitchen)
 
     updated_references = if title_changed?(old_title, recipe.title)
                            CrossReferenceUpdater.rename_references(old_title: old_title, new_title: recipe.title)
@@ -36,7 +38,7 @@ class RecipesController < ApplicationController
 
     @recipe.destroy! if recipe.slug != @recipe.slug
     recipe.update!(edited_at: Time.current)
-    Category.left_joins(:recipes).where(recipes: { id: nil }).destroy_all
+    current_kitchen.categories.left_joins(:recipes).where(recipes: { id: nil }).destroy_all
 
     response_json = { redirect_url: recipe_path(recipe.slug) }
     response_json[:updated_references] = updated_references if updated_references.any?
@@ -46,13 +48,13 @@ class RecipesController < ApplicationController
   end
 
   def destroy
-    @recipe = Recipe.find_by!(slug: params[:slug])
+    @recipe = current_kitchen.recipes.find_by!(slug: params[:slug])
 
     updated_references = CrossReferenceUpdater.strip_references(@recipe)
     @recipe.destroy!
-    Category.left_joins(:recipes).where(recipes: { id: nil }).destroy_all
+    current_kitchen.categories.left_joins(:recipes).where(recipes: { id: nil }).destroy_all
 
-    response_json = { redirect_url: root_path }
+    response_json = { redirect_url: kitchen_root_path }
     response_json[:updated_references] = updated_references if updated_references.any?
     render json: response_json
   rescue ActiveRecord::RecordNotFound
@@ -93,7 +95,7 @@ class RecipesController < ApplicationController
   end
 
   def load_grocery_aisles
-    doc = SiteDocument.find_by(name: 'grocery_aisles')
+    doc = current_kitchen.site_documents.find_by(name: 'grocery_aisles')
     return FamilyRecipes.parse_grocery_info(Rails.root.join('resources/grocery-info.yaml')) unless doc
 
     FamilyRecipes.parse_grocery_aisles_markdown(doc.content)
@@ -115,7 +117,7 @@ class RecipesController < ApplicationController
   end
 
   def recipe_map
-    @recipe_map ||= Recipe.includes(:category).to_h do |r|
+    @recipe_map ||= current_kitchen.recipes.includes(:category).to_h do |r|
       parsed = FamilyRecipes::Recipe.new(
         markdown_source: r.markdown_source,
         id: r.slug,

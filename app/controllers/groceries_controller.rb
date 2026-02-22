@@ -1,8 +1,10 @@
 # frozen_string_literal: true
 
 class GroceriesController < ApplicationController
+  before_action :require_membership, only: %i[update_quick_bites update_grocery_aisles]
+
   def show
-    @categories = Category.ordered.includes(recipes: { steps: :ingredients })
+    @categories = current_kitchen.categories.ordered.includes(recipes: { steps: :ingredients })
     @grocery_aisles = load_grocery_aisles
     @alias_map = FamilyRecipes.build_alias_map(@grocery_aisles)
     @omit_set = build_omit_set
@@ -17,7 +19,7 @@ class GroceriesController < ApplicationController
     content = params[:content].to_s
     return render json: { errors: ['Content cannot be blank.'] }, status: :unprocessable_entity if content.blank?
 
-    doc = SiteDocument.find_or_initialize_by(name: 'quick_bites')
+    doc = current_kitchen.site_documents.find_or_initialize_by(name: 'quick_bites')
     doc.content = content
     doc.save!
 
@@ -29,7 +31,7 @@ class GroceriesController < ApplicationController
     errors = validate_grocery_aisles(content)
     return render json: { errors: }, status: :unprocessable_entity if errors.any?
 
-    doc = SiteDocument.find_or_initialize_by(name: 'grocery_aisles')
+    doc = current_kitchen.site_documents.find_or_initialize_by(name: 'grocery_aisles')
     doc.content = content
     doc.save!
 
@@ -60,7 +62,7 @@ class GroceriesController < ApplicationController
   end
 
   def build_recipe_map
-    Recipe.includes(:category).to_h do |r|
+    current_kitchen.recipes.includes(:category).to_h do |r|
       parsed = FamilyRecipes::Recipe.new(
         markdown_source: r.markdown_source,
         id: r.slug,
@@ -87,11 +89,11 @@ class GroceriesController < ApplicationController
   end
 
   def quick_bites_document
-    @quick_bites_document ||= SiteDocument.find_by(name: 'quick_bites')
+    @quick_bites_document ||= current_kitchen.site_documents.find_by(name: 'quick_bites')
   end
 
   def grocery_aisles_document
-    @grocery_aisles_document ||= SiteDocument.find_by(name: 'grocery_aisles')
+    @grocery_aisles_document ||= current_kitchen.site_documents.find_by(name: 'grocery_aisles')
   end
 
   def validate_grocery_aisles(content)

@@ -15,11 +15,13 @@
   <%= javascript_include_tag 'recipe-editor', defer: true %>
 <% end %>
 
+<% if current_kitchen.member?(current_user) %>
 <% content_for(:extra_nav) do %>
   <div>
     <button type="button" id="edit-quick-bites-button" class="btn">Edit Quick Bites</button>
     <button type="button" id="edit-aisles-button" class="btn">Edit Aisles</button>
   </div>
+<% end %>
 <% end %>
 
 <header id="groceries-header">
@@ -127,6 +129,7 @@
   </section>
 </div>
 
+<% if current_kitchen.member?(current_user) %>
 <dialog class="editor-dialog"
         data-editor-open="#edit-quick-bites-button"
         data-editor-url="<%= groceries_quick_bites_path %>"
@@ -162,3 +165,4 @@
     <button type="button" class="btn btn-primary editor-save">Save</button>
   </div>
 </dialog>
+<% end %>

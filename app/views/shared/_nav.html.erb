@@ -1,8 +1,12 @@
   <nav>
     <div>
-      <%= link_to 'Home', root_path, class: 'home', title: 'Home (Table of Contents)' %>
-      <%= link_to 'Index', ingredients_path, class: 'index', title: 'Index of ingredients' %>
-      <%= link_to 'Groceries', groceries_path, class: 'groceries', title: 'Printable grocery list' %>
+      <% if current_kitchen %>
+        <%= link_to 'Home', kitchen_root_path, class: 'home', title: 'Home (Table of Contents)' %>
+        <%= link_to 'Index', ingredients_path, class: 'index', title: 'Index of ingredients' %>
+        <%= link_to 'Groceries', groceries_path, class: 'groceries', title: 'Printable grocery list' %>
+      <% else %>
+        <%= link_to 'Home', root_path, class: 'home', title: 'Home' %>
+      <% end %>
     </div>
     <%= yield :extra_nav if content_for?(:extra_nav) %>
   </nav>

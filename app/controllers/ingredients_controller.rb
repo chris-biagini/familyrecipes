@@ -14,7 +14,8 @@ class IngredientsController < ApplicationController
   end
 
   def recipes_by_ingredient(alias_map)
-    Recipe.includes(steps: :ingredients).each_with_object(Hash.new { |h, k| h[k] = [] }) do |recipe, index|
+    recipes = current_kitchen.recipes.includes(steps: :ingredients)
+    recipes.each_with_object(Hash.new { |h, k| h[k] = [] }) do |recipe, index|
       recipe.ingredients.each do |ingredient|
         canonical = alias_map[ingredient.name.downcase] || ingredient.name
         index[canonical] << recipe unless index[canonical].include?(recipe)

@@ -6,7 +6,9 @@
 
 <% content_for(:extra_nav) do %>
     <div>
+      <% if current_kitchen.member?(current_user) %>
       <button type="button" id="edit-button" class="btn">Edit</button>
+      <% end %>
       <button type="button" id="scale-button" class="btn">Scale</button>
     </div>
 <% end %>
@@ -25,7 +27,7 @@
     <p><%= @recipe.description %></p>
     <%- end -%>
     <p class="recipe-meta">
-      <%= link_to @recipe.category.name, root_path(anchor: @recipe.category.slug) %><%- if @recipe.makes -%>
+      <%= link_to @recipe.category.name, kitchen_root_path(anchor: @recipe.category.slug) %><%- if @recipe.makes -%>
       <%- if @nutrition&.makes_unit_singular -%>
       &middot; Makes <%= format_yield_with_unit(@recipe.makes, @nutrition.makes_unit_singular, @nutrition.makes_unit_plural) %><%- else -%>
       &middot; Makes <%= format_yield_line(@recipe.makes) %><%- end -%><%- end -%><%- if @recipe.serves -%>
@@ -48,8 +50,10 @@
   <%- end -%>
 </article>
 
+<% if current_kitchen.member?(current_user) %>
 <%= render 'editor_dialog',
            mode: :edit,
            content: @recipe.markdown_source,
            action_url: recipe_path(@recipe.slug),
            recipe: @recipe %>
+<% end %>
