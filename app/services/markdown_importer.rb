@@ -114,7 +114,7 @@ class MarkdownImporter
     target_slugs = cross_refs.map { |ref| FamilyRecipes.slugify(ref[:target_title]) }.uniq
 
     target_slugs.each do |slug|
-      target = Recipe.find_by(slug: slug)
+      target = kitchen.recipes.find_by(slug: slug)
       next unless target
 
       recipe.outbound_dependencies.create!(target_recipe: target)

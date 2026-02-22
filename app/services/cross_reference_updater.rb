@@ -5,9 +5,9 @@ class CrossReferenceUpdater
     new(recipe).strip_references
   end
 
-  def self.rename_references(old_title:, new_title:)
+  def self.rename_references(old_title:, new_title:, kitchen:)
     slug = FamilyRecipes.slugify(old_title)
-    recipe = Recipe.find_by(slug: slug)
+    recipe = kitchen.recipes.find_by(slug: slug)
     return [] unless recipe
 
     new(recipe).rename_references(new_title)

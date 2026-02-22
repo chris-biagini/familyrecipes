@@ -30,7 +30,7 @@ recipe_files.each do |path|
   parsed = RecipeBuilder.new(tokens).build
   slug = FamilyRecipes.slugify(parsed[:title])
 
-  existing = Recipe.find_by(slug: slug)
+  existing = kitchen.recipes.find_by(slug: slug)
   if existing&.edited_at?
     puts "  [skipped] #{existing.title} (web-edited)"
     next

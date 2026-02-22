@@ -65,7 +65,8 @@ class CrossReferenceUpdaterTest < ActiveSupport::TestCase
   end
 
   test 'rename_references updates @[Old] to @[New] in referencing recipes' do
-    CrossReferenceUpdater.rename_references(old_title: 'Pizza Dough', new_title: 'Neapolitan Dough')
+    CrossReferenceUpdater.rename_references(old_title: 'Pizza Dough', new_title: 'Neapolitan Dough',
+                                            kitchen: @kitchen)
 
     @pizza.reload
 
@@ -74,7 +75,8 @@ class CrossReferenceUpdaterTest < ActiveSupport::TestCase
   end
 
   test 'rename_references returns titles of updated recipes' do
-    updated = CrossReferenceUpdater.rename_references(old_title: 'Pizza Dough', new_title: 'Neapolitan Dough')
+    updated = CrossReferenceUpdater.rename_references(old_title: 'Pizza Dough', new_title: 'Neapolitan Dough',
+                                                      kitchen: @kitchen)
 
     assert_includes updated, 'Margherita Pizza'
   end

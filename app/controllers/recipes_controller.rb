@@ -31,7 +31,9 @@ class RecipesController < ApplicationController
     recipe = MarkdownImporter.import(params[:markdown_source], kitchen: current_kitchen)
 
     updated_references = if title_changed?(old_title, recipe.title)
-                           CrossReferenceUpdater.rename_references(old_title: old_title, new_title: recipe.title)
+                           CrossReferenceUpdater.rename_references(
+                             old_title: old_title, new_title: recipe.title, kitchen: current_kitchen
+                           )
                          else
                            []
                          end

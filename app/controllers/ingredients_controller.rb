@@ -24,7 +24,13 @@ class IngredientsController < ApplicationController
   end
 
   def load_alias_map
-    grocery_aisles = FamilyRecipes.parse_grocery_info(Rails.root.join('resources/grocery-info.yaml'))
-    FamilyRecipes.build_alias_map(grocery_aisles)
+    FamilyRecipes.build_alias_map(load_grocery_aisles)
+  end
+
+  def load_grocery_aisles
+    doc = current_kitchen.site_documents.find_by(name: 'grocery_aisles')
+    return FamilyRecipes.parse_grocery_info(Rails.root.join('resources/grocery-info.yaml')) unless doc
+
+    FamilyRecipes.parse_grocery_aisles_markdown(doc.content)
   end
 end
