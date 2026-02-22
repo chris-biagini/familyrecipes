@@ -46,8 +46,7 @@ Gourmet:
   - Gruyère
   - Mozzarella (fresh)
   - Olives
-  - name: Parmesan
-    aliases: [Parmesan cheese]
+  - Parmesan
   - Pecorino
 
 Bread:
@@ -124,16 +123,13 @@ Cereal:
 Baking:
   - Baking powder
   - Baking soda
-  - name: Bouillon
-    aliases: [Vegetable bouillon, Vegetarian bouillon]
+  - Vegetarian bouillon
   - Cake mix
   - Cornmeal
   - Cornstarch
   - Diastatic malt powder
   - Flour (00)
-  - name: Flour (all-purpose)
-    aliases:
-      - Flour (All purpose)
+  - Flour (all-purpose)
   - Flour (bread)
   - Flour (rye)
   - Flour (semolina)
@@ -189,16 +185,14 @@ Condiments:
   - Veganaise
 
 Pantry:
-  - name: Artichokes (jarred)
-    aliases: [Marinated artichokes]
+  - Artichokes (jarred)
   - Cavatappi
   - Coffee
   - Coffee (decaf)
   - Distilled water
   - Farro
   - Fruit preserves
-  - name: Jarred red peppers
-    aliases: [Roasted peppers (jarred)]
+  - Roasted peppers (jarred)
   - Mezze rigatoni
   - Olive oil
   - Olive oil (mild)
@@ -215,8 +209,7 @@ Pantry:
   - Tomatoes (canned)
   - Vinegar (balsamic)
   - Vinegar (sherry)
-  - name: Vinegar (white)
-    aliases: [White vinegar]
+  - Vinegar (white)
   - Walnuts
 
 Beverages:
@@ -237,8 +230,8 @@ Frozen:
   - Frozen potatoes
   - Frozen spinach
   - Green beans
-  - name: Ice cream
-    aliases: [Ice cream (vanilla)]
+  - Ice cream
+  - Ice cream (vanilla)
   - Impossible burgers
   - Peas and carrots (frozen)
   - Soft pretzels
