@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Your goal is a high-quality, well-crafted user experience. Improve the end product. Make it delightful, charming, and fun. Finish the back of the cabinet even though no one will see it. Always feel free to challenge assumptions, misconceptions, and poor design decisions. Be as opinionated as this document and push back on my ideas when you need to. Suggest any quality-of-life, performance, or feature improvements that come to mind. Always use the superpowers skill and plan mode when getting ready to write code or build a new feature. 
 
-This is a fully dynamic Rails 8 app backed by PostgreSQL. All pages render live from the database — there is no static site generator. Next milestones: web-based recipe editing, and Docker packaging for homelab deployment. Don't prematurely optimize, but keep these goals in mind when planning.
+This is a fully dynamic Rails 8 app backed by PostgreSQL. All pages render live from the database — there is no static site generator. Web-based editing is in place for recipes, Quick Bites, and grocery aisles. Next milestone: Docker packaging for homelab deployment. Don't prematurely optimize, but keep these goals in mind when planning.
 
 ### Visual language
 
@@ -205,7 +205,7 @@ The Rails app module is `Familyrecipes` (lowercase r); the domain/parser module 
 
 ### Database
 
-PostgreSQL with five tables: `categories`, `recipes`, `steps`, `ingredients`, `recipe_dependencies`. See `db/schema.rb` for the full schema. Recipes are seeded from `recipes/*.md` via `MarkdownImporter`.
+PostgreSQL with six tables: `categories`, `recipes`, `steps`, `ingredients`, `recipe_dependencies`, `site_documents`. See `db/schema.rb` for the full schema. Recipes are seeded from `recipes/*.md` via `MarkdownImporter`.
 
 ### ActiveRecord Models (`app/models/`)
 
@@ -214,6 +214,7 @@ PostgreSQL with five tables: `categories`, `recipes`, `steps`, `ingredients`, `r
 - `Step` — belongs_to :recipe, has_many :ingredients (ordered)
 - `Ingredient` — belongs_to :step
 - `RecipeDependency` — join table tracking which recipes reference which (source → target)
+- `SiteDocument` — key-value text blobs for editable site content (quick_bites, grocery_aisles); loaded by controllers with YAML file fallback
 
 ### Controllers (`app/controllers/`)
 
@@ -222,7 +223,7 @@ All controllers are thin — load from ActiveRecord, pass to views:
 - `HomepageController#show` — categories with eager-loaded recipes, site config from YAML
 - `RecipesController#show` — uses the "parsed-recipe bridge" pattern (see below)
 - `IngredientsController#index` — all ingredients grouped by canonical name with recipe links
-- `GroceriesController#show` — recipe selector with ingredient JSON, aisle-organized grocery list
+- `GroceriesController#show` — recipe selector with ingredient JSON, aisle-organized grocery list, Quick Bites section, editor dialogs for quick bites and aisles
 
 ### The parsed-recipe bridge
 
@@ -273,7 +274,7 @@ Views use `content_for` blocks for page-specific titles, head tags, body attribu
 Propshaft serves fingerprinted assets from `app/assets/`. No build step, no bundling, no Node.
 
 - `app/assets/stylesheets/` — `style.css`, `groceries.css`
-- `app/assets/javascripts/` — `recipe-state-manager.js`, `groceries.js`, `notify.js`, `wake-lock.js`, `qrcodegen.js`
+- `app/assets/javascripts/` — `recipe-state-manager.js`, `recipe-editor.js`, `groceries.js`, `notify.js`, `wake-lock.js`, `qrcodegen.js`
 - `app/assets/images/` — favicons
 
 Views use `stylesheet_link_tag`, `javascript_include_tag`, `asset_path`.
@@ -281,8 +282,12 @@ Views use `stylesheet_link_tag`, `javascript_include_tag`, `asset_path`.
 ### Data Files (`resources/`)
 
 - `site-config.yaml` — site identity (title, homepage heading/subtitle, GitHub URL)
-- `grocery-info.yaml` — ingredient-to-aisle mappings
+- `grocery-info.yaml` — ingredient-to-aisle mappings (fallback; primary source is `site_documents` table)
 - `nutrition-data.yaml` — density-first nutrition data (see Nutrition Data section)
+
+### Editor dialogs
+
+`recipe-editor.js` is a data-driven multi-dialog handler. It finds all `.editor-dialog` elements and configures each via data attributes (`data-editor-open`, `data-editor-url`, `data-editor-method`, `data-editor-on-success`, `data-editor-body-key`). To add a new editor dialog, create a `<dialog class="editor-dialog">` with the right data attributes — no JS changes needed. See `recipes/_editor_dialog.html.erb` and `groceries/show.html.erb` for examples.
 
 ### Design History
 
@@ -337,11 +342,12 @@ Optional footer content (notes, source, etc.)
 
 ## Quick Bites
 
-`recipes/Quick Bites.md` uses a different format for simple recipes:
+Quick Bites are "grocery bundles" (not recipes) — simple name + ingredient lists for quick shopping. They live on the **groceries page**, not the homepage. Source format in `recipes/Quick Bites.md`:
 ```
 ## Category Name
   - Recipe Name: Ingredient1, Ingredient2
 ```
+At seed time, the file content is stored in `site_documents` (name: `quick_bites`) and is web-editable via a dialog on the groceries page. `FamilyRecipes.parse_quick_bites_content(string)` parses the content from either source.
 
 ## Nutrition Data
 
