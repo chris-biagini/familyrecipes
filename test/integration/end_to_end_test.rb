@@ -300,6 +300,38 @@ class EndToEndTest < ActionDispatch::IntegrationTest
     assert_select 'h1', 'Sourdough Boule'
   end
 
+  # -- Quick Bites / Aisles editing --
+
+  test 'edit and save Quick Bites document' do
+    SiteDocument.create!(name: 'quick_bites', content: "## Snacks\n  - Goldfish")
+
+    patch groceries_quick_bites_path,
+          params: { content: "## Snacks\n  - Goldfish\n  - Pretzels" },
+          as: :json
+
+    assert_response :success
+
+    get groceries_path
+
+    assert_response :success
+    assert_select 'input[data-title="Pretzels"]'
+  end
+
+  test 'edit and save grocery aisles document' do
+    SiteDocument.create!(name: 'grocery_aisles', content: "## Produce\n- Apples")
+
+    patch groceries_grocery_aisles_path,
+          params: { content: "## Produce\n- Apples\n- Bananas\n\n## Baking\n- Flour" },
+          as: :json
+
+    assert_response :success
+
+    get groceries_path
+
+    assert_response :success
+    assert_select 'details.aisle summary', /Baking/
+  end
+
   test 'delete recipe removes it from homepage' do
     get root_path
 
