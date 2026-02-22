@@ -181,6 +181,13 @@ rake test
 
 Runs all tests in `test/` via Minitest.
 
+```bash
+ruby -Itest test/controllers/recipes_controller_test.rb              # single file
+ruby -Itest test/models/recipe_test.rb -n test_requires_title        # single test method
+```
+
+Test layout: `test/controllers/`, `test/models/`, `test/services/`, `test/integration/`, plus top-level parser unit tests. `test/test_helper.rb` provides `create_kitchen_and_user` (returns `[kitchen, user]`), `log_in(user)`, and `kitchen_slug` for controller tests.
+
 ## Dev Server
 
 ```bash
@@ -227,7 +234,7 @@ All controllers are thin — load from ActiveRecord, pass to views. All queries 
 - `LandingController#show` — root page listing available kitchens
 - `DevSessionsController` — dev/test-only session login (`/dev/login/:id`) and logout (`/dev/logout`)
 - `HomepageController#show` — categories with eager-loaded recipes, site config from SiteDocument (seeded from YAML)
-- `RecipesController#show` — uses the "parsed-recipe bridge" pattern (see below)
+- `RecipesController` — `show` uses the "parsed-recipe bridge" pattern (see below); `create`/`update`/`destroy` are editor endpoints guarded by `require_membership`, using `MarkdownValidator` and `MarkdownImporter`
 - `IngredientsController#index` — all ingredients grouped by canonical name with recipe links
 - `GroceriesController#show` — recipe selector with ingredient JSON, aisle-organized grocery list, Quick Bites section, editor dialogs for quick bites and aisles
 
@@ -260,6 +267,11 @@ These are the import engine and render-time helpers. Loaded via `config/initiali
 
 - `MarkdownImporter` — bridges parser and database: parses markdown, upserts Recipe/Step/Ingredient rows, rebuilds `recipe_dependencies`. Requires `kitchen:` keyword argument. Used by `db/seeds.rb` and the recipe editor.
 - `CrossReferenceUpdater` — updates `@[Title]` cross-references when recipes are renamed or deleted. `rename_references` requires `kitchen:` keyword; `strip_references` gets kitchen from the recipe.
+- `MarkdownValidator` — validates markdown source before import; checks for blank content, missing Category front matter, and at least one step. Used by `RecipesController` for editor input validation.
+
+### Helpers (`app/helpers/`)
+
+- `RecipesHelper` — view helpers for rendering recipe content: `render_markdown(text)`, `scalable_instructions(text)` (wraps numbers in scalable spans then renders), `format_yield_line(text)`, `format_yield_with_unit(text, singular, plural)`. Used in recipe views for all markdown-to-HTML conversion.
 
 ### Views (`app/views/`)
 
