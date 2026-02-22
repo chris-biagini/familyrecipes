@@ -253,6 +253,43 @@ class MarkdownImporterTest < ActiveSupport::TestCase
     assert_nil recipe.footer
   end
 
+  test 'imports cross-references with multiplier and prep_note' do
+    ActsAsTenant.with_tenant(@kitchen) do
+      MarkdownImporter.import("# Dough\n\nCategory: Bread\n\n## Mix\n\n- Flour, 2 cups\n\nMix it.", kitchen: @kitchen)
+
+      markdown = "# Pizza\n\nCategory: Bread\n\n## Assemble\n\n" \
+                 "- @[Dough], 2: Let rest.\n- Cheese, 1 cup\n\nAssemble it."
+      recipe = MarkdownImporter.import(markdown, kitchen: @kitchen)
+
+      step = recipe.steps.first
+
+      assert_equal 1, step.cross_references.size
+
+      ref = step.cross_references.first
+
+      assert_equal 'Dough', ref.target_title
+      assert_in_delta 2.0, ref.multiplier
+      assert_equal 'Let rest.', ref.prep_note
+    end
+  end
+
+  test 'cross-references and ingredients share position sequence' do
+    ActsAsTenant.with_tenant(@kitchen) do
+      MarkdownImporter.import("# Sauce\n\nCategory: Bread\n\n## Mix\n\n- Tomato, 1 can\n\nMix.", kitchen: @kitchen)
+
+      markdown = "# Pizza\n\nCategory: Bread\n\n## Build\n\n- Dough, 1 ball\n- @[Sauce]\n- Cheese, 2 cups\n\nBuild it."
+      recipe = MarkdownImporter.import(markdown, kitchen: @kitchen)
+
+      step = recipe.steps.first
+      items = step.ingredient_list_items
+
+      assert_equal 3, items.size
+      assert_equal 'Dough', items[0].name
+      assert_respond_to items[1], :target_slug
+      assert_equal 'Cheese', items[2].name
+    end
+  end
+
   test 'category is reused when it already exists' do
     bread1 = <<~MARKDOWN
       # Focaccia

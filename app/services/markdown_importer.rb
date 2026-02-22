@@ -80,24 +80,43 @@ class MarkdownImporter
         position: index
       )
 
-      import_ingredients(step, step_data[:ingredients])
+      import_step_items(step, step_data[:ingredients])
     end
   end
 
-  def import_ingredients(step, ingredient_data_list)
+  def import_step_items(step, ingredient_data_list)
     ingredient_data_list.each_with_index do |data, index|
-      next if data[:cross_reference]
-
-      qty, unit = split_quantity(data[:quantity])
-
-      step.ingredients.create!(
-        name: data[:name],
-        quantity: qty,
-        unit: unit,
-        prep_note: data[:prep_note],
-        position: index
-      )
+      if data[:cross_reference]
+        import_cross_reference(step, data, index)
+      else
+        import_ingredient(step, data, index)
+      end
     end
+  end
+
+  def import_ingredient(step, data, position)
+    qty, unit = split_quantity(data[:quantity])
+
+    step.ingredients.create!(
+      name: data[:name],
+      quantity: qty,
+      unit: unit,
+      prep_note: data[:prep_note],
+      position: position
+    )
+  end
+
+  def import_cross_reference(step, data, position)
+    target_slug = FamilyRecipes.slugify(data[:target_title])
+    target = kitchen.recipes.find_by(slug: target_slug)
+    return unless target
+
+    step.cross_references.create!(
+      target_recipe: target,
+      multiplier: data[:multiplier] || 1.0,
+      prep_note: data[:prep_note],
+      position: position
+    )
   end
 
   def split_quantity(quantity_string)
