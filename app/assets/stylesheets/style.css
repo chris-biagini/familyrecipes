@@ -223,6 +223,17 @@ nav button {
   outline-offset: 2px;
 }
 
+.btn-primary {
+  background: var(--accent-color);
+  color: white;
+  border-color: var(--accent-color);
+}
+
+.btn-primary:hover {
+  background: rgb(135, 8, 20);
+  border-color: rgb(135, 8, 20);
+}
+
 nav a:hover,
 nav a:focus {
   color: var(--accent-color);
@@ -562,6 +573,95 @@ footer small {
   section > ul {
     column-count: 2;
   }
+
+  #recipe-editor {
+    width: 100vw;
+    max-height: 100vh;
+    height: 100vh;
+    border-radius: 0;
+  }
+}
+
+/************************/
+/* Recipe editor dialog */
+/************************/
+
+#recipe-editor {
+  border: 1px solid var(--border-color);
+  border-radius: 0.25rem;
+  background: var(--content-background-color);
+  padding: 0;
+  width: min(90vw, 50rem);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+}
+
+#recipe-editor::backdrop {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--separator-color);
+}
+
+.editor-header h2 {
+  font-family: "Futura", sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 0;
+  border: none;
+  padding: 0;
+}
+
+.editor-header .btn {
+  font-size: 1.25rem;
+  line-height: 1;
+  padding: 0.2rem 0.5rem;
+  border: none;
+  background: none;
+}
+
+#editor-errors {
+  padding: 0.75rem 1.5rem;
+  color: var(--danger-color);
+  font-family: "Futura", sans-serif;
+  font-size: 0.85rem;
+  border-bottom: 1px solid var(--separator-color);
+}
+
+#editor-errors ul {
+  margin: 0;
+  padding: 0 0 0 1.25rem;
+}
+
+#editor-textarea {
+  flex: 1;
+  min-height: 60vh;
+  padding: 1.5rem;
+  border: none;
+  font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  resize: none;
+  outline: none;
+  color: var(--text-color);
+  background: var(--content-background-color);
+}
+
+.editor-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--separator-color);
 }
 
 /************************/
@@ -646,7 +746,8 @@ footer small {
   }
 
   nav,
-  .notify-bar {
+  .notify-bar,
+  #recipe-editor {
     display: none;
   }
 
