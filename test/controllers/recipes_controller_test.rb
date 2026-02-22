@@ -190,6 +190,48 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     assert Category.find_by(slug: 'pastry')
   end
 
+  test 'update returns updated_references when title changes and cross-references exist' do
+    MarkdownImporter.import(<<~MD)
+      # Panzanella
+
+      Category: Bread
+
+      ## Assemble (put it together)
+
+      - @[Focaccia], 1
+      - Tomatoes, 3
+
+      Tear bread and toss with tomatoes.
+    MD
+
+    updated_markdown = <<~MD
+      # Rosemary Focaccia
+
+      Category: Bread
+      Serves: 8
+
+      ## Make the dough (combine ingredients)
+
+      - Flour, 4 cups
+
+      Mix everything together.
+    MD
+
+    patch recipe_path('focaccia'),
+          params: { markdown_source: updated_markdown },
+          as: :json
+
+    assert_response :success
+    body = JSON.parse(response.body)
+
+    assert_includes body['updated_references'], 'Panzanella'
+
+    panzanella = Recipe.find_by!(slug: 'panzanella')
+
+    assert_includes panzanella.markdown_source, '@[Rosemary Focaccia]'
+    assert_not_includes panzanella.markdown_source, '@[Focaccia]'
+  end
+
   test 'full edit round-trip: edit, save, re-render' do
     updated_markdown = <<~MD
       # Focaccia

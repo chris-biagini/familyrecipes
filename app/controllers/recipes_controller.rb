@@ -15,17 +15,31 @@ class RecipesController < ApplicationController
     errors = MarkdownValidator.validate(params[:markdown_source])
     return render json: { errors: errors }, status: :unprocessable_entity if errors.any?
 
+    old_title = @recipe.title
     recipe = MarkdownImporter.import(params[:markdown_source])
+
+    updated_references = if title_changed?(old_title, recipe.title)
+                           CrossReferenceUpdater.rename_references(old_title: old_title, new_title: recipe.title)
+                         else
+                           []
+                         end
+
     @recipe.destroy! if recipe.slug != @recipe.slug
     recipe.update!(edited_at: Time.current)
     Category.left_joins(:recipes).where(recipes: { id: nil }).destroy_all
 
-    render json: { redirect_url: recipe_path(recipe.slug) }
+    response_json = { redirect_url: recipe_path(recipe.slug) }
+    response_json[:updated_references] = updated_references if updated_references.any?
+    render json: response_json
   rescue ActiveRecord::RecordNotFound
     head :not_found
   end
 
   private
+
+  def title_changed?(old_title, new_title)
+    old_title != new_title
+  end
 
   def parse_recipe
     FamilyRecipes::Recipe.new(
