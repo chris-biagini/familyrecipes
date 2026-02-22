@@ -12,6 +12,16 @@ class MarkdownImporter
   end
 
   def import
+    recipe = save_recipe
+    compute_nutrition(recipe)
+    recipe
+  end
+
+  private
+
+  attr_reader :markdown_source, :kitchen, :parsed
+
+  def save_recipe
     ActiveRecord::Base.transaction do
       recipe = find_or_initialize_recipe
       update_recipe_attributes(recipe)
@@ -22,9 +32,10 @@ class MarkdownImporter
     end
   end
 
-  private
-
-  attr_reader :markdown_source, :kitchen, :parsed
+  def compute_nutrition(recipe)
+    RecipeNutritionJob.perform_now(recipe)
+    CascadeNutritionJob.perform_now(recipe)
+  end
 
   def parse_markdown
     tokens = LineClassifier.classify(markdown_source)
