@@ -290,6 +290,18 @@ class MarkdownImporterTest < ActiveSupport::TestCase
     end
   end
 
+  test 'stores processed_instructions with scalable number spans' do
+    ActsAsTenant.with_tenant(@kitchen) do
+      markdown = "# Bread\n\nCategory: Bread\n\n## Mix\n\n- Flour, 2 cups\n\nCombine 3* cups of water."
+      recipe = MarkdownImporter.import(markdown, kitchen: @kitchen)
+
+      step = recipe.steps.first
+
+      assert_includes step.processed_instructions, 'data-base-value="3.0"'
+      assert_includes step.processed_instructions, 'scalable'
+    end
+  end
+
   test 'category is reused when it already exists' do
     bread1 = <<~MARKDOWN
       # Focaccia

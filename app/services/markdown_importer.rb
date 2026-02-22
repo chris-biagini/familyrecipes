@@ -77,11 +77,18 @@ class MarkdownImporter
       step = recipe.steps.create!(
         title: step_data[:tldr],
         instructions: step_data[:instructions],
+        processed_instructions: process_instructions(step_data[:instructions]),
         position: index
       )
 
       import_step_items(step, step_data[:ingredients])
     end
+  end
+
+  def process_instructions(text)
+    return if text.blank?
+
+    ScalableNumberPreprocessor.process_instructions(text)
   end
 
   def import_step_items(step, ingredient_data_list)
