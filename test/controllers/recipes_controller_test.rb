@@ -189,4 +189,48 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     assert_nil Category.find_by(slug: 'bread')
     assert Category.find_by(slug: 'pastry')
   end
+
+  test 'full edit round-trip: edit, save, re-render' do
+    updated_markdown = <<~MD
+      # Focaccia
+
+      An updated description.
+
+      Category: Bread
+      Serves: 12
+
+      ## Make the dough (combine ingredients)
+
+      - Flour, 4 cups
+      - Water, 1.5 cups: Warm.
+      - Salt, 2 tsp
+      - Olive oil, 3 tbsp
+
+      Mix everything together and let rest for 2 hours.
+
+      ## Bake (put it in the oven)
+
+      Bake at 450 degrees for 25 minutes.
+
+      ---
+
+      Updated notes.
+    MD
+
+    # Save the edit
+    patch recipe_path('focaccia'),
+          params: { markdown_source: updated_markdown },
+          as: :json
+
+    assert_response :success
+
+    # Re-render the page
+    get recipe_path('focaccia')
+
+    assert_response :success
+    assert_select 'h1', 'Focaccia'
+    assert_select '.recipe-meta', /Serves 12/
+    assert_select '.ingredients li', 4
+    assert_select 'b', 'Olive oil'
+  end
 end
