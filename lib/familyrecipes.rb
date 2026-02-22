@@ -42,6 +42,24 @@ module FamilyRecipes
     end
   end
 
+  # Parse grocery aisles from markdown into structured data
+  # Uses ## headings as aisle names and - items as ingredients
+  def self.parse_grocery_aisles_markdown(content)
+    current_aisle = nil
+
+    content.each_line.with_object({}) do |line, aisles|
+      case line
+      when /^##\s+(.*)/
+        current_aisle = ::Regexp.last_match(1).strip
+        aisles[current_aisle] = []
+      when /^\s*-\s+(.*)/
+        next unless current_aisle
+
+        aisles[current_aisle] << { name: ::Regexp.last_match(1).strip }
+      end
+    end
+  end
+
   # Build a reverse lookup map: alias -> canonical name (all keys downcased)
   def self.build_alias_map(grocery_aisles)
     grocery_aisles.each_value.with_object({}) do |items, alias_map|
@@ -50,12 +68,12 @@ module FamilyRecipes
 
         alias_map[canonical.downcase] = canonical
 
-        item[:aliases].each { |al| alias_map[al.downcase] = canonical }
+        (item[:aliases] || []).each { |al| alias_map[al.downcase] = canonical }
 
         singular = Inflector.singular(canonical)
         alias_map[singular.downcase] = canonical unless singular.downcase == canonical.downcase
 
-        item[:aliases].each do |al|
+        (item[:aliases] || []).each do |al|
           singular = Inflector.singular(al)
           alias_map[singular.downcase] = canonical unless singular.downcase == al.downcase
         end
@@ -68,7 +86,7 @@ module FamilyRecipes
     grocery_aisles.each_value.with_object(Set.new) do |items, known|
       items.each do |item|
         known << item[:name].downcase
-        item[:aliases].each { |al| known << al.downcase }
+        (item[:aliases] || []).each { |al| known << al.downcase }
       end
     end.merge(alias_map.keys)
   end

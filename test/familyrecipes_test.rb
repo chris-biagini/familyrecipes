@@ -101,4 +101,69 @@ class FamilyRecipesTest < Minitest::Test
     assert_includes known, 'apple'
     assert_includes known, 'gala apple'
   end
+
+  def test_parse_grocery_aisles_markdown_basic
+    content = <<~MD
+      ## Produce
+      - Apples
+      - Bananas
+
+      ## Baking
+      - Flour
+    MD
+
+    result = FamilyRecipes.parse_grocery_aisles_markdown(content)
+
+    assert_equal %w[Produce Baking], result.keys
+    assert_equal 'Apples', result['Produce'].first[:name]
+    assert_equal 'Bananas', result['Produce'].last[:name]
+    assert_equal 'Flour', result['Baking'].first[:name]
+  end
+
+  def test_parse_grocery_aisles_markdown_omit_from_list
+    content = <<~MD
+      ## Produce
+      - Garlic
+
+      ## Omit From List
+      - Water
+      - Sourdough starter
+    MD
+
+    result = FamilyRecipes.parse_grocery_aisles_markdown(content)
+
+    assert_equal ['Produce', 'Omit From List'], result.keys
+    assert_equal 'Water', result['Omit From List'].first[:name]
+  end
+
+  def test_parse_grocery_aisles_markdown_ignores_non_list_lines
+    content = <<~MD
+      # Grocery Aisles
+
+      Some description text.
+
+      ## Produce
+      - Apples
+
+      Random text between aisles.
+
+      ## Baking
+      - Flour
+    MD
+
+    result = FamilyRecipes.parse_grocery_aisles_markdown(content)
+
+    assert_equal %w[Produce Baking], result.keys
+  end
+
+  def test_build_alias_map_without_aliases
+    grocery_aisles = {
+      'Produce' => [{ name: 'Apples' }]
+    }
+
+    alias_map = FamilyRecipes.build_alias_map(grocery_aisles)
+
+    assert_equal 'Apples', alias_map['apples']
+    assert_equal 'Apples', alias_map['apple']
+  end
 end
