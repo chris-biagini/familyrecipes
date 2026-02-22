@@ -142,6 +142,18 @@ When a session runs inside a worktree, `git worktree remove` deletes the CWD and
 cd /home/claude/familyrecipes && git worktree remove .claude/worktrees/<name> && git worktree prune
 ```
 
+### Screenshots and Playwright
+Save screenshots and Playwright output to `~/screenshots/`, not inside the repo. When using browser tools, pass filenames like `/home/claude/screenshots/my-screenshot.png`. The `.gitignore` catches `.playwright-mcp/` and `*.png` as a safety net, but keep them out of the repo directory entirely.
+
+### Data.define and Rails JSON serialization
+`Data.define` classes with custom `to_json` must also define `as_json` — ActiveSupport calls `as_json` (not `to_json`) on nested objects. See `Quantity` for the pattern. Without both, value objects serialize as hashes instead of the intended format when embedded in arrays/hashes passed to `.to_json`.
+
+### Stale server PID
+If `bin/dev` fails with "A server is already running", kill the process and remove the PID file:
+```bash
+pkill -f puma; rm -f tmp/pids/server.pid
+```
+
 ### GitHub Issues
 If I mention a GitHub issue (e.g., "#99"), review it and plan a fix. Close it via the commit message once confirmed.
 

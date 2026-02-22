@@ -12,6 +12,10 @@ output/
 # Claude Code local data
 .claude/
 
+# Playwright MCP output
+.playwright-mcp/
+*.png
+
 # Bundler
 .bundle/
 vendor/bundle/
