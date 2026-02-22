@@ -8,18 +8,32 @@ class GroceriesController < ApplicationController
     @omit_set = build_omit_set
     @recipe_map = build_recipe_map
     @unit_plurals = collect_unit_plurals
+    @quick_bites_by_subsection = load_quick_bites_by_subsection
+    @quick_bites_content = quick_bites_document&.content || ''
+    @grocery_aisles_content = grocery_aisles_document&.content || ''
   end
 
   private
 
   def load_grocery_aisles
-    FamilyRecipes.parse_grocery_info(Rails.root.join('resources/grocery-info.yaml'))
+    doc = grocery_aisles_document
+    return fallback_grocery_aisles unless doc
+
+    FamilyRecipes.parse_grocery_aisles_markdown(doc.content)
+  end
+
+  def fallback_grocery_aisles
+    yaml_path = Rails.root.join('resources/grocery-info.yaml')
+    return {} unless File.exist?(yaml_path)
+
+    FamilyRecipes.parse_grocery_info(yaml_path)
   end
 
   def build_omit_set
-    (@grocery_aisles['Omit_From_List'] || []).flat_map do |item|
-      [item[:name], *item[:aliases]].map(&:downcase)
-    end.to_set
+    omit_key = @grocery_aisles.keys.find { |k| k.downcase.tr('_', ' ') == 'omit from list' }
+    return Set.new unless omit_key
+
+    @grocery_aisles[omit_key].to_set { |item| item[:name].downcase }
   end
 
   def build_recipe_map
@@ -39,5 +53,21 @@ class GroceriesController < ApplicationController
                .flat_map { |_, amounts| amounts.compact.filter_map(&:unit) }
                .uniq
                .to_h { |u| [u, FamilyRecipes::Inflector.unit_display(u, 2)] }
+  end
+
+  def load_quick_bites_by_subsection
+    doc = quick_bites_document
+    return {} unless doc
+
+    FamilyRecipes.parse_quick_bites_content(doc.content)
+                 .group_by { |qb| qb.category.delete_prefix('Quick Bites: ') }
+  end
+
+  def quick_bites_document
+    @quick_bites_document ||= SiteDocument.find_by(name: 'quick_bites')
+  end
+
+  def grocery_aisles_document
+    @grocery_aisles_document ||= SiteDocument.find_by(name: 'grocery_aisles')
   end
 end

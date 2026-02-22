@@ -105,6 +105,30 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     assert_select '#recipe-selector .category h2', 'Pasta'
   end
 
+  test 'renders Quick Bites section when document exists' do
+    SiteDocument.create!(name: 'quick_bites', content: <<~MD)
+      ## Snacks
+        - Goldfish
+        - Hummus with Pretzels: Hummus, Pretzels
+    MD
+
+    get groceries_path
+
+    assert_response :success
+    assert_select '.quick-bites h2', 'Quick Bites'
+    assert_select '.quick-bites .subsection h3', 'Snacks'
+    assert_select '.quick-bites input[type=checkbox][data-title="Goldfish"]'
+    assert_select '.quick-bites input[type=checkbox][data-title="Hummus with Pretzels"]'
+  end
+
+  test 'renders gracefully without site documents' do
+    SiteDocument.where(name: %w[quick_bites grocery_aisles]).destroy_all
+
+    get groceries_path
+
+    assert_response :success
+  end
+
   test 'recipe checkboxes include ingredient data as JSON' do
     Category.create!(name: 'Bread', slug: 'bread', position: 0)
     MarkdownImporter.import(<<~MD)
