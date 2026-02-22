@@ -1,0 +1,32 @@
+<% content_for(:title) { @site_config['site_title'] } %>
+
+<article class="homepage">
+  <header>
+    <h1><%= @site_config['homepage_heading'] %></h1>
+    <p><%= @site_config['homepage_subtitle'] %></p>
+  </header>
+
+  <div class="toc_nav">
+    <ul>
+      <%- @categories.each do |category| -%>
+      <li><%= link_to category.name, "##{category.slug}" %></li>
+      <%- end -%>
+    </ul>
+  </div>
+
+  <%- @categories.each do |category| -%>
+  <section id="<%= category.slug %>">
+    <h2><%= category.name %></h2>
+    <ul>
+      <%- category.recipes.sort_by(&:title).each do |recipe| -%>
+      <li><%= link_to recipe.title, recipe_path(recipe.slug), title: recipe.description %></li>
+      <%- end -%>
+    </ul>
+  </section>
+  <%- end -%>
+
+  <footer>
+    <p>Download the <%= link_to 'PDF cookbook', 'cookbook.pdf' %>.</p>
+    <p>For more information, visit <a href="<%= @site_config['github_url'] %>">our project page on GitHub</a>.</p>
+  </footer>
+</article>
