@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="rgb(205, 71, 84)">
+  <title><%= content_for?(:title) ? content_for(:title) : 'Biagini Family Recipes' %></title>
+  <%= stylesheet_link_tag 'style' %>
+  <link rel="icon" type="image/svg+xml" href="<%= asset_path('favicon.svg') %>">
+  <link rel="shortcut icon" href="<%= asset_path('favicon.ico') %>">
+  <link rel="apple-touch-icon" sizes="180x180" href="<%= asset_path('apple-touch-icon.png') %>">
+  <%= yield :head %>
+</head>
+<body <%= yield :body_attrs %>>
+  <%= render 'shared/nav' %>
+  <main>
+    <%= yield %>
+  </main>
+  <%= yield :scripts %>
+</body>
+</html>
