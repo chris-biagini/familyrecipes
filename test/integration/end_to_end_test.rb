@@ -106,6 +106,19 @@ class EndToEndTest < ActionDispatch::IntegrationTest
     assert_select 'footer a[href*="github"]'
   end
 
+  test 'homepage renders new recipe button' do
+    get root_path
+
+    assert_select '#new-recipe-button'
+  end
+
+  test 'homepage renders editor dialog in create mode' do
+    get root_path
+
+    assert_select '#recipe-editor[data-editor-mode="create"]'
+    assert_select '#editor-textarea'
+  end
+
   test 'homepage renders categories as sections with anchors' do
     get root_path
 

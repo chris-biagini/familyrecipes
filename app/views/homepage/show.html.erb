@@ -1,5 +1,16 @@
 <% content_for(:title) { @site_config['site_title'] } %>
 
+<% content_for(:extra_nav) do %>
+    <div>
+      <button type="button" id="new-recipe-button" class="btn">+ New</button>
+    </div>
+<% end %>
+
+<% content_for(:scripts) do %>
+  <%= javascript_include_tag 'notify', defer: true %>
+  <%= javascript_include_tag 'recipe-editor', defer: true %>
+<% end %>
+
 <article class="homepage">
   <header>
     <h1><%= @site_config['homepage_heading'] %></h1>
@@ -29,3 +40,8 @@
     <p>For more information, visit <a href="<%= @site_config['github_url'] %>">our project page on GitHub</a>.</p>
   </footer>
 </article>
+
+<%= render 'recipes/editor_dialog',
+           mode: :create,
+           content: "# Recipe Title\n\nOptional description.\n\nCategory: \nMakes: \nServes: \n\n## Step Name (short summary)\n\n- Ingredient, quantity: prep note\n\nInstructions here.\n\n---\n\nOptional notes or source.",
+           action_url: recipes_path %>
