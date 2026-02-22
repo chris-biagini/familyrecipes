@@ -268,4 +268,47 @@ class EndToEndTest < ActionDispatch::IntegrationTest
 
     assert_select '.recipe-meta a[href=?]', root_path(anchor: 'bread')
   end
+
+  # -- Create / Delete --
+
+  test 'create and then visit new recipe' do
+    markdown = <<~MD
+      # Sourdough Boule
+
+      A tangy loaf.
+
+      Category: Bread
+
+      ## Mix (combine ingredients)
+
+      - Flour, 4 cups
+      - Starter, 1 cup
+
+      Mix and bulk ferment.
+    MD
+
+    post recipes_path,
+         params: { markdown_source: markdown },
+         as: :json
+
+    assert_response :success
+    body = JSON.parse(response.body)
+
+    get body['redirect_url']
+
+    assert_response :success
+    assert_select 'h1', 'Sourdough Boule'
+  end
+
+  test 'delete recipe removes it from homepage' do
+    get root_path
+    assert_select 'a', text: /Focaccia/
+
+    delete recipe_path('focaccia'), as: :json
+
+    assert_response :success
+
+    get root_path
+    assert_select 'a', text: /Focaccia/, count: 0
+  end
 end
