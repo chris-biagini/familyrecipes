@@ -1,0 +1,33 @@
+<section>
+  <h2><%= step.tldr %></h2>
+  <div>
+    <%- unless step.ingredient_list_items.empty? -%>
+    <div class="ingredients">
+      <ul>
+        <%- step.ingredient_list_items.each do |item| -%>
+        <%- if item.respond_to?(:target_slug) -%>
+        <li class="cross-reference"><b><%= link_to item.target_title, recipe_path(item.target_slug) %></b><% if item.multiplier != 1.0 %>, <span class="quantity"><%= item.multiplier == item.multiplier.to_i ? item.multiplier.to_i : item.multiplier %></span><% end %>
+        <%- if item.prep_note -%>
+          <small><%= item.prep_note %></small>
+        <%- end -%>
+        </li>
+        <%- else -%>
+        <li<% if item.quantity_value %> data-quantity-value="<%= item.quantity_value %>" data-quantity-unit="<%= item.quantity_unit %>"<%= %( data-quantity-unit-plural="#{FamilyRecipes::Inflector.unit_display(item.quantity_unit, 2)}").html_safe if item.quantity_unit %><% end %>>
+          <b><%= item.name %></b><% if item.quantity %>, <span class="quantity"><%= item.quantity %></span><% end %>
+        <%- if item.prep_note -%>
+          <small><%= item.prep_note %></small>
+        <%- end -%>
+        </li>
+        <%- end -%>
+        <%- end -%>
+      </ul>
+    </div>
+    <%- end -%>
+
+    <%- unless step.instructions.nil? || step.instructions.strip.empty? -%>
+    <div class="instructions">
+      <%= scalable_instructions(step.instructions) %>
+    </div>
+    <%- end -%>
+  </div>
+</section>

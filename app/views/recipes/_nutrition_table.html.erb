@@ -1,0 +1,61 @@
+<aside class="nutrition-facts">
+  <h2>Nutrition Facts</h2>
+  <%
+    has_per_unit = nutrition.per_unit && nutrition.makes_quantity && nutrition.makes_quantity > 0
+    has_per_serving = nutrition.per_serving && nutrition.serving_count
+
+    columns = []
+
+    if has_per_unit
+      columns << ["Per #{nutrition.makes_unit_singular.capitalize}", nutrition.per_unit, false]
+      if has_per_serving && nutrition.units_per_serving
+        ups = nutrition.units_per_serving
+        formatted_ups = FamilyRecipes::VulgarFractions.format(ups)
+        singular = FamilyRecipes::VulgarFractions.singular_noun?(ups)
+        ups_unit = singular ? nutrition.makes_unit_singular : nutrition.makes_unit_plural
+        columns << ["Per Serving<br>(#{formatted_ups} #{ups_unit})".html_safe, nutrition.per_serving, false]
+      end
+      columns << ['Total', nutrition.totals, true]
+    elsif has_per_serving
+      columns << ['Per Serving', nutrition.per_serving, false]
+      columns << ['Total', nutrition.totals, true]
+    else
+      columns << ['Total', nutrition.totals, true]
+    end
+  %>
+  <table>
+    <thead>
+      <tr>
+        <th></th>
+        <%- columns.each do |label, _, _| -%>
+        <th><%= label %></th>
+        <%- end -%>
+      </tr>
+    </thead>
+    <tbody>
+      <%- [
+        ['Calories', :calories, '', 0],
+        ['Total Fat', :fat, 'g', 0],
+        ['Sat. Fat', :saturated_fat, 'g', 1],
+        ['Trans Fat', :trans_fat, 'g', 1],
+        ['Cholesterol', :cholesterol, 'mg', 0],
+        ['Sodium', :sodium, 'mg', 0],
+        ['Total Carbs', :carbs, 'g', 0],
+        ['Fiber', :fiber, 'g', 1],
+        ['Total Sugars', :total_sugars, 'g', 1],
+        ['Added Sugars', :added_sugars, 'g', 2],
+        ['Protein', :protein, 'g', 0],
+      ].each do |label, key, unit_label, indent| -%>
+      <tr<%= %( class="indent-#{indent}").html_safe if indent > 0 %>>
+        <td><%= label %></td>
+        <%- columns.each do |_, values, is_scalable| -%>
+        <td<%= %( data-nutrient="#{key}" data-base-value="#{values[key].round(1)}").html_safe if is_scalable %>><%= values[key].round %><%= unit_label %></td>
+        <%- end -%>
+      </tr>
+      <%- end -%>
+    </tbody>
+  </table>
+  <%- unless nutrition.complete? -%>
+  <p class="nutrition-note">*Approximate. Data unavailable for: <%= (nutrition.missing_ingredients + nutrition.partial_ingredients).uniq.join(', ') %>.</p>
+  <%- end -%>
+</aside>

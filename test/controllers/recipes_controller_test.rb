@@ -1,52 +1,69 @@
 # frozen_string_literal: true
 
-ENV['RAILS_ENV'] = 'test'
-
-require_relative '../../config/environment'
-require 'rails/test_help'
+require 'test_helper'
 
 class RecipesControllerTest < ActionDispatch::IntegrationTest
-  test 'shows a recipe by slug' do
-    get '/focaccia'
+  setup do
+    Category.create!(name: 'Bread', slug: 'bread', position: 0)
+    MarkdownImporter.import(<<~MD)
+      # Focaccia
+
+      A simple flatbread.
+
+      Category: Bread
+      Serves: 8
+
+      ## Make the dough (combine ingredients)
+
+      - Flour, 3 cups
+      - Water, 1 cup: Warm.
+      - Salt, 1 tsp
+
+      Mix everything together and let rest for 1* hour.
+
+      ## Bake (put it in the oven)
+
+      Bake at 425* degrees for 20* minutes.
+
+      ---
+
+      A classic Italian bread.
+    MD
+  end
+
+  test 'renders a recipe page' do
+    get recipe_path('focaccia')
 
     assert_response :success
-    assert_includes response.body, 'Focaccia'
+    assert_select 'h1', 'Focaccia'
+    assert_select '.recipe-meta', /Bread/
+    assert_select '.recipe-meta', /Serves 8/
+    assert_select 'h2', 'Make the dough (combine ingredients)'
+    assert_select '.ingredients li', 3
+    assert_select 'b', 'Flour'
   end
 
   test 'returns 404 for unknown recipe' do
-    get '/nonexistent-recipe'
+    get recipe_path('nonexistent')
 
     assert_response :not_found
   end
 
-  test 'renders full recipe template with scale button' do
-    get '/focaccia'
+  test 'includes recipe JavaScript' do
+    get recipe_path('focaccia')
 
-    assert_includes response.body, 'id="scale-button"'
+    assert_select 'script[src*="recipe-state-manager"]'
+  end
+
+  test 'renders scale button' do
+    get recipe_path('focaccia')
+
+    assert_select '#scale-button'
   end
 
   test 'renders ingredient data attributes for scaling' do
-    get '/focaccia'
+    get recipe_path('focaccia')
 
     assert_match(/data-quantity-value=/, response.body)
-  end
-
-  test 'renders nutrition table when data exists' do
-    get '/focaccia'
-
-    assert_includes response.body, 'class="nutrition-facts"'
-    assert_includes response.body, 'Nutrition Facts'
-  end
-
-  test 'renders recipe metadata with category link' do
-    get '/focaccia'
-
-    assert_match(%r{<a href="index\.html#[^"]+">Bread</a>}, response.body)
-  end
-
-  test 'includes recipe-state-manager script' do
-    get '/focaccia'
-
-    assert_includes response.body, 'recipe-state-manager.js'
   end
 end

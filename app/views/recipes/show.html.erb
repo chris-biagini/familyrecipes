@@ -1,0 +1,47 @@
+<% content_for(:title) { @recipe.title } %>
+
+<% content_for(:body_attrs) do %>
+  data-recipe-id="<%= @recipe.slug %>" data-version-hash="<%= Digest::SHA256.hexdigest(@recipe.markdown_source) %>"
+<% end %>
+
+<% content_for(:extra_nav) do %>
+    <div>
+      <button type="button" id="scale-button" class="btn">Scale</button>
+    </div>
+<% end %>
+
+<% content_for(:scripts) do %>
+  <%= javascript_include_tag 'notify', defer: true %>
+  <%= javascript_include_tag 'wake-lock', defer: true %>
+  <%= javascript_include_tag 'recipe-state-manager', defer: true %>
+<% end %>
+
+<article class="recipe">
+  <header>
+    <h1><%= @recipe.title %></h1>
+    <%- if @recipe.description.present? -%>
+    <p><%= @recipe.description %></p>
+    <%- end -%>
+    <p class="recipe-meta">
+      <%= link_to @recipe.category.name, root_path(anchor: @recipe.category.slug) %><%- if @recipe.makes -%>
+      <%- if @nutrition&.makes_unit_singular -%>
+      &middot; Makes <%= format_yield_with_unit(@recipe.makes, @nutrition.makes_unit_singular, @nutrition.makes_unit_plural) %><%- else -%>
+      &middot; Makes <%= format_yield_line(@recipe.makes) %><%- end -%><%- end -%><%- if @recipe.serves -%>
+      &middot; Serves <%= format_yield_line(@recipe.serves.to_s) %><%- end -%>
+    </p>
+  </header>
+
+  <% @parsed_recipe.steps.each do |step| %>
+    <%= render 'step', step: step %>
+  <% end %>
+
+  <footer>
+    <%- if @recipe.footer.present? -%>
+    <%= render_markdown(@recipe.footer) %>
+    <%- end -%>
+  </footer>
+
+  <%- if @nutrition && @nutrition.totals.values.any? { |v| v > 0 } -%>
+    <%= render 'nutrition_table', nutrition: @nutrition %>
+  <%- end -%>
+</article>
