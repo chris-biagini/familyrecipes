@@ -587,7 +587,7 @@ footer small {
     column-count: 2;
   }
 
-  #recipe-editor {
+  .editor-dialog {
     width: 100vw;
     max-height: 100vh;
     height: 100vh;
@@ -596,10 +596,10 @@ footer small {
 }
 
 /************************/
-/* Recipe editor dialog */
+/* Editor Dialog        */
 /************************/
 
-#recipe-editor {
+.editor-dialog {
   border: 1px solid var(--border-color);
   border-radius: 0.25rem;
   background: var(--content-background-color);
@@ -609,12 +609,12 @@ footer small {
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
 }
 
-#recipe-editor[open] {
+.editor-dialog[open] {
   display: flex;
   flex-direction: column;
 }
 
-#recipe-editor::backdrop {
+.editor-dialog::backdrop {
   background: rgba(0, 0, 0, 0.5);
 }
 
@@ -645,7 +645,7 @@ footer small {
   background: none;
 }
 
-#editor-errors {
+.editor-errors {
   padding: 0.75rem 1.5rem;
   color: var(--danger-color);
   font-family: "Futura", sans-serif;
@@ -653,12 +653,12 @@ footer small {
   border-bottom: 1px solid var(--separator-color);
 }
 
-#editor-errors ul {
+.editor-errors ul {
   margin: 0;
   padding: 0 0 0 1.25rem;
 }
 
-#editor-textarea {
+.editor-textarea {
   flex: 1;
   min-height: 60vh;
   padding: 1.5rem;
@@ -767,7 +767,7 @@ footer small {
 
   nav,
   .notify-bar,
-  #recipe-editor {
+  .editor-dialog {
     display: none;
   }
 
