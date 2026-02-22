@@ -9,6 +9,16 @@ class RecipesController < ApplicationController
     head :not_found
   end
 
+  def create
+    errors = MarkdownValidator.validate(params[:markdown_source])
+    return render json: { errors: errors }, status: :unprocessable_entity if errors.any?
+
+    recipe = MarkdownImporter.import(params[:markdown_source])
+    recipe.update!(edited_at: Time.current)
+
+    render json: { redirect_url: recipe_path(recipe.slug) }
+  end
+
   def update
     @recipe = Recipe.find_by!(slug: params[:slug])
 

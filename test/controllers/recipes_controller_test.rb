@@ -232,6 +232,65 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes panzanella.markdown_source, '@[Focaccia]'
   end
 
+  test 'create saves valid markdown and returns redirect URL' do
+    markdown = <<~MD
+      # Ciabatta
+
+      A rustic bread.
+
+      Category: Bread
+
+      ## Mix (combine ingredients)
+
+      - Flour, 4 cups
+      - Water, 2 cups
+
+      Mix and rest overnight.
+    MD
+
+    post recipes_path,
+         params: { markdown_source: markdown },
+         as: :json
+
+    assert_response :success
+    body = JSON.parse(response.body)
+
+    assert_equal recipe_path('ciabatta'), body['redirect_url']
+    assert Recipe.find_by(slug: 'ciabatta')
+  end
+
+  test 'create rejects invalid markdown' do
+    post recipes_path,
+         params: { markdown_source: 'not valid' },
+         as: :json
+
+    assert_response :unprocessable_entity
+    body = JSON.parse(response.body)
+
+    assert_predicate body['errors'], :any?
+  end
+
+  test 'create sets edited_at timestamp' do
+    markdown = <<~MD
+      # Ciabatta
+
+      Category: Bread
+
+      ## Mix (combine ingredients)
+
+      - Flour, 4 cups
+
+      Mix it.
+    MD
+
+    post recipes_path,
+         params: { markdown_source: markdown },
+         as: :json
+
+    assert_response :success
+    assert_not_nil Recipe.find_by!(slug: 'ciabatta').edited_at
+  end
+
   test 'full edit round-trip: edit, save, re-render' do
     updated_markdown = <<~MD
       # Focaccia
