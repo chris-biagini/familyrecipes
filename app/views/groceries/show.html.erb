@@ -12,6 +12,14 @@
   <%= javascript_include_tag 'wake-lock', defer: true %>
   <%= javascript_include_tag 'qrcodegen', defer: true %>
   <%= javascript_include_tag 'groceries', defer: true %>
+  <%= javascript_include_tag 'recipe-editor', defer: true %>
+<% end %>
+
+<% content_for(:extra_nav) do %>
+  <div>
+    <button type="button" id="edit-quick-bites-button" class="btn">Edit Quick Bites</button>
+    <button type="button" id="edit-aisles-button" class="btn">Edit Aisles</button>
+  </div>
 <% end %>
 
 <header id="groceries-header">
@@ -41,6 +49,27 @@
       </li>
     <%- end -%>
     </ul>
+  </div>
+  <%- end -%>
+  <%- if @quick_bites_by_subsection.any? -%>
+  <div class="quick-bites">
+    <h2>Quick Bites</h2>
+    <div class="subsections">
+      <%- @quick_bites_by_subsection.each do |subsection, items| -%>
+      <div class="subsection">
+        <h3><%= subsection %></h3>
+        <ul>
+        <%- items.each do |item| -%>
+          <%- filtered_ingredients = item.ingredients_with_quantities.reject { |name, _| @omit_set.include?(name.downcase) } -%>
+          <li>
+            <input type="checkbox" id="<%= item.id %>-checkbox" data-title="<%= h item.title %>" data-ingredients="<%= h filtered_ingredients.to_json %>">
+            <label for="<%= item.id %>-checkbox" title="Ingredients: <%= h filtered_ingredients.map(&:first).join(', ') %>"><%= item.title %></label>
+          </li>
+        <%- end -%>
+        </ul>
+      </div>
+      <%- end -%>
+    </div>
   </div>
   <%- end -%>
 </div>
@@ -75,7 +104,7 @@
 
   <section id="grocery-list">
   <%- @grocery_aisles.each do |aisle, ingredients| -%>
-  <%- next if aisle == 'Omit_From_List' -%>
+  <%- next if aisle.downcase.tr('_', ' ') == 'omit from list' -%>
   <details class="aisle">
     <summary><%= aisle %> <span class="aisle-count"></span></summary>
     <ul>
@@ -97,3 +126,39 @@
   </details>
   </section>
 </div>
+
+<dialog class="editor-dialog"
+        data-editor-open="#edit-quick-bites-button"
+        data-editor-url="<%= groceries_quick_bites_path %>"
+        data-editor-method="PATCH"
+        data-editor-on-success="reload"
+        data-editor-body-key="content">
+  <div class="editor-header">
+    <h2>Edit Quick Bites</h2>
+    <button type="button" class="btn editor-close" aria-label="Close">&times;</button>
+  </div>
+  <div class="editor-errors" hidden></div>
+  <textarea class="editor-textarea" spellcheck="false"><%= @quick_bites_content %></textarea>
+  <div class="editor-footer">
+    <button type="button" class="btn editor-cancel">Cancel</button>
+    <button type="button" class="btn btn-primary editor-save">Save</button>
+  </div>
+</dialog>
+
+<dialog class="editor-dialog"
+        data-editor-open="#edit-aisles-button"
+        data-editor-url="<%= groceries_grocery_aisles_path %>"
+        data-editor-method="PATCH"
+        data-editor-on-success="reload"
+        data-editor-body-key="content">
+  <div class="editor-header">
+    <h2>Edit Aisles</h2>
+    <button type="button" class="btn editor-close" aria-label="Close">&times;</button>
+  </div>
+  <div class="editor-errors" hidden></div>
+  <textarea class="editor-textarea" spellcheck="false"><%= @grocery_aisles_content %></textarea>
+  <div class="editor-footer">
+    <button type="button" class="btn editor-cancel">Cancel</button>
+    <button type="button" class="btn btn-primary editor-save">Save</button>
+  </div>
+</dialog>
