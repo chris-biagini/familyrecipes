@@ -1,23 +1,26 @@
 <%# locals: (mode:, content:, action_url:, recipe: nil) %>
 <dialog id="recipe-editor"
         class="editor-dialog"
-        data-editor-mode="<%= mode %>"
-        data-editor-url="<%= action_url %>">
+        data-editor-open="<%= mode == :create ? '#new-recipe-button' : '#edit-button' %>"
+        data-editor-url="<%= action_url %>"
+        data-editor-method="<%= mode == :create ? 'POST' : 'PATCH' %>"
+        data-editor-on-success="redirect"
+        data-editor-body-key="markdown_source">
   <div class="editor-header">
     <h2><%= mode == :create ? 'New Recipe' : "Editing: #{recipe.title}" %></h2>
-    <button type="button" class="btn editor-close" id="editor-close" aria-label="Close">&times;</button>
+    <button type="button" class="btn editor-close" aria-label="Close">&times;</button>
   </div>
-  <div id="editor-errors" class="editor-errors" hidden></div>
-  <textarea id="editor-textarea" class="editor-textarea" spellcheck="false"><%= content %></textarea>
+  <div class="editor-errors" hidden></div>
+  <textarea class="editor-textarea" spellcheck="false"><%= content %></textarea>
   <div class="editor-footer">
     <%- if mode == :edit -%>
-    <button type="button" class="btn btn-danger editor-delete" id="editor-delete"
+    <button type="button" class="btn btn-danger editor-delete"
             data-recipe-title="<%= recipe.title %>"
             data-recipe-slug="<%= recipe.slug %>"
             data-referencing-recipes="<%= recipe.referencing_recipes.pluck(:title).to_json %>">Delete</button>
     <span class="editor-footer-spacer"></span>
     <%- end -%>
-    <button type="button" class="btn editor-cancel" id="editor-cancel">Cancel</button>
-    <button type="button" class="btn btn-primary editor-save" id="editor-save">Save</button>
+    <button type="button" class="btn editor-cancel">Cancel</button>
+    <button type="button" class="btn btn-primary editor-save">Save</button>
   </div>
 </dialog>

@@ -65,7 +65,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     get recipe_path('focaccia')
 
     assert_select '#recipe-editor'
-    assert_select '#editor-textarea'
+    assert_select '.editor-textarea'
   end
 
   test 'renders scale button' do
