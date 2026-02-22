@@ -107,6 +107,21 @@ module FamilyRecipes
     end
   end
 
+  # Parse Quick Bites from a markdown string (instead of a file path)
+  def self.parse_quick_bites_content(content)
+    current_subcat = nil
+
+    content.each_line.with_object([]) do |line, quick_bites|
+      case line
+      when /^##\s+(.*)/
+        current_subcat = ::Regexp.last_match(1).strip
+      when /^\s*-\s+(.*)/
+        category = [CONFIG[:quick_bites_category], current_subcat].compact.join(': ')
+        quick_bites << QuickBite.new(text_source: ::Regexp.last_match(1).strip, category: category)
+      end
+    end
+  end
+
   # Parse Quick Bites file into QuickBite objects
   def self.parse_quick_bites(recipes_dir)
     quick_bites_filename = CONFIG[:quick_bites_filename]

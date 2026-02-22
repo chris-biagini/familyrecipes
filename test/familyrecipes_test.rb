@@ -156,6 +156,29 @@ class FamilyRecipesTest < Minitest::Test
     assert_equal %w[Produce Baking], result.keys
   end
 
+  def test_parse_quick_bites_content
+    content = <<~MD
+      # Quick Bites
+
+      ## Snacks
+        - Peanut Butter on Bread: Peanut butter, Bread
+        - Goldfish
+
+      ## Breakfast
+        - Cereal with Milk: Cereal, Milk
+    MD
+
+    result = FamilyRecipes.parse_quick_bites_content(content)
+
+    assert_equal 3, result.size
+    assert_equal 'Peanut Butter on Bread', result[0].title
+    assert_equal ['Peanut butter', 'Bread'], result[0].ingredients
+    assert_equal 'Quick Bites: Snacks', result[0].category
+    assert_equal 'Goldfish', result[1].title
+    assert_equal ['Goldfish'], result[1].ingredients
+    assert_equal 'Quick Bites: Breakfast', result[2].category
+  end
+
   def test_build_alias_map_without_aliases
     grocery_aisles = {
       'Produce' => [{ name: 'Apples' }]
