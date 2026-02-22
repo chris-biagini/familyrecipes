@@ -37,12 +37,14 @@ jobs:
       - name: Run tests
         run: bundle exec ruby -Itest -Ilib -e "Dir.glob('test/*_test.rb').each { |f| require File.expand_path(f) }"
 
-      - name: Build site
-        run: bin/generate
-
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: output/web
+      # Build and deploy steps disabled — static site generator removed.
+      # Deployment pending Docker packaging for Rails app.
+      # - name: Build site
+      #   run: bin/generate
+      #
+      # - uses: actions/upload-pages-artifact@v3
+      #   with:
+      #     path: output/web
 
   deploy:
     needs: build

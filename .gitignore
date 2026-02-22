@@ -3,8 +3,8 @@
 Thumbs.db
 desktop.ini
 
-# Generated output
-output/
+# Generated output (legacy static build)
+# output/
 
 # Editor directories
 .nova/
