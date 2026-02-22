@@ -302,6 +302,7 @@ class EndToEndTest < ActionDispatch::IntegrationTest
 
   test 'delete recipe removes it from homepage' do
     get root_path
+
     assert_select 'a', text: /Focaccia/
 
     delete recipe_path('focaccia'), as: :json
@@ -309,6 +310,7 @@ class EndToEndTest < ActionDispatch::IntegrationTest
     assert_response :success
 
     get root_path
+
     assert_select 'a', text: /Focaccia/, count: 0
   end
 end
