@@ -6,6 +6,7 @@
 
 <% content_for(:extra_nav) do %>
     <div>
+      <button type="button" id="edit-button" class="btn">Edit</button>
       <button type="button" id="scale-button" class="btn">Scale</button>
     </div>
 <% end %>
@@ -14,6 +15,7 @@
   <%= javascript_include_tag 'notify', defer: true %>
   <%= javascript_include_tag 'wake-lock', defer: true %>
   <%= javascript_include_tag 'recipe-state-manager', defer: true %>
+  <%= javascript_include_tag 'recipe-editor', defer: true %>
 <% end %>
 
 <article class="recipe">
@@ -45,3 +47,16 @@
     <%= render 'nutrition_table', nutrition: @nutrition %>
   <%- end -%>
 </article>
+
+<dialog id="recipe-editor">
+  <div class="editor-header">
+    <h2>Editing: <%= @recipe.title %></h2>
+    <button type="button" class="btn" id="editor-close" aria-label="Close">&times;</button>
+  </div>
+  <div id="editor-errors" hidden></div>
+  <textarea id="editor-textarea" spellcheck="false"><%= @recipe.markdown_source %></textarea>
+  <div class="editor-footer">
+    <button type="button" class="btn" id="editor-cancel">Cancel</button>
+    <button type="button" class="btn btn-primary" id="editor-save">Save</button>
+  </div>
+</dialog>
