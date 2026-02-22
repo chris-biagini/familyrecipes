@@ -41,13 +41,9 @@ class GroceriesController < ApplicationController
   private
 
   def load_grocery_aisles
-    doc = grocery_aisles_document
-    return fallback_grocery_aisles unless doc
+    content = SiteDocument.content_for('grocery_aisles')
+    return FamilyRecipes.parse_grocery_aisles_markdown(content) if content
 
-    FamilyRecipes.parse_grocery_aisles_markdown(doc.content)
-  end
-
-  def fallback_grocery_aisles
     yaml_path = Rails.root.join('db/seeds/resources/grocery-info.yaml')
     return {} unless File.exist?(yaml_path)
 

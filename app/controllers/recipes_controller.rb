@@ -86,13 +86,11 @@ class RecipesController < ApplicationController
   end
 
   def load_nutrition_data
-    doc = current_kitchen.site_documents.find_by(name: 'nutrition_data')
-    return YAML.safe_load(doc.content, permitted_classes: [], permitted_symbols: [], aliases: false) if doc
+    content = SiteDocument.content_for('nutrition_data',
+                                       fallback_path: Rails.root.join('db/seeds/resources/nutrition-data.yaml'))
+    return unless content
 
-    path = Rails.root.join('db/seeds/resources/nutrition-data.yaml')
-    return unless File.exist?(path)
-
-    YAML.safe_load_file(path, permitted_classes: [], permitted_symbols: [], aliases: false)
+    YAML.safe_load(content, permitted_classes: [], permitted_symbols: [], aliases: false)
   end
 
   def grocery_aisles
@@ -100,10 +98,10 @@ class RecipesController < ApplicationController
   end
 
   def load_grocery_aisles
-    doc = current_kitchen.site_documents.find_by(name: 'grocery_aisles')
-    return FamilyRecipes.parse_grocery_info(Rails.root.join('db/seeds/resources/grocery-info.yaml')) unless doc
+    content = SiteDocument.content_for('grocery_aisles')
+    return FamilyRecipes.parse_grocery_aisles_markdown(content) if content
 
-    FamilyRecipes.parse_grocery_aisles_markdown(doc.content)
+    FamilyRecipes.parse_grocery_info(Rails.root.join('db/seeds/resources/grocery-info.yaml'))
   end
 
   def alias_map

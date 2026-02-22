@@ -28,9 +28,9 @@ class IngredientsController < ApplicationController
   end
 
   def load_grocery_aisles
-    doc = current_kitchen.site_documents.find_by(name: 'grocery_aisles')
-    return FamilyRecipes.parse_grocery_info(Rails.root.join('db/seeds/resources/grocery-info.yaml')) unless doc
+    content = SiteDocument.content_for('grocery_aisles')
+    return FamilyRecipes.parse_grocery_aisles_markdown(content) if content
 
-    FamilyRecipes.parse_grocery_aisles_markdown(doc.content)
+    FamilyRecipes.parse_grocery_info(Rails.root.join('db/seeds/resources/grocery-info.yaml'))
   end
 end
