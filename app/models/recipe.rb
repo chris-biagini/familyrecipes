@@ -12,7 +12,7 @@ class Recipe < ApplicationRecord
                                    inverse_of: :source_recipe
   has_many :inbound_dependencies, class_name: 'RecipeDependency',
                                   foreign_key: :target_recipe_id,
-                                  dependent: :restrict_with_error,
+                                  dependent: :destroy,
                                   inverse_of: :target_recipe
   has_many :referenced_recipes, through: :outbound_dependencies, source: :target_recipe
   has_many :referencing_recipes, through: :inbound_dependencies, source: :source_recipe
