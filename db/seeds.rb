@@ -9,6 +9,7 @@ user = User.find_or_create_by!(email: 'chris@example.com') do |u|
   u.name = 'Chris'
 end
 
+ActsAsTenant.current_tenant = kitchen
 Membership.find_or_create_by!(kitchen: kitchen, user: user)
 
 puts "Kitchen: #{kitchen.name} (#{kitchen.slug})"
@@ -79,11 +80,44 @@ if File.exist?(site_config_path)
   puts 'Site Config document loaded.'
 end
 
-# Seed Nutrition Data document
+# Seed Nutrition Data document and NutritionEntry rows
 nutrition_path = resources_dir.join('nutrition-data.yaml')
 if File.exist?(nutrition_path)
+  raw_content = File.read(nutrition_path)
+
   SiteDocument.find_or_create_by!(kitchen: kitchen, name: 'nutrition_data') do |doc|
-    doc.content = File.read(nutrition_path)
+    doc.content = raw_content
   end
   puts 'Nutrition Data document loaded.'
+
+  nutrition_data = YAML.safe_load(raw_content, permitted_classes: [], permitted_symbols: [], aliases: false)
+  nutrition_data.each do |name, entry|
+    nutrients = entry['nutrients']
+    next unless nutrients.is_a?(Hash) && nutrients['basis_grams'].is_a?(Numeric)
+
+    density = entry['density'] || {}
+    NutritionEntry.find_or_initialize_by(ingredient_name: name).tap do |ne|
+      ne.assign_attributes(
+        basis_grams: nutrients['basis_grams'],
+        calories: nutrients['calories'],
+        fat: nutrients['fat'],
+        saturated_fat: nutrients['saturated_fat'],
+        trans_fat: nutrients['trans_fat'],
+        cholesterol: nutrients['cholesterol'],
+        sodium: nutrients['sodium'],
+        carbs: nutrients['carbs'],
+        fiber: nutrients['fiber'],
+        total_sugars: nutrients['total_sugars'],
+        added_sugars: nutrients['added_sugars'],
+        protein: nutrients['protein'],
+        density_grams: density['grams'],
+        density_volume: density['volume'],
+        density_unit: density['unit'],
+        portions: entry['portions'] || {},
+        sources: entry['sources'] || []
+      )
+      ne.save!
+    end
+  end
+  puts "Seeded #{NutritionEntry.count} nutrition entries."
 end
