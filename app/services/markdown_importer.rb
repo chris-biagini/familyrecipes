@@ -1,12 +1,13 @@
 # frozen_string_literal: true
 
 class MarkdownImporter
-  def self.import(markdown_source)
-    new(markdown_source).import
+  def self.import(markdown_source, kitchen:)
+    new(markdown_source, kitchen: kitchen).import
   end
 
-  def initialize(markdown_source)
+  def initialize(markdown_source, kitchen:)
     @markdown_source = markdown_source
+    @kitchen = kitchen
     @parsed = parse_markdown
   end
 
@@ -23,7 +24,7 @@ class MarkdownImporter
 
   private
 
-  attr_reader :markdown_source, :parsed
+  attr_reader :markdown_source, :kitchen, :parsed
 
   def parse_markdown
     tokens = LineClassifier.classify(markdown_source)
@@ -32,7 +33,7 @@ class MarkdownImporter
 
   def find_or_initialize_recipe
     slug = FamilyRecipes.slugify(parsed[:title])
-    Recipe.find_or_initialize_by(slug: slug)
+    kitchen.recipes.find_or_initialize_by(slug: slug)
   end
 
   def update_recipe_attributes(recipe)
@@ -43,6 +44,7 @@ class MarkdownImporter
       title: parsed[:title],
       description: parsed[:description],
       category: category,
+      kitchen: kitchen,
       makes_quantity: makes_qty,
       makes_unit_noun: makes_unit,
       serves: parsed[:front_matter][:serves]&.to_i,
@@ -53,9 +55,9 @@ class MarkdownImporter
 
   def find_or_create_category(name)
     slug = FamilyRecipes.slugify(name)
-    Category.find_or_create_by!(slug: slug) do |cat|
+    kitchen.categories.find_or_create_by!(slug: slug) do |cat|
       cat.name = name
-      cat.position = Category.maximum(:position).to_i + 1
+      cat.position = kitchen.categories.maximum(:position).to_i + 1
     end
   end
 

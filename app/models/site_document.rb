@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class SiteDocument < ApplicationRecord
-  validates :name, presence: true, uniqueness: true
+  belongs_to :kitchen
+
+  validates :name, presence: true, uniqueness: { scope: :kitchen_id }
   validates :content, presence: true
 end

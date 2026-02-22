@@ -1,10 +1,12 @@
 # frozen_string_literal: true
 
 class Category < ApplicationRecord
+  belongs_to :kitchen
+
   has_many :recipes, dependent: :destroy
 
-  validates :name, presence: true, uniqueness: true
-  validates :slug, presence: true, uniqueness: true
+  validates :name, presence: true, uniqueness: { scope: :kitchen_id }
+  validates :slug, presence: true, uniqueness: { scope: :kitchen_id }
 
   scope :ordered, -> { order(:position, :name) }
 

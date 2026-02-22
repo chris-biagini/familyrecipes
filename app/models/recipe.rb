@@ -2,6 +2,7 @@
 
 class Recipe < ApplicationRecord
   belongs_to :category
+  belongs_to :kitchen
 
   has_many :steps, -> { order(:position) }, dependent: :destroy, inverse_of: :recipe
   has_many :ingredients, through: :steps
@@ -18,7 +19,7 @@ class Recipe < ApplicationRecord
   has_many :referencing_recipes, through: :inbound_dependencies, source: :source_recipe
 
   validates :title, presence: true
-  validates :slug, presence: true, uniqueness: true
+  validates :slug, presence: true, uniqueness: { scope: :kitchen_id }
   validates :markdown_source, presence: true
 
   scope :alphabetical, -> { order(:title) }
