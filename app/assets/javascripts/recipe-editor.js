@@ -1,15 +1,21 @@
 document.addEventListener('DOMContentLoaded', () => {
   const dialog = document.getElementById('recipe-editor');
-  const editBtn = document.getElementById('edit-button');
+  if (!dialog) return;
+
+  const mode = dialog.dataset.editorMode;
+  const actionUrl = dialog.dataset.editorUrl;
+  const openBtn = mode === 'create'
+    ? document.getElementById('new-recipe-button')
+    : document.getElementById('edit-button');
   const closeBtn = document.getElementById('editor-close');
   const cancelBtn = document.getElementById('editor-cancel');
   const saveBtn = document.getElementById('editor-save');
+  const deleteBtn = document.getElementById('editor-delete');
   const textarea = document.getElementById('editor-textarea');
   const errorsDiv = document.getElementById('editor-errors');
 
-  if (!dialog || !editBtn) return;
+  if (!openBtn) return;
 
-  const recipeSlug = document.body.dataset.recipeId;
   const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
   let originalContent = textarea.value;
   let saving = false;
@@ -44,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Open
-  editBtn.addEventListener('click', () => {
+  openBtn.addEventListener('click', () => {
     originalContent = textarea.value;
     clearErrors();
     dialog.showModal();
@@ -62,15 +68,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Save
+  // Save (create or update)
   saveBtn.addEventListener('click', async () => {
     saveBtn.disabled = true;
     saveBtn.textContent = 'Saving\u2026';
     clearErrors();
 
+    const method = mode === 'create' ? 'POST' : 'PATCH';
+
     try {
-      const response = await fetch(`/recipes/${recipeSlug}`, {
-        method: 'PATCH',
+      const response = await fetch(actionUrl, {
+        method: method,
         headers: {
           'Content-Type': 'application/json',
           'X-CSRF-Token': csrfToken
@@ -81,7 +89,14 @@ document.addEventListener('DOMContentLoaded', () => {
       if (response.ok) {
         const data = await response.json();
         saving = true;
-        window.location = data.redirect_url;
+
+        let redirectUrl = data.redirect_url;
+        if (data.updated_references && data.updated_references.length > 0) {
+          const param = encodeURIComponent(data.updated_references.join(', '));
+          const separator = redirectUrl.includes('?') ? '&' : '?';
+          redirectUrl += `${separator}refs_updated=${param}`;
+        }
+        window.location = redirectUrl;
       } else if (response.status === 422) {
         const data = await response.json();
         showErrors(data.errors);
@@ -99,10 +114,65 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // Delete (edit mode only)
+  if (deleteBtn) {
+    deleteBtn.addEventListener('click', async () => {
+      const title = deleteBtn.dataset.recipeTitle;
+      const slug = deleteBtn.dataset.recipeSlug;
+      const referencingRaw = deleteBtn.dataset.referencingRecipes;
+      const referencing = JSON.parse(referencingRaw || '[]');
+
+      let message;
+      if (referencing.length > 0) {
+        message = `Delete "${title}"?\n\nCross-references in ${referencing.join(', ')} will be converted to plain text.\n\nThis cannot be undone.`;
+      } else {
+        message = `Delete "${title}"?\n\nThis cannot be undone.`;
+      }
+
+      if (!confirm(message)) return;
+
+      deleteBtn.disabled = true;
+      deleteBtn.textContent = 'Deleting\u2026';
+
+      try {
+        const response = await fetch(`/recipes/${slug}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfToken
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          saving = true;
+          window.location = data.redirect_url;
+        } else {
+          showErrors([`Failed to delete (${response.status}). Please try again.`]);
+          deleteBtn.disabled = false;
+          deleteBtn.textContent = 'Delete';
+        }
+      } catch {
+        showErrors(['Network error. Please check your connection and try again.']);
+        deleteBtn.disabled = false;
+        deleteBtn.textContent = 'Delete';
+      }
+    });
+  }
+
   // Warn on page navigation with unsaved changes
   window.addEventListener('beforeunload', (event) => {
     if (!saving && dialog.open && isModified()) {
       event.preventDefault();
     }
   });
+
+  // Show toast for cross-reference updates (from URL param)
+  const params = new URLSearchParams(window.location.search);
+  const refsUpdated = params.get('refs_updated');
+  if (refsUpdated && typeof Notify !== 'undefined') {
+    Notify.show(`Updated references in ${refsUpdated}.`);
+    const cleanUrl = window.location.pathname + window.location.hash;
+    history.replaceState(null, '', cleanUrl);
+  }
 });
