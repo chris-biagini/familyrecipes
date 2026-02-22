@@ -2,68 +2,8 @@
 # frozen_string_literal: true
 
 #
-# Starts both dev servers side-by-side:
-#   WEBrick  (port 8888) — static site reference, matches GitHub Pages
-#   Puma     (port 3030) — Rails dynamic server under development
+# Starts the Rails dev server on port 3030.
+# Binds 0.0.0.0 (LAN-accessible) via config/boot.rb.
 #
-# Ctrl-C cleanly stops both. If either dies, the other is killed too.
 
-WEBRICK_PORT = 8888
-RAILS_PORT   = 3030
-
-def clean_stale_pidfile(path)
-  return unless File.exist?(path)
-
-  pid = File.read(path).strip.to_i
-  Process.kill(0, pid)
-rescue Errno::ESRCH, Errno::EPERM
-  File.delete(path)
-  puts "Cleaned stale PID file: #{path}"
-end
-
-def generate_static_site
-  puts '== Generating static site =='
-  system('bin/generate', exception: true)
-  puts
-end
-
-def print_banner
-  puts <<~BANNER
-    ┌─────────────────────────────────────────────┐
-    │  WEBrick (static)  → http://localhost:#{WEBRICK_PORT}  │
-    │  Rails   (dynamic) → http://localhost:#{RAILS_PORT}  │
-    │                                             │
-    │  Ctrl-C to stop both servers                │
-    └─────────────────────────────────────────────┘
-  BANNER
-end
-
-project_root = File.expand_path('..', __dir__)
-Dir.chdir(project_root)
-
-generate_static_site
-clean_stale_pidfile('tmp/pids/server.pid')
-
-print_banner
-
-pids = []
-pids << spawn('bin/serve', WEBRICK_PORT.to_s)
-pids << spawn('bin/rails', 'server', '-p', RAILS_PORT.to_s)
-
-shutdown = proc do
-  pids.each do |pid|
-    Process.kill('TERM', pid)
-  rescue Errno::ESRCH
-    # already gone
-  end
-end
-
-trap('INT')  { shutdown.call }
-trap('TERM') { shutdown.call }
-
-# Wait for the first child to exit, then tear down the other.
-exited_pid, status = Process.wait2
-pids.delete(exited_pid)
-puts "\nProcess #{exited_pid} exited (#{status.exitstatus || "signal #{status.termsig}"}), shutting down..."
-shutdown.call
-Process.waitall
+exec 'bin/rails', 'server', '-p', '3030'
