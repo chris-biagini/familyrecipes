@@ -131,6 +131,6 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     ingredients = JSON.parse(ingredients_json)
     ingredient_names = ingredients.map(&:first)
 
-    assert_includes ingredient_names, 'Flour (all-purpose)'
+    assert_includes ingredient_names, 'Flour'
   end
 end

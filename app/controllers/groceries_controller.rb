@@ -23,7 +23,14 @@ class GroceriesController < ApplicationController
   end
 
   def build_recipe_map
-    FamilyRecipes.parse_recipes(Rails.root.join('recipes')).to_h { |r| [r.id, r] }
+    Recipe.includes(:category).to_h do |r|
+      parsed = FamilyRecipes::Recipe.new(
+        markdown_source: r.markdown_source,
+        id: r.slug,
+        category: r.category.name
+      )
+      [r.slug, parsed]
+    end
   end
 
   def collect_unit_plurals
