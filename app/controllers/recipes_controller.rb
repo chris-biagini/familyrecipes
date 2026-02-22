@@ -65,6 +65,13 @@ class RecipesController < ApplicationController
   end
 
   def recipe_map
-    @recipe_map ||= FamilyRecipes.parse_recipes(Rails.root.join('recipes')).to_h { |r| [r.id, r] }
+    @recipe_map ||= Recipe.includes(:category).to_h do |r|
+      parsed = FamilyRecipes::Recipe.new(
+        markdown_source: r.markdown_source,
+        id: r.slug,
+        category: r.category.name
+      )
+      [r.slug, parsed]
+    end
   end
 end
