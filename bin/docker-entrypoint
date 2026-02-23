@@ -1,0 +1,11 @@
+#!/bin/bash
+set -e
+
+echo "Preparing database..."
+bin/rails db:prepare
+
+echo "Seeding data..."
+bin/rails db:seed
+
+echo "Starting server..."
+exec "$@"
