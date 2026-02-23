@@ -1,0 +1,16 @@
+{
+  "planPath": "docs/plans/2026-02-22-docker-packaging-plan.md",
+  "tasks": [
+    {"id": 7, "subject": "Task 1: Create .dockerignore", "status": "pending"},
+    {"id": 8, "subject": "Task 2: Create entrypoint script", "status": "pending"},
+    {"id": 9, "subject": "Task 3: Create Dockerfile", "status": "pending", "blockedBy": [7, 8]},
+    {"id": 10, "subject": "Task 4: Create docker-compose.example.yml", "status": "pending"},
+    {"id": 11, "subject": "Task 5: Create GitHub Actions workflow", "status": "pending"},
+    {"id": 12, "subject": "Task 6: Adjust production config for reverse proxy", "status": "pending"},
+    {"id": 13, "subject": "Task 7: Update .env.example with Docker notes", "status": "pending"},
+    {"id": 14, "subject": "Task 8: Test Docker build locally", "status": "pending", "blockedBy": [7, 8, 9, 10, 11, 12, 13]},
+    {"id": 15, "subject": "Task 9: Update CLAUDE.md deployment section", "status": "pending"},
+    {"id": 16, "subject": "Task 10: Push and verify GitHub Actions", "status": "pending", "blockedBy": [14, 15]}
+  ],
+  "lastUpdated": "2026-02-22T00:00:00Z"
+}
