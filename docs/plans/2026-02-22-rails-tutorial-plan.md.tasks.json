@@ -1,0 +1,20 @@
+{
+  "planPath": "docs/plans/2026-02-22-rails-tutorial-plan.md",
+  "tasks": [
+    {"id": 0, "nativeId": "7", "subject": "Task 0: Create document with introduction", "status": "pending"},
+    {"id": 1, "nativeId": "8", "subject": "Task 1: Journey 1, Stop 1 — The Route", "status": "pending", "blockedBy": [0]},
+    {"id": 2, "nativeId": "9", "subject": "Task 2: Journey 1, Stop 2 — The Controller Pipeline", "status": "pending", "blockedBy": [1]},
+    {"id": 3, "nativeId": "10", "subject": "Task 3: Journey 1, Stop 3 — ActiveRecord", "status": "pending", "blockedBy": [2]},
+    {"id": 4, "nativeId": "11", "subject": "Task 4: Journey 1, Stop 4 — Views and Layout", "status": "pending", "blockedBy": [3]},
+    {"id": 5, "nativeId": "12", "subject": "Task 5: Journey 1, Stop 5 — Partials and Helpers", "status": "pending", "blockedBy": [4]},
+    {"id": 6, "nativeId": "13", "subject": "Task 6: Journey 1, Stop 6 — Assets and Journey 1 wrap-up", "status": "pending", "blockedBy": [5]},
+    {"id": 7, "nativeId": "14", "subject": "Task 7: Journey 2, Stop 1 — Editor Dialog", "status": "pending", "blockedBy": [6]},
+    {"id": 8, "nativeId": "15", "subject": "Task 8: Journey 2, Stop 2 — Authentication", "status": "pending", "blockedBy": [7]},
+    {"id": 9, "nativeId": "16", "subject": "Task 9: Journey 2, Stop 3 — Validation", "status": "pending", "blockedBy": [8]},
+    {"id": 10, "nativeId": "17", "subject": "Task 10: Journey 2, Stop 4 — The Import Pipeline", "status": "pending", "blockedBy": [9]},
+    {"id": 11, "nativeId": "18", "subject": "Task 11: Journey 2, Stop 5 — Response and wrap-up", "status": "pending", "blockedBy": [10]},
+    {"id": 12, "nativeId": "19", "subject": "Task 12: Write the Glossary", "status": "pending", "blockedBy": [11]},
+    {"id": 13, "nativeId": "20", "subject": "Task 13: Final review and cleanup", "status": "pending", "blockedBy": [12]}
+  ],
+  "lastUpdated": "2026-02-22T00:00:00Z"
+}
