@@ -208,7 +208,21 @@ Starts Puma on port 3030, bound to `0.0.0.0` (LAN-accessible via `config/boot.rb
 
 ## Deployment
 
-`rails-development` has been merged to `main`. The GitHub Pages deploy workflow is disabled. Next step: Docker packaging for homelab deployment. Health check at `/up` is ready for container orchestration.
+Docker image built by GitHub Actions on push to `main`, pushed to `ghcr.io/chris-biagini/familyrecipes`. Tagged with `latest` and the git SHA.
+
+**On the server:**
+```bash
+docker compose pull && docker compose up -d
+```
+
+The container entrypoint runs `db:prepare` and `db:seed` automatically. Health check at `/up` is ready for container orchestration.
+
+**Local Docker testing:**
+```bash
+docker build -t familyrecipes:test .
+```
+
+See `docker-compose.example.yml` for a reference deployment configuration.
 
 ## Routes
 
