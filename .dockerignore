@@ -1,0 +1,15 @@
+.git
+.env
+.env.example
+.claude/
+.playwright-mcp/
+.nova/
+.bundle/
+.DS_Store
+tmp/
+log/
+test/
+docs/
+node_modules/
+*.png
+vendor/bundle/
