@@ -1,0 +1,120 @@
+#!/usr/bin/env bash
+#
+# post-commit hook: rewrite commit timestamps for privacy.
+#
+# Replaces real timestamps with synthetic ones that preserve chronological
+# ordering within a day but leak no information about when work actually
+# happened. All timestamps are UTC (+0000).
+#
+# Activated via: git config core.hooksPath .githooks
+
+set -euo pipefail
+
+# ---------------------------------------------------------------------------
+# Recursion guard — the amend below triggers post-commit again.
+# ---------------------------------------------------------------------------
+if [ "${GIT_PRIVACY_AMENDING:-}" = "1" ]; then
+  exit 0
+fi
+
+# ---------------------------------------------------------------------------
+# Portable date helpers (GNU coreutils vs BSD/macOS)
+# ---------------------------------------------------------------------------
+
+# Convert an ISO 8601 date string to epoch seconds.
+epoch_from_iso() {
+  local iso_date="$1"
+  # GNU date
+  if date -d "$iso_date" +%s 2>/dev/null; then
+    return
+  fi
+  # BSD date (macOS) — try space-separated (git log) then T-separated (ISO 8601)
+  date -j -f "%Y-%m-%d %H:%M:%S %z" "$iso_date" +%s 2>/dev/null \
+    || date -j -f "%Y-%m-%dT%H:%M:%S %z" "$iso_date" +%s
+}
+
+# Convert epoch seconds to an ISO 8601 string in UTC.
+iso_from_epoch() {
+  local epoch="$1"
+  # GNU date
+  if date -u -d "@$epoch" "+%Y-%m-%dT%H:%M:%S +0000" 2>/dev/null; then
+    return
+  fi
+  # BSD date (macOS)
+  date -u -r "$epoch" "+%Y-%m-%dT%H:%M:%S +0000"
+}
+
+# ---------------------------------------------------------------------------
+# Portable random number in a range (inclusive).
+# Prefer shuf(1) from coreutils; fall back to $RANDOM.
+# ---------------------------------------------------------------------------
+random_between() {
+  local min="$1" max="$2"
+  if command -v shuf > /dev/null 2>&1; then
+    shuf -i "${min}-${max}" -n 1
+  else
+    echo $(( min + RANDOM % (max - min + 1) ))
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# Extract the calendar date (UTC) from the current commit.
+# ---------------------------------------------------------------------------
+author_date_iso=$(git log -1 --format="%ai" HEAD)
+commit_epoch=$(epoch_from_iso "$author_date_iso")
+
+# Calendar day string (YYYY-MM-DD) in UTC for the current commit.
+commit_day=$(date -u -d "@$commit_epoch" "+%Y-%m-%d" 2>/dev/null \
+  || date -u -r "$commit_epoch" "+%Y-%m-%d")
+
+# ---------------------------------------------------------------------------
+# Check the parent commit's timestamp (HEAD~1).
+# ---------------------------------------------------------------------------
+parent_exists=false
+parent_epoch=0
+parent_day=""
+
+if git rev-parse --verify HEAD~1 > /dev/null 2>&1; then
+  parent_exists=true
+  parent_date_iso=$(git log -1 --format="%ai" HEAD~1)
+  parent_epoch=$(epoch_from_iso "$parent_date_iso")
+  parent_day=$(date -u -d "@$parent_epoch" "+%Y-%m-%d" 2>/dev/null \
+    || date -u -r "$parent_epoch" "+%Y-%m-%d")
+fi
+
+# ---------------------------------------------------------------------------
+# Compute the new timestamp.
+# ---------------------------------------------------------------------------
+if [ "$parent_exists" = true ] && [ "$parent_day" = "$commit_day" ]; then
+  # Same calendar day: parent_time + random gap (2-20 minutes).
+  gap=$(random_between 120 1200)
+  new_epoch=$(( parent_epoch + gap ))
+else
+  # Different day (or no parent): noon UTC +/- 3 hours jitter.
+  # Noon = 43200 seconds into the day. Jitter range: -10800..+10800.
+  noon_epoch=$(date -u -d "${commit_day}T12:00:00 +0000" +%s 2>/dev/null \
+    || date -u -j -f "%Y-%m-%dT%H:%M:%S %z" "${commit_day}T12:00:00 +0000" +%s)
+  jitter_offset=$(random_between 0 21600)
+  jitter=$(( jitter_offset - 10800 ))
+  new_epoch=$(( noon_epoch + jitter ))
+fi
+
+# ---------------------------------------------------------------------------
+# Clamp at 23:00 UTC on the commit day to avoid rolling into the next day.
+# ---------------------------------------------------------------------------
+clamp_epoch=$(date -u -d "${commit_day}T23:00:00 +0000" +%s 2>/dev/null \
+  || date -u -j -f "%Y-%m-%dT%H:%M:%S %z" "${commit_day}T23:00:00 +0000" +%s)
+
+if [ "$new_epoch" -gt "$clamp_epoch" ]; then
+  new_epoch=$clamp_epoch
+fi
+
+# ---------------------------------------------------------------------------
+# Format the final timestamp and amend the commit.
+# ---------------------------------------------------------------------------
+new_date=$(iso_from_epoch "$new_epoch")
+
+GIT_PRIVACY_AMENDING=1 \
+GIT_COMMITTER_DATE="$new_date" \
+  git commit --amend --no-edit --no-verify --allow-empty --date="$new_date" \
+  > /dev/null 2>&1
