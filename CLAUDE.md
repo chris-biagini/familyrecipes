@@ -208,7 +208,7 @@ Starts Puma on port 3030, bound to `0.0.0.0` (LAN-accessible via `config/boot.rb
 
 ## Deployment
 
-The `main` branch still deploys a static site to **GitHub Pages** at `biaginifamily.recipes` via `.github/workflows/deploy.yml`. The `rails-development` branch is the dynamic Rails app with Kitchen multi-tenancy and dev auth — deployment infrastructure (Docker, CI updates) is not yet in place. Do not merge `rails-development` to `main` until the deployment story is resolved.
+`rails-development` has been merged to `main`. The GitHub Pages deploy workflow is disabled. Next step: Docker packaging for homelab deployment. Health check at `/up` is ready for container orchestration.
 
 ## Routes
 
