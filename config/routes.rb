@@ -12,6 +12,8 @@ Rails.application.routes.draw do
     get 'groceries', to: 'groceries#show', as: :groceries
     patch 'groceries/quick_bites', to: 'groceries#update_quick_bites', as: :groceries_quick_bites
     patch 'groceries/grocery_aisles', to: 'groceries#update_grocery_aisles', as: :groceries_grocery_aisles
+    post 'nutrition/:ingredient_name', to: 'nutrition_entries#upsert', as: :nutrition_entry_upsert
+    delete 'nutrition/:ingredient_name', to: 'nutrition_entries#destroy', as: :nutrition_entry_destroy
   end
 
   match 'auth/:provider/callback', to: 'omniauth_callbacks#create', as: :omniauth_callback, via: %i[get post]
