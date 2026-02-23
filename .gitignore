@@ -22,6 +22,7 @@ vendor/bundle/
 
 # Environment secrets
 .env
+docker-compose.yml
 
 # Rails
 /log/*

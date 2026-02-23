@@ -29,6 +29,8 @@ RUN apt-get update -qq && \
 
 WORKDIR /app
 
+ENV RAILS_ENV=production
+
 COPY --from=builder /usr/local/bundle /usr/local/bundle
 COPY --from=builder /app /app
 
