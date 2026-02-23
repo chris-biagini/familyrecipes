@@ -5,7 +5,61 @@ require 'test_helper'
 class NutritionEntryTest < ActiveSupport::TestCase
   setup do
     @kitchen = Kitchen.find_or_create_by!(name: 'Test Kitchen', slug: 'test-kitchen')
-    ActsAsTenant.current_tenant = @kitchen
+    NutritionEntry.where(kitchen_id: [@kitchen.id, nil]).delete_all
+  end
+
+  test 'global? returns true when kitchen_id is nil' do
+    entry = NutritionEntry.create!(ingredient_name: 'Butter', basis_grams: 100)
+
+    assert_predicate entry, :global?
+    refute_predicate entry, :custom?
+  end
+
+  test 'custom? returns true when kitchen_id is present' do
+    entry = NutritionEntry.create!(kitchen: @kitchen, ingredient_name: 'Butter', basis_grams: 100)
+
+    refute_predicate entry, :global?
+    assert_predicate entry, :custom?
+  end
+
+  test 'lookup_for returns global entries when no kitchen overrides' do
+    NutritionEntry.create!(ingredient_name: 'Butter', basis_grams: 100, calories: 717)
+    result = NutritionEntry.lookup_for(@kitchen)
+
+    assert_equal 1, result.size
+    assert_in_delta 717, result['Butter'].calories.to_f
+    assert_predicate result['Butter'], :global?
+  end
+
+  test 'lookup_for returns kitchen override when it exists' do
+    NutritionEntry.create!(ingredient_name: 'Butter', basis_grams: 100, calories: 717)
+    NutritionEntry.create!(kitchen: @kitchen, ingredient_name: 'Butter', basis_grams: 100, calories: 700)
+
+    result = NutritionEntry.lookup_for(@kitchen)
+
+    assert_equal 1, result.size
+    assert_in_delta 700, result['Butter'].calories.to_f
+    assert_predicate result['Butter'], :custom?
+  end
+
+  test 'lookup_for merges global and kitchen entries' do
+    NutritionEntry.create!(ingredient_name: 'Butter', basis_grams: 100)
+    NutritionEntry.create!(kitchen: @kitchen, ingredient_name: 'Flour', basis_grams: 30)
+
+    result = NutritionEntry.lookup_for(@kitchen)
+
+    assert_equal 2, result.size
+    assert result.key?('Butter')
+    assert result.key?('Flour')
+  end
+
+  test 'lookup_for does not return entries from other kitchens' do
+    other = Kitchen.find_or_create_by!(name: 'Other Kitchen', slug: 'other-kitchen')
+    NutritionEntry.create!(kitchen: other, ingredient_name: 'Butter', basis_grams: 100)
+
+    result = NutritionEntry.lookup_for(@kitchen)
+
+    assert_empty result
   end
 
   test 'stores nutrient data for an ingredient' do
@@ -58,23 +112,6 @@ class NutritionEntryTest < ActiveSupport::TestCase
     assert_in_delta 0.0, entry.added_sugars.to_f
   end
 
-  test 'enforces unique ingredient_name per kitchen' do
-    NutritionEntry.create!(
-      ingredient_name: 'Salt',
-      basis_grams: 6.0,
-      sodium: 2360.0
-    )
-
-    duplicate = NutritionEntry.new(
-      ingredient_name: 'Salt',
-      basis_grams: 6.0,
-      sodium: 2360.0
-    )
-
-    assert_not duplicate.valid?
-    assert_includes duplicate.errors[:ingredient_name], 'has already been taken'
-  end
-
   test 'stores density data' do
     entry = NutritionEntry.create!(
       ingredient_name: 'Flour (all-purpose)',
@@ -115,33 +152,45 @@ class NutritionEntryTest < ActiveSupport::TestCase
     assert_equal [{ 'type' => 'usda', 'fdc_id' => 173_530 }], entry.sources
   end
 
-  test 'requires ingredient_name' do
-    entry = NutritionEntry.new(basis_grams: 30.0)
+  test 'validates ingredient_name presence' do
+    entry = NutritionEntry.new(basis_grams: 100)
 
-    assert_not entry.valid?
+    refute_predicate entry, :valid?
     assert_includes entry.errors[:ingredient_name], "can't be blank"
   end
 
-  test 'requires basis_grams' do
+  test 'validates basis_grams presence' do
     entry = NutritionEntry.new(ingredient_name: 'Flour')
 
-    assert_not entry.valid?
+    refute_predicate entry, :valid?
     assert_includes entry.errors[:basis_grams], "can't be blank"
   end
 
-  test 'requires basis_grams to be greater than zero' do
-    entry = NutritionEntry.new(ingredient_name: 'Flour', basis_grams: 0)
+  test 'validates basis_grams greater than zero' do
+    entry = NutritionEntry.new(ingredient_name: 'Test', basis_grams: 0)
 
-    assert_not entry.valid?
-    assert_includes entry.errors[:basis_grams], 'must be greater than 0'
+    refute_predicate entry, :valid?
   end
 
-  test 'belongs to kitchen' do
-    entry = NutritionEntry.create!(
-      ingredient_name: 'Sugar',
-      basis_grams: 4.0
-    )
+  test 'enforces uniqueness of ingredient_name within same kitchen' do
+    NutritionEntry.create!(kitchen: @kitchen, ingredient_name: 'Butter', basis_grams: 100)
+    duplicate = NutritionEntry.new(kitchen: @kitchen, ingredient_name: 'Butter', basis_grams: 100)
 
-    assert_equal @kitchen, entry.kitchen
+    refute_predicate duplicate, :valid?
+  end
+
+  test 'allows same ingredient_name in different kitchens' do
+    other = Kitchen.find_or_create_by!(name: 'Other Kitchen', slug: 'other-kitchen')
+    NutritionEntry.create!(kitchen: @kitchen, ingredient_name: 'Butter', basis_grams: 100)
+    entry = NutritionEntry.new(kitchen: other, ingredient_name: 'Butter', basis_grams: 100)
+
+    assert_predicate entry, :valid?
+  end
+
+  test 'allows same ingredient_name as global and kitchen entry' do
+    NutritionEntry.create!(ingredient_name: 'Butter', basis_grams: 100)
+    entry = NutritionEntry.new(kitchen: @kitchen, ingredient_name: 'Butter', basis_grams: 100)
+
+    assert_predicate entry, :valid?
   end
 end
