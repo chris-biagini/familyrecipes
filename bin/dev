@@ -5,5 +5,21 @@
 # Starts the Rails dev server on port 3030.
 # Binds 0.0.0.0 (LAN-accessible) via config/boot.rb.
 #
+# Kills any stale Puma process first so a leftover PID file
+# doesn't block startup.
+#
+
+pid_file = File.expand_path('../tmp/pids/server.pid', __dir__)
+
+if File.exist?(pid_file)
+  pid = File.read(pid_file).strip.to_i
+  begin
+    Process.kill('TERM', pid)
+    sleep 0.5
+  rescue Errno::ESRCH
+    # already dead
+  end
+  File.delete(pid_file)
+end
 
 exec 'bin/rails', 'server', '-p', '3030'

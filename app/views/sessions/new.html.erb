@@ -6,7 +6,7 @@
   </header>
 
   <% if Rails.env.development? || Rails.env.test? %>
-    <%= form_tag '/auth/developer', method: :post, class: 'login-form' do %>
+    <%= form_tag '/auth/developer/callback', method: :post, class: 'login-form' do %>
       <div class="login-field">
         <%= label_tag :name, 'Name' %>
         <%= text_field_tag :name, nil, required: true, autofocus: true %>

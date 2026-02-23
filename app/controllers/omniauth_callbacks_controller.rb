@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 class OmniauthCallbacksController < ApplicationController
-  allow_unauthenticated_access only: %i[create destroy failure]
   skip_before_action :set_kitchen_from_path
 
   def create

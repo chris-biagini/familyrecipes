@@ -13,7 +13,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
   test 'login page has form that posts to omniauth developer' do
     get login_path
 
-    assert_select 'form[action="/auth/developer"][method="post"]'
+    assert_select 'form[action="/auth/developer/callback"][method="post"]'
     assert_select 'input[name="name"]'
     assert_select 'input[name="email"]'
   end

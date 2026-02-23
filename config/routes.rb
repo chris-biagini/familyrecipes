@@ -14,7 +14,7 @@ Rails.application.routes.draw do
     patch 'groceries/grocery_aisles', to: 'groceries#update_grocery_aisles', as: :groceries_grocery_aisles
   end
 
-  post 'auth/:provider/callback', to: 'omniauth_callbacks#create', as: :omniauth_callback
+  match 'auth/:provider/callback', to: 'omniauth_callbacks#create', as: :omniauth_callback, via: %i[get post]
   get 'auth/failure', to: 'omniauth_callbacks#failure'
   delete 'logout', to: 'omniauth_callbacks#destroy', as: :logout
   get 'login', to: 'sessions#new', as: :login
