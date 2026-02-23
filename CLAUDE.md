@@ -160,6 +160,13 @@ Adding gems (e.g., `omniauth`) or creating new files in `app/controllers/concern
 ### GitHub Issues
 If I mention a GitHub issue (e.g., "#99"), review it and plan a fix. Close it via the commit message once confirmed.
 
+### Commit timestamp privacy
+This repo uses a post-commit hook (`.githooks/post-commit`) that rewrites commit timestamps for privacy. After cloning, activate it:
+```bash
+git config core.hooksPath .githooks
+```
+The hook replaces time-of-day with synthetic UTC timestamps while preserving the calendar date and chronological commit order. See `docs/plans/2026-02-23-commit-privacy-design.md` for details.
+
 ## Database Setup
 
 ```bash
