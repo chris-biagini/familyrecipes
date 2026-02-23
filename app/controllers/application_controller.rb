@@ -25,7 +25,13 @@ class ApplicationController < ActionController::Base
   def logged_in? = authenticated?
 
   def require_membership
-    head :unauthorized unless logged_in? && current_kitchen&.member?(current_user)
+    unless logged_in?
+      return head(:unauthorized) if request.format.json?
+
+      return request_authentication
+    end
+
+    head :unauthorized unless current_kitchen&.member?(current_user)
   end
 
   def default_url_options

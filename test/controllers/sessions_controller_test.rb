@@ -17,4 +17,12 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'input[name="name"]'
     assert_select 'input[name="email"]'
   end
+
+  test 'unauthenticated access to protected action redirects to login' do
+    create_kitchen_and_user
+
+    post recipes_path(kitchen_slug: kitchen_slug), params: { recipe: { markdown: '# Test' } }
+
+    assert_redirected_to login_path
+  end
 end

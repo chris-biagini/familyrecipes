@@ -34,7 +34,7 @@ module Authentication
 
   def request_authentication
     session[:return_to_after_authenticating] = request.url
-    redirect_to '/auth/developer'
+    redirect_to '/login'
   end
 
   def after_authentication_url
