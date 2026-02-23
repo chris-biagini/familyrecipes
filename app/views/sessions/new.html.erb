@@ -1,0 +1,25 @@
+<% content_for(:title) { 'Log In' } %>
+
+<article class="login">
+  <header>
+    <h1>Log In</h1>
+  </header>
+
+  <% if Rails.env.development? || Rails.env.test? %>
+    <%= form_tag '/auth/developer', method: :post, class: 'login-form' do %>
+      <div class="login-field">
+        <%= label_tag :name, 'Name' %>
+        <%= text_field_tag :name, nil, required: true, autofocus: true %>
+      </div>
+      <div class="login-field">
+        <%= label_tag :email, 'Email' %>
+        <%= email_field_tag :email, nil, required: true %>
+      </div>
+      <div class="login-actions">
+        <%= submit_tag 'Log In', class: 'btn btn-primary' %>
+      </div>
+    <% end %>
+  <% else %>
+    <p class="login-placeholder">OAuth providers coming soon.</p>
+  <% end %>
+</article>
