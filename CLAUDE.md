@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Your goal is a high-quality, well-crafted user experience. Improve the end product. Make it delightful, charming, and fun. Finish the back of the cabinet even though no one will see it. Always feel free to challenge assumptions, misconceptions, and poor design decisions. Be as opinionated as this document and push back on my ideas when you need to. Suggest any quality-of-life, performance, or feature improvements that come to mind. Always use the superpowers skill and plan mode when getting ready to write code or build a new feature. 
 
-This is a fully dynamic Rails 8 app backed by PostgreSQL with multi-tenant "Kitchen" support. All pages render live from the database — there is no static site generator. Web-based editing is in place for recipes, Quick Bites, and grocery aisles. Dev-only auth is in place (Phase 1); next auth milestone is OmniAuth (Phase 2). Next infra milestone: Docker packaging for homelab deployment. Don't prematurely optimize, but keep these goals in mind when planning.
+This is a fully dynamic Rails 8 app backed by PostgreSQL with multi-tenant "Kitchen" support. All pages render live from the database — there is no static site generator. Web-based editing is in place for recipes, Quick Bites, and grocery aisles. OmniAuth-based auth with database-backed sessions is in place (`:developer` strategy for dev/test; production OAuth providers not yet configured). Next infra milestone: Docker packaging for homelab deployment. Don't prematurely optimize, but keep these goals in mind when planning.
 
 ### Visual language
 
@@ -154,6 +154,9 @@ If `bin/dev` fails with "A server is already running", kill the process and remo
 pkill -f puma; rm -f tmp/pids/server.pid
 ```
 
+### Server restart after gem or concern changes
+Adding gems (e.g., `omniauth`) or creating new files in `app/controllers/concerns/` requires restarting Puma. The dev server does not hot-reload these. Run `pkill -f puma; rm -f tmp/pids/server.pid` then `bin/dev`.
+
 ### GitHub Issues
 If I mention a GitHub issue (e.g., "#99"), review it and plan a fix. Close it via the commit message once confirmed.
 
@@ -193,7 +196,7 @@ ruby -Itest test/controllers/recipes_controller_test.rb              # single fi
 ruby -Itest test/models/recipe_test.rb -n test_requires_title        # single test method
 ```
 
-Test layout: `test/controllers/`, `test/models/`, `test/services/`, `test/integration/`, plus top-level parser unit tests. `test/test_helper.rb` provides `create_kitchen_and_user` (returns `[kitchen, user]`), `log_in(user)`, and `kitchen_slug` for controller tests.
+Test layout: `test/controllers/`, `test/models/`, `test/services/`, `test/jobs/`, `test/integration/`, plus top-level parser unit tests. `test/test_helper.rb` provides `create_kitchen_and_user` (sets `@kitchen`, `@user`, and tenant), `log_in` (logs in `@user` via dev login), and `kitchen_slug` for controller tests. OmniAuth test mode is enabled globally.
 
 ## Dev Server
 
@@ -209,7 +212,7 @@ The `main` branch still deploys a static site to **GitHub Pages** at `biaginifam
 
 ## Routes
 
-All routes live under `/kitchens/:kitchen_slug/` except the landing page (`/`) and dev login. Views use Rails route helpers — `root_path` (landing), `kitchen_root_path` (kitchen homepage), `recipe_path(slug)`, `ingredients_path`, `groceries_path`. `ApplicationController#default_url_options` auto-fills `kitchen_slug` from `current_kitchen`, so most helpers work without explicitly passing it. When adding links, always use the `_path` helpers.
+All routes live under `/kitchens/:kitchen_slug/` except the landing page (`/`), auth routes (`/auth/:provider/callback`, `/auth/failure`, `/logout`), dev login (`/dev/login/:id`), and health check (`/up`). Views use Rails route helpers — `root_path` (landing), `kitchen_root_path` (kitchen homepage), `recipe_path(slug)`, `ingredients_path`, `groceries_path`. `ApplicationController#default_url_options` auto-fills `kitchen_slug` from `current_kitchen`, so most helpers work without explicitly passing it. When adding links, always use the `_path` helpers.
 
 ## Architecture
 
@@ -219,17 +222,22 @@ The Rails app module is `Familyrecipes` (lowercase r); the domain/parser module 
 
 ### Database
 
-PostgreSQL with nine tables: `kitchens`, `users`, `memberships`, `categories`, `recipes`, `steps`, `ingredients`, `recipe_dependencies`, `site_documents`. All data tables have a `kitchen_id` FK. See `db/schema.rb` for the full schema. Recipes are seeded from `db/seeds/recipes/*.md` via `MarkdownImporter`.
+PostgreSQL with thirteen tables: `kitchens`, `users`, `memberships`, `sessions`, `connected_services`, `categories`, `recipes`, `steps`, `ingredients`, `cross_references`, `recipe_dependencies`, `nutrition_entries`, `site_documents`. Most data tables have a `kitchen_id` FK; `sessions` and `connected_services` belong to `users` directly. See `db/schema.rb` for the full schema. Recipes are seeded from `db/seeds/recipes/*.md` via `MarkdownImporter`.
 
 ### ActiveRecord Models (`app/models/`)
 
 - `Kitchen` — multi-tenant container; has_many :users (through :memberships), :categories, :recipes, :site_documents; `member?(user)` checks membership
-- `User` — has_many :kitchens (through :memberships); email optional with partial unique index
+- `User` — has_many :kitchens (through :memberships), :sessions, :connected_services; email required and unique
+- `Session` — database-backed login session; belongs_to :user; stores ip_address, user_agent
+- `Current` — `ActiveSupport::CurrentAttributes` with `:session` attribute; delegates `:user` to session
+- `ConnectedService` — OAuth identity (provider + uid); belongs_to :user; unique on [provider, uid]
 - `Membership` — joins User to Kitchen; `role` column (default: "member") for future use
 - `Category` — has_many :recipes, ordered by position, auto-generates slug
 - `Recipe` — belongs_to :kitchen and :category, has_many :steps (ordered), has_many :ingredients (through steps), tracks outbound/inbound recipe dependencies
 - `Step` — belongs_to :recipe, has_many :ingredients (ordered)
 - `Ingredient` — belongs_to :step
+- `CrossReference` — AR model for `@[Recipe]` links within steps; stores target_recipe, multiplier, prep_note, position
+- `NutritionEntry` — one row per ingredient with FDA-label nutrients, density, and portions; used by `RecipeNutritionJob`
 - `RecipeDependency` — join table tracking which recipes reference which (source → target)
 - `SiteDocument` — kitchen-scoped key-value text blobs for editable site content (quick_bites, grocery_aisles) and seed-loaded configuration (site_config, nutrition_data); loaded by controllers with YAML file fallback
 
@@ -237,17 +245,18 @@ PostgreSQL with nine tables: `kitchens`, `users`, `memberships`, `categories`, `
 
 All controllers are thin — load from ActiveRecord, pass to views. All queries MUST go through `current_kitchen` (e.g., `current_kitchen.recipes.find_by!`). Never use unscoped model queries like `Recipe.find_by` — that crosses kitchen boundaries.
 
-- `ApplicationController` — provides `current_user`, `current_kitchen`, `logged_in?` helpers and `require_membership` before_action guard for write endpoints
+- `ApplicationController` — includes `Authentication` concern; provides `current_user`, `current_kitchen`, `logged_in?` helpers; `allow_unauthenticated_access` makes all pages public by default; `require_membership` guards write endpoints
 - `LandingController#show` — root page listing available kitchens
-- `DevSessionsController` — dev/test-only session login (`/dev/login/:id`) and logout (`/dev/logout`)
+- `DevSessionsController` — dev/test-only session login (`/dev/login/:id`) and logout; uses `start_new_session_for`/`terminate_session` from Authentication concern
+- `OmniauthCallbacksController` — handles OmniAuth callbacks (`/auth/:provider/callback`); finds or creates user via ConnectedService, starts database-backed session
 - `HomepageController#show` — categories with eager-loaded recipes, site config from SiteDocument (seeded from YAML)
 - `RecipesController` — `show` uses the "parsed-recipe bridge" pattern (see below); `create`/`update`/`destroy` are editor endpoints guarded by `require_membership`, using `MarkdownValidator` and `MarkdownImporter`
 - `IngredientsController#index` — all ingredients grouped by canonical name with recipe links
 - `GroceriesController#show` — recipe selector with ingredient JSON, aisle-organized grocery list, Quick Bites section, editor dialogs for quick bites and aisles
 
-### The parsed-recipe bridge
+### Parse-on-save architecture
 
-`RecipesController` loads the AR `Recipe` but also re-parses the original markdown via the parser pipeline. This is because the parser produces interleaved ingredient/cross-reference lists, scalable number markup, and nutrition data that would be complex to replicate from structured AR data alone. The AR model stores canonical data; the parser handles rendering concerns. This is intentional for v1 — the editor may change this.
+The parser runs only on the write path (`MarkdownImporter`). The database is the complete source of truth for rendering: `Step#processed_instructions` stores scalable number markup, `CrossReference` records store interleaved recipe links, and `Recipe#nutrition_data` stores pre-computed nutrition as jsonb. Views render entirely from AR data.
 
 ### Parser / Domain Classes (`lib/familyrecipes/`)
 
@@ -263,7 +272,7 @@ These are the import engine and render-time helpers. Loaded via `config/initiali
 - `IngredientParser` — parses ingredient line text into structured data; detects cross-references
 - `IngredientAggregator` — sums ingredient quantities by unit for grocery list display
 - `ScalableNumberPreprocessor` — wraps numbers in `<span class="scalable">` tags for client-side scaling
-- `NutritionCalculator` — calculates nutrition facts from SiteDocument data at render time
+- `NutritionCalculator` — calculates nutrition facts; used by `RecipeNutritionJob` at save time
 - `NutritionEntryHelpers` — shared helpers for nutrition entry tool
 - `BuildValidator` — validates cross-references, ingredients, and nutrition data
 - `Inflector` — pluralization/singularization for ingredient canonicalization
