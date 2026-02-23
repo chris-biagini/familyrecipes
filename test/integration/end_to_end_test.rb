@@ -78,7 +78,7 @@ class EndToEndTest < ActionDispatch::IntegrationTest
     get kitchen_root_path(kitchen_slug: kitchen_slug)
 
     assert_select 'nav a.home', 'Home'
-    assert_select 'nav a.index', 'Index'
+    assert_select 'nav a.ingredients', 'Ingredients'
     assert_select 'nav a.groceries', 'Groceries'
   end
 

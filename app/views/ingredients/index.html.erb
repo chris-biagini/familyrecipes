@@ -1,13 +1,48 @@
-<% content_for(:title) { 'Biagini Family Recipes: Index' } %>
+<% content_for(:title) { "#{current_kitchen.name}: Ingredients" } %>
 
-<article class="index">
+<article class="index ingredients">
   <header>
-    <h1>Ingredient Index</h1>
+    <h1>Ingredients</h1>
   </header>
 
+  <%- if current_kitchen.member?(current_user) && @missing_ingredients.any? -%>
+  <details class="nutrition-banner">
+    <summary><%= @missing_ingredients.size %> ingredient<%= 's' unless @missing_ingredients.size == 1 %> need<%= 's' if @missing_ingredients.size == 1 %> nutrition data</summary>
+    <p class="nutrition-banner-list">
+      <%- @missing_ingredients.each_with_index do |name, i| -%>
+        <%- unless i.zero? %> &middot; <% end -%>
+        <a href="#ingredient-<%= name.parameterize %>" class="nutrition-banner-link"><%= name %></a>
+      <%- end -%>
+    </p>
+  </details>
+  <%- end -%>
+
   <%- @ingredients_with_recipes.each do |ingredient, recipes| -%>
-  <section>
-    <h2><%= ingredient %></h2>
+  <section id="ingredient-<%= ingredient.parameterize %>">
+    <h2>
+      <%= ingredient %>
+      <%- if current_kitchen.member?(current_user) -%>
+        <%- entry = @nutrition_lookup[ingredient] -%>
+        <%- if entry.nil? -%>
+          <span class="nutrition-badge nutrition-missing" title="No nutrition data">!</span>
+          <button type="button" class="btn-link nutrition-edit-btn"
+                  data-ingredient="<%= ingredient %>"
+                  data-nutrition-text="<%= NutritionLabelParser.blank_skeleton %>">+ Add nutrition</button>
+        <%- elsif entry.global? -%>
+          <span class="nutrition-badge nutrition-global" title="Built-in nutrition data">built-in</span>
+          <button type="button" class="btn-link nutrition-edit-btn"
+                  data-ingredient="<%= ingredient %>"
+                  data-nutrition-text="<%= NutritionLabelParser.format(entry) %>">Edit</button>
+        <%- else -%>
+          <span class="nutrition-badge nutrition-custom" title="Custom nutrition data">custom</span>
+          <button type="button" class="btn-link nutrition-edit-btn"
+                  data-ingredient="<%= ingredient %>"
+                  data-nutrition-text="<%= NutritionLabelParser.format(entry) %>">Edit</button>
+          <button type="button" class="btn-link nutrition-reset-btn"
+                  data-ingredient="<%= ingredient %>">Reset</button>
+        <%- end -%>
+      <%- end -%>
+    </h2>
     <ul>
       <%- recipes.each do |recipe| -%>
       <li><%= link_to recipe.title, recipe_path(recipe.slug), title: recipe.description %></li>
@@ -16,3 +51,20 @@
   </section>
   <%- end -%>
 </article>
+
+<% if current_kitchen.member?(current_user) %>
+<dialog id="nutrition-editor" class="editor-dialog">
+  <div class="editor-header">
+    <h2 id="nutrition-editor-title">Edit Nutrition</h2>
+    <button type="button" class="btn editor-close" aria-label="Close">&times;</button>
+  </div>
+  <div class="editor-errors" hidden></div>
+  <textarea id="nutrition-editor-textarea" class="editor-textarea" spellcheck="false"></textarea>
+  <div class="editor-footer">
+    <button type="button" class="btn editor-cancel">Cancel</button>
+    <button type="button" class="btn btn-primary editor-save">Save</button>
+  </div>
+</dialog>
+
+<%= javascript_include_tag 'nutrition-editor' %>
+<% end %>

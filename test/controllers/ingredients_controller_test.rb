@@ -25,7 +25,7 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
     get ingredients_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
-    assert_select 'h1', 'Ingredient Index'
+    assert_select 'h1', 'Ingredients'
     assert_select 'h2', 'Flour'
     assert_select 'a[href=?]', recipe_path('focaccia', kitchen_slug: kitchen_slug), text: 'Focaccia'
   end
@@ -61,7 +61,7 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select 'article.index section' do |sections|
-      flour_section = sections.detect { |s| s.at('h2').text == 'Flour' }
+      flour_section = sections.detect { |s| s.at('h2').text.strip == 'Flour' }
 
       assert flour_section, 'Expected a section for Flour'
       assert_select flour_section, 'li', count: 2
@@ -86,7 +86,7 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
     get ingredients_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
-    headings = css_select('article.index h2').map(&:text)
+    headings = css_select('article.index h2').map { |h| h.text.strip }
 
     assert_equal headings, headings.sort_by(&:downcase)
   end
@@ -115,7 +115,7 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select 'article.index section' do |sections|
-      flour_section = sections.detect { |s| s.at('h2').text == 'Flour' }
+      flour_section = sections.detect { |s| s.at('h2').text.strip == 'Flour' }
 
       assert flour_section, 'Expected a section for Flour'
       assert_select flour_section, 'li', count: 1
@@ -142,5 +142,112 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select 'a[title="A simple flatbread."]', text: 'Focaccia'
+  end
+
+  test 'shows missing nutrition badge for ingredients without data' do
+    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Focaccia
+
+      Category: Bread
+
+      ## Mix (combine)
+
+      - Flour, 3 cups
+
+      Mix well.
+    MD
+
+    log_in
+    get ingredients_path(kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select '.nutrition-missing'
+  end
+
+  test 'shows global badge for ingredients with global nutrition data' do
+    NutritionEntry.create!(ingredient_name: 'Flour', basis_grams: 30, calories: 110)
+    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Focaccia
+
+      Category: Bread
+
+      ## Mix (combine)
+
+      - Flour, 3 cups
+
+      Mix well.
+    MD
+
+    log_in
+    get ingredients_path(kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select '.nutrition-global'
+  end
+
+  test 'shows custom badge for ingredients with kitchen override' do
+    NutritionEntry.create!(kitchen: @kitchen, ingredient_name: 'Flour', basis_grams: 30, calories: 110)
+    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Focaccia
+
+      Category: Bread
+
+      ## Mix (combine)
+
+      - Flour, 3 cups
+
+      Mix well.
+    MD
+
+    log_in
+    get ingredients_path(kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select '.nutrition-custom'
+  end
+
+  test 'shows missing ingredients banner when nutrition data is absent' do
+    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Focaccia
+
+      Category: Bread
+
+      ## Mix (combine)
+
+      - Flour, 3 cups
+
+      Mix well.
+    MD
+
+    log_in
+    get ingredients_path(kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select 'details.nutrition-banner'
+  end
+
+  test 'hides edit controls from non-members' do
+    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Focaccia
+
+      Category: Bread
+
+      ## Mix (combine)
+
+      - Flour, 3 cups
+
+      Mix well.
+    MD
+
+    get ingredients_path(kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select '.nutrition-edit-btn', count: 0
+    assert_select '.editor-dialog', count: 0
   end
 end
