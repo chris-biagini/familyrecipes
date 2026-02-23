@@ -421,6 +421,74 @@ section h2 {
   padding-bottom: 0.4rem;
 }
 
+/********************************/
+/* Nutrition status (ingredients) */
+/********************************/
+
+.nutrition-banner {
+  margin: 0 0 1.5rem;
+  padding: 0.75rem 1rem;
+  background: #fef3cd;
+  border: 1px solid #e6d17a;
+  border-radius: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.nutrition-banner summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.nutrition-banner-list {
+  margin: 0.5rem 0 0;
+  line-height: 1.8;
+}
+
+.nutrition-banner-link {
+  white-space: nowrap;
+}
+
+.nutrition-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.1em 0.4em;
+  border-radius: 0.2em;
+  vertical-align: middle;
+  margin-left: 0.3em;
+}
+
+.nutrition-missing {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.nutrition-global {
+  background: #d4edda;
+  color: #155724;
+}
+
+.nutrition-custom {
+  background: #cce5ff;
+  color: #004085;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: var(--muted-text);
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  vertical-align: middle;
+}
+
+.btn-link:hover {
+  color: var(--text-color);
+}
+
 section > div:has(.ingredients):has(.instructions) {
   display: grid;
   grid-template-columns: 10rem 1fr;
