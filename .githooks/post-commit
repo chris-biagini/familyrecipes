@@ -117,4 +117,5 @@ new_date=$(iso_from_epoch "$new_epoch")
 GIT_PRIVACY_AMENDING=1 \
 GIT_COMMITTER_DATE="$new_date" \
   git commit --amend --no-edit --no-verify --allow-empty --date="$new_date" \
-  > /dev/null 2>&1
+  > /dev/null 2>&1 \
+  || echo "WARNING: timestamp privacy hook failed to amend commit" >&2
