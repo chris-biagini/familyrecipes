@@ -71,6 +71,28 @@ class RecipeNutritionJobTest < ActiveSupport::TestCase
     assert_predicate recipe.nutrition_data['totals']['calories'], :positive?
   end
 
+  test 'uses kitchen override when available' do
+    # Global entry exists from setup (Flour, calories: 110)
+    # Create kitchen override with different calories
+    NutritionEntry.create!(
+      kitchen: @kitchen,
+      ingredient_name: 'Flour',
+      basis_grams: 30.0,
+      calories: 200.0,
+      fat: 1.0,
+      protein: 5.0
+    )
+
+    markdown = "# Bread\n\nCategory: Cat\nServes: 1\n\n## Mix\n\n- Flour, 30 g\n\nMix."
+    recipe = import_without_nutrition(markdown)
+
+    RecipeNutritionJob.perform_now(recipe)
+    recipe.reload
+
+    # Should use the kitchen override (200 cal) not global (110 cal)
+    assert_in_delta 200.0, recipe.nutrition_data['totals']['calories'], 0.01
+  end
+
   test 'cascade job recomputes nutrition for referencing recipes' do
     dough = MarkdownImporter.import(
       "# Dough\n\nCategory: Cat\nServes: 2\n\n## Mix\n\n- Flour, 60 g\n\nMix.", kitchen: @kitchen

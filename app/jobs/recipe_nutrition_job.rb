@@ -5,25 +5,23 @@ class RecipeNutritionJob < ApplicationJob
                         sodium carbs fiber total_sugars added_sugars protein].freeze
 
   def perform(recipe)
-    ActsAsTenant.with_tenant(recipe.kitchen) do
-      nutrition_data = build_nutrition_lookup
-      return if nutrition_data.empty?
+    nutrition_data = build_nutrition_lookup(recipe.kitchen)
+    return if nutrition_data.empty?
 
-      calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data, omit_set: omit_set)
-      result = calculator.calculate(parsed_recipe(recipe), alias_map, recipe_map)
+    calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data, omit_set: omit_set)
+    result = calculator.calculate(parsed_recipe(recipe), alias_map, recipe_map(recipe.kitchen))
 
-      recipe.update_column(:nutrition_data, serialize_result(result))
-    end
+    recipe.update_column(:nutrition_data, serialize_result(result))
   end
 
   private
 
-  def build_nutrition_lookup
-    NutritionEntry.all.to_h do |entry|
+  def build_nutrition_lookup(kitchen)
+    NutritionEntry.lookup_for(kitchen).transform_values do |entry|
       data = { 'nutrients' => nutrients_hash(entry) }
       data['density'] = density_hash(entry) if entry.density_grams && entry.density_volume && entry.density_unit
       data['portions'] = entry.portions if entry.portions.present?
-      [entry.ingredient_name, data]
+      data
     end
   end
 
@@ -78,8 +76,8 @@ class RecipeNutritionJob < ApplicationJob
     grocery_aisles[omit_key].to_set { |item| item[:name].downcase }
   end
 
-  def recipe_map
-    @recipe_map ||= Recipe.includes(:category).to_h do |r|
+  def recipe_map(kitchen)
+    @recipe_map ||= kitchen.recipes.includes(:category).to_h do |r|
       [r.slug, parsed_recipe(r)]
     end
   end
