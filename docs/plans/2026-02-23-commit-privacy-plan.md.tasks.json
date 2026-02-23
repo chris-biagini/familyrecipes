@@ -1,0 +1,9 @@
+{
+  "planPath": "docs/plans/2026-02-23-commit-privacy-plan.md",
+  "tasks": [
+    {"id": 5, "subject": "Task 1: Write the post-commit hook", "status": "pending"},
+    {"id": 6, "subject": "Task 2: Activate the hook and verify", "status": "pending", "blockedBy": [5]},
+    {"id": 7, "subject": "Task 3: Update CLAUDE.md with setup instructions", "status": "pending", "blockedBy": [6]}
+  ],
+  "lastUpdated": "2026-02-23T15:45:00Z"
+}
