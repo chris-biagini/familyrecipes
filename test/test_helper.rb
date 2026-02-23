@@ -8,6 +8,8 @@ require_relative '../config/environment'
 require 'rails/test_help'
 require 'minitest/autorun'
 
+OmniAuth.config.test_mode = true
+
 module ActionDispatch
   class IntegrationTest
     private

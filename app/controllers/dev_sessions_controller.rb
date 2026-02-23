@@ -5,13 +5,13 @@ class DevSessionsController < ApplicationController
 
   def create
     user = User.find(params[:id])
-    session[:user_id] = user.id
+    start_new_session_for(user)
     kitchen = ActsAsTenant.without_tenant { user.kitchens.first }
     redirect_to kitchen_root_path(kitchen_slug: kitchen.slug)
   end
 
   def destroy
-    reset_session
+    terminate_session
     redirect_to root_path
   end
 end

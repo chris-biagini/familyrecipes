@@ -1,12 +1,16 @@
 # frozen_string_literal: true
 
 class ApplicationController < ActionController::Base
+  include Authentication
+
   allow_browser versions: :modern
+  allow_unauthenticated_access
 
   set_current_tenant_through_filter
+  before_action :resume_session
   before_action :set_kitchen_from_path
 
-  helper_method :current_user, :current_kitchen, :logged_in?
+  helper_method :current_kitchen, :logged_in?
 
   private
 
@@ -16,17 +20,9 @@ class ApplicationController < ActionController::Base
     set_current_tenant(Kitchen.find_by!(slug: params[:kitchen_slug]))
   end
 
-  def current_user
-    @current_user ||= User.find_by(id: session[:user_id])
-  end
+  def current_kitchen = ActsAsTenant.current_tenant
 
-  def current_kitchen
-    ActsAsTenant.current_tenant
-  end
-
-  def logged_in?
-    current_user.present?
-  end
+  def logged_in? = authenticated?
 
   def require_membership
     head :unauthorized unless logged_in? && current_kitchen&.member?(current_user)

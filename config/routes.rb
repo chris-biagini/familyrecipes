@@ -12,6 +12,10 @@ Rails.application.routes.draw do
     patch 'groceries/grocery_aisles', to: 'groceries#update_grocery_aisles', as: :groceries_grocery_aisles
   end
 
+  get 'auth/:provider/callback', to: 'omniauth_callbacks#create', as: :omniauth_callback
+  get 'auth/failure', to: 'omniauth_callbacks#failure'
+  delete 'logout', to: 'omniauth_callbacks#destroy', as: :logout
+
   if Rails.env.development? || Rails.env.test?
     get 'dev/login/:id', to: 'dev_sessions#create', as: :dev_login
     get 'dev/logout', to: 'dev_sessions#destroy', as: :dev_logout
