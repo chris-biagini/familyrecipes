@@ -165,6 +165,13 @@ rails db:create db:migrate db:seed
 
 PostgreSQL is required. `db:seed` imports all markdown files from `db/seeds/recipes/` into the database via `MarkdownImporter`. The seed is idempotent — safe to re-run. Dependencies are managed via `Gemfile` (Ruby 3.2+, Bundler, and `bundle install` required).
 
+### Background Jobs
+
+Save-time operations (nutrition calculation, cross-reference cascades) run synchronously
+via `perform_now`. When this becomes too slow, add `solid_queue` gem and switch to
+`perform_later`. Solid Queue runs inside Puma via `plugin :solid_queue` — no separate
+process needed. See `app/jobs/` for the job classes.
+
 ## Lint Command
 
 ```bash
