@@ -144,7 +144,7 @@ function initEditor(dialog) {
       deleteBtn.textContent = 'Deleting\u2026';
 
       try {
-        const response = await fetch(`/recipes/${slug}`, {
+        const response = await fetch(actionUrl, {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',

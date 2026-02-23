@@ -31,7 +31,7 @@ class ApplicationController < ActionController::Base
       return request_authentication
     end
 
-    head :unauthorized unless current_kitchen&.member?(current_user)
+    return head(:unauthorized) unless current_kitchen&.member?(current_user)
   end
 
   def default_url_options
