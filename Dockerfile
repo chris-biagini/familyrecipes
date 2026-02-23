@@ -4,7 +4,7 @@
 FROM ruby:3.2-slim AS builder
 
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential libpq-dev && \
+    apt-get install --no-install-recommends -y build-essential libpq-dev libyaml-dev && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -22,7 +22,7 @@ RUN SECRET_KEY_BASE=placeholder bin/rails assets:precompile
 FROM ruby:3.2-slim
 
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y libpq5 && \
+    apt-get install --no-install-recommends -y libpq5 libyaml-0-2 && \
     rm -rf /var/lib/apt/lists/* && \
     groupadd --system rails && \
     useradd --system --gid rails --create-home rails
