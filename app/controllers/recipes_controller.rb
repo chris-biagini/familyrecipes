@@ -4,9 +4,10 @@ class RecipesController < ApplicationController
   before_action :require_membership, only: %i[create update destroy]
 
   def show
-    @recipe = current_kitchen.recipes.includes(steps: :ingredients).find_by!(slug: params[:slug])
-    @parsed_recipe = parse_recipe
-    @nutrition = calculate_nutrition
+    @recipe = current_kitchen.recipes
+                             .includes(steps: %i[ingredients cross_references])
+                             .find_by!(slug: params[:slug])
+    @nutrition = @recipe.nutrition_data
   rescue ActiveRecord::RecordNotFound
     head :not_found
   end
@@ -67,66 +68,5 @@ class RecipesController < ApplicationController
 
   def title_changed?(old_title, new_title)
     old_title != new_title
-  end
-
-  def parse_recipe
-    FamilyRecipes::Recipe.new(
-      markdown_source: @recipe.markdown_source,
-      id: @recipe.slug,
-      category: @recipe.category.name
-    )
-  end
-
-  def calculate_nutrition
-    nutrition_data = load_nutrition_data
-    return unless nutrition_data
-
-    calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data, omit_set: omit_set)
-    calculator.calculate(@parsed_recipe, alias_map, recipe_map)
-  end
-
-  def load_nutrition_data
-    content = SiteDocument.content_for('nutrition_data',
-                                       fallback_path: Rails.root.join('db/seeds/resources/nutrition-data.yaml'))
-    return unless content
-
-    YAML.safe_load(content, permitted_classes: [], permitted_symbols: [], aliases: false)
-  end
-
-  def grocery_aisles
-    @grocery_aisles ||= load_grocery_aisles
-  end
-
-  def load_grocery_aisles
-    content = SiteDocument.content_for('grocery_aisles')
-    return FamilyRecipes.parse_grocery_aisles_markdown(content) if content
-
-    FamilyRecipes.parse_grocery_info(Rails.root.join('db/seeds/resources/grocery-info.yaml'))
-  end
-
-  def alias_map
-    @alias_map ||= FamilyRecipes.build_alias_map(grocery_aisles)
-  end
-
-  def omit_set
-    @omit_set ||= build_omit_set
-  end
-
-  def build_omit_set
-    omit_key = grocery_aisles.keys.find { |k| k.downcase.tr('_', ' ') == 'omit from list' }
-    return Set.new unless omit_key
-
-    grocery_aisles[omit_key].to_set { |item| item[:name].downcase }
-  end
-
-  def recipe_map
-    @recipe_map ||= current_kitchen.recipes.includes(:category).to_h do |r|
-      parsed = FamilyRecipes::Recipe.new(
-        markdown_source: r.markdown_source,
-        id: r.slug,
-        category: r.category.name
-      )
-      [r.slug, parsed]
-    end
   end
 end

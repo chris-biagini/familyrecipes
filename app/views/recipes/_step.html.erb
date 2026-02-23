@@ -1,5 +1,5 @@
 <section>
-  <h2><%= step.tldr %></h2>
+  <h2><%= step.title %></h2>
   <div>
     <%- unless step.ingredient_list_items.empty? -%>
     <div class="ingredients">
@@ -13,7 +13,7 @@
         </li>
         <%- else -%>
         <li<% if item.quantity_value %> data-quantity-value="<%= item.quantity_value %>" data-quantity-unit="<%= item.quantity_unit %>"<%= %( data-quantity-unit-plural="#{FamilyRecipes::Inflector.unit_display(item.quantity_unit, 2)}").html_safe if item.quantity_unit %><% end %>>
-          <b><%= item.name %></b><% if item.quantity %>, <span class="quantity"><%= item.quantity %></span><% end %>
+          <b><%= item.name %></b><% if item.quantity_display %>, <span class="quantity"><%= item.quantity_display %></span><% end %>
         <%- if item.prep_note -%>
           <small><%= item.prep_note %></small>
         <%- end -%>
@@ -24,7 +24,11 @@
     </div>
     <%- end -%>
 
-    <%- unless step.instructions.nil? || step.instructions.strip.empty? -%>
+    <%- if step.processed_instructions.present? -%>
+    <div class="instructions">
+      <%= render_markdown(step.processed_instructions) %>
+    </div>
+    <%- elsif step.instructions.present? -%>
     <div class="instructions">
       <%= scalable_instructions(step.instructions) %>
     </div>
