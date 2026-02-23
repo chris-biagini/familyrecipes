@@ -200,6 +200,27 @@ nav > div:last-child:not(:first-child) {
   padding: 0.4rem;
 }
 
+.nav-auth-btn {
+  appearance: none;
+  -webkit-appearance: none;
+  font-family: "Futura", sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  background: none;
+  border: none;
+  color: var(--text-color);
+  cursor: pointer;
+  padding: 0.5rem 0.9rem;
+  line-height: 1.5;
+  transition: color 0.2s ease;
+}
+
+.nav-auth-btn:hover {
+  color: var(--accent-color);
+}
+
 /* Buttons — the one shared interactive style across the site */
 .btn {
   appearance: none;
@@ -738,6 +759,68 @@ footer small {
 }
 
 .notify-dismiss:hover {
+  color: var(--muted-text);
+}
+
+/************************/
+/* Login page           */
+/************************/
+
+.login header {
+  margin-bottom: 1.5rem;
+}
+
+.login-form {
+  max-width: 20rem;
+  margin: 0 auto;
+}
+
+.login-field {
+  margin-bottom: 1rem;
+}
+
+.login-field label {
+  display: block;
+  font-family: "Futura", sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.35rem;
+}
+
+.login-field input {
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  font-family: inherit;
+  font-size: 1rem;
+  border: 1px solid var(--border-light);
+  border-radius: 3px;
+  background: white;
+  color: var(--text-color);
+  box-sizing: border-box;
+}
+
+.login-field input:focus {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 1px;
+  border-color: var(--accent-color);
+}
+
+.login-actions {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.login-actions .btn {
+  width: 100%;
+  padding: 0.6rem;
+  font-size: 0.9rem;
+}
+
+.login-placeholder {
+  text-align: center;
+  font-style: italic;
   color: var(--muted-text);
 }
 
