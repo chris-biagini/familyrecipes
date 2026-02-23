@@ -1,0 +1,11 @@
+{
+  "planPath": "docs/plans/2026-02-22-login-page-plan.md",
+  "tasks": [
+    {"id": 3, "subject": "Task 1: Route and Controller", "status": "pending"},
+    {"id": 4, "subject": "Task 2: Fix Authentication Redirect", "status": "pending", "blockedBy": [3]},
+    {"id": 5, "subject": "Task 3: Nav Login/Logout Links", "status": "pending", "blockedBy": [3]},
+    {"id": 6, "subject": "Task 4: Login Page Styling", "status": "pending", "blockedBy": [5]},
+    {"id": 7, "subject": "Task 5: Full Test Suite Verification", "status": "pending", "blockedBy": [6]}
+  ],
+  "lastUpdated": "2026-02-22T00:00:00Z"
+}
