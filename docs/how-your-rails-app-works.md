@@ -360,3 +360,364 @@ This is also why the recipe template uses `content_for(:scripts)` to declare its
 ---
 
 **That's the whole read path.** A URL hits the router, which picks a controller. The controller runs through a pipeline of callbacks (restore session, set kitchen), then executes a three-line action that loads a recipe from the database. Rails infers the template from the controller and action names, wraps it in a layout, and the view renders your parser's output — stored in the database as structured rows — back into HTML. Propshaft serves the CSS and JavaScript that make it look and feel like a cookbook page. The entire journey, from URL to finished HTML, touches about eight files and zero configuration.
+
+*Now let's see what happens when someone changes something.*
+
+## Journey 2: Someone edits and saves that recipe
+
+You just read the Focaccia recipe (Journey 1). You're logged in as a family member, and you notice the salt quantity is wrong. You click "Edit," fix the amount in the Markdown source, and hit "Save." Here's everything that happens between that click and the updated page.
+
+### Stop 1: The Editor Dialog and JavaScript
+
+At the end of Journey 1, the browser received the recipe page. If you're logged in and you belong to this kitchen, the page includes something extra that anonymous visitors don't see. Look at the bottom of `app/views/recipes/show.html.erb`:
+
+```erb
+<% if current_kitchen.member?(current_user) %>
+<%= render 'editor_dialog',
+           mode: :edit,
+           content: @recipe.markdown_source,
+           action_url: recipe_path(@recipe.slug),
+           recipe: @recipe %>
+<% end %>
+```
+
+The `member?` check means the editor dialog only appears in the HTML for logged-in kitchen members. Anonymous visitors get the same recipe page, minus the editing UI. The dialog is rendered from a **partial** (`app/views/recipes/_editor_dialog.html.erb`) that we can reuse for both editing and creating recipes, controlled by the `mode:` parameter.
+
+Here's the dialog, trimmed to its structural bones:
+
+```erb
+<%# locals: (mode:, content:, action_url:, recipe: nil) %>
+<dialog id="recipe-editor"
+        class="editor-dialog"
+        data-editor-open="<%= mode == :create ? '#new-recipe-button' : '#edit-button' %>"
+        data-editor-url="<%= action_url %>"
+        data-editor-method="<%= mode == :create ? 'POST' : 'PATCH' %>"
+        data-editor-on-success="redirect"
+        data-editor-body-key="markdown_source">
+  <div class="editor-errors" hidden></div>
+  <textarea class="editor-textarea"><%= content %></textarea>
+  <div class="editor-footer">
+    <button type="button" class="btn editor-cancel">Cancel</button>
+    <button type="button" class="btn btn-primary editor-save">Save</button>
+  </div>
+</dialog>
+```
+
+This is a native HTML **`<dialog>`** element — no framework, no custom modal. The interesting part is the `data-` attributes on the dialog tag. These are the entire configuration for the JavaScript that drives it:
+
+- **`data-editor-open`** — a CSS selector for the button that opens this dialog (`#edit-button`)
+- **`data-editor-url`** — where to send the save request (`/kitchens/test-kitchen/recipes/focaccia`)
+- **`data-editor-method`** — HTTP method: `PATCH` for editing, `POST` for creating
+- **`data-editor-on-success`** — what to do after a successful save (`redirect` navigates to the recipe)
+- **`data-editor-body-key`** — the JSON key to wrap the textarea content in (`markdown_source`)
+
+The JavaScript (`app/assets/javascripts/recipe-editor.js`) is generic. On page load, it finds every `.editor-dialog` on the page and wires each one up by reading its data attributes. There's no per-dialog JavaScript — the same code handles the recipe editor, the Quick Bites editor on the groceries page, and the aisle editor. Want a new editor dialog? Add a `<dialog>` with the right data attributes. No JS changes needed.
+
+When you click Save, the JavaScript does this:
+
+```javascript
+const response = await fetch(actionUrl, {
+  method: method,
+  headers: {
+    'Content-Type': 'application/json',
+    'X-CSRF-Token': csrfToken
+  },
+  body: JSON.stringify({ [bodyKey]: textarea.value })
+});
+```
+
+That sends a `PATCH` request to `/kitchens/test-kitchen/recipes/focaccia` with a JSON body like `{ "markdown_source": "# Focaccia\n\nThe updated markdown..." }`. The **CSRF token** is a Rails security feature — it's a one-time token embedded in the page's `<meta>` tags that proves this request came from your page, not a malicious third-party site. Rails rejects requests without a valid token.
+
+The request is now headed for `RecipesController#update`. But before Rails runs that method, it needs to verify that this user is allowed to make changes.
+
+### Stop 2: Authentication and Authorization
+
+In Journey 1, we breezed past `require_membership` because it didn't apply to the `show` action. Now it's front and center. Look at `app/controllers/recipes_controller.rb`:
+
+```ruby
+class RecipesController < ApplicationController
+  before_action :require_membership, only: %i[create update destroy]
+  # ...
+end
+```
+
+Our PATCH request maps to the `update` action, so `require_membership` runs. Open `app/controllers/application_controller.rb`:
+
+```ruby
+def require_membership
+  unless logged_in?
+    return head(:unauthorized) if request.format.json?
+    return request_authentication
+  end
+  return head(:unauthorized) unless current_kitchen&.member?(current_user)
+end
+```
+
+This does two checks. First: **are you logged in at all?** If not, JSON requests get a 401 response (the editor JavaScript shows an error), and browser requests get redirected to the login page. Second: **are you a member of this kitchen?** Even a logged-in user can't edit recipes in someone else's kitchen.
+
+`logged_in?` delegates to `authenticated?`, which calls `resume_session` from the `Authentication` concern. Here's the chain:
+
+```ruby
+# app/controllers/concerns/authentication.rb
+def resume_session
+  Current.session ||= find_session_by_cookie
+end
+
+def find_session_by_cookie
+  Session.find_by(id: cookies.signed[:session_id])
+end
+```
+
+When you logged in earlier, the app created a `Session` row in the database and stored its ID in a **signed cookie** — a cookie that Rails cryptographically signs so it can't be tampered with. `resume_session` reads that cookie, looks up the Session row, and stores it in **`Current`** — a thread-local container that holds data for just this one request:
+
+```ruby
+# app/models/current.rb
+class Current < ActiveSupport::CurrentAttributes
+  attribute :session
+  delegate :user, to: :session, allow_nil: true
+end
+```
+
+`Current.session` gives you the session. `Current.user` (which delegates through the session) gives you the user. These are available anywhere in the app for the duration of this request, then automatically reset. No global state leaks between requests.
+
+`current_kitchen.member?(current_user)` is the final gate — it checks the `memberships` table for a row linking this user to this kitchen:
+
+```ruby
+# app/models/kitchen.rb
+def member?(user)
+  return false unless user
+  memberships.exists?(user: user)
+end
+```
+
+Our user passes both checks. The before-action finishes without halting, and Rails proceeds to `RecipesController#update`.
+
+### Stop 3: Validation
+
+The first thing `update` does is find the recipe and validate the incoming Markdown. Here's the top of the action:
+
+```ruby
+def update
+  @recipe = current_kitchen.recipes.find_by!(slug: params[:slug])
+
+  errors = MarkdownValidator.validate(params[:markdown_source])
+  return render json: { errors: errors }, status: :unprocessable_entity if errors.any?
+
+  # ... import happens next
+end
+```
+
+`find_by!` loads the existing recipe from the database — same pattern as `show` in Journey 1, but this time we need the record so we can track changes to the title later. If the slug doesn't match anything, the rescue at the bottom of the method catches the exception and returns a 404.
+
+**`MarkdownValidator`** is a plain Ruby class in `app/services/markdown_validator.rb`. It runs your parser code in a read-only pass to check whether the Markdown is structurally valid:
+
+```ruby
+class MarkdownValidator
+  def self.validate(markdown_source)
+    new(markdown_source).validate
+  end
+
+  def validate
+    return ['Recipe cannot be blank.'] if @markdown_source.blank?
+
+    parsed = parse
+    errors = []
+    errors << 'Category is required in front matter.' unless parsed[:front_matter][:category]
+    errors << 'Recipe must have at least one step.' if parsed[:steps].empty?
+    errors
+  rescue StandardError => error
+    [error.message]
+  end
+
+  private
+
+  def parse
+    tokens = LineClassifier.classify(@markdown_source)
+    RecipeBuilder.new(tokens).build
+  end
+end
+```
+
+This is **fail-fast validation**: check cheaply before doing anything expensive. The private `parse` method runs `LineClassifier` and `RecipeBuilder` — your code — to tokenize and parse the Markdown. If the parser raises an exception (missing title, malformed structure), the rescue catches it and surfaces the error message. If parsing succeeds, the validator checks for a category and at least one step.
+
+The key design: the validator calls the same parser the importer will call momentarily. If validation passes, we know the import won't blow up on a parse error. And if validation fails, we haven't touched the database at all — the response goes back as a `422 Unprocessable Entity` with the error messages as JSON, and the editor JavaScript displays them in the `.editor-errors` div.
+
+Our Focaccia edit passes validation. On to the import.
+
+### Stop 4: The Import Pipeline
+
+This is where your parser code meets the database. `MarkdownImporter` is the bridge between the two worlds: it takes raw Markdown, runs it through your parser, and writes the result into ActiveRecord models. Open `app/services/markdown_importer.rb`:
+
+```ruby
+class MarkdownImporter
+  def self.import(markdown_source, kitchen:)
+    new(markdown_source, kitchen: kitchen).import
+  end
+
+  def initialize(markdown_source, kitchen:)
+    @markdown_source = markdown_source
+    @kitchen = kitchen
+    @parsed = parse_markdown
+  end
+
+  def import
+    recipe = save_recipe
+    compute_nutrition(recipe)
+    recipe
+  end
+end
+```
+
+The class method `import` is the public interface — the controller calls `MarkdownImporter.import(params[:markdown_source], kitchen: current_kitchen)` and gets a Recipe back. Let's walk through each phase.
+
+**Phase 1: Parse.** The constructor calls `parse_markdown` immediately:
+
+```ruby
+def parse_markdown
+  tokens = LineClassifier.classify(markdown_source)
+  RecipeBuilder.new(tokens).build
+end
+```
+
+This is your code. `LineClassifier` tokenizes the Markdown into typed lines, `RecipeBuilder` assembles them into a structured hash with `:title`, `:description`, `:front_matter`, `:steps`, `:footer`. The result is a plain Ruby hash — no ActiveRecord, no database. Just data.
+
+**Phase 2: Transaction.** `save_recipe` wraps the entire database write in a **transaction**:
+
+```ruby
+def save_recipe
+  ActiveRecord::Base.transaction do
+    recipe = find_or_initialize_recipe
+    update_recipe_attributes(recipe)
+    recipe.save!
+    replace_steps(recipe)
+    rebuild_dependencies(recipe)
+    recipe
+  end
+end
+```
+
+A transaction means all of these database operations either succeed together or fail together. If `replace_steps` blows up halfway through, the recipe attributes get rolled back too. You never end up with a half-updated recipe.
+
+**Phase 3: Find or create.** `find_or_initialize_recipe` derives a slug from the parsed title and looks for an existing recipe:
+
+```ruby
+def find_or_initialize_recipe
+  slug = FamilyRecipes.slugify(parsed[:title])
+  kitchen.recipes.find_or_initialize_by(slug: slug)
+end
+```
+
+`find_or_initialize_by` either finds the existing Focaccia record or builds a new (unsaved) one in memory. For our edit, it finds the existing record. For a brand-new recipe, it initializes a blank one.
+
+**Phase 4: Set attributes.** `update_recipe_attributes` takes the parsed data and maps it onto the Recipe model's columns:
+
+```ruby
+def update_recipe_attributes(recipe)
+  category = find_or_create_category(parsed[:front_matter][:category])
+  makes_qty, makes_unit = parse_makes(parsed[:front_matter][:makes])
+
+  recipe.assign_attributes(
+    title: parsed[:title],
+    description: parsed[:description],
+    category: category,
+    kitchen: kitchen,
+    makes_quantity: makes_qty,
+    makes_unit_noun: makes_unit,
+    serves: parsed[:front_matter][:serves]&.to_i,
+    footer: parsed[:footer],
+    markdown_source: markdown_source
+  )
+end
+```
+
+`assign_attributes` sets the values in memory without saving. The `save!` on the next line writes them to the database (the bang means it raises an exception if validation fails, which the transaction would then roll back).
+
+**Phase 5: Replace steps.** This is the most destructive part — and the simplest:
+
+```ruby
+def replace_steps(recipe)
+  recipe.steps.destroy_all
+  parsed[:steps].each_with_index do |step_data, index|
+    step = recipe.steps.create!(
+      title: step_data[:tldr],
+      instructions: step_data[:instructions],
+      processed_instructions: process_instructions(step_data[:instructions]),
+      position: index
+    )
+    import_step_items(step, step_data[:ingredients])
+  end
+end
+```
+
+`destroy_all` deletes every existing step (and their ingredients and cross-references, thanks to `dependent: :destroy` on the model). Then it creates fresh ones from the parsed data. This is a full replacement, not a diff — simpler to reason about and impossible to leave stale data behind. Each step's instructions get run through `ScalableNumberPreprocessor`, which wraps numbers in `<span class="scalable">` tags so the client-side scaling JavaScript can find them later.
+
+`import_step_items` iterates through each step's ingredient list and creates either an `Ingredient` or a `CrossReference` row depending on whether the parsed data has a `:cross_reference` flag — the distinction your `IngredientParser` makes when it sees the `@[Recipe Name]` syntax.
+
+**Phase 6: Rebuild dependencies.** `rebuild_dependencies` updates the `RecipeDependency` table, which tracks which recipes reference which other recipes. Same pattern: destroy all existing dependencies, create new ones from the parsed cross-references. This table powers things like warning you when deleting a recipe that other recipes link to.
+
+**Phase 7: Compute nutrition.** After the transaction commits, `compute_nutrition` runs two jobs synchronously:
+
+```ruby
+def compute_nutrition(recipe)
+  RecipeNutritionJob.perform_now(recipe)
+  CascadeNutritionJob.perform_now(recipe)
+end
+```
+
+`RecipeNutritionJob` calculates this recipe's nutrition facts from its ingredients. `CascadeNutritionJob` recalculates any recipe that references *this* recipe (via cross-references), since their nutrition totals may have changed. Both run inline (`perform_now`) — no background queue.
+
+After the importer returns, the database is the source of truth. The Markdown has been decomposed into rows across five tables (recipes, steps, ingredients, cross_references, recipe_dependencies), the raw source has been stored in `markdown_source`, and nutrition data has been computed and stored as jsonb. The parser won't run again until the next edit.
+
+### Stop 5: The Response and Redirect
+
+Back in the controller, the import is done. The rest of `update` handles a few housekeeping tasks and sends the response:
+
+```ruby
+def update
+  @recipe = current_kitchen.recipes.find_by!(slug: params[:slug])
+  # validation and import happened above...
+
+  old_title = @recipe.title
+  recipe = MarkdownImporter.import(params[:markdown_source], kitchen: current_kitchen)
+
+  updated_references = if title_changed?(old_title, recipe.title)
+                         CrossReferenceUpdater.rename_references(
+                           old_title: old_title, new_title: recipe.title, kitchen: current_kitchen
+                         )
+                       else
+                         []
+                       end
+
+  @recipe.destroy! if recipe.slug != @recipe.slug
+  recipe.update!(edited_at: Time.current)
+
+  response_json = { redirect_url: recipe_path(recipe.slug) }
+  response_json[:updated_references] = updated_references if updated_references.any?
+  render json: response_json
+end
+```
+
+If the title changed, `CrossReferenceUpdater` finds every other recipe that references this one by its old title and updates those references. If the slug changed (because the title changed), the old recipe record gets destroyed — the importer already created a new one with the new slug. Either way, the `edited_at` timestamp is set.
+
+The response is JSON: `{ "redirect_url": "/kitchens/test-kitchen/recipes/focaccia" }`. Back in the browser, the JavaScript reads `redirect_url` and navigates there:
+
+```javascript
+if (response.ok) {
+  const data = await response.json();
+  window.location = data.redirect_url;
+}
+```
+
+The browser navigates to the recipe URL, and Journey 1 starts all over again — router, controller pipeline, database query, view render. The page loads with the updated salt quantity. The cycle is complete.
+
+---
+
+**That's the whole write path.** A click opens a native `<dialog>` configured entirely through data attributes. JavaScript sends a JSON PATCH request with the Markdown source. The controller verifies you're logged in and belong to this kitchen, validates the Markdown with a fast parser pass, then hands it to the import pipeline. The importer runs your parser code one more time, decomposes the result into database rows inside a transaction, and computes nutrition. The controller sends back a redirect URL, and the JavaScript navigates there — handing off to the read path from Journey 1.
+
+Your parser code appears in exactly three places in the running app:
+
+1. **`MarkdownValidator`** — a quick parse to check structure before committing to the import.
+2. **`MarkdownImporter`** — the full parse that decomposes Markdown into database rows. This is where `LineClassifier`, `RecipeBuilder`, and `IngredientParser` do their real work.
+3. **`RecipeNutritionJob`** — after import, it uses the structured data to calculate nutrition facts.
+
+Everything else — routing, authentication, rendering, scaling, cross-references — works from the database rows your parser helped create.
