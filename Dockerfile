@@ -34,7 +34,8 @@ ENV RAILS_ENV=production
 COPY --from=builder /usr/local/bundle /usr/local/bundle
 COPY --from=builder /app /app
 
-RUN chown -R rails:rails /app/tmp /app/log /app/db
+RUN mkdir -p /app/tmp /app/log && \
+    chown -R rails:rails /app/tmp /app/log /app/db
 
 USER rails
 
