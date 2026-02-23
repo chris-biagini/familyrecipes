@@ -1,0 +1,19 @@
+{
+  "planPath": "docs/plans/2026-02-23-web-nutrition-editor-plan.md",
+  "tasks": [
+    {"id": 0, "subject": "Task 0: Create feature branch and worktree", "status": "pending"},
+    {"id": 1, "subject": "Task 1: Migration — make kitchen_id nullable", "status": "pending", "blockedBy": [0]},
+    {"id": 2, "subject": "Task 2: NutritionEntry overlay model", "status": "pending", "blockedBy": [1]},
+    {"id": 3, "subject": "Task 3: Update seeds for global entries", "status": "pending", "blockedBy": [2]},
+    {"id": 4, "subject": "Task 4: RecipeNutritionJob overlay lookup", "status": "pending", "blockedBy": [2]},
+    {"id": 5, "subject": "Task 5: NutritionLabelParser service", "status": "pending", "blockedBy": [0]},
+    {"id": 6, "subject": "Task 6: NutritionEntriesController", "status": "pending", "blockedBy": [2, 5]},
+    {"id": 7, "subject": "Task 7: Ingredients page redesign", "status": "pending", "blockedBy": [2, 5]},
+    {"id": 8, "subject": "Task 8: Nutrition editor JavaScript", "status": "pending", "blockedBy": [7]},
+    {"id": 9, "subject": "Task 9: CSS for nutrition badges and banner", "status": "pending", "blockedBy": [7]},
+    {"id": 10, "subject": "Task 10: Fix broken tests", "status": "pending", "blockedBy": [8, 9]},
+    {"id": 11, "subject": "Task 11: Manual verification and polish", "status": "pending", "blockedBy": [10]},
+    {"id": 12, "subject": "Task 12: Final test suite and lint", "status": "pending", "blockedBy": [11]}
+  ],
+  "lastUpdated": "2026-02-23T00:00:00Z"
+}
