@@ -27,7 +27,7 @@ class KitchenTest < ActiveSupport::TestCase
 
   test 'member? returns true for kitchen members' do
     kitchen = Kitchen.create!(name: 'Test Kitchen', slug: 'test-kitchen')
-    user = User.create!(name: 'Alice')
+    user = User.create!(name: 'Alice', email: 'alice@example.com')
     ActsAsTenant.current_tenant = kitchen
     Membership.create!(kitchen: kitchen, user: user)
 
@@ -36,7 +36,7 @@ class KitchenTest < ActiveSupport::TestCase
 
   test 'member? returns false for non-members' do
     kitchen = Kitchen.create!(name: 'Test Kitchen', slug: 'test-kitchen')
-    user = User.create!(name: 'Alice')
+    user = User.create!(name: 'Alice', email: 'alice@example.com')
     ActsAsTenant.current_tenant = kitchen
 
     assert_not kitchen.member?(user)

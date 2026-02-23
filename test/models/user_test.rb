@@ -4,19 +4,20 @@ require 'test_helper'
 
 class UserTest < ActiveSupport::TestCase
   test 'requires name' do
-    user = User.new
+    user = User.new(email: 'test@example.com')
 
     assert_not user.valid?
     assert_includes user.errors[:name], "can't be blank"
   end
 
-  test 'allows nil email' do
+  test 'requires email' do
     user = User.new(name: 'Alice')
 
-    assert_predicate user, :valid?
+    assert_not user.valid?
+    assert_includes user.errors[:email], "can't be blank"
   end
 
-  test 'enforces email uniqueness when present' do
+  test 'enforces email uniqueness' do
     User.create!(name: 'Alice', email: 'alice@example.com')
     dup = User.new(name: 'Bob', email: 'alice@example.com')
 
@@ -24,16 +25,9 @@ class UserTest < ActiveSupport::TestCase
     assert_includes dup.errors[:email], 'has already been taken'
   end
 
-  test 'allows multiple nil emails' do
-    User.create!(name: 'Alice')
-    user = User.new(name: 'Bob')
-
-    assert_predicate user, :valid?
-  end
-
   test 'accesses kitchens through memberships' do
     kitchen = Kitchen.create!(name: 'Test Kitchen', slug: 'test-kitchen')
-    user = User.create!(name: 'Alice')
+    user = User.create!(name: 'Alice', email: 'alice@example.com')
     ActsAsTenant.current_tenant = kitchen
     Membership.create!(kitchen: kitchen, user: user)
 

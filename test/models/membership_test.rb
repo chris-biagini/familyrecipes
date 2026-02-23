@@ -9,7 +9,7 @@ class MembershipTest < ActiveSupport::TestCase
   end
 
   test 'enforces unique user per kitchen' do
-    user = User.create!(name: 'Alice')
+    user = User.create!(name: 'Alice', email: 'alice@example.com')
     Membership.create!(kitchen: @kitchen, user: user)
 
     dup = Membership.new(kitchen: @kitchen, user: user)
@@ -19,7 +19,7 @@ class MembershipTest < ActiveSupport::TestCase
   end
 
   test 'default role is member' do
-    user = User.create!(name: 'Alice')
+    user = User.create!(name: 'Alice', email: 'alice@example.com')
     membership = Membership.create!(kitchen: @kitchen, user: user)
 
     assert_equal 'member', membership.role

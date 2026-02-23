@@ -4,7 +4,8 @@ class User < ApplicationRecord
   has_many :memberships, dependent: :destroy
   has_many :kitchens, through: :memberships
   has_many :sessions, dependent: :destroy
+  has_many :connected_services, dependent: :destroy
 
   validates :name, presence: true
-  validates :email, uniqueness: true, allow_nil: true
+  validates :email, presence: true, uniqueness: true
 end
