@@ -25,7 +25,7 @@ module FamilyRecipes
       print 'Validating ingredients...'
 
       ingredients_to_recipes = build_ingredient_recipe_index
-      known = IngredientProfile.pluck(:ingredient_name).to_set(&:downcase)
+      known = IngredientCatalog.pluck(:ingredient_name).to_set(&:downcase)
 
       unknown_ingredients = ingredients_to_recipes.keys.reject do |name|
         known.include?(name.downcase)
@@ -43,7 +43,7 @@ module FamilyRecipes
 
       print 'Validating nutrition data...'
 
-      omit_set = IngredientProfile.where(aisle: 'omit').pluck(:ingredient_name).to_set(&:downcase)
+      omit_set = IngredientCatalog.where(aisle: 'omit').pluck(:ingredient_name).to_set(&:downcase)
       ingredients_to_recipes = build_nutrition_recipe_index(omit_set)
       missing = find_missing_nutrition(ingredients_to_recipes)
       unresolvable, unquantified = find_nutrition_issues(omit_set)
@@ -94,7 +94,7 @@ module FamilyRecipes
 
     def print_unknown_ingredients(unknown_ingredients, ingredients_to_recipes)
       puts "\n"
-      puts 'WARNING: The following ingredients are not in any IngredientProfile:'
+      puts 'WARNING: The following ingredients are not in any IngredientCatalog:'
       unknown_ingredients.sort.each do |ing|
         recipes = ingredients_to_recipes[ing].uniq.sort
         puts "  - #{ing} (in: #{recipes.join(', ')})"

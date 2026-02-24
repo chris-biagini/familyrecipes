@@ -69,7 +69,7 @@ class BuildValidatorTest < ActiveSupport::TestCase
   def test_validate_ingredients_warns_on_unknown
     md = "# Test Recipe\n\nCategory: Test\n\n## Step (do it)\n\n- Flour, 500 g\n- Unicorn dust\n\nMix."
     recipe = make_recipe(md, id: 'test-recipe')
-    IngredientProfile.find_or_create_by!(ingredient_name: 'Flour', kitchen_id: nil) do |p|
+    IngredientCatalog.find_or_create_by!(ingredient_name: 'Flour', kitchen_id: nil) do |p|
       p.basis_grams = 30
       p.calories = 110
     end
@@ -83,11 +83,11 @@ class BuildValidatorTest < ActiveSupport::TestCase
   def test_validate_ingredients_passes_when_all_known
     md = "# Test Recipe\n\nCategory: Test\n\n## Step (do it)\n\n- Flour, 500 g\n- Salt\n\nMix."
     recipe = make_recipe(md, id: 'test-recipe')
-    IngredientProfile.find_or_create_by!(ingredient_name: 'Flour', kitchen_id: nil) do |p|
+    IngredientCatalog.find_or_create_by!(ingredient_name: 'Flour', kitchen_id: nil) do |p|
       p.basis_grams = 30
       p.calories = 110
     end
-    IngredientProfile.find_or_create_by!(ingredient_name: 'Salt', kitchen_id: nil) do |p|
+    IngredientCatalog.find_or_create_by!(ingredient_name: 'Salt', kitchen_id: nil) do |p|
       p.basis_grams = 6
       p.calories = 0
     end

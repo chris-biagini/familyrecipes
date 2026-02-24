@@ -23,7 +23,7 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
     create_kitchen_and_user
     log_in
     @category = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
-    IngredientProfile.where(kitchen_id: [@kitchen.id, nil]).delete_all
+    IngredientCatalog.where(kitchen_id: [@kitchen.id, nil]).delete_all
   end
 
   # --- upsert ---
@@ -38,7 +38,7 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
 
     assert_equal 'ok', body['status']
 
-    entry = IngredientProfile.find_by(kitchen: @kitchen, ingredient_name: 'flour')
+    entry = IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'flour')
 
     assert_predicate entry, :present?
     assert_predicate entry, :custom?
@@ -51,7 +51,7 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'upsert updates existing kitchen entry' do
-    IngredientProfile.create!(
+    IngredientCatalog.create!(
       kitchen: @kitchen, ingredient_name: 'flour',
       basis_grams: 100, calories: 364
     )
@@ -62,7 +62,7 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
 
-    entry = IngredientProfile.find_by(kitchen: @kitchen, ingredient_name: 'flour')
+    entry = IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'flour')
 
     assert_in_delta 30.0, entry.basis_grams
     assert_in_delta 110.0, entry.calories
@@ -75,7 +75,7 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
 
-    entry = IngredientProfile.find_by(kitchen: @kitchen, ingredient_name: 'flour')
+    entry = IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'flour')
 
     assert_equal [{ 'type' => 'web', 'note' => 'Entered via ingredients page' }], entry.sources
   end
@@ -99,7 +99,7 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
 
-    entry = IngredientProfile.find_by(kitchen: @kitchen, ingredient_name: 'olive oil')
+    entry = IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'olive oil')
 
     assert_predicate entry, :present?
   end
@@ -135,7 +135,7 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
   # --- destroy ---
 
   test 'destroy deletes kitchen override' do
-    IngredientProfile.create!(
+    IngredientCatalog.create!(
       kitchen: @kitchen, ingredient_name: 'flour',
       basis_grams: 30, calories: 110
     )
@@ -143,11 +143,11 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
     delete nutrition_entry_destroy_path('flour', kitchen_slug: kitchen_slug), as: :json
 
     assert_response :success
-    assert_nil IngredientProfile.find_by(kitchen: @kitchen, ingredient_name: 'flour')
+    assert_nil IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'flour')
   end
 
   test 'destroy does not delete global entries' do
-    IngredientProfile.create!(
+    IngredientCatalog.create!(
       kitchen: nil, ingredient_name: 'flour',
       basis_grams: 100, calories: 364
     )
@@ -155,7 +155,7 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
     delete nutrition_entry_destroy_path('flour', kitchen_slug: kitchen_slug), as: :json
 
     assert_response :not_found
-    assert IngredientProfile.exists?(kitchen_id: nil, ingredient_name: 'flour')
+    assert IngredientCatalog.exists?(kitchen_id: nil, ingredient_name: 'flour')
   end
 
   test 'destroy returns 404 for nonexistent entry' do
@@ -174,14 +174,14 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
 
   test 'destroy recalculates affected recipes with global fallback' do
     # Global entry has no density — cannot resolve volume units
-    IngredientProfile.create!(
+    IngredientCatalog.create!(
       kitchen: nil, ingredient_name: 'Flour',
       basis_grams: 100, calories: 364, fat: 1.0, saturated_fat: 0,
       trans_fat: 0, cholesterol: 0, sodium: 2, carbs: 76, fiber: 2.7,
       total_sugars: 0.3, added_sugars: 0, protein: 10
     )
     # Kitchen override with density — resolves "3 cups" via volume
-    IngredientProfile.create!(
+    IngredientCatalog.create!(
       kitchen: @kitchen, ingredient_name: 'Flour',
       basis_grams: 30, calories: 110, fat: 0.5, saturated_fat: 0,
       trans_fat: 0, cholesterol: 0, sodium: 5, carbs: 23, fiber: 1,

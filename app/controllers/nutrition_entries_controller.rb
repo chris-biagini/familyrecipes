@@ -7,7 +7,7 @@ class NutritionEntriesController < ApplicationController
     result = NutritionLabelParser.parse(params[:label_text])
     return render json: { errors: result.errors }, status: :unprocessable_entity unless result.success?
 
-    entry = IngredientProfile.find_or_initialize_by(kitchen: current_kitchen, ingredient_name:)
+    entry = IngredientCatalog.find_or_initialize_by(kitchen: current_kitchen, ingredient_name:)
     assign_parsed_attributes(entry, result)
 
     if entry.save
@@ -19,7 +19,7 @@ class NutritionEntriesController < ApplicationController
   end
 
   def destroy
-    entry = IngredientProfile.find_by!(kitchen: current_kitchen, ingredient_name:)
+    entry = IngredientCatalog.find_by!(kitchen: current_kitchen, ingredient_name:)
     entry.destroy!
     recalculate_affected_recipes
     render json: { status: 'ok' }

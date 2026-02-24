@@ -1,10 +1,11 @@
 # frozen_string_literal: true
 
-class IngredientProfile < ApplicationRecord
+class IngredientCatalog < ApplicationRecord
+  self.table_name = 'ingredient_catalog'
+
   belongs_to :kitchen, optional: true
 
   validates :ingredient_name, presence: true, uniqueness: { scope: :kitchen_id }
-  # nil basis_grams allowed for aisle-only entries (no nutrition data yet)
   validates :basis_grams, numericality: { greater_than: 0 }, allow_nil: true
 
   scope :global, -> { where(kitchen_id: nil) }

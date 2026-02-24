@@ -8,9 +8,9 @@ class RecipeNutritionJobTest < ActiveSupport::TestCase
     ActsAsTenant.current_tenant = @kitchen
     Recipe.destroy_all
     Category.destroy_all
-    IngredientProfile.destroy_all
+    IngredientCatalog.destroy_all
 
-    IngredientProfile.create!(
+    IngredientCatalog.create!(
       ingredient_name: 'Flour',
       basis_grams: 30.0,
       calories: 110.0,
@@ -42,7 +42,7 @@ class RecipeNutritionJobTest < ActiveSupport::TestCase
   end
 
   test 'handles recipe with no nutrition entries gracefully' do
-    IngredientProfile.destroy_all
+    IngredientCatalog.destroy_all
 
     markdown = "# Salad\n\nCategory: Cat\n\n## Toss\n\n- Lettuce, 1 head\n\nToss."
     recipe = import_without_nutrition(markdown)
@@ -74,7 +74,7 @@ class RecipeNutritionJobTest < ActiveSupport::TestCase
   test 'uses kitchen override when available' do
     # Global entry exists from setup (Flour, calories: 110)
     # Create kitchen override with different calories
-    IngredientProfile.create!(
+    IngredientCatalog.create!(
       kitchen: @kitchen,
       ingredient_name: 'Flour',
       basis_grams: 30.0,

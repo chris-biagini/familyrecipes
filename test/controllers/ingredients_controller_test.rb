@@ -166,7 +166,7 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'shows global badge for ingredients with global nutrition data' do
-    IngredientProfile.create!(ingredient_name: 'Flour', basis_grams: 30, calories: 110)
+    IngredientCatalog.create!(ingredient_name: 'Flour', basis_grams: 30, calories: 110)
     Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
     MarkdownImporter.import(<<~MD, kitchen: @kitchen)
       # Focaccia
@@ -188,7 +188,7 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'shows custom badge for ingredients with kitchen override' do
-    IngredientProfile.create!(kitchen: @kitchen, ingredient_name: 'Flour', basis_grams: 30, calories: 110)
+    IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Flour', basis_grams: 30, calories: 110)
     Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
     MarkdownImporter.import(<<~MD, kitchen: @kitchen)
       # Focaccia

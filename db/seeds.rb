@@ -45,41 +45,24 @@ end
 
 puts "Done! #{Recipe.count} recipes, #{Category.count} categories."
 
-# Seed Quick Bites document
+# Seed Quick Bites content on kitchen
 quick_bites_path = recipes_dir.join('Quick Bites.md')
 if File.exist?(quick_bites_path)
-  SiteDocument.find_or_create_by!(kitchen: kitchen, name: 'quick_bites') do |doc|
-    doc.content = File.read(quick_bites_path)
-  end
-  puts 'Quick Bites document loaded.'
+  kitchen.update!(quick_bites_content: File.read(quick_bites_path)) unless kitchen.quick_bites_content
+  puts 'Quick Bites content loaded.'
 end
 
-# Seed Site Config document
-site_config_path = resources_dir.join('site-config.yaml')
-if File.exist?(site_config_path)
-  SiteDocument.find_or_create_by!(kitchen: kitchen, name: 'site_config') do |doc|
-    doc.content = File.read(site_config_path)
-  end
-  puts 'Site Config document loaded.'
-end
-
-# Seed Nutrition Data document and IngredientProfile rows
+# Seed IngredientCatalog rows from nutrition data
 nutrition_path = resources_dir.join('nutrition-data.yaml')
 if File.exist?(nutrition_path)
   raw_content = File.read(nutrition_path)
-
-  SiteDocument.find_or_create_by!(kitchen: kitchen, name: 'nutrition_data') do |doc|
-    doc.content = raw_content
-  end
-  puts 'Nutrition Data document loaded.'
-
   nutrition_data = YAML.safe_load(raw_content, permitted_classes: [], permitted_symbols: [], aliases: false)
   nutrition_data.each do |name, entry|
     nutrients = entry['nutrients']
     next unless nutrients.is_a?(Hash) && nutrients['basis_grams'].is_a?(Numeric)
 
     density = entry['density'] || {}
-    IngredientProfile.find_or_initialize_by(kitchen_id: nil, ingredient_name: name).tap do |ne|
+    IngredientCatalog.find_or_initialize_by(kitchen_id: nil, ingredient_name: name).tap do |ne|
       ne.assign_attributes(
         basis_grams: nutrients['basis_grams'],
         calories: nutrients['calories'],
@@ -102,10 +85,10 @@ if File.exist?(nutrition_path)
       ne.save!
     end
   end
-  puts "Seeded #{IngredientProfile.global.count} nutrition entries."
+  puts "Seeded #{IngredientCatalog.global.count} nutrition entries."
 end
 
-# Populate aisle data on IngredientProfile rows from grocery-info.yaml
+# Populate aisle data on IngredientCatalog rows from grocery-info.yaml
 grocery_yaml_path = resources_dir.join('grocery-info.yaml')
 if File.exist?(grocery_yaml_path)
   raw = YAML.safe_load_file(grocery_yaml_path, permitted_classes: [], permitted_symbols: [], aliases: false)
@@ -117,7 +100,7 @@ if File.exist?(grocery_yaml_path)
 
     items.each do |item|
       name = item.is_a?(Hash) ? item['name'] : item
-      profile = IngredientProfile.find_or_initialize_by(kitchen_id: nil, ingredient_name: name)
+      profile = IngredientCatalog.find_or_initialize_by(kitchen_id: nil, ingredient_name: name)
       profile.aisle = aisle_value
       profile.save!
       aisle_count += 1
