@@ -150,7 +150,7 @@ class MarkdownImporterTest < ActiveSupport::TestCase
     assert_includes ingredient_names, 'Tomato sauce'
   end
 
-  test 'recipe dependencies are created for cross-references' do
+  test 'cross-references link to target recipes' do
     dough_markdown = <<~MARKDOWN
       # Pizza Dough
 
@@ -180,11 +180,11 @@ class MarkdownImporterTest < ActiveSupport::TestCase
     MarkdownImporter.import(dough_markdown, kitchen: @kitchen)
     pizza = MarkdownImporter.import(pizza_markdown, kitchen: @kitchen)
 
-    assert_equal 1, pizza.outbound_dependencies.count
-    assert_equal 'pizza-dough', pizza.referenced_recipes.first.slug
+    assert_equal 1, pizza.cross_references.count
+    assert_equal 'pizza-dough', pizza.cross_references.first.target_slug
   end
 
-  test 'dependencies are not created when target recipe is missing' do
+  test 'cross-references are not created when target recipe is missing' do
     markdown_with_missing_ref = <<~MARKDOWN
       # Pasta
 
@@ -200,7 +200,7 @@ class MarkdownImporterTest < ActiveSupport::TestCase
 
     recipe = MarkdownImporter.import(markdown_with_missing_ref, kitchen: @kitchen)
 
-    assert_equal 0, recipe.outbound_dependencies.count
+    assert_equal 0, recipe.cross_references.count
   end
 
   test 'quantity splitting handles various formats' do

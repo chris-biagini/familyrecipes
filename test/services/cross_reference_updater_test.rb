@@ -53,10 +53,10 @@ class CrossReferenceUpdaterTest < ActiveSupport::TestCase
     assert_includes updated, 'Margherita Pizza'
   end
 
-  test 'strip_references removes inbound dependencies' do
+  test 'strip_references removes inbound cross-references' do
     CrossReferenceUpdater.strip_references(@dough)
 
-    assert_empty @dough.reload.inbound_dependencies
+    assert_empty @dough.reload.inbound_cross_references
   end
 
   test 'strip_references is a no-op when no recipes reference this one' do
