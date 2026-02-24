@@ -74,6 +74,10 @@
       var csrfToken = document.querySelector('meta[name="csrf-token"]');
       var method = url === this.urls.clear ? 'DELETE' : 'PATCH';
 
+      // Mark before fetch so ActionCable broadcasts don't trigger
+      // a spurious "updated from another device" notification.
+      self.awaitingOwnAction = true;
+
       return fetch(url, {
         method: method,
         headers: {
@@ -84,18 +88,24 @@
         body: JSON.stringify(params)
       })
       .then(function(response) {
-        if (!response.ok) throw new Error('action failed');
+        if (!response.ok) {
+          var err = new Error('action failed');
+          err.status = response.status;
+          throw err;
+        }
         return response.json();
       })
       .then(function() {
         // Fetch full state to get updated shopping list and version
-        self.awaitingOwnAction = true;
         self.fetchState();
       })
-      .catch(function() {
-        // Queue for retry
-        self.pending.push({ url: url, params: params });
-        self.savePending();
+      .catch(function(err) {
+        self.awaitingOwnAction = false;
+        // Only queue for retry on network errors, not server rejections
+        if (!err.status) {
+          self.pending.push({ url: url, params: params });
+          self.savePending();
+        }
       });
     },
 
@@ -128,7 +138,7 @@
               });
               return;
             }
-            if (data.version && data.version > self.version) {
+            if (data.version && data.version > self.version && !self.awaitingOwnAction) {
               self.fetchState();
             }
           },

@@ -74,12 +74,21 @@ class EndToEndTest < ActionDispatch::IntegrationTest
 
   # -- Layout --
 
-  test 'layout includes nav with all three links' do
+  test 'layout includes nav with all links for logged-in members' do
+    log_in
     get kitchen_root_path(kitchen_slug: kitchen_slug)
 
     assert_select 'nav a.home', 'Home'
     assert_select 'nav a.ingredients', 'Ingredients'
     assert_select 'nav a.groceries', 'Groceries'
+  end
+
+  test 'layout hides groceries link when not logged in' do
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
+
+    assert_select 'nav a.home', 'Home'
+    assert_select 'nav a.ingredients', 'Ingredients'
+    assert_select 'nav a.groceries', count: 0
   end
 
   test 'layout includes meta tags and stylesheet' do
@@ -223,6 +232,7 @@ class EndToEndTest < ActionDispatch::IntegrationTest
   # -- Groceries --
 
   test 'groceries page renders recipe checkboxes grouped by category' do
+    log_in
     get groceries_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
@@ -233,6 +243,7 @@ class EndToEndTest < ActionDispatch::IntegrationTest
   end
 
   test 'groceries page includes noscript fallback' do
+    log_in
     get groceries_path(kitchen_slug: kitchen_slug)
 
     assert_select 'noscript', /JavaScript/

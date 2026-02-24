@@ -7,6 +7,60 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     create_kitchen_and_user
   end
 
+  # --- Access control ---
+
+  test 'show redirects to login when not logged in' do
+    get groceries_path(kitchen_slug: kitchen_slug)
+
+    assert_redirected_to '/login'
+  end
+
+  test 'state requires membership' do
+    get groceries_state_path(kitchen_slug: kitchen_slug), as: :json
+
+    assert_response :unauthorized
+  end
+
+  test 'select requires membership' do
+    patch groceries_select_path(kitchen_slug: kitchen_slug),
+          params: { type: 'recipe', slug: 'focaccia', selected: true },
+          as: :json
+
+    assert_response :unauthorized
+  end
+
+  test 'check requires membership' do
+    patch groceries_check_path(kitchen_slug: kitchen_slug),
+          params: { item: 'flour', checked: true },
+          as: :json
+
+    assert_response :unauthorized
+  end
+
+  test 'custom_items requires membership' do
+    patch groceries_custom_items_path(kitchen_slug: kitchen_slug),
+          params: { item: 'birthday candles', action_type: 'add' },
+          as: :json
+
+    assert_response :unauthorized
+  end
+
+  test 'clear requires membership' do
+    delete groceries_clear_path(kitchen_slug: kitchen_slug), as: :json
+
+    assert_response :unauthorized
+  end
+
+  test 'update_quick_bites requires membership' do
+    patch groceries_quick_bites_path(kitchen_slug: kitchen_slug),
+          params: { content: "## Snacks\n  - Goldfish" },
+          as: :json
+
+    assert_response :unauthorized
+  end
+
+  # --- Show page ---
+
   test 'renders the groceries page with recipe checkboxes' do
     Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
     MarkdownImporter.import(<<~MD, kitchen: @kitchen)
@@ -21,6 +75,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
       Mix well.
     MD
 
+    log_in
     get groceries_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
@@ -29,6 +84,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'includes groceries CSS and JS' do
+    log_in
     get groceries_path(kitchen_slug: kitchen_slug)
 
     assert_select 'link[href*="groceries"]'
@@ -36,6 +92,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'renders custom items section' do
+    log_in
     get groceries_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
@@ -44,6 +101,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'renders shopping list container with data attributes' do
+    log_in
     get groceries_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
@@ -57,6 +115,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'recipe selector has data-type attribute' do
+    log_in
     get groceries_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
@@ -64,6 +123,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'renders noscript fallback' do
+    log_in
     get groceries_path(kitchen_slug: kitchen_slug)
 
     assert_select 'noscript', /JavaScript/
@@ -97,6 +157,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
       Cook until al dente.
     MD
 
+    log_in
     get groceries_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
@@ -111,6 +172,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
         - Hummus with Pretzels: Hummus, Pretzels
     MD
 
+    log_in
     get groceries_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
@@ -122,10 +184,13 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'renders gracefully without quick bites content' do
+    log_in
     get groceries_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
   end
+
+  # --- Quick Bites editing ---
 
   test 'update_quick_bites saves valid content' do
     @kitchen.update!(quick_bites_content: 'old content')
@@ -161,17 +226,10 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
   end
 
-  test 'update_quick_bites requires membership' do
-    patch groceries_quick_bites_path(kitchen_slug: kitchen_slug),
-          params: { content: "## Snacks\n  - Goldfish" },
-          as: :json
-
-    assert_response :unauthorized
-  end
-
   # --- API endpoint tests ---
 
   test 'state returns version and empty state for new list' do
+    log_in
     get groceries_state_path(kitchen_slug: kitchen_slug), as: :json
 
     assert_response :success
@@ -193,14 +251,6 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     assert_operator json['version'], :>, 0
   end
 
-  test 'select requires membership' do
-    patch groceries_select_path(kitchen_slug: kitchen_slug),
-          params: { type: 'recipe', slug: 'focaccia', selected: true },
-          as: :json
-
-    assert_response :unauthorized
-  end
-
   test 'check marks item as checked' do
     log_in
     patch groceries_check_path(kitchen_slug: kitchen_slug),
@@ -208,14 +258,6 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
           as: :json
 
     assert_response :success
-  end
-
-  test 'check requires membership' do
-    patch groceries_check_path(kitchen_slug: kitchen_slug),
-          params: { item: 'flour', checked: true },
-          as: :json
-
-    assert_response :unauthorized
   end
 
   test 'custom_items adds item' do
@@ -227,14 +269,6 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-  test 'custom_items requires membership' do
-    patch groceries_custom_items_path(kitchen_slug: kitchen_slug),
-          params: { item: 'birthday candles', action_type: 'add' },
-          as: :json
-
-    assert_response :unauthorized
-  end
-
   test 'clear resets the list' do
     log_in
     delete groceries_clear_path(kitchen_slug: kitchen_slug), as: :json
@@ -243,12 +277,6 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     json = JSON.parse(response.body)
 
     assert json.key?('version')
-  end
-
-  test 'clear requires membership' do
-    delete groceries_clear_path(kitchen_slug: kitchen_slug), as: :json
-
-    assert_response :unauthorized
   end
 
   test 'state includes shopping_list when recipes selected' do
@@ -308,12 +336,6 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     assert json.key?('checked_off')
     assert json.key?('custom_items')
     assert json.key?('shopping_list')
-  end
-
-  test 'state is accessible without login' do
-    get groceries_state_path(kitchen_slug: kitchen_slug), as: :json
-
-    assert_response :success
   end
 
   test 'select deselects recipe when selected is false' do

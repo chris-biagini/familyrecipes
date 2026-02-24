@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class GroceriesController < ApplicationController
-  before_action :require_membership, only: %i[select check update_custom_items clear update_quick_bites]
+  before_action :require_membership
 
   def show
     @categories = current_kitchen.categories.ordered.includes(recipes: { steps: :ingredients })

@@ -95,11 +95,10 @@ class AuthTest < ActionDispatch::IntegrationTest
     assert_select '#new-recipe-button', count: 1
   end
 
-  test 'groceries page hides edit buttons for non-members' do
+  test 'groceries page redirects non-members to login' do
     get groceries_path(kitchen_slug: kitchen_slug)
 
-    assert_response :success
-    assert_select '#edit-quick-bites-button', count: 0
+    assert_redirected_to '/login'
   end
 
   test 'groceries page shows edit buttons for members' do
