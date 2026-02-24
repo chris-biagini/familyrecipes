@@ -1,0 +1,14 @@
+{
+  "planPath": "docs/plans/2026-02-24-aisle-order-editor-plan.md",
+  "tasks": [
+    {"id": 3, "subject": "Task 1: Add aisle_order column to kitchens", "status": "pending"},
+    {"id": 4, "subject": "Task 2: Add Kitchen#parsed_aisle_order helper and test", "status": "pending", "blockedBy": [3]},
+    {"id": 5, "subject": "Task 3: Update ShoppingListBuilder to use aisle order", "status": "pending", "blockedBy": [4]},
+    {"id": 6, "subject": "Task 4: Add controller endpoint and route", "status": "pending", "blockedBy": [4]},
+    {"id": 7, "subject": "Task 5: Add editor dialog to groceries view", "status": "pending", "blockedBy": [6]},
+    {"id": 8, "subject": "Task 6: Add dynamic content loading to recipe-editor.js", "status": "pending", "blockedBy": [7]},
+    {"id": 9, "subject": "Task 7: Add dialog rendering test and run full suite", "status": "pending", "blockedBy": [7, 8]},
+    {"id": 10, "subject": "Task 8: Update CLAUDE.md", "status": "pending", "blockedBy": [9]}
+  ],
+  "lastUpdated": "2026-02-24T12:00:00Z"
+}
