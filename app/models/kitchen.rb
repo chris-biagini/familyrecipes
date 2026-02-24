@@ -17,4 +17,15 @@ class Kitchen < ApplicationRecord
 
     memberships.exists?(user: user)
   end
+
+  def parsed_aisle_order
+    return [] unless aisle_order
+
+    aisle_order.lines.map(&:strip).reject(&:empty?)
+  end
+
+  def normalize_aisle_order!
+    lines = parsed_aisle_order.uniq
+    self.aisle_order = lines.empty? ? nil : lines.join("\n")
+  end
 end
