@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-This is a fully dynamic Rails 8 app backed by SQLite with multi-tenant "Kitchen" support. Three-database architecture: primary (app data), cable (Solid Cable pub/sub), queue (Solid Queue background jobs). OmniAuth-based auth with database-backed sessions is in place (`:developer` strategy for dev/test; production OAuth providers not yet configured).
+This is a fully dynamic Rails 8 app backed by SQLite with multi-tenant "Kitchen" support. Two-database architecture: primary (app data), cable (Solid Cable pub/sub). OmniAuth-based auth with database-backed sessions is in place (`:developer` strategy for dev/test; production OAuth providers not yet configured).
 Eventually, the goal is to ship this app as a Docker image for homelab install, while also maintaining a for-pay hosted copy (e.g., at fly.io).
 
 ## Design Philosophy
@@ -180,11 +180,13 @@ The hook replaces time-of-day with synthetic UTC timestamps while preserving the
 rails db:create db:migrate db:seed
 ```
 
-SQLite3 is required. Three databases: primary (`storage/production.sqlite3`), cable (`storage/production_cable.sqlite3`), queue (`storage/production_queue.sqlite3`). Development/test use parallel files under `storage/`. `db:seed` imports all markdown files from `db/seeds/recipes/` into the database via `MarkdownImporter` and loads ingredient catalog from `db/seeds/resources/ingredient-catalog.yaml`. The seed is idempotent — safe to re-run. Dependencies are managed via `Gemfile` (Ruby 3.2+, Bundler, and `bundle install` required).
+SQLite3 is required. Two databases: primary (`storage/production.sqlite3`), cable (`storage/production_cable.sqlite3`). Development/test use parallel files under `storage/`. `db:seed` imports all markdown files from `db/seeds/recipes/` into the database via `MarkdownImporter` and loads ingredient catalog from `db/seeds/resources/ingredient-catalog.yaml`. The seed is idempotent — safe to re-run. Dependencies are managed via `Gemfile` (Ruby 3.2+, Bundler, and `bundle install` required).
 
 ### Background Jobs
 
-Save-time operations (nutrition calculation, cross-reference cascades) run synchronously via `perform_now`. Solid Queue is configured (`config/queue.yml`) and runs inside Puma via `plugin :solid_queue` — no separate process needed. Switch to `perform_later` when synchronous becomes too slow. Job classes:
+Save-time operations (nutrition calculation, cross-reference cascades) run synchronously
+via `perform_now`. When this becomes too slow, add Solid Queue (`gem 'solid_queue'`) with
+a dedicated database and Puma plugin. Job classes:
 - `RecipeNutritionJob` — recalculates a recipe's `nutrition_data` json from its ingredients
 - `CascadeNutritionJob` — recalculates nutrition for all recipes that reference a given recipe (triggered after a recipe's nutrition changes)
 
@@ -249,7 +251,7 @@ The Rails app module is `Familyrecipes` (lowercase r); the domain/parser module 
 
 ### Database
 
-Three SQLite databases. **Primary** with twelve tables: `kitchens`, `users`, `memberships`, `sessions`, `connected_services`, `categories`, `recipes`, `steps`, `ingredients`, `cross_references`, `ingredient_catalog`, `grocery_lists`. Most data tables have a `kitchen_id` FK; `sessions` and `connected_services` belong to `users` directly. **Cable** database stores `solid_cable_messages` for ActionCable pub/sub. **Queue** database stores Solid Queue tables (jobs, executions, processes, etc.). See `db/schema.rb` for the primary schema. Recipes are seeded from `db/seeds/recipes/*.md` via `MarkdownImporter`.
+Two SQLite databases. **Primary** with twelve tables: `kitchens`, `users`, `memberships`, `sessions`, `connected_services`, `categories`, `recipes`, `steps`, `ingredients`, `cross_references`, `ingredient_catalog`, `grocery_lists`. Most data tables have a `kitchen_id` FK; `sessions` and `connected_services` belong to `users` directly. **Cable** database stores `solid_cable_messages` for ActionCable pub/sub. See `db/schema.rb` for the primary schema. Recipes are seeded from `db/seeds/recipes/*.md` via `MarkdownImporter`.
 
 ### ActiveRecord Models (`app/models/`)
 

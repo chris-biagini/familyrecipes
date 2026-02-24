@@ -15,7 +15,6 @@ gem 'acts_as_tenant'
 gem 'omniauth'
 gem 'omniauth-rails_csrf_protection'
 gem 'solid_cable'
-gem 'solid_queue'
 
 group :development do
   gem 'rubocop', require: false
