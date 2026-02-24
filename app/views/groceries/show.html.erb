@@ -15,6 +15,7 @@
 <% if current_kitchen.member?(current_user) %>
 <% content_for(:extra_nav) do %>
   <div>
+    <button type="button" id="edit-aisle-order-button" class="btn">Aisle Order</button>
     <button type="button" id="edit-quick-bites-button" class="btn">Edit Quick Bites</button>
   </div>
 <% end %>
@@ -103,6 +104,26 @@
   </div>
   <div class="editor-errors" hidden></div>
   <textarea class="editor-textarea" spellcheck="false"><%= @quick_bites_content %></textarea>
+  <div class="editor-footer">
+    <button type="button" class="btn editor-cancel">Cancel</button>
+    <button type="button" class="btn btn-primary editor-save">Save</button>
+  </div>
+</dialog>
+
+<dialog class="editor-dialog"
+        data-editor-open="#edit-aisle-order-button"
+        data-editor-url="<%= groceries_aisle_order_path %>"
+        data-editor-method="PATCH"
+        data-editor-on-success="reload"
+        data-editor-body-key="aisle_order"
+        data-editor-load-url="<%= groceries_aisle_order_content_path %>"
+        data-editor-load-key="aisle_order">
+  <div class="editor-header">
+    <h2>Aisle Order</h2>
+    <button type="button" class="btn editor-close" aria-label="Close">&times;</button>
+  </div>
+  <div class="editor-errors" hidden></div>
+  <textarea class="editor-textarea" spellcheck="false" placeholder="Loading..."></textarea>
   <div class="editor-footer">
     <button type="button" class="btn editor-cancel">Cancel</button>
     <button type="button" class="btn btn-primary editor-save">Save</button>
