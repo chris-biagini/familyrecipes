@@ -25,7 +25,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select 'h1', 'Groceries'
-    assert_select 'input[type=checkbox][data-title="Focaccia"]'
+    assert_select 'input[type=checkbox][data-slug="focaccia"][data-title="Focaccia"]'
   end
 
   test 'includes groceries CSS and JS' do
@@ -43,12 +43,13 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     assert_select '#custom-input'
   end
 
-  test 'renders share section' do
+  test 'renders shopping list container with data attributes' do
     get groceries_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
-    assert_select '#share-section'
-    assert_select '#qr-container'
+    assert_select '#shopping-list'
+    assert_select '#groceries-app[data-kitchen-slug]'
+    assert_select '#groceries-app[data-state-url]'
   end
 
   test 'groups recipes by category' do
@@ -98,8 +99,9 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select '.quick-bites h2', 'Quick Bites'
     assert_select '.quick-bites .subsection h3', 'Snacks'
-    assert_select '.quick-bites input[type=checkbox][data-title="Goldfish"]'
-    assert_select '.quick-bites input[type=checkbox][data-title="Hummus with Pretzels"]'
+    assert_select '.quick-bites[data-type="quick_bite"]'
+    assert_select '.quick-bites input[type=checkbox][data-slug="goldfish"][data-title="Goldfish"]'
+    assert_select '.quick-bites input[data-slug="hummus-with-pretzels"]'
   end
 
   test 'renders gracefully without site documents' do
