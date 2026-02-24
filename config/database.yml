@@ -1,19 +1,49 @@
 default: &default
-  adapter: postgresql
-  encoding: unicode
+  adapter: sqlite3
   pool: 5
+  timeout: 5000
+  idle_timeout: 300
+  pragmas:
+    journal_mode: wal
+    synchronous: normal
+    mmap_size: 134217728
+    cache_size: -64000
 
 development:
-  <<: *default
-  database: familyrecipes_development
+  primary:
+    <<: *default
+    database: storage/development.sqlite3
+  cable:
+    <<: *default
+    database: storage/development_cable.sqlite3
+    migrations_paths: db/cable_migrate
+  queue:
+    <<: *default
+    database: storage/development_queue.sqlite3
+    migrations_paths: db/queue_migrate
 
 test:
-  <<: *default
-  database: familyrecipes_test
+  primary:
+    <<: *default
+    database: storage/test.sqlite3
+  cable:
+    <<: *default
+    database: storage/test_cable.sqlite3
+    migrations_paths: db/cable_migrate
+  queue:
+    <<: *default
+    database: storage/test_queue.sqlite3
+    migrations_paths: db/queue_migrate
 
 production:
-  <<: *default
-  database: familyrecipes_production
-  username: <%= ENV["DATABASE_USERNAME"] %>
-  password: <%= ENV["DATABASE_PASSWORD"] %>
-  host: <%= ENV.fetch("DATABASE_HOST", "localhost") %>
+  primary:
+    <<: *default
+    database: storage/production.sqlite3
+  cable:
+    <<: *default
+    database: storage/production_cable.sqlite3
+    migrations_paths: db/cable_migrate
+  queue:
+    <<: *default
+    database: storage/production_queue.sqlite3
+    migrations_paths: db/queue_migrate
