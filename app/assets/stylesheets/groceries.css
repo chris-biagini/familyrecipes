@@ -269,11 +269,26 @@
   border-top: 2px solid var(--separator-color);
 }
 
+.shopping-list-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.shopping-list-header h2 {
+  font-family: "Futura", sans-serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 0;
+}
+
 #item-count {
   font-size: 0.9rem;
   font-style: italic;
-  text-align: center;
-  margin-bottom: 1rem;
+  margin: 0;
   transition: color 0.3s ease;
 }
 
@@ -369,7 +384,7 @@
   color: var(--text-color);
 }
 
-.check-off input[type="checkbox"]:checked + span {
+.check-off input[type="checkbox"]:checked + .item-text {
   text-decoration: line-through;
   opacity: 0.4;
   transition: opacity 0.15s ease;
@@ -377,6 +392,10 @@
 
 .item-amount {
   font-style: italic;
+}
+
+.item-text {
+  line-height: 1.4;
 }
 
 /* Desktop layout */
@@ -409,7 +428,7 @@
   #instructions,
   #custom-items-section,
   #grocery-preview-empty,
-  #item-count {
+  .shopping-list-header {
     display: none !important;
   }
 
@@ -539,7 +558,7 @@
   }
 
   /* Undo the strikethrough/fade on checked items that are still visible */
-  .check-off input[type="checkbox"]:checked + span {
+  .check-off input[type="checkbox"]:checked + .item-text {
     text-decoration: none;
     opacity: 1;
   }

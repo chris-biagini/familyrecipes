@@ -14,6 +14,7 @@
     subscription: null,
     heartbeatId: null,
     consumer: null,
+    awaitingOwnAction: false,
 
     init: function(app) {
       var slug = app.dataset.kitchenSlug;
@@ -51,8 +52,9 @@
         return response.json();
       })
       .then(function(data) {
-        if (data.version > self.version) {
-          var isRemoteUpdate = self.version > 0;
+        if (data.version >= self.version) {
+          var isRemoteUpdate = data.version > self.version && self.version > 0 && !self.awaitingOwnAction;
+          self.awaitingOwnAction = false;
           self.version = data.version;
           self.state = data;
           self.saveCache();
@@ -85,11 +87,9 @@
         if (!response.ok) throw new Error('action failed');
         return response.json();
       })
-      .then(function(data) {
-        if (data.version) {
-          self.version = data.version;
-        }
-        // Fetch full state to get updated shopping list
+      .then(function() {
+        // Fetch full state to get updated shopping list and version
+        self.awaitingOwnAction = true;
         self.fetchState();
       })
       .catch(function() {
@@ -210,6 +210,7 @@
       this.renderCustomItems(state.custom_items || []);
       this.syncCheckedOff(state.checked_off || []);
       this.renderItemCount();
+      this.autoCollapseCompletedAisles();
     },
 
     // --- Checkbox synchronization ---
@@ -240,17 +241,23 @@
 
       container.textContent = '';
 
+      var header = document.createElement('div');
+      header.className = 'shopping-list-header';
+      var h2 = document.createElement('h2');
+      h2.textContent = 'Shopping List';
+      var countEl = document.createElement('p');
+      countEl.id = 'item-count';
+      header.appendChild(h2);
+      header.appendChild(countEl);
+      container.appendChild(header);
+
       if (aisles.length === 0) {
         var emptyMsg = document.createElement('p');
         emptyMsg.id = 'grocery-preview-empty';
-        emptyMsg.textContent = 'Your shopping list will appear here.';
+        emptyMsg.textContent = 'Select recipes above to build your shopping list.';
         container.appendChild(emptyMsg);
         return;
       }
-
-      var countEl = document.createElement('p');
-      countEl.id = 'item-count';
-      container.appendChild(countEl);
 
       var self = this;
 
@@ -289,19 +296,19 @@
           checkbox.type = 'checkbox';
           checkbox.dataset.item = item.name;
 
-          var nameSpan = document.createElement('span');
-          nameSpan.className = 'item-name';
-          nameSpan.textContent = item.name;
-
-          label.appendChild(checkbox);
-          label.appendChild(nameSpan);
+          var textSpan = document.createElement('span');
+          textSpan.className = 'item-text';
+          textSpan.textContent = amountStr ? item.name + ' ' : item.name;
 
           if (amountStr) {
-            var amountSpan = document.createElement('span');
-            amountSpan.className = 'item-amount';
-            amountSpan.textContent = amountStr;
-            label.appendChild(amountSpan);
+            var amountNode = document.createElement('span');
+            amountNode.className = 'item-amount';
+            amountNode.textContent = amountStr;
+            textSpan.appendChild(amountNode);
           }
+
+          label.appendChild(checkbox);
+          label.appendChild(textSpan);
 
           li.appendChild(label);
           ul.appendChild(li);
@@ -379,7 +386,7 @@
       } else {
         countEl.classList.remove('all-done');
         if (checked > 0) {
-          countEl.textContent = remaining + ' of ' + total + ' items remaining';
+          countEl.textContent = remaining + ' of ' + total + ' items needed';
         } else {
           countEl.textContent = total + (total === 1 ? ' item' : ' items');
         }
@@ -407,6 +414,25 @@
         } else {
           countSpan.textContent = '(' + remaining + ')';
           countSpan.classList.remove('aisle-done');
+        }
+      });
+    },
+
+    autoCollapseCompletedAisles: function() {
+      var self = this;
+      document.querySelectorAll('#shopping-list details.aisle').forEach(function(details) {
+        var allChecked = true;
+        var items = details.querySelectorAll('li[data-item]');
+        if (items.length === 0) return;
+
+        items.forEach(function(li) {
+          var cb = li.querySelector('input[type="checkbox"]');
+          if (cb && !cb.checked) allChecked = false;
+        });
+
+        if (allChecked && details.open) {
+          details.open = false;
+          self.saveAisleCollapse();
         }
       });
     },
@@ -626,7 +652,7 @@
       var unit = amounts[i][1];
       parts.push(unit ? value + '\u00a0' + unit : value);
     }
-    return parts.join(' + ');
+    return '(' + parts.join(' + ') + ')';
   }
 
   function formatNumber(val) {
