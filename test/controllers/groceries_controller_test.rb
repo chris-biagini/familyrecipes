@@ -145,4 +145,128 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_entity
   end
+
+  # --- API endpoint tests ---
+
+  test 'state returns version and empty state for new list' do
+    get groceries_state_path(kitchen_slug: kitchen_slug), as: :json
+
+    assert_response :success
+    json = JSON.parse(response.body)
+
+    assert_equal 0, json['version']
+    assert_empty(json['shopping_list'])
+  end
+
+  test 'select adds recipe and returns version' do
+    log_in
+    patch groceries_select_path(kitchen_slug: kitchen_slug),
+          params: { type: 'recipe', slug: 'focaccia', selected: true },
+          as: :json
+
+    assert_response :success
+    json = JSON.parse(response.body)
+
+    assert_operator json['version'], :>, 0
+  end
+
+  test 'select requires membership' do
+    patch groceries_select_path(kitchen_slug: kitchen_slug),
+          params: { type: 'recipe', slug: 'focaccia', selected: true },
+          as: :json
+
+    assert_response :unauthorized
+  end
+
+  test 'check marks item as checked' do
+    log_in
+    patch groceries_check_path(kitchen_slug: kitchen_slug),
+          params: { item: 'flour', checked: true },
+          as: :json
+
+    assert_response :success
+  end
+
+  test 'check requires membership' do
+    patch groceries_check_path(kitchen_slug: kitchen_slug),
+          params: { item: 'flour', checked: true },
+          as: :json
+
+    assert_response :unauthorized
+  end
+
+  test 'custom_items adds item' do
+    log_in
+    patch groceries_custom_items_path(kitchen_slug: kitchen_slug),
+          params: { item: 'birthday candles', action_type: 'add' },
+          as: :json
+
+    assert_response :success
+  end
+
+  test 'custom_items requires membership' do
+    patch groceries_custom_items_path(kitchen_slug: kitchen_slug),
+          params: { item: 'birthday candles', action_type: 'add' },
+          as: :json
+
+    assert_response :unauthorized
+  end
+
+  test 'clear resets the list' do
+    log_in
+    delete groceries_clear_path(kitchen_slug: kitchen_slug), as: :json
+
+    assert_response :success
+    json = JSON.parse(response.body)
+
+    assert json.key?('version')
+  end
+
+  test 'clear requires membership' do
+    delete groceries_clear_path(kitchen_slug: kitchen_slug), as: :json
+
+    assert_response :unauthorized
+  end
+
+  test 'state includes shopping_list when recipes selected' do
+    Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Focaccia
+
+      Category: Bread
+
+      ## Mix (combine)
+
+      - Flour, 3 cups
+
+      Mix well.
+    MD
+
+    IngredientProfile.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Flour') do |p|
+      p.basis_grams = 30
+      p.aisle = 'Baking'
+    end
+
+    log_in
+    patch groceries_select_path(kitchen_slug: kitchen_slug),
+          params: { type: 'recipe', slug: 'focaccia', selected: true },
+          as: :json
+
+    get groceries_state_path(kitchen_slug: kitchen_slug), as: :json
+    json = JSON.parse(response.body)
+
+    assert json['shopping_list'].key?('Baking')
+  end
+
+  test 'state includes selected_recipes in response' do
+    log_in
+    patch groceries_select_path(kitchen_slug: kitchen_slug),
+          params: { type: 'recipe', slug: 'focaccia', selected: true },
+          as: :json
+
+    get groceries_state_path(kitchen_slug: kitchen_slug), as: :json
+    json = JSON.parse(response.body)
+
+    assert_includes json['selected_recipes'], 'focaccia'
+  end
 end
