@@ -245,7 +245,7 @@
       header.className = 'shopping-list-header';
       var h2 = document.createElement('h2');
       h2.textContent = 'Shopping List';
-      var countEl = document.createElement('p');
+      var countEl = document.createElement('span');
       countEl.id = 'item-count';
       header.appendChild(h2);
       header.appendChild(countEl);
@@ -272,11 +272,9 @@
         if (!isCollapsed) details.open = true;
 
         var summary = document.createElement('summary');
-        var h3 = document.createElement('h3');
-        h3.textContent = aisle;
+        summary.appendChild(document.createTextNode(aisle + ' '));
         var aisleCount = document.createElement('span');
         aisleCount.className = 'aisle-count';
-        summary.appendChild(h3);
         summary.appendChild(aisleCount);
         details.appendChild(summary);
 
