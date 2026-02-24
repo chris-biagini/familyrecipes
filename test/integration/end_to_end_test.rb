@@ -293,8 +293,8 @@ class EndToEndTest < ActionDispatch::IntegrationTest
 
   # -- Quick Bites / Aisles editing --
 
-  test 'edit and save Quick Bites document' do
-    SiteDocument.create!(name: 'quick_bites', content: "## Snacks\n  - Goldfish", kitchen: @kitchen)
+  test 'edit and save Quick Bites content' do
+    @kitchen.update!(quick_bites_content: "## Snacks\n  - Goldfish")
 
     log_in
     patch groceries_quick_bites_path(kitchen_slug: kitchen_slug),

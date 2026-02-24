@@ -6,7 +6,7 @@ class GroceriesController < ApplicationController
   def show
     @categories = current_kitchen.categories.ordered.includes(recipes: { steps: :ingredients })
     @quick_bites_by_subsection = load_quick_bites_by_subsection
-    @quick_bites_content = quick_bites_document&.content || ''
+    @quick_bites_content = current_kitchen.quick_bites_content || ''
   end
 
   def state
@@ -50,9 +50,7 @@ class GroceriesController < ApplicationController
     content = params[:content].to_s
     return render json: { errors: ['Content cannot be blank.'] }, status: :unprocessable_entity if content.blank?
 
-    doc = current_kitchen.site_documents.find_or_initialize_by(name: 'quick_bites')
-    doc.content = content
-    doc.save!
+    current_kitchen.update!(quick_bites_content: content)
 
     GroceryListChannel.broadcast_content_changed(current_kitchen)
     render json: { status: 'ok' }
@@ -68,14 +66,10 @@ class GroceriesController < ApplicationController
   end
 
   def load_quick_bites_by_subsection
-    doc = quick_bites_document
-    return {} unless doc
+    content = current_kitchen.quick_bites_content
+    return {} unless content
 
-    FamilyRecipes.parse_quick_bites_content(doc.content)
+    FamilyRecipes.parse_quick_bites_content(content)
                  .group_by { |qb| qb.category.delete_prefix('Quick Bites: ') }
-  end
-
-  def quick_bites_document
-    @quick_bites_document ||= current_kitchen.site_documents.find_by(name: 'quick_bites')
   end
 end

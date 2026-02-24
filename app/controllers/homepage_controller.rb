@@ -9,11 +9,10 @@ class HomepageController < ApplicationController
   private
 
   def load_site_config
-    content = SiteDocument.content_for('site_config',
-                                       fallback_path: Rails.root.join('db/seeds/resources/site-config.yaml'))
-    return {} unless content
+    path = Rails.root.join('db/seeds/resources/site-config.yaml')
+    return {} unless File.exist?(path)
 
-    YAML.safe_load(content)
+    YAML.safe_load_file(path)
   end
 
   def categories_with_recipes
