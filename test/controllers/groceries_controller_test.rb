@@ -369,4 +369,80 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
 
     refute_includes json.fetch('custom_items', []), 'birthday candles'
   end
+
+  # --- Aisle order ---
+
+  test 'update_aisle_order requires membership' do
+    patch groceries_aisle_order_path(kitchen_slug: kitchen_slug),
+          params: { aisle_order: "Produce\nBaking" },
+          as: :json
+
+    assert_response :unauthorized
+  end
+
+  test 'update_aisle_order saves valid order' do
+    log_in
+    patch groceries_aisle_order_path(kitchen_slug: kitchen_slug),
+          params: { aisle_order: "Produce\n  Baking\nProduce\n\nFrozen" },
+          as: :json
+
+    assert_response :success
+    assert_equal "Produce\nBaking\nFrozen", @kitchen.reload.aisle_order
+  end
+
+  test 'update_aisle_order clears order when empty' do
+    @kitchen.update!(aisle_order: "Produce\nBaking")
+
+    log_in
+    patch groceries_aisle_order_path(kitchen_slug: kitchen_slug),
+          params: { aisle_order: '' },
+          as: :json
+
+    assert_response :success
+    assert_nil @kitchen.reload.aisle_order
+  end
+
+  test 'aisle_order_content returns current aisles for editor' do
+    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Flour') do |p|
+      p.basis_grams = 30
+      p.aisle = 'Baking'
+    end
+    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Salt') do |p|
+      p.basis_grams = 6
+      p.aisle = 'Spices'
+    end
+
+    log_in
+    get groceries_aisle_order_content_path(kitchen_slug: kitchen_slug), as: :json
+
+    assert_response :success
+    json = JSON.parse(response.body)
+
+    assert_includes json['aisle_order'], 'Baking'
+    assert_includes json['aisle_order'], 'Spices'
+  end
+
+  test 'aisle_order_content merges saved order with catalog aisles' do
+    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Flour') do |p|
+      p.basis_grams = 30
+      p.aisle = 'Baking'
+    end
+    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Salt') do |p|
+      p.basis_grams = 6
+      p.aisle = 'Spices'
+    end
+
+    @kitchen.update!(aisle_order: "Spices\nProduce")
+
+    log_in
+    get groceries_aisle_order_content_path(kitchen_slug: kitchen_slug), as: :json
+
+    json = JSON.parse(response.body)
+    lines = json['aisle_order'].lines.map(&:strip)
+
+    # Saved order preserved, new aisle appended
+    assert_equal 'Spices', lines[0]
+    assert_equal 'Produce', lines[1]
+    assert_includes lines, 'Baking'
+  end
 end

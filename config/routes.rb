@@ -16,6 +16,8 @@ Rails.application.routes.draw do
     patch 'groceries/custom_items', to: 'groceries#update_custom_items', as: :groceries_custom_items
     delete 'groceries/clear', to: 'groceries#clear', as: :groceries_clear
     patch 'groceries/quick_bites', to: 'groceries#update_quick_bites', as: :groceries_quick_bites
+    patch 'groceries/aisle_order', to: 'groceries#update_aisle_order', as: :groceries_aisle_order
+    get 'groceries/aisle_order_content', to: 'groceries#aisle_order_content', as: :groceries_aisle_order_content
     post 'nutrition/:ingredient_name', to: 'nutrition_entries#upsert', as: :nutrition_entry_upsert
     delete 'nutrition/:ingredient_name', to: 'nutrition_entries#destroy', as: :nutrition_entry_destroy
   end

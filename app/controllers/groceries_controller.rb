@@ -56,6 +56,19 @@ class GroceriesController < ApplicationController
     render json: { status: 'ok' }
   end
 
+  def update_aisle_order
+    current_kitchen.aisle_order = params[:aisle_order].to_s
+    current_kitchen.normalize_aisle_order!
+    current_kitchen.save!
+
+    GroceryListChannel.broadcast_content_changed(current_kitchen)
+    render json: { status: 'ok' }
+  end
+
+  def aisle_order_content
+    render json: { aisle_order: build_aisle_order_text }
+  end
+
   private
 
   def apply_and_respond(action_type, **action_params)
@@ -63,6 +76,19 @@ class GroceriesController < ApplicationController
     list.apply_action(action_type, **action_params)
     GroceryListChannel.broadcast_version(current_kitchen, list.version)
     render json: { version: list.version }
+  end
+
+  def build_aisle_order_text
+    saved = current_kitchen.parsed_aisle_order
+    catalog_aisles = IngredientCatalog.lookup_for(current_kitchen)
+                                      .values
+                                      .filter_map(&:aisle)
+                                      .uniq
+                                      .reject { |a| a == 'omit' }
+                                      .sort
+
+    new_aisles = catalog_aisles - saved
+    (saved + new_aisles).join("\n")
   end
 
   def load_quick_bites_by_subsection
