@@ -228,8 +228,8 @@ class EndToEndTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select '#recipe-selector .category h2', 'Bread'
     assert_select '#recipe-selector .category h2', 'Pizza'
-    assert_select 'input[type=checkbox][data-title="Focaccia"]'
-    assert_select 'input[type=checkbox][data-title="Pizza Dough"]'
+    assert_select 'input[type=checkbox][data-slug="focaccia"][data-title="Focaccia"]'
+    assert_select 'input[type=checkbox][data-slug="pizza-dough"][data-title="Pizza Dough"]'
   end
 
   test 'groceries page includes noscript fallback' do
