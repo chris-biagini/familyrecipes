@@ -17,7 +17,7 @@ class RecipeNutritionJob < ApplicationJob
   private
 
   def build_nutrition_lookup(kitchen)
-    NutritionEntry.lookup_for(kitchen).transform_values do |entry|
+    IngredientProfile.lookup_for(kitchen).transform_values do |entry|
       data = { 'nutrients' => nutrients_hash(entry) }
       data['density'] = density_hash(entry) if entry.density_grams && entry.density_volume && entry.density_unit
       data['portions'] = entry.portions if entry.portions.present?

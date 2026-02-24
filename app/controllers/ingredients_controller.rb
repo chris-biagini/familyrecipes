@@ -4,7 +4,7 @@ class IngredientsController < ApplicationController
   def index
     @alias_map = load_alias_map
     @ingredients_with_recipes = build_ingredient_index
-    @nutrition_lookup = NutritionEntry.lookup_for(current_kitchen)
+    @nutrition_lookup = IngredientProfile.lookup_for(current_kitchen)
     @missing_ingredients = find_missing_ingredients
   end
 

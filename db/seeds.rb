@@ -80,7 +80,7 @@ if File.exist?(site_config_path)
   puts 'Site Config document loaded.'
 end
 
-# Seed Nutrition Data document and NutritionEntry rows
+# Seed Nutrition Data document and IngredientProfile rows
 nutrition_path = resources_dir.join('nutrition-data.yaml')
 if File.exist?(nutrition_path)
   raw_content = File.read(nutrition_path)
@@ -96,7 +96,7 @@ if File.exist?(nutrition_path)
     next unless nutrients.is_a?(Hash) && nutrients['basis_grams'].is_a?(Numeric)
 
     density = entry['density'] || {}
-    NutritionEntry.find_or_initialize_by(kitchen_id: nil, ingredient_name: name).tap do |ne|
+    IngredientProfile.find_or_initialize_by(kitchen_id: nil, ingredient_name: name).tap do |ne|
       ne.assign_attributes(
         basis_grams: nutrients['basis_grams'],
         calories: nutrients['calories'],
@@ -119,5 +119,5 @@ if File.exist?(nutrition_path)
       ne.save!
     end
   end
-  puts "Seeded #{NutritionEntry.global.count} nutrition entries."
+  puts "Seeded #{IngredientProfile.global.count} nutrition entries."
 end

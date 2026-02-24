@@ -264,7 +264,7 @@ PostgreSQL with thirteen tables: `kitchens`, `users`, `memberships`, `sessions`,
 - `Step` — belongs_to :recipe, has_many :ingredients (ordered)
 - `Ingredient` — belongs_to :step
 - `CrossReference` — AR model for `@[Recipe]` links within steps; stores target_recipe, multiplier, prep_note, position
-- `NutritionEntry` — one row per ingredient with FDA-label nutrients, density, and portions; supports an overlay model where seed entries are global (`kitchen_id: nil`) and kitchens can add overrides. `lookup_for(kitchen)` merges global + kitchen entries with kitchen taking precedence. Used by `RecipeNutritionJob`
+- `IngredientProfile` — one row per ingredient with FDA-label nutrients, density, and portions; supports an overlay model where seed entries are global (`kitchen_id: nil`) and kitchens can add overrides. `lookup_for(kitchen)` merges global + kitchen entries with kitchen taking precedence. Used by `RecipeNutritionJob`
 - `RecipeDependency` — join table tracking which recipes reference which (source → target)
 - `SiteDocument` — kitchen-scoped key-value text blobs for editable site content (quick_bites, grocery_aisles) and seed-loaded configuration (site_config, nutrition_data); loaded by controllers with YAML file fallback
 

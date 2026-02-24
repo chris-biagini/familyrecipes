@@ -166,7 +166,7 @@ class NutritionLabelParser
     @in_portions_section ||= lines.any? { |l| portions_header?(l) }
   end
 
-  # Formatter — reverse: NutritionEntry -> plaintext label
+  # Formatter — reverse: IngredientProfile -> plaintext label
   class Formatter
     def initialize(entry)
       @entry = entry
