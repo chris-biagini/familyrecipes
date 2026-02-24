@@ -113,6 +113,83 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
     assert_in_delta 5.0, flour_cup[0], 0.01
   end
 
+  test 'respects kitchen aisle_order for sorting' do
+    @kitchen.update!(aisle_order: "Spices\nBaking")
+    list = GroceryList.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+
+    result = ShoppingListBuilder.new(kitchen: @kitchen, grocery_list: list).build
+    aisle_names = result.keys
+
+    assert_equal 'Spices', aisle_names[0]
+    assert_equal 'Baking', aisle_names[1]
+  end
+
+  test 'unordered aisles appear after ordered aisles alphabetically' do
+    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Eggs') do |p|
+      p.basis_grams = 50
+      p.aisle = 'Refrigerated'
+    end
+
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Scramble
+
+      Category: Bread
+
+      ## Cook (scramble)
+
+      - Eggs, 3
+      - Flour, 1 cup
+      - Salt, 1 tsp
+
+      Cook.
+    MD
+
+    @kitchen.update!(aisle_order: "Spices\nBaking")
+    list = GroceryList.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'recipe', slug: 'scramble', selected: true)
+
+    result = ShoppingListBuilder.new(kitchen: @kitchen, grocery_list: list).build
+    aisle_names = result.keys
+
+    assert_equal %w[Spices Baking Refrigerated], aisle_names
+  end
+
+  test 'Miscellaneous sorts last even with aisle_order' do
+    IngredientCatalog.find_by(ingredient_name: 'Salt', kitchen_id: nil)&.update!(aisle: nil)
+    @kitchen.update!(aisle_order: 'Baking')
+
+    list = GroceryList.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+
+    result = ShoppingListBuilder.new(kitchen: @kitchen, grocery_list: list).build
+
+    assert_equal 'Miscellaneous', result.keys.last
+  end
+
+  test 'Miscellaneous respects explicit position in aisle_order' do
+    IngredientCatalog.find_by(ingredient_name: 'Salt', kitchen_id: nil)&.update!(aisle: nil)
+    @kitchen.update!(aisle_order: "Miscellaneous\nBaking")
+
+    list = GroceryList.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+
+    result = ShoppingListBuilder.new(kitchen: @kitchen, grocery_list: list).build
+
+    assert_equal %w[Miscellaneous Baking], result.keys
+  end
+
+  test 'falls back to alphabetical when aisle_order is nil' do
+    @kitchen.update!(aisle_order: nil)
+    list = GroceryList.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+
+    result = ShoppingListBuilder.new(kitchen: @kitchen, grocery_list: list).build
+    aisle_names = result.keys
+
+    assert_equal %w[Baking Spices], aisle_names
+  end
+
   test 'includes quick bite ingredients when selected' do
     @kitchen.update!(quick_bites_content: <<~MD)
       ## Snacks
