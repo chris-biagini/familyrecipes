@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_24_190748) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_24_191000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -168,6 +168,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_24_190748) do
     t.datetime "updated_at", null: false
     t.index ["kitchen_id", "name"], name: "index_site_documents_on_kitchen_id_and_name", unique: true
     t.index ["kitchen_id"], name: "index_site_documents_on_kitchen_id"
+  end
+
+  create_table "solid_cable_messages", force: :cascade do |t|
+    t.binary "channel", null: false
+    t.bigint "channel_hash", null: false
+    t.datetime "created_at", null: false
+    t.binary "payload", null: false
+    t.index ["channel"], name: "index_solid_cable_messages_on_channel"
+    t.index ["channel_hash"], name: "index_solid_cable_messages_on_channel_hash"
+    t.index ["created_at"], name: "index_solid_cable_messages_on_created_at"
   end
 
   create_table "steps", force: :cascade do |t|

@@ -6,6 +6,8 @@ ENV['RAILS_ENV'] ||= 'test'
 
 require_relative '../config/environment'
 require 'rails/test_help'
+require 'action_cable/test_helper'
+require 'action_cable/channel/test_case'
 require 'minitest/autorun'
 
 OmniAuth.config.test_mode = true
