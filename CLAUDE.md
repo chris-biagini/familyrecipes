@@ -2,32 +2,36 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Overview
+
+This is a fully dynamic Rails 8 app backed by PostgreSQL with multi-tenant "Kitchen" support. 
+OmniAuth-based auth with database-backed sessions is in place (`:developer` strategy for dev/test; production OAuth providers not yet configured). 
+Eventually, the goal is to ship this app as a Docker image for homelab install, while also maintaining a for-pay hosted copy (e.g., at fly.io).
+
 ## Design Philosophy
 
-Your goal is a high-quality, well-crafted user experience. Improve the end product. Make it delightful, charming, and fun. Finish the back of the cabinet even though no one will see it. Always feel free to challenge assumptions, misconceptions, and poor design decisions. Be as opinionated as this document and push back on my ideas when you need to. Suggest any quality-of-life, performance, or feature improvements that come to mind. Always use the superpowers skill and plan mode when getting ready to write code or build a new feature. 
+- Your goal is a high-quality, well-crafted user experience. 
+- Improve the end product. Make it delightful, charming, and fun. 
+- Finish the back of the cabinet even though no one will see it. 
+- Always feel free to challenge assumptions, misconceptions, and poor design decisions. 
+- Suggest any quality-of-life, performance, or feature improvements that come to mind. 
+- Always use the superpowers skill when getting ready to write code or build a new feature. 
 
-This is a fully dynamic Rails 8 app backed by PostgreSQL with multi-tenant "Kitchen" support. All pages render live from the database — there is no static site generator. Web-based editing is in place for recipes, Quick Bites, and grocery aisles. OmniAuth-based auth with database-backed sessions is in place (`:developer` strategy for dev/test; production OAuth providers not yet configured). Next infra milestone: Docker packaging for homelab deployment. Don't prematurely optimize, but keep these goals in mind when planning.
-
-### Visual language
-
-The visual identity evokes **red-checked tablecloths** and **mid-century cookbooks** — the `<main>` content card is a cookbook page; the gingham background is the tablecloth peeking out around it. When designing new UI elements, ask: would this feel at home in a well-loved cookbook from the 1960s that somehow learned a few new tricks?
-
-### Source files
+## Recipe source files
 
 - Recipe source files are Markdown. They should read naturally in plaintext, as if written for a person, not a parser. Some custom syntax is necessary but should be limited.
 - Source files follow a strict, consistent format to keep parsing reliable.
 
-### HTML, CSS, and JavaScript
+## HTML, CSS, and JavaScript
 
+Recipes:
 - Recipes are **documents first**. They are marked-up text that a browser can render, not an app that happens to contain text.
-- CSS and JS are progressive enhancements. Every page must be readable and functional with both disabled.
+- CSS and JS are progressive enhancements. Every recipe page must be readable and functional with both disabled.
 - JavaScript is used sparingly and only for optional features (scaling, state preservation, cross-off). These are guilty indulgences—they must not interfere with the document nature of the page.
-- Prefer native HTML elements. Introduce as close to zero custom UI as possible.
+
+Elsewhere (home page, ingredients editor, groceries page):
+- The mandate here is looser. More JavaScript is permitted, but keep things lean.
 - No third-party libraries, scripts, stylesheets, or fonts unless clearly the best solution—and ask before adding any.
-
-### The groceries page is the exception
-
-The groceries page (`app/views/groceries/show.html.erb`) has a looser mandate. Slightly heavier JavaScript is more permissible there. Custom UI is ok. Third-party dependencies should still be avoided, but the overall restraint is relaxed.
 
 ## Ruby code conventions
 
@@ -132,7 +136,7 @@ end
 ### Comments
 
 - Never write comments that restate what the code does. If code needs a comment explaining *what*, extract a method with a descriptive name instead.
-- Comments explain *why* — business rules, non-obvious constraints, or links to external references.
+- Add comments to explain *why* — business rules, non-obvious constraints, or links to external references.
 
 ## Workflow Preferences
 
@@ -180,7 +184,9 @@ PostgreSQL is required. `db:seed` imports all markdown files from `db/seeds/reci
 Save-time operations (nutrition calculation, cross-reference cascades) run synchronously
 via `perform_now`. When this becomes too slow, add `solid_queue` gem and switch to
 `perform_later`. Solid Queue runs inside Puma via `plugin :solid_queue` — no separate
-process needed. See `app/jobs/` for the job classes.
+process needed. Job classes:
+- `RecipeNutritionJob` — recalculates a recipe's `nutrition_data` jsonb from its ingredients
+- `CascadeNutritionJob` — recalculates nutrition for all recipes that reference a given recipe (triggered after a recipe's nutrition changes)
 
 ## Lint Command
 
@@ -233,7 +239,7 @@ See `docker-compose.example.yml` for a reference deployment configuration.
 
 ## Routes
 
-All routes live under `/kitchens/:kitchen_slug/` except the landing page (`/`), auth routes (`/auth/:provider/callback`, `/auth/failure`, `/logout`), dev login (`/dev/login/:id`), and health check (`/up`). Views use Rails route helpers — `root_path` (landing), `kitchen_root_path` (kitchen homepage), `recipe_path(slug)`, `ingredients_path`, `groceries_path`. `ApplicationController#default_url_options` auto-fills `kitchen_slug` from `current_kitchen`, so most helpers work without explicitly passing it. When adding links, always use the `_path` helpers.
+All routes live under `/kitchens/:kitchen_slug/` except the landing page (`/`), auth routes (`/auth/:provider/callback`, `/auth/failure`, `/logout`), login (`/login`), dev login (`/dev/login/:id`), and health check (`/up`). Kitchen-scoped routes include recipes (CRUD), ingredients index, groceries (with PATCH sub-routes for `quick_bites` and `grocery_aisles`), and nutrition entries (`POST`/`DELETE` at `/nutrition/:ingredient_name`). Views use Rails route helpers — `root_path` (landing), `kitchen_root_path` (kitchen homepage), `recipe_path(slug)`, `ingredients_path`, `groceries_path`. `ApplicationController#default_url_options` auto-fills `kitchen_slug` from `current_kitchen`, so most helpers work without explicitly passing it. When adding links, always use the `_path` helpers.
 
 ## Architecture
 
@@ -258,7 +264,7 @@ PostgreSQL with thirteen tables: `kitchens`, `users`, `memberships`, `sessions`,
 - `Step` — belongs_to :recipe, has_many :ingredients (ordered)
 - `Ingredient` — belongs_to :step
 - `CrossReference` — AR model for `@[Recipe]` links within steps; stores target_recipe, multiplier, prep_note, position
-- `NutritionEntry` — one row per ingredient with FDA-label nutrients, density, and portions; used by `RecipeNutritionJob`
+- `NutritionEntry` — one row per ingredient with FDA-label nutrients, density, and portions; supports an overlay model where seed entries are global (`kitchen_id: nil`) and kitchens can add overrides. `lookup_for(kitchen)` merges global + kitchen entries with kitchen taking precedence. Used by `RecipeNutritionJob`
 - `RecipeDependency` — join table tracking which recipes reference which (source → target)
 - `SiteDocument` — kitchen-scoped key-value text blobs for editable site content (quick_bites, grocery_aisles) and seed-loaded configuration (site_config, nutrition_data); loaded by controllers with YAML file fallback
 
@@ -272,8 +278,10 @@ All controllers are thin — load from ActiveRecord, pass to views. All queries 
 - `OmniauthCallbacksController` — handles OmniAuth callbacks (`/auth/:provider/callback`); finds or creates user via ConnectedService, starts database-backed session
 - `HomepageController#show` — categories with eager-loaded recipes, site config from SiteDocument (seeded from YAML)
 - `RecipesController` — `show` uses the "parsed-recipe bridge" pattern (see below); `create`/`update`/`destroy` are editor endpoints guarded by `require_membership`, using `MarkdownValidator` and `MarkdownImporter`
-- `IngredientsController#index` — all ingredients grouped by canonical name with recipe links
+- `IngredientsController#index` — all ingredients grouped by canonical name with recipe links and nutrition status badges
+- `NutritionEntriesController` — `upsert`/`destroy` endpoints for web-based nutrition editing via the ingredients page; parses label text with `NutritionLabelParser`, recalculates affected recipes; guarded by `require_membership`
 - `GroceriesController#show` — recipe selector with ingredient JSON, aisle-organized grocery list, Quick Bites section, editor dialogs for quick bites and aisles
+- `SessionsController#new` — login page at `/login`
 
 ### Parse-on-save architecture
 
@@ -305,6 +313,7 @@ These are the import engine and render-time helpers. Loaded via `config/initiali
 - `MarkdownImporter` — bridges parser and database: parses markdown, upserts Recipe/Step/Ingredient rows, rebuilds `recipe_dependencies`. Requires `kitchen:` keyword argument. Used by `db/seeds.rb` and the recipe editor.
 - `CrossReferenceUpdater` — updates `@[Title]` cross-references when recipes are renamed or deleted. `rename_references` requires `kitchen:` keyword; `strip_references` gets kitchen from the recipe.
 - `MarkdownValidator` — validates markdown source before import; checks for blank content, missing Category front matter, and at least one step. Used by `RecipesController` for editor input validation.
+- `NutritionLabelParser` — parses plaintext FDA-style nutrition labels into structured data (nutrients, density, portions). `Result` is a `Data.define` with `success?` predicate. Used by `NutritionEntriesController`.
 
 ### Helpers (`app/helpers/`)
 
@@ -320,7 +329,8 @@ homepage/show.html.erb          ← category TOC + recipe listings
 recipes/show.html.erb           ← recipe page (steps, ingredients, nutrition)
 recipes/_step.html.erb          ← step partial with ingredients and cross-references
 recipes/_nutrition_table.html.erb ← FDA-style nutrition facts
-ingredients/index.html.erb      ← alphabetical ingredient index with recipe links
+ingredients/index.html.erb      ← alphabetical ingredient index with nutrition status badges and editor dialog
+sessions/new.html.erb           ← login page
 groceries/show.html.erb         ← recipe selector + aisle-organized grocery list
 ```
 
@@ -331,7 +341,7 @@ Views use `content_for` blocks for page-specific titles, head tags, body attribu
 Propshaft serves fingerprinted assets from `app/assets/`. No build step, no bundling, no Node.
 
 - `app/assets/stylesheets/` — `style.css`, `groceries.css`
-- `app/assets/javascripts/` — `recipe-state-manager.js`, `recipe-editor.js`, `groceries.js`, `notify.js`, `wake-lock.js`, `qrcodegen.js`
+- `app/assets/javascripts/` — `recipe-state-manager.js`, `recipe-editor.js`, `groceries.js`, `nutrition-editor.js`, `notify.js`, `wake-lock.js`, `qrcodegen.js`
 - `app/assets/images/` — favicons
 
 Views use `stylesheet_link_tag`, `javascript_include_tag`, `asset_path`.
@@ -348,7 +358,7 @@ Views use `stylesheet_link_tag`, `javascript_include_tag`, `asset_path`.
 
 ### Design History
 
-`docs/plans/` contains dated design documents and implementation plans for major features and architectural decisions.
+`docs/plans/` contains dated design documents (`*-design.md`) and implementation plans (`*-plan.md`) for major features and architectural decisions. Files are date-prefixed (e.g., `2026-02-23-web-nutrition-editor-design.md`). Consult these when working on related features to understand past decisions.
 
 ## Recipe Format
 
@@ -434,7 +444,7 @@ Flour (all-purpose):
 
 **Key principles:**
 - `basis_grams` is the gram weight the nutrient values correspond to (not necessarily 100g)
-- Volume units (cup, tbsp, tsp) are **derived from `density` at build time** — never stored as portions
+- Volume units (cup, tbsp, tsp) are **derived from `density` at runtime** — never stored as portions
 - `portions` only holds non-volume units like `stick`, `~unitless`, `slice`, etc.
 - `NutritionCalculator` resolves units in order: weight > named portion > density-derived volume
 
