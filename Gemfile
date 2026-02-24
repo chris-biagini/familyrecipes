@@ -7,9 +7,9 @@ gem 'puma', '>= 5'
 gem 'rails', '~> 8.0'
 
 gem 'minitest'
-gem 'sqlite3'
 gem 'rake'
 gem 'redcarpet'
+gem 'sqlite3'
 
 gem 'acts_as_tenant'
 gem 'omniauth'
