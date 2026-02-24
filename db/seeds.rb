@@ -121,3 +121,24 @@ if File.exist?(nutrition_path)
   end
   puts "Seeded #{IngredientProfile.global.count} nutrition entries."
 end
+
+# Populate aisle data on IngredientProfile rows from grocery-info.yaml
+grocery_yaml_path = resources_dir.join('grocery-info.yaml')
+if File.exist?(grocery_yaml_path)
+  grocery_data = FamilyRecipes.parse_grocery_info(grocery_yaml_path)
+  aisle_count = 0
+
+  grocery_data.each do |aisle, items|
+    # Normalize "Omit_From_List" to "omit"
+    aisle_value = aisle.downcase.tr('_', ' ') == 'omit from list' ? 'omit' : aisle
+
+    items.each do |item|
+      profile = IngredientProfile.find_or_initialize_by(kitchen_id: nil, ingredient_name: item[:name])
+      profile.aisle = aisle_value
+      profile.save!
+      aisle_count += 1
+    end
+  end
+
+  puts "Populated aisle data on #{aisle_count} ingredient profiles."
+end
