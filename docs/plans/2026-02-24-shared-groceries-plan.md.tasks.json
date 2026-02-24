@@ -1,0 +1,18 @@
+{
+  "planPath": "docs/plans/2026-02-24-shared-groceries-plan.md",
+  "tasks": [
+    {"id": 4, "subject": "Task 1: Rename NutritionEntry to IngredientProfile (migration)", "status": "pending"},
+    {"id": 5, "subject": "Task 2: Update all NutritionEntry references across codebase", "status": "pending", "blockedBy": [4]},
+    {"id": 6, "subject": "Task 3: Populate aisle data from grocery-info.yaml", "status": "pending", "blockedBy": [5]},
+    {"id": 7, "subject": "Task 4: Remove alias map, grocery YAML parsing, and aisle SiteDocument", "status": "pending", "blockedBy": [6]},
+    {"id": 8, "subject": "Task 5: Create GroceryList model", "status": "pending", "blockedBy": [7]},
+    {"id": 9, "subject": "Task 6: Set up ActionCable with Solid Cable", "status": "pending", "blockedBy": [7]},
+    {"id": 10, "subject": "Task 7: Build grocery list API endpoints", "status": "pending", "blockedBy": [8, 9]},
+    {"id": 11, "subject": "Task 8: Rewrite groceries view for server-driven state", "status": "pending", "blockedBy": [10]},
+    {"id": 12, "subject": "Task 9: Rewrite groceries JavaScript", "status": "pending", "blockedBy": [10]},
+    {"id": 13, "subject": "Task 10: Update groceries CSS", "status": "pending", "blockedBy": [12]},
+    {"id": 14, "subject": "Task 11: Update tests for new groceries architecture", "status": "pending", "blockedBy": [12, 13]},
+    {"id": 15, "subject": "Task 12: Update CLAUDE.md and clean up", "status": "pending", "blockedBy": [14]}
+  ],
+  "lastUpdated": "2026-02-24T00:00:00Z"
+}
