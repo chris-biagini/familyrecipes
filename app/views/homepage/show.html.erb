@@ -1,4 +1,4 @@
-<% content_for(:title) { @site_config['site_title'] } %>
+<% content_for(:title) { @site_config.site_title } %>
 
 <% if current_kitchen.member?(current_user) %>
 <% content_for(:extra_nav) do %>
@@ -15,8 +15,8 @@
 
 <article class="homepage">
   <header>
-    <h1><%= @site_config['homepage_heading'] %></h1>
-    <p><%= @site_config['homepage_subtitle'] %></p>
+    <h1><%= @site_config.homepage_heading %></h1>
+    <p><%= @site_config.homepage_subtitle %></p>
   </header>
 
   <div class="toc_nav">
@@ -39,7 +39,7 @@
   <%- end -%>
 
   <footer>
-    <p>For more information, visit <a href="<%= @site_config['github_url'] %>">our project page on GitHub</a>.</p>
+    <p>For more information, visit <a href="<%= @site_config.github_url %>">our project page on GitHub</a>.</p>
   </footer>
 </article>
 
