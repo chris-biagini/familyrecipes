@@ -71,37 +71,34 @@ end
 # --- Context loading and name resolution ---
 
 def load_context
-  grocery_aisles = FamilyRecipes.parse_grocery_info(GROCERY_PATH)
-  alias_map = FamilyRecipes.build_alias_map(grocery_aisles)
   recipes = FamilyRecipes.parse_recipes(RECIPES_DIR)
   recipe_map = recipes.to_h { |r| [r.id, r] }
-  omit_set = (grocery_aisles['Omit_From_List'] || []).flat_map do |item|
-    [item[:name], *item[:aliases]].map(&:downcase)
-  end.to_set
 
-  { grocery_aisles: grocery_aisles, alias_map: alias_map, recipes: recipes,
-    recipe_map: recipe_map, omit_set: omit_set }
-end
-
-def resolve_name(raw_name, ctx)
-  canonical = ctx[:alias_map][raw_name.downcase]
-  if canonical
-    puts "  -> Resolved to \"#{canonical}\"" if canonical != raw_name
-    return canonical
+  # Build omit set from nutrition-data.yaml entries with aisle: omit
+  # (bin/nutrition runs outside Rails, so we read from YAML)
+  omit_set = Set.new
+  if File.exist?(GROCERY_PATH)
+    grocery_data = YAML.safe_load_file(GROCERY_PATH, permitted_classes: [], permitted_symbols: [], aliases: false)
+    omit_key = grocery_data.keys.find { |k| k.downcase.tr('_', ' ') == 'omit from list' }
+    if omit_key
+      grocery_data[omit_key].each do |item|
+        name = item.is_a?(Hash) ? item['name'] : item
+        omit_set << name.downcase
+      end
+    end
   end
 
-  puts "  \"#{raw_name}\" not found in grocery-info.yaml. Recipes won't match this entry."
-  print '  Continue anyway? (y/n): '
-  input = $stdin.gets&.strip
-  return nil unless input&.downcase == 'y'
+  { recipes: recipes, recipe_map: recipe_map, omit_set: omit_set }
+end
 
+def resolve_name(raw_name, _ctx)
   raw_name
 end
 
 def find_needed_units(name, ctx)
   units = Set.new
   ctx[:recipes].each do |recipe|
-    recipe.all_ingredients_with_quantities(ctx[:alias_map], ctx[:recipe_map]).each do |ing_name, amounts|
+    recipe.all_ingredients_with_quantities(ctx[:recipe_map]).each do |ing_name, amounts|
       next unless ing_name == name
 
       amounts.each do |amount|
@@ -806,7 +803,7 @@ end
 def find_missing_ingredients(nutrition_data, ctx)
   ingredients_to_recipes = Hash.new { |h, k| h[k] = [] }
   ctx[:recipes].each do |recipe|
-    recipe.all_ingredient_names(ctx[:alias_map]).each do |name|
+    recipe.all_ingredient_names.each do |name|
       ingredients_to_recipes[name] << recipe.title unless ctx[:omit_set].include?(name.downcase)
     end
   end
@@ -820,7 +817,7 @@ def find_missing_ingredients(nutrition_data, ctx)
   unresolvable = Hash.new { |h, k| h[k] = { units: Set.new, recipes: [] } }
 
   ctx[:recipes].each do |recipe|
-    recipe.all_ingredients_with_quantities(ctx[:alias_map], ctx[:recipe_map]).each do |name, amounts|
+    recipe.all_ingredients_with_quantities(ctx[:recipe_map]).each do |name, amounts|
       next if ctx[:omit_set].include?(name.downcase)
 
       entry = nutrition_data[name]

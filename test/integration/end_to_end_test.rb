@@ -232,24 +232,6 @@ class EndToEndTest < ActionDispatch::IntegrationTest
     assert_select 'input[type=checkbox][data-title="Pizza Dough"]'
   end
 
-  test 'groceries page recipe checkboxes contain ingredient JSON' do
-    get groceries_path(kitchen_slug: kitchen_slug)
-
-    checkbox = css_select('input[data-title="Focaccia"]').first
-
-    assert_predicate checkbox, :present?
-    ingredients = JSON.parse(checkbox['data-ingredients'])
-
-    assert(ingredients.any? { |name, _| name.include?('Flour') })
-  end
-
-  test 'groceries page renders aisle details elements' do
-    get groceries_path(kitchen_slug: kitchen_slug)
-
-    assert_select 'details.aisle'
-    assert_select '#misc-aisle'
-  end
-
   test 'groceries page includes noscript fallback' do
     get groceries_path(kitchen_slug: kitchen_slug)
 
@@ -325,22 +307,6 @@ class EndToEndTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select 'input[data-title="Pretzels"]'
-  end
-
-  test 'edit and save grocery aisles document' do
-    SiteDocument.create!(name: 'grocery_aisles', content: "## Produce\n- Apples", kitchen: @kitchen)
-
-    log_in
-    patch groceries_grocery_aisles_path(kitchen_slug: kitchen_slug),
-          params: { content: "## Produce\n- Apples\n- Bananas\n\n## Baking\n- Flour" },
-          as: :json
-
-    assert_response :success
-
-    get groceries_path(kitchen_slug: kitchen_slug)
-
-    assert_response :success
-    assert_select 'details.aisle summary', /Baking/
   end
 
   test 'delete recipe removes it from homepage' do

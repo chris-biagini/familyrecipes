@@ -50,16 +50,6 @@ class NutritionCalculatorTest < Minitest::Test
 
     @omit_set = Set.new(['water', 'ice', 'poolish', 'sourdough starter'])
     @calculator = FamilyRecipes::NutritionCalculator.new(@nutrition_data, omit_set: @omit_set)
-    @alias_map = {
-      'flour (all-purpose)' => 'Flour (all-purpose)',
-      'flour (all purpose)' => 'Flour (all-purpose)',
-      'eggs' => 'Eggs',
-      'egg' => 'Eggs',
-      'butter' => 'Butter',
-      'olive oil' => 'Olive oil',
-      'sugar (white)' => 'Sugar (white)',
-      'water' => 'Water'
-    }
     @recipe_map = {}
   end
 
@@ -82,7 +72,7 @@ class NutritionCalculatorTest < Minitest::Test
       Mix.
     MD
 
-    result = @calculator.calculate(recipe, @alias_map, @recipe_map)
+    result = @calculator.calculate(recipe, @recipe_map)
 
     # 500g flour: (109.2/30)*500 = 1820 cal
     assert_in_delta 1820, result.totals[:calories], 1
@@ -106,7 +96,7 @@ class NutritionCalculatorTest < Minitest::Test
       Crack.
     MD
 
-    result = @calculator.calculate(recipe, @alias_map, @recipe_map)
+    result = @calculator.calculate(recipe, @recipe_map)
 
     # 3 eggs * 50g each = 150g; (71.5/50)*150 = 214.5 cal
     assert_in_delta 214.5, result.totals[:calories], 1
@@ -126,7 +116,7 @@ class NutritionCalculatorTest < Minitest::Test
       Mix.
     MD
 
-    result = @calculator.calculate(recipe, @alias_map, @recipe_map)
+    result = @calculator.calculate(recipe, @recipe_map)
 
     # 2 Tbsp via density: 227g/cup, 1 cup = 236.588ml, 1 tbsp = 14.787ml
     # 2 * 14.787ml * (227/236.588) g/ml = 28.37g; (100.38/14)*28.37 = 203.3 cal
@@ -157,7 +147,7 @@ class NutritionCalculatorTest < Minitest::Test
       Second.
     MD
 
-    result = @calculator.calculate(recipe, @alias_map, @recipe_map)
+    result = @calculator.calculate(recipe, @recipe_map)
 
     # 150g butter: (100.38/14)*150 = 1075.5 cal
     assert_in_delta 1075.5, result.totals[:calories], 1
@@ -178,7 +168,7 @@ class NutritionCalculatorTest < Minitest::Test
       Mix.
     MD
 
-    result = @calculator.calculate(recipe, @alias_map, @recipe_map)
+    result = @calculator.calculate(recipe, @recipe_map)
 
     assert_includes result.missing_ingredients, 'Unicorn dust'
     refute_predicate result, :complete?
@@ -197,7 +187,7 @@ class NutritionCalculatorTest < Minitest::Test
       Mix.
     MD
 
-    result = @calculator.calculate(recipe, @alias_map, @recipe_map)
+    result = @calculator.calculate(recipe, @recipe_map)
 
     assert_includes result.partial_ingredients, 'Flour (all-purpose)'
     refute_predicate result, :complete?
@@ -219,7 +209,7 @@ class NutritionCalculatorTest < Minitest::Test
       Mix.
     MD
 
-    result = @calculator.calculate(recipe, @alias_map, @recipe_map)
+    result = @calculator.calculate(recipe, @recipe_map)
 
     # Only flour should contribute (100g: (109.2/30)*100 = 364 cal)
     assert_in_delta 364, result.totals[:calories], 1
@@ -242,7 +232,7 @@ class NutritionCalculatorTest < Minitest::Test
       Mix.
     MD
 
-    result = @calculator.calculate(recipe, @alias_map, @recipe_map)
+    result = @calculator.calculate(recipe, @recipe_map)
 
     # Only flour contributes (200g: (109.2/30)*200 = 728 cal)
     assert_in_delta 728, result.totals[:calories], 1
@@ -265,7 +255,7 @@ class NutritionCalculatorTest < Minitest::Test
       Mix.
     MD
 
-    result = @calculator.calculate(recipe, @alias_map, @recipe_map)
+    result = @calculator.calculate(recipe, @recipe_map)
 
     assert_equal 4, result.serving_count
     assert_in_delta 364, result.per_serving[:calories], 1
@@ -285,7 +275,7 @@ class NutritionCalculatorTest < Minitest::Test
       Mix.
     MD
 
-    result = @calculator.calculate(recipe, @alias_map, @recipe_map)
+    result = @calculator.calculate(recipe, @recipe_map)
 
     assert_equal 30, result.serving_count
     refute_nil result.per_serving
@@ -306,7 +296,7 @@ class NutritionCalculatorTest < Minitest::Test
       Mix.
     MD
 
-    result = @calculator.calculate(recipe, @alias_map, @recipe_map)
+    result = @calculator.calculate(recipe, @recipe_map)
 
     assert_equal 6, result.serving_count
   end
@@ -324,7 +314,7 @@ class NutritionCalculatorTest < Minitest::Test
       Mix.
     MD
 
-    result = @calculator.calculate(recipe, @alias_map, @recipe_map)
+    result = @calculator.calculate(recipe, @recipe_map)
 
     assert_nil result.serving_count
     assert_nil result.per_serving
@@ -363,7 +353,7 @@ class NutritionCalculatorTest < Minitest::Test
       'pizza' => pizza_recipe
     }
 
-    result = @calculator.calculate(pizza_recipe, @alias_map, recipe_map)
+    result = @calculator.calculate(pizza_recipe, recipe_map)
 
     # Flour: 500g = 1820 cal, Olive oil: 2 Tbsp via density (14g/tbsp) = 28g = 247.5 cal
     flour_cal = (109.2 / 30.0) * 500
@@ -403,32 +393,10 @@ class NutritionCalculatorTest < Minitest::Test
       'pizza' => pizza_recipe
     }
 
-    result = @calculator.calculate(pizza_recipe, @alias_map, recipe_map)
+    result = @calculator.calculate(pizza_recipe, recipe_map)
 
     # Flour: 250g * 2 = 500g = 1820 cal
     assert_in_delta 1820, result.totals[:calories], 1
-  end
-
-  # --- Alias map ---
-
-  def test_alias_map_resolves_alternate_names
-    recipe = make_recipe(<<~MD)
-      # Test
-
-      Category: Test
-
-      ## Mix (combine)
-
-      - Flour (All purpose), 200 g
-
-      Mix.
-    MD
-
-    result = @calculator.calculate(recipe, @alias_map, @recipe_map)
-
-    # "Flour (All purpose)" aliases to "Flour (all-purpose)"
-    assert_in_delta 728, result.totals[:calories], 1
-    assert_empty result.missing_ingredients
   end
 
   # --- Complete? ---
@@ -447,7 +415,7 @@ class NutritionCalculatorTest < Minitest::Test
       Mix.
     MD
 
-    result = @calculator.calculate(recipe, @alias_map, @recipe_map)
+    result = @calculator.calculate(recipe, @recipe_map)
 
     assert_predicate result, :complete?
   end
@@ -467,7 +435,7 @@ class NutritionCalculatorTest < Minitest::Test
       Mix.
     MD
 
-    result = @calculator.calculate(recipe, @alias_map, @recipe_map)
+    result = @calculator.calculate(recipe, @recipe_map)
 
     # 4 oz * 28.3495 g/oz = 113.398g; (100.38/14)*113.398 = 813.1 cal
     assert_in_delta 813.1, result.totals[:calories], 2
@@ -487,7 +455,7 @@ class NutritionCalculatorTest < Minitest::Test
       Mix.
     MD
 
-    result = @calculator.calculate(recipe, @alias_map, @recipe_map)
+    result = @calculator.calculate(recipe, @recipe_map)
 
     # 1 lbs → normalized to lb → 453.592g; (109.2/30)*453.592 = 1651 cal
     assert_in_delta 1651, result.totals[:calories], 2
@@ -512,7 +480,7 @@ class NutritionCalculatorTest < Minitest::Test
       Mix.
     MD
 
-    result = @calculator.calculate(recipe, @alias_map, @recipe_map)
+    result = @calculator.calculate(recipe, @recipe_map)
 
     # (123.76/14) * (236.588 * 14/14.787) = 8.84 * 224.0 = 1980 cal approx
     expected_grams = 236.588 * (14.0 / 14.787)
@@ -536,7 +504,7 @@ class NutritionCalculatorTest < Minitest::Test
       Mix.
     MD
 
-    result = @calculator.calculate(recipe, @alias_map, @recipe_map)
+    result = @calculator.calculate(recipe, @recipe_map)
 
     # 1 stick = 113g; (100.38/14)*113 = 810.2 cal
     expected_cal = (100.38 / 14.0) * 113.0
@@ -559,7 +527,7 @@ class NutritionCalculatorTest < Minitest::Test
       Mix.
     MD
 
-    result = @calculator.calculate(recipe, @alias_map, @recipe_map)
+    result = @calculator.calculate(recipe, @recipe_map)
 
     # (7.17/14)*100 = 51.21g sat fat
     expected = (7.17 / 14.0) * 100
@@ -609,7 +577,7 @@ class NutritionCalculatorTest < Minitest::Test
       Mix.
     MD
 
-    result = @calculator.calculate(recipe, @alias_map, @recipe_map)
+    result = @calculator.calculate(recipe, @recipe_map)
 
     # 1 tbsp butter via density: 14.787ml * (227/236.588) g/ml = 14.19g
     # (100.38/14)*14.19 = 101.7 cal
@@ -635,7 +603,7 @@ class NutritionCalculatorTest < Minitest::Test
       Mix.
     MD
 
-    result = @calculator.calculate(recipe, @alias_map, @recipe_map)
+    result = @calculator.calculate(recipe, @recipe_map)
 
     # Flour has no ~unitless portion, so bare "4" should be partial
     assert_includes result.partial_ingredients, 'Flour (all-purpose)'
@@ -676,7 +644,7 @@ class NutritionCalculatorTest < Minitest::Test
       Mix.
     MD
 
-    result = calculator.calculate(recipe, @alias_map, @recipe_map)
+    result = calculator.calculate(recipe, @recipe_map)
 
     # 28g = 2 servings worth
     assert_in_delta 1.0, result.totals[:trans_fat], 0.01
@@ -711,7 +679,7 @@ class NutritionCalculatorTest < Minitest::Test
       Mix.
     MD
 
-    result = calculator.calculate(recipe, @alias_map, @recipe_map)
+    result = calculator.calculate(recipe, @recipe_map)
 
     # New keys missing from YAML → default to 0
     assert_equal 0, result.totals[:trans_fat]
@@ -792,7 +760,7 @@ class NutritionCalculatorTest < Minitest::Test
       Mix.
     MD
 
-    result = @calculator.calculate(recipe, @alias_map, @recipe_map)
+    result = @calculator.calculate(recipe, @recipe_map)
 
     assert_equal 24, result.makes_quantity
     assert_equal 'cookie', result.makes_unit_singular
@@ -814,7 +782,7 @@ class NutritionCalculatorTest < Minitest::Test
       Mix.
     MD
 
-    result = @calculator.calculate(recipe, @alias_map, @recipe_map)
+    result = @calculator.calculate(recipe, @recipe_map)
 
     assert_nil result.per_unit
     assert_nil result.makes_quantity
@@ -835,7 +803,7 @@ class NutritionCalculatorTest < Minitest::Test
       Mix.
     MD
 
-    result = @calculator.calculate(recipe, @alias_map, @recipe_map)
+    result = @calculator.calculate(recipe, @recipe_map)
 
     assert_in_delta 6.0, result.units_per_serving, 0.01
   end
@@ -854,7 +822,7 @@ class NutritionCalculatorTest < Minitest::Test
       Mix.
     MD
 
-    result = @calculator.calculate(recipe, @alias_map, @recipe_map)
+    result = @calculator.calculate(recipe, @recipe_map)
 
     assert_nil result.units_per_serving
   end
@@ -873,7 +841,7 @@ class NutritionCalculatorTest < Minitest::Test
       Mix.
     MD
 
-    result = @calculator.calculate(recipe, @alias_map, @recipe_map)
+    result = @calculator.calculate(recipe, @recipe_map)
 
     assert_equal 'loaf', result.makes_unit_singular
     assert_equal 'loaves', result.makes_unit_plural

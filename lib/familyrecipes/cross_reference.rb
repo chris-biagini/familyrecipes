@@ -18,12 +18,11 @@ module FamilyRecipes
 
     # Return the scaled ingredients from the target recipe.
     # recipe_map: slug -> Recipe
-    # alias_map: alias -> canonical name
-    def expanded_ingredients(recipe_map, alias_map = {})
+    def expanded_ingredients(recipe_map)
       recipe = recipe_map[@target_slug]
       return [] unless recipe
 
-      recipe.own_ingredients_with_quantities(alias_map).map do |name, amounts|
+      recipe.own_ingredients_with_quantities.map do |name, amounts|
         scaled = amounts.map do |amount|
           next nil if amount.nil?
 

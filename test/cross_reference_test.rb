@@ -150,7 +150,7 @@ class CrossReferenceTest < Minitest::Test
     pizza = make_recipe(pizza_md)
     recipe_map = { 'pizza-dough' => dough }
 
-    expanded = pizza.all_ingredients_with_quantities({}, recipe_map)
+    expanded = pizza.all_ingredients_with_quantities(recipe_map)
     names = expanded.map(&:first)
 
     assert_includes names, 'Olive oil'
@@ -165,7 +165,7 @@ class CrossReferenceTest < Minitest::Test
     pizza = make_recipe(pizza_md)
     recipe_map = { 'pizza-dough' => dough }
 
-    expanded = pizza.all_ingredients_with_quantities({}, recipe_map)
+    expanded = pizza.all_ingredients_with_quantities(recipe_map)
     flour = expanded.find { |name, _| name == 'Flour' }
 
     refute_nil flour

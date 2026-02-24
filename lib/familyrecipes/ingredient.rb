@@ -24,9 +24,7 @@ module FamilyRecipes
       @prep_note = prep_note
     end
 
-    def normalized_name(alias_map = {})
-      alias_map[@name.downcase] || @name
-    end
+    def normalized_name = @name
 
     def quantity_value
       return nil if quantity_blank?

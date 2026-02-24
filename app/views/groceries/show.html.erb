@@ -5,9 +5,6 @@
 <% end %>
 
 <% content_for(:scripts) do %>
-  <script>
-    window.UNIT_PLURALS = <%= @unit_plurals.to_json.html_safe %>;
-  </script>
   <%= javascript_include_tag 'notify', defer: true %>
   <%= javascript_include_tag 'wake-lock', defer: true %>
   <%= javascript_include_tag 'qrcodegen', defer: true %>
@@ -19,7 +16,6 @@
 <% content_for(:extra_nav) do %>
   <div>
     <button type="button" id="edit-quick-bites-button" class="btn">Edit Quick Bites</button>
-    <button type="button" id="edit-aisles-button" class="btn">Edit Aisles</button>
   </div>
 <% end %>
 <% end %>
@@ -41,12 +37,9 @@
     <h2><%= category.name %></h2>
     <ul>
     <%- category.recipes.sort_by(&:title).each do |recipe| -%>
-      <%- parsed = @recipe_map[recipe.slug] -%>
-      <%- next unless parsed -%>
-      <%- filtered_ingredients = parsed.all_ingredients_with_quantities(@alias_map, @recipe_map).reject { |name, _| @omit_set.include?(name.downcase) } -%>
       <li>
-        <input type="checkbox" id="<%= recipe.slug %>-checkbox" data-title="<%= h recipe.title %>" data-ingredients="<%= h filtered_ingredients.to_json %>">
-        <label for="<%= recipe.slug %>-checkbox" title="Ingredients: <%= h filtered_ingredients.map(&:first).join(', ') %>"><%= recipe.title %></label>
+        <input type="checkbox" id="<%= recipe.slug %>-checkbox" data-title="<%= h recipe.title %>">
+        <label for="<%= recipe.slug %>-checkbox"><%= recipe.title %></label>
         <%= link_to raw('&rarr;'), recipe_path(recipe.slug), class: 'recipe-link', title: "Open #{recipe.title} in new tab", target: '_blank' %>
       </li>
     <%- end -%>
@@ -62,10 +55,9 @@
         <h3><%= subsection %></h3>
         <ul>
         <%- items.each do |item| -%>
-          <%- filtered_ingredients = item.ingredients_with_quantities.reject { |name, _| @omit_set.include?(name.downcase) } -%>
           <li>
-            <input type="checkbox" id="<%= item.id %>-checkbox" data-title="<%= h item.title %>" data-ingredients="<%= h filtered_ingredients.to_json %>">
-            <label for="<%= item.id %>-checkbox" title="Ingredients: <%= h filtered_ingredients.map(&:first).join(', ') %>"><%= item.title %></label>
+            <input type="checkbox" id="<%= item.id %>-checkbox" data-title="<%= h item.title %>">
+            <label for="<%= item.id %>-checkbox"><%= item.title %></label>
           </li>
         <%- end -%>
         </ul>
@@ -105,27 +97,6 @@
   <p id="grocery-preview-empty">Select recipes above to build your shopping list.</p>
 
   <section id="grocery-list">
-  <%- @grocery_aisles.each do |aisle, ingredients| -%>
-  <%- next if aisle.downcase.tr('_', ' ') == 'omit from list' -%>
-  <details class="aisle">
-    <summary><%= aisle %> <span class="aisle-count"></span></summary>
-    <ul>
-      <%- ingredients.each do |ingredient| -%>
-        <li data-item="<%= h ingredient[:name] %>" hidden>
-          <label class="check-off">
-            <input type="checkbox">
-            <span><%= ingredient[:name] %><span class="qty"></span></span>
-          </label>
-        </li>
-      <%- end -%>
-    </ul>
-  </details>
-  <%- end -%>
-
-  <details class="aisle" id="misc-aisle">
-    <summary>Miscellaneous <span class="aisle-count"></span></summary>
-    <ul id="misc-items"></ul>
-  </details>
   </section>
 </div>
 
@@ -142,24 +113,6 @@
   </div>
   <div class="editor-errors" hidden></div>
   <textarea class="editor-textarea" spellcheck="false"><%= @quick_bites_content %></textarea>
-  <div class="editor-footer">
-    <button type="button" class="btn editor-cancel">Cancel</button>
-    <button type="button" class="btn btn-primary editor-save">Save</button>
-  </div>
-</dialog>
-
-<dialog class="editor-dialog"
-        data-editor-open="#edit-aisles-button"
-        data-editor-url="<%= groceries_grocery_aisles_path %>"
-        data-editor-method="PATCH"
-        data-editor-on-success="reload"
-        data-editor-body-key="content">
-  <div class="editor-header">
-    <h2>Edit Aisles</h2>
-    <button type="button" class="btn editor-close" aria-label="Close">&times;</button>
-  </div>
-  <div class="editor-errors" hidden></div>
-  <textarea class="editor-textarea" spellcheck="false"><%= @grocery_aisles_content %></textarea>
   <div class="editor-footer">
     <button type="button" class="btn editor-cancel">Cancel</button>
     <button type="button" class="btn btn-primary editor-save">Save</button>

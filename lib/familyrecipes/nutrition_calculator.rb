@@ -49,8 +49,8 @@ module FamilyRecipes
       end.to_h
     end
 
-    def calculate(recipe, alias_map, recipe_map)
-      totals, missing, partial = sum_totals(recipe, alias_map, recipe_map)
+    def calculate(recipe, recipe_map)
+      totals, missing, partial = sum_totals(recipe, recipe_map)
       serving_count = parse_serving_count(recipe)
 
       Result.new(
@@ -69,12 +69,12 @@ module FamilyRecipes
 
     private
 
-    def sum_totals(recipe, alias_map, recipe_map)
+    def sum_totals(recipe, recipe_map)
       totals = NUTRIENTS.to_h { |n| [n, 0.0] }
       missing = []
       partial = []
 
-      recipe.all_ingredients_with_quantities(alias_map, recipe_map).each do |name, amounts|
+      recipe.all_ingredients_with_quantities(recipe_map).each do |name, amounts|
         next if @omit_set.include?(name.downcase)
 
         entry = @nutrition_data[name]

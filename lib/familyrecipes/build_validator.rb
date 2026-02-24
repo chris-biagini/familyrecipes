@@ -2,14 +2,10 @@
 
 module FamilyRecipes
   class BuildValidator
-    def initialize(recipes:, quick_bites:, recipe_map:, alias_map:, known_ingredients:, omit_set:, # rubocop:disable Metrics/ParameterLists
-                   nutrition_calculator:)
+    def initialize(recipes:, quick_bites:, recipe_map:, nutrition_calculator: nil)
       @recipes = recipes
       @quick_bites = quick_bites
       @recipe_map = recipe_map
-      @alias_map = alias_map
-      @known_ingredients = known_ingredients
-      @omit_set = omit_set
       @nutrition_calculator = nutrition_calculator
     end
 
@@ -29,9 +25,10 @@ module FamilyRecipes
       print 'Validating ingredients...'
 
       ingredients_to_recipes = build_ingredient_recipe_index
+      known = IngredientProfile.pluck(:ingredient_name).to_set(&:downcase)
 
       unknown_ingredients = ingredients_to_recipes.keys.reject do |name|
-        @known_ingredients.include?(name.downcase)
+        known.include?(name.downcase)
       end.to_set
 
       if unknown_ingredients.any?
@@ -46,9 +43,10 @@ module FamilyRecipes
 
       print 'Validating nutrition data...'
 
-      ingredients_to_recipes = build_nutrition_recipe_index
+      omit_set = IngredientProfile.where(aisle: 'omit').pluck(:ingredient_name).to_set(&:downcase)
+      ingredients_to_recipes = build_nutrition_recipe_index(omit_set)
       missing = find_missing_nutrition(ingredients_to_recipes)
-      unresolvable, unquantified = find_nutrition_issues
+      unresolvable, unquantified = find_nutrition_issues(omit_set)
 
       print_nutrition_warnings(missing, unresolvable, unquantified, ingredients_to_recipes)
     end
@@ -96,19 +94,19 @@ module FamilyRecipes
 
     def print_unknown_ingredients(unknown_ingredients, ingredients_to_recipes)
       puts "\n"
-      puts 'WARNING: The following ingredients are not in grocery-info.yaml:'
+      puts 'WARNING: The following ingredients are not in any IngredientProfile:'
       unknown_ingredients.sort.each do |ing|
         recipes = ingredients_to_recipes[ing].uniq.sort
         puts "  - #{ing} (in: #{recipes.join(', ')})"
       end
-      puts 'Add them to grocery-info.yaml or add as aliases to existing items.'
+      puts 'Add them via bin/nutrition or the web editor.'
       puts ''
     end
 
-    def build_nutrition_recipe_index
+    def build_nutrition_recipe_index(omit_set)
       @recipes.each_with_object(Hash.new { |h, k| h[k] = [] }) do |recipe, index|
-        recipe.all_ingredient_names(@alias_map).each do |name|
-          index[name] << recipe.title unless @omit_set.include?(name.downcase)
+        recipe.all_ingredient_names.each do |name|
+          index[name] << recipe.title unless omit_set.include?(name.downcase)
         end
       end
     end
@@ -117,20 +115,20 @@ module FamilyRecipes
       ingredients_to_recipes.keys.reject { |name| @nutrition_calculator.nutrition_data.key?(name) }
     end
 
-    def find_nutrition_issues
+    def find_nutrition_issues(omit_set)
       unresolvable = Hash.new { |h, k| h[k] = { units: Set.new, recipes: [] } }
       unquantified = Hash.new { |h, k| h[k] = [] }
 
       @recipes.each do |recipe|
-        check_recipe_nutrition(recipe, unresolvable, unquantified)
+        check_recipe_nutrition(recipe, unresolvable, unquantified, omit_set)
       end
 
       [unresolvable, unquantified]
     end
 
-    def check_recipe_nutrition(recipe, unresolvable, unquantified)
-      recipe.all_ingredients_with_quantities(@alias_map, @recipe_map).each do |name, amounts|
-        next if @omit_set.include?(name.downcase)
+    def check_recipe_nutrition(recipe, unresolvable, unquantified, omit_set)
+      recipe.all_ingredients_with_quantities(@recipe_map).each do |name, amounts|
+        next if omit_set.include?(name.downcase)
 
         entry = @nutrition_calculator.nutrition_data[name]
         next unless entry

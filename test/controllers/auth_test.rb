@@ -48,14 +48,6 @@ class AuthTest < ActionDispatch::IntegrationTest
     assert_response :unauthorized
   end
 
-  test 'unauthenticated PATCH to grocery_aisles returns 401' do
-    patch groceries_grocery_aisles_path(kitchen_slug: kitchen_slug),
-          params: { content: "## Produce\n- Apples" },
-          as: :json
-
-    assert_response :unauthorized
-  end
-
   test 'non-member cannot write to a kitchen' do
     outsider_kitchen = Kitchen.create!(name: 'Other Kitchen', slug: 'other-kitchen')
     outsider = User.create!(name: 'Outsider', email: 'outsider@example.com')
@@ -108,7 +100,6 @@ class AuthTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select '#edit-quick-bites-button', count: 0
-    assert_select '#edit-aisles-button', count: 0
   end
 
   test 'groceries page shows edit buttons for members' do
@@ -118,6 +109,5 @@ class AuthTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select '#edit-quick-bites-button', count: 1
-    assert_select '#edit-aisles-button', count: 1
   end
 end
