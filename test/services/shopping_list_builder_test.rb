@@ -21,11 +21,11 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
       Mix well.
     MD
 
-    IngredientProfile.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Flour') do |p|
+    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Flour') do |p|
       p.basis_grams = 30
       p.aisle = 'Baking'
     end
-    IngredientProfile.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Salt') do |p|
+    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Salt') do |p|
       p.basis_grams = 6
       p.aisle = 'Spices'
     end
@@ -46,7 +46,7 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
   test 'puts unmapped ingredients in Miscellaneous' do
     list = GroceryList.for_kitchen(@kitchen)
     list.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
-    IngredientProfile.find_by(ingredient_name: 'Salt', kitchen_id: nil)&.update!(aisle: nil)
+    IngredientCatalog.find_by(ingredient_name: 'Salt', kitchen_id: nil)&.update!(aisle: nil)
 
     result = ShoppingListBuilder.new(kitchen: @kitchen, grocery_list: list).build
 
@@ -57,7 +57,7 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
   end
 
   test 'omits ingredients with aisle omit' do
-    IngredientProfile.find_by(ingredient_name: 'Salt', kitchen_id: nil)&.update!(aisle: 'omit')
+    IngredientCatalog.find_by(ingredient_name: 'Salt', kitchen_id: nil)&.update!(aisle: 'omit')
     list = GroceryList.for_kitchen(@kitchen)
     list.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
 
@@ -114,7 +114,7 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
   end
 
   test 'includes quick bite ingredients when selected' do
-    SiteDocument.create!(name: 'quick_bites', kitchen: @kitchen, content: <<~MD)
+    @kitchen.update!(quick_bites_content: <<~MD)
       ## Snacks
         - Hummus with Pretzels: Hummus, Pretzels
     MD

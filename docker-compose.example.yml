@@ -6,40 +6,21 @@
 # Quick start:
 #   1. cp docker-compose.example.yml docker-compose.yml
 #   2. Generate a secret: docker run --rm ruby:3.2-slim ruby -rsecurerandom -e 'puts SecureRandom.hex(64)'
-#   3. Fill in SECRET_KEY_BASE and database credentials below
+#   3. Fill in SECRET_KEY_BASE below
 #   4. docker compose up -d
 
 services:
-  db:
-    image: postgres:16
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: familyrecipes
-      POSTGRES_PASSWORD: CHANGE_ME
-      POSTGRES_DB: familyrecipes_production
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U familyrecipes"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
   app:
     image: ghcr.io/chris-biagini/familyrecipes:latest
     restart: unless-stopped
-    depends_on:
-      db:
-        condition: service_healthy
     ports:
       - "127.0.0.1:3030:3030"
     environment:
       RAILS_ENV: production
-      DATABASE_HOST: db
-      DATABASE_USERNAME: familyrecipes
-      DATABASE_PASSWORD: CHANGE_ME
       SECRET_KEY_BASE: CHANGE_ME
       RAILS_LOG_LEVEL: info
+    volumes:
+      - app_storage:/app/storage
 
 volumes:
-  pgdata:
+  app_storage:

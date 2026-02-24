@@ -20,5 +20,7 @@ module Familyrecipes
     config.autoload_lib(ignore: %w[assets tasks familyrecipes])
 
     config.generators.system_tests = nil
+
+    config.solid_queue.connects_to = { database: { writing: :queue } }
   end
 end

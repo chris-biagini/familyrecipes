@@ -4,7 +4,7 @@
 FROM ruby:3.2-slim AS builder
 
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential libpq-dev libyaml-dev && \
+    apt-get install --no-install-recommends -y build-essential libsqlite3-dev libyaml-dev && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -22,7 +22,7 @@ RUN SECRET_KEY_BASE=placeholder bin/rails assets:precompile
 FROM ruby:3.2-slim
 
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y libpq5 libyaml-0-2 && \
+    apt-get install --no-install-recommends -y libsqlite3-0 libyaml-0-2 && \
     rm -rf /var/lib/apt/lists/* && \
     groupadd --system rails && \
     useradd --system --gid rails --create-home rails
@@ -34,8 +34,8 @@ ENV RAILS_ENV=production
 COPY --from=builder /usr/local/bundle /usr/local/bundle
 COPY --from=builder /app /app
 
-RUN mkdir -p /app/tmp /app/log && \
-    chown -R rails:rails /app/tmp /app/log /app/db
+RUN mkdir -p /app/tmp /app/log /app/storage && \
+    chown -R rails:rails /app/tmp /app/log /app/db /app/storage
 
 USER rails
 

@@ -6,17 +6,12 @@ class Recipe < ApplicationRecord
 
   has_many :steps, -> { order(:position) }, dependent: :destroy, inverse_of: :recipe
   has_many :ingredients, through: :steps
+  has_many :cross_references, through: :steps
+  has_many :inbound_cross_references, class_name: 'CrossReference', foreign_key: :target_recipe_id
 
-  has_many :outbound_dependencies, class_name: 'RecipeDependency',
-                                   foreign_key: :source_recipe_id,
-                                   dependent: :destroy,
-                                   inverse_of: :source_recipe
-  has_many :inbound_dependencies, class_name: 'RecipeDependency',
-                                  foreign_key: :target_recipe_id,
-                                  dependent: :destroy,
-                                  inverse_of: :target_recipe
-  has_many :referenced_recipes, through: :outbound_dependencies, source: :target_recipe
-  has_many :referencing_recipes, through: :inbound_dependencies, source: :source_recipe
+  def referencing_recipes
+    Recipe.where(id: inbound_cross_references.joins(:step).select('steps.recipe_id')).distinct
+  end
 
   validates :title, presence: true
   validates :slug, presence: true, uniqueness: { scope: :kitchen_id }

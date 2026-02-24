@@ -4,18 +4,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-This is a fully dynamic Rails 8 app backed by PostgreSQL with multi-tenant "Kitchen" support. 
-OmniAuth-based auth with database-backed sessions is in place (`:developer` strategy for dev/test; production OAuth providers not yet configured). 
+This is a fully dynamic Rails 8 app backed by SQLite with multi-tenant "Kitchen" support. Three-database architecture: primary (app data), cable (Solid Cable pub/sub), queue (Solid Queue background jobs). OmniAuth-based auth with database-backed sessions is in place (`:developer` strategy for dev/test; production OAuth providers not yet configured).
 Eventually, the goal is to ship this app as a Docker image for homelab install, while also maintaining a for-pay hosted copy (e.g., at fly.io).
 
 ## Design Philosophy
 
-- Your goal is a high-quality, well-crafted user experience. 
-- Improve the end product. Make it delightful, charming, and fun. 
-- Finish the back of the cabinet even though no one will see it. 
-- Always feel free to challenge assumptions, misconceptions, and poor design decisions. 
-- Suggest any quality-of-life, performance, or feature improvements that come to mind. 
-- Always use the superpowers skill when getting ready to write code or build a new feature. 
+- Your goal is a high-quality, well-crafted user experience.
+- Improve the end product. Make it delightful, charming, and fun.
+- Default to simple UI. We can add complexity when it's necessary.
+- Always feel free to challenge assumptions, misconceptions, and poor design decisions.
+- Suggest any quality-of-life, performance, or feature improvements that come to mind.
+- Let's walk before we run. Don't solve scale problems I don't have.
+- Always use the superpowers skill when getting ready to write code or build a new feature.
 
 ## Recipe source files
 
@@ -24,14 +24,17 @@ Eventually, the goal is to ship this app as a Docker image for homelab install, 
 
 ## HTML, CSS, and JavaScript
 
+Everywhere: use semantic HTML wherever possible and appropriate for the content.
+Avoid littering the DOM with  more `<div>`s than needed. Don't use a `<div>` when a semantic tag will do.
+
 Recipes:
 - Recipes are **documents first**. They are marked-up text that a browser can render, not an app that happens to contain text.
 - CSS and JS are progressive enhancements. Every recipe page must be readable and functional with both disabled.
 - JavaScript is used sparingly and only for optional features (scaling, state preservation, cross-off). These are guilty indulgences—they must not interfere with the document nature of the page.
 
-Elsewhere (home page, ingredients editor, groceries page):
-- The mandate here is looser. More JavaScript is permitted, but keep things lean.
-- No third-party libraries, scripts, stylesheets, or fonts unless clearly the best solution—and ask before adding any.
+Elsewhere (home page, ingredients editor, groceries page): the mandate here is looser.
+More JavaScript is permitted, but keep things lean.
+Ask before adding any third-party resources.
 
 ## Ruby code conventions
 
@@ -177,15 +180,12 @@ The hook replaces time-of-day with synthetic UTC timestamps while preserving the
 rails db:create db:migrate db:seed
 ```
 
-PostgreSQL is required. `db:seed` imports all markdown files from `db/seeds/recipes/` into the database via `MarkdownImporter`. The seed is idempotent — safe to re-run. Dependencies are managed via `Gemfile` (Ruby 3.2+, Bundler, and `bundle install` required).
+SQLite3 is required. Three databases: primary (`storage/production.sqlite3`), cable (`storage/production_cable.sqlite3`), queue (`storage/production_queue.sqlite3`). Development/test use parallel files under `storage/`. `db:seed` imports all markdown files from `db/seeds/recipes/` into the database via `MarkdownImporter` and loads ingredient catalog from `db/seeds/resources/ingredient-catalog.yaml`. The seed is idempotent — safe to re-run. Dependencies are managed via `Gemfile` (Ruby 3.2+, Bundler, and `bundle install` required).
 
 ### Background Jobs
 
-Save-time operations (nutrition calculation, cross-reference cascades) run synchronously
-via `perform_now`. When this becomes too slow, add `solid_queue` gem and switch to
-`perform_later`. Solid Queue runs inside Puma via `plugin :solid_queue` — no separate
-process needed. Job classes:
-- `RecipeNutritionJob` — recalculates a recipe's `nutrition_data` jsonb from its ingredients
+Save-time operations (nutrition calculation, cross-reference cascades) run synchronously via `perform_now`. Solid Queue is configured (`config/queue.yml`) and runs inside Puma via `plugin :solid_queue` — no separate process needed. Switch to `perform_later` when synchronous becomes too slow. Job classes:
+- `RecipeNutritionJob` — recalculates a recipe's `nutrition_data` json from its ingredients
 - `CascadeNutritionJob` — recalculates nutrition for all recipes that reference a given recipe (triggered after a recipe's nutrition changes)
 
 ## Lint Command
@@ -235,7 +235,7 @@ The container entrypoint runs `db:prepare` and `db:seed` automatically. Health c
 docker build -t familyrecipes:test .
 ```
 
-See `docker-compose.example.yml` for a reference deployment configuration.
+See `docker-compose.example.yml` for a reference deployment configuration. No external database needed — SQLite files are stored in a Docker volume mounted at `/app/storage`.
 
 ## Routes
 
@@ -249,25 +249,23 @@ The Rails app module is `Familyrecipes` (lowercase r); the domain/parser module 
 
 ### Database
 
-PostgreSQL with sixteen tables: `kitchens`, `users`, `memberships`, `sessions`, `connected_services`, `categories`, `recipes`, `steps`, `ingredients`, `cross_references`, `recipe_dependencies`, `ingredient_profiles`, `site_documents`, `grocery_lists`, `solid_cable_messages`. Most data tables have a `kitchen_id` FK; `sessions` and `connected_services` belong to `users` directly. See `db/schema.rb` for the full schema. Recipes are seeded from `db/seeds/recipes/*.md` via `MarkdownImporter`.
+Three SQLite databases. **Primary** with twelve tables: `kitchens`, `users`, `memberships`, `sessions`, `connected_services`, `categories`, `recipes`, `steps`, `ingredients`, `cross_references`, `ingredient_catalog`, `grocery_lists`. Most data tables have a `kitchen_id` FK; `sessions` and `connected_services` belong to `users` directly. **Cable** database stores `solid_cable_messages` for ActionCable pub/sub. **Queue** database stores Solid Queue tables (jobs, executions, processes, etc.). See `db/schema.rb` for the primary schema. Recipes are seeded from `db/seeds/recipes/*.md` via `MarkdownImporter`.
 
 ### ActiveRecord Models (`app/models/`)
 
-- `Kitchen` — multi-tenant container; has_many :users (through :memberships), :categories, :recipes, :ingredient_profiles, :site_documents; has_one :grocery_list; `member?(user)` checks membership
+- `Kitchen` — multi-tenant container; has_many :users (through :memberships), :categories, :recipes, :ingredient_catalog; has_one :grocery_list; `quick_bites_content` text column for Quick Bites source; `member?(user)` checks membership
 - `User` — has_many :kitchens (through :memberships), :sessions, :connected_services; email required and unique
 - `Session` — database-backed login session; belongs_to :user; stores ip_address, user_agent
 - `Current` — `ActiveSupport::CurrentAttributes` with `:session` attribute; delegates `:user` to session
 - `ConnectedService` — OAuth identity (provider + uid); belongs_to :user; unique on [provider, uid]
 - `Membership` — joins User to Kitchen; `role` column (default: "member") for future use
 - `Category` — has_many :recipes, ordered by position, auto-generates slug
-- `Recipe` — belongs_to :kitchen and :category, has_many :steps (ordered), has_many :ingredients (through steps), tracks outbound/inbound recipe dependencies
+- `Recipe` — belongs_to :kitchen and :category, has_many :steps (ordered), has_many :ingredients (through steps), has_many :cross_references (through steps), has_many :inbound_cross_references; `referencing_recipes` derives from CrossReference joins
 - `Step` — belongs_to :recipe, has_many :ingredients (ordered)
 - `Ingredient` — belongs_to :step
 - `CrossReference` — AR model for `@[Recipe]` links within steps; stores target_recipe, multiplier, prep_note, position
-- `IngredientProfile` — one row per ingredient with FDA-label nutrients, density, portions, and aisle; supports an overlay model where seed entries are global (`kitchen_id: nil`) and kitchens can add overrides. `lookup_for(kitchen)` merges global + kitchen entries with kitchen taking precedence. Aisle data seeded from `grocery-info.yaml`. Used by `RecipeNutritionJob` and `ShoppingListBuilder`
-- `GroceryList` — one per kitchen; jsonb `state` column stores `selected_recipes`, `selected_quick_bites`, `custom_items`, `checked_off`; integer `version` counter for optimistic sync via ActionCable
-- `RecipeDependency` — join table tracking which recipes reference which (source → target)
-- `SiteDocument` — kitchen-scoped key-value text blobs for editable site content (quick_bites) and seed-loaded configuration (site_config, nutrition_data); loaded by controllers with YAML file fallback
+- `IngredientCatalog` — one row per ingredient with FDA-label nutrients, density, portions, and aisle; supports an overlay model where seed entries are global (`kitchen_id: nil`) and kitchens can add overrides. `lookup_for(kitchen)` merges global + kitchen entries with kitchen taking precedence. Seeded from `ingredient-catalog.yaml`. Used by `RecipeNutritionJob` and `ShoppingListBuilder`
+- `GroceryList` — one per kitchen; json `state` column stores `selected_recipes`, `selected_quick_bites`, `custom_items`, `checked_off`; integer `version` counter for optimistic sync via ActionCable
 
 ### Controllers (`app/controllers/`)
 
@@ -277,20 +275,20 @@ All controllers are thin — load from ActiveRecord, pass to views. All queries 
 - `LandingController#show` — root page listing available kitchens
 - `DevSessionsController` — dev/test-only session login (`/dev/login/:id`) and logout; uses `start_new_session_for`/`terminate_session` from Authentication concern
 - `OmniauthCallbacksController` — handles OmniAuth callbacks (`/auth/:provider/callback`); finds or creates user via ConnectedService, starts database-backed session
-- `HomepageController#show` — categories with eager-loaded recipes, site config from SiteDocument (seeded from YAML)
+- `HomepageController#show` — categories with eager-loaded recipes, site config from `Rails.configuration.site` (loaded from `config/site.yml`)
 - `RecipesController` — `show` uses the "parsed-recipe bridge" pattern (see below); `create`/`update`/`destroy` are editor endpoints guarded by `require_membership`, using `MarkdownValidator` and `MarkdownImporter`
 - `IngredientsController#index` — all ingredients grouped by canonical name with recipe links and nutrition status badges
 - `NutritionEntriesController` — `upsert`/`destroy` endpoints for web-based nutrition editing via the ingredients page; parses label text with `NutritionLabelParser`, recalculates affected recipes; guarded by `require_membership`
-- `GroceriesController` — `show` renders recipe/quick-bite selectors; `state` returns JSON shopping list built by `ShoppingListBuilder`; `select`, `check`, `update_custom_items`, `clear` mutate `GroceryList` state and broadcast via ActionCable; `update_quick_bites` edits Quick Bites content
+- `GroceriesController` — `show` renders recipe/quick-bite selectors; `state` returns JSON shopping list built by `ShoppingListBuilder`; `select`, `check`, `update_custom_items`, `clear` mutate `GroceryList` state and broadcast via ActionCable; `update_quick_bites` edits `Kitchen#quick_bites_content` directly
 - `SessionsController#new` — login page at `/login`
 
 ### Parse-on-save architecture
 
-The parser runs only on the write path (`MarkdownImporter`). The database is the complete source of truth for rendering: `Step#processed_instructions` stores scalable number markup, `CrossReference` records store interleaved recipe links, and `Recipe#nutrition_data` stores pre-computed nutrition as jsonb. Views render entirely from AR data.
+The parser runs only on the write path (`MarkdownImporter`). The database is the complete source of truth for rendering: `Step#processed_instructions` stores scalable number markup, `CrossReference` records store interleaved recipe links, and `Recipe#nutrition_data` stores pre-computed nutrition as json. Views render entirely from AR data.
 
 ### Real-time sync (ActionCable)
 
-Grocery list state syncs across browser tabs/devices via ActionCable backed by Solid Cable (database-backed pub/sub in `solid_cable_messages`). `GroceryListChannel` broadcasts version numbers on state changes; clients poll for fresh state when their version is stale.
+Grocery list state syncs across browser tabs/devices via ActionCable backed by Solid Cable (separate SQLite database for pub/sub). `GroceryListChannel` broadcasts version numbers on state changes; clients poll for fresh state when their version is stale.
 
 ### Parser / Domain Classes (`lib/familyrecipes/`)
 
@@ -315,11 +313,11 @@ These are the import engine and render-time helpers. Loaded via `config/initiali
 
 ### Services (`app/services/`)
 
-- `MarkdownImporter` — bridges parser and database: parses markdown, upserts Recipe/Step/Ingredient rows, rebuilds `recipe_dependencies`. Requires `kitchen:` keyword argument. Used by `db/seeds.rb` and the recipe editor.
+- `MarkdownImporter` — bridges parser and database: parses markdown, upserts Recipe/Step/Ingredient/CrossReference rows. Requires `kitchen:` keyword argument. Used by `db/seeds.rb` and the recipe editor.
 - `CrossReferenceUpdater` — updates `@[Title]` cross-references when recipes are renamed or deleted. `rename_references` requires `kitchen:` keyword; `strip_references` gets kitchen from the recipe.
 - `MarkdownValidator` — validates markdown source before import; checks for blank content, missing Category front matter, and at least one step. Used by `RecipesController` for editor input validation.
 - `NutritionLabelParser` — parses plaintext FDA-style nutrition labels into structured data (nutrients, density, portions). `Result` is a `Data.define` with `success?` predicate. Used by `NutritionEntriesController`.
-- `ShoppingListBuilder` — builds aisle-organized shopping list from selected recipes/quick bites; uses `IngredientProfile` for aisle lookup and `IngredientAggregator`-style quantity merging. Used by `GroceriesController#state`.
+- `ShoppingListBuilder` — builds aisle-organized shopping list from selected recipes/quick bites; uses `IngredientCatalog` for aisle lookup and `IngredientAggregator`-style quantity merging. Used by `GroceriesController#state`.
 
 ### Helpers (`app/helpers/`)
 
@@ -352,11 +350,10 @@ Propshaft serves fingerprinted assets from `app/assets/`. No build step, no bund
 
 Views use `stylesheet_link_tag`, `javascript_include_tag`, `asset_path`.
 
-### Data Files (`db/seeds/resources/`)
+### Data Files
 
-- `site-config.yaml` — site identity (title, homepage heading/subtitle, GitHub URL); seeded into `site_documents` table as `site_config`
-- `grocery-info.yaml` — ingredient-to-aisle mappings; seeded into `IngredientProfile.aisle` column during `db:seed`
-- `nutrition-data.yaml` — density-first nutrition data (see Nutrition Data section); seeded into `site_documents` table as `nutrition_data`
+- `config/site.yml` — site identity (title, homepage heading/subtitle, GitHub URL); loaded as `Rails.configuration.site` via `config/initializers/site_config.rb`
+- `db/seeds/resources/ingredient-catalog.yaml` — merged ingredient reference data: nutrition facts, density, portions, aisle mappings, and sources; seeded into `ingredient_catalog` table during `db:seed`
 
 ### Editor dialogs
 
@@ -420,11 +417,11 @@ Quick Bites are "grocery bundles" (not recipes) — simple name + ingredient lis
 ## Category Name
   - Recipe Name: Ingredient1, Ingredient2
 ```
-At seed time, the file content is stored in `site_documents` (name: `quick_bites`) and is web-editable via a dialog on the groceries page. `FamilyRecipes.parse_quick_bites_content(string)` parses the content from either source.
+At seed time, the file content is stored in `Kitchen#quick_bites_content` and is web-editable via a dialog on the groceries page. `FamilyRecipes.parse_quick_bites_content(string)` parses the content.
 
 ## Nutrition Data
 
-Nutrition data uses a **density-first model** stored in `db/seeds/resources/nutrition-data.yaml`. Each entry has:
+Nutrition data uses a **density-first model** stored in `db/seeds/resources/ingredient-catalog.yaml`. Each entry has:
 
 ```yaml
 Flour (all-purpose):
@@ -464,4 +461,4 @@ bin/nutrition --manual "Flour"  # Force manual entry from package labels
 
 `bin/nutrition` auto-detects `USDA_API_KEY` (from `.env` or environment): when present, it searches the USDA SR Legacy dataset first and falls back to manual entry; when absent, it defaults to manual entry from package labels. Existing entries open in an edit menu for surgical fixes (e.g., adding missing portions). Requires `USDA_API_KEY` for USDA mode (free at https://fdc.nal.usda.gov/api-key-signup).
 
-During `db:seed`, `BuildValidator` checks that all recipe ingredients have nutrition data and prints warnings for any that are missing.
+During `db:seed`, `BuildValidator` checks that all recipe ingredients have entries in the ingredient catalog and prints warnings for any that are missing.

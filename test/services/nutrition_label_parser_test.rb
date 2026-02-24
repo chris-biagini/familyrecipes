@@ -3,7 +3,7 @@
 require_relative '../test_helper'
 
 class NutritionLabelParserTest < ActiveSupport::TestCase
-  # Lightweight stand-in for IngredientProfile — duck-typed attribute reader
+  # Lightweight stand-in for IngredientCatalog — duck-typed attribute reader
   # avoids acts_as_tenant requirement in unit tests
   FakeEntry = Data.define(
     :ingredient_name, :basis_grams,

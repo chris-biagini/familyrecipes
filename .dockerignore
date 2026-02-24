@@ -13,3 +13,5 @@ docs/
 node_modules/
 *.png
 vendor/bundle/
+storage/*.sqlite3
+storage/*.sqlite3-*

@@ -17,7 +17,7 @@ class RecipeNutritionJob < ApplicationJob
   private
 
   def build_nutrition_lookup(kitchen)
-    IngredientProfile.lookup_for(kitchen).transform_values do |entry|
+    IngredientCatalog.lookup_for(kitchen).transform_values do |entry|
       data = { 'nutrients' => nutrients_hash(entry) }
       data['density'] = density_hash(entry) if entry.density_grams && entry.density_volume && entry.density_unit
       data['portions'] = entry.portions if entry.portions.present?
@@ -48,7 +48,7 @@ class RecipeNutritionJob < ApplicationJob
   end
 
   def omit_set
-    @omit_set ||= IngredientProfile.where(aisle: 'omit').pluck(:ingredient_name).to_set(&:downcase)
+    @omit_set ||= IngredientCatalog.where(aisle: 'omit').pluck(:ingredient_name).to_set(&:downcase)
   end
 
   def recipe_map(kitchen)

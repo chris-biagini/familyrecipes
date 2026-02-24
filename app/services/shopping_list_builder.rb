@@ -4,7 +4,7 @@ class ShoppingListBuilder
   def initialize(kitchen:, grocery_list:)
     @kitchen = kitchen
     @grocery_list = grocery_list
-    @profiles = IngredientProfile.lookup_for(kitchen)
+    @profiles = IngredientCatalog.lookup_for(kitchen)
   end
 
   def build
@@ -37,10 +37,10 @@ class ShoppingListBuilder
     slugs = @grocery_list.state.fetch('selected_quick_bites', [])
     return [] if slugs.empty?
 
-    doc = @kitchen.site_documents.find_by(name: 'quick_bites')
-    return [] unless doc
+    content = @kitchen.quick_bites_content
+    return [] unless content
 
-    all_bites = FamilyRecipes.parse_quick_bites_content(doc.content)
+    all_bites = FamilyRecipes.parse_quick_bites_content(content)
     all_bites.select { |qb| slugs.include?(qb.id) }
   end
 

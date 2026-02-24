@@ -2,29 +2,29 @@
 
 require 'test_helper'
 
-class IngredientProfileTest < ActiveSupport::TestCase
+class IngredientCatalogTest < ActiveSupport::TestCase
   setup do
     @kitchen = Kitchen.find_or_create_by!(name: 'Test Kitchen', slug: 'test-kitchen')
-    IngredientProfile.where(kitchen_id: [@kitchen.id, nil]).delete_all
+    IngredientCatalog.where(kitchen_id: [@kitchen.id, nil]).delete_all
   end
 
   test 'global? returns true when kitchen_id is nil' do
-    entry = IngredientProfile.create!(ingredient_name: 'Butter', basis_grams: 100)
+    entry = IngredientCatalog.create!(ingredient_name: 'Butter', basis_grams: 100)
 
     assert_predicate entry, :global?
     refute_predicate entry, :custom?
   end
 
   test 'custom? returns true when kitchen_id is present' do
-    entry = IngredientProfile.create!(kitchen: @kitchen, ingredient_name: 'Butter', basis_grams: 100)
+    entry = IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Butter', basis_grams: 100)
 
     refute_predicate entry, :global?
     assert_predicate entry, :custom?
   end
 
   test 'lookup_for returns global entries when no kitchen overrides' do
-    IngredientProfile.create!(ingredient_name: 'Butter', basis_grams: 100, calories: 717)
-    result = IngredientProfile.lookup_for(@kitchen)
+    IngredientCatalog.create!(ingredient_name: 'Butter', basis_grams: 100, calories: 717)
+    result = IngredientCatalog.lookup_for(@kitchen)
 
     assert_equal 1, result.size
     assert_in_delta 717, result['Butter'].calories.to_f
@@ -32,10 +32,10 @@ class IngredientProfileTest < ActiveSupport::TestCase
   end
 
   test 'lookup_for returns kitchen override when it exists' do
-    IngredientProfile.create!(ingredient_name: 'Butter', basis_grams: 100, calories: 717)
-    IngredientProfile.create!(kitchen: @kitchen, ingredient_name: 'Butter', basis_grams: 100, calories: 700)
+    IngredientCatalog.create!(ingredient_name: 'Butter', basis_grams: 100, calories: 717)
+    IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Butter', basis_grams: 100, calories: 700)
 
-    result = IngredientProfile.lookup_for(@kitchen)
+    result = IngredientCatalog.lookup_for(@kitchen)
 
     assert_equal 1, result.size
     assert_in_delta 700, result['Butter'].calories.to_f
@@ -43,10 +43,10 @@ class IngredientProfileTest < ActiveSupport::TestCase
   end
 
   test 'lookup_for merges global and kitchen entries' do
-    IngredientProfile.create!(ingredient_name: 'Butter', basis_grams: 100)
-    IngredientProfile.create!(kitchen: @kitchen, ingredient_name: 'Flour', basis_grams: 30)
+    IngredientCatalog.create!(ingredient_name: 'Butter', basis_grams: 100)
+    IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Flour', basis_grams: 30)
 
-    result = IngredientProfile.lookup_for(@kitchen)
+    result = IngredientCatalog.lookup_for(@kitchen)
 
     assert_equal 2, result.size
     assert result.key?('Butter')
@@ -55,15 +55,15 @@ class IngredientProfileTest < ActiveSupport::TestCase
 
   test 'lookup_for does not return entries from other kitchens' do
     other = Kitchen.find_or_create_by!(name: 'Other Kitchen', slug: 'other-kitchen')
-    IngredientProfile.create!(kitchen: other, ingredient_name: 'Butter', basis_grams: 100)
+    IngredientCatalog.create!(kitchen: other, ingredient_name: 'Butter', basis_grams: 100)
 
-    result = IngredientProfile.lookup_for(@kitchen)
+    result = IngredientCatalog.lookup_for(@kitchen)
 
     assert_empty result
   end
 
   test 'stores nutrient data for an ingredient' do
-    entry = IngredientProfile.create!(
+    entry = IngredientCatalog.create!(
       ingredient_name: 'Flour (all-purpose)',
       basis_grams: 30.0,
       calories: 110.0,
@@ -91,7 +91,7 @@ class IngredientProfileTest < ActiveSupport::TestCase
   end
 
   test 'stores zero-value nutrients correctly' do
-    entry = IngredientProfile.create!(
+    entry = IngredientCatalog.create!(
       ingredient_name: 'Flour (all-purpose)',
       basis_grams: 30.0,
       saturated_fat: 0.0,
@@ -113,7 +113,7 @@ class IngredientProfileTest < ActiveSupport::TestCase
   end
 
   test 'stores density data' do
-    entry = IngredientProfile.create!(
+    entry = IngredientCatalog.create!(
       ingredient_name: 'Flour (all-purpose)',
       basis_grams: 30.0,
       density_grams: 30.0,
@@ -129,7 +129,7 @@ class IngredientProfileTest < ActiveSupport::TestCase
   end
 
   test 'stores portions as JSON' do
-    entry = IngredientProfile.create!(
+    entry = IngredientCatalog.create!(
       ingredient_name: 'Butter',
       basis_grams: 14.0,
       portions: { 'stick' => 113.0 }
@@ -141,7 +141,7 @@ class IngredientProfileTest < ActiveSupport::TestCase
   end
 
   test 'stores sources as JSON array' do
-    entry = IngredientProfile.create!(
+    entry = IngredientCatalog.create!(
       ingredient_name: 'Cream cheese',
       basis_grams: 28.0,
       sources: [{ 'type' => 'usda', 'fdc_id' => 173_530 }]
@@ -153,60 +153,60 @@ class IngredientProfileTest < ActiveSupport::TestCase
   end
 
   test 'validates ingredient_name presence' do
-    entry = IngredientProfile.new(basis_grams: 100)
+    entry = IngredientCatalog.new(basis_grams: 100)
 
     refute_predicate entry, :valid?
     assert_includes entry.errors[:ingredient_name], "can't be blank"
   end
 
   test 'allows nil basis_grams for aisle-only rows' do
-    entry = IngredientProfile.new(ingredient_name: 'Egg yolk')
+    entry = IngredientCatalog.new(ingredient_name: 'Egg yolk')
 
     assert_predicate entry, :valid?
   end
 
   test 'rejects zero basis_grams' do
-    entry = IngredientProfile.new(ingredient_name: 'Test', basis_grams: 0)
+    entry = IngredientCatalog.new(ingredient_name: 'Test', basis_grams: 0)
 
     refute_predicate entry, :valid?
   end
 
   test 'rejects negative basis_grams' do
-    entry = IngredientProfile.new(ingredient_name: 'Test', basis_grams: -5)
+    entry = IngredientCatalog.new(ingredient_name: 'Test', basis_grams: -5)
 
     refute_predicate entry, :valid?
   end
 
   test 'enforces uniqueness of ingredient_name within same kitchen' do
-    IngredientProfile.create!(kitchen: @kitchen, ingredient_name: 'Butter', basis_grams: 100)
-    duplicate = IngredientProfile.new(kitchen: @kitchen, ingredient_name: 'Butter', basis_grams: 100)
+    IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Butter', basis_grams: 100)
+    duplicate = IngredientCatalog.new(kitchen: @kitchen, ingredient_name: 'Butter', basis_grams: 100)
 
     refute_predicate duplicate, :valid?
   end
 
   test 'allows same ingredient_name in different kitchens' do
     other = Kitchen.find_or_create_by!(name: 'Other Kitchen', slug: 'other-kitchen')
-    IngredientProfile.create!(kitchen: @kitchen, ingredient_name: 'Butter', basis_grams: 100)
-    entry = IngredientProfile.new(kitchen: other, ingredient_name: 'Butter', basis_grams: 100)
+    IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Butter', basis_grams: 100)
+    entry = IngredientCatalog.new(kitchen: other, ingredient_name: 'Butter', basis_grams: 100)
 
     assert_predicate entry, :valid?
   end
 
   test 'allows same ingredient_name as global and kitchen entry' do
-    IngredientProfile.create!(ingredient_name: 'Butter', basis_grams: 100)
-    entry = IngredientProfile.new(kitchen: @kitchen, ingredient_name: 'Butter', basis_grams: 100)
+    IngredientCatalog.create!(ingredient_name: 'Butter', basis_grams: 100)
+    entry = IngredientCatalog.new(kitchen: @kitchen, ingredient_name: 'Butter', basis_grams: 100)
 
     assert_predicate entry, :valid?
   end
 
   test 'allows aisle-only rows without basis_grams' do
-    entry = IngredientProfile.new(ingredient_name: 'Egg yolk', aisle: 'Refrigerated')
+    entry = IngredientCatalog.new(ingredient_name: 'Egg yolk', aisle: 'Refrigerated')
 
     assert_predicate entry, :valid?
   end
 
   test 'stores aisle data' do
-    entry = IngredientProfile.create!(ingredient_name: 'Flour', basis_grams: 30, aisle: 'Baking')
+    entry = IngredientCatalog.create!(ingredient_name: 'Flour', basis_grams: 30, aisle: 'Baking')
     entry.reload
 
     assert_equal 'Baking', entry.aisle

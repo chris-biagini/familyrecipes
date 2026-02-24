@@ -27,7 +27,6 @@ class MarkdownImporter
       update_recipe_attributes(recipe)
       recipe.save!
       replace_steps(recipe)
-      rebuild_dependencies(recipe)
       recipe
     end
   end
@@ -142,19 +141,5 @@ class MarkdownImporter
 
     parts = quantity_string.strip.split(' ', 2)
     [parts[0], parts[1]]
-  end
-
-  def rebuild_dependencies(recipe)
-    recipe.outbound_dependencies.destroy_all
-
-    cross_refs = parsed[:steps].flat_map { |s| s[:ingredients].select { |i| i[:cross_reference] } }
-    target_slugs = cross_refs.map { |ref| FamilyRecipes.slugify(ref[:target_title]) }.uniq
-
-    target_slugs.each do |slug|
-      target = kitchen.recipes.find_by(slug: slug)
-      next unless target
-
-      recipe.outbound_dependencies.create!(target_recipe: target)
-    end
   end
 end

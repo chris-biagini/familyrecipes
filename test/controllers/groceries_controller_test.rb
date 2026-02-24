@@ -104,8 +104,8 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     assert_select '#recipe-selector .category h2', 'Pasta'
   end
 
-  test 'renders Quick Bites section when document exists' do
-    SiteDocument.create!(name: 'quick_bites', kitchen: @kitchen, content: <<~MD)
+  test 'renders Quick Bites section when content exists' do
+    @kitchen.update!(quick_bites_content: <<~MD)
       ## Snacks
         - Goldfish
         - Hummus with Pretzels: Hummus, Pretzels
@@ -121,16 +121,14 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     assert_select '.quick-bites input[data-slug="hummus-with-pretzels"]'
   end
 
-  test 'renders gracefully without site documents' do
-    SiteDocument.where(name: 'quick_bites').destroy_all
-
+  test 'renders gracefully without quick bites content' do
     get groceries_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
   end
 
   test 'update_quick_bites saves valid content' do
-    SiteDocument.create!(name: 'quick_bites', kitchen: @kitchen, content: 'old content')
+    @kitchen.update!(quick_bites_content: 'old content')
 
     log_in
     patch groceries_quick_bites_path(kitchen_slug: kitchen_slug),
@@ -139,23 +137,21 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
 
-    doc = SiteDocument.find_by(name: 'quick_bites')
-
-    assert_equal "## Snacks\n  - Goldfish", doc.content
+    assert_equal "## Snacks\n  - Goldfish", @kitchen.reload.quick_bites_content
   end
 
-  test 'update_quick_bites creates document if missing' do
+  test 'update_quick_bites saves content when none existed' do
     log_in
     patch groceries_quick_bites_path(kitchen_slug: kitchen_slug),
           params: { content: "## Snacks\n  - Goldfish" },
           as: :json
 
     assert_response :success
-    assert SiteDocument.exists?(name: 'quick_bites')
+    assert_equal "## Snacks\n  - Goldfish", @kitchen.reload.quick_bites_content
   end
 
   test 'update_quick_bites rejects blank content' do
-    SiteDocument.create!(name: 'quick_bites', kitchen: @kitchen, content: 'old content')
+    @kitchen.update!(quick_bites_content: 'old content')
 
     log_in
     patch groceries_quick_bites_path(kitchen_slug: kitchen_slug),
@@ -269,7 +265,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
       Mix well.
     MD
 
-    IngredientProfile.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Flour') do |p|
+    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Flour') do |p|
       p.basis_grams = 30
       p.aisle = 'Baking'
     end
