@@ -61,9 +61,37 @@ function initEditor(dialog) {
   }
 
   openBtn.addEventListener('click', () => {
-    originalContent = textarea.value;
     clearErrors();
-    dialog.showModal();
+
+    const loadUrl = dialog.dataset.editorLoadUrl;
+    if (loadUrl) {
+      textarea.value = '';
+      textarea.disabled = true;
+      textarea.placeholder = 'Loading\u2026';
+      dialog.showModal();
+
+      fetch(loadUrl, {
+        headers: { 'Accept': 'application/json', 'X-CSRF-Token': csrfToken }
+      })
+        .then(response => response.json())
+        .then(data => {
+          const key = dialog.dataset.editorLoadKey || 'content';
+          textarea.value = data[key] || '';
+          originalContent = textarea.value;
+          textarea.disabled = false;
+          textarea.placeholder = '';
+          textarea.focus();
+        })
+        .catch(() => {
+          textarea.value = '';
+          textarea.disabled = false;
+          textarea.placeholder = '';
+          showErrors(['Failed to load content. Close and try again.']);
+        });
+    } else {
+      originalContent = textarea.value;
+      dialog.showModal();
+    }
   });
 
   closeBtn.addEventListener('click', closeDialog);
