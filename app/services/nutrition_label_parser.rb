@@ -179,13 +179,20 @@ class NutritionLabelParser
     private
 
     def serving_line
-      return "Serving size: #{format_grams(@entry.basis_grams)}" unless density?
+      return "Serving size: #{format_grams(@entry.basis_grams)}" unless volume_serving?
 
       volume = "#{format_number(@entry.density_volume)} #{@entry.density_unit}"
-      "Serving size: #{volume} (#{format_grams(@entry.basis_grams)})"
+      "Serving size: #{volume} (#{format_grams(@entry.density_grams)})"
     end
 
-    def density? = @entry.density_grams && @entry.density_volume
+    # Volume format only when basis_grams matches density_grams — meaning
+    # the serving IS the volume amount (e.g., 1/4 cup = 30g, nutrients per 30g).
+    # USDA entries often have basis_grams=100 with a separate density conversion,
+    # so showing volume would produce contradictions like "1 cup (100g)" for oil.
+    def volume_serving?
+      @entry.density_grams && @entry.density_volume &&
+        @entry.basis_grams == @entry.density_grams
+    end
 
     def nutrient_lines
       LABEL_LINES.map do |label, key, unit|

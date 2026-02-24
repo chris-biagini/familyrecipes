@@ -244,6 +244,18 @@ class NutritionLabelParserTest < ActiveSupport::TestCase
     assert_includes text, '140'
   end
 
+  test 'formats entry with mismatched density as gram-only serving' do
+    entry = build_entry(
+      basis_grams: 100.0, calories: 884.0, fat: 100.0,
+      density_grams: 216.0, density_volume: 1.0, density_unit: 'cup'
+    )
+
+    text = NutritionLabelParser.format(entry)
+
+    assert_includes text, 'Serving size: 100g'
+    assert_not_includes text, 'cup'
+  end
+
   test 'formats entry with portions' do
     entry = build_entry(
       basis_grams: 30.0, calories: 110.0,
