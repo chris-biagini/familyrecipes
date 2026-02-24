@@ -7,7 +7,7 @@ class Kitchen < ApplicationRecord
   has_many :categories, dependent: :destroy
   has_many :recipes, dependent: :destroy
   has_many :recipe_dependencies, dependent: :destroy
-  has_many :nutrition_entries, dependent: :destroy
+  has_many :ingredient_profiles, dependent: :destroy
   has_many :site_documents, dependent: :destroy
   has_one :grocery_list, dependent: :destroy
 

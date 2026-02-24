@@ -239,7 +239,7 @@ See `docker-compose.example.yml` for a reference deployment configuration.
 
 ## Routes
 
-All routes live under `/kitchens/:kitchen_slug/` except the landing page (`/`), auth routes (`/auth/:provider/callback`, `/auth/failure`, `/logout`), login (`/login`), dev login (`/dev/login/:id`), and health check (`/up`). Kitchen-scoped routes include recipes (CRUD), ingredients index, groceries (with PATCH sub-routes for `quick_bites` and `grocery_aisles`), and nutrition entries (`POST`/`DELETE` at `/nutrition/:ingredient_name`). Views use Rails route helpers — `root_path` (landing), `kitchen_root_path` (kitchen homepage), `recipe_path(slug)`, `ingredients_path`, `groceries_path`. `ApplicationController#default_url_options` auto-fills `kitchen_slug` from `current_kitchen`, so most helpers work without explicitly passing it. When adding links, always use the `_path` helpers.
+All routes live under `/kitchens/:kitchen_slug/` except the landing page (`/`), auth routes (`/auth/:provider/callback`, `/auth/failure`, `/logout`), login (`/login`), dev login (`/dev/login/:id`), and health check (`/up`). Kitchen-scoped routes include recipes (CRUD), ingredients index, groceries (`show`, `state`, `select`, `check`, `custom_items`, `clear`, `quick_bites`), and nutrition entries (`POST`/`DELETE` at `/nutrition/:ingredient_name`). Views use Rails route helpers — `root_path` (landing), `kitchen_root_path` (kitchen homepage), `recipe_path(slug)`, `ingredients_path`, `groceries_path`. `ApplicationController#default_url_options` auto-fills `kitchen_slug` from `current_kitchen`, so most helpers work without explicitly passing it. When adding links, always use the `_path` helpers.
 
 ## Architecture
 
@@ -249,11 +249,11 @@ The Rails app module is `Familyrecipes` (lowercase r); the domain/parser module 
 
 ### Database
 
-PostgreSQL with thirteen tables: `kitchens`, `users`, `memberships`, `sessions`, `connected_services`, `categories`, `recipes`, `steps`, `ingredients`, `cross_references`, `recipe_dependencies`, `nutrition_entries`, `site_documents`. Most data tables have a `kitchen_id` FK; `sessions` and `connected_services` belong to `users` directly. See `db/schema.rb` for the full schema. Recipes are seeded from `db/seeds/recipes/*.md` via `MarkdownImporter`.
+PostgreSQL with sixteen tables: `kitchens`, `users`, `memberships`, `sessions`, `connected_services`, `categories`, `recipes`, `steps`, `ingredients`, `cross_references`, `recipe_dependencies`, `ingredient_profiles`, `site_documents`, `grocery_lists`, `solid_cable_messages`. Most data tables have a `kitchen_id` FK; `sessions` and `connected_services` belong to `users` directly. See `db/schema.rb` for the full schema. Recipes are seeded from `db/seeds/recipes/*.md` via `MarkdownImporter`.
 
 ### ActiveRecord Models (`app/models/`)
 
-- `Kitchen` — multi-tenant container; has_many :users (through :memberships), :categories, :recipes, :site_documents; `member?(user)` checks membership
+- `Kitchen` — multi-tenant container; has_many :users (through :memberships), :categories, :recipes, :ingredient_profiles, :site_documents; has_one :grocery_list; `member?(user)` checks membership
 - `User` — has_many :kitchens (through :memberships), :sessions, :connected_services; email required and unique
 - `Session` — database-backed login session; belongs_to :user; stores ip_address, user_agent
 - `Current` — `ActiveSupport::CurrentAttributes` with `:session` attribute; delegates `:user` to session
@@ -264,9 +264,10 @@ PostgreSQL with thirteen tables: `kitchens`, `users`, `memberships`, `sessions`,
 - `Step` — belongs_to :recipe, has_many :ingredients (ordered)
 - `Ingredient` — belongs_to :step
 - `CrossReference` — AR model for `@[Recipe]` links within steps; stores target_recipe, multiplier, prep_note, position
-- `IngredientProfile` — one row per ingredient with FDA-label nutrients, density, and portions; supports an overlay model where seed entries are global (`kitchen_id: nil`) and kitchens can add overrides. `lookup_for(kitchen)` merges global + kitchen entries with kitchen taking precedence. Used by `RecipeNutritionJob`
+- `IngredientProfile` — one row per ingredient with FDA-label nutrients, density, portions, and aisle; supports an overlay model where seed entries are global (`kitchen_id: nil`) and kitchens can add overrides. `lookup_for(kitchen)` merges global + kitchen entries with kitchen taking precedence. Aisle data seeded from `grocery-info.yaml`. Used by `RecipeNutritionJob` and `ShoppingListBuilder`
+- `GroceryList` — one per kitchen; jsonb `state` column stores `selected_recipes`, `selected_quick_bites`, `custom_items`, `checked_off`; integer `version` counter for optimistic sync via ActionCable
 - `RecipeDependency` — join table tracking which recipes reference which (source → target)
-- `SiteDocument` — kitchen-scoped key-value text blobs for editable site content (quick_bites, grocery_aisles) and seed-loaded configuration (site_config, nutrition_data); loaded by controllers with YAML file fallback
+- `SiteDocument` — kitchen-scoped key-value text blobs for editable site content (quick_bites) and seed-loaded configuration (site_config, nutrition_data); loaded by controllers with YAML file fallback
 
 ### Controllers (`app/controllers/`)
 
@@ -280,12 +281,16 @@ All controllers are thin — load from ActiveRecord, pass to views. All queries 
 - `RecipesController` — `show` uses the "parsed-recipe bridge" pattern (see below); `create`/`update`/`destroy` are editor endpoints guarded by `require_membership`, using `MarkdownValidator` and `MarkdownImporter`
 - `IngredientsController#index` — all ingredients grouped by canonical name with recipe links and nutrition status badges
 - `NutritionEntriesController` — `upsert`/`destroy` endpoints for web-based nutrition editing via the ingredients page; parses label text with `NutritionLabelParser`, recalculates affected recipes; guarded by `require_membership`
-- `GroceriesController#show` — recipe selector with ingredient JSON, aisle-organized grocery list, Quick Bites section, editor dialogs for quick bites and aisles
+- `GroceriesController` — `show` renders recipe/quick-bite selectors; `state` returns JSON shopping list built by `ShoppingListBuilder`; `select`, `check`, `update_custom_items`, `clear` mutate `GroceryList` state and broadcast via ActionCable; `update_quick_bites` edits Quick Bites content
 - `SessionsController#new` — login page at `/login`
 
 ### Parse-on-save architecture
 
 The parser runs only on the write path (`MarkdownImporter`). The database is the complete source of truth for rendering: `Step#processed_instructions` stores scalable number markup, `CrossReference` records store interleaved recipe links, and `Recipe#nutrition_data` stores pre-computed nutrition as jsonb. Views render entirely from AR data.
+
+### Real-time sync (ActionCable)
+
+Grocery list state syncs across browser tabs/devices via ActionCable backed by Solid Cable (database-backed pub/sub in `solid_cable_messages`). `GroceryListChannel` broadcasts version numbers on state changes; clients poll for fresh state when their version is stale.
 
 ### Parser / Domain Classes (`lib/familyrecipes/`)
 
@@ -314,6 +319,7 @@ These are the import engine and render-time helpers. Loaded via `config/initiali
 - `CrossReferenceUpdater` — updates `@[Title]` cross-references when recipes are renamed or deleted. `rename_references` requires `kitchen:` keyword; `strip_references` gets kitchen from the recipe.
 - `MarkdownValidator` — validates markdown source before import; checks for blank content, missing Category front matter, and at least one step. Used by `RecipesController` for editor input validation.
 - `NutritionLabelParser` — parses plaintext FDA-style nutrition labels into structured data (nutrients, density, portions). `Result` is a `Data.define` with `success?` predicate. Used by `NutritionEntriesController`.
+- `ShoppingListBuilder` — builds aisle-organized shopping list from selected recipes/quick bites; uses `IngredientProfile` for aisle lookup and `IngredientAggregator`-style quantity merging. Used by `GroceriesController#state`.
 
 ### Helpers (`app/helpers/`)
 
@@ -331,7 +337,7 @@ recipes/_step.html.erb          ← step partial with ingredients and cross-refe
 recipes/_nutrition_table.html.erb ← FDA-style nutrition facts
 ingredients/index.html.erb      ← alphabetical ingredient index with nutrition status badges and editor dialog
 sessions/new.html.erb           ← login page
-groceries/show.html.erb         ← recipe selector + aisle-organized grocery list
+groceries/show.html.erb         ← recipe/quick-bite selectors, server-driven shopping list via JS
 ```
 
 Views use `content_for` blocks for page-specific titles, head tags, body attributes, and scripts. Cross-references are rendered using duck typing (`respond_to?(:target_slug)`) per project conventions. Edit buttons and editor dialogs are wrapped in `current_kitchen.member?(current_user)` checks — read-only visitors see no edit UI.
@@ -341,7 +347,7 @@ Views use `content_for` blocks for page-specific titles, head tags, body attribu
 Propshaft serves fingerprinted assets from `app/assets/`. No build step, no bundling, no Node.
 
 - `app/assets/stylesheets/` — `style.css`, `groceries.css`
-- `app/assets/javascripts/` — `recipe-state-manager.js`, `recipe-editor.js`, `groceries.js`, `nutrition-editor.js`, `notify.js`, `wake-lock.js`, `qrcodegen.js`
+- `app/assets/javascripts/` — `recipe-state-manager.js`, `recipe-editor.js`, `groceries.js`, `nutrition-editor.js`, `notify.js`, `wake-lock.js`
 - `app/assets/images/` — favicons
 
 Views use `stylesheet_link_tag`, `javascript_include_tag`, `asset_path`.
@@ -349,7 +355,7 @@ Views use `stylesheet_link_tag`, `javascript_include_tag`, `asset_path`.
 ### Data Files (`db/seeds/resources/`)
 
 - `site-config.yaml` — site identity (title, homepage heading/subtitle, GitHub URL); seeded into `site_documents` table as `site_config`
-- `grocery-info.yaml` — ingredient-to-aisle mappings (fallback; primary source is `site_documents` table)
+- `grocery-info.yaml` — ingredient-to-aisle mappings; seeded into `IngredientProfile.aisle` column during `db:seed`
 - `nutrition-data.yaml` — density-first nutrition data (see Nutrition Data section); seeded into `site_documents` table as `nutrition_data`
 
 ### Editor dialogs
