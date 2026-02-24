@@ -54,6 +54,7 @@ class GroceriesController < ApplicationController
     doc.content = content
     doc.save!
 
+    GroceryListChannel.broadcast_content_changed(current_kitchen)
     render json: { status: 'ok' }
   end
 

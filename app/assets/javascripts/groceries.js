@@ -121,6 +121,13 @@
         { channel: 'GroceryListChannel', kitchen_slug: slug },
         {
           received: function(data) {
+            if (data.type === 'content_changed') {
+              Notify.show('Recipes or ingredients have changed.', {
+                persistent: true,
+                action: { label: 'Reload', callback: function() { location.reload(); } }
+              });
+              return;
+            }
             if (data.version && data.version > self.version) {
               self.fetchState();
             }

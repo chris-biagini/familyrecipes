@@ -11,4 +11,8 @@ class GroceryListChannel < ApplicationCable::Channel
   def self.broadcast_version(kitchen, version)
     broadcast_to(kitchen, version: version)
   end
+
+  def self.broadcast_content_changed(kitchen)
+    broadcast_to(kitchen, type: 'content_changed')
+  end
 end
