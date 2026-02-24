@@ -7,8 +7,7 @@ require 'json'
 require_relative '../lib/familyrecipes'
 
 PROJECT_ROOT = File.expand_path('..', __dir__)
-NUTRITION_PATH = File.join(PROJECT_ROOT, 'db/seeds/resources/nutrition-data.yaml')
-GROCERY_PATH = File.join(PROJECT_ROOT, 'db/seeds/resources/grocery-info.yaml')
+NUTRITION_PATH = File.join(PROJECT_ROOT, 'db/seeds/resources/ingredient-catalog.yaml')
 RECIPES_DIR = File.join(PROJECT_ROOT, 'db/seeds/recipes')
 
 Helpers = FamilyRecipes::NutritionEntryHelpers
@@ -74,18 +73,10 @@ def load_context
   recipes = FamilyRecipes.parse_recipes(RECIPES_DIR)
   recipe_map = recipes.to_h { |r| [r.id, r] }
 
-  # Build omit set from nutrition-data.yaml entries with aisle: omit
-  # (bin/nutrition runs outside Rails, so we read from YAML)
   omit_set = Set.new
-  if File.exist?(GROCERY_PATH)
-    grocery_data = YAML.safe_load_file(GROCERY_PATH, permitted_classes: [], permitted_symbols: [], aliases: false)
-    omit_key = grocery_data.keys.find { |k| k.downcase.tr('_', ' ') == 'omit from list' }
-    if omit_key
-      grocery_data[omit_key].each do |item|
-        name = item.is_a?(Hash) ? item['name'] : item
-        omit_set << name.downcase
-      end
-    end
+  catalog = load_nutrition_data
+  catalog.each do |name, entry|
+    omit_set << name.downcase if entry['aisle'] == 'omit'
   end
 
   { recipes: recipes, recipe_map: recipe_map, omit_set: omit_set }

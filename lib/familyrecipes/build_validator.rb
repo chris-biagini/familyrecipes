@@ -159,7 +159,7 @@ module FamilyRecipes
 
       if has_warnings
         puts ''
-        puts 'Use bin/nutrition to add data, or edit db/seeds/resources/nutrition-data.yaml directly.'
+        puts 'Use bin/nutrition to add data, or edit db/seeds/resources/ingredient-catalog.yaml directly.'
         puts ''
       else
         print "done! (All ingredients have nutrition data.)\n"
