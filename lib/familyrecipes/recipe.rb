@@ -54,32 +54,29 @@ module FamilyRecipes
     end
 
     # Own ingredients only (excludes sub-recipe ingredients) — used for ingredient index
-    def all_ingredients(alias_map = {})
-      @steps.flat_map(&:ingredients).uniq { |ingredient| ingredient.normalized_name(alias_map) }
+    def all_ingredients
+      @steps.flat_map(&:ingredients).uniq(&:name)
     end
 
-    def all_ingredient_names(alias_map = {})
-      @steps
-        .flat_map(&:ingredients)
-        .map { |ingredient| ingredient.normalized_name(alias_map) }
-        .uniq
+    def all_ingredient_names
+      @steps.flat_map(&:ingredients).map(&:name).uniq
     end
 
     # Own ingredients with aggregated quantities (excludes sub-recipe ingredients)
-    def own_ingredients_with_quantities(alias_map = {})
-      ingredients_with_quantities(alias_map)
+    def own_ingredients_with_quantities
+      ingredients_with_quantities
     end
 
-    def ingredients_with_quantities(alias_map = {})
+    def ingredients_with_quantities
       @steps.flat_map(&:ingredients)
-            .group_by { |i| i.normalized_name(alias_map) }
+            .group_by(&:name)
             .map { |name, ingredients| [name, IngredientAggregator.aggregate_amounts(ingredients)] }
     end
 
     # Ingredients with quantities including expanded cross-references — used for grocery list
-    def all_ingredients_with_quantities(alias_map, recipe_map)
-      cross_references.each_with_object(ingredients_with_quantities(alias_map).to_h) do |xref, merged|
-        xref.expanded_ingredients(recipe_map, alias_map).each do |name, amounts|
+    def all_ingredients_with_quantities(recipe_map)
+      cross_references.each_with_object(ingredients_with_quantities.to_h) do |xref, merged|
+        xref.expanded_ingredients(recipe_map).each do |name, amounts|
           merged[name] = merged.key?(name) ? merge_amounts(merged[name], amounts) : amounts
         end
       end.to_a

@@ -332,7 +332,7 @@ class RecipeTest < Minitest::Test
     pizza = FamilyRecipes::Recipe.new(markdown_source: pizza_md, id: 'test-pizza', category: 'Test')
     recipe_map = { 'pizza-dough' => dough, 'test-pizza' => pizza }
 
-    iwq = pizza.all_ingredients_with_quantities({}, recipe_map)
+    iwq = pizza.all_ingredients_with_quantities(recipe_map)
     flour = iwq.find { |name, _| name == 'Flour' }
 
     refute_nil flour, 'Flour should appear in merged ingredients'

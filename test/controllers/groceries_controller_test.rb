@@ -25,7 +25,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select 'h1', 'Groceries'
-    assert_select 'input[type=checkbox][data-title="Focaccia"]'
+    assert_select 'input[type=checkbox][data-slug="focaccia"][data-title="Focaccia"]'
   end
 
   test 'includes groceries CSS and JS' do
@@ -33,22 +33,6 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
 
     assert_select 'link[href*="groceries"]'
     assert_select 'script[src*="groceries"]'
-  end
-
-  test 'renders aisle sections from grocery data' do
-    get groceries_path(kitchen_slug: kitchen_slug)
-
-    assert_response :success
-    assert_select 'details.aisle summary', /Produce/
-    assert_select 'details.aisle summary', /Baking/
-    assert_select '#misc-aisle summary', /Miscellaneous/
-  end
-
-  test 'does not render Omit_From_List aisle' do
-    get groceries_path(kitchen_slug: kitchen_slug)
-
-    assert_response :success
-    assert_select 'details.aisle summary', { text: /Omit_From_List/, count: 0 }
   end
 
   test 'renders custom items section' do
@@ -59,19 +43,30 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     assert_select '#custom-input'
   end
 
-  test 'renders share section' do
+  test 'renders shopping list container with data attributes' do
     get groceries_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
-    assert_select '#share-section'
-    assert_select '#qr-container'
+    assert_select '#shopping-list'
+    assert_select '#groceries-app[data-kitchen-slug]'
+    assert_select '#groceries-app[data-state-url]'
+    assert_select '#groceries-app[data-select-url]'
+    assert_select '#groceries-app[data-check-url]'
+    assert_select '#groceries-app[data-custom-items-url]'
+    assert_select '#groceries-app[data-clear-url]'
   end
 
-  test 'renders UNIT_PLURALS script' do
+  test 'recipe selector has data-type attribute' do
     get groceries_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
-    assert_match(/window\.UNIT_PLURALS/, response.body)
+    assert_select '#recipe-selector[data-type="recipe"]'
+  end
+
+  test 'renders noscript fallback' do
+    get groceries_path(kitchen_slug: kitchen_slug)
+
+    assert_select 'noscript', /JavaScript/
   end
 
   test 'groups recipes by category' do
@@ -121,12 +116,13 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select '.quick-bites h2', 'Quick Bites'
     assert_select '.quick-bites .subsection h3', 'Snacks'
-    assert_select '.quick-bites input[type=checkbox][data-title="Goldfish"]'
-    assert_select '.quick-bites input[type=checkbox][data-title="Hummus with Pretzels"]'
+    assert_select '.quick-bites[data-type="quick_bite"]'
+    assert_select '.quick-bites input[type=checkbox][data-slug="goldfish"][data-title="Goldfish"]'
+    assert_select '.quick-bites input[data-slug="hummus-with-pretzels"]'
   end
 
   test 'renders gracefully without site documents' do
-    SiteDocument.where(name: %w[quick_bites grocery_aisles]).destroy_all
+    SiteDocument.where(name: 'quick_bites').destroy_all
 
     get groceries_path(kitchen_slug: kitchen_slug)
 
@@ -169,38 +165,98 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
   end
 
-  test 'update_grocery_aisles saves valid content' do
-    SiteDocument.create!(name: 'grocery_aisles', kitchen: @kitchen, content: 'old')
+  test 'update_quick_bites requires membership' do
+    patch groceries_quick_bites_path(kitchen_slug: kitchen_slug),
+          params: { content: "## Snacks\n  - Goldfish" },
+          as: :json
 
-    new_content = "## Produce\n- Apples\n\n## Baking\n- Flour"
+    assert_response :unauthorized
+  end
+
+  # --- API endpoint tests ---
+
+  test 'state returns version and empty state for new list' do
+    get groceries_state_path(kitchen_slug: kitchen_slug), as: :json
+
+    assert_response :success
+    json = JSON.parse(response.body)
+
+    assert_equal 0, json['version']
+    assert_empty(json['shopping_list'])
+  end
+
+  test 'select adds recipe and returns version' do
     log_in
-    patch groceries_grocery_aisles_path(kitchen_slug: kitchen_slug),
-          params: { content: new_content },
+    patch groceries_select_path(kitchen_slug: kitchen_slug),
+          params: { type: 'recipe', slug: 'focaccia', selected: true },
           as: :json
 
     assert_response :success
-
-    doc = SiteDocument.find_by(name: 'grocery_aisles')
-
-    assert_equal new_content, doc.content
-  end
-
-  test 'update_grocery_aisles rejects content with no aisles' do
-    SiteDocument.create!(name: 'grocery_aisles', kitchen: @kitchen, content: 'old')
-
-    log_in
-    patch groceries_grocery_aisles_path(kitchen_slug: kitchen_slug),
-          params: { content: 'just some text with no headings' },
-          as: :json
-
-    assert_response :unprocessable_entity
     json = JSON.parse(response.body)
 
-    assert_includes json['errors'], 'Must have at least one aisle (## Aisle Name).'
+    assert_operator json['version'], :>, 0
   end
 
-  test 'recipe checkboxes include ingredient data as JSON' do
-    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+  test 'select requires membership' do
+    patch groceries_select_path(kitchen_slug: kitchen_slug),
+          params: { type: 'recipe', slug: 'focaccia', selected: true },
+          as: :json
+
+    assert_response :unauthorized
+  end
+
+  test 'check marks item as checked' do
+    log_in
+    patch groceries_check_path(kitchen_slug: kitchen_slug),
+          params: { item: 'flour', checked: true },
+          as: :json
+
+    assert_response :success
+  end
+
+  test 'check requires membership' do
+    patch groceries_check_path(kitchen_slug: kitchen_slug),
+          params: { item: 'flour', checked: true },
+          as: :json
+
+    assert_response :unauthorized
+  end
+
+  test 'custom_items adds item' do
+    log_in
+    patch groceries_custom_items_path(kitchen_slug: kitchen_slug),
+          params: { item: 'birthday candles', action_type: 'add' },
+          as: :json
+
+    assert_response :success
+  end
+
+  test 'custom_items requires membership' do
+    patch groceries_custom_items_path(kitchen_slug: kitchen_slug),
+          params: { item: 'birthday candles', action_type: 'add' },
+          as: :json
+
+    assert_response :unauthorized
+  end
+
+  test 'clear resets the list' do
+    log_in
+    delete groceries_clear_path(kitchen_slug: kitchen_slug), as: :json
+
+    assert_response :success
+    json = JSON.parse(response.body)
+
+    assert json.key?('version')
+  end
+
+  test 'clear requires membership' do
+    delete groceries_clear_path(kitchen_slug: kitchen_slug), as: :json
+
+    assert_response :unauthorized
+  end
+
+  test 'state includes shopping_list when recipes selected' do
+    Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
     MarkdownImporter.import(<<~MD, kitchen: @kitchen)
       # Focaccia
 
@@ -209,22 +265,90 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
       ## Mix (combine)
 
       - Flour, 3 cups
-      - Salt, 1 tsp
 
       Mix well.
     MD
 
-    get groceries_path(kitchen_slug: kitchen_slug)
+    IngredientProfile.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Flour') do |p|
+      p.basis_grams = 30
+      p.aisle = 'Baking'
+    end
+
+    log_in
+    patch groceries_select_path(kitchen_slug: kitchen_slug),
+          params: { type: 'recipe', slug: 'focaccia', selected: true },
+          as: :json
+
+    get groceries_state_path(kitchen_slug: kitchen_slug), as: :json
+    json = JSON.parse(response.body)
+
+    assert json['shopping_list'].key?('Baking')
+  end
+
+  test 'state includes selected_recipes in response' do
+    log_in
+    patch groceries_select_path(kitchen_slug: kitchen_slug),
+          params: { type: 'recipe', slug: 'focaccia', selected: true },
+          as: :json
+
+    get groceries_state_path(kitchen_slug: kitchen_slug), as: :json
+    json = JSON.parse(response.body)
+
+    assert_includes json['selected_recipes'], 'focaccia'
+  end
+
+  test 'state includes all state keys' do
+    log_in
+    patch groceries_select_path(kitchen_slug: kitchen_slug),
+          params: { type: 'recipe', slug: 'focaccia', selected: true },
+          as: :json
+
+    get groceries_state_path(kitchen_slug: kitchen_slug), as: :json
+    json = JSON.parse(response.body)
+
+    assert json.key?('version')
+    assert json.key?('selected_recipes')
+    assert json.key?('selected_quick_bites')
+    assert json.key?('checked_off')
+    assert json.key?('custom_items')
+    assert json.key?('shopping_list')
+  end
+
+  test 'state is accessible without login' do
+    get groceries_state_path(kitchen_slug: kitchen_slug), as: :json
 
     assert_response :success
-    checkbox = css_select('input[data-title="Focaccia"]').first
-    ingredients_json = checkbox['data-ingredients']
+  end
 
-    assert_predicate ingredients_json, :present?, 'Expected data-ingredients attribute'
+  test 'select deselects recipe when selected is false' do
+    log_in
+    patch groceries_select_path(kitchen_slug: kitchen_slug),
+          params: { type: 'recipe', slug: 'focaccia', selected: true },
+          as: :json
 
-    ingredients = JSON.parse(ingredients_json)
-    ingredient_names = ingredients.map(&:first)
+    patch groceries_select_path(kitchen_slug: kitchen_slug),
+          params: { type: 'recipe', slug: 'focaccia', selected: false },
+          as: :json
 
-    assert_includes ingredient_names, 'Flour'
+    get groceries_state_path(kitchen_slug: kitchen_slug), as: :json
+    json = JSON.parse(response.body)
+
+    refute_includes json['selected_recipes'], 'focaccia'
+  end
+
+  test 'custom_items removes item' do
+    log_in
+    patch groceries_custom_items_path(kitchen_slug: kitchen_slug),
+          params: { item: 'birthday candles', action_type: 'add' },
+          as: :json
+
+    patch groceries_custom_items_path(kitchen_slug: kitchen_slug),
+          params: { item: 'birthday candles', action_type: 'remove' },
+          as: :json
+
+    get groceries_state_path(kitchen_slug: kitchen_slug), as: :json
+    json = JSON.parse(response.body)
+
+    refute_includes json.fetch('custom_items', []), 'birthday candles'
   end
 end

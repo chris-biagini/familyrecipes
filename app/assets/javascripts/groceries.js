@@ -1,494 +1,668 @@
 (function() {
-  var STORAGE_KEY = 'groceries-state';
-  var initComplete = false;
+  'use strict';
 
-  // Central state
-  var state = {
-    selectedIds: new Set(),
-    customItems: [],
-    checkedOff: new Set()
+  // -----------------------------------------------------------------------
+  // GrocerySync — server-driven state with ActionCable sync
+  // -----------------------------------------------------------------------
+
+  var GrocerySync = {
+    version: 0,
+    state: {},
+    pending: [],
+    storageKey: null,
+    urls: {},
+    subscription: null,
+    heartbeatId: null,
+    consumer: null,
+    awaitingOwnAction: false,
+
+    init: function(app) {
+      var slug = app.dataset.kitchenSlug;
+      this.storageKey = 'grocery-state-' + slug;
+      this.pendingKey = 'grocery-pending-' + slug;
+
+      this.urls = {
+        state: app.dataset.stateUrl,
+        select: app.dataset.selectUrl,
+        check: app.dataset.checkUrl,
+        customItems: app.dataset.customItemsUrl,
+        clear: app.dataset.clearUrl
+      };
+
+      this.loadCache();
+      this.loadPending();
+
+      if (this.state && Object.keys(this.state).length > 0) {
+        GroceryUI.applyState(this.state);
+      }
+
+      this.fetchState();
+      this.subscribe(slug);
+      this.startHeartbeat();
+      this.flushPending();
+    },
+
+    fetchState: function() {
+      var self = this;
+      fetch(this.urls.state, {
+        headers: { 'Accept': 'application/json' }
+      })
+      .then(function(response) {
+        if (!response.ok) throw new Error('fetch failed');
+        return response.json();
+      })
+      .then(function(data) {
+        if (data.version >= self.version) {
+          var isRemoteUpdate = data.version > self.version && self.version > 0 && !self.awaitingOwnAction;
+          self.awaitingOwnAction = false;
+          self.version = data.version;
+          self.state = data;
+          self.saveCache();
+          GroceryUI.applyState(data);
+          if (isRemoteUpdate) {
+            Notify.show('List updated from another device.');
+          }
+        }
+      })
+      .catch(function() {
+        // Offline or error — cached state already applied
+      });
+    },
+
+    sendAction: function(url, params) {
+      var self = this;
+      var csrfToken = document.querySelector('meta[name="csrf-token"]');
+      var method = url === this.urls.clear ? 'DELETE' : 'PATCH';
+
+      return fetch(url, {
+        method: method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-CSRF-Token': csrfToken ? csrfToken.content : ''
+        },
+        body: JSON.stringify(params)
+      })
+      .then(function(response) {
+        if (!response.ok) throw new Error('action failed');
+        return response.json();
+      })
+      .then(function() {
+        // Fetch full state to get updated shopping list and version
+        self.awaitingOwnAction = true;
+        self.fetchState();
+      })
+      .catch(function() {
+        // Queue for retry
+        self.pending.push({ url: url, params: params });
+        self.savePending();
+      });
+    },
+
+    flushPending: function() {
+      if (this.pending.length === 0) return;
+
+      var queue = this.pending.slice();
+      this.pending = [];
+      this.savePending();
+
+      var self = this;
+      queue.forEach(function(entry) {
+        self.sendAction(entry.url, entry.params);
+      });
+    },
+
+    subscribe: function(slug) {
+      if (typeof ActionCable === 'undefined') return;
+
+      var self = this;
+      this.consumer = ActionCable.createConsumer();
+      this.subscription = this.consumer.subscriptions.create(
+        { channel: 'GroceryListChannel', kitchen_slug: slug },
+        {
+          received: function(data) {
+            if (data.type === 'content_changed') {
+              Notify.show('Recipes or ingredients have changed.', {
+                persistent: true,
+                action: { label: 'Reload', callback: function() { location.reload(); } }
+              });
+              return;
+            }
+            if (data.version && data.version > self.version) {
+              self.fetchState();
+            }
+          },
+          connected: function() {
+            self.flushPending();
+          }
+        }
+      );
+    },
+
+    startHeartbeat: function() {
+      var self = this;
+      this.heartbeatId = setInterval(function() {
+        self.fetchState();
+      }, 30000);
+    },
+
+    saveCache: function() {
+      try {
+        localStorage.setItem(this.storageKey, JSON.stringify({
+          version: this.version,
+          state: this.state
+        }));
+      } catch(error) {
+        // localStorage full or unavailable
+      }
+    },
+
+    loadCache: function() {
+      try {
+        var raw = localStorage.getItem(this.storageKey);
+        if (!raw) return;
+        var cached = JSON.parse(raw);
+        if (cached && cached.version) {
+          this.version = cached.version;
+          this.state = cached.state || {};
+        }
+      } catch(error) {
+        // Corrupted cache
+      }
+    },
+
+    savePending: function() {
+      try {
+        if (this.pending.length > 0) {
+          localStorage.setItem(this.pendingKey, JSON.stringify(this.pending));
+        } else {
+          localStorage.removeItem(this.pendingKey);
+        }
+      } catch(error) {
+        // localStorage full or unavailable
+      }
+    },
+
+    loadPending: function() {
+      try {
+        var raw = localStorage.getItem(this.pendingKey);
+        if (raw) {
+          this.pending = JSON.parse(raw) || [];
+        }
+      } catch(error) {
+        this.pending = [];
+      }
+    }
   };
 
-  // --- Recipe index mapping (for compact URLs) ---
+  // -----------------------------------------------------------------------
+  // GroceryUI — renders state to the DOM and handles user interactions
+  // -----------------------------------------------------------------------
 
-  var recipeIdList = [];   // index -> id
-  var recipeIndexMap = {}; // id -> index
+  var GroceryUI = {
+    app: null,
+    aisleCollapseKey: null,
 
-  function buildRecipeIndex() {
-    document.querySelectorAll('input[type="checkbox"][data-ingredients]').forEach(function(cb) {
-      var id = cb.id.replace(/-checkbox$/, '');
-      recipeIndexMap[id] = recipeIdList.length;
-      recipeIdList.push(id);
-    });
-  }
+    init: function(app) {
+      this.app = app;
+      this.aisleCollapseKey = 'grocery-aisles-' + app.dataset.kitchenSlug;
+      this.bindRecipeCheckboxes();
+      this.bindCustomItemInput();
+      this.bindShoppingListEvents();
+    },
 
-  // --- Aisle index mapping (for localStorage collapse persistence) ---
+    applyState: function(state) {
+      this.syncCheckboxes(state);
+      this.renderShoppingList(state.shopping_list || {});
+      this.renderCustomItems(state.custom_items || []);
+      this.syncCheckedOff(state.checked_off || []);
+      this.renderItemCount();
+      this.autoCollapseCompletedAisles();
+    },
 
-  var aisleElements = [];  // index -> details element
+    // --- Checkbox synchronization ---
 
-  function buildAisleIndex() {
-    document.querySelectorAll('#grocery-list details.aisle').forEach(function(details) {
-      aisleElements.push(details);
-    });
-  }
+    syncCheckboxes: function(state) {
+      var selectedRecipes = state.selected_recipes || [];
+      var selectedQuickBites = state.selected_quick_bites || [];
 
-  // --- Compact encoding ---
+      this.app.querySelectorAll('#recipe-selector input[type="checkbox"]').forEach(function(cb) {
+        var slug = cb.dataset.slug;
+        var typeEl = cb.closest('[data-type]');
+        if (!typeEl || !slug) return;
 
-  function encodeIndices(indices) {
-    var sorted = indices.slice().sort(function(a, b) { return a - b; });
-    var str = '';
-    for (var i = 0; i < sorted.length; i++) {
-      str += String.fromCharCode(97 + Math.floor(sorted[i] / 26))
-           + String.fromCharCode(97 + sorted[i] % 26);
-    }
-    return str;
-  }
-
-  function decodeIndices(str) {
-    var indices = [];
-    for (var i = 0; i + 1 < str.length; i += 2) {
-      indices.push((str.charCodeAt(i) - 97) * 26 + str.charCodeAt(i + 1) - 97);
-    }
-    return indices;
-  }
-
-  function encodeCustomItem(text) {
-    return encodeURIComponent(text)
-      .replace(/-/g, '%2D')
-      .replace(/\./g, '%2E')
-      .replace(/%20/g, '-');
-  }
-
-  function decodeCustomItem(str) {
-    return decodeURIComponent(str.replace(/-/g, '%20'));
-  }
-
-  function getRawParam(name) {
-    var match = window.location.search.match(new RegExp('[?&]' + name + '=([^&]*)'));
-    return match ? match[1] : null;
-  }
-
-  // --- Unified state encode/decode ---
-
-  function encodeState() {
-    var encoded = {};
-
-    var ids = Array.from(state.selectedIds);
-    if (ids.length > 0) {
-      var indices = [];
-      ids.forEach(function(id) {
-        if (recipeIndexMap[id] !== undefined) indices.push(recipeIndexMap[id]);
-      });
-      if (indices.length > 0) encoded.s = encodeIndices(indices);
-    }
-
-    if (state.customItems.length > 0) {
-      encoded.c = state.customItems.map(encodeCustomItem).join('.');
-    }
-
-    if (state.checkedOff.size > 0) {
-      encoded.x = Array.from(state.checkedOff).map(encodeCustomItem).join('.');
-    }
-
-    return encoded;
-  }
-
-  function decodeState(obj) {
-    var result = { selectedIds: [], customItems: [], checkedOff: [] };
-
-    if (obj.s) {
-      decodeIndices(obj.s).forEach(function(i) {
-        if (i >= 0 && i < recipeIdList.length) {
-          result.selectedIds.push(recipeIdList[i]);
-        }
-      });
-    }
-
-    if (obj.c) {
-      obj.c.split('.').forEach(function(encoded) {
-        if (encoded) result.customItems.push(decodeCustomItem(encoded));
-      });
-    }
-
-    if (obj.x) {
-      obj.x.split('.').forEach(function(encoded) {
-        if (encoded) result.checkedOff.push(decodeCustomItem(encoded));
-      });
-    }
-
-    return result;
-  }
-
-  function applyState(decoded) {
-    state.selectedIds = new Set(decoded.selectedIds);
-    state.customItems = decoded.customItems.slice();
-    state.checkedOff = new Set(decoded.checkedOff);
-  }
-
-  function snapshotState() {
-    return {
-      selectedIds: Array.from(state.selectedIds),
-      customItems: state.customItems.slice(),
-      checkedOff: Array.from(state.checkedOff)
-    };
-  }
-
-  // --- Aisle state ---
-
-  function encodeAisleState() {
-    var collapsed = [];
-    for (var i = 0; i < aisleElements.length; i++) {
-      if (!aisleElements[i].hidden && !aisleElements[i].open) {
-        collapsed.push(i);
-      }
-    }
-    return collapsed.length > 0 ? encodeIndices(collapsed) : undefined;
-  }
-
-  function restoreAisleState(encoded) {
-    if (!encoded) return;
-    var indices = decodeIndices(encoded);
-    indices.forEach(function(i) {
-      if (i >= 0 && i < aisleElements.length && !aisleElements[i].hidden) {
-        aisleElements[i].open = false;
-      }
-    });
-  }
-
-  // --- State persistence ---
-
-  function saveState() {
-    var encoded = encodeState();
-    var aisles = encodeAisleState();
-    if (aisles) encoded.a = aisles;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(encoded));
-  }
-
-  function loadFromStorage() {
-    var raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    try {
-      var obj = JSON.parse(raw);
-      if (!obj.s && !obj.c && !obj.x && !obj.a) return null;
-      return { decoded: decodeState(obj), aisles: obj.a || null };
-    } catch(e) {
-      return null;
-    }
-  }
-
-  function parseStateFromUrl() {
-    var s = getRawParam('s');
-    var c = getRawParam('c');
-    var x = getRawParam('x');
-    if (!s && !c && !x) return null;
-
-    return decodeState({ s: s, c: c, x: x });
-  }
-
-  function cleanUrl() {
-    history.replaceState(null, '', window.location.pathname);
-  }
-
-  function statesMatch(a, b) {
-    var aIds = a.selectedIds.slice().sort();
-    var bIds = b.selectedIds.slice().sort();
-    if (JSON.stringify(aIds) !== JSON.stringify(bIds)) return false;
-
-    var aItems = a.customItems.slice().sort();
-    var bItems = b.customItems.slice().sort();
-    if (JSON.stringify(aItems) !== JSON.stringify(bItems)) return false;
-
-    var aChecked = a.checkedOff.slice().sort();
-    var bChecked = b.checkedOff.slice().sort();
-    return JSON.stringify(aChecked) === JSON.stringify(bChecked);
-  }
-
-  function applyStateToCheckboxes() {
-    document.querySelectorAll('input[type="checkbox"][data-ingredients]').forEach(function(cb) {
-      var id = cb.id.replace(/-checkbox$/, '');
-      cb.checked = state.selectedIds.has(id);
-    });
-  }
-
-  // --- Grocery list logic ---
-
-  function formatQtyNumber(val) {
-    return parseFloat(val.toFixed(2)).toString();
-  }
-
-  function displayUnit(unit, qty) {
-    if (!unit) return '';
-    if (qty === 1) return unit;
-    return (window.UNIT_PLURALS && window.UNIT_PLURALS[unit]) || unit;
-  }
-
-  function aggregateQuantities(info) {
-    var recipes = info.recipes; // Map of title -> amounts array
-    if (recipes.size === 0) return { display: null, tooltip: null };
-
-    // Collect all amounts across all recipes
-    var sums = {};       // unit (or "") -> total
-    var hasNull = false;  // any unquantified occurrence
-    var perRecipe = [];   // for tooltip
-
-    recipes.forEach(function(amounts, title) {
-      var recipeParts = [];
-      amounts.forEach(function(a) {
-        if (a === null) {
-          hasNull = true;
+        if (typeEl.dataset.type === 'quick_bite') {
+          cb.checked = selectedQuickBites.indexOf(slug) !== -1;
         } else {
-          var val = a[0];
-          var unit = a[1] || '';
-          sums[unit] = (sums[unit] || 0) + val;
-          var part = formatQtyNumber(val);
-          if (unit) part += '\u00a0' + displayUnit(unit, val);
-          recipeParts.push(part);
+          cb.checked = selectedRecipes.indexOf(slug) !== -1;
         }
       });
-      if (recipeParts.length > 0) {
-        perRecipe.push(recipeParts.join(' + ') + ' from ' + title);
+    },
+
+    // --- Shopping list rendering (DOM construction) ---
+
+    renderShoppingList: function(shoppingList) {
+      var container = document.getElementById('shopping-list');
+      var aisles = Object.keys(shoppingList);
+      var collapsed = this.loadAisleCollapse();
+
+      container.textContent = '';
+
+      var header = document.createElement('div');
+      header.className = 'shopping-list-header';
+      var h2 = document.createElement('h2');
+      h2.textContent = 'Shopping List';
+      var countEl = document.createElement('span');
+      countEl.id = 'item-count';
+      header.appendChild(h2);
+      header.appendChild(countEl);
+      container.appendChild(header);
+
+      if (aisles.length === 0) {
+        var emptyMsg = document.createElement('p');
+        emptyMsg.id = 'grocery-preview-empty';
+        emptyMsg.textContent = 'Select recipes above to build your shopping list.';
+        container.appendChild(emptyMsg);
+        return;
       }
-    });
 
-    // Build display string
-    var parts = [];
-    var units = Object.keys(sums);
-    for (var i = 0; i < units.length; i++) {
-      var unit = units[i];
-      var str = formatQtyNumber(sums[unit]);
-      if (unit) str += '\u00a0' + displayUnit(unit, sums[unit]);
-      parts.push(str);
-    }
+      var self = this;
 
-    var display = null;
-    if (parts.length > 0) {
-      display = ' (' + parts.join(' + ') + (hasNull ? '+' : '') + ')';
-    }
+      for (var i = 0; i < aisles.length; i++) {
+        var aisle = aisles[i];
+        var items = shoppingList[aisle];
+        var isCollapsed = collapsed.indexOf(aisle) !== -1;
 
-    // Build tooltip
-    var tooltip = null;
-    if (perRecipe.length > 1) {
-      tooltip = perRecipe.join(', ');
-    } else if (perRecipe.length === 0 && recipes.size > 0) {
-      tooltip = 'Needed for: ' + Array.from(recipes.keys()).join(', ');
-    }
+        var details = document.createElement('details');
+        details.className = 'aisle';
+        details.dataset.aisle = aisle;
+        if (!isCollapsed) details.open = true;
 
-    return { display: display, tooltip: tooltip };
-  }
+        var summary = document.createElement('summary');
+        summary.appendChild(document.createTextNode(aisle + ' '));
+        var aisleCount = document.createElement('span');
+        aisleCount.className = 'aisle-count';
+        summary.appendChild(aisleCount);
+        details.appendChild(summary);
 
-  function updateGroceryList() {
-    // Build map of needed ingredients: name -> { recipes: Map<title, amounts> }
-    var neededMap = new Map();
+        var ul = document.createElement('ul');
 
-    // From checked recipe checkboxes
-    document.querySelectorAll('input[type="checkbox"][data-ingredients]').forEach(function(cb) {
-      if (!cb.checked) return;
-      var recipeTitle = cb.dataset.title;
-      var items = JSON.parse(cb.dataset.ingredients);
-      items.forEach(function(entry) {
-        var name = entry[0];
-        var amounts = entry[1];
-        if (!neededMap.has(name)) neededMap.set(name, { recipes: new Map() });
-        neededMap.get(name).recipes.set(recipeTitle, amounts);
-      });
-    });
+        for (var j = 0; j < items.length; j++) {
+          var item = items[j];
+          var amountStr = formatAmounts(item.amounts);
 
-    // From custom items
-    state.customItems.forEach(function(name) {
-      if (!neededMap.has(name)) neededMap.set(name, { recipes: new Map() });
-    });
+          var li = document.createElement('li');
+          li.dataset.item = item.name;
 
-    // Show/hide static list items and match against neededMap
-    document.querySelectorAll('#grocery-list .aisle:not(#misc-aisle) li[data-item]').forEach(function(li) {
-      var name = li.getAttribute('data-item');
-      if (neededMap.has(name)) {
-        li.hidden = false;
-        var info = neededMap.get(name);
-        var qty = aggregateQuantities(info);
-        var qtySpan = li.querySelector('.qty');
-        if (qtySpan) qtySpan.textContent = qty.display || '';
-        if (qty.tooltip) {
-          li.setAttribute('title', qty.tooltip);
-        } else if (info.recipes.size > 0) {
-          li.setAttribute('title', 'Needed for: ' + Array.from(info.recipes.keys()).join(', '));
-        } else {
-          li.removeAttribute('title');
+          var label = document.createElement('label');
+          label.className = 'check-off';
+
+          var checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.dataset.item = item.name;
+
+          var textSpan = document.createElement('span');
+          textSpan.className = 'item-text';
+          textSpan.textContent = amountStr ? item.name + ' ' : item.name;
+
+          if (amountStr) {
+            var amountNode = document.createElement('span');
+            amountNode.className = 'item-amount';
+            amountNode.textContent = amountStr;
+            textSpan.appendChild(amountNode);
+          }
+
+          label.appendChild(checkbox);
+          label.appendChild(textSpan);
+
+          li.appendChild(label);
+          ul.appendChild(li);
         }
-        neededMap.delete(name);
-      } else {
-        li.hidden = true;
-        li.removeAttribute('title');
-        var qtySpan = li.querySelector('.qty');
-        if (qtySpan) qtySpan.textContent = '';
-        // Uncheck when hidden
-        var cb = li.querySelector('input[type="checkbox"]');
-        if (cb) cb.checked = false;
+
+        details.appendChild(ul);
+        container.appendChild(details);
+
+        // Bind aisle toggle persistence
+        details.addEventListener('toggle', function() {
+          self.saveAisleCollapse();
+        });
       }
-    });
+    },
 
-    // Leftovers go to Miscellaneous
-    var misc = document.getElementById('misc-items');
-    misc.innerHTML = '';
-    neededMap.forEach(function(info, name) {
-      var li = document.createElement('li');
-      li.setAttribute('data-item', name);
-      var label = document.createElement('label');
-      label.className = 'check-off';
-      var checkbox = document.createElement('input');
-      checkbox.type = 'checkbox';
-      var span = document.createElement('span');
-      var qty = aggregateQuantities(info);
-      span.textContent = name;
-      var qtySpan = document.createElement('span');
-      qtySpan.className = 'qty';
-      qtySpan.textContent = qty.display || '';
-      span.appendChild(qtySpan);
-      label.appendChild(checkbox);
-      label.appendChild(span);
-      li.appendChild(label);
-      if (qty.tooltip) {
-        li.setAttribute('title', qty.tooltip);
-      } else if (info.recipes.size > 0) {
-        li.setAttribute('title', 'Needed for: ' + Array.from(info.recipes.keys()).join(', '));
+    // --- Custom items ---
+
+    renderCustomItems: function(items) {
+      var container = document.getElementById('custom-items-list');
+      container.textContent = '';
+
+      for (var i = 0; i < items.length; i++) {
+        var name = items[i];
+        var li = document.createElement('li');
+
+        var span = document.createElement('span');
+        span.textContent = name;
+
+        var btn = document.createElement('button');
+        btn.className = 'custom-item-remove';
+        btn.type = 'button';
+        btn.textContent = '\u00d7';
+        btn.setAttribute('aria-label', 'Remove ' + name);
+        btn.dataset.item = name;
+
+        li.appendChild(span);
+        li.appendChild(btn);
+        container.appendChild(li);
       }
-      misc.appendChild(li);
-    });
+    },
 
-    // Hide empty aisles, only force-open newly visible ones
-    document.querySelectorAll('#grocery-list details.aisle').forEach(function(details) {
-      var visibleItems = details.querySelectorAll('li:not([hidden])');
-      var count = visibleItems.length;
+    // --- Checked-off state ---
 
-      if (count === 0) {
-        details.hidden = true;
-      } else {
-        var wasHidden = details.hidden;
-        details.hidden = false;
-        if (wasHidden) details.open = true;
-      }
-    });
+    syncCheckedOff: function(checkedOff) {
+      document.querySelectorAll('#shopping-list input[type="checkbox"][data-item]').forEach(function(cb) {
+        var name = cb.dataset.item;
+        cb.checked = checkedOff.indexOf(name) !== -1;
+      });
+    },
 
-    // Restore check-off states
-    restoreCheckOffs();
+    // --- Item counts ---
 
-    // Update item count display
-    updateItemCount();
-  }
+    renderItemCount: function() {
+      this.updateAisleCounts();
 
-  // --- Item count ---
+      var countEl = document.getElementById('item-count');
+      if (!countEl) return;
 
-  function getItemCountInfo() {
-    var total = 0;
-    var checked = 0;
-    document.querySelectorAll('#grocery-list li:not([hidden])').forEach(function(li) {
-      total++;
-      var cb = li.querySelector('.check-off input[type="checkbox"]');
-      if (cb && cb.checked) checked++;
-    });
-    return { total: total, checked: checked, remaining: total - checked };
-  }
-
-  function updateAisleCounts() {
-    document.querySelectorAll('#grocery-list details.aisle:not([hidden])').forEach(function(details) {
       var total = 0;
       var checked = 0;
-      details.querySelectorAll('li:not([hidden])').forEach(function(li) {
+
+      document.querySelectorAll('#shopping-list li[data-item]').forEach(function(li) {
         total++;
-        var cb = li.querySelector('.check-off input[type="checkbox"]');
+        var cb = li.querySelector('input[type="checkbox"]');
         if (cb && cb.checked) checked++;
       });
-      var countSpan = details.querySelector('.aisle-count');
-      if (!countSpan) return;
+
       var remaining = total - checked;
-      if (remaining === 0 && total > 0) {
-        countSpan.textContent = '\u2713';
-        countSpan.classList.add('aisle-done');
-      } else {
-        countSpan.textContent = '(' + remaining + ')';
-        countSpan.classList.remove('aisle-done');
-      }
-    });
-  }
 
-  function updateItemCount() {
-    updateAisleCounts();
-    var info = getItemCountInfo();
-    var countEl = document.getElementById('item-count');
-    var emptyEl = document.getElementById('grocery-preview-empty');
-    var groceryList = document.getElementById('grocery-list');
-
-    if (info.total > 0) {
-      emptyEl.style.display = 'none';
-      groceryList.style.display = '';
-
-      if (info.remaining === 0) {
+      if (total === 0) {
+        countEl.textContent = '';
+      } else if (remaining === 0) {
         countEl.textContent = '\u2713 All done!';
         countEl.classList.add('all-done');
       } else {
         countEl.classList.remove('all-done');
-        if (info.checked > 0) {
-          countEl.textContent = info.remaining + ' of ' + info.total + ' items needed';
+        if (checked > 0) {
+          countEl.textContent = remaining + ' of ' + total + ' items needed';
         } else {
-          countEl.textContent = info.total + (info.total === 1 ? ' item' : ' items');
+          countEl.textContent = total + (total === 1 ? ' item' : ' items');
         }
       }
-    } else {
-      countEl.textContent = '';
-      countEl.classList.remove('all-done');
-      emptyEl.style.display = '';
-      groceryList.style.display = 'none';
-    }
-  }
+    },
 
-  // --- Check-off ---
+    updateAisleCounts: function() {
+      document.querySelectorAll('#shopping-list details.aisle').forEach(function(details) {
+        var total = 0;
+        var checked = 0;
 
-  function restoreCheckOffs() {
-    document.querySelectorAll('#grocery-list li:not([hidden])').forEach(function(li) {
-      var name = li.getAttribute('data-item');
-      var cb = li.querySelector('.check-off input[type="checkbox"]');
-      if (cb && name) {
-        cb.checked = state.checkedOff.has(name);
-      }
-    });
-  }
-
-  function handleCheckOff(e) {
-    var cb = e.target;
-    if (!cb.matches('.check-off input[type="checkbox"]')) return;
-    var li = cb.closest('li');
-    var name = li ? li.getAttribute('data-item') : null;
-    if (!name) return;
-
-    if (cb.checked) {
-      state.checkedOff.add(name);
-    } else {
-      state.checkedOff.delete(name);
-    }
-    saveState();
-    updateItemCount();
-    updateShareSection();
-
-    // Auto-collapse/expand aisle
-    var details = li.closest('details.aisle');
-    if (details) {
-      if (cb.checked) {
-        var allChecked = true;
-        details.querySelectorAll('li:not([hidden])').forEach(function(item) {
-          var itemCb = item.querySelector('.check-off input[type="checkbox"]');
-          if (itemCb && !itemCb.checked) allChecked = false;
+        details.querySelectorAll('li[data-item]').forEach(function(li) {
+          total++;
+          var cb = li.querySelector('input[type="checkbox"]');
+          if (cb && cb.checked) checked++;
         });
+
+        var countSpan = details.querySelector('.aisle-count');
+        if (!countSpan) return;
+
+        var remaining = total - checked;
+        if (remaining === 0 && total > 0) {
+          countSpan.textContent = '\u2713';
+          countSpan.classList.add('aisle-done');
+        } else {
+          countSpan.textContent = '(' + remaining + ')';
+          countSpan.classList.remove('aisle-done');
+        }
+      });
+    },
+
+    autoCollapseCompletedAisles: function() {
+      var self = this;
+      document.querySelectorAll('#shopping-list details.aisle').forEach(function(details) {
+        var allChecked = true;
+        var items = details.querySelectorAll('li[data-item]');
+        if (items.length === 0) return;
+
+        items.forEach(function(li) {
+          var cb = li.querySelector('input[type="checkbox"]');
+          if (cb && !cb.checked) allChecked = false;
+        });
+
         if (allChecked && details.open) {
-          animateCollapse(details);
+          details.open = false;
+          self.saveAisleCollapse();
         }
-      } else {
+      });
+    },
+
+    // --- Aisle collapse persistence (personal, localStorage) ---
+
+    saveAisleCollapse: function() {
+      var collapsed = [];
+      document.querySelectorAll('#shopping-list details.aisle').forEach(function(details) {
         if (!details.open) {
-          animateExpand(details);
+          collapsed.push(details.dataset.aisle);
         }
+      });
+
+      try {
+        localStorage.setItem(this.aisleCollapseKey, JSON.stringify(collapsed));
+      } catch(error) {
+        // localStorage full or unavailable
       }
+    },
+
+    loadAisleCollapse: function() {
+      try {
+        var raw = localStorage.getItem(this.aisleCollapseKey);
+        return raw ? JSON.parse(raw) : [];
+      } catch(error) {
+        return [];
+      }
+    },
+
+    // --- Aisle animation ---
+
+    animateCollapse: function(details) {
+      var ul = details.querySelector('ul');
+      if (!ul) { details.open = false; return; }
+
+      cleanupAnimation(details);
+
+      var startHeight = ul.scrollHeight;
+      ul.style.height = startHeight + 'px';
+      ul.style.overflow = 'hidden';
+      ul.offsetHeight; // force reflow
+
+      details.classList.add('aisle-collapsing');
+      ul.style.height = '0';
+      ul.style.opacity = '0';
+      ul.style.paddingBottom = '0';
+
+      function onEnd(e) {
+        if (e.target !== ul) return;
+        ul.removeEventListener('transitionend', onEnd);
+        details.classList.remove('aisle-collapsing');
+        ul.style.height = '';
+        ul.style.overflow = '';
+        ul.style.opacity = '';
+        ul.style.paddingBottom = '';
+        details.open = false;
+      }
+      ul.addEventListener('transitionend', onEnd);
+
+      setTimeout(function() {
+        if (details.classList.contains('aisle-collapsing')) {
+          details.classList.remove('aisle-collapsing');
+          ul.style.height = '';
+          ul.style.overflow = '';
+          ul.style.opacity = '';
+          ul.style.paddingBottom = '';
+          details.open = false;
+        }
+      }, 400);
+    },
+
+    animateExpand: function(details) {
+      var ul = details.querySelector('ul');
+      if (!ul) { details.open = true; return; }
+
+      cleanupAnimation(details);
+
+      details.open = true;
+      var targetHeight = ul.scrollHeight;
+      ul.style.height = '0';
+      ul.style.opacity = '0';
+      ul.style.overflow = 'hidden';
+      ul.style.paddingBottom = '0';
+      ul.offsetHeight; // force reflow
+
+      details.classList.add('aisle-expanding');
+      ul.style.height = targetHeight + 'px';
+      ul.style.opacity = '1';
+      ul.style.paddingBottom = '';
+
+      function onEnd(e) {
+        if (e.target !== ul) return;
+        ul.removeEventListener('transitionend', onEnd);
+        details.classList.remove('aisle-expanding');
+        ul.style.height = '';
+        ul.style.overflow = '';
+        ul.style.opacity = '';
+      }
+      ul.addEventListener('transitionend', onEnd);
+
+      setTimeout(function() {
+        if (details.classList.contains('aisle-expanding')) {
+          details.classList.remove('aisle-expanding');
+          ul.style.height = '';
+          ul.style.overflow = '';
+          ul.style.opacity = '';
+        }
+      }, 400);
+    },
+
+    // --- Event binding ---
+
+    bindRecipeCheckboxes: function() {
+      this.app.querySelectorAll('#recipe-selector input[type="checkbox"]').forEach(function(cb) {
+        cb.addEventListener('change', function() {
+          var slug = cb.dataset.slug;
+          var typeEl = cb.closest('[data-type]');
+          var type = typeEl ? typeEl.dataset.type : 'recipe';
+
+          GrocerySync.sendAction(GrocerySync.urls.select, {
+            type: type,
+            slug: slug,
+            selected: cb.checked
+          });
+        });
+      });
+    },
+
+    bindCustomItemInput: function() {
+      var input = document.getElementById('custom-input');
+      var addBtn = document.getElementById('custom-add');
+
+      function addItem() {
+        var text = input.value.trim();
+        if (!text) return;
+
+        GrocerySync.sendAction(GrocerySync.urls.customItems, {
+          item: text,
+          action_type: 'add'
+        });
+
+        input.value = '';
+        input.focus();
+      }
+
+      addBtn.addEventListener('click', addItem);
+      input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          addItem();
+        }
+      });
+
+      // Delegated remove handler for custom item chips
+      document.getElementById('custom-items-list').addEventListener('click', function(e) {
+        var btn = e.target.closest('.custom-item-remove');
+        if (!btn) return;
+
+        GrocerySync.sendAction(GrocerySync.urls.customItems, {
+          item: btn.dataset.item,
+          action_type: 'remove'
+        });
+      });
+    },
+
+    bindShoppingListEvents: function() {
+      var self = this;
+
+      // Delegated handler for shopping list check-offs
+      document.getElementById('shopping-list').addEventListener('change', function(e) {
+        var cb = e.target;
+        if (!cb.matches('.check-off input[type="checkbox"]')) return;
+
+        var name = cb.dataset.item;
+        if (!name) return;
+
+        GrocerySync.sendAction(GrocerySync.urls.check, {
+          item: name,
+          checked: cb.checked
+        });
+
+        self.renderItemCount();
+
+        // Auto-collapse aisle when all items checked
+        var details = cb.closest('details.aisle');
+        if (!details) return;
+
+        if (cb.checked) {
+          var allChecked = true;
+          details.querySelectorAll('li[data-item]').forEach(function(li) {
+            var itemCb = li.querySelector('input[type="checkbox"]');
+            if (itemCb && !itemCb.checked) allChecked = false;
+          });
+          if (allChecked && details.open) {
+            self.animateCollapse(details);
+          }
+        } else {
+          if (!details.open) {
+            self.animateExpand(details);
+          }
+        }
+      });
     }
+  };
+
+  // -----------------------------------------------------------------------
+  // Helpers
+  // -----------------------------------------------------------------------
+
+  function formatAmounts(amounts) {
+    if (!amounts || amounts.length === 0) return '';
+
+    var parts = [];
+    for (var i = 0; i < amounts.length; i++) {
+      var value = formatNumber(amounts[i][0]);
+      var unit = amounts[i][1];
+      parts.push(unit ? value + '\u00a0' + unit : value);
+    }
+    return '(' + parts.join(' + ') + ')';
   }
 
-  // --- Aisle animation ---
+  function formatNumber(val) {
+    return parseFloat(val.toFixed(2)).toString();
+  }
 
   function cleanupAnimation(details) {
     var ul = details.querySelector('ul');
@@ -500,363 +674,18 @@
     ul.style.paddingBottom = '';
   }
 
-  function animateCollapse(details) {
-    var ul = details.querySelector('ul');
-    if (!ul) { details.open = false; return; }
-
-    cleanupAnimation(details);
-
-    var startHeight = ul.scrollHeight;
-    ul.style.height = startHeight + 'px';
-    ul.style.overflow = 'hidden';
-    ul.offsetHeight; // force reflow
-
-    details.classList.add('aisle-collapsing');
-    ul.style.height = '0';
-    ul.style.opacity = '0';
-    ul.style.paddingBottom = '0';
-
-    function onEnd(e) {
-      if (e.target !== ul) return;
-      ul.removeEventListener('transitionend', onEnd);
-      details.classList.remove('aisle-collapsing');
-      ul.style.height = '';
-      ul.style.overflow = '';
-      ul.style.opacity = '';
-      ul.style.paddingBottom = '';
-      details.open = false;
-    }
-    ul.addEventListener('transitionend', onEnd);
-
-    // Fallback in case transitionend doesn't fire
-    setTimeout(function() {
-      if (details.classList.contains('aisle-collapsing')) {
-        details.classList.remove('aisle-collapsing');
-        ul.style.height = '';
-        ul.style.overflow = '';
-        ul.style.opacity = '';
-        ul.style.paddingBottom = '';
-        details.open = false;
-      }
-    }, 400);
-  }
-
-  function animateExpand(details) {
-    var ul = details.querySelector('ul');
-    if (!ul) { details.open = true; return; }
-
-    cleanupAnimation(details);
-
-    details.open = true;
-    var targetHeight = ul.scrollHeight;
-    ul.style.height = '0';
-    ul.style.opacity = '0';
-    ul.style.overflow = 'hidden';
-    ul.style.paddingBottom = '0';
-    ul.offsetHeight; // force reflow
-
-    details.classList.add('aisle-expanding');
-    ul.style.height = targetHeight + 'px';
-    ul.style.opacity = '1';
-    ul.style.paddingBottom = '';
-
-    function onEnd(e) {
-      if (e.target !== ul) return;
-      ul.removeEventListener('transitionend', onEnd);
-      details.classList.remove('aisle-expanding');
-      ul.style.height = '';
-      ul.style.overflow = '';
-      ul.style.opacity = '';
-    }
-    ul.addEventListener('transitionend', onEnd);
-
-    setTimeout(function() {
-      if (details.classList.contains('aisle-expanding')) {
-        details.classList.remove('aisle-expanding');
-        ul.style.height = '';
-        ul.style.overflow = '';
-        ul.style.opacity = '';
-      }
-    }, 400);
-  }
-
-  // --- Custom items ---
-
-  function addCustomItem(name) {
-    name = name.trim();
-    if (!name) return;
-    var lowerName = name.toLowerCase();
-    if (state.customItems.some(function(item) { return item.toLowerCase() === lowerName; })) return;
-    state.customItems.push(name);
-    renderChips();
-    saveState();
-    updateGroceryList();
-    updateShareSection();
-  }
-
-  function removeCustomItem(name) {
-    state.customItems = state.customItems.filter(function(item) { return item !== name; });
-    renderChips();
-    saveState();
-    updateGroceryList();
-    updateShareSection();
-  }
-
-  function renderChips() {
-    var container = document.getElementById('custom-items-list');
-    container.innerHTML = '';
-    state.customItems.forEach(function(name) {
-      var li = document.createElement('li');
-      var span = document.createElement('span');
-      span.textContent = name;
-      var btn = document.createElement('button');
-      btn.className = 'custom-item-remove';
-      btn.type = 'button';
-      btn.textContent = '\u00d7';
-      btn.setAttribute('aria-label', 'Remove ' + name);
-      btn.addEventListener('click', function() { removeCustomItem(name); });
-      li.appendChild(span);
-      li.appendChild(btn);
-      container.appendChild(li);
-    });
-  }
-
-  // --- Sharing ---
-
-  function buildShareUrl() {
-    var encoded = encodeState();
-    var base = window.location.origin + window.location.pathname;
-    var params = [];
-
-    if (encoded.s) params.push('s=' + encoded.s);
-    if (encoded.c) params.push('c=' + encoded.c);
-    if (encoded.x) params.push('x=' + encoded.x);
-
-    return params.length > 0 ? base + '?' + params.join('&') : base;
-  }
-
-  function qrToSvg(qr, border) {
-    var size = qr.size + border * 2;
-    var parts = [];
-    for (var y = 0; y < qr.size; y++) {
-      for (var x = 0; x < qr.size; x++) {
-        if (qr.getModule(x, y))
-          parts.push('M' + (x + border) + ',' + (y + border) + 'h1v1h-1z');
-      }
-    }
-    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + size + ' ' + size + '">'
-      + '<rect width="100%" height="100%" fill="#fff"/>'
-      + '<path d="' + parts.join(' ') + '" fill="#000"/></svg>';
-  }
-
-  var ICON_SHARE = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
-    + '<path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>'
-    + '<polyline points="16 6 12 2 8 6"/>'
-    + '<line x1="12" y1="2" x2="12" y2="15"/></svg>';
-
-  var ICON_COPY = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
-    + '<rect x="9" y="9" width="13" height="13" rx="2"/>'
-    + '<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
-
-  var canShare = typeof navigator.share === 'function';
-
-  function updateShareSection() {
-    var url = buildShareUrl();
-
-    // Update URL display
-    document.getElementById('share-url').textContent = url;
-
-    // Update QR code
-    var container = document.getElementById('qr-container');
-    try {
-      var qr = qrcodegen.QrCode.encodeText(url, qrcodegen.QrCode.Ecc.LOW);
-      container.innerHTML = qrToSvg(qr, 2);
-    } catch(e) {
-      container.textContent = '';
-      var msg = document.createElement('p');
-      msg.style.cssText = 'color: var(--muted-text); font-size: 0.85rem; text-align: center;';
-      msg.textContent = 'List too large for QR code. Use the link below instead.';
-      container.appendChild(msg);
-    }
-
-    // Clear any previous feedback
-    document.getElementById('share-feedback').hidden = true;
-  }
-
-  function copyToClipboard(text) {
-    // Try the modern API first (requires secure context)
-    if (navigator.clipboard && window.isSecureContext) {
-      return navigator.clipboard.writeText(text);
-    }
-    // Fallback for non-secure contexts (e.g. HTTP dev server)
-    var textarea = document.createElement('textarea');
-    textarea.value = text;
-    textarea.style.position = 'fixed';
-    textarea.style.opacity = '0';
-    document.body.appendChild(textarea);
-    textarea.select();
-    document.execCommand('copy');
-    document.body.removeChild(textarea);
-    return Promise.resolve();
-  }
-
-  function handleShareAction() {
-    var url = buildShareUrl();
-    var feedback = document.getElementById('share-feedback');
-
-    if (canShare) {
-      navigator.share({ title: 'Grocery List', url: url }).catch(function() {});
-    } else {
-      copyToClipboard(url).then(function() {
-        feedback.textContent = 'Copied to clipboard';
-        feedback.hidden = false;
-        setTimeout(function() { feedback.hidden = true; }, 2000);
-      });
-    }
-  }
-
-  function selectShareUrl() {
-    var range = document.createRange();
-    range.selectNodeContents(document.getElementById('share-url'));
-    var sel = window.getSelection();
-    sel.removeAllRanges();
-    sel.addRange(range);
-  }
-
-  // --- Init ---
+  // -----------------------------------------------------------------------
+  // Init on DOMContentLoaded
+  // -----------------------------------------------------------------------
 
   document.addEventListener('DOMContentLoaded', function() {
-    // Reveal JS-only elements
-    document.querySelectorAll('.hidden-until-js').forEach(function(el) {
-      el.classList.remove('hidden-until-js');
-    });
+    var app = document.getElementById('groceries-app');
+    if (!app) return;
 
-    // Build index mappings (must happen before state parsing)
-    buildRecipeIndex();
-    buildAisleIndex();
+    // Reveal JS-only content
+    app.classList.remove('hidden-until-js');
 
-    // Mark all aisles hidden so updateGroceryList treats them as "new"
-    // and opens them when they first gain items
-    aisleElements.forEach(function(d) { d.hidden = true; });
-
-    // Parse state sources
-    var urlState = parseStateFromUrl();
-    var stored = loadFromStorage();
-    var storedAisles = null;
-
-    function finishInit() {
-      applyStateToCheckboxes();
-      renderChips();
-      updateGroceryList();
-      updateShareSection();
-    }
-
-    if (!urlState) {
-      // Branch 1: No URL params — load from localStorage silently
-      if (stored) {
-        applyState(stored.decoded);
-        storedAisles = stored.aisles;
-      }
-      finishInit();
-      if (storedAisles) restoreAisleState(storedAisles);
-
-    } else {
-      var storedDecoded = stored ? stored.decoded : null;
-
-      if (storedDecoded && statesMatch(urlState, storedDecoded)) {
-        // Branch 2: URL matches stored state — load silently
-        applyState(storedDecoded);
-        storedAisles = stored.aisles;
-        cleanUrl();
-        finishInit();
-        if (storedAisles) restoreAisleState(storedAisles);
-
-      } else {
-        // Branch 3: URL differs (or no stored state) — clobber with undo
-        applyState(urlState);
-        cleanUrl();
-        finishInit();
-
-        var info = getItemCountInfo();
-        var message = 'List loaded.';
-        if (info.total > 0) {
-          if (info.checked > 0) {
-            message += ' ' + info.remaining + ' of ' + info.total + ' items needed.';
-          } else {
-            message += ' ' + info.total + (info.total === 1 ? ' item.' : ' items.');
-          }
-        }
-
-        Notify.show(message, {
-          action: storedDecoded ? { label: 'Undo', callback: function() {
-            applyState(storedDecoded);
-            applyStateToCheckboxes();
-            renderChips();
-            saveState();
-            updateGroceryList();
-            updateShareSection();
-          }} : null
-        });
-      }
-    }
-
-    // Init complete — enable aisle toggle persistence
-    initComplete = true;
-    saveState();
-
-    // Sync selectedIds from checkbox state
-    function syncSelectedIds() {
-      state.selectedIds.clear();
-      document.querySelectorAll('input[type="checkbox"][data-ingredients]').forEach(function(cb) {
-        if (cb.checked) {
-          state.selectedIds.add(cb.id.replace(/-checkbox$/, ''));
-        }
-      });
-    }
-
-    // Recipe checkbox changes
-    document.querySelectorAll('input[type="checkbox"][data-ingredients]').forEach(function(cb) {
-      cb.addEventListener('change', function() {
-        syncSelectedIds();
-        saveState();
-        updateGroceryList();
-        updateShareSection();
-      });
-    });
-
-    // Check-off changes (delegated)
-    document.getElementById('grocery-list').addEventListener('change', handleCheckOff);
-
-    // Aisle toggle persistence
-    document.querySelectorAll('#grocery-list details.aisle').forEach(function(details) {
-      details.addEventListener('toggle', function() {
-        if (initComplete) saveState();
-      });
-    });
-
-    // Custom item input
-    var customInput = document.getElementById('custom-input');
-    var customAdd = document.getElementById('custom-add');
-    customAdd.addEventListener('click', function() {
-      addCustomItem(customInput.value);
-      customInput.value = '';
-      customInput.focus();
-    });
-    customInput.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        addCustomItem(customInput.value);
-        customInput.value = '';
-      }
-    });
-
-    // Share/copy button — set icon based on platform capability
-    var shareBtn = document.getElementById('share-action');
-    shareBtn.innerHTML = canShare ? ICON_SHARE : ICON_COPY;
-    shareBtn.addEventListener('click', handleShareAction);
-
-    // Click URL to select all
-    document.getElementById('share-url').addEventListener('click', selectShareUrl);
-
+    GroceryUI.init(app);
+    GrocerySync.init(app);
   });
 })();

@@ -9,7 +9,7 @@ class RecipeNutritionJob < ApplicationJob
     return if nutrition_data.empty?
 
     calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data, omit_set: omit_set)
-    result = calculator.calculate(parsed_recipe(recipe), alias_map, recipe_map(recipe.kitchen))
+    result = calculator.calculate(parsed_recipe(recipe), recipe_map(recipe.kitchen))
 
     recipe.update_column(:nutrition_data, serialize_result(result))
   end
@@ -17,7 +17,7 @@ class RecipeNutritionJob < ApplicationJob
   private
 
   def build_nutrition_lookup(kitchen)
-    NutritionEntry.lookup_for(kitchen).transform_values do |entry|
+    IngredientProfile.lookup_for(kitchen).transform_values do |entry|
       data = { 'nutrients' => nutrients_hash(entry) }
       data['density'] = density_hash(entry) if entry.density_grams && entry.density_volume && entry.density_unit
       data['portions'] = entry.portions if entry.portions.present?
@@ -47,33 +47,8 @@ class RecipeNutritionJob < ApplicationJob
     )
   end
 
-  def grocery_aisles
-    @grocery_aisles ||= load_grocery_aisles
-  end
-
-  def load_grocery_aisles
-    content = SiteDocument.content_for('grocery_aisles')
-    return FamilyRecipes.parse_grocery_aisles_markdown(content) if content
-
-    yaml_path = Rails.root.join('db/seeds/resources/grocery-info.yaml')
-    return FamilyRecipes.parse_grocery_info(yaml_path) if File.exist?(yaml_path)
-
-    {}
-  end
-
-  def alias_map
-    @alias_map ||= FamilyRecipes.build_alias_map(grocery_aisles)
-  end
-
   def omit_set
-    @omit_set ||= build_omit_set
-  end
-
-  def build_omit_set
-    omit_key = grocery_aisles.keys.find { |k| k.downcase.tr('_', ' ') == 'omit from list' }
-    return Set.new unless omit_key
-
-    grocery_aisles[omit_key].to_set { |item| item[:name].downcase }
+    @omit_set ||= IngredientProfile.where(aisle: 'omit').pluck(:ingredient_name).to_set(&:downcase)
   end
 
   def recipe_map(kitchen)

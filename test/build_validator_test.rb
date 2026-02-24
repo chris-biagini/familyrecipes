@@ -2,7 +2,7 @@
 
 require_relative 'test_helper'
 
-class BuildValidatorTest < Minitest::Test
+class BuildValidatorTest < ActiveSupport::TestCase
   def test_detects_unresolved_cross_reference
     dough_md = "# Pizza Dough\n\nCategory: Test\n\n## Mix (make dough)\n\n- Flour, 500 g\n\nKnead."
     dough = make_recipe(dough_md, id: 'pizza-dough')
@@ -69,7 +69,11 @@ class BuildValidatorTest < Minitest::Test
   def test_validate_ingredients_warns_on_unknown
     md = "# Test Recipe\n\nCategory: Test\n\n## Step (do it)\n\n- Flour, 500 g\n- Unicorn dust\n\nMix."
     recipe = make_recipe(md, id: 'test-recipe')
-    validator = build_validator(recipes: [recipe], known_ingredients: Set.new(%w[flour]))
+    IngredientProfile.find_or_create_by!(ingredient_name: 'Flour', kitchen_id: nil) do |p|
+      p.basis_grams = 30
+      p.calories = 110
+    end
+    validator = build_validator(recipes: [recipe])
 
     output = capture_io { validator.validate_ingredients }
 
@@ -79,7 +83,15 @@ class BuildValidatorTest < Minitest::Test
   def test_validate_ingredients_passes_when_all_known
     md = "# Test Recipe\n\nCategory: Test\n\n## Step (do it)\n\n- Flour, 500 g\n- Salt\n\nMix."
     recipe = make_recipe(md, id: 'test-recipe')
-    validator = build_validator(recipes: [recipe], known_ingredients: Set.new(%w[flour salt]))
+    IngredientProfile.find_or_create_by!(ingredient_name: 'Flour', kitchen_id: nil) do |p|
+      p.basis_grams = 30
+      p.calories = 110
+    end
+    IngredientProfile.find_or_create_by!(ingredient_name: 'Salt', kitchen_id: nil) do |p|
+      p.basis_grams = 6
+      p.calories = 0
+    end
+    validator = build_validator(recipes: [recipe])
 
     output = capture_io { validator.validate_ingredients }
 
@@ -122,16 +134,12 @@ class BuildValidatorTest < Minitest::Test
     FamilyRecipes::Recipe.new(markdown_source: markdown, id: id, category: 'Test')
   end
 
-  def build_validator(recipes: [], quick_bites: [], known_ingredients: Set.new,
-                      nutrition_calculator: nil)
+  def build_validator(recipes: [], quick_bites: [], nutrition_calculator: nil)
     recipe_map = recipes.to_h { |r| [r.id, r] }
     FamilyRecipes::BuildValidator.new(
       recipes: recipes,
       quick_bites: quick_bites,
       recipe_map: recipe_map,
-      alias_map: {},
-      known_ingredients: known_ingredients,
-      omit_set: Set.new,
       nutrition_calculator: nutrition_calculator
     )
   end

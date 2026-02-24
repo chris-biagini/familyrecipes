@@ -104,16 +104,9 @@ class IngredientTest < Minitest::Test
   end
 
   # Normalized name tests
-  def test_normalized_name_returns_original_when_no_alias
+  def test_normalized_name_returns_name
     ingredient = FamilyRecipes::Ingredient.new(name: 'Flour')
 
     assert_equal 'Flour', ingredient.normalized_name
-  end
-
-  def test_normalized_name_returns_canonical_when_alias_exists
-    alias_map = { 'flour (all-purpose)' => 'Flour' }
-    ingredient = FamilyRecipes::Ingredient.new(name: 'Flour (all-purpose)')
-
-    assert_equal 'Flour', ingredient.normalized_name(alias_map)
   end
 end

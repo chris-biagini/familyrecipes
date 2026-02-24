@@ -54,23 +54,6 @@ if File.exist?(quick_bites_path)
   puts 'Quick Bites document loaded.'
 end
 
-# Seed Grocery Aisles document (convert YAML to markdown)
-grocery_yaml_path = resources_dir.join('grocery-info.yaml')
-if File.exist?(grocery_yaml_path)
-  SiteDocument.find_or_create_by!(kitchen: kitchen, name: 'grocery_aisles') do |doc|
-    raw = YAML.safe_load_file(grocery_yaml_path, permitted_classes: [], permitted_symbols: [], aliases: false)
-    doc.content = raw.map do |aisle, items|
-      heading = "## #{aisle.tr('_', ' ')}"
-      item_lines = items.map do |item|
-        name = item.respond_to?(:fetch) ? item.fetch('name') : item
-        "- #{name}"
-      end
-      [heading, *item_lines, ''].join("\n")
-    end.join("\n")
-  end
-  puts 'Grocery Aisles document loaded.'
-end
-
 # Seed Site Config document
 site_config_path = resources_dir.join('site-config.yaml')
 if File.exist?(site_config_path)
@@ -80,7 +63,7 @@ if File.exist?(site_config_path)
   puts 'Site Config document loaded.'
 end
 
-# Seed Nutrition Data document and NutritionEntry rows
+# Seed Nutrition Data document and IngredientProfile rows
 nutrition_path = resources_dir.join('nutrition-data.yaml')
 if File.exist?(nutrition_path)
   raw_content = File.read(nutrition_path)
@@ -96,7 +79,7 @@ if File.exist?(nutrition_path)
     next unless nutrients.is_a?(Hash) && nutrients['basis_grams'].is_a?(Numeric)
 
     density = entry['density'] || {}
-    NutritionEntry.find_or_initialize_by(kitchen_id: nil, ingredient_name: name).tap do |ne|
+    IngredientProfile.find_or_initialize_by(kitchen_id: nil, ingredient_name: name).tap do |ne|
       ne.assign_attributes(
         basis_grams: nutrients['basis_grams'],
         calories: nutrients['calories'],
@@ -119,5 +102,27 @@ if File.exist?(nutrition_path)
       ne.save!
     end
   end
-  puts "Seeded #{NutritionEntry.global.count} nutrition entries."
+  puts "Seeded #{IngredientProfile.global.count} nutrition entries."
+end
+
+# Populate aisle data on IngredientProfile rows from grocery-info.yaml
+grocery_yaml_path = resources_dir.join('grocery-info.yaml')
+if File.exist?(grocery_yaml_path)
+  raw = YAML.safe_load_file(grocery_yaml_path, permitted_classes: [], permitted_symbols: [], aliases: false)
+  aisle_count = 0
+
+  raw.each do |aisle, items|
+    # Normalize "Omit_From_List" to "omit"
+    aisle_value = aisle.downcase.tr('_', ' ') == 'omit from list' ? 'omit' : aisle
+
+    items.each do |item|
+      name = item.is_a?(Hash) ? item['name'] : item
+      profile = IngredientProfile.find_or_initialize_by(kitchen_id: nil, ingredient_name: name)
+      profile.aisle = aisle_value
+      profile.save!
+      aisle_count += 1
+    end
+  end
+
+  puts "Populated aisle data on #{aisle_count} ingredient profiles."
 end
