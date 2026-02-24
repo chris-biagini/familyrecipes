@@ -33,7 +33,6 @@ port ENV.fetch("PORT", 3030)
 
 # Allow puma to be restarted by `bin/rails restart` command.
 plugin :tmp_restart
-plugin :solid_cable
 plugin :solid_queue
 
 # Specify the PID file. Defaults to tmp/pids/server.pid in development.
