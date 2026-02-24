@@ -579,7 +579,7 @@
       // Delegated handler for shopping list check-offs
       document.getElementById('shopping-list').addEventListener('change', function(e) {
         var cb = e.target;
-        if (!cb.matches('.grocery-item input[type="checkbox"]')) return;
+        if (!cb.matches('.check-off input[type="checkbox"]')) return;
 
         var name = cb.dataset.item;
         if (!name) return;
