@@ -30,6 +30,20 @@ class Recipe < ApplicationRecord
     "#{makes_quantity.to_i == makes_quantity ? makes_quantity.to_i : makes_quantity} #{unit}"
   end
 
+  def own_ingredients_aggregated
+    ingredients.group_by(&:name).transform_values do |group|
+      IngredientAggregator.aggregate_amounts(group)
+    end
+  end
+
+  def all_ingredients_with_quantities(_recipe_map = nil)
+    cross_references.each_with_object(own_ingredients_aggregated) do |xref, merged|
+      xref.expanded_ingredients.each do |name, amounts|
+        merged[name] = merged.key?(name) ? IngredientAggregator.merge_amounts(merged[name], amounts) : amounts
+      end
+    end.to_a
+  end
+
   private
 
   def generate_slug = self.slug = FamilyRecipes.slugify(title)

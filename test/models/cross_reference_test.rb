@@ -266,3 +266,67 @@ class StepIngredientListItemsTest < ActiveSupport::TestCase
     assert_instance_of CrossReference, items.first
   end
 end
+
+class CrossReferenceExpandedIngredientsTest < ActiveSupport::TestCase
+  setup do
+    @kitchen = Kitchen.find_or_create_by!(name: 'Test Kitchen', slug: 'test-kitchen')
+    ActsAsTenant.current_tenant = @kitchen
+
+    @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread')
+
+    # Target recipe: Poolish with "Flour, 2 cups" and "Water, 1 cup"
+    @target = Recipe.find_or_create_by!(
+      title: 'Poolish', slug: 'poolish',
+      category: @category,
+      markdown_source: "# Poolish\n\nCategory: Bread\n\n## Mix\n\n- Flour, 2 cups\n- Water, 1 cup\n\nMix."
+    )
+    target_step = @target.steps.find_or_create_by!(title: 'Mix', position: 1)
+    target_step.ingredients.find_or_create_by!(name: 'Flour', quantity: '2', unit: 'cups', position: 1)
+    target_step.ingredients.find_or_create_by!(name: 'Water', quantity: '1', unit: 'cup', position: 2)
+
+    # Parent recipe with a cross-reference to Poolish
+    @recipe = Recipe.find_or_create_by!(
+      title: 'Focaccia', slug: 'focaccia',
+      category: @category, markdown_source: "# Focaccia\n\nCategory: Bread\n\n## Mix\n\n- @[Poolish]\n\nMix."
+    )
+    @step = @recipe.steps.find_or_create_by!(title: 'Mix', position: 1)
+  end
+
+  test 'expanded_ingredients returns target ingredients with default multiplier' do
+    xref = CrossReference.create!(
+      step: @step, target_recipe: @target, position: 1,
+      target_slug: 'poolish', target_title: 'Poolish'
+    )
+
+    result = xref.expanded_ingredients
+
+    assert_equal 2, result.size
+    flour = result.find { |name, _| name == 'Flour' }
+
+    assert flour, 'Expected Flour in expanded ingredients'
+    assert_in_delta 2.0, flour[1].first.value, 0.01
+    assert_equal 'cup', flour[1].first.unit
+  end
+
+  test 'expanded_ingredients scales by multiplier' do
+    xref = CrossReference.create!(
+      step: @step, target_recipe: @target, position: 1,
+      target_slug: 'poolish', target_title: 'Poolish', multiplier: 0.5
+    )
+
+    result = xref.expanded_ingredients
+
+    flour = result.find { |name, _| name == 'Flour' }
+
+    assert_in_delta 1.0, flour[1].first.value, 0.01
+  end
+
+  test 'expanded_ingredients returns empty array when target_recipe is nil' do
+    xref = CrossReference.create!(
+      step: @step, position: 1,
+      target_slug: 'nonexistent', target_title: 'Nonexistent'
+    )
+
+    assert_empty xref.expanded_ingredients
+  end
+end

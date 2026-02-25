@@ -16,6 +16,15 @@ class CrossReference < ApplicationRecord
   def resolved? = target_recipe_id.present?
   def pending?  = !resolved?
 
+  def expanded_ingredients
+    return [] unless target_recipe
+
+    target_recipe.own_ingredients_aggregated.map do |name, amounts|
+      scaled = amounts.map { |amount| amount && Quantity[amount.value * multiplier, amount.unit] }
+      [name, scaled]
+    end
+  end
+
   def self.resolve_pending(kitchen:)
     slugs = pending.distinct.pluck(:target_slug)
     return if slugs.empty?
