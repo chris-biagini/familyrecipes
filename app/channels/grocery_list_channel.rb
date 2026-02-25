@@ -3,7 +3,7 @@
 class GroceryListChannel < ApplicationCable::Channel
   def subscribed
     kitchen = Kitchen.find_by(slug: params[:kitchen_slug])
-    reject unless kitchen
+    return reject unless authorized?(kitchen)
 
     stream_for kitchen
   end
@@ -14,5 +14,13 @@ class GroceryListChannel < ApplicationCable::Channel
 
   def self.broadcast_content_changed(kitchen)
     broadcast_to(kitchen, type: 'content_changed')
+  end
+
+  private
+
+  def authorized?(kitchen)
+    return false unless kitchen
+
+    ActsAsTenant.with_tenant(kitchen) { kitchen.member?(current_user) }
   end
 end
