@@ -2,15 +2,12 @@
     <div>
       <% if current_kitchen %>
         <%= link_to 'Home', kitchen_root_path, class: 'home', title: 'Home (Table of Contents)' %>
-        <%= link_to 'Ingredients', ingredients_path, class: 'ingredients', title: 'Ingredients' %>
-        <%= link_to 'Groceries', groceries_path, class: 'groceries', title: 'Printable grocery list' %>
+        <% if logged_in? %>
+          <%= link_to 'Ingredients', ingredients_path, class: 'ingredients', title: 'Ingredients' %>
+          <%= link_to 'Groceries', groceries_path, class: 'groceries', title: 'Printable grocery list' %>
+        <% end %>
       <% else %>
         <%= link_to 'Home', root_path, class: 'home', title: 'Home' %>
-      <% end %>
-    </div>
-    <div>
-      <% if logged_in? %>
-        <%= button_to 'Log out', logout_path, method: :delete, class: 'nav-auth-btn' %>
       <% end %>
     </div>
     <%= yield :extra_nav if content_for?(:extra_nav) %>

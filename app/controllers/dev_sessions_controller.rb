@@ -7,6 +7,7 @@ class DevSessionsController < ApplicationController
   def create
     user = User.find(params[:id])
     start_new_session_for(user)
+    cookies.delete(:skip_dev_auto_login)
     kitchen = ActsAsTenant.without_tenant { user.kitchens.first }
     return redirect_to root_path unless kitchen
 
@@ -15,6 +16,7 @@ class DevSessionsController < ApplicationController
 
   def destroy
     terminate_session
+    cookies[:skip_dev_auto_login] = true if Rails.env.development?
     redirect_to root_path
   end
 

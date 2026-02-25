@@ -83,12 +83,12 @@ class EndToEndTest < ActionDispatch::IntegrationTest
     assert_select 'nav a.groceries', 'Groceries'
   end
 
-  test 'layout shows groceries link when not logged in' do
+  test 'layout hides ingredients and groceries links when not logged in' do
     get kitchen_root_path(kitchen_slug: kitchen_slug)
 
     assert_select 'nav a.home', 'Home'
-    assert_select 'nav a.ingredients', 'Ingredients'
-    assert_select 'nav a.groceries', 'Groceries'
+    assert_select 'nav a.ingredients', count: 0
+    assert_select 'nav a.groceries', count: 0
   end
 
   test 'layout includes meta tags and stylesheet' do
@@ -215,14 +215,16 @@ class EndToEndTest < ActionDispatch::IntegrationTest
   # -- Ingredients Index --
 
   test 'ingredients index lists all ingredients from all recipes' do
+    log_in
     get ingredients_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
-    assert_select 'h2', 'Mozzarella'
-    assert_select 'h2', 'Honey'
+    assert_select 'h2', /Mozzarella/
+    assert_select 'h2', /Honey/
   end
 
   test 'ingredients index links back to recipe pages' do
+    log_in
     get ingredients_path(kitchen_slug: kitchen_slug)
 
     assert_select 'a[href=?]', recipe_path('pizza-dough', kitchen_slug: kitchen_slug)

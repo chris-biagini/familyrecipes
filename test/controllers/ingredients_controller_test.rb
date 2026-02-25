@@ -7,6 +7,12 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
     create_kitchen_and_user
   end
 
+  test 'requires membership to view ingredients' do
+    get ingredients_path(kitchen_slug: kitchen_slug)
+
+    assert_response :forbidden
+  end
+
   test 'renders ingredient index grouped by ingredient name' do
     Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
     MarkdownImporter.import(<<~MD, kitchen: @kitchen)
@@ -22,11 +28,12 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
       Mix well.
     MD
 
+    log_in
     get ingredients_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
     assert_select 'h1', 'Ingredients'
-    assert_select 'h2', 'Flour'
+    assert_select 'h2', /Flour/
     assert_select 'a[href=?]', recipe_path('focaccia', kitchen_slug: kitchen_slug), text: 'Focaccia'
   end
 
@@ -57,11 +64,12 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
       Knead well.
     MD
 
+    log_in
     get ingredients_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
     assert_select 'article.index section' do |sections|
-      flour_section = sections.detect { |s| s.at('h2').text.strip == 'Flour' }
+      flour_section = sections.detect { |s| s.at('h2').text.include?('Flour') }
 
       assert flour_section, 'Expected a section for Flour'
       assert_select flour_section, 'li', count: 2
@@ -83,6 +91,7 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
       Mix well.
     MD
 
+    log_in
     get ingredients_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
@@ -111,11 +120,12 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
       Add more flour.
     MD
 
+    log_in
     get ingredients_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
     assert_select 'article.index section' do |sections|
-      flour_section = sections.detect { |s| s.at('h2').text.strip == 'Flour' }
+      flour_section = sections.detect { |s| s.at('h2').text.include?('Flour') }
 
       assert flour_section, 'Expected a section for Flour'
       assert_select flour_section, 'li', count: 1
@@ -138,6 +148,7 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
       Mix well.
     MD
 
+    log_in
     get ingredients_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
@@ -228,26 +239,5 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select 'details.nutrition-banner'
-  end
-
-  test 'hides edit controls from non-members' do
-    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
-      # Focaccia
-
-      Category: Bread
-
-      ## Mix (combine)
-
-      - Flour, 3 cups
-
-      Mix well.
-    MD
-
-    get ingredients_path(kitchen_slug: kitchen_slug)
-
-    assert_response :success
-    assert_select '.nutrition-edit-btn', count: 0
-    assert_select '.editor-dialog', count: 0
   end
 end

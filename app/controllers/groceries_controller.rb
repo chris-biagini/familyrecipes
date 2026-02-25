@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 
 class GroceriesController < ApplicationController
-  before_action :require_membership, only: %i[select check update_custom_items clear
-                                              update_quick_bites update_aisle_order]
+  before_action :require_membership
 
   rescue_from ActiveRecord::StaleObjectError, with: :handle_stale_record
 

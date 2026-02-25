@@ -319,7 +319,7 @@ When a new user has zero memberships and exactly one Kitchen exists, `auto_join_
 
 ### Auth gates
 
-Read paths are public at the Rails level (Authelia provides the access boundary). Write paths require membership (`require_membership` before_action). `ActionCable::Connection` identifies users from the session cookie; `GroceryListChannel` checks kitchen membership. See `docs/plans/2026-02-25-trusted-header-auth-design.md` for the full auth design.
+Homepage and recipe pages are public reads. Ingredients and groceries pages require membership entirely (`require_membership` on all actions). Write paths on recipes also require membership. In development, `auto_login_in_development` logs in as `User.first` automatically (simulating Authelia); `/logout` sets a `skip_dev_auto_login` cookie to test the logged-out experience. `ActionCable::Connection` identifies users from the session cookie; `GroceryListChannel` checks kitchen membership. See `docs/plans/2026-02-25-dev-auth-optimization-design.md` for the current auth design.
 
 ### Real-time sync (ActionCable)
 

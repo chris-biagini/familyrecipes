@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class IngredientsController < ApplicationController
+  before_action :require_membership
+
   def index
     @ingredients_with_recipes = build_ingredient_index
     @nutrition_lookup = IngredientCatalog.lookup_for(current_kitchen)

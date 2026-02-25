@@ -9,22 +9,22 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
 
   # --- Access control ---
 
-  test 'show is publicly accessible without login' do
+  test 'show requires membership' do
     get groceries_path(kitchen_slug: kitchen_slug)
 
-    assert_response :success
+    assert_response :forbidden
   end
 
-  test 'state is publicly accessible without login' do
+  test 'state requires membership' do
     get groceries_state_path(kitchen_slug: kitchen_slug), as: :json
 
-    assert_response :success
+    assert_response :forbidden
   end
 
-  test 'aisle_order_content is publicly accessible without login' do
+  test 'aisle_order_content requires membership' do
     get groceries_aisle_order_content_path(kitchen_slug: kitchen_slug), as: :json
 
-    assert_response :success
+    assert_response :forbidden
   end
 
   test 'select requires membership' do

@@ -95,10 +95,10 @@ class AuthTest < ActionDispatch::IntegrationTest
     assert_select '#new-recipe-button', count: 1
   end
 
-  test 'groceries page is publicly accessible' do
+  test 'groceries page requires membership' do
     get groceries_path(kitchen_slug: kitchen_slug)
 
-    assert_response :success
+    assert_response :forbidden
   end
 
   test 'groceries page shows edit buttons for members' do

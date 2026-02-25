@@ -9,6 +9,7 @@ class ApplicationController < ActionController::Base
   set_current_tenant_through_filter
   before_action :resume_session
   before_action :authenticate_from_headers
+  before_action :auto_login_in_development
   before_action :auto_join_sole_kitchen
   before_action :set_kitchen_from_path
 
@@ -38,6 +39,17 @@ class ApplicationController < ActionController::Base
     user = User.find_or_create_by!(email: email) do |u|
       u.name = name
     end
+
+    start_new_session_for(user)
+  end
+
+  def auto_login_in_development
+    return unless Rails.env.development?
+    return if authenticated?
+    return if cookies[:skip_dev_auto_login]
+
+    user = User.first
+    return unless user
 
     start_new_session_for(user)
   end
