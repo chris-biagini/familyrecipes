@@ -16,7 +16,7 @@
         <%- end -%>
         </li>
         <%- else -%>
-        <li<% if item.quantity_value %> data-quantity-value="<%= item.quantity_value %>" data-quantity-unit="<%= item.quantity_unit %>"<%= %( data-quantity-unit-plural="#{FamilyRecipes::Inflector.unit_display(item.quantity_unit, 2)}").html_safe if item.quantity_unit %><% end %>>
+        <li<% if item.quantity_value %> data-quantity-value="<%= item.quantity_value %>" data-quantity-unit="<%= item.quantity_unit %>"<%= %( data-quantity-unit-plural="#{ERB::Util.html_escape(FamilyRecipes::Inflector.unit_display(item.quantity_unit, 2))}").html_safe if item.quantity_unit %><% end %>>
           <b><%= item.name %></b><% if item.quantity_display %>, <span class="quantity"><%= item.quantity_display %></span><% end %>
         <%- if item.prep_note -%>
           <small><%= item.prep_note %></small>

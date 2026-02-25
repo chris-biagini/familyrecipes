@@ -13,7 +13,7 @@
         formatted_ups = FamilyRecipes::VulgarFractions.format(ups)
         singular = FamilyRecipes::VulgarFractions.singular_noun?(ups)
         ups_unit = singular ? nutrition['makes_unit_singular'] : nutrition['makes_unit_plural']
-        columns << ["Per Serving<br>(#{formatted_ups} #{ups_unit})".html_safe, nutrition['per_serving'], false]
+        columns << ["Per Serving<br>(#{ERB::Util.html_escape(formatted_ups)} #{ERB::Util.html_escape(ups_unit)})".html_safe, nutrition['per_serving'], false]
       end
       columns << ['Total', nutrition['totals'], true]
     elsif has_per_serving
