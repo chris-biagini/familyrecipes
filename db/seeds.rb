@@ -42,6 +42,11 @@ recipe_files.each do |path|
   puts "  #{recipe.title} (#{recipe.category.name})"
 end
 
+# Resolve any cross-references that were deferred during import
+CrossReference.resolve_pending(kitchen: kitchen)
+pending_count = CrossReference.pending.count
+puts "  WARNING: #{pending_count} unresolved cross-references remain" if pending_count.positive?
+
 puts "Done! #{Recipe.count} recipes, #{Category.count} categories."
 
 # Seed Quick Bites content onto kitchen
