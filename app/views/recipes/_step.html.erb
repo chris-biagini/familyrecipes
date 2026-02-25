@@ -6,7 +6,11 @@
       <ul>
         <%- step.ingredient_list_items.each do |item| -%>
         <%- if item.respond_to?(:target_slug) -%>
+        <%- if item.resolved? -%>
         <li class="cross-reference"><b><%= link_to item.target_title, recipe_path(item.target_slug) %></b><% if item.multiplier != 1.0 %>, <span class="quantity"><%= item.multiplier == item.multiplier.to_i ? item.multiplier.to_i : item.multiplier %></span><% end %>
+        <%- else -%>
+        <li class="cross-reference"><b><%= item.target_title %></b><% if item.multiplier != 1.0 %>, <span class="quantity"><%= item.multiplier == item.multiplier.to_i ? item.multiplier.to_i : item.multiplier %></span><% end %>
+        <%- end -%>
         <%- if item.prep_note -%>
           <small><%= item.prep_note %></small>
         <%- end -%>

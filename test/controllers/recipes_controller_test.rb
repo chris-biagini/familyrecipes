@@ -352,6 +352,26 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes panzanella.markdown_source, '@[Focaccia]'
   end
 
+  test 'show renders pending cross-reference as plain text' do
+    category = Category.create!(name: 'Main', slug: 'main', kitchen: @kitchen)
+    recipe = Recipe.create!(
+      title: 'Pasta', slug: 'pasta', category: category,
+      markdown_source: "# Pasta\n\nCategory: Main\n\n## Cook\n\n- Spaghetti\n\nCook.",
+      kitchen: @kitchen
+    )
+    step = recipe.steps.create!(title: 'Cook', position: 0)
+    step.cross_references.create!(
+      target_slug: 'missing-sauce', target_title: 'Missing Sauce',
+      position: 0, multiplier: 1.0
+    )
+
+    get recipe_path('pasta', kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select 'li.cross-reference b', 'Missing Sauce'
+    assert_select 'li.cross-reference a', count: 0
+  end
+
   test 'destroy returns 404 for unknown recipe' do
     log_in
     delete recipe_path('nonexistent', kitchen_slug: kitchen_slug), as: :json
