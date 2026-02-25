@@ -27,17 +27,20 @@
           <span class="nutrition-badge nutrition-missing" title="No nutrition data">!</span>
           <button type="button" class="btn-link nutrition-edit-btn"
                   data-ingredient="<%= ingredient %>"
-                  data-nutrition-text="<%= NutritionLabelParser.blank_skeleton %>">+ Add nutrition</button>
+                  data-nutrition-text="<%= NutritionLabelParser.blank_skeleton %>"
+                  data-aisle="">+ Add nutrition</button>
         <%- elsif entry.global? -%>
           <span class="nutrition-badge nutrition-global" title="Built-in nutrition data">built-in</span>
           <button type="button" class="btn-link nutrition-edit-btn"
                   data-ingredient="<%= ingredient %>"
-                  data-nutrition-text="<%= NutritionLabelParser.format(entry) %>">Edit</button>
+                  data-nutrition-text="<%= NutritionLabelParser.format(entry) %>"
+                  data-aisle="<%= entry&.aisle %>">Edit</button>
         <%- else -%>
           <span class="nutrition-badge nutrition-custom" title="Custom nutrition data">custom</span>
           <button type="button" class="btn-link nutrition-edit-btn"
                   data-ingredient="<%= ingredient %>"
-                  data-nutrition-text="<%= NutritionLabelParser.format(entry) %>">Edit</button>
+                  data-nutrition-text="<%= NutritionLabelParser.format(entry) %>"
+                  data-aisle="<%= entry&.aisle %>">Edit</button>
           <button type="button" class="btn-link nutrition-reset-btn"
                   data-ingredient="<%= ingredient %>">Reset</button>
         <%- end -%>
@@ -61,6 +64,17 @@
   <div class="editor-errors" hidden></div>
   <textarea id="nutrition-editor-textarea" class="editor-textarea" spellcheck="false"></textarea>
   <div class="editor-footer">
+    <select id="nutrition-editor-aisle" class="aisle-select" aria-label="Grocery aisle">
+      <option value="">(none)</option>
+      <%- @available_aisles.each do |aisle| -%>
+      <option value="<%= aisle %>"><%= aisle %></option>
+      <%- end -%>
+      <option value="omit">omit</option>
+      <option disabled>───</option>
+      <option value="__other__">Other…</option>
+    </select>
+    <input type="text" id="nutrition-editor-aisle-input" class="aisle-input" placeholder="New aisle name" hidden>
+    <span class="editor-footer-spacer"></span>
     <button type="button" class="btn editor-cancel">Cancel</button>
     <button type="button" class="btn btn-primary editor-save">Save</button>
   </div>

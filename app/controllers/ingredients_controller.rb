@@ -5,6 +5,7 @@ class IngredientsController < ApplicationController
     @ingredients_with_recipes = build_ingredient_index
     @nutrition_lookup = IngredientCatalog.lookup_for(current_kitchen)
     @missing_ingredients = find_missing_ingredients
+    @available_aisles = current_kitchen.all_aisles
   end
 
   private

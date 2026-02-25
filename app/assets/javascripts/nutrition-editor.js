@@ -8,16 +8,27 @@ document.addEventListener('DOMContentLoaded', () => {
   const cancelBtn = dialog.querySelector('.editor-cancel');
   const saveBtn = dialog.querySelector('.editor-save');
   const errorsDiv = dialog.querySelector('.editor-errors');
+  const aisleSelect = document.getElementById('nutrition-editor-aisle');
+  const aisleInput = document.getElementById('nutrition-editor-aisle-input');
 
   let currentIngredient = null;
   let originalContent = '';
+  let originalAisle = '';
+
+  function currentAisle() {
+    return aisleInput.hidden ? aisleSelect.value : aisleInput.value.trim();
+  }
 
   function isModified() {
-    return textarea.value !== originalContent;
+    return textarea.value !== originalContent || currentAisle() !== originalAisle;
   }
 
   function resetDialog() {
     textarea.value = originalContent;
+    aisleSelect.value = originalAisle || '';
+    aisleSelect.hidden = false;
+    aisleInput.hidden = true;
+    aisleInput.value = '';
     EditorUtils.clearErrors(errorsDiv);
   }
 
@@ -44,10 +55,35 @@ document.addEventListener('DOMContentLoaded', () => {
       currentIngredient = btn.dataset.ingredient;
       textarea.value = btn.dataset.nutritionText;
       originalContent = textarea.value;
+      originalAisle = btn.dataset.aisle || '';
+      aisleSelect.value = originalAisle;
+      // If the value wasn't found in the select options, reset to empty
+      if (aisleSelect.value !== originalAisle) aisleSelect.value = '';
+      aisleInput.hidden = true;
+      aisleInput.value = '';
+      aisleSelect.hidden = false;
       titleEl.textContent = currentIngredient;
       EditorUtils.clearErrors(errorsDiv);
       dialog.showModal();
     });
+  });
+
+  // "Other..." handling for aisle select
+  aisleSelect.addEventListener('change', () => {
+    if (aisleSelect.value === '__other__') {
+      aisleSelect.hidden = true;
+      aisleInput.hidden = false;
+      aisleInput.value = '';
+      aisleInput.focus();
+    }
+  });
+
+  aisleInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      aisleInput.hidden = true;
+      aisleSelect.hidden = false;
+      aisleSelect.value = originalAisle || '';
+    }
   });
 
   // Reset buttons (delete kitchen override)
@@ -92,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
     EditorUtils.handleSave(
       saveBtn,
       errorsDiv,
-      () => EditorUtils.saveRequest(nutritionUrl(currentIngredient), 'POST', { label_text: textarea.value }),
+      () => EditorUtils.saveRequest(nutritionUrl(currentIngredient), 'POST', { label_text: textarea.value, aisle: currentAisle() }),
       () => {
         guard.markSaving();
         window.location.reload();

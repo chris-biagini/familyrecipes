@@ -773,6 +773,17 @@ footer small {
   flex: 1;
 }
 
+.aisle-select,
+.aisle-input {
+  font-size: 0.85rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.25rem;
+  background: var(--content-background-color);
+  color: var(--text-color);
+  max-width: 12rem;
+}
+
 /************************/
 /* Notification toast   */
 /************************/
