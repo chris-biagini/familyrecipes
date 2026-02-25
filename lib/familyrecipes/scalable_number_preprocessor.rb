@@ -68,10 +68,7 @@ module ScalableNumberPreprocessor
   end
 
   def parse_numeral(str)
-    return str.to_f unless str.include?('/')
-
-    numerator, denominator = str.split('/')
-    numerator.to_f / denominator.to_i
+    FamilyRecipes::NumericParsing.parse_fraction(str)
   end
 
   def build_span(value, original_text)
