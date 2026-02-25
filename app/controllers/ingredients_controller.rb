@@ -16,8 +16,9 @@ class IngredientsController < ApplicationController
 
   def recipes_by_ingredient
     seen = Hash.new { |h, k| h[k] = Set.new }
+    recipes = current_kitchen.recipes.includes(steps: :ingredients)
 
-    current_kitchen.recipes.includes(steps: :ingredients).each_with_object(Hash.new { |h, k| h[k] = [] }) do |recipe, index|
+    recipes.each_with_object(Hash.new { |h, k| h[k] = [] }) do |recipe, index|
       recipe.ingredients.each do |ingredient|
         index[ingredient.name] << recipe if seen[ingredient.name].add?(recipe.id)
       end

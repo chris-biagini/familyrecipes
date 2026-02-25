@@ -10,8 +10,8 @@ module RecipesHelper
   def scalable_instructions(text)
     return '' if text.blank?
 
-    processed = ScalableNumberPreprocessor.process_instructions(text)
-    render_markdown(processed)
+    html = FamilyRecipes::Recipe::MARKDOWN.render(text)
+    ScalableNumberPreprocessor.process_instructions(html).html_safe
   end
 
   def format_yield_line(text)
@@ -35,16 +35,14 @@ module RecipesHelper
 
     if has_per_unit
       columns << ["Per #{nutrition['makes_unit_singular']&.capitalize}", nutrition['per_unit'], false]
-      columns << [per_serving_label(nutrition), nutrition['per_serving'], false] if has_per_serving && nutrition['units_per_serving']
-      columns << ['Total', nutrition['totals'], true]
+      if has_per_serving && nutrition['units_per_serving']
+        columns << [per_serving_label(nutrition), nutrition['per_serving'], false]
+      end
     elsif has_per_serving
       columns << ['Per Serving', nutrition['per_serving'], false]
-      columns << ['Total', nutrition['totals'], true]
-    else
-      columns << ['Total', nutrition['totals'], true]
     end
 
-    columns
+    columns << ['Total', nutrition['totals'], true]
   end
 
   def nutrition_missing_ingredients(nutrition)

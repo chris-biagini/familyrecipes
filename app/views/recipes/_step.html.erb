@@ -30,7 +30,7 @@
 
     <%- if step.processed_instructions.present? -%>
     <div class="instructions">
-      <%= render_markdown(step.processed_instructions) %>
+      <%= step.processed_instructions.html_safe %>
     </div>
     <%- elsif step.instructions.present? -%>
     <div class="instructions">
