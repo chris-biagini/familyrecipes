@@ -344,4 +344,55 @@ class InflectorTest < Minitest::Test
   def test_unit_display_slice_plural
     assert_equal 'slices', FamilyRecipes::Inflector.unit_display('slice', 3)
   end
+
+  # --- ingredient_variants ---
+
+  def test_ingredient_variants_plural_to_singular
+    assert_equal ['Egg'], FamilyRecipes::Inflector.ingredient_variants('Eggs')
+  end
+
+  def test_ingredient_variants_singular_to_plural
+    assert_equal ['Eggs'], FamilyRecipes::Inflector.ingredient_variants('Egg')
+  end
+
+  def test_ingredient_variants_uncountable_returns_empty
+    assert_empty FamilyRecipes::Inflector.ingredient_variants('Butter')
+  end
+
+  def test_ingredient_variants_uncountable_with_qualifier_returns_empty
+    assert_empty FamilyRecipes::Inflector.ingredient_variants('Flour (all-purpose)')
+  end
+
+  def test_ingredient_variants_qualified_name_inflects_base
+    assert_equal ['Tomato (canned)'], FamilyRecipes::Inflector.ingredient_variants('Tomatoes (canned)')
+  end
+
+  def test_ingredient_variants_multi_word_inflects_last_word
+    assert_equal ['Egg yolk'], FamilyRecipes::Inflector.ingredient_variants('Egg yolks')
+  end
+
+  def test_ingredient_variants_multi_word_singular_to_plural
+    assert_equal ['Egg yolks'], FamilyRecipes::Inflector.ingredient_variants('Egg yolk')
+  end
+
+  def test_ingredient_variants_nil_returns_empty
+    assert_empty FamilyRecipes::Inflector.ingredient_variants(nil)
+  end
+
+  def test_ingredient_variants_empty_returns_empty
+    assert_empty FamilyRecipes::Inflector.ingredient_variants('')
+  end
+
+  def test_ingredient_variants_irregular_leaves
+    assert_equal ['Bay leaf'], FamilyRecipes::Inflector.ingredient_variants('Bay leaves')
+  end
+
+  def test_ingredient_variants_irregular_singular_to_plural
+    assert_equal ['Bay leaves'], FamilyRecipes::Inflector.ingredient_variants('Bay leaf')
+  end
+
+  def test_ingredient_variants_already_both_forms_same
+    # "grass" singularizes to "grass" (ss ending) — no useful variant
+    assert_empty FamilyRecipes::Inflector.ingredient_variants('grass')
+  end
 end

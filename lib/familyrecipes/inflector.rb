@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module FamilyRecipes
-  module Inflector
+  module Inflector # rubocop:disable Metrics/ModuleLength
     IRREGULAR_SINGULAR_TO_PLURAL = {
       'cookie' => 'cookies',
       'leaf' => 'leaves',
@@ -66,6 +66,20 @@ module FamilyRecipes
       UNCOUNTABLE.include?(word.downcase)
     end
 
+    def self.ingredient_variants(name)
+      return [] if name.blank?
+
+      base, qualifier = split_ingredient_name(name)
+      words = base.split
+      last_word = words.last
+      prefix = words[0..-2].join(' ')
+
+      alternate = alternate_form(last_word)
+      return [] unless alternate
+
+      [rejoin_ingredient(prefix, alternate, qualifier)]
+    end
+
     def self.normalize_unit(raw_unit)
       cleaned = raw_unit.strip.downcase.chomp('.')
       UNIT_ALIASES[cleaned] || ABBREVIATIONS[cleaned] || singular(cleaned)
@@ -102,5 +116,29 @@ module FamilyRecipes
       end
     end
     private_class_method :pluralize_by_rules
+
+    # Words ending in 's' are ambiguous — could already be plural
+    def self.alternate_form(word)
+      singular_form = singular(word)
+      return singular_form if singular_form != word
+
+      plural_form = plural(word)
+      return plural_form if plural_form != word && !word.end_with?('s')
+
+      nil
+    end
+    private_class_method :alternate_form
+
+    def self.split_ingredient_name(name)
+      match = name.match(/\A(.+?)\s*(\([^)]+\))\z/)
+      match ? [match[1].strip, match[2]] : [name, nil]
+    end
+    private_class_method :split_ingredient_name
+
+    def self.rejoin_ingredient(prefix, word, qualifier)
+      parts = [prefix.presence, word].compact.join(' ')
+      qualifier ? "#{parts} #{qualifier}" : parts
+    end
+    private_class_method :rejoin_ingredient
   end
 end
