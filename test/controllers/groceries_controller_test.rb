@@ -454,4 +454,57 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'Produce', lines[1]
     assert_includes lines, 'Baking'
   end
+
+  # --- Optimistic locking / 409 Conflict ---
+
+  test 'select returns 409 when retry exhausted' do
+    log_in
+    stale_list = build_stale_list(:apply_action)
+
+    GroceryList.stub(:for_kitchen, stale_list) do
+      patch groceries_select_path(kitchen_slug: kitchen_slug),
+            params: { type: 'recipe', slug: 'focaccia', selected: true },
+            as: :json
+    end
+
+    assert_response :conflict
+    json = JSON.parse(response.body)
+
+    assert_equal 'Grocery list was modified by another request. Please refresh.', json['error']
+  end
+
+  test 'check returns 409 when retry exhausted' do
+    log_in
+    stale_list = build_stale_list(:apply_action)
+
+    GroceryList.stub(:for_kitchen, stale_list) do
+      patch groceries_check_path(kitchen_slug: kitchen_slug),
+            params: { item: 'flour', checked: true },
+            as: :json
+    end
+
+    assert_response :conflict
+  end
+
+  test 'clear returns 409 when retry exhausted' do
+    log_in
+    stale_list = build_stale_list(:clear!)
+
+    GroceryList.stub(:for_kitchen, stale_list) do
+      delete groceries_clear_path(kitchen_slug: kitchen_slug), as: :json
+    end
+
+    assert_response :conflict
+  end
+
+  private
+
+  def build_stale_list(method_to_stub)
+    list = GroceryList.for_kitchen(@kitchen)
+    list.define_singleton_method(method_to_stub) do |*|
+      raise ActiveRecord::StaleObjectError, self
+    end
+    list.define_singleton_method(:reload) { self }
+    list
+  end
 end

@@ -3,6 +3,8 @@
 class GroceriesController < ApplicationController
   before_action :require_membership
 
+  rescue_from ActiveRecord::StaleObjectError, with: :handle_stale_record
+
   def show
     @categories = current_kitchen.categories.ordered.includes(recipes: { steps: :ingredients })
     @quick_bites_by_subsection = load_quick_bites_by_subsection
@@ -14,7 +16,7 @@ class GroceriesController < ApplicationController
     shopping_list = ShoppingListBuilder.new(kitchen: current_kitchen, grocery_list: list).build
 
     render json: {
-      version: list.version,
+      version: list.lock_version,
       **list.state.slice(*GroceryList::STATE_KEYS),
       shopping_list: shopping_list
     }
@@ -41,9 +43,9 @@ class GroceriesController < ApplicationController
 
   def clear
     list = GroceryList.for_kitchen(current_kitchen)
-    list.clear!
-    GroceryListChannel.broadcast_version(current_kitchen, list.version)
-    render json: { version: list.version }
+    list.with_optimistic_retry { list.clear! }
+    GroceryListChannel.broadcast_version(current_kitchen, list.lock_version)
+    render json: { version: list.lock_version }
   end
 
   def update_quick_bites
@@ -62,8 +64,8 @@ class GroceriesController < ApplicationController
     current_kitchen.save!
 
     list = GroceryList.for_kitchen(current_kitchen)
-    list.increment!(:version)
-    GroceryListChannel.broadcast_version(current_kitchen, list.version)
+    list.with_optimistic_retry { list.save! }
+    GroceryListChannel.broadcast_version(current_kitchen, list.lock_version)
     render json: { status: 'ok' }
   end
 
@@ -75,9 +77,16 @@ class GroceriesController < ApplicationController
 
   def apply_and_respond(action_type, **action_params)
     list = GroceryList.for_kitchen(current_kitchen)
-    list.apply_action(action_type, **action_params)
-    GroceryListChannel.broadcast_version(current_kitchen, list.version)
-    render json: { version: list.version }
+    list.with_optimistic_retry do
+      list.apply_action(action_type, **action_params)
+    end
+    GroceryListChannel.broadcast_version(current_kitchen, list.lock_version)
+    render json: { version: list.lock_version }
+  end
+
+  def handle_stale_record
+    render json: { error: 'Grocery list was modified by another request. Please refresh.' },
+           status: :conflict
   end
 
   def build_aisle_order_text
