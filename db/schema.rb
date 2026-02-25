@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 4) do
+ActiveRecord::Schema[8.1].define(version: 5) do
   create_table "categories", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "kitchen_id", null: false
@@ -53,9 +53,9 @@ ActiveRecord::Schema[8.1].define(version: 4) do
   create_table "grocery_lists", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "kitchen_id", null: false
+    t.integer "lock_version", default: 0, null: false
     t.json "state", default: {}, null: false
     t.datetime "updated_at", null: false
-    t.integer "version", default: 0, null: false
     t.index ["kitchen_id"], name: "index_grocery_lists_on_kitchen_id", unique: true
   end
 
