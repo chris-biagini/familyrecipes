@@ -4,10 +4,27 @@ class CrossReference < ApplicationRecord
   acts_as_tenant :kitchen
 
   belongs_to :step, inverse_of: :cross_references
-  belongs_to :target_recipe, class_name: 'Recipe'
+  belongs_to :target_recipe, class_name: 'Recipe', optional: true
 
   validates :position, presence: true, uniqueness: { scope: :step_id }
+  validates :target_slug, presence: true
+  validates :target_title, presence: true
 
-  delegate :slug, to: :target_recipe, prefix: :target
-  delegate :title, to: :target_recipe, prefix: :target
+  scope :pending, -> { where(target_recipe_id: nil) }
+  scope :resolved, -> { where.not(target_recipe_id: nil) }
+
+  def resolved? = target_recipe_id.present?
+  def pending?  = !resolved?
+
+  def self.resolve_pending(kitchen:)
+    slugs = pending.distinct.pluck(:target_slug)
+    return if slugs.empty?
+
+    slug_to_id = kitchen.recipes.where(slug: slugs).pluck(:slug, :id).to_h
+    return if slug_to_id.empty?
+
+    pending.where(target_slug: slug_to_id.keys).find_each do |ref|
+      ref.update_column(:target_recipe_id, slug_to_id.fetch(ref.target_slug))
+    end
+  end
 end
