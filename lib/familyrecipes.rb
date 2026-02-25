@@ -66,6 +66,7 @@ end
 
 # my classes
 
+require_relative 'familyrecipes/numeric_parsing'
 require_relative 'familyrecipes/quantity'
 require_relative 'familyrecipes/scalable_number_preprocessor'
 require_relative 'familyrecipes/inflector'
