@@ -22,7 +22,7 @@ class ShoppingListBuilder
 
     quick_bite_ingredients.each do |name, amounts|
       recipe_ingredients[name] =
-        recipe_ingredients.key?(name) ? merge_amounts(recipe_ingredients[name], amounts) : amounts
+        recipe_ingredients.key?(name) ? IngredientAggregator.merge_amounts(recipe_ingredients[name], amounts) : amounts
     end
 
     recipe_ingredients
@@ -52,7 +52,7 @@ class ShoppingListBuilder
       next unless parsed
 
       parsed.all_ingredients_with_quantities(recipe_map).each do |name, amounts|
-        merged[name] = merged.key?(name) ? merge_amounts(merged[name], amounts) : amounts
+        merged[name] = merged.key?(name) ? IngredientAggregator.merge_amounts(merged[name], amounts) : amounts
       end
     end
   end
@@ -60,7 +60,7 @@ class ShoppingListBuilder
   def aggregate_quick_bite_ingredients
     selected_quick_bites.each_with_object({}) do |qb, merged|
       qb.ingredients_with_quantities.each do |name, amounts|
-        merged[name] = merged.key?(name) ? merge_amounts(merged[name], amounts) : amounts
+        merged[name] = merged.key?(name) ? IngredientAggregator.merge_amounts(merged[name], amounts) : amounts
       end
     end
   end
@@ -74,19 +74,6 @@ class ShoppingListBuilder
       )
       [r.slug, parsed]
     end
-  end
-
-  def merge_amounts(existing, new_amounts)
-    all = existing + new_amounts
-    has_nil = all.include?(nil)
-
-    sums = all.compact.each_with_object(Hash.new(0.0)) do |quantity, h|
-      h[quantity.unit] += quantity.value
-    end
-
-    result = sums.map { |unit, value| Quantity[value, unit] }
-    result << nil if has_nil
-    result
   end
 
   def organize_by_aisle(ingredients)

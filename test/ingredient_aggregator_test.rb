@@ -73,4 +73,53 @@ class IngredientAggregatorTest < Minitest::Test
     assert_in_delta 0.75, result[0].value
     assert_equal 'cup', result[0].unit
   end
+
+  # merge_amounts tests
+
+  def test_merge_amounts_sums_same_unit
+    a = [Quantity[2.0, 'cup']]
+    b = [Quantity[1.0, 'cup']]
+    result = IngredientAggregator.merge_amounts(a, b)
+
+    assert_equal 1, result.size
+    assert_in_delta 3.0, result[0].value
+    assert_equal 'cup', result[0].unit
+  end
+
+  def test_merge_amounts_keeps_different_units
+    a = [Quantity[2.0, 'cup']]
+    b = [Quantity[100.0, 'g']]
+    result = IngredientAggregator.merge_amounts(a, b)
+
+    assert_equal 2, result.size
+    units = result.map(&:unit).sort
+
+    assert_equal %w[cup g], units
+  end
+
+  def test_merge_amounts_preserves_nil
+    a = [Quantity[1.0, 'cup']]
+    b = [nil]
+    result = IngredientAggregator.merge_amounts(a, b)
+
+    assert_equal 2, result.size
+    assert_includes result, nil
+    numeric = result.compact.first
+
+    assert_in_delta 1.0, numeric.value
+  end
+
+  def test_merge_amounts_deduplicates_nil
+    a = [nil]
+    b = [nil]
+    result = IngredientAggregator.merge_amounts(a, b)
+
+    assert_equal [nil], result
+  end
+
+  def test_merge_amounts_empty_arrays
+    result = IngredientAggregator.merge_amounts([], [])
+
+    assert_empty result
+  end
 end

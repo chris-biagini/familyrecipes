@@ -77,24 +77,12 @@ module FamilyRecipes
     def all_ingredients_with_quantities(recipe_map)
       cross_references.each_with_object(ingredients_with_quantities.to_h) do |xref, merged|
         xref.expanded_ingredients(recipe_map).each do |name, amounts|
-          merged[name] = merged.key?(name) ? merge_amounts(merged[name], amounts) : amounts
+          merged[name] = merged.key?(name) ? IngredientAggregator.merge_amounts(merged[name], amounts) : amounts
         end
       end.to_a
     end
 
     private
-
-    def merge_amounts(existing, new_amounts)
-      all = existing + new_amounts
-      has_nil = all.include?(nil)
-      sums = all.compact.each_with_object(Hash.new(0.0)) do |quantity, h|
-        h[quantity.unit] += quantity.value
-      end
-
-      result = sums.map { |unit, value| Quantity[value, unit] }
-      result << nil if has_nil
-      result
-    end
 
     def parse_recipe
       tokens = LineClassifier.classify(@source)

@@ -7,6 +7,21 @@
 module IngredientAggregator
   # Given an array of Ingredient objects with the same name,
   # returns an array of Quantity objects (plus nil for unquantified).
+  # Merges two pre-aggregated Quantity arrays by summing values per unit.
+  # Both arrays may contain nil (representing unquantified entries).
+  def self.merge_amounts(existing, new_amounts)
+    all = existing + new_amounts
+    has_nil = all.include?(nil)
+
+    sums = all.compact.each_with_object(Hash.new(0.0)) do |quantity, h|
+      h[quantity.unit] += quantity.value
+    end
+
+    result = sums.map { |unit, value| Quantity[value, unit] }
+    result << nil if has_nil
+    result
+  end
+
   def self.aggregate_amounts(ingredients)
     parsed = ingredients.map do |ingredient|
       unit = ingredient.quantity_unit
