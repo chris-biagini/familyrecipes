@@ -24,6 +24,16 @@ Eventually, the goal is to ship this app as a Docker image for homelab install, 
 
 ## HTML, CSS, and JavaScript
 
+### XSS prevention — trust Rails, distrust `.html_safe`
+
+Rails auto-escapes all `<%= %>` output. The **only** XSS vectors are `.html_safe`, `raw()`, and rendering engines (like Redcarpet) whose output is marked safe. Rules:
+- **Never** call `.html_safe` on a string that interpolates user content without first escaping it via `ERB::Util.html_escape`.
+- **Never** use `raw()` on user content.
+- When building HTML strings in Ruby (helpers, lib classes), escape every user-derived value with `ERB::Util.html_escape` before interpolation.
+- In JavaScript, use `textContent` / `createTextNode` for user content — never `innerHTML`.
+- The Redcarpet renderer uses `escape_html: true`. Do not remove this option.
+- `rake lint:html_safe` audits all `.html_safe` and `raw()` calls. Run it before adding new ones.
+
 Everywhere: use semantic HTML wherever possible and appropriate for the content.
 Avoid littering the DOM with  more `<div>`s than needed. Don't use a `<div>` when a semantic tag will do.
 

@@ -1,0 +1,23 @@
+# Approved .html_safe / raw() calls.
+#
+# Each entry is "relative/path:line_number". The lint:html_safe rake task
+# will fail if any .html_safe or raw() call is found that is NOT in this list.
+#
+# Before adding a new entry, verify the call is safe:
+#   - All interpolated user content must be escaped with ERB::Util.html_escape
+#   - Hardcoded values (integers, literal strings) are safe without escaping
+#   - Renderer output (Redcarpet with escape_html: true) is safe
+#   - ScalableNumberPreprocessor output is safe (escapes user content internally)
+
+# RecipesHelper — renderer and preprocessor output (safe by construction)
+- "app/helpers/recipes_helper.rb:7"     # render_markdown: Redcarpet with escape_html: true
+- "app/helpers/recipes_helper.rb:20"    # format_yield_line: preprocessor escapes internally
+- "app/helpers/recipes_helper.rb:26"    # format_yield_with_unit: preprocessor escapes internally
+
+# _step.html.erb — data attribute with escaped user value
+- "app/views/recipes/_step.html.erb:19" # quantity_unit_plural: ERB::Util.html_escape wraps value
+
+# _nutrition_table.html.erb — mix of escaped user values and hardcoded literals
+- "app/views/recipes/_nutrition_table.html.erb:16" # Per Serving column: user values escaped
+- "app/views/recipes/_nutrition_table.html.erb:49" # indent class: hardcoded integer
+- "app/views/recipes/_nutrition_table.html.erb:52" # nutrient data attrs: hardcoded key + numeric value
