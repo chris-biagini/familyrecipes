@@ -9,6 +9,7 @@ class ApplicationController < ActionController::Base
   set_current_tenant_through_filter
   before_action :resume_session
   before_action :authenticate_from_headers
+  before_action :auto_join_sole_kitchen
   before_action :set_kitchen_from_path
 
   helper_method :current_kitchen, :logged_in?
@@ -39,6 +40,20 @@ class ApplicationController < ActionController::Base
     end
 
     start_new_session_for(user)
+  end
+
+  def auto_join_sole_kitchen
+    return unless authenticated?
+
+    user = current_user
+    return if ActsAsTenant.without_tenant { user.memberships.exists? }
+
+    kitchens = ActsAsTenant.without_tenant { Kitchen.all }
+    return unless kitchens.size == 1
+
+    ActsAsTenant.with_tenant(kitchens.first) do
+      Membership.create!(kitchen: kitchens.first, user: user)
+    end
   end
 
   def require_membership

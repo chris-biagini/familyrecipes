@@ -80,6 +80,46 @@ class HeaderAuthTest < ActionDispatch::IntegrationTest
     assert_equal 'bob', User.find_by(email: 'bob@example.com').name
   end
 
+  test 'auto-joins sole kitchen for new user' do
+    get kitchen_root_path(kitchen_slug: @kitchen.slug), headers: {
+      'Remote-User' => 'alice',
+      'Remote-Name' => 'Alice',
+      'Remote-Email' => 'alice@example.com'
+    }
+
+    user = User.find_by(email: 'alice@example.com')
+
+    assert_predicate user.memberships, :any?
+    assert @kitchen.member?(user)
+  end
+
+  test 'does not auto-join when multiple kitchens exist' do
+    Kitchen.create!(name: 'Second Kitchen', slug: 'second')
+
+    get kitchen_root_path(kitchen_slug: @kitchen.slug), headers: {
+      'Remote-User' => 'alice',
+      'Remote-Name' => 'Alice',
+      'Remote-Email' => 'alice@example.com'
+    }
+
+    user = User.find_by(email: 'alice@example.com')
+
+    assert_predicate user.memberships, :empty?
+  end
+
+  test 'does not auto-join when user already has membership' do
+    user = User.create!(name: 'Alice', email: 'alice@example.com')
+    ActsAsTenant.with_tenant(@kitchen) { Membership.create!(kitchen: @kitchen, user: user) }
+
+    assert_no_difference 'Membership.count' do
+      get kitchen_root_path(kitchen_slug: @kitchen.slug), headers: {
+        'Remote-User' => 'alice',
+        'Remote-Name' => 'Alice',
+        'Remote-Email' => 'alice@example.com'
+      }
+    end
+  end
+
   private
 
   # Nav partial still references login_path/logout_path removed in Task 0.
