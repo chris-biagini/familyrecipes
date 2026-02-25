@@ -1,0 +1,11 @@
+{
+  "planPath": "docs/plans/2026-02-24-grocery-list-optimistic-locking-plan.md",
+  "tasks": [
+    {"id": 1, "subject": "Task 1: Migration — rename version to lock_version", "status": "pending"},
+    {"id": 2, "subject": "Task 2: Model — remove manual version bumps, add retry helper", "status": "pending", "blockedBy": [1]},
+    {"id": 3, "subject": "Task 3: Controller — wrap mutations in retry, return 409", "status": "pending", "blockedBy": [2]},
+    {"id": 4, "subject": "Task 4: Update remaining tests and channel references", "status": "pending", "blockedBy": [3]},
+    {"id": 5, "subject": "Task 5: Final verification and smoke test", "status": "pending", "blockedBy": [4]}
+  ],
+  "lastUpdated": "2026-02-24T00:00:00Z"
+}
