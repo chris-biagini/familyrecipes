@@ -2,7 +2,6 @@
 
 class RecipesController < ApplicationController
   before_action :require_membership, only: %i[create update destroy]
-  rescue_from ActiveRecord::RecordNotFound, with: :record_not_found
 
   def show
     @recipe = current_kitchen.recipes
@@ -64,14 +63,5 @@ class RecipesController < ApplicationController
     response_json = { redirect_url: kitchen_root_path }
     response_json[:updated_references] = updated_references if updated_references.any?
     render json: response_json
-  end
-
-  private
-
-  def record_not_found
-    respond_to do |format|
-      format.html { render file: Rails.public_path.join('404.html'), status: :not_found, layout: false }
-      format.json { head :not_found }
-    end
   end
 end

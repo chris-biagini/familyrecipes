@@ -1,0 +1,9 @@
+body {
+  text-align: center;
+}
+
+h1::after {
+  content: "\1F974";
+  display: block;
+  margin: 1rem;
+}

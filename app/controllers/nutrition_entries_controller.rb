@@ -4,7 +4,7 @@ class NutritionEntriesController < ApplicationController
   before_action :require_membership
 
   def upsert
-    aisle = params[:aisle].presence
+    aisle = params[:aisle]&.strip.presence
     label_text = params[:label_text].to_s
 
     if blank_nutrition?(label_text)

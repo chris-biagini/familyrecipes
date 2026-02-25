@@ -58,6 +58,9 @@ class NutritionLabelParser # rubocop:disable Metrics/ClassLength
     return serving if serving.is_a?(Result)
 
     nutrients = parse_nutrients.merge(basis_grams: serving[:grams])
+    errors = validate_nutrients(nutrients)
+    return Result.new(nutrients: {}, density: nil, portions: {}, errors:) if errors.any?
+
     density = parse_density_section || build_density(serving)
     portions = parse_portions.merge(auto_portions(serving))
 
@@ -75,6 +78,19 @@ class NutritionLabelParser # rubocop:disable Metrics/ClassLength
     return failure('Serving size must include a gram weight (e.g., 30g)') unless parsed
 
     parsed
+  end
+
+  MAX_NUTRIENT_VALUE = 10_000
+  private_constant :MAX_NUTRIENT_VALUE
+
+  def validate_nutrients(nutrients)
+    nutrients.each_with_object([]) do |(key, value), errors|
+      next if key == :basis_grams
+
+      label = key.to_s.tr('_', ' ').capitalize
+      errors << "#{label} cannot be negative" if value.negative?
+      errors << "#{label} exceeds maximum (#{MAX_NUTRIENT_VALUE})" if value > MAX_NUTRIENT_VALUE
+    end
   end
 
   def failure(message)

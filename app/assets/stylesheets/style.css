@@ -399,6 +399,8 @@ section > ul {
 
 section > ul li {
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* in allrecipes view, all headers get demoted by one to avoid multiple H1's on page */

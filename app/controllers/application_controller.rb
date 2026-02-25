@@ -6,6 +6,8 @@ class ApplicationController < ActionController::Base
   allow_browser versions: :modern
   allow_unauthenticated_access
 
+  rescue_from ActiveRecord::RecordNotFound, with: :record_not_found
+
   set_current_tenant_through_filter
   before_action :resume_session
   before_action :authenticate_from_headers
@@ -76,5 +78,12 @@ class ApplicationController < ActionController::Base
 
   def default_url_options
     { kitchen_slug: current_kitchen&.slug }.compact
+  end
+
+  def record_not_found
+    respond_to do |format|
+      format.html { render file: Rails.public_path.join('404.html'), status: :not_found, layout: false }
+      format.json { head :not_found }
+    end
   end
 end
