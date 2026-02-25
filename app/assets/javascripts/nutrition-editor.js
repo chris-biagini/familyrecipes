@@ -80,6 +80,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   aisleInput.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
+      event.preventDefault();
+      event.stopPropagation();
       aisleInput.hidden = true;
       aisleSelect.hidden = false;
       aisleSelect.value = originalAisle || '';
@@ -128,7 +130,13 @@ document.addEventListener('DOMContentLoaded', () => {
     EditorUtils.handleSave(
       saveBtn,
       errorsDiv,
-      () => EditorUtils.saveRequest(nutritionUrl(currentIngredient), 'POST', { label_text: textarea.value, aisle: currentAisle() }),
+      () => {
+        const nutritionChanged = textarea.value !== originalContent;
+        return EditorUtils.saveRequest(nutritionUrl(currentIngredient), 'POST', {
+          label_text: nutritionChanged ? textarea.value : '',
+          aisle: currentAisle()
+        });
+      },
       () => {
         guard.markSaving();
         window.location.reload();
