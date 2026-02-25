@@ -59,24 +59,8 @@ module FamilyRecipes
 
   # Parse Quick Bites file into QuickBite objects
   def self.parse_quick_bites(recipes_dir)
-    quick_bites_filename = CONFIG[:quick_bites_filename]
-    quick_bites_category = CONFIG[:quick_bites_category]
-    file_path = File.join(recipes_dir, quick_bites_filename)
-
-    quick_bites = []
-    current_subcat = nil
-
-    File.foreach(file_path) do |line|
-      case line
-      when /^##\s+(.*)/
-        current_subcat = ::Regexp.last_match(1).strip
-      when /^\s*-\s+(.*)/
-        category = [quick_bites_category, current_subcat].compact.join(': ')
-        quick_bites << QuickBite.new(text_source: ::Regexp.last_match(1).strip, category: category)
-      end
-    end
-
-    quick_bites
+    file_path = File.join(recipes_dir, CONFIG[:quick_bites_filename])
+    parse_quick_bites_content(File.read(file_path))
   end
 end
 

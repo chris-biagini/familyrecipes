@@ -16,9 +16,7 @@ module Authentication
 
   private
 
-  def authenticated?
-    resume_session
-  end
+  def authenticated? = Current.session.present?
 
   def require_authentication
     resume_session || request_authentication
@@ -48,7 +46,7 @@ module Authentication
     ).tap do |new_session|
       Current.session = new_session
       cookies.signed.permanent[:session_id] = {
-        value: new_session.id, httponly: true, same_site: :lax
+        value: new_session.id, httponly: true, same_site: :lax, secure: Rails.env.production?
       }
     end
   end

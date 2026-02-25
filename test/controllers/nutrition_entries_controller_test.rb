@@ -131,7 +131,7 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
          params: { label_text: VALID_LABEL },
          as: :json
 
-    assert_response :unauthorized
+    assert_response :forbidden
   end
 
   # --- upsert with aisle ---
@@ -244,7 +244,7 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
 
     delete nutrition_entry_destroy_path('flour', kitchen_slug: kitchen_slug), as: :json
 
-    assert_response :unauthorized
+    assert_response :forbidden
   end
 
   test 'destroy recalculates affected recipes with global fallback' do

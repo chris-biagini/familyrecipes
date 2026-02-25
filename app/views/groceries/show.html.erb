@@ -50,7 +50,7 @@
         <li>
           <input type="checkbox" id="<%= recipe.slug %>-checkbox" data-slug="<%= recipe.slug %>" data-title="<%= h recipe.title %>">
           <label for="<%= recipe.slug %>-checkbox"><%= recipe.title %></label>
-          <%= link_to raw('&rarr;'), recipe_path(recipe.slug), class: 'recipe-link', title: "Open #{recipe.title} in new tab", target: '_blank' %>
+          <%= link_to "\u2192", recipe_path(recipe.slug), class: 'recipe-link', title: "Open #{recipe.title} in new tab", target: '_blank' %>
         </li>
       <%- end -%>
       </ul>

@@ -36,8 +36,7 @@ module FamilyRecipes
     end
 
     def find_glyph(fractional_value)
-      _rational, glyph = GLYPHS.find { |rational, _| (fractional_value - rational.to_f).abs < TOLERANCE }
-      glyph
+      GLYPHS.find { |rational, _| (fractional_value - rational.to_f).abs < TOLERANCE }&.last
     end
 
     def integer?(value)

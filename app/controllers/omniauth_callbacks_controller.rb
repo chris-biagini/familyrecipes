@@ -5,6 +5,8 @@ class OmniauthCallbacksController < ApplicationController
 
   def create
     auth = request.env['omniauth.auth']
+    return redirect_to root_path, alert: 'Authentication failed' unless auth
+
     user = find_or_create_user(auth)
     start_new_session_for(user)
     redirect_to after_authentication_url
@@ -16,7 +18,7 @@ class OmniauthCallbacksController < ApplicationController
   end
 
   def failure
-    redirect_to root_path
+    redirect_to root_path, alert: 'Authentication failed. Please try again.'
   end
 
   private

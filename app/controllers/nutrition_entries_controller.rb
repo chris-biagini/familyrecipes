@@ -35,9 +35,12 @@ class NutritionEntriesController < ApplicationController
   end
 
   def blank_nutrition?(text)
-    stripped = text.lines.map(&:strip).reject(&:empty?).join("\n")
-    skeleton = NutritionLabelParser.blank_skeleton.lines.map(&:strip).reject(&:empty?).join("\n")
-    stripped.empty? || stripped == skeleton
+    stripped = normalize_whitespace(text)
+    stripped.empty? || stripped == normalize_whitespace(NutritionLabelParser.blank_skeleton)
+  end
+
+  def normalize_whitespace(text)
+    text.lines.map(&:strip).reject(&:empty?).join("\n")
   end
 
   def save_aisle_only(aisle)
@@ -104,8 +107,10 @@ class NutritionEntriesController < ApplicationController
 
   def recalculate_affected_recipes
     canonical = ingredient_name.downcase
-    current_kitchen.recipes.includes(steps: :ingredients)
-                   .select { |recipe| recipe.ingredients.any? { |i| i.name.downcase == canonical } }
+    current_kitchen.recipes
+                   .joins(steps: :ingredients)
+                   .where('LOWER(ingredients.name) = ?', canonical)
+                   .distinct
                    .each { |recipe| RecipeNutritionJob.perform_now(recipe) }
   end
 end

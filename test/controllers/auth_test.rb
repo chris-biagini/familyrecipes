@@ -18,34 +18,34 @@ class AuthTest < ActionDispatch::IntegrationTest
     MD
   end
 
-  test 'unauthenticated POST to recipes returns 401' do
+  test 'unauthenticated POST to recipes returns 403' do
     post recipes_path(kitchen_slug: kitchen_slug),
          params: { markdown_source: "# New\n\nCategory: Bread\n\n## Step (do)\n\n- Flour\n\nMix." },
          as: :json
 
-    assert_response :unauthorized
+    assert_response :forbidden
   end
 
-  test 'unauthenticated PATCH to recipes returns 401' do
+  test 'unauthenticated PATCH to recipes returns 403' do
     patch recipe_path('focaccia', kitchen_slug: kitchen_slug),
           params: { markdown_source: "# Focaccia\n\nCategory: Bread\n\n## Step (do)\n\n- Flour\n\nMix." },
           as: :json
 
-    assert_response :unauthorized
+    assert_response :forbidden
   end
 
-  test 'unauthenticated DELETE to recipes returns 401' do
+  test 'unauthenticated DELETE to recipes returns 403' do
     delete recipe_path('focaccia', kitchen_slug: kitchen_slug), as: :json
 
-    assert_response :unauthorized
+    assert_response :forbidden
   end
 
-  test 'unauthenticated PATCH to quick_bites returns 401' do
+  test 'unauthenticated PATCH to quick_bites returns 403' do
     patch groceries_quick_bites_path(kitchen_slug: kitchen_slug),
           params: { content: '## Snacks' },
           as: :json
 
-    assert_response :unauthorized
+    assert_response :forbidden
   end
 
   test 'non-member cannot write to a kitchen' do
@@ -60,7 +60,7 @@ class AuthTest < ActionDispatch::IntegrationTest
          params: { markdown_source: "# New\n\nCategory: Bread\n\n## Step (do)\n\n- Flour\n\nMix." },
          as: :json
 
-    assert_response :unauthorized
+    assert_response :forbidden
   end
 
   test 'recipe page hides edit button for non-members' do

@@ -10,6 +10,10 @@ class Category < ApplicationRecord
 
   scope :ordered, -> { order(:position, :name) }
 
+  def self.cleanup_orphans(kitchen)
+    kitchen.categories.left_joins(:recipes).where(recipes: { id: nil }).destroy_all
+  end
+
   before_validation :generate_slug, if: -> { slug.blank? && name.present? }
 
   private

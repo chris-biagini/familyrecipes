@@ -18,7 +18,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
   test 'state requires membership' do
     get groceries_state_path(kitchen_slug: kitchen_slug), as: :json
 
-    assert_response :unauthorized
+    assert_response :forbidden
   end
 
   test 'select requires membership' do
@@ -26,7 +26,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
           params: { type: 'recipe', slug: 'focaccia', selected: true },
           as: :json
 
-    assert_response :unauthorized
+    assert_response :forbidden
   end
 
   test 'check requires membership' do
@@ -34,7 +34,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
           params: { item: 'flour', checked: true },
           as: :json
 
-    assert_response :unauthorized
+    assert_response :forbidden
   end
 
   test 'custom_items requires membership' do
@@ -42,13 +42,13 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
           params: { item: 'birthday candles', action_type: 'add' },
           as: :json
 
-    assert_response :unauthorized
+    assert_response :forbidden
   end
 
   test 'clear requires membership' do
     delete groceries_clear_path(kitchen_slug: kitchen_slug), as: :json
 
-    assert_response :unauthorized
+    assert_response :forbidden
   end
 
   test 'update_quick_bites requires membership' do
@@ -56,7 +56,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
           params: { content: "## Snacks\n  - Goldfish" },
           as: :json
 
-    assert_response :unauthorized
+    assert_response :forbidden
   end
 
   # --- Show page ---
@@ -386,7 +386,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
           params: { aisle_order: "Produce\nBaking" },
           as: :json
 
-    assert_response :unauthorized
+    assert_response :forbidden
   end
 
   test 'update_aisle_order saves valid order' do

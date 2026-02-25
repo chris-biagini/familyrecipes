@@ -17,9 +17,7 @@ class MarkdownValidator
     errors << 'Category is required in front matter (e.g., "Category: Bread").' unless parsed[:front_matter][:category]
     errors << 'Recipe must have at least one step (## Step Name).' if parsed[:steps].empty?
     errors
-  rescue StandardError => error
-    # RecipeBuilder raises RuntimeError for structural issues (missing title, etc.)
-    # We surface any parse error as a validation message.
+  rescue RuntimeError => error
     [error.message]
   end
 

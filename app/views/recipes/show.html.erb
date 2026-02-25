@@ -40,11 +40,11 @@
     <%= render 'step', step: step %>
   <% end %>
 
+  <%- if @recipe.footer.present? -%>
   <footer>
-    <%- if @recipe.footer.present? -%>
     <%= render_markdown(@recipe.footer) %>
-    <%- end -%>
   </footer>
+  <%- end -%>
 
   <%- if @nutrition && @nutrition['totals']&.values&.any? { |v| v.to_f > 0 } -%>
     <%= render 'nutrition_table', nutrition: @nutrition %>
