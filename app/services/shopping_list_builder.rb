@@ -30,7 +30,10 @@ class ShoppingListBuilder
 
   def selected_recipes
     slugs = @grocery_list.state.fetch('selected_recipes', [])
-    @kitchen.recipes.includes(:category, steps: :ingredients).where(slug: slugs)
+    xref_includes = { cross_references: { target_recipe: { steps: :ingredients } } }
+    @kitchen.recipes
+            .includes(:category, steps: [:ingredients, xref_includes])
+            .where(slug: slugs)
   end
 
   def selected_quick_bites
@@ -45,13 +48,8 @@ class ShoppingListBuilder
   end
 
   def aggregate_recipe_ingredients
-    recipe_map = build_recipe_map
-
     selected_recipes.each_with_object({}) do |recipe, merged|
-      parsed = recipe_map[recipe.slug]
-      next unless parsed
-
-      parsed.all_ingredients_with_quantities(recipe_map).each do |name, amounts|
+      recipe.all_ingredients_with_quantities.each do |name, amounts|
         merged[name] = merged.key?(name) ? IngredientAggregator.merge_amounts(merged[name], amounts) : amounts
       end
     end
@@ -62,17 +60,6 @@ class ShoppingListBuilder
       qb.ingredients_with_quantities.each do |name, amounts|
         merged[name] = merged.key?(name) ? IngredientAggregator.merge_amounts(merged[name], amounts) : amounts
       end
-    end
-  end
-
-  def build_recipe_map
-    @kitchen.recipes.includes(:category, steps: :ingredients).to_h do |r|
-      parsed = FamilyRecipes::Recipe.new(
-        markdown_source: r.markdown_source,
-        id: r.slug,
-        category: r.category.name
-      )
-      [r.slug, parsed]
     end
   end
 

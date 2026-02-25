@@ -206,4 +206,47 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
     assert_includes all_names, 'Hummus'
     assert_includes all_names, 'Pretzels'
   end
+
+  test 'includes cross-referenced recipe ingredients in shopping list' do
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Poolish
+
+      Category: Bread
+
+      ## Mix (combine)
+
+      - Flour, 1 cup
+      - Water, 1 cup
+
+      Mix.
+    MD
+
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Pizza
+
+      Category: Bread
+
+      ## Dough (assemble)
+
+      - Salt, 1 tsp
+      - @[Poolish]
+
+      Make dough.
+    MD
+
+    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Water') do |p|
+      p.basis_grams = 240
+      p.aisle = 'Miscellaneous'
+    end
+
+    list = GroceryList.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'recipe', slug: 'pizza', selected: true)
+
+    result = ShoppingListBuilder.new(kitchen: @kitchen, grocery_list: list).build
+    all_names = result.values.flatten.map { |i| i[:name] }
+
+    assert_includes all_names, 'Salt'
+    assert_includes all_names, 'Flour'
+    assert_includes all_names, 'Water'
+  end
 end
