@@ -6,6 +6,7 @@ class GroceryList < ApplicationRecord
   validates :kitchen_id, uniqueness: true
 
   STATE_KEYS = %w[selected_recipes selected_quick_bites custom_items checked_off].freeze
+  MAX_RETRY_ATTEMPTS = 3
 
   def self.for_kitchen(kitchen)
     find_or_create_by!(kitchen: kitchen)
@@ -23,8 +24,21 @@ class GroceryList < ApplicationRecord
 
   def clear!
     self.state = {}
-    increment(:version)
     save!
+  end
+
+  def with_optimistic_retry(max_attempts: MAX_RETRY_ATTEMPTS)
+    attempts = 0
+
+    begin
+      attempts += 1
+      yield
+    rescue ActiveRecord::StaleObjectError
+      raise if attempts >= max_attempts
+
+      reload
+      retry
+    end
   end
 
   private
@@ -52,16 +66,11 @@ class GroceryList < ApplicationRecord
 
     if add && !already_present
       list << value
-      bump_and_save!
+      save!
     elsif !add && already_present
       list.delete(value)
-      bump_and_save!
+      save!
     end
-  end
-
-  def bump_and_save!
-    increment(:version)
-    save!
   end
 
   # Controller params arrive as strings; handle both "true"/true

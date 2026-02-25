@@ -25,7 +25,7 @@ class GroceryListTest < ActiveSupport::TestCase
   test 'defaults to version 0 and empty state' do
     list = GroceryList.create!(kitchen: @kitchen)
 
-    assert_equal 0, list.version
+    assert_equal 0, list.lock_version
     assert_empty list.state
   end
 
@@ -115,39 +115,61 @@ class GroceryListTest < ActiveSupport::TestCase
   test 'clear resets state and bumps version' do
     list = GroceryList.for_kitchen(@kitchen)
     list.apply_action('select', type: 'recipe', slug: 'pizza-dough', selected: true)
-    old_version = list.version
+    old_version = list.lock_version
 
     list.clear!
 
     assert_empty list.state
-    assert_operator list.version, :>, old_version
+    assert_operator list.lock_version, :>, old_version
   end
 
   test 'apply_action bumps version' do
     list = GroceryList.for_kitchen(@kitchen)
-    old_version = list.version
+    old_version = list.lock_version
 
     list.apply_action('check', item: 'milk', checked: true)
 
-    assert_operator list.version, :>, old_version
+    assert_operator list.lock_version, :>, old_version
   end
 
   test 'operations are idempotent' do
     list = GroceryList.for_kitchen(@kitchen)
     list.apply_action('check', item: 'milk', checked: true)
-    version_after_first = list.version
+    version_after_first = list.lock_version
 
     list.apply_action('check', item: 'milk', checked: true)
 
-    assert_equal version_after_first, list.version
+    assert_equal version_after_first, list.lock_version
   end
 
   test 'ignores unknown action types' do
     list = GroceryList.for_kitchen(@kitchen)
-    old_version = list.version
+    old_version = list.lock_version
 
     list.apply_action('bogus', foo: 'bar')
 
-    assert_equal old_version, list.version
+    assert_equal old_version, list.lock_version
+  end
+
+  test 'with_optimistic_retry retries on StaleObjectError' do
+    list = GroceryList.for_kitchen(@kitchen)
+    attempts = 0
+
+    list.with_optimistic_retry do
+      attempts += 1
+      raise ActiveRecord::StaleObjectError, list if attempts == 1
+    end
+
+    assert_equal 2, attempts
+  end
+
+  test 'with_optimistic_retry raises after max attempts' do
+    list = GroceryList.for_kitchen(@kitchen)
+
+    assert_raises(ActiveRecord::StaleObjectError) do
+      list.with_optimistic_retry(max_attempts: 2) do
+        raise ActiveRecord::StaleObjectError, list
+      end
+    end
   end
 end
