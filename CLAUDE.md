@@ -255,7 +255,13 @@ a dedicated database and Puma plugin. Job classes:
 rake lint
 ```
 
-Runs RuboCop on all Ruby files. Configuration is in `.rubocop.yml`. The default `rake` task runs both lint and test.
+Runs RuboCop on all Ruby files. Configuration is in `.rubocop.yml`. Plugins: `rubocop-rails`, `rubocop-performance`, `rubocop-minitest`. The default `rake` task runs both lint and test. Always use `bundle exec rubocop` (not bare `rubocop`) — the plugins are Bundler-managed and won't load without it.
+
+`rake lint:html_safe` is a separate audit that checks `.html_safe` and `raw()` calls against `config/html_safe_allowlist.yml`. The allowlist uses `file:line_number` keys — update it whenever edits shift line numbers in files containing `.html_safe` calls.
+
+### RuboCop metric thresholds
+
+Metric thresholds in `.rubocop.yml` are **aspirational** — tighter than what all code currently meets. Methods/classes that exceed them have inline `# rubocop:disable` comments. When writing new code, respect the thresholds. When modifying existing code with a disable, try to refactor below the threshold and remove the disable. The 6 worst offenders are documented in `docs/plans/2026-02-25-rubocop-configuration-design.md`.
 
 ## Test Command
 
@@ -270,7 +276,7 @@ ruby -Itest test/controllers/recipes_controller_test.rb              # single fi
 ruby -Itest test/models/recipe_test.rb -n test_requires_title        # single test method
 ```
 
-Test layout: `test/controllers/`, `test/models/`, `test/services/`, `test/jobs/`, `test/integration/`, `test/channels/`, `test/lib/`, plus top-level parser unit tests. `test/test_helper.rb` provides `create_kitchen_and_user` (sets `@kitchen`, `@user`, and tenant), `log_in` (logs in `@user` via dev login), and `kitchen_slug` for controller tests.
+Test layout: `test/controllers/`, `test/models/`, `test/services/`, `test/jobs/`, `test/integration/`, `test/channels/`, `test/lib/`, plus top-level parser unit tests. `test/test_helper.rb` provides `create_kitchen_and_user` (sets `@kitchen`, `@user`, and tenant), `log_in` (logs in `@user` via dev login), and `kitchen_slug` for controller tests. **Two test hierarchies:** controller/model/integration tests inherit `ActiveSupport::TestCase`; top-level parser unit tests (`test/recipe_test.rb`, `test/nutrition_calculator_test.rb`, etc.) inherit `Minitest::Test` directly and do NOT have ActiveSupport extensions like `assert_not_*`.
 
 ## Dev Server
 
