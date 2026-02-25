@@ -51,8 +51,8 @@ class StepModelTest < ActiveSupport::TestCase
     step = Step.create!(recipe: @recipe, title: 'Mix', position: 1)
     target_a = Recipe.create!(title: 'Alpha', category: @category, markdown_source: BASIC_MD)
     target_b = Recipe.create!(title: 'Beta', category: @category, markdown_source: BASIC_MD)
-    step.cross_references.create!(target_recipe: target_b, position: 2)
-    step.cross_references.create!(target_recipe: target_a, position: 1)
+    step.cross_references.create!(target_recipe: target_b, target_slug: 'beta', target_title: 'Beta', position: 2)
+    step.cross_references.create!(target_recipe: target_a, target_slug: 'alpha', target_title: 'Alpha', position: 1)
 
     assert_equal [target_a.id, target_b.id], step.cross_references.pluck(:target_recipe_id)
   end
@@ -69,7 +69,7 @@ class StepModelTest < ActiveSupport::TestCase
   test 'destroying step destroys associated cross_references' do
     step = Step.create!(recipe: @recipe, title: 'Mix', position: 1)
     target = Recipe.create!(title: 'Poolish', category: @category, markdown_source: BASIC_MD)
-    step.cross_references.create!(target_recipe: target, position: 1)
+    step.cross_references.create!(target_recipe: target, target_slug: 'poolish', target_title: 'Poolish', position: 1)
 
     assert_difference 'CrossReference.count', -1 do
       step.destroy

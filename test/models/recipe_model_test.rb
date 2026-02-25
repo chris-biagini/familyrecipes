@@ -112,7 +112,8 @@ class RecipeModelTest < ActiveSupport::TestCase
     target = Recipe.create!(title: 'Poolish', category: @category, markdown_source: BASIC_MD)
     referrer = Recipe.create!(title: 'Focaccia', slug: 'focaccia', category: @category, markdown_source: BASIC_MD)
     step = referrer.steps.create!(title: 'Mix', position: 1)
-    CrossReference.create!(step: step, target_recipe: target, position: 1)
+    CrossReference.create!(step: step, target_recipe: target, target_slug: 'poolish', target_title: 'Poolish',
+                           position: 1)
 
     assert_includes target.referencing_recipes, referrer
   end
@@ -128,8 +129,10 @@ class RecipeModelTest < ActiveSupport::TestCase
     referrer = Recipe.create!(title: 'Focaccia', slug: 'focaccia', category: @category, markdown_source: BASIC_MD)
     step1 = referrer.steps.create!(title: 'Mix', position: 1)
     step2 = referrer.steps.create!(title: 'Shape', position: 2)
-    CrossReference.create!(step: step1, target_recipe: target, position: 1)
-    CrossReference.create!(step: step2, target_recipe: target, position: 1)
+    CrossReference.create!(step: step1, target_recipe: target, target_slug: 'poolish', target_title: 'Poolish',
+                           position: 1)
+    CrossReference.create!(step: step2, target_recipe: target, target_slug: 'poolish', target_title: 'Poolish',
+                           position: 1)
 
     assert_equal 1, target.referencing_recipes.size
     assert_includes target.referencing_recipes, referrer
