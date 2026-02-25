@@ -3,12 +3,13 @@
 require 'test_helper'
 
 class LandingControllerTest < ActionDispatch::IntegrationTest
-  test 'redirects to sole kitchen when exactly one exists' do
-    kitchen = Kitchen.create!(name: 'Test Kitchen', slug: 'test-kitchen')
+  test 'renders homepage for sole kitchen without redirect' do
+    Kitchen.create!(name: 'Test Kitchen', slug: 'test-kitchen')
 
     get root_path
 
-    assert_redirected_to kitchen_root_path(kitchen_slug: kitchen.slug)
+    assert_response :success
+    assert_select 'h1', 'Our Recipes'
   end
 
   test 'renders landing page when no kitchens exist' do

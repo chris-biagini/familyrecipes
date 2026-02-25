@@ -60,7 +60,7 @@ class RecipesController < ApplicationController
     Category.cleanup_orphans(current_kitchen)
 
     GroceryListChannel.broadcast_content_changed(current_kitchen)
-    response_json = { redirect_url: kitchen_root_path }
+    response_json = { redirect_url: home_path }
     response_json[:updated_references] = updated_references if updated_references.any?
     render json: response_json
   end

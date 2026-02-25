@@ -28,7 +28,7 @@
     <p><%= @recipe.description %></p>
     <%- end -%>
     <p class="recipe-meta">
-      <%= link_to @recipe.category.name, kitchen_root_path(anchor: @recipe.category.slug) %><%- if @recipe.makes -%>
+      <%= link_to @recipe.category.name, home_path(anchor: @recipe.category.slug) %><%- if @recipe.makes -%>
       <%- if @nutrition&.dig('makes_unit_singular') -%>
       &middot; Makes <%= format_yield_with_unit(@recipe.makes, @nutrition['makes_unit_singular'], @nutrition['makes_unit_plural']) %><%- else -%>
       &middot; Makes <%= format_yield_line(@recipe.makes) %><%- end -%><%- end -%><%- if @recipe.serves -%>

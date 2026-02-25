@@ -15,19 +15,36 @@ class ApplicationController < ActionController::Base
   before_action :auto_join_sole_kitchen
   before_action :set_kitchen_from_path
 
-  helper_method :current_kitchen, :logged_in?
+  helper_method :current_kitchen, :logged_in?, :home_path
 
   private
 
   def set_kitchen_from_path
-    return unless params[:kitchen_slug]
+    if params[:kitchen_slug]
+      set_current_tenant(Kitchen.find_by!(slug: params[:kitchen_slug]))
+      return
+    end
 
-    set_current_tenant(Kitchen.find_by!(slug: params[:kitchen_slug]))
+    kitchen = resolve_sole_kitchen
+    if kitchen
+      set_current_tenant(kitchen)
+    else
+      redirect_to root_path
+    end
+  end
+
+  def resolve_sole_kitchen
+    kitchens = ActsAsTenant.without_tenant { Kitchen.limit(2).to_a }
+    kitchens.first if kitchens.size == 1
   end
 
   def current_kitchen = ActsAsTenant.current_tenant
 
   def logged_in? = authenticated?
+
+  def home_path(**)
+    params[:kitchen_slug] ? kitchen_root_path(**) : root_path(**)
+  end
 
   def authenticate_from_headers
     return if authenticated?
@@ -77,7 +94,9 @@ class ApplicationController < ActionController::Base
   end
 
   def default_url_options
-    { kitchen_slug: current_kitchen&.slug }.compact
+    return { kitchen_slug: params[:kitchen_slug] } if params[:kitchen_slug]
+
+    {}
   end
 
   def record_not_found

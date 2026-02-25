@@ -5,8 +5,9 @@ Rails.application.routes.draw do
 
   root 'landing#show'
 
-  scope 'kitchens/:kitchen_slug' do
-    get '/', to: 'homepage#show', as: :kitchen_root
+  get 'kitchens/:kitchen_slug', to: 'homepage#show', as: :kitchen_root
+
+  scope '(/kitchens/:kitchen_slug)' do
     resources :recipes, only: %i[show create update destroy], param: :slug
     get 'ingredients', to: 'ingredients#index', as: :ingredients
     get 'groceries', to: 'groceries#show', as: :groceries
