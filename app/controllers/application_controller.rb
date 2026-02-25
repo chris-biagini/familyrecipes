@@ -8,6 +8,7 @@ class ApplicationController < ActionController::Base
 
   set_current_tenant_through_filter
   before_action :resume_session
+  before_action :authenticate_from_headers
   before_action :set_kitchen_from_path
 
   helper_method :current_kitchen, :logged_in?
@@ -23,6 +24,22 @@ class ApplicationController < ActionController::Base
   def current_kitchen = ActsAsTenant.current_tenant
 
   def logged_in? = authenticated?
+
+  def authenticate_from_headers
+    return if authenticated?
+
+    remote_user = request.headers['Remote-User']
+    return unless remote_user
+
+    email = request.headers['Remote-Email'] || "#{remote_user}@header.local"
+    name = request.headers['Remote-Name'] || remote_user
+
+    user = User.find_or_create_by!(email: email) do |u|
+      u.name = name
+    end
+
+    start_new_session_for(user)
+  end
 
   def require_membership
     unless logged_in?
