@@ -461,6 +461,65 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     assert_includes lines, 'Baking'
   end
 
+  # --- Length limits ---
+
+  test 'custom_items rejects item over 100 characters' do
+    log_in
+    patch groceries_custom_items_path(kitchen_slug: kitchen_slug),
+          params: { item: 'a' * 101, action_type: 'add' },
+          as: :json
+
+    assert_response :unprocessable_entity
+    assert_includes response.parsed_body['errors'].first, 'too long'
+  end
+
+  test 'custom_items accepts item at exactly 100 characters' do
+    log_in
+    patch groceries_custom_items_path(kitchen_slug: kitchen_slug),
+          params: { item: 'a' * 100, action_type: 'add' },
+          as: :json
+
+    assert_response :success
+  end
+
+  test 'update_aisle_order rejects aisle name over 50 characters' do
+    log_in
+    patch groceries_aisle_order_path(kitchen_slug: kitchen_slug),
+          params: { aisle_order: 'a' * 51 },
+          as: :json
+
+    assert_response :unprocessable_entity
+    assert_includes response.parsed_body['errors'].first, 'too long'
+  end
+
+  test 'update_aisle_order accepts aisle name at exactly 50 characters' do
+    log_in
+    patch groceries_aisle_order_path(kitchen_slug: kitchen_slug),
+          params: { aisle_order: 'a' * 50 },
+          as: :json
+
+    assert_response :success
+  end
+
+  test 'update_aisle_order rejects more than 50 aisles' do
+    log_in
+    patch groceries_aisle_order_path(kitchen_slug: kitchen_slug),
+          params: { aisle_order: (1..51).map { |i| "Aisle #{i}" }.join("\n") },
+          as: :json
+
+    assert_response :unprocessable_entity
+    assert_includes response.parsed_body['errors'].first, 'Too many aisles'
+  end
+
+  test 'update_aisle_order accepts exactly 50 aisles' do
+    log_in
+    patch groceries_aisle_order_path(kitchen_slug: kitchen_slug),
+          params: { aisle_order: (1..50).map { |i| "Aisle #{i}" }.join("\n") },
+          as: :json
+
+    assert_response :success
+  end
+
   # --- Optimistic locking / 409 Conflict ---
 
   test 'select returns 409 when retry exhausted' do

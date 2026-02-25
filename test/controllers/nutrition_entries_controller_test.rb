@@ -207,6 +207,25 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  # --- aisle length limit ---
+
+  test 'upsert rejects aisle name over 50 characters' do
+    post nutrition_entry_upsert_path('flour', kitchen_slug: kitchen_slug),
+         params: { label_text: '', aisle: 'a' * 51 },
+         as: :json
+
+    assert_response :unprocessable_entity
+    assert_includes response.parsed_body['errors'].first, 'too long'
+  end
+
+  test 'upsert accepts aisle name at exactly 50 characters' do
+    post nutrition_entry_upsert_path('flour', kitchen_slug: kitchen_slug),
+         params: { label_text: '', aisle: 'a' * 50 },
+         as: :json
+
+    assert_response :success
+  end
+
   # --- destroy ---
 
   test 'destroy deletes kitchen override' do

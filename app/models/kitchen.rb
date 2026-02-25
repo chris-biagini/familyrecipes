@@ -9,6 +9,9 @@ class Kitchen < ApplicationRecord
   has_many :ingredient_catalog, dependent: :destroy, class_name: 'IngredientCatalog'
   has_one :grocery_list, dependent: :destroy
 
+  MAX_AISLE_NAME_LENGTH = 50
+  MAX_AISLES = 50
+
   validates :name, presence: true
   validates :slug, presence: true, uniqueness: true
 

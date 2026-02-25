@@ -5,6 +5,11 @@ class NutritionEntriesController < ApplicationController
 
   def upsert
     aisle = params[:aisle]&.strip.presence
+    if aisle && aisle.size > Kitchen::MAX_AISLE_NAME_LENGTH
+      return render json: { errors: ["Aisle name is too long (max #{Kitchen::MAX_AISLE_NAME_LENGTH} characters)"] },
+                    status: :unprocessable_content
+    end
+
     label_text = params[:label_text].to_s
 
     if blank_nutrition?(label_text)

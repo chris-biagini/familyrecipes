@@ -7,6 +7,7 @@ class GroceryList < ApplicationRecord
 
   STATE_KEYS = %w[selected_recipes selected_quick_bites custom_items checked_off].freeze
   MAX_RETRY_ATTEMPTS = 3
+  MAX_CUSTOM_ITEM_LENGTH = 100
 
   def self.for_kitchen(kitchen)
     find_or_create_by!(kitchen: kitchen)

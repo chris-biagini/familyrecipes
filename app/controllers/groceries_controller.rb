@@ -36,9 +36,14 @@ class GroceriesController < ApplicationController
   end
 
   def update_custom_items
-    apply_and_respond('custom_items',
-                      item: params[:item],
-                      action: params[:action_type])
+    item = params[:item].to_s
+    max = GroceryList::MAX_CUSTOM_ITEM_LENGTH
+    if item.size > max
+      return render json: { errors: ["Custom item name is too long (max #{max} characters)"] },
+                    status: :unprocessable_content
+    end
+
+    apply_and_respond('custom_items', item: item, action: params[:action_type])
   end
 
   def clear
@@ -61,6 +66,10 @@ class GroceriesController < ApplicationController
   def update_aisle_order
     current_kitchen.aisle_order = params[:aisle_order].to_s
     current_kitchen.normalize_aisle_order!
+
+    errors = validate_aisle_order
+    return render json: { errors: }, status: :unprocessable_content if errors.any?
+
     current_kitchen.save!
 
     list = GroceryList.for_kitchen(current_kitchen)
@@ -87,6 +96,19 @@ class GroceriesController < ApplicationController
   def handle_stale_record
     render json: { error: 'Grocery list was modified by another request. Please refresh.' },
            status: :conflict
+  end
+
+  def validate_aisle_order
+    lines = current_kitchen.parsed_aisle_order
+    errors = []
+    errors << "Too many aisles (max #{Kitchen::MAX_AISLES})" if lines.size > Kitchen::MAX_AISLES
+
+    lines.each do |line|
+      next unless line.size > Kitchen::MAX_AISLE_NAME_LENGTH
+
+      errors << "Aisle name '#{line.truncate(20)}' is too long (max #{Kitchen::MAX_AISLE_NAME_LENGTH} characters)"
+    end
+    errors
   end
 
   def build_aisle_order_text
