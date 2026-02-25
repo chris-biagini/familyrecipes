@@ -81,16 +81,7 @@ class GroceriesController < ApplicationController
   end
 
   def build_aisle_order_text
-    saved = current_kitchen.parsed_aisle_order
-    catalog_aisles = IngredientCatalog.lookup_for(current_kitchen)
-                                      .values
-                                      .filter_map(&:aisle)
-                                      .uniq
-                                      .reject { |a| a == 'omit' }
-                                      .sort
-
-    new_aisles = catalog_aisles - saved
-    (saved + new_aisles).join("\n")
+    current_kitchen.all_aisles.join("\n")
   end
 
   def load_quick_bites_by_subsection
