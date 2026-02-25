@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-This is a fully dynamic Rails 8 app backed by SQLite with multi-tenant "Kitchen" support. Two-database architecture: primary (app data), cable (Solid Cable pub/sub). Trusted-header authentication: in production, Authelia/Caddy sets `Remote-User`/`Remote-Email` headers; the app reads them to find-or-create users and establish sessions. In dev/test, `DevSessionsController` provides direct login. No OmniAuth, no passwords.
+This is a fully dynamic Rails 8 app backed by SQLite with multi-tenant "Kitchen" support. Two-database architecture: primary (app data), cable (Solid Cable pub/sub). Trusted-header authentication: in production, Authelia/Caddy sets `Remote-User`/`Remote-Email`/`Remote-Name` headers; the app reads them to find-or-create users and establish sessions. In dev/test, `DevSessionsController` provides direct login. No OmniAuth, no passwords.
 Eventually, the goal is to ship this app as a Docker image for homelab install, while also maintaining a for-pay hosted copy (e.g., at fly.io).
 
 ## Design Philosophy
@@ -224,11 +224,7 @@ Adding gems or creating new files in `app/controllers/concerns/` requires restar
 If I mention a GitHub issue (e.g., "#99"), review it and plan a fix. Close it via the commit message once confirmed.
 
 ### Commit timestamp privacy
-This repo uses a post-commit hook (`.githooks/post-commit`) that rewrites commit timestamps for privacy. After cloning, activate it:
-```bash
-git config core.hooksPath .githooks
-```
-The hook replaces time-of-day with synthetic UTC timestamps while preserving the calendar date and chronological commit order. See `docs/plans/2026-02-23-commit-privacy-design.md` for details.
+A post-commit hook (`.git/hooks/post-commit`) rewrites commit timestamps for privacy. The hook replaces time-of-day with synthetic UTC timestamps while preserving the calendar date and chronological commit order. Since `.git/hooks/` is not tracked by git, the hook must be installed manually on fresh clones. See `docs/plans/2026-02-23-commit-privacy-design.md` for details.
 
 ## Database Setup
 
@@ -288,7 +284,7 @@ Starts Puma on port 3030, bound to `0.0.0.0` (LAN-accessible via `config/boot.rb
 
 ## Deployment
 
-Docker image built by GitHub Actions on push to `main`, pushed to `ghcr.io/chris-biagini/familyrecipes`. Tagged with `latest` and the git SHA.
+Docker image built by GitHub Actions on push to `main`, pushed to `ghcr.io/chris-biagini/familyrecipes`. Tagged with `latest` and the git SHA. Two-stage CI: `test.yml` runs lint + tests on every push/PR to `main`; `docker.yml` only builds the image after tests pass.
 
 **On the server:**
 ```bash
@@ -303,6 +299,8 @@ docker build -t familyrecipes:test .
 ```
 
 See `docker-compose.example.yml` for a reference deployment configuration. No external database needed — SQLite files are stored in a Docker volume mounted at `/app/storage`.
+
+Set `ALLOWED_HOSTS` (comma-separated domains) to enable DNS rebinding protection in production. Omit to allow all hosts. See `.env.example` for all environment variables.
 
 ## Routes
 
