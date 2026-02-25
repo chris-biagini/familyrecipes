@@ -4,7 +4,6 @@ class User < ApplicationRecord
   has_many :memberships, dependent: :destroy
   has_many :kitchens, through: :memberships
   has_many :sessions, dependent: :destroy
-  has_many :connected_services, dependent: :destroy
 
   normalizes :email, with: ->(email) { email.strip.downcase }
 

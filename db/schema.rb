@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 5) do
+ActiveRecord::Schema[8.1].define(version: 6) do
   create_table "categories", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "kitchen_id", null: false
@@ -21,16 +21,6 @@ ActiveRecord::Schema[8.1].define(version: 5) do
     t.index ["kitchen_id", "slug"], name: "index_categories_on_kitchen_id_and_slug", unique: true
     t.index ["kitchen_id"], name: "index_categories_on_kitchen_id"
     t.index ["position"], name: "index_categories_on_position"
-  end
-
-  create_table "connected_services", force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.string "provider", null: false
-    t.string "uid", null: false
-    t.datetime "updated_at", null: false
-    t.integer "user_id", null: false
-    t.index ["provider", "uid"], name: "index_connected_services_on_provider_and_uid", unique: true
-    t.index ["user_id"], name: "index_connected_services_on_user_id"
   end
 
   create_table "cross_references", force: :cascade do |t|
@@ -169,7 +159,6 @@ ActiveRecord::Schema[8.1].define(version: 5) do
   end
 
   add_foreign_key "categories", "kitchens"
-  add_foreign_key "connected_services", "users"
   add_foreign_key "cross_references", "kitchens"
   add_foreign_key "cross_references", "recipes", column: "target_recipe_id"
   add_foreign_key "cross_references", "steps"

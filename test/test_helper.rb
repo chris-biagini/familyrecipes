@@ -10,8 +10,6 @@ require 'action_cable/test_helper'
 require 'action_cable/channel/test_case'
 require 'minitest/autorun'
 
-OmniAuth.config.test_mode = true
-
 module ActionDispatch
   class IntegrationTest
     private

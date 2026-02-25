@@ -12,8 +12,6 @@ gem 'redcarpet'
 gem 'sqlite3'
 
 gem 'acts_as_tenant'
-gem 'omniauth'
-gem 'omniauth-rails_csrf_protection'
 gem 'solid_cable'
 
 group :development do
