@@ -3,6 +3,8 @@
 require 'test_helper'
 
 class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
+  include ActionCable::TestHelper
+
   VALID_LABEL = <<~LABEL
     Serving size: 1/4 cup (30g)
 
@@ -130,6 +132,79 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
          as: :json
 
     assert_response :unauthorized
+  end
+
+  # --- upsert with aisle ---
+
+  test 'upsert saves aisle alongside nutrition data' do
+    post nutrition_entry_upsert_path('flour', kitchen_slug: kitchen_slug),
+         params: { label_text: VALID_LABEL, aisle: 'Baking' },
+         as: :json
+
+    assert_response :success
+    entry = IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'flour')
+
+    assert_equal 'Baking', entry.aisle
+    assert_in_delta 110.0, entry.calories
+  end
+
+  test 'upsert saves aisle-only when label is blank skeleton' do
+    post nutrition_entry_upsert_path('flour', kitchen_slug: kitchen_slug),
+         params: { label_text: NutritionLabelParser.blank_skeleton, aisle: 'Baking' },
+         as: :json
+
+    assert_response :success
+    entry = IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'flour')
+
+    assert_equal 'Baking', entry.aisle
+    assert_nil entry.basis_grams
+  end
+
+  test 'upsert saves aisle-only when label is empty' do
+    post nutrition_entry_upsert_path('flour', kitchen_slug: kitchen_slug),
+         params: { label_text: '', aisle: 'Produce' },
+         as: :json
+
+    assert_response :success
+    entry = IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'flour')
+
+    assert_equal 'Produce', entry.aisle
+  end
+
+  test 'upsert appends new aisle to kitchen aisle_order' do
+    post nutrition_entry_upsert_path('flour', kitchen_slug: kitchen_slug),
+         params: { label_text: '', aisle: 'Deli' },
+         as: :json
+
+    assert_response :success
+    assert_includes @kitchen.reload.parsed_aisle_order, 'Deli'
+  end
+
+  test 'upsert does not duplicate existing aisle in aisle_order' do
+    @kitchen.update!(aisle_order: "Produce\nBaking")
+
+    post nutrition_entry_upsert_path('flour', kitchen_slug: kitchen_slug),
+         params: { label_text: '', aisle: 'Baking' },
+         as: :json
+
+    assert_response :success
+    assert_equal "Produce\nBaking", @kitchen.reload.aisle_order
+  end
+
+  test 'upsert returns error when both label invalid and no aisle' do
+    post nutrition_entry_upsert_path('flour', kitchen_slug: kitchen_slug),
+         params: { label_text: 'garbage', aisle: '' },
+         as: :json
+
+    assert_response :unprocessable_entity
+  end
+
+  test 'upsert broadcasts content changed when aisle is saved' do
+    assert_broadcast_on(GroceryListChannel.broadcasting_for(@kitchen), type: 'content_changed') do
+      post nutrition_entry_upsert_path('flour', kitchen_slug: kitchen_slug),
+           params: { label_text: '', aisle: 'Deli' },
+           as: :json
+    end
   end
 
   # --- destroy ---

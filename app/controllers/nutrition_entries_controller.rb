@@ -4,17 +4,18 @@ class NutritionEntriesController < ApplicationController
   before_action :require_membership
 
   def upsert
-    result = NutritionLabelParser.parse(params[:label_text])
-    return render json: { errors: result.errors }, status: :unprocessable_entity unless result.success?
+    aisle = params[:aisle].presence
+    label_text = params[:label_text].to_s
 
-    entry = IngredientCatalog.find_or_initialize_by(kitchen: current_kitchen, ingredient_name:)
-    assign_parsed_attributes(entry, result)
+    if blank_nutrition?(label_text)
+      return render json: { errors: ['Nothing to save'] }, status: :unprocessable_entity unless aisle
 
-    if entry.save
-      recalculate_affected_recipes
-      render json: { status: 'ok' }
+      save_aisle_only(aisle)
     else
-      render json: { errors: entry.errors.full_messages }, status: :unprocessable_entity
+      result = NutritionLabelParser.parse(label_text)
+      return render json: { errors: result.errors }, status: :unprocessable_entity unless result.success?
+
+      save_full_entry(result, aisle)
     end
   end
 
@@ -31,6 +32,52 @@ class NutritionEntriesController < ApplicationController
 
   def ingredient_name
     params[:ingredient_name].tr('-', ' ')
+  end
+
+  def blank_nutrition?(text)
+    stripped = text.lines.map(&:strip).reject(&:empty?).join("\n")
+    skeleton = NutritionLabelParser.blank_skeleton.lines.map(&:strip).reject(&:empty?).join("\n")
+    stripped.empty? || stripped == skeleton
+  end
+
+  def save_aisle_only(aisle)
+    entry = IngredientCatalog.find_or_initialize_by(kitchen: current_kitchen, ingredient_name:)
+    entry.aisle = aisle
+
+    if entry.save
+      sync_aisle_to_kitchen(aisle)
+      broadcast_aisle_change
+      render json: { status: 'ok' }
+    else
+      render json: { errors: entry.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
+  def save_full_entry(result, aisle)
+    entry = IngredientCatalog.find_or_initialize_by(kitchen: current_kitchen, ingredient_name:)
+    assign_parsed_attributes(entry, result)
+    entry.aisle = aisle if aisle
+
+    if entry.save
+      sync_aisle_to_kitchen(aisle) if aisle
+      broadcast_aisle_change if aisle
+      recalculate_affected_recipes
+      render json: { status: 'ok' }
+    else
+      render json: { errors: entry.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
+  def sync_aisle_to_kitchen(aisle)
+    return if aisle == 'omit'
+    return if current_kitchen.parsed_aisle_order.include?(aisle)
+
+    existing = current_kitchen.aisle_order.to_s
+    current_kitchen.update!(aisle_order: [existing, aisle].reject(&:empty?).join("\n"))
+  end
+
+  def broadcast_aisle_change
+    GroceryListChannel.broadcast_content_changed(current_kitchen)
   end
 
   def assign_parsed_attributes(entry, result)
