@@ -1,14 +1,5 @@
 # frozen_string_literal: true
 
-# ScalableNumberPreprocessor
-#
-# Wraps numbers in <span class="scalable"> tags so they can be scaled
-# by the client-side recipe scaler.
-#
-# Two entry points:
-# - process_instructions(text): replaces NUMBER* patterns (asterisk consumed)
-# - process_yield_line(text): wraps the first number found (no asterisk needed)
-
 module ScalableNumberPreprocessor
   WORD_VALUES = {
     'zero' => 0, 'one' => 1, 'two' => 2, 'three' => 3, 'four' => 4,
@@ -18,7 +9,6 @@ module ScalableNumberPreprocessor
 
   WORD_PATTERN = WORD_VALUES.keys.join('|')
 
-  # Match word* or numeral* (fraction or decimal or integer, followed by *)
   INSTRUCTION_PATTERN = %r{
     (?:
       (#{WORD_PATTERN})\*                  # word number with asterisk
@@ -27,7 +17,6 @@ module ScalableNumberPreprocessor
     )
   }ix
 
-  # Match the first number (word or numeral) in a yield line
   YIELD_NUMBER_PATTERN = %r{
     (?:
       \b(#{WORD_PATTERN})\b     # word number

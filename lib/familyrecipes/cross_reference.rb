@@ -1,10 +1,5 @@
 # frozen_string_literal: true
 
-# CrossReference class
-#
-# Represents a reference from one recipe to another (e.g., "- @[Pizza Dough]").
-# Behaves alongside Ingredient in step ingredient lists but renders as a link.
-
 module FamilyRecipes
   class CrossReference
     attr_reader :target_title, :target_slug, :multiplier, :prep_note
@@ -16,8 +11,6 @@ module FamilyRecipes
       @prep_note = prep_note
     end
 
-    # Return the scaled ingredients from the target recipe.
-    # recipe_map: slug -> Recipe
     def expanded_ingredients(recipe_map)
       recipe = recipe_map[@target_slug]
       return [] unless recipe

@@ -1,10 +1,5 @@
 # frozen_string_literal: true
 
-# RecipeBuilder class
-#
-# Consumes LineTokens from LineClassifier and produces a structured
-# document hash, which can then be converted to domain objects.
-
 class RecipeBuilder
   attr_reader :errors
 
@@ -14,8 +9,6 @@ class RecipeBuilder
     @errors = []
   end
 
-  # Build a document hash from the tokens
-  # Returns: { title:, description:, front_matter:, steps:, footer: }
   def build
     {
       title: parse_title,
@@ -28,29 +21,24 @@ class RecipeBuilder
 
   private
 
-  # Get current token without advancing
   def peek
     @tokens[@position]
   end
 
-  # Get current token and advance position
   def advance
     token = @tokens[@position]
     @position += 1
     token
   end
 
-  # Check if we've reached the end
   def at_end?
-    @position >= @tokens.length
+    @position >= @tokens.size
   end
 
-  # Skip blank lines
   def skip_blanks
     advance while peek&.type == :blank
   end
 
-  # Parse the title (first non-blank line must be a title)
   def parse_title
     skip_blanks
 
@@ -60,11 +48,9 @@ class RecipeBuilder
       raise "Invalid recipe format at line #{line_num}: The first line must be a level-one header (# Toasted Bread)."
     end
 
-    # Title content is an array: [captured_text]
     token.content[0]
   end
 
-  # Parse optional description (prose between title and first step)
   def parse_description
     skip_blanks
 
@@ -75,7 +61,6 @@ class RecipeBuilder
     advance.content if peek.type == :prose
   end
 
-  # Parse optional front matter fields (Category, Makes, Serves)
   def parse_front_matter
     fields = {}
     skip_blanks
@@ -89,17 +74,15 @@ class RecipeBuilder
     fields
   end
 
-  # Parse all steps until divider or end
   def parse_steps
     steps = []
 
     skip_blanks
 
-    while !at_end? && peek.type != :divider
+    until at_end? || peek.type == :divider
       if peek.type == :step_header
         steps << parse_step
       else
-        # Skip unexpected tokens (shouldn't happen with well-formed input)
         advance
       end
       skip_blanks
@@ -108,28 +91,24 @@ class RecipeBuilder
     steps
   end
 
-  # Parse a single step (header, ingredients, instructions)
   def parse_step
     header_token = advance
-    tldr = header_token.content[0] # Step header content is [captured_text]
+    tldr = header_token.content[0]
 
     ingredients = []
     instruction_lines = []
 
     skip_blanks
 
-    while !at_end? && peek.type != :step_header && peek.type != :divider
+    until at_end? || peek.type == :step_header || peek.type == :divider
       token = advance
 
       case token.type
       when :ingredient
-        # Ingredient content is [captured_text] (the part after "- ")
-        ingredient_data = IngredientParser.parse(token.content[0])
-        ingredients << ingredient_data
+        ingredients << IngredientParser.parse(token.content[0])
       when :prose
         instruction_lines << token.content
       when :blank
-        # Blanks between instruction paragraphs
         next
       end
     end
@@ -141,7 +120,6 @@ class RecipeBuilder
     }
   end
 
-  # Parse optional footer (everything after ---)
   def parse_footer
     skip_blanks
 
@@ -157,14 +135,12 @@ class RecipeBuilder
       next if token.type == :blank && footer_lines.empty? # skip leading blanks
 
       footer_lines << if token.type == :blank
-                        # Keep blank lines as paragraph separators
                         ''
                       else
                         token.content
                       end
     end
 
-    # Remove trailing blank lines
     footer_lines.pop while footer_lines.last == ''
 
     return nil if footer_lines.empty?

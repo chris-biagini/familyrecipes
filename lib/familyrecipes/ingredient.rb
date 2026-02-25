@@ -1,14 +1,9 @@
 # frozen_string_literal: true
 
-# Ingredient Class
-#
-# Handles parsing and providing information about individual ingredient lines in a Step
-
 module FamilyRecipes
   class Ingredient
     attr_reader :name, :quantity, :prep_note
 
-    # Fraction-to-decimal conversions for quantity parsing
     QUANTITY_FRACTIONS = {
       '1/2' => '0.5',
       '1/4' => '0.25',
@@ -17,9 +12,7 @@ module FamilyRecipes
       '3/4' => '0.75'
     }.freeze
 
-    # Converts a raw numeric string (e.g., "1/2", "2-3", "250") to its
-    # resolved value. Handles fractions via QUANTITY_FRACTIONS and ranges
-    # by taking the high end. Used by both the parser and AR model.
+    # Resolves fractions and ranges (takes high end) to a numeric string.
     def self.numeric_value(raw)
       return nil if raw.nil? || raw.strip.empty?
 
@@ -29,7 +22,6 @@ module FamilyRecipes
       QUANTITY_FRACTIONS[value_str] || value_str
     end
 
-    # name is required, quantity and prep_note are optional
     def initialize(name:, quantity: nil, prep_note: nil)
       @name = name
       @quantity = quantity

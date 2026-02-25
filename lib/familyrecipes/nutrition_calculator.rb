@@ -1,11 +1,5 @@
 # frozen_string_literal: true
 
-# NutritionCalculator
-#
-# Calculates nutrition facts for a recipe by looking up each ingredient
-# in a nutrition data table and converting quantities to grams.
-# Expects density-first schema with nutrients block and optional density.
-
 module FamilyRecipes
   class NutritionCalculator
     NUTRIENTS = %i[calories fat saturated_fat trans_fat cholesterol sodium

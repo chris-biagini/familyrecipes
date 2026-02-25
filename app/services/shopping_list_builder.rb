@@ -100,7 +100,7 @@ class ShoppingListBuilder
     return if custom.empty?
 
     organized['Miscellaneous'] ||= []
-    custom.each { |item| organized['Miscellaneous'] << { name: item, amounts: [] } }
+    organized['Miscellaneous'].concat(custom.map { |item| { name: item, amounts: [] } })
   end
 
   def serialize_amounts(amounts)

@@ -65,6 +65,15 @@ items.select(&:active?).map(&:name)
 
 Use `map` for transformation, `select`/`reject` for filtering, `flat_map` for nested flattening, `each_with_object` for building hashes, `any?`/`all?`/`none?` for boolean reduction, `tally` for counting, `group_by` for categorization, `sum` for totals. Always use `&:method_name` (Symbol#to_proc) when the block just calls one method.
 
+When appending transformed items to an existing collection, use `concat` + `map` — not `each` + `<<`:
+```ruby
+# WRONG
+custom.each { |item| list << { name: item, amounts: [] } }
+
+# RIGHT
+list.concat(custom.map { |item| { name: item, amounts: [] } })
+```
+
 ### Method design
 
 - Methods should be ≤ 5 lines. Extract smaller methods with descriptive names instead of adding comments.
@@ -72,6 +81,8 @@ Use `map` for transformation, `select`/`reject` for filtering, `flat_map` for ne
 - Use guard clauses and early returns to flatten conditionals. Never nest more than 2 levels.
 - Use postfix `if`/`unless` for single-line expressions: `return if list.empty?`
 - Use `unless` for negative conditions. Never use `unless` with `else`.
+- Use `until` instead of `while !`. When the negated `until` form has compound conditions that are harder to read, `while` is fine.
+- Prefer `size` over `length` everywhere (arrays, strings, hashes). `length` is Java/Python; `size` is Ruby.
 - Prefer keyword arguments over positional arguments for clarity at call sites.
 
 ```ruby
@@ -95,7 +106,7 @@ end
 
 ### Ruby's object model — trust it
 
-- Use duck typing. Never check `is_a?` or `.class` — call the method or use `respond_to?`.
+- Use duck typing. Never check `is_a?` or `.class` for domain objects — call the method or use `respond_to?`. Type checks are acceptable at system boundaries (validating parsed data, external input).
 - Use `Hash#fetch` instead of `Hash#[]` when the key must exist. Use `fetch(:key, default)` for defaults.
 - Only `false` and `nil` are falsy in Ruby. Never write `if x != nil` or `if x == true` — write `if x`.
 - Use `&.` (safe navigation) instead of `x && x.method`.
@@ -144,12 +155,45 @@ end
 - `snake_case` for methods, variables, files. `CamelCase` for classes/modules. `SCREAMING_SNAKE_CASE` for constants.
 - Predicate methods end with `?`. Dangerous/mutating methods end with `!`.
 - Never prefix with `get_` or `is_`. Use `name` not `get_name`. Use `valid?` not `is_valid?`.
-- Prefer `map` over `collect`, `select` over `find_all`, `size` over `length`, `key?` over `has_key?`.
+- Prefer `map` over `collect`, `select` over `find_all`, `key?` over `has_key?`.
 
-### Comments
+### Comments — LLMs get this wrong constantly
 
-- Never write comments that restate what the code does. If code needs a comment explaining *what*, extract a method with a descriptive name instead.
-- Add comments to explain *why* — business rules, non-obvious constraints, or links to external references.
+Comments that narrate code are the #1 tell of LLM-generated Ruby. This is a hard rule:
+
+- **Never** write a comment that restates the method name, class name, or what the code obviously does.
+- **Never** write `# ClassName` or `# ClassName class` above a class definition.
+- **Do** add comments that explain *why* — business rules, non-obvious constraints, or links to external references.
+- If code needs a comment explaining *what*, extract a method with a descriptive name instead.
+
+```ruby
+# WRONG — every one of these restates the obvious
+# RecipeBuilder class
+class RecipeBuilder
+
+  # Get current token without advancing
+  def peek
+
+  # Parse the title
+  def parse_title
+
+  # Check if we've reached the end
+  def at_end?
+
+# RIGHT — no comment needed, the names say it all
+class RecipeBuilder
+  def peek
+  def parse_title
+  def at_end?
+
+# RIGHT — explains WHY, not WHAT
+# Miscellaneous defaults to last unless explicitly ordered
+return [2, 0] if aisle == 'Miscellaneous'
+```
+
+### Views — keep logic out of templates
+
+Extract anything beyond simple conditionals and loops into helper methods. Views should render data, not compute it.
 
 ## Workflow Preferences
 

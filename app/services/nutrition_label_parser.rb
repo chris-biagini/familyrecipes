@@ -46,9 +46,7 @@ class NutritionLabelParser
   end
 
   def self.blank_skeleton
-    lines = ['Serving size:', '']
-    LABEL_LINES.each { |label, _, _| lines << label }
-    lines.join("\n")
+    (['Serving size:', ''] + LABEL_LINES.map { |label, _, _| label }).join("\n")
   end
 
   def initialize(text)
@@ -88,12 +86,11 @@ class NutritionLabelParser
   end
 
   def parse_nutrients
-    found = {}
-    nutrient_lines.each do |line|
+    found = nutrient_lines.each_with_object({}) do |line, hash|
       key, value = match_nutrient(line)
-      found[key] = value if key
+      hash[key] = value if key
     end
-    NUTRIENT_KEYS.each_with_object({}) { |key, hash| hash[key] = found.fetch(key, 0.0) }
+    NUTRIENT_KEYS.to_h { |key| [key, found.fetch(key, 0.0)] }
   end
 
   def nutrient_lines

@@ -1,28 +1,6 @@
 <aside class="nutrition-facts">
   <h2>Nutrition Facts</h2>
-  <%
-    has_per_unit = nutrition['per_unit'] && nutrition['makes_quantity']&.to_f&.positive?
-    has_per_serving = nutrition['per_serving'] && nutrition['serving_count']
-
-    columns = []
-
-    if has_per_unit
-      columns << ["Per #{nutrition['makes_unit_singular']&.capitalize}", nutrition['per_unit'], false]
-      if has_per_serving && nutrition['units_per_serving']
-        ups = nutrition['units_per_serving']
-        formatted_ups = FamilyRecipes::VulgarFractions.format(ups)
-        singular = FamilyRecipes::VulgarFractions.singular_noun?(ups)
-        ups_unit = singular ? nutrition['makes_unit_singular'] : nutrition['makes_unit_plural']
-        columns << ["Per Serving<br>(#{ERB::Util.html_escape(formatted_ups)} #{ERB::Util.html_escape(ups_unit)})".html_safe, nutrition['per_serving'], false]
-      end
-      columns << ['Total', nutrition['totals'], true]
-    elsif has_per_serving
-      columns << ['Per Serving', nutrition['per_serving'], false]
-      columns << ['Total', nutrition['totals'], true]
-    else
-      columns << ['Total', nutrition['totals'], true]
-    end
-  %>
+  <% columns = nutrition_columns(nutrition) %>
   <table>
     <thead>
       <tr>
@@ -55,10 +33,8 @@
       <%- end -%>
     </tbody>
   </table>
-  <%
-    missing = (nutrition['missing_ingredients'] || []) + (nutrition['partial_ingredients'] || [])
-  %>
+  <% missing = nutrition_missing_ingredients(nutrition) %>
   <%- if missing.any? -%>
-  <p class="nutrition-note">*Approximate. Data unavailable for: <%= missing.uniq.join(', ') %>.</p>
+  <p class="nutrition-note">*Approximate. Data unavailable for: <%= missing.join(', ') %>.</p>
   <%- end -%>
 </aside>

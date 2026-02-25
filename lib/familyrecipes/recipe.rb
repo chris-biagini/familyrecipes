@@ -1,14 +1,9 @@
 # frozen_string_literal: true
 
-# Recipe class
-#
-# Parses and encapsulates an entire recipe
-
 module FamilyRecipes
   class Recipe
     attr_reader :title, :description, :makes, :serves, :steps, :footer, :source, :id, :version_hash, :category
 
-    # Shared markdown renderer with SmartyPants for typographic quotes/dashes
     MARKDOWN = Redcarpet::Markdown.new(
       Redcarpet::Render::SmartyHTML.new(escape_html: true),
       autolink: true,
@@ -48,12 +43,10 @@ module FamilyRecipes
       @makes.match(/\A\S+\s+(.+)/)&.captures&.first
     end
 
-    # All cross-references across all steps
     def cross_references
       @steps.flat_map(&:cross_references)
     end
 
-    # Own ingredients only (excludes sub-recipe ingredients) — used for ingredient index
     def all_ingredients
       @steps.flat_map(&:ingredients).uniq(&:name)
     end
@@ -62,7 +55,6 @@ module FamilyRecipes
       @steps.flat_map(&:ingredients).map(&:name).uniq
     end
 
-    # Own ingredients with aggregated quantities (excludes sub-recipe ingredients)
     def own_ingredients_with_quantities
       ingredients_with_quantities
     end
@@ -73,7 +65,6 @@ module FamilyRecipes
             .map { |name, ingredients| [name, IngredientAggregator.aggregate_amounts(ingredients)] }
     end
 
-    # Ingredients with quantities including expanded cross-references — used for grocery list
     def all_ingredients_with_quantities(recipe_map)
       cross_references.each_with_object(ingredients_with_quantities.to_h) do |xref, merged|
         xref.expanded_ingredients(recipe_map).each do |name, amounts|
@@ -127,7 +118,6 @@ module FamilyRecipes
             "(e.g., 'Makes: 12 pancakes', not 'Makes: 12')."
     end
 
-    # Convert step hashes from RecipeBuilder into Step objects
     def build_steps(step_data)
       step_data.map do |data|
         Step.new(
@@ -138,7 +128,6 @@ module FamilyRecipes
       end
     end
 
-    # Convert ingredient hashes from IngredientParser into Ingredient or CrossReference objects
     def build_ingredient_items(ingredient_data)
       ingredient_data.map do |data|
         if data[:cross_reference]

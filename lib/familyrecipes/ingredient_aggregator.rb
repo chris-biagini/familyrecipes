@@ -1,14 +1,8 @@
 # frozen_string_literal: true
 
-# IngredientAggregator module
-#
-# Sums ingredient quantities by unit for grocery list display
-
 module IngredientAggregator
-  # Given an array of Ingredient objects with the same name,
-  # returns an array of Quantity objects (plus nil for unquantified).
-  # Merges two pre-aggregated Quantity arrays by summing values per unit.
-  # Both arrays may contain nil (representing unquantified entries).
+  # Merges two Quantity arrays, summing values per unit.
+  # nil entries represent unquantified ingredients ("Salt" with no amount).
   def self.merge_amounts(existing, new_amounts)
     all = existing + new_amounts
     has_nil = all.include?(nil)

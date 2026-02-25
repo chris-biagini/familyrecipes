@@ -1,9 +1,5 @@
 # frozen_string_literal: true
 
-# Step class
-#
-# Handles parsing and providing information about top-level Steps in a Recipe
-
 module FamilyRecipes
   class Step
     attr_reader :tldr, :ingredients, :cross_references, :instructions, :ingredient_list_items

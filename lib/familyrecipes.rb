@@ -1,23 +1,17 @@
 # frozen_string_literal: true
 
-# This file handles loading all required libraries and classes
-
-# libraries
-
 require 'erb'
 require 'redcarpet'
 require 'digest'
 require 'json'
 require 'yaml'
 
-# Shared utilities
 module FamilyRecipes
   CONFIG = {
     quick_bites_filename: 'Quick Bites.md',
     quick_bites_category: 'Quick Bites'
   }.freeze
 
-  # Generate a URL-safe slug from a title string
   def self.slugify(title)
     title
       .unicode_normalize(:nfkd)
@@ -26,7 +20,6 @@ module FamilyRecipes
       .gsub(/[^a-z0-9-]/, '')
   end
 
-  # Parse all recipe files from the given directory into Recipe objects
   def self.parse_recipes(recipes_dir)
     quick_bites_filename = CONFIG[:quick_bites_filename]
 
@@ -42,7 +35,6 @@ module FamilyRecipes
     end
   end
 
-  # Parse Quick Bites from a markdown string (instead of a file path)
   def self.parse_quick_bites_content(content)
     current_subcat = nil
 
@@ -57,14 +49,11 @@ module FamilyRecipes
     end
   end
 
-  # Parse Quick Bites file into QuickBite objects
   def self.parse_quick_bites(recipes_dir)
     file_path = File.join(recipes_dir, CONFIG[:quick_bites_filename])
     parse_quick_bites_content(File.read(file_path))
   end
 end
-
-# my classes
 
 require_relative 'familyrecipes/numeric_parsing'
 require_relative 'familyrecipes/quantity'
