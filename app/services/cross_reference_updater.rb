@@ -28,12 +28,12 @@ class CrossReferenceUpdater
 
   private
 
-  def update_referencing_recipes(&block)
+  def update_referencing_recipes
     referencing = @recipe.referencing_recipes.includes(:category)
     return [] if referencing.empty?
 
     referencing.map do |ref_recipe|
-      updated_source = block.call(ref_recipe.markdown_source, @recipe.title)
+      updated_source = yield(ref_recipe.markdown_source, @recipe.title)
       MarkdownImporter.import(updated_source, kitchen: ref_recipe.kitchen)
       ref_recipe.title
     end

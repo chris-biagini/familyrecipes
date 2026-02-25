@@ -91,7 +91,7 @@ class RecipeBuilder
     steps
   end
 
-  def parse_step
+  def parse_step # rubocop:disable Metrics/MethodLength
     header_token = advance
     tldr = header_token.content[0]
 
@@ -118,9 +118,9 @@ class RecipeBuilder
       ingredients: ingredients,
       instructions: instruction_lines.join("\n\n")
     }
-  end
+  end # rubocop:enable Metrics/MethodLength
 
-  def parse_footer
+  def parse_footer # rubocop:disable Metrics/MethodLength
     skip_blanks
 
     return nil if at_end?
@@ -146,5 +146,5 @@ class RecipeBuilder
     return nil if footer_lines.empty?
 
     footer_lines.join("\n\n").gsub(/\n\n+/, "\n\n")
-  end
+  end # rubocop:enable Metrics/MethodLength
 end

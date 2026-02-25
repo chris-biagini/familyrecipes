@@ -16,7 +16,7 @@ module IngredientAggregator
     result
   end
 
-  def self.aggregate_amounts(ingredients)
+  def self.aggregate_amounts(ingredients) # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
     parsed = ingredients.map do |ingredient|
       unit = ingredient.quantity_unit
       numeric = Float(ingredient.quantity_value, exception: false) if ingredient.quantity_value
@@ -33,5 +33,5 @@ module IngredientAggregator
     amounts = sums.map { |unit, value| Quantity[value, unit] }
     amounts << nil if has_unquantified
     amounts.empty? ? [nil] : amounts
-  end
+  end # rubocop:enable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
 end

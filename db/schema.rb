@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 6) do
+ActiveRecord::Schema[8.1].define(version: 7) do
   create_table "categories", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "kitchen_id", null: false
@@ -18,6 +18,7 @@ ActiveRecord::Schema[8.1].define(version: 6) do
     t.integer "position", default: 0, null: false
     t.string "slug", null: false
     t.datetime "updated_at", null: false
+    t.index ["kitchen_id", "name"], name: "index_categories_on_kitchen_id_and_name", unique: true
     t.index ["kitchen_id", "slug"], name: "index_categories_on_kitchen_id_and_slug", unique: true
     t.index ["kitchen_id"], name: "index_categories_on_kitchen_id"
     t.index ["position"], name: "index_categories_on_position"

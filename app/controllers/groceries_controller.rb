@@ -50,7 +50,7 @@ class GroceriesController < ApplicationController
 
   def update_quick_bites
     content = params[:content].to_s
-    return render json: { errors: ['Content cannot be blank.'] }, status: :unprocessable_entity if content.blank?
+    return render json: { errors: ['Content cannot be blank.'] }, status: :unprocessable_content if content.blank?
 
     current_kitchen.update!(quick_bites_content: content)
 

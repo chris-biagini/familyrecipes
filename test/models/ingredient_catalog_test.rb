@@ -12,13 +12,13 @@ class IngredientCatalogTest < ActiveSupport::TestCase
     entry = IngredientCatalog.create!(ingredient_name: 'Butter', basis_grams: 100)
 
     assert_predicate entry, :global?
-    refute_predicate entry, :custom?
+    assert_not_predicate entry, :custom?
   end
 
   test 'custom? returns true when kitchen_id is present' do
     entry = IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Butter', basis_grams: 100)
 
-    refute_predicate entry, :global?
+    assert_not_predicate entry, :global?
     assert_predicate entry, :custom?
   end
 
@@ -155,7 +155,7 @@ class IngredientCatalogTest < ActiveSupport::TestCase
   test 'validates ingredient_name presence' do
     entry = IngredientCatalog.new(basis_grams: 100)
 
-    refute_predicate entry, :valid?
+    assert_not_predicate entry, :valid?
     assert_includes entry.errors[:ingredient_name], "can't be blank"
   end
 
@@ -168,20 +168,20 @@ class IngredientCatalogTest < ActiveSupport::TestCase
   test 'rejects zero basis_grams' do
     entry = IngredientCatalog.new(ingredient_name: 'Test', basis_grams: 0)
 
-    refute_predicate entry, :valid?
+    assert_not_predicate entry, :valid?
   end
 
   test 'rejects negative basis_grams' do
     entry = IngredientCatalog.new(ingredient_name: 'Test', basis_grams: -5)
 
-    refute_predicate entry, :valid?
+    assert_not_predicate entry, :valid?
   end
 
   test 'enforces uniqueness of ingredient_name within same kitchen' do
     IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Butter', basis_grams: 100)
     duplicate = IngredientCatalog.new(kitchen: @kitchen, ingredient_name: 'Butter', basis_grams: 100)
 
-    refute_predicate duplicate, :valid?
+    assert_not_predicate duplicate, :valid?
   end
 
   test 'allows same ingredient_name in different kitchens' do

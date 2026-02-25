@@ -2,10 +2,10 @@
 
 namespace :lint do
   desc 'Audit .html_safe and raw() calls for XSS risk'
-  task :html_safe do
+  task html_safe: :environment do
     puts 'Auditing .html_safe and raw() calls...'
 
-    allowlist_file = Rails.root.join('config', 'html_safe_allowlist.yml')
+    allowlist_file = Rails.root.join('config/html_safe_allowlist.yml')
     allowlist = File.exist?(allowlist_file) ? YAML.load_file(allowlist_file) : []
 
     findings = scan_files(

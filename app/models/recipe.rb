@@ -9,6 +9,7 @@ class Recipe < ApplicationRecord
   has_many :cross_references, through: :steps
   has_many :inbound_cross_references, class_name: 'CrossReference',
                                       foreign_key: :target_recipe_id,
+                                      inverse_of: :target_recipe,
                                       dependent: :destroy
 
   def referencing_recipes

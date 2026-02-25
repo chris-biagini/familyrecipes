@@ -6,7 +6,7 @@ module FamilyRecipes
 
     NUTRITION_UNIT_OVERRIDES = { 'eggs' => '~unitless' }.freeze
 
-    def self.parse_serving_size(input)
+    def self.parse_serving_size(input) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
       # Extract gram weight: "30g", "(30g)", "(3.3g)", "30 grams", "30 gram"
       grams_match = input.match(/(\d+(?:\.\d+)?)\s*(?:grams?|g)\b/)
       return nil unless grams_match
@@ -60,7 +60,7 @@ module FamilyRecipes
       result
     rescue ArgumentError
       result
-    end
+    end # rubocop:enable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
 
     def self.volume_to_ml(unit)
       NutritionCalculator::VOLUME_TO_ML[unit] || 1

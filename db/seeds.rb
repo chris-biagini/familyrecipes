@@ -60,7 +60,7 @@ end
 catalog_path = seeds_dir.join('resources/ingredient-catalog.yaml')
 if File.exist?(catalog_path)
   catalog_data = YAML.safe_load_file(catalog_path, permitted_classes: [], permitted_symbols: [], aliases: false)
-  catalog_data.each do |name, entry|
+  catalog_data.each do |name, entry| # rubocop:disable Metrics/BlockLength
     profile = IngredientCatalog.find_or_initialize_by(kitchen_id: nil, ingredient_name: name)
 
     attrs = { aisle: entry['aisle'] }
@@ -95,7 +95,7 @@ if File.exist?(catalog_path)
 
     profile.assign_attributes(attrs)
     profile.save!
-  end
+  end # rubocop:enable Metrics/BlockLength
 
   puts "Seeded #{IngredientCatalog.global.count} ingredient catalog entries."
 end

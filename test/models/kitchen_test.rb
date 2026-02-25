@@ -77,7 +77,7 @@ class KitchenTest < ActiveSupport::TestCase
     kitchen = Kitchen.create!(name: 'Test', slug: 'test-omit')
     IngredientCatalog.create!(kitchen: nil, ingredient_name: 'Bay leaves', aisle: 'omit', basis_grams: 1)
 
-    refute_includes kitchen.all_aisles, 'omit'
+    assert_not_includes kitchen.all_aisles, 'omit'
   end
 
   test 'all_aisles deduplicates across sources' do

@@ -11,13 +11,15 @@
 
 # RecipesHelper — renderer and preprocessor output (safe by construction)
 - "app/helpers/recipes_helper.rb:7"     # render_markdown: Redcarpet with escape_html: true
+- "app/helpers/recipes_helper.rb:14"    # scalable_instructions: preprocessor escapes internally
 - "app/helpers/recipes_helper.rb:20"    # format_yield_line: preprocessor escapes internally
 - "app/helpers/recipes_helper.rb:26"    # format_yield_with_unit: preprocessor escapes internally
+- "app/helpers/recipes_helper.rb:59"    # per_serving_label: user values escaped with ERB::Util.html_escape
 
-# _step.html.erb — data attribute with escaped user value
+# _step.html.erb
 - "app/views/recipes/_step.html.erb:19" # quantity_unit_plural: ERB::Util.html_escape wraps value
+- "app/views/recipes/_step.html.erb:33" # processed_instructions: pre-rendered HTML from parse-on-save
 
-# _nutrition_table.html.erb — mix of escaped user values and hardcoded literals
-- "app/views/recipes/_nutrition_table.html.erb:16" # Per Serving column: user values escaped
-- "app/views/recipes/_nutrition_table.html.erb:49" # indent class: hardcoded integer
-- "app/views/recipes/_nutrition_table.html.erb:52" # nutrient data attrs: hardcoded key + numeric value
+# _nutrition_table.html.erb — hardcoded literals, no user content
+- "app/views/recipes/_nutrition_table.html.erb:27" # indent class: hardcoded integer
+- "app/views/recipes/_nutrition_table.html.erb:30" # nutrient data attrs: hardcoded key + numeric value

@@ -33,7 +33,7 @@ class CrossReference < ApplicationRecord
     return if slug_to_id.empty?
 
     pending.where(target_slug: slug_to_id.keys).find_each do |ref|
-      ref.update_column(:target_recipe_id, slug_to_id.fetch(ref.target_slug))
+      ref.update_column(:target_recipe_id, slug_to_id.fetch(ref.target_slug)) # rubocop:disable Rails/SkipsModelValidations
     end
   end
 end

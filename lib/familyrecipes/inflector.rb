@@ -42,7 +42,7 @@ module FamilyRecipes
     # --- Public API ---
 
     def self.singular(word)
-      return word if word.nil? || word.empty?
+      return word if word.blank?
       return word if uncountable?(word)
 
       irregular = IRREGULAR_PLURAL_TO_SINGULAR[word.downcase]
@@ -52,7 +52,7 @@ module FamilyRecipes
     end
 
     def self.plural(word)
-      return word if word.nil? || word.empty?
+      return word if word.blank?
       return word if uncountable?(word)
       return word if ABBREVIATED_FORMS.include?(word.downcase)
 

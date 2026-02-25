@@ -62,9 +62,9 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
     list.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
 
     result = ShoppingListBuilder.new(kitchen: @kitchen, grocery_list: list).build
-    all_names = result.values.flatten.map { |i| i[:name] }
+    all_names = result.values.flatten.pluck(:name)
 
-    refute_includes all_names, 'Salt'
+    assert_not_includes all_names, 'Salt'
   end
 
   test 'includes custom items in Miscellaneous' do
@@ -201,7 +201,7 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
 
     result = ShoppingListBuilder.new(kitchen: @kitchen, grocery_list: list).build
 
-    all_names = result.values.flatten.map { |i| i[:name] }
+    all_names = result.values.flatten.pluck(:name)
 
     assert_includes all_names, 'Hummus'
     assert_includes all_names, 'Pretzels'
@@ -243,7 +243,7 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
     list.apply_action('select', type: 'recipe', slug: 'pizza', selected: true)
 
     result = ShoppingListBuilder.new(kitchen: @kitchen, grocery_list: list).build
-    all_names = result.values.flatten.map { |i| i[:name] }
+    all_names = result.values.flatten.pluck(:name)
 
     assert_includes all_names, 'Salt'
     assert_includes all_names, 'Flour'

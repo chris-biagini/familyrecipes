@@ -36,7 +36,7 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
          as: :json
 
     assert_response :success
-    body = JSON.parse(response.body)
+    body = response.parsed_body
 
     assert_equal 'ok', body['status']
 
@@ -88,7 +88,7 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
          as: :json
 
     assert_response :unprocessable_entity
-    body = JSON.parse(response.body)
+    body = response.parsed_body
 
     assert_predicate body['errors'], :any?
     assert(body['errors'].any? { |e| e.include?('Serving size') })

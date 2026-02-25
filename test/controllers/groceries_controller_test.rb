@@ -248,7 +248,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     get groceries_state_path(kitchen_slug: kitchen_slug), as: :json
 
     assert_response :success
-    json = JSON.parse(response.body)
+    json = response.parsed_body
 
     assert_equal 0, json['version']
     assert_empty(json['shopping_list'])
@@ -261,7 +261,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
           as: :json
 
     assert_response :success
-    json = JSON.parse(response.body)
+    json = response.parsed_body
 
     assert_operator json['version'], :>, 0
   end
@@ -289,7 +289,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     delete groceries_clear_path(kitchen_slug: kitchen_slug), as: :json
 
     assert_response :success
-    json = JSON.parse(response.body)
+    json = response.parsed_body
 
     assert json.key?('version')
   end
@@ -319,7 +319,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
           as: :json
 
     get groceries_state_path(kitchen_slug: kitchen_slug), as: :json
-    json = JSON.parse(response.body)
+    json = response.parsed_body
 
     assert json['shopping_list'].key?('Baking')
   end
@@ -331,7 +331,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
           as: :json
 
     get groceries_state_path(kitchen_slug: kitchen_slug), as: :json
-    json = JSON.parse(response.body)
+    json = response.parsed_body
 
     assert_includes json['selected_recipes'], 'focaccia'
   end
@@ -343,7 +343,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
           as: :json
 
     get groceries_state_path(kitchen_slug: kitchen_slug), as: :json
-    json = JSON.parse(response.body)
+    json = response.parsed_body
 
     assert json.key?('version')
     assert json.key?('selected_recipes')
@@ -364,9 +364,9 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
           as: :json
 
     get groceries_state_path(kitchen_slug: kitchen_slug), as: :json
-    json = JSON.parse(response.body)
+    json = response.parsed_body
 
-    refute_includes json['selected_recipes'], 'focaccia'
+    assert_not_includes json['selected_recipes'], 'focaccia'
   end
 
   test 'custom_items removes item' do
@@ -380,9 +380,9 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
           as: :json
 
     get groceries_state_path(kitchen_slug: kitchen_slug), as: :json
-    json = JSON.parse(response.body)
+    json = response.parsed_body
 
-    refute_includes json.fetch('custom_items', []), 'birthday candles'
+    assert_not_includes json.fetch('custom_items', []), 'birthday candles'
   end
 
   # --- Aisle order ---
@@ -431,7 +431,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     get groceries_aisle_order_content_path(kitchen_slug: kitchen_slug), as: :json
 
     assert_response :success
-    json = JSON.parse(response.body)
+    json = response.parsed_body
 
     assert_includes json['aisle_order'], 'Baking'
     assert_includes json['aisle_order'], 'Spices'
@@ -452,7 +452,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     log_in
     get groceries_aisle_order_content_path(kitchen_slug: kitchen_slug), as: :json
 
-    json = JSON.parse(response.body)
+    json = response.parsed_body
     lines = json['aisle_order'].lines.map(&:strip)
 
     # Saved order preserved, new aisle appended
@@ -474,7 +474,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :conflict
-    json = JSON.parse(response.body)
+    json = response.parsed_body
 
     assert_equal 'Grocery list was modified by another request. Please refresh.', json['error']
   end

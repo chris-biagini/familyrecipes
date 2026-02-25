@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module FamilyRecipes
-  class BuildValidator
+  class BuildValidator # rubocop:disable Metrics/ClassLength
     def initialize(recipes:, quick_bites:, recipe_map:, nutrition_calculator: nil)
       @recipes = recipes
       @quick_bites = quick_bites
@@ -192,5 +192,5 @@ module FamilyRecipes
         puts "  - #{name} (in: #{recipes.sort.join(', ')})"
       end
     end
-  end
+  end # rubocop:enable Metrics/ClassLength
 end

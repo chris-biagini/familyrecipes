@@ -19,7 +19,7 @@ class GroceryListTest < ActiveSupport::TestCase
     GroceryList.create!(kitchen: @kitchen)
     duplicate = GroceryList.new(kitchen: @kitchen)
 
-    refute_predicate duplicate, :valid?
+    assert_not_predicate duplicate, :valid?
   end
 
   test 'defaults to version 0 and empty state' do
@@ -50,7 +50,7 @@ class GroceryListTest < ActiveSupport::TestCase
     list.apply_action('select', type: 'recipe', slug: 'pizza-dough', selected: true)
     list.apply_action('select', type: 'recipe', slug: 'pizza-dough', selected: false)
 
-    refute_includes list.state['selected_recipes'], 'pizza-dough'
+    assert_not_includes list.state['selected_recipes'], 'pizza-dough'
   end
 
   test 'apply_action adds quick bite to selected_quick_bites' do
@@ -72,7 +72,7 @@ class GroceryListTest < ActiveSupport::TestCase
     list.apply_action('check', item: 'milk', checked: true)
     list.apply_action('check', item: 'milk', checked: false)
 
-    refute_includes list.state['checked_off'], 'milk'
+    assert_not_includes list.state['checked_off'], 'milk'
   end
 
   test 'apply_action adds custom item' do
@@ -87,7 +87,7 @@ class GroceryListTest < ActiveSupport::TestCase
     list.apply_action('custom_items', item: 'birthday candles', action: 'add')
     list.apply_action('custom_items', item: 'birthday candles', action: 'remove')
 
-    refute_includes list.state['custom_items'], 'birthday candles'
+    assert_not_includes list.state['custom_items'], 'birthday candles'
   end
 
   test 'apply_action handles string selected param' do
@@ -98,7 +98,7 @@ class GroceryListTest < ActiveSupport::TestCase
 
     list.apply_action('select', type: 'recipe', slug: 'pizza-dough', selected: 'false')
 
-    refute_includes list.state['selected_recipes'], 'pizza-dough'
+    assert_not_includes list.state['selected_recipes'], 'pizza-dough'
   end
 
   test 'apply_action handles string checked param' do
@@ -109,7 +109,7 @@ class GroceryListTest < ActiveSupport::TestCase
 
     list.apply_action('check', item: 'milk', checked: 'false')
 
-    refute_includes list.state['checked_off'], 'milk'
+    assert_not_includes list.state['checked_off'], 'milk'
   end
 
   test 'clear resets state and bumps version' do

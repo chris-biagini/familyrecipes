@@ -112,7 +112,7 @@ class RecipeNutritionJobTest < ActiveSupport::TestCase
 
   def import_without_nutrition(markdown)
     recipe = MarkdownImporter.import(markdown, kitchen: @kitchen)
-    recipe.update_column(:nutrition_data, nil)
+    recipe.update_column(:nutrition_data, nil) # rubocop:disable Rails/SkipsModelValidations
     recipe
   end
 end

@@ -6,7 +6,7 @@ module IngredientParser
   # Catches the old quantity-first syntax ("2 @[Pizza Dough]") to give a helpful error
   OLD_CROSS_REF_PATTERN = %r{\A\d+(?:/\d+)?(?:\.\d+)?x?\s*@\[}
 
-  def self.parse(text)
+  def self.parse(text) # rubocop:disable Metrics/MethodLength
     if text.match?(OLD_CROSS_REF_PATTERN)
       raise "Invalid cross-reference syntax: \"#{text}\". " \
             'Use @[Recipe Title], quantity (quantity after reference), not quantity before.'
@@ -38,7 +38,7 @@ module IngredientParser
       quantity: quantity,
       prep_note: prep_note
     }
-  end
+  end # rubocop:enable Metrics/MethodLength
 
   def self.parse_multiplier(str)
     FamilyRecipes::NumericParsing.parse_fraction(str) || 1.0

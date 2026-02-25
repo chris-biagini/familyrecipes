@@ -23,6 +23,6 @@ class DevSessionsController < ApplicationController
   private
 
   def require_non_production_environment
-    head :not_found unless Rails.env.development? || Rails.env.test?
+    head :not_found unless Rails.env.local?
   end
 end

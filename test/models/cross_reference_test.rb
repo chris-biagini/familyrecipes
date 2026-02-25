@@ -251,7 +251,7 @@ class StepIngredientListItemsTest < ActiveSupport::TestCase
     items = @step.ingredient_list_items
 
     assert_equal 2, items.size
-    assert(items.all? { |item| item.is_a?(Ingredient) })
+    assert(items.all?(Ingredient))
   end
 
   test 'ingredient_list_items works with only cross_references' do

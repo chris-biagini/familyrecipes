@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module FamilyRecipes
-  class NutritionCalculator
+  class NutritionCalculator # rubocop:disable Metrics/ClassLength
     NUTRIENTS = %i[calories fat saturated_fat trans_fat cholesterol sodium
                    carbs fiber total_sugars added_sugars protein].freeze
 
@@ -64,7 +64,7 @@ module FamilyRecipes
     private
 
     def sum_totals(recipe, recipe_map)
-      totals = NUTRIENTS.to_h { |n| [n, 0.0] }
+      totals = NUTRIENTS.index_with { |_n| 0.0 }
       missing = []
       partial = []
 
@@ -98,7 +98,7 @@ module FamilyRecipes
     end
 
     def divide_nutrients(totals, divisor)
-      NUTRIENTS.to_h { |n| [n, totals[n] / divisor] } if divisor
+      NUTRIENTS.index_with { |n| totals[n] / divisor } if divisor
     end
 
     def per_unit_metadata(recipe, totals, serving_count)
@@ -122,7 +122,7 @@ module FamilyRecipes
       (entry.dig('nutrients', nutrient.to_s) || 0) / basis_grams.to_f
     end
 
-    def to_grams(value, unit, entry)
+    def to_grams(value, unit, entry) # rubocop:disable Metrics/MethodLength, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
       portions = entry['portions'] || {}
 
       # 1. Bare count with no unit (e.g. "Eggs, 3") — use ~unitless portion
@@ -151,7 +151,7 @@ module FamilyRecipes
 
       # 5. Can't resolve
       nil
-    end
+    end # rubocop:enable Metrics/MethodLength, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
 
     def derive_density(entry)
       density = entry['density']
@@ -174,5 +174,5 @@ module FamilyRecipes
         recipe.makes_quantity&.to_i
       end
     end
-  end
+  end # rubocop:enable Metrics/ClassLength
 end

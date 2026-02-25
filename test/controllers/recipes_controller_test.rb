@@ -117,7 +117,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
           as: :json
 
     assert_response :success
-    body = JSON.parse(response.body)
+    body = response.parsed_body
 
     assert_equal recipe_path('focaccia', kitchen_slug: kitchen_slug), body['redirect_url']
 
@@ -134,7 +134,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
           as: :json
 
     assert_response :unprocessable_entity
-    body = JSON.parse(response.body)
+    body = response.parsed_body
 
     assert_predicate body['errors'], :any?
   end
@@ -170,7 +170,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
           as: :json
 
     assert_response :success
-    body = JSON.parse(response.body)
+    body = response.parsed_body
 
     assert_equal recipe_path('rosemary-focaccia', kitchen_slug: kitchen_slug), body['redirect_url']
     assert_nil Recipe.find_by(slug: 'focaccia')
@@ -233,7 +233,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
           as: :json
 
     assert_response :success
-    body = JSON.parse(response.body)
+    body = response.parsed_body
 
     assert_includes body['updated_references'], 'Panzanella'
 
@@ -265,7 +265,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
          as: :json
 
     assert_response :success
-    body = JSON.parse(response.body)
+    body = response.parsed_body
 
     assert_equal recipe_path('ciabatta', kitchen_slug: kitchen_slug), body['redirect_url']
     assert Recipe.find_by(slug: 'ciabatta')
@@ -278,7 +278,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
          as: :json
 
     assert_response :unprocessable_entity
-    body = JSON.parse(response.body)
+    body = response.parsed_body
 
     assert_predicate body['errors'], :any?
   end
@@ -310,7 +310,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     delete recipe_path('focaccia', kitchen_slug: kitchen_slug), as: :json
 
     assert_response :success
-    body = JSON.parse(response.body)
+    body = response.parsed_body
 
     assert_equal kitchen_root_path(kitchen_slug: kitchen_slug), body['redirect_url']
     assert_nil Recipe.find_by(slug: 'focaccia')
@@ -342,7 +342,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     delete recipe_path('focaccia', kitchen_slug: kitchen_slug), as: :json
 
     assert_response :success
-    body = JSON.parse(response.body)
+    body = response.parsed_body
 
     assert_includes body['updated_references'], 'Panzanella'
 

@@ -8,12 +8,12 @@ class NutritionEntriesController < ApplicationController
     label_text = params[:label_text].to_s
 
     if blank_nutrition?(label_text)
-      return render json: { errors: ['Nothing to save'] }, status: :unprocessable_entity unless aisle
+      return render json: { errors: ['Nothing to save'] }, status: :unprocessable_content unless aisle
 
       save_aisle_only(aisle)
     else
       result = NutritionLabelParser.parse(label_text)
-      return render json: { errors: result.errors }, status: :unprocessable_entity unless result.success?
+      return render json: { errors: result.errors }, status: :unprocessable_content unless result.success?
 
       save_full_entry(result, aisle)
     end
@@ -52,7 +52,7 @@ class NutritionEntriesController < ApplicationController
       broadcast_aisle_change
       render json: { status: 'ok' }
     else
-      render json: { errors: entry.errors.full_messages }, status: :unprocessable_entity
+      render json: { errors: entry.errors.full_messages }, status: :unprocessable_content
     end
   end
 
@@ -67,7 +67,7 @@ class NutritionEntriesController < ApplicationController
       recalculate_affected_recipes
       render json: { status: 'ok' }
     else
-      render json: { errors: entry.errors.full_messages }, status: :unprocessable_entity
+      render json: { errors: entry.errors.full_messages }, status: :unprocessable_content
     end
   end
 
@@ -83,7 +83,7 @@ class NutritionEntriesController < ApplicationController
     GroceryListChannel.broadcast_content_changed(current_kitchen)
   end
 
-  def assign_parsed_attributes(entry, result)
+  def assign_parsed_attributes(entry, result) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
     entry.assign_attributes(
       basis_grams: result.nutrients[:basis_grams],
       calories: result.nutrients[:calories],
@@ -103,7 +103,7 @@ class NutritionEntriesController < ApplicationController
       portions: result.portions,
       sources: [{ 'type' => 'web', 'note' => 'Entered via ingredients page' }]
     )
-  end
+  end # rubocop:enable Metrics/MethodLength, Metrics/AbcSize
 
   def recalculate_affected_recipes
     canonical = ingredient_name.downcase

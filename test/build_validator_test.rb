@@ -135,7 +135,7 @@ class BuildValidatorTest < ActiveSupport::TestCase
   end
 
   def build_validator(recipes: [], quick_bites: [], nutrition_calculator: nil)
-    recipe_map = recipes.to_h { |r| [r.id, r] }
+    recipe_map = recipes.index_by(&:id)
     FamilyRecipes::BuildValidator.new(
       recipes: recipes,
       quick_bites: quick_bites,

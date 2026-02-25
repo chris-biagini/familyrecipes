@@ -8,50 +8,51 @@ AllCops:
   SuggestExtensions: false
   Exclude:
     - vendor/**/*
-    - config/**/*
-    - db/**/*
+    - db/migrate/**/*
+    - db/schema.rb
 
 plugins:
   - rubocop-minitest
+  - rubocop-performance
+  - rubocop-rails
 
-# Project doesn't use class-level documentation comments
+# --- Project conventions ---
+
 Style/Documentation:
   Enabled: false
 
-# CLAUDE.md says frozen_string_literal on every file
 Style/FrozenStringLiteralComment:
   EnforcedStyle: always
 
-# Project convention: rescued exceptions are named `error`, not `e`
 Naming/RescuedExceptionsVariableName:
   PreferredName: error
 
-# 120 is a reasonable line length for modern screens
 Layout/LineLength:
   Max: 120
 
-# Relax metrics to accommodate existing parsing/validation methods.
+# --- Aspirational metrics ---
 # bin/ scripts and tests are exempt — they're inherently procedural.
+
 Metrics/MethodLength:
-  Max: 35
+  Max: 15
   Exclude:
     - bin/*
     - test/**/*
 
 Metrics/AbcSize:
-  Max: 40
+  Max: 25
   Exclude:
     - bin/*
     - test/**/*
 
 Metrics/CyclomaticComplexity:
-  Max: 15
+  Max: 10
   Exclude:
     - bin/*
     - test/**/*
 
 Metrics/PerceivedComplexity:
-  Max: 15
+  Max: 10
   Exclude:
     - bin/*
     - test/**/*
@@ -62,13 +63,31 @@ Metrics/BlockLength:
     - test/**/*
 
 Metrics/ClassLength:
-  Max: 275
+  Max: 125
   Exclude:
     - test/**/*
 
 Metrics/ModuleLength:
-  Max: 120
+  Max: 100
 
-# Tests naturally have many assertions per case
 Minitest/MultipleAssertions:
   Max: 12
+
+# --- Rails cops ---
+
+# BuildValidator is a CLI build tool that intentionally uses puts
+Rails/Output:
+  Exclude:
+    - lib/familyrecipes/build_validator.rb
+    - db/seeds.rb
+
+# Plain Minitest tests (Minitest::Test) don't have assert_not_* methods
+Rails/RefuteMethods:
+  Exclude:
+    - test/cross_reference_test.rb
+    - test/inflector_test.rb
+    - test/nutrition_calculator_test.rb
+    - test/quantity_test.rb
+    - test/recipe_test.rb
+    - test/scalable_number_preprocessor_test.rb
+    - test/vulgar_fractions_test.rb

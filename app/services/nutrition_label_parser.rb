@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class NutritionLabelParser
+class NutritionLabelParser # rubocop:disable Metrics/ClassLength
   Result = Data.define(:nutrients, :density, :portions, :errors) do
     def success? = errors.empty?
   end
@@ -90,7 +90,7 @@ class NutritionLabelParser
       key, value = match_nutrient(line)
       hash[key] = value if key
     end
-    NUTRIENT_KEYS.to_h { |key| [key, found.fetch(key, 0.0)] }
+    NUTRIENT_KEYS.index_with { |key| found.fetch(key, 0.0) }
   end
 
   def nutrient_lines
@@ -221,7 +221,7 @@ class NutritionLabelParser
 
     def portions_section
       portions = @entry.portions
-      return [] if portions.nil? || portions.empty?
+      return [] if portions.blank?
 
       header = ['', 'Portions:']
       entries = portions.map { |name, grams| "  #{name}: #{format_grams(grams)}" }
@@ -236,4 +236,4 @@ class NutritionLabelParser
       value == value.to_i ? value.to_i.to_s : value.to_s
     end
   end
-end
+end # rubocop:enable Metrics/ClassLength

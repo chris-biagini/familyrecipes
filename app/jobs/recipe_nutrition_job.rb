@@ -13,7 +13,7 @@ class RecipeNutritionJob < ApplicationJob
     calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data, omit_set: omit_set)
     result = calculator.calculate(loaded, {})
 
-    recipe.update_column(:nutrition_data, serialize_result(result))
+    recipe.update_column(:nutrition_data, serialize_result(result)) # rubocop:disable Rails/SkipsModelValidations
   end
 
   private

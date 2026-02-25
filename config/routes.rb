@@ -24,7 +24,5 @@ Rails.application.routes.draw do
 
   delete 'logout', to: 'dev_sessions#destroy', as: :logout
 
-  if Rails.env.development? || Rails.env.test?
-    get 'dev/login/:id', to: 'dev_sessions#create', as: :dev_login
-  end
+  get 'dev/login/:id', to: 'dev_sessions#create', as: :dev_login if Rails.env.local?
 end

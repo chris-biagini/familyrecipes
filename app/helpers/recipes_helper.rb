@@ -4,30 +4,30 @@ module RecipesHelper
   def render_markdown(text)
     return '' if text.blank?
 
-    FamilyRecipes::Recipe::MARKDOWN.render(text).html_safe
+    FamilyRecipes::Recipe::MARKDOWN.render(text).html_safe # rubocop:disable Rails/OutputSafety
   end
 
   def scalable_instructions(text)
     return '' if text.blank?
 
     html = FamilyRecipes::Recipe::MARKDOWN.render(text)
-    ScalableNumberPreprocessor.process_instructions(html).html_safe
+    ScalableNumberPreprocessor.process_instructions(html).html_safe # rubocop:disable Rails/OutputSafety
   end
 
   def format_yield_line(text)
     return '' if text.blank?
 
-    ScalableNumberPreprocessor.process_yield_line(text).html_safe
+    ScalableNumberPreprocessor.process_yield_line(text).html_safe # rubocop:disable Rails/OutputSafety
   end
 
   def format_yield_with_unit(text, singular, plural)
     return '' if text.blank?
 
-    ScalableNumberPreprocessor.process_yield_with_unit(text, singular, plural).html_safe
+    ScalableNumberPreprocessor.process_yield_with_unit(text, singular, plural).html_safe # rubocop:disable Rails/OutputSafety
   end
 
   # Returns array of [label, values_hash, is_scalable] tuples for the nutrition table.
-  def nutrition_columns(nutrition)
+  def nutrition_columns(nutrition) # rubocop:disable Metrics/PerceivedComplexity
     has_per_unit = nutrition['per_unit'] && nutrition['makes_quantity']&.to_f&.positive?
     has_per_serving = nutrition['per_serving'] && nutrition['serving_count']
 
@@ -43,7 +43,7 @@ module RecipesHelper
     end
 
     columns << ['Total', nutrition['totals'], true]
-  end
+  end # rubocop:enable Metrics/PerceivedComplexity
 
   def nutrition_missing_ingredients(nutrition)
     ((nutrition['missing_ingredients'] || []) + (nutrition['partial_ingredients'] || [])).uniq
@@ -56,6 +56,6 @@ module RecipesHelper
     formatted_ups = FamilyRecipes::VulgarFractions.format(ups)
     singular = FamilyRecipes::VulgarFractions.singular_noun?(ups)
     ups_unit = singular ? nutrition['makes_unit_singular'] : nutrition['makes_unit_plural']
-    "Per Serving<br>(#{ERB::Util.html_escape(formatted_ups)} #{ERB::Util.html_escape(ups_unit)})".html_safe
+    "Per Serving<br>(#{ERB::Util.html_escape(formatted_ups)} #{ERB::Util.html_escape(ups_unit)})".html_safe # rubocop:disable Rails/OutputSafety
   end
 end

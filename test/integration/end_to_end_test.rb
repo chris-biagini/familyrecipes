@@ -296,7 +296,7 @@ class EndToEndTest < ActionDispatch::IntegrationTest
          as: :json
 
     assert_response :success
-    body = JSON.parse(response.body)
+    body = response.parsed_body
 
     get body['redirect_url']
 
