@@ -217,8 +217,8 @@ If `bin/dev` fails with "A server is already running", kill the process and remo
 pkill -f puma; rm -f tmp/pids/server.pid
 ```
 
-### Server restart after gem or concern changes
-Adding gems or creating new files in `app/controllers/concerns/` requires restarting Puma. The dev server does not hot-reload these. Run `pkill -f puma; rm -f tmp/pids/server.pid` then `bin/dev`.
+### Server restart after gem, concern, or lib changes
+Adding gems, creating new files in `app/controllers/concerns/`, or modifying files in `lib/familyrecipes/` requires restarting Puma. Domain classes in `lib/` are loaded once at boot via an initializer — they do not hot-reload. Run `pkill -f puma; rm -f tmp/pids/server.pid` then `bin/dev`. If you see "undefined method" errors for methods that exist in source, a stale server is the likely cause.
 
 ### GitHub Issues
 If I mention a GitHub issue (e.g., "#99"), review it and plan a fix. Close it via the commit message once confirmed.
@@ -304,7 +304,7 @@ Set `ALLOWED_HOSTS` (comma-separated domains) to enable DNS rebinding protection
 
 ## Routes
 
-All routes live under `/kitchens/:kitchen_slug/` except the landing page (`/`), logout (`DELETE /logout`), dev login (`/dev/login/:id`, dev/test only), and health check (`/up`). When exactly one kitchen exists, `/` redirects to that kitchen's homepage. Kitchen-scoped routes include recipes (`show`, `create`, `update`, `destroy` — no index/new/edit), ingredients index, groceries (`show`, `state`, `select`, `check`, `custom_items`, `clear`, `quick_bites`, `aisle_order`, `aisle_order_content`), and nutrition entries (`POST`/`DELETE` at `/nutrition/:ingredient_name`). Views use Rails route helpers — `root_path` (landing), `kitchen_root_path` (kitchen homepage), `recipe_path(slug)`, `ingredients_path`, `groceries_path`. `ApplicationController#default_url_options` auto-fills `kitchen_slug` from `current_kitchen`, so most helpers work without explicitly passing it. When adding links, always use the `_path` helpers.
+Routes use an optional `(/kitchens/:kitchen_slug)` scope. When exactly one kitchen exists, URLs are root-level (`/recipes/bagels`, `/ingredients`, `/groceries`). When multiple kitchens exist, URLs are scoped (`/kitchens/:slug/recipes/bagels`). `default_url_options` returns `{ kitchen_slug: }` or `{}` based on whether the request arrived via a scoped URL. Kitchen-scoped routes include recipes (`show`, `create`, `update`, `destroy` — no index/new/edit), ingredients index, groceries (`show`, `state`, `select`, `check`, `custom_items`, `clear`, `quick_bites`, `aisle_order`, `aisle_order_content`), and nutrition entries (`POST`/`DELETE` at `/nutrition/:ingredient_name`). Views use `home_path` (not `kitchen_root_path`) for the homepage link — it returns `root_path` or `kitchen_root_path` depending on mode. Other helpers (`recipe_path`, `ingredients_path`, `groceries_path`) auto-adapt via `default_url_options`. When adding links, always use the `_path` helpers.
 
 ## Architecture
 
