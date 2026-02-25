@@ -113,7 +113,7 @@ class ScalableNumberPreprocessorTest < Minitest::Test
     assert_equal '', result
   end
 
-  def test_process_yield_line_escapes_HTML_in_surrounding_text
+  def test_process_yield_line_escapes_html_in_surrounding_text
     result = ScalableNumberPreprocessor.process_yield_line('12 <script>alert(1)</script>')
 
     refute_includes result, '<script>'
@@ -121,7 +121,7 @@ class ScalableNumberPreprocessorTest < Minitest::Test
     assert_includes result, 'class="scalable"'
   end
 
-  def test_process_yield_line_escapes_HTML_when_no_number
+  def test_process_yield_line_escapes_html_when_no_number
     result = ScalableNumberPreprocessor.process_yield_line('<img src=x onerror=alert(1)>')
 
     refute_includes result, '<img'
