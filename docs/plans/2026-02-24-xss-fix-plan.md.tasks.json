@@ -1,0 +1,10 @@
+{
+  "planPath": "docs/plans/2026-02-24-xss-fix-plan.md",
+  "tasks": [
+    {"id": 3, "subject": "Task 1: Escape HTML in the Redcarpet renderer", "status": "pending"},
+    {"id": 4, "subject": "Task 2: Escape user content in ScalableNumberPreprocessor", "status": "pending", "blockedBy": [3]},
+    {"id": 5, "subject": "Task 3: Fix view-level html_safe calls", "status": "pending", "blockedBy": [3, 4]},
+    {"id": 6, "subject": "Task 4: Final verification and close", "status": "pending", "blockedBy": [3, 4, 5]}
+  ],
+  "lastUpdated": "2026-02-24T00:00:00Z"
+}
