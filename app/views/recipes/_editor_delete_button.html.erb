@@ -1,0 +1,6 @@
+<%# locals: (recipe:) %>
+<button type="button" class="btn btn-danger editor-delete"
+        data-recipe-title="<%= recipe.title %>"
+        data-recipe-slug="<%= recipe.slug %>"
+        data-referencing-recipes="<%= recipe.referencing_recipes.pluck(:title).to_json %>">Delete</button>
+<span class="editor-footer-spacer"></span>

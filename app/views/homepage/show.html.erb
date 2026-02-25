@@ -11,7 +11,7 @@
 <% content_for(:scripts) do %>
   <%= javascript_include_tag 'notify', defer: true %>
   <%= javascript_include_tag 'editor-utils', defer: true %>
-  <%= javascript_include_tag 'recipe-editor', defer: true %>
+  <%= javascript_include_tag 'editor-framework', defer: true %>
 <% end %>
 
 <article class="homepage">
@@ -45,8 +45,14 @@
 </article>
 
 <% if current_kitchen.member?(current_user) %>
-<%= render 'recipes/editor_dialog',
-           mode: :create,
-           content: "# Recipe Title\n\nOptional description.\n\nCategory: \nMakes: \nServes: \n\n## Step Name (short summary)\n\n- Ingredient, quantity: prep note\n\nInstructions here.\n\n---\n\nOptional notes or source.",
-           action_url: recipes_path %>
+<%= render layout: 'shared/editor_dialog',
+    locals: { title: 'New Recipe',
+              id: 'recipe-editor',
+              dialog_data: { editor_open: '#new-recipe-button',
+                             editor_url: recipes_path,
+                             editor_method: 'POST',
+                             editor_on_success: 'redirect',
+                             editor_body_key: 'markdown_source' } } do %>
+  <textarea class="editor-textarea" spellcheck="false"><%= "# Recipe Title\n\nOptional description.\n\nCategory: \nMakes: \nServes: \n\n## Step Name (short summary)\n\n- Ingredient, quantity: prep note\n\nInstructions here.\n\n---\n\nOptional notes or source." %></textarea>
+<% end %>
 <% end %>

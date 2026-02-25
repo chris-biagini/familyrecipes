@@ -18,7 +18,7 @@
   <%= javascript_include_tag 'wake-lock', defer: true %>
   <%= javascript_include_tag 'recipe-state-manager', defer: true %>
   <%= javascript_include_tag 'editor-utils', defer: true %>
-  <%= javascript_include_tag 'recipe-editor', defer: true %>
+  <%= javascript_include_tag 'editor-framework', defer: true %>
 <% end %>
 
 <article class="recipe">
@@ -52,9 +52,15 @@
 </article>
 
 <% if current_kitchen.member?(current_user) %>
-<%= render 'editor_dialog',
-           mode: :edit,
-           content: @recipe.markdown_source,
-           action_url: recipe_path(@recipe.slug),
-           recipe: @recipe %>
+<%= render layout: 'shared/editor_dialog',
+    locals: { title: "Editing: #{@recipe.title}",
+              id: 'recipe-editor',
+              dialog_data: { editor_open: '#edit-button',
+                             editor_url: recipe_path(@recipe.slug),
+                             editor_method: 'PATCH',
+                             editor_on_success: 'redirect',
+                             editor_body_key: 'markdown_source' },
+              footer_extra: render('recipes/editor_delete_button', recipe: @recipe) } do %>
+  <textarea class="editor-textarea" spellcheck="false"><%= @recipe.markdown_source %></textarea>
+<% end %>
 <% end %>
