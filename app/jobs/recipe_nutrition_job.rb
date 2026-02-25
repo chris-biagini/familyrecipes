@@ -5,16 +5,23 @@ class RecipeNutritionJob < ApplicationJob
                         sodium carbs fiber total_sugars added_sugars protein].freeze
 
   def perform(recipe)
-    nutrition_data = build_nutrition_lookup(recipe.kitchen)
+    loaded = eager_load_recipe(recipe)
+
+    nutrition_data = build_nutrition_lookup(loaded.kitchen)
     return if nutrition_data.empty?
 
     calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data, omit_set: omit_set)
-    result = calculator.calculate(parsed_recipe(recipe), recipe_map(recipe.kitchen))
+    result = calculator.calculate(loaded, {})
 
     recipe.update_column(:nutrition_data, serialize_result(result))
   end
 
   private
+
+  def eager_load_recipe(recipe)
+    Recipe.includes(steps: [:ingredients, { cross_references: { target_recipe: { steps: :ingredients } } }])
+          .find(recipe.id)
+  end
 
   def build_nutrition_lookup(kitchen)
     IngredientCatalog.lookup_for(kitchen).transform_values do |entry|
@@ -39,22 +46,8 @@ class RecipeNutritionJob < ApplicationJob
     }
   end
 
-  def parsed_recipe(recipe)
-    FamilyRecipes::Recipe.new(
-      markdown_source: recipe.markdown_source,
-      id: recipe.slug,
-      category: recipe.category.name
-    )
-  end
-
   def omit_set
     @omit_set ||= IngredientCatalog.where(aisle: 'omit').pluck(:ingredient_name).to_set(&:downcase)
-  end
-
-  def recipe_map(kitchen)
-    @recipe_map ||= kitchen.recipes.includes(:category).to_h do |r|
-      [r.slug, parsed_recipe(r)]
-    end
   end
 
   def serialize_result(result)
