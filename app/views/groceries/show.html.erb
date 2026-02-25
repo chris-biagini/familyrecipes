@@ -10,7 +10,7 @@
   <%= javascript_include_tag 'wake-lock', defer: true %>
   <%= javascript_include_tag 'groceries', defer: true %>
   <%= javascript_include_tag 'editor-utils', defer: true %>
-  <%= javascript_include_tag 'recipe-editor', defer: true %>
+  <%= javascript_include_tag 'editor-framework', defer: true %>
 <% end %>
 
 <% if current_kitchen.member?(current_user) %>
@@ -93,41 +93,25 @@
 </div>
 
 <% if current_kitchen.member?(current_user) %>
-<dialog class="editor-dialog"
-        data-editor-open="#edit-quick-bites-button"
-        data-editor-url="<%= groceries_quick_bites_path %>"
-        data-editor-method="PATCH"
-        data-editor-on-success="reload"
-        data-editor-body-key="content">
-  <div class="editor-header">
-    <h2>Edit Quick Bites</h2>
-    <button type="button" class="btn editor-close" aria-label="Close">&times;</button>
-  </div>
-  <div class="editor-errors" hidden></div>
+<%= render layout: 'shared/editor_dialog',
+    locals: { title: 'Edit Quick Bites',
+              dialog_data: { editor_open: '#edit-quick-bites-button',
+                             editor_url: groceries_quick_bites_path,
+                             editor_method: 'PATCH',
+                             editor_on_success: 'reload',
+                             editor_body_key: 'content' } } do %>
   <textarea class="editor-textarea" spellcheck="false"><%= @quick_bites_content %></textarea>
-  <div class="editor-footer">
-    <button type="button" class="btn editor-cancel">Cancel</button>
-    <button type="button" class="btn btn-primary editor-save">Save</button>
-  </div>
-</dialog>
+<% end %>
 
-<dialog class="editor-dialog"
-        data-editor-open="#edit-aisle-order-button"
-        data-editor-url="<%= groceries_aisle_order_path %>"
-        data-editor-method="PATCH"
-        data-editor-on-success="reload"
-        data-editor-body-key="aisle_order"
-        data-editor-load-url="<%= groceries_aisle_order_content_path %>"
-        data-editor-load-key="aisle_order">
-  <div class="editor-header">
-    <h2>Aisle Order</h2>
-    <button type="button" class="btn editor-close" aria-label="Close">&times;</button>
-  </div>
-  <div class="editor-errors" hidden></div>
+<%= render layout: 'shared/editor_dialog',
+    locals: { title: 'Aisle Order',
+              dialog_data: { editor_open: '#edit-aisle-order-button',
+                             editor_url: groceries_aisle_order_path,
+                             editor_method: 'PATCH',
+                             editor_on_success: 'reload',
+                             editor_body_key: 'aisle_order',
+                             editor_load_url: groceries_aisle_order_content_path,
+                             editor_load_key: 'aisle_order' } } do %>
   <textarea class="editor-textarea" spellcheck="false" placeholder="Loading..."></textarea>
-  <div class="editor-footer">
-    <button type="button" class="btn editor-cancel">Cancel</button>
-    <button type="button" class="btn btn-primary editor-save">Save</button>
-  </div>
-</dialog>
+<% end %>
 <% end %>
