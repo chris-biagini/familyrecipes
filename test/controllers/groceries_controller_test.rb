@@ -134,7 +134,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     get groceries_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
-    assert_select '#edit-aisle-order-button', 'Aisle Order'
+    assert_select '#edit-aisle-order-button', 'Edit Aisle Order'
     assert_select 'dialog[data-editor-open="#edit-aisle-order-button"]'
   end
 
