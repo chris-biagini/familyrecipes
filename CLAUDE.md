@@ -35,7 +35,7 @@ Rails auto-escapes all `<%= %>` output. The **only** XSS vectors are `.html_safe
 - `rake lint:html_safe` audits all `.html_safe` and `raw()` calls. Run it before adding new ones.
 
 Everywhere: use semantic HTML wherever possible and appropriate for the content.
-Avoid littering the DOM with  more `<div>`s than needed. Don't use a `<div>` when a semantic tag will do.
+Avoid littering the DOM with more `<div>`s than needed. Don't use a `<div>` when a semantic tag will do.
 
 Recipes:
 - Recipes are **documents first**. They are marked-up text that a browser can render, not an app that happens to contain text.
@@ -230,11 +230,14 @@ The hook replaces time-of-day with synthetic UTC timestamps while preserving the
 
 ## Database Setup
 
+Ruby 3.2+ and SQLite3 are required. Install dependencies first:
+
 ```bash
+bundle install
 rails db:create db:migrate db:seed
 ```
 
-SQLite3 is required. Two databases: primary (`storage/production.sqlite3`), cable (`storage/production_cable.sqlite3`). Development/test use parallel files under `storage/`. `db:seed` imports all markdown files from `db/seeds/recipes/` into the database via `MarkdownImporter` and loads ingredient catalog from `db/seeds/resources/ingredient-catalog.yaml`. The seed is idempotent — safe to re-run. Dependencies are managed via `Gemfile` (Bundler and `bundle install` required).
+Two databases: primary (`storage/production.sqlite3`), cable (`storage/production_cable.sqlite3`). Development/test use parallel files under `storage/`. `db:seed` imports all markdown files from `db/seeds/recipes/` into the database via `MarkdownImporter` and loads ingredient catalog from `db/seeds/resources/ingredient-catalog.yaml`. The seed is idempotent — safe to re-run.
 
 ### Background Jobs
 
