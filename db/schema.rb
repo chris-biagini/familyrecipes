@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 3) do
+ActiveRecord::Schema[8.1].define(version: 4) do
   create_table "categories", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "kitchen_id", null: false
@@ -40,7 +40,9 @@ ActiveRecord::Schema[8.1].define(version: 3) do
     t.integer "position", null: false
     t.string "prep_note"
     t.integer "step_id", null: false
-    t.integer "target_recipe_id", null: false
+    t.integer "target_recipe_id"
+    t.string "target_slug", null: false
+    t.string "target_title", null: false
     t.datetime "updated_at", null: false
     t.index ["kitchen_id"], name: "index_cross_references_on_kitchen_id"
     t.index ["step_id", "position"], name: "index_cross_references_on_step_id_and_position", unique: true
