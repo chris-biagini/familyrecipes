@@ -2,7 +2,7 @@
 
 class DevSessionsController < ApplicationController
   skip_before_action :set_kitchen_from_path
-  before_action :require_non_production_environment
+  before_action :require_non_production_environment, only: :create
 
   def create
     user = User.find(params[:id])

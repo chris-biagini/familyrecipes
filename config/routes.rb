@@ -22,8 +22,9 @@ Rails.application.routes.draw do
     delete 'nutrition/:ingredient_name', to: 'nutrition_entries#destroy', as: :nutrition_entry_destroy
   end
 
+  delete 'logout', to: 'dev_sessions#destroy', as: :logout
+
   if Rails.env.development? || Rails.env.test?
     get 'dev/login/:id', to: 'dev_sessions#create', as: :dev_login
-    get 'dev/logout', to: 'dev_sessions#destroy', as: :dev_logout
   end
 end

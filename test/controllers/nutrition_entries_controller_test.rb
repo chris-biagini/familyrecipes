@@ -125,7 +125,7 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'upsert requires membership' do
-    get dev_logout_path
+    delete logout_path
 
     post nutrition_entry_upsert_path('flour', kitchen_slug: kitchen_slug),
          params: { label_text: VALID_LABEL },
@@ -240,7 +240,7 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'destroy requires membership' do
-    get dev_logout_path
+    delete logout_path
 
     delete nutrition_entry_destroy_path('flour', kitchen_slug: kitchen_slug), as: :json
 

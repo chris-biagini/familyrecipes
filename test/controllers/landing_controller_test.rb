@@ -3,13 +3,6 @@
 require 'test_helper'
 
 class LandingControllerTest < ActionDispatch::IntegrationTest
-  setup do
-    add_placeholder_auth_routes
-  end
-
-  teardown do
-    reload_original_routes
-  end
 
   test 'redirects to sole kitchen when exactly one exists' do
     kitchen = Kitchen.create!(name: 'Test Kitchen', slug: 'test-kitchen')
@@ -37,21 +30,4 @@ class LandingControllerTest < ActionDispatch::IntegrationTest
     assert_select 'a', 'Kitchen B'
   end
 
-  private
-
-  def add_placeholder_auth_routes
-    return if Rails.application.routes.named_routes.key?(:login)
-
-    @routes_need_reload = true
-    Rails.application.routes.append do
-      get 'login', to: 'dev_sessions#create', as: :login
-      delete 'logout', to: 'dev_sessions#destroy', as: :logout
-    end
-  end
-
-  def reload_original_routes
-    return unless @routes_need_reload
-
-    Rails.application.reload_routes!
-  end
 end

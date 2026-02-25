@@ -28,21 +28,5 @@ module ActionDispatch
     def kitchen_slug
       @kitchen.slug
     end
-
-    def add_placeholder_auth_routes
-      return if Rails.application.routes.named_routes.key?(:login)
-
-      @routes_need_reload = true
-      Rails.application.routes.append do
-        get 'login', to: 'dev_sessions#create', as: :login
-        delete 'logout', to: 'dev_sessions#destroy', as: :logout
-      end
-    end
-
-    def reload_original_routes
-      return unless @routes_need_reload
-
-      Rails.application.reload_routes!
-    end
   end
 end

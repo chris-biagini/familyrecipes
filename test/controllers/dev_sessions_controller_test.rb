@@ -16,7 +16,7 @@ class DevSessionsControllerTest < ActionDispatch::IntegrationTest
   test 'logout clears session and redirects to landing' do
     log_in
 
-    get dev_logout_path
+    delete logout_path
 
     assert_redirected_to root_path
   end

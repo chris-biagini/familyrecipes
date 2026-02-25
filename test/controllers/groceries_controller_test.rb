@@ -5,11 +5,6 @@ require 'test_helper'
 class GroceriesControllerTest < ActionDispatch::IntegrationTest
   setup do
     create_kitchen_and_user
-    add_placeholder_auth_routes
-  end
-
-  teardown do
-    reload_original_routes
   end
 
   # --- Access control ---

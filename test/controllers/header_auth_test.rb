@@ -6,11 +6,6 @@ class HeaderAuthTest < ActionDispatch::IntegrationTest
   setup do
     @kitchen = Kitchen.create!(name: 'Test Kitchen', slug: 'test-kitchen')
     ActsAsTenant.current_tenant = @kitchen
-    add_placeholder_auth_routes
-  end
-
-  teardown do
-    reload_original_routes
   end
 
   test 'creates user and session from trusted headers' do

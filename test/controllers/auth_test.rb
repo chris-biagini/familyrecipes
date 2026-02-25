@@ -5,7 +5,6 @@ require 'test_helper'
 class AuthTest < ActionDispatch::IntegrationTest
   setup do
     create_kitchen_and_user
-    add_placeholder_auth_routes
     MarkdownImporter.import(<<~MD, kitchen: @kitchen)
       # Focaccia
 
@@ -17,10 +16,6 @@ class AuthTest < ActionDispatch::IntegrationTest
 
       Mix well.
     MD
-  end
-
-  teardown do
-    reload_original_routes
   end
 
   test 'unauthenticated POST to recipes returns 403' do

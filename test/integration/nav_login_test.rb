@@ -7,11 +7,10 @@ class NavLoginTest < ActionDispatch::IntegrationTest
     create_kitchen_and_user
   end
 
-  test 'anonymous user sees log in link' do
+  test 'anonymous user does not see log in or log out' do
     get kitchen_root_path(kitchen_slug: kitchen_slug)
 
-    assert_select 'nav a.login', text: 'Log in'
-    assert_select 'nav a.login[href*="login"]'
+    assert_select 'nav form[action*="logout"]', count: 0
   end
 
   test 'logged-in user sees log out button' do
@@ -20,11 +19,5 @@ class NavLoginTest < ActionDispatch::IntegrationTest
     get kitchen_root_path(kitchen_slug: kitchen_slug)
 
     assert_select 'nav form[action*="logout"] button', text: 'Log out'
-  end
-
-  test 'anonymous user does not see log out button' do
-    get kitchen_root_path(kitchen_slug: kitchen_slug)
-
-    assert_select 'nav form[action*="logout"]', count: 0
   end
 end

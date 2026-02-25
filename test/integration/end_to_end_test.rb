@@ -5,7 +5,6 @@ require 'test_helper'
 class EndToEndTest < ActionDispatch::IntegrationTest
   setup do
     create_kitchen_and_user
-    add_placeholder_auth_routes
 
     @bread = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
     @pizza = Category.create!(name: 'Pizza', slug: 'pizza', position: 1, kitchen: @kitchen)
@@ -71,10 +70,6 @@ class EndToEndTest < ActionDispatch::IntegrationTest
 
       Combine and let rest for 1* hour.
     MD
-  end
-
-  teardown do
-    reload_original_routes
   end
 
   # -- Layout --

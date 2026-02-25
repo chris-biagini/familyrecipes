@@ -11,8 +11,6 @@
     <div>
       <% if logged_in? %>
         <%= button_to 'Log out', logout_path, method: :delete, class: 'nav-auth-btn' %>
-      <% else %>
-        <%= link_to 'Log in', login_path, class: 'login' %>
       <% end %>
     </div>
     <%= yield :extra_nav if content_for?(:extra_nav) %>

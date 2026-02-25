@@ -57,11 +57,7 @@ class ApplicationController < ActionController::Base
   end
 
   def require_membership
-    unless logged_in?
-      return head(:forbidden) if request.format.json?
-
-      return request_authentication
-    end
+    return head(:forbidden) unless logged_in?
 
     head(:forbidden) unless current_kitchen&.member?(current_user)
   end
