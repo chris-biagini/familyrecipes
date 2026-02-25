@@ -28,4 +28,16 @@ class Kitchen < ApplicationRecord
     lines = parsed_aisle_order.uniq
     self.aisle_order = lines.empty? ? nil : lines.join("\n")
   end
+
+  def all_aisles
+    saved = parsed_aisle_order
+    catalog_aisles = IngredientCatalog.lookup_for(self)
+                                      .values
+                                      .filter_map(&:aisle)
+                                      .uniq
+                                      .reject { |a| a == 'omit' }
+                                      .sort
+
+    saved + (catalog_aisles - saved)
+  end
 end
