@@ -190,7 +190,7 @@ The hook replaces time-of-day with synthetic UTC timestamps while preserving the
 rails db:create db:migrate db:seed
 ```
 
-SQLite3 is required. Two databases: primary (`storage/production.sqlite3`), cable (`storage/production_cable.sqlite3`). Development/test use parallel files under `storage/`. `db:seed` imports all markdown files from `db/seeds/recipes/` into the database via `MarkdownImporter` and loads ingredient catalog from `db/seeds/resources/ingredient-catalog.yaml`. The seed is idempotent — safe to re-run. Dependencies are managed via `Gemfile` (Ruby 3.2+, Bundler, and `bundle install` required).
+SQLite3 is required. Two databases: primary (`storage/production.sqlite3`), cable (`storage/production_cable.sqlite3`). Development/test use parallel files under `storage/`. `db:seed` imports all markdown files from `db/seeds/recipes/` into the database via `MarkdownImporter` and loads ingredient catalog from `db/seeds/resources/ingredient-catalog.yaml`. The seed is idempotent — safe to re-run. Dependencies are managed via `Gemfile` (Bundler and `bundle install` required).
 
 ### Background Jobs
 
@@ -206,7 +206,7 @@ a dedicated database and Puma plugin. Job classes:
 rake lint
 ```
 
-Runs RuboCop on all Ruby files. Configuration is in `.rubocop.yml`. The default `rake` task runs both lint and test. CI also runs `bundle exec rubocop` before tests.
+Runs RuboCop on all Ruby files. Configuration is in `.rubocop.yml`. The default `rake` task runs both lint and test.
 
 ## Test Command
 
@@ -221,7 +221,7 @@ ruby -Itest test/controllers/recipes_controller_test.rb              # single fi
 ruby -Itest test/models/recipe_test.rb -n test_requires_title        # single test method
 ```
 
-Test layout: `test/controllers/`, `test/models/`, `test/services/`, `test/jobs/`, `test/integration/`, plus top-level parser unit tests. `test/test_helper.rb` provides `create_kitchen_and_user` (sets `@kitchen`, `@user`, and tenant), `log_in` (logs in `@user` via dev login), and `kitchen_slug` for controller tests. OmniAuth test mode is enabled globally.
+Test layout: `test/controllers/`, `test/models/`, `test/services/`, `test/jobs/`, `test/integration/`, `test/channels/`, `test/lib/`, plus top-level parser unit tests. `test/test_helper.rb` provides `create_kitchen_and_user` (sets `@kitchen`, `@user`, and tenant), `log_in` (logs in `@user` via dev login), and `kitchen_slug` for controller tests. OmniAuth test mode is enabled globally.
 
 ## Dev Server
 
@@ -251,7 +251,7 @@ See `docker-compose.example.yml` for a reference deployment configuration. No ex
 
 ## Routes
 
-All routes live under `/kitchens/:kitchen_slug/` except the landing page (`/`), auth routes (`/auth/:provider/callback`, `/auth/failure`, `/logout`), login (`/login`), dev login (`/dev/login/:id`), and health check (`/up`). Kitchen-scoped routes include recipes (CRUD), ingredients index, groceries (`show`, `state`, `select`, `check`, `custom_items`, `clear`, `quick_bites`, `aisle_order`, `aisle_order_content`), and nutrition entries (`POST`/`DELETE` at `/nutrition/:ingredient_name`). Views use Rails route helpers — `root_path` (landing), `kitchen_root_path` (kitchen homepage), `recipe_path(slug)`, `ingredients_path`, `groceries_path`. `ApplicationController#default_url_options` auto-fills `kitchen_slug` from `current_kitchen`, so most helpers work without explicitly passing it. When adding links, always use the `_path` helpers.
+All routes live under `/kitchens/:kitchen_slug/` except the landing page (`/`), auth routes (`/auth/:provider/callback`, `/auth/failure`, `/logout`), login (`/login`), dev login (`/dev/login/:id`), and health check (`/up`). Kitchen-scoped routes include recipes (`show`, `create`, `update`, `destroy` — no index/new/edit), ingredients index, groceries (`show`, `state`, `select`, `check`, `custom_items`, `clear`, `quick_bites`, `aisle_order`, `aisle_order_content`), and nutrition entries (`POST`/`DELETE` at `/nutrition/:ingredient_name`). Views use Rails route helpers — `root_path` (landing), `kitchen_root_path` (kitchen homepage), `recipe_path(slug)`, `ingredients_path`, `groceries_path`. `ApplicationController#default_url_options` auto-fills `kitchen_slug` from `current_kitchen`, so most helpers work without explicitly passing it. When adding links, always use the `_path` helpers.
 
 ## Architecture
 
@@ -259,40 +259,9 @@ All routes live under `/kitchens/:kitchen_slug/` except the landing page (`/`), 
 
 The Rails app module is `Familyrecipes` (lowercase r); the domain/parser module is `FamilyRecipes` (uppercase R). Different constants, no collision. Parser classes that would collide with ActiveRecord model names (`Recipe`, `Step`, `Ingredient`, `CrossReference`, `QuickBite`) are namespaced under `FamilyRecipes::`. Utility classes without collisions (`LineClassifier`, `RecipeBuilder`, etc.) remain top-level.
 
-### Database
+### Multi-tenant scoping — non-negotiable
 
-Two SQLite databases. **Primary** with twelve tables: `kitchens`, `users`, `memberships`, `sessions`, `connected_services`, `categories`, `recipes`, `steps`, `ingredients`, `cross_references`, `ingredient_catalog`, `grocery_lists`. Most data tables have a `kitchen_id` FK; `sessions` and `connected_services` belong to `users` directly. **Cable** database stores `solid_cable_messages` for ActionCable pub/sub. See `db/schema.rb` for the primary schema. Recipes are seeded from `db/seeds/recipes/*.md` via `MarkdownImporter`.
-
-### ActiveRecord Models (`app/models/`)
-
-- `Kitchen` — multi-tenant container; has_many :users (through :memberships), :categories, :recipes, :ingredient_catalog; has_one :grocery_list; `quick_bites_content` text column for Quick Bites source; `aisle_order` text column for grocery aisle display order; `member?(user)` checks membership
-- `User` — has_many :kitchens (through :memberships), :sessions, :connected_services; email required and unique
-- `Session` — database-backed login session; belongs_to :user; stores ip_address, user_agent
-- `Current` — `ActiveSupport::CurrentAttributes` with `:session` attribute; delegates `:user` to session
-- `ConnectedService` — OAuth identity (provider + uid); belongs_to :user; unique on [provider, uid]
-- `Membership` — joins User to Kitchen; `role` column (default: "member") for future use
-- `Category` — has_many :recipes, ordered by position, auto-generates slug
-- `Recipe` — belongs_to :kitchen and :category, has_many :steps (ordered), has_many :ingredients (through steps), has_many :cross_references (through steps), has_many :inbound_cross_references; `referencing_recipes` derives from CrossReference joins
-- `Step` — belongs_to :recipe, has_many :ingredients (ordered)
-- `Ingredient` — belongs_to :step
-- `CrossReference` — AR model for `@[Recipe]` links within steps; stores target_recipe, multiplier, prep_note, position
-- `IngredientCatalog` — one row per ingredient with FDA-label nutrients, density, portions, and aisle; supports an overlay model where seed entries are global (`kitchen_id: nil`) and kitchens can add overrides. `lookup_for(kitchen)` merges global + kitchen entries with kitchen taking precedence. Seeded from `ingredient-catalog.yaml`. Used by `RecipeNutritionJob` and `ShoppingListBuilder`
-- `GroceryList` — one per kitchen; json `state` column stores `selected_recipes`, `selected_quick_bites`, `custom_items`, `checked_off`; integer `version` counter for optimistic sync via ActionCable
-
-### Controllers (`app/controllers/`)
-
-All controllers are thin — load from ActiveRecord, pass to views. All queries MUST go through `current_kitchen` (e.g., `current_kitchen.recipes.find_by!`). Never use unscoped model queries like `Recipe.find_by` — that crosses kitchen boundaries.
-
-- `ApplicationController` — includes `Authentication` concern; provides `current_user`, `current_kitchen`, `logged_in?` helpers; `allow_unauthenticated_access` makes all pages public by default; `require_membership` guards write endpoints
-- `LandingController#show` — root page listing available kitchens
-- `DevSessionsController` — dev/test-only session login (`/dev/login/:id`) and logout; uses `start_new_session_for`/`terminate_session` from Authentication concern
-- `OmniauthCallbacksController` — handles OmniAuth callbacks (`/auth/:provider/callback`); finds or creates user via ConnectedService, starts database-backed session
-- `HomepageController#show` — categories with eager-loaded recipes, site config from `Rails.configuration.site` (loaded from `config/site.yml`)
-- `RecipesController` — `show` uses the "parsed-recipe bridge" pattern (see below); `create`/`update`/`destroy` are editor endpoints guarded by `require_membership`, using `MarkdownValidator` and `MarkdownImporter`
-- `IngredientsController#index` — all ingredients grouped by canonical name with recipe links and nutrition status badges
-- `NutritionEntriesController` — `upsert`/`destroy` endpoints for web-based nutrition editing via the ingredients page; parses label text with `NutritionLabelParser`, recalculates affected recipes; guarded by `require_membership`
-- `GroceriesController` — `show` renders recipe/quick-bite selectors; `state` returns JSON shopping list built by `ShoppingListBuilder`; `select`, `check`, `update_custom_items`, `clear` mutate `GroceryList` state and broadcast via ActionCable; `update_quick_bites` edits `Kitchen#quick_bites_content` directly
-- `SessionsController#new` — login page at `/login`
+All queries MUST go through `current_kitchen` (e.g., `current_kitchen.recipes.find_by!`). Never use unscoped model queries like `Recipe.find_by` — that crosses kitchen boundaries. `Kitchen` is the tenant container; most data tables have a `kitchen_id` FK.
 
 ### Parse-on-save architecture
 
@@ -302,74 +271,23 @@ The parser runs only on the write path (`MarkdownImporter`). The database is the
 
 Grocery list state syncs across browser tabs/devices via ActionCable backed by Solid Cable (separate SQLite database for pub/sub). `GroceryListChannel` broadcasts version numbers on state changes; clients poll for fresh state when their version is stale.
 
-### Parser / Domain Classes (`lib/familyrecipes/`)
+### IngredientCatalog overlay model
 
-These are the import engine and render-time helpers. Loaded via `config/initializers/familyrecipes.rb` (not Zeitwerk-autoloaded).
-
-- `FamilyRecipes::Recipe` — parses markdown into structured data (title, description, front matter, steps, footer)
-- `FamilyRecipes::Step` — a recipe step containing a tldr summary, ingredients list, and instructions
-- `FamilyRecipes::Ingredient` — individual ingredient with name, quantity, and prep note
-- `FamilyRecipes::CrossReference` — a reference from one recipe to another (e.g., `@[Pizza Dough]`), renders as a link
-- `FamilyRecipes::QuickBite` — simple recipe from Quick Bites.md (name and ingredients only)
-- `LineClassifier` — classifies raw recipe text lines into typed tokens
-- `RecipeBuilder` — consumes LineTokens and produces a structured document hash
-- `IngredientParser` — parses ingredient line text into structured data; detects cross-references
-- `IngredientAggregator` — sums ingredient quantities by unit for grocery list display
-- `ScalableNumberPreprocessor` — wraps numbers in `<span class="scalable">` tags for client-side scaling
-- `NutritionCalculator` — calculates nutrition facts; used by `RecipeNutritionJob` at save time
-- `NutritionEntryHelpers` — shared helpers for nutrition entry tool
-- `BuildValidator` — validates cross-references, ingredients, and nutrition data
-- `Inflector` — pluralization/singularization for ingredient canonicalization
-- `VulgarFractions` — converts decimal quantities to Unicode vulgar fractions (½, ¾, etc.)
-- `Quantity` — immutable `Data.define` value object (value + unit)
-
-### Services (`app/services/`)
-
-- `MarkdownImporter` — bridges parser and database: parses markdown, upserts Recipe/Step/Ingredient/CrossReference rows. Requires `kitchen:` keyword argument. Used by `db/seeds.rb` and the recipe editor.
-- `CrossReferenceUpdater` — updates `@[Title]` cross-references when recipes are renamed or deleted. `rename_references` requires `kitchen:` keyword; `strip_references` gets kitchen from the recipe.
-- `MarkdownValidator` — validates markdown source before import; checks for blank content, missing Category front matter, and at least one step. Used by `RecipesController` for editor input validation.
-- `NutritionLabelParser` — parses plaintext FDA-style nutrition labels into structured data (nutrients, density, portions). `Result` is a `Data.define` with `success?` predicate. Used by `NutritionEntriesController`.
-- `ShoppingListBuilder` — builds aisle-organized shopping list from selected recipes/quick bites; uses `IngredientCatalog` for aisle lookup and `IngredientAggregator`-style quantity merging. Used by `GroceriesController#state`.
-
-### Helpers (`app/helpers/`)
-
-- `RecipesHelper` — view helpers for rendering recipe content: `render_markdown(text)`, `scalable_instructions(text)` (wraps numbers in scalable spans then renders), `format_yield_line(text)`, `format_yield_with_unit(text, singular, plural)`. Used in recipe views for all markdown-to-HTML conversion.
-
-### Views (`app/views/`)
-
-```
-layouts/application.html.erb    ← doctype, meta, Propshaft asset tags, nav, yield
-shared/_nav.html.erb            ← Home, Index, Groceries links
-landing/show.html.erb           ← kitchen listing (root page)
-homepage/show.html.erb          ← category TOC + recipe listings
-recipes/show.html.erb           ← recipe page (steps, ingredients, nutrition)
-recipes/_step.html.erb          ← step partial with ingredients and cross-references
-recipes/_nutrition_table.html.erb ← FDA-style nutrition facts
-ingredients/index.html.erb      ← alphabetical ingredient index with nutrition status badges and editor dialog
-sessions/new.html.erb           ← login page
-groceries/show.html.erb         ← recipe/quick-bite selectors, server-driven shopping list via JS
-```
-
-Views use `content_for` blocks for page-specific titles, head tags, body attributes, and scripts. Cross-references are rendered using duck typing (`respond_to?(:target_slug)`) per project conventions. Edit buttons and editor dialogs are wrapped in `current_kitchen.member?(current_user)` checks — read-only visitors see no edit UI.
-
-### Assets (Propshaft)
-
-Propshaft serves fingerprinted assets from `app/assets/`. No build step, no bundling, no Node.
-
-- `app/assets/stylesheets/` — `style.css`, `groceries.css`
-- `app/assets/javascripts/` — `recipe-state-manager.js`, `recipe-editor.js`, `groceries.js`, `nutrition-editor.js`, `notify.js`, `wake-lock.js`
-- `app/assets/images/` — favicons
-
-Views use `stylesheet_link_tag`, `javascript_include_tag`, `asset_path`.
-
-### Data Files
-
-- `config/site.yml` — site identity (title, homepage heading/subtitle, GitHub URL); loaded as `Rails.configuration.site` via `config/initializers/site_config.rb`
-- `db/seeds/resources/ingredient-catalog.yaml` — merged ingredient reference data: nutrition facts, density, portions, aisle mappings, and sources; seeded into `ingredient_catalog` table during `db:seed`
+Seed entries are global (`kitchen_id: nil`); kitchens can add overrides. `lookup_for(kitchen)` merges global + kitchen entries with kitchen taking precedence.
 
 ### Editor dialogs
 
 `recipe-editor.js` is a data-driven multi-dialog handler. It finds all `.editor-dialog` elements and configures each via data attributes (`data-editor-open`, `data-editor-url`, `data-editor-method`, `data-editor-on-success`, `data-editor-body-key`). To add a new editor dialog, create a `<dialog class="editor-dialog">` with the right data attributes — no JS changes needed. See `recipes/_editor_dialog.html.erb` and `groceries/show.html.erb` for examples.
+
+### Key conventions
+
+- Domain classes in `lib/familyrecipes/` are loaded via `config/initializers/familyrecipes.rb` (not Zeitwerk-autoloaded).
+- Propshaft serves assets from `app/assets/`. No build step, no bundling, no Node.
+- Views use `content_for` blocks for page-specific titles, head tags, body attributes, and scripts.
+- Cross-references in views are rendered using duck typing (`respond_to?(:target_slug)`).
+- Edit UI is wrapped in `current_kitchen.member?(current_user)` checks — read-only visitors see no edit controls.
+- `config/site.yml` holds site identity; loaded as `Rails.configuration.site`.
+- `MarkdownImporter` requires `kitchen:` keyword. `CrossReferenceUpdater.rename_references` also requires `kitchen:`.
 
 ### Design History
 
