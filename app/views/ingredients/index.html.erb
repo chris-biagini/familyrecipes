@@ -56,31 +56,17 @@
 </article>
 
 <% if current_kitchen.member?(current_user) %>
-<dialog id="nutrition-editor" class="editor-dialog">
-  <div class="editor-header">
-    <h2 id="nutrition-editor-title">Edit Nutrition</h2>
-    <button type="button" class="btn editor-close" aria-label="Close">&times;</button>
-  </div>
-  <div class="editor-errors" hidden></div>
+<%= render layout: 'shared/editor_dialog',
+    locals: { title: 'Edit Nutrition',
+              id: 'nutrition-editor',
+              dialog_data: { editor_on_success: 'reload' },
+              footer_extra: render('ingredients/aisle_selector', aisles: @available_aisles) } do %>
   <textarea id="nutrition-editor-textarea" class="editor-textarea" spellcheck="false"></textarea>
-  <div class="editor-footer">
-    <select id="nutrition-editor-aisle" class="aisle-select" aria-label="Grocery aisle">
-      <option value="">(none)</option>
-      <%- @available_aisles.each do |aisle| -%>
-      <option value="<%= aisle %>"><%= aisle %></option>
-      <%- end -%>
-      <option disabled>───</option>
-      <option value="omit">Omit from Grocery List</option>
-      <option disabled>───</option>
-      <option value="__other__">New aisle…</option>
-    </select>
-    <input type="text" id="nutrition-editor-aisle-input" class="aisle-input" placeholder="New aisle name" hidden>
-    <span class="editor-footer-spacer"></span>
-    <button type="button" class="btn editor-cancel">Cancel</button>
-    <button type="button" class="btn btn-primary editor-save">Save</button>
-  </div>
-</dialog>
+<% end %>
+<% end %>
 
-<%= javascript_include_tag 'editor-utils' %>
-<%= javascript_include_tag 'nutrition-editor' %>
+<% content_for(:scripts) do %>
+  <%= javascript_include_tag 'editor-utils', defer: true %>
+  <%= javascript_include_tag 'editor-framework', defer: true %>
+  <%= javascript_include_tag 'nutrition-editor', defer: true %>
 <% end %>
