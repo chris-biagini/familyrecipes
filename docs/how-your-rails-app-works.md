@@ -246,7 +246,7 @@ Two kinds of ERB tags here. **`<%= %>`** (with the equals sign) evaluates the Ru
 <% content_for(:scripts) do %>
   <%= javascript_include_tag 'notify', defer: true %>
   <%= javascript_include_tag 'recipe-state-manager', defer: true %>
-  <%= javascript_include_tag 'recipe-editor', defer: true %>
+  <%= javascript_include_tag 'editor-framework', defer: true %>
 <% end %>
 ```
 
@@ -344,11 +344,11 @@ The nav partial (`app/views/shared/_nav.html.erb`) demonstrates another useful p
 
 ### Stop 6: Assets — CSS and JavaScript
 
-The layout includes stylesheets and scripts with helpers like `stylesheet_link_tag 'style'` and `javascript_include_tag 'recipe-editor', defer: true`. These turn into standard HTML tags:
+The layout includes stylesheets and scripts with helpers like `stylesheet_link_tag 'style'` and `javascript_include_tag 'editor-framework', defer: true`. These turn into standard HTML tags:
 
 ```html
 <link href="/assets/style-a1b2c3d4.css" rel="stylesheet">
-<script src="/assets/recipe-editor-e5f6g7h8.js" defer></script>
+<script src="/assets/editor-framework-e5f6g7h8.js" defer></script>
 ```
 
 Those hashes in the filenames are **fingerprints**, added by **Propshaft** — the Rails asset pipeline. It serves files directly from `app/assets/stylesheets/` and `app/assets/javascripts/` with no build step, no bundler, no Node.js. When a file changes, its fingerprint changes, which busts browser caches automatically. You edit `app/assets/stylesheets/style.css` directly, and Propshaft handles the rest.
@@ -764,7 +764,7 @@ Quick reference for the Rails terms used in the two journeys above. Each definit
 
 **instance variable (`@`)** — A variable prefixed with `@` that Rails automatically passes from a controller action to its view template. `RecipesController#show` sets `@recipe`, and the template reads `@recipe.title` — no import or parameter passing required.
 
-**`javascript_include_tag`** — A Rails helper that generates a `<script>` tag with a Propshaft-fingerprinted URL. `javascript_include_tag 'recipe-editor', defer: true` becomes `<script src="/assets/recipe-editor-abc123.js" defer>`. See `app/views/recipes/show.html.erb`.
+**`javascript_include_tag`** — A Rails helper that generates a `<script>` tag with a Propshaft-fingerprinted URL. `javascript_include_tag 'editor-framework', defer: true` becomes `<script src="/assets/editor-framework-abc123.js" defer>`. See `app/views/recipes/show.html.erb`.
 
 **layout** — The HTML wrapper around every page. `app/views/layouts/application.html.erb` provides the `<html>`, `<head>`, nav bar, and `<main>` tag. Each template's content is inserted at the `<%= yield %>` point in the layout. Templates share the layout but inject page-specific content via `content_for`.
 

@@ -321,7 +321,7 @@ Seed entries are global (`kitchen_id: nil`); kitchens can add overrides. `lookup
 
 ### Editor dialogs
 
-`editor-framework.js` is a data-driven multi-dialog handler. It finds all `.editor-dialog` elements and configures each via data attributes (`data-editor-open`, `data-editor-url`, `data-editor-method`, `data-editor-on-success`, `data-editor-body-key`). To add a new editor dialog, create a `<dialog class="editor-dialog">` with the right data attributes — no JS changes needed. See `shared/_editor_dialog.html.erb` and `groceries/show.html.erb` for examples.
+`editor-framework.js` is an event-driven multi-dialog handler. It finds all `.editor-dialog` elements and manages lifecycle (open, save, dirty-check, close). Simple dialogs configure entirely via data attributes (`data-editor-open`, `data-editor-url`, `data-editor-method`, `data-editor-on-success`, `data-editor-body-key`). Custom dialogs (like the nutrition editor) hook into lifecycle events (`editor:collect`, `editor:save`, `editor:modified`, `editor:reset`) on the `<dialog>` element and set `event.detail.handled = true` to override defaults. To add a new simple dialog, use `render layout: 'shared/editor_dialog'` with a textarea block and data attributes — no JS changes needed. For custom content, add a JS file that listens for the lifecycle events. See `groceries/show.html.erb` (simple) and `ingredients/index.html.erb` + `nutrition-editor.js` (custom).
 
 ### Key conventions
 
