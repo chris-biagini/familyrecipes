@@ -1,0 +1,15 @@
+{
+  "planPath": "docs/plans/2026-02-25-trusted-header-auth-plan.md",
+  "tasks": [
+    {"id": 5, "subject": "Task 0: Remove OmniAuth and ConnectedService", "status": "pending"},
+    {"id": 6, "subject": "Task 1: Add trusted-header authentication", "status": "pending", "blockedBy": [5]},
+    {"id": 7, "subject": "Task 2: Auto-join sole kitchen", "status": "pending", "blockedBy": [6]},
+    {"id": 8, "subject": "Task 3: Landing page redirect for sole kitchen", "status": "pending", "blockedBy": [7]},
+    {"id": 9, "subject": "Task 4: Fix groceries auth gates (read paths public)", "status": "pending", "blockedBy": [5]},
+    {"id": 10, "subject": "Task 5: Secure ActionCable (#94)", "status": "pending", "blockedBy": [5]},
+    {"id": 11, "subject": "Task 6: Update nav, routes, and auth for header-only flow", "status": "pending", "blockedBy": [5]},
+    {"id": 12, "subject": "Task 7: Full test suite green + update CLAUDE.md", "status": "pending", "blockedBy": [6, 7, 8, 9, 10, 11]},
+    {"id": 13, "subject": "Task 8: Close GitHub issues", "status": "pending", "blockedBy": [12]}
+  ],
+  "lastUpdated": "2026-02-25T00:00:00Z"
+}
