@@ -129,6 +129,15 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     assert_select 'noscript', /JavaScript/
   end
 
+  test 'renders aisle order editor dialog for members' do
+    log_in
+    get groceries_path(kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select '#edit-aisle-order-button', 'Aisle Order'
+    assert_select 'dialog[data-editor-open="#edit-aisle-order-button"]'
+  end
+
   test 'groups recipes by category' do
     Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
     Category.create!(name: 'Pasta', slug: 'pasta', position: 1, kitchen: @kitchen)
