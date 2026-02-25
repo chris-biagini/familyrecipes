@@ -19,6 +19,7 @@ services:
       RAILS_ENV: production
       SECRET_KEY_BASE: CHANGE_ME
       RAILS_LOG_LEVEL: info
+      # ALLOWED_HOSTS: recipes.example.com
     volumes:
       - app_storage:/app/storage
 
