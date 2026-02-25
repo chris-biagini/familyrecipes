@@ -3,9 +3,7 @@
       <% if current_kitchen %>
         <%= link_to 'Home', kitchen_root_path, class: 'home', title: 'Home (Table of Contents)' %>
         <%= link_to 'Ingredients', ingredients_path, class: 'ingredients', title: 'Ingredients' %>
-        <% if logged_in? %>
-          <%= link_to 'Groceries', groceries_path, class: 'groceries', title: 'Printable grocery list' %>
-        <% end %>
+        <%= link_to 'Groceries', groceries_path, class: 'groceries', title: 'Printable grocery list' %>
       <% else %>
         <%= link_to 'Home', root_path, class: 'home', title: 'Home' %>
       <% end %>

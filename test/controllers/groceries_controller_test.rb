@@ -5,20 +5,31 @@ require 'test_helper'
 class GroceriesControllerTest < ActionDispatch::IntegrationTest
   setup do
     create_kitchen_and_user
+    add_placeholder_auth_routes
+  end
+
+  teardown do
+    reload_original_routes
   end
 
   # --- Access control ---
 
-  test 'show redirects to login when not logged in' do
+  test 'show is publicly accessible without login' do
     get groceries_path(kitchen_slug: kitchen_slug)
 
-    assert_redirected_to '/login'
+    assert_response :success
   end
 
-  test 'state requires membership' do
+  test 'state is publicly accessible without login' do
     get groceries_state_path(kitchen_slug: kitchen_slug), as: :json
 
-    assert_response :forbidden
+    assert_response :success
+  end
+
+  test 'aisle_order_content is publicly accessible without login' do
+    get groceries_aisle_order_content_path(kitchen_slug: kitchen_slug), as: :json
+
+    assert_response :success
   end
 
   test 'select requires membership' do

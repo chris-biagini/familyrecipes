@@ -5,6 +5,7 @@ require 'test_helper'
 class EndToEndTest < ActionDispatch::IntegrationTest
   setup do
     create_kitchen_and_user
+    add_placeholder_auth_routes
 
     @bread = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
     @pizza = Category.create!(name: 'Pizza', slug: 'pizza', position: 1, kitchen: @kitchen)
@@ -72,6 +73,10 @@ class EndToEndTest < ActionDispatch::IntegrationTest
     MD
   end
 
+  teardown do
+    reload_original_routes
+  end
+
   # -- Layout --
 
   test 'layout includes nav with all links for logged-in members' do
@@ -83,12 +88,12 @@ class EndToEndTest < ActionDispatch::IntegrationTest
     assert_select 'nav a.groceries', 'Groceries'
   end
 
-  test 'layout hides groceries link when not logged in' do
+  test 'layout shows groceries link when not logged in' do
     get kitchen_root_path(kitchen_slug: kitchen_slug)
 
     assert_select 'nav a.home', 'Home'
     assert_select 'nav a.ingredients', 'Ingredients'
-    assert_select 'nav a.groceries', count: 0
+    assert_select 'nav a.groceries', 'Groceries'
   end
 
   test 'layout includes meta tags and stylesheet' do

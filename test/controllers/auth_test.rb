@@ -5,6 +5,7 @@ require 'test_helper'
 class AuthTest < ActionDispatch::IntegrationTest
   setup do
     create_kitchen_and_user
+    add_placeholder_auth_routes
     MarkdownImporter.import(<<~MD, kitchen: @kitchen)
       # Focaccia
 
@@ -16,6 +17,10 @@ class AuthTest < ActionDispatch::IntegrationTest
 
       Mix well.
     MD
+  end
+
+  teardown do
+    reload_original_routes
   end
 
   test 'unauthenticated POST to recipes returns 403' do
@@ -95,10 +100,10 @@ class AuthTest < ActionDispatch::IntegrationTest
     assert_select '#new-recipe-button', count: 1
   end
 
-  test 'groceries page redirects non-members to login' do
+  test 'groceries page is publicly accessible' do
     get groceries_path(kitchen_slug: kitchen_slug)
 
-    assert_redirected_to '/login'
+    assert_response :success
   end
 
   test 'groceries page shows edit buttons for members' do
