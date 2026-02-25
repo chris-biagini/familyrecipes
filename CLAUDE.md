@@ -241,7 +241,7 @@ See `docker-compose.example.yml` for a reference deployment configuration. No ex
 
 ## Routes
 
-All routes live under `/kitchens/:kitchen_slug/` except the landing page (`/`), auth routes (`/auth/:provider/callback`, `/auth/failure`, `/logout`), login (`/login`), dev login (`/dev/login/:id`), and health check (`/up`). Kitchen-scoped routes include recipes (CRUD), ingredients index, groceries (`show`, `state`, `select`, `check`, `custom_items`, `clear`, `quick_bites`), and nutrition entries (`POST`/`DELETE` at `/nutrition/:ingredient_name`). Views use Rails route helpers — `root_path` (landing), `kitchen_root_path` (kitchen homepage), `recipe_path(slug)`, `ingredients_path`, `groceries_path`. `ApplicationController#default_url_options` auto-fills `kitchen_slug` from `current_kitchen`, so most helpers work without explicitly passing it. When adding links, always use the `_path` helpers.
+All routes live under `/kitchens/:kitchen_slug/` except the landing page (`/`), auth routes (`/auth/:provider/callback`, `/auth/failure`, `/logout`), login (`/login`), dev login (`/dev/login/:id`), and health check (`/up`). Kitchen-scoped routes include recipes (CRUD), ingredients index, groceries (`show`, `state`, `select`, `check`, `custom_items`, `clear`, `quick_bites`, `aisle_order`, `aisle_order_content`), and nutrition entries (`POST`/`DELETE` at `/nutrition/:ingredient_name`). Views use Rails route helpers — `root_path` (landing), `kitchen_root_path` (kitchen homepage), `recipe_path(slug)`, `ingredients_path`, `groceries_path`. `ApplicationController#default_url_options` auto-fills `kitchen_slug` from `current_kitchen`, so most helpers work without explicitly passing it. When adding links, always use the `_path` helpers.
 
 ## Architecture
 
@@ -255,7 +255,7 @@ Two SQLite databases. **Primary** with twelve tables: `kitchens`, `users`, `memb
 
 ### ActiveRecord Models (`app/models/`)
 
-- `Kitchen` — multi-tenant container; has_many :users (through :memberships), :categories, :recipes, :ingredient_catalog; has_one :grocery_list; `quick_bites_content` text column for Quick Bites source; `member?(user)` checks membership
+- `Kitchen` — multi-tenant container; has_many :users (through :memberships), :categories, :recipes, :ingredient_catalog; has_one :grocery_list; `quick_bites_content` text column for Quick Bites source; `aisle_order` text column for grocery aisle display order; `member?(user)` checks membership
 - `User` — has_many :kitchens (through :memberships), :sessions, :connected_services; email required and unique
 - `Session` — database-backed login session; belongs_to :user; stores ip_address, user_agent
 - `Current` — `ActiveSupport::CurrentAttributes` with `:session` attribute; delegates `:user` to session
