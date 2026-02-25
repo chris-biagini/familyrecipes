@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let originalAisle = '';
 
   function currentAisle() {
-    return aisleInput.hidden ? aisleSelect.value : aisleInput.value.trim();
+    return aisleSelect.value === '__other__' ? aisleInput.value.trim() : aisleSelect.value;
   }
 
   function isModified() {
@@ -26,7 +26,6 @@ document.addEventListener('DOMContentLoaded', () => {
   function resetDialog() {
     textarea.value = originalContent;
     aisleSelect.value = originalAisle || '';
-    aisleSelect.hidden = false;
     aisleInput.hidden = true;
     aisleInput.value = '';
     EditorUtils.clearErrors(errorsDiv);
@@ -61,20 +60,21 @@ document.addEventListener('DOMContentLoaded', () => {
       if (aisleSelect.value !== originalAisle) aisleSelect.value = '';
       aisleInput.hidden = true;
       aisleInput.value = '';
-      aisleSelect.hidden = false;
       titleEl.textContent = currentIngredient;
       EditorUtils.clearErrors(errorsDiv);
       dialog.showModal();
     });
   });
 
-  // "Other..." handling for aisle select
+  // "New aisle..." handling for aisle select
   aisleSelect.addEventListener('change', () => {
     if (aisleSelect.value === '__other__') {
-      aisleSelect.hidden = true;
       aisleInput.hidden = false;
       aisleInput.value = '';
       aisleInput.focus();
+    } else {
+      aisleInput.hidden = true;
+      aisleInput.value = '';
     }
   });
 
@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
       event.preventDefault();
       event.stopPropagation();
       aisleInput.hidden = true;
-      aisleSelect.hidden = false;
+      aisleInput.value = '';
       aisleSelect.value = originalAisle || '';
     }
   });

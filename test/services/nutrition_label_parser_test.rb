@@ -215,7 +215,7 @@ class NutritionLabelParserTest < ActiveSupport::TestCase
     assert_equal({ 'stick' => 113.0, 'slice' => 21.0 }, result.portions)
   end
 
-  test 'formats entry with density as label text' do
+  test 'formats entry with density as separate section' do
     entry = build_entry(
       basis_grams: 30.0, calories: 110.0, fat: 0.5, saturated_fat: 0.0,
       trans_fat: 0.0, cholesterol: 0.0, sodium: 5.0, carbs: 23.0,
@@ -225,11 +225,11 @@ class NutritionLabelParserTest < ActiveSupport::TestCase
 
     text = NutritionLabelParser.format(entry)
 
-    assert_includes text, 'Serving size: 0.25 cup (30g)'
+    assert_includes text, 'Serving size: 30g'
+    assert_includes text, 'Density:'
+    assert_includes text, '0.25 cup = 30g'
     assert_includes text, 'Calories'
     assert_includes text, '110'
-    assert_includes text, 'Total Fat'
-    assert_includes text, '0.5g'
     assert_includes text, 'Protein'
     assert_includes text, '3g'
   end
@@ -244,7 +244,7 @@ class NutritionLabelParserTest < ActiveSupport::TestCase
     assert_includes text, '140'
   end
 
-  test 'formats entry with mismatched density as gram-only serving' do
+  test 'formats entry with mismatched density shows density section' do
     entry = build_entry(
       basis_grams: 100.0, calories: 884.0, fat: 100.0,
       density_grams: 216.0, density_volume: 1.0, density_unit: 'cup'
@@ -253,7 +253,8 @@ class NutritionLabelParserTest < ActiveSupport::TestCase
     text = NutritionLabelParser.format(entry)
 
     assert_includes text, 'Serving size: 100g'
-    assert_not_includes text, 'cup'
+    assert_includes text, 'Density:'
+    assert_includes text, '1 cup = 216g'
   end
 
   test 'formats entry with portions' do
@@ -289,6 +290,66 @@ class NutritionLabelParserTest < ActiveSupport::TestCase
     assert_in_delta 3.0, result.nutrients[:protein]
     assert_equal({ grams: 30.0, volume: 0.25, unit: 'cup' }, result.density)
     assert_equal({ 'stick' => 113.0 }, result.portions)
+  end
+
+  test 'round-trips mismatched density through parse and format' do
+    entry = build_entry(
+      basis_grams: 100.0, calories: 884.0, fat: 100.0,
+      density_grams: 216.0, density_volume: 1.0, density_unit: 'cup'
+    )
+
+    text = NutritionLabelParser.format(entry)
+    result = NutritionLabelParser.parse(text)
+
+    assert_predicate result, :success?
+    assert_in_delta 100.0, result.nutrients[:basis_grams]
+    assert_equal({ grams: 216.0, volume: 1.0, unit: 'cup' }, result.density)
+  end
+
+  test 'parses explicit density section' do
+    text = <<~LABEL
+      Serving size: 100g
+
+      Calories    884
+
+      Density:
+        1 cup = 216g
+    LABEL
+
+    result = NutritionLabelParser.parse(text)
+
+    assert_predicate result, :success?
+    assert_equal({ grams: 216.0, volume: 1.0, unit: 'cup' }, result.density)
+    assert_in_delta 884.0, result.nutrients[:calories]
+  end
+
+  test 'density section takes precedence over serving line volume' do
+    text = <<~LABEL
+      Serving size: 0.25 cup (30g)
+
+      Calories    110
+
+      Density:
+        1 cup = 216g
+    LABEL
+
+    result = NutritionLabelParser.parse(text)
+
+    assert_predicate result, :success?
+    assert_equal({ grams: 216.0, volume: 1.0, unit: 'cup' }, result.density)
+  end
+
+  test 'backward compat: serving line volume still produces density' do
+    text = <<~LABEL
+      Serving size: 0.25 cup (30g)
+
+      Calories    110
+    LABEL
+
+    result = NutritionLabelParser.parse(text)
+
+    assert_predicate result, :success?
+    assert_equal({ grams: 30.0, volume: 0.25, unit: 'cup' }, result.density)
   end
 
   test 'blank_skeleton produces expected template' do

@@ -60,7 +60,7 @@ class NutritionLabelParser
     return serving if serving.is_a?(Result)
 
     nutrients = parse_nutrients.merge(basis_grams: serving[:grams])
-    density = build_density(serving)
+    density = parse_density_section || build_density(serving)
     portions = parse_portions.merge(auto_portions(serving))
 
     Result.new(nutrients:, density:, portions:, errors: [])
@@ -97,10 +97,15 @@ class NutritionLabelParser
   end
 
   def nutrient_lines
-    lines.reject { |l| l.empty? || serving_size_line?(l) || portions_header?(l) || portion_line?(l) }
+    lines.reject do |l|
+      l.empty? || serving_size_line?(l) || portions_header?(l) || portion_line?(l) ||
+        density_header?(l) || density_line?(l)
+    end
   end
 
   def serving_size_line?(line) = line.match?(/\Aserving\s+size\s*:/i)
+  def density_header?(line) = line.match?(/\Adensity\s*:/i)
+  def density_line?(line) = line.match?(/\A[\d.]+\s+\S+\s*=\s*[\d.]+\s*g?\s*\z/i)
   def portions_header?(line) = line.match?(/\Aportions\s*:/i)
   def portion_line?(line) = in_portions_section? && line.match?(/\A\S+\s*:\s*\d/)
 
@@ -147,6 +152,22 @@ class NutritionLabelParser
     { serving[:auto_portion][:unit] => serving[:auto_portion][:grams] }
   end
 
+  def parse_density_section
+    idx = lines.index { |l| density_header?(l) }
+    return nil unless idx
+
+    # Look for "X unit = Yg" on the next non-empty line
+    lines[(idx + 1)..].each do |line|
+      next if line.empty?
+
+      match = line.match(/\A([\d.]+)\s+(\S+)\s*=\s*([\d.]+)\s*g?\s*\z/i)
+      return { volume: match[1].to_f, unit: match[2], grams: match[3].to_f } if match
+
+      break
+    end
+    nil
+  end
+
   def parse_portions
     return {} unless (idx = portions_section_start)
 
@@ -173,25 +194,13 @@ class NutritionLabelParser
     end
 
     def to_s
-      [serving_line, '', *nutrient_lines, *portions_section].join("\n")
+      [serving_line, '', *nutrient_lines, *density_section, *portions_section].join("\n")
     end
 
     private
 
     def serving_line
-      return "Serving size: #{format_grams(@entry.basis_grams)}" unless volume_serving?
-
-      volume = "#{format_number(@entry.density_volume)} #{@entry.density_unit}"
-      "Serving size: #{volume} (#{format_grams(@entry.density_grams)})"
-    end
-
-    # Volume format only when basis_grams matches density_grams — meaning
-    # the serving IS the volume amount (e.g., 1/4 cup = 30g, nutrients per 30g).
-    # USDA entries often have basis_grams=100 with a separate density conversion,
-    # so showing volume would produce contradictions like "1 cup (100g)" for oil.
-    def volume_serving?
-      @entry.density_grams && @entry.density_volume &&
-        @entry.basis_grams == @entry.density_grams
+      "Serving size: #{format_grams(@entry.basis_grams)}"
     end
 
     def nutrient_lines
@@ -204,6 +213,13 @@ class NutritionLabelParser
     def pad(label)
       width = 20 - label.size
       ' ' * [width, 1].max
+    end
+
+    def density_section
+      return [] unless @entry.density_grams && @entry.density_volume
+
+      volume = "#{format_number(@entry.density_volume)} #{@entry.density_unit}"
+      ['', 'Density:', "  #{volume} = #{format_grams(@entry.density_grams)}"]
     end
 
     def portions_section

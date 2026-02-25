@@ -69,9 +69,10 @@
       <%- @available_aisles.each do |aisle| -%>
       <option value="<%= aisle %>"><%= aisle %></option>
       <%- end -%>
-      <option value="omit">omit</option>
       <option disabled>───</option>
-      <option value="__other__">Other…</option>
+      <option value="omit">Omit from Grocery List</option>
+      <option disabled>───</option>
+      <option value="__other__">New aisle…</option>
     </select>
     <input type="text" id="nutrition-editor-aisle-input" class="aisle-input" placeholder="New aisle name" hidden>
     <span class="editor-footer-spacer"></span>
