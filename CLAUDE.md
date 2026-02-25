@@ -26,6 +26,8 @@ Eventually, the goal is to ship this app as a Docker image for homelab install, 
 
 ### XSS prevention — trust Rails, distrust `.html_safe`
 
+A strict Content Security Policy is enforcing (`config/initializers/content_security_policy.rb`). All directives use `'self'` only, plus `ws:`/`wss:` for ActionCable in `connect-src`. No inline scripts, no inline styles, no external resources are allowed. If you need to add any of these, update the CSP initializer first.
+
 Rails auto-escapes all `<%= %>` output. The **only** XSS vectors are `.html_safe`, `raw()`, and rendering engines (like Redcarpet) whose output is marked safe. Rules:
 - **Never** call `.html_safe` on a string that interpolates user content without first escaping it via `ERB::Util.html_escape`.
 - **Never** use `raw()` on user content.
