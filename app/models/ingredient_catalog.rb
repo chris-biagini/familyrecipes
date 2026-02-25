@@ -15,7 +15,19 @@ class IngredientCatalog < ApplicationRecord
   def custom? = kitchen_id.present?
 
   def self.lookup_for(kitchen)
-    global.index_by(&:ingredient_name)
-          .merge(for_kitchen(kitchen).index_by(&:ingredient_name))
+    base = global.index_by(&:ingredient_name)
+                 .merge(for_kitchen(kitchen).index_by(&:ingredient_name))
+    add_ingredient_variants(base)
   end
+
+  def self.add_ingredient_variants(lookup)
+    variants = {}
+    lookup.each_value do |entry|
+      FamilyRecipes::Inflector.ingredient_variants(entry.ingredient_name).each do |variant|
+        variants[variant] = entry unless lookup.key?(variant)
+      end
+    end
+    lookup.merge(variants)
+  end
+  private_class_method :add_ingredient_variants
 end

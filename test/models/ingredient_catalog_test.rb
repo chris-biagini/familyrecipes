@@ -211,4 +211,55 @@ class IngredientCatalogTest < ActiveSupport::TestCase
 
     assert_equal 'Baking', entry.aisle
   end
+
+  test 'lookup_for resolves singular variant of plural catalog name' do
+    IngredientCatalog.create!(ingredient_name: 'Eggs', basis_grams: 50, calories: 70)
+    result = IngredientCatalog.lookup_for(@kitchen)
+
+    assert result.key?('Eggs'), 'exact key should exist'
+    assert result.key?('Egg'), 'singular variant should resolve'
+    assert_equal result['Eggs'].id, result['Egg'].id
+  end
+
+  test 'lookup_for resolves plural variant of singular catalog name' do
+    IngredientCatalog.create!(ingredient_name: 'Carrot', basis_grams: 50, calories: 25)
+    result = IngredientCatalog.lookup_for(@kitchen)
+
+    assert result.key?('Carrot'), 'exact key should exist'
+    assert result.key?('Carrots'), 'plural variant should resolve'
+    assert_equal result['Carrot'].id, result['Carrots'].id
+  end
+
+  test 'lookup_for does not overwrite explicit entry with variant' do
+    eggs_entry = IngredientCatalog.create!(ingredient_name: 'Eggs', basis_grams: 50, calories: 70)
+    egg_entry = IngredientCatalog.create!(ingredient_name: 'Egg', basis_grams: 50, calories: 80)
+    result = IngredientCatalog.lookup_for(@kitchen)
+
+    assert_equal eggs_entry.id, result['Eggs'].id
+    assert_equal egg_entry.id, result['Egg'].id
+  end
+
+  test 'lookup_for skips variants for uncountable names' do
+    IngredientCatalog.create!(ingredient_name: 'Butter', basis_grams: 14)
+    result = IngredientCatalog.lookup_for(@kitchen)
+
+    assert result.key?('Butter')
+    assert_equal 1, result.size
+  end
+
+  test 'lookup_for handles qualified names with variants' do
+    IngredientCatalog.create!(ingredient_name: 'Tomatoes (canned)', basis_grams: 100)
+    result = IngredientCatalog.lookup_for(@kitchen)
+
+    assert result.key?('Tomatoes (canned)')
+    assert result.key?('Tomato (canned)')
+  end
+
+  test 'lookup_for kitchen override applies to variants too' do
+    IngredientCatalog.create!(ingredient_name: 'Eggs', basis_grams: 50, calories: 70)
+    kitchen_entry = IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Eggs', basis_grams: 50, calories: 80)
+    result = IngredientCatalog.lookup_for(@kitchen)
+
+    assert_equal kitchen_entry.id, result['Egg'].id
+  end
 end
