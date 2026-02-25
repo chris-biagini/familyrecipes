@@ -61,7 +61,9 @@ class GroceriesController < ApplicationController
     current_kitchen.normalize_aisle_order!
     current_kitchen.save!
 
-    GroceryListChannel.broadcast_content_changed(current_kitchen)
+    list = GroceryList.for_kitchen(current_kitchen)
+    list.increment!(:version)
+    GroceryListChannel.broadcast_version(current_kitchen, list.version)
     render json: { status: 'ok' }
   end
 

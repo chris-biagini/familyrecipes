@@ -15,6 +15,7 @@
     heartbeatId: null,
     consumer: null,
     awaitingOwnAction: false,
+    initialFetch: true,
 
     init: function(app) {
       var slug = app.dataset.kitchenSlug;
@@ -36,6 +37,7 @@
         GroceryUI.applyState(this.state);
       }
 
+      this.initialFetch = true;
       this.fetchState();
       this.subscribe(slug);
       this.startHeartbeat();
@@ -53,8 +55,9 @@
       })
       .then(function(data) {
         if (data.version >= self.version) {
-          var isRemoteUpdate = data.version > self.version && self.version > 0 && !self.awaitingOwnAction;
+          var isRemoteUpdate = data.version > self.version && self.version > 0 && !self.awaitingOwnAction && !self.initialFetch;
           self.awaitingOwnAction = false;
+          self.initialFetch = false;
           self.version = data.version;
           self.state = data;
           self.saveCache();
