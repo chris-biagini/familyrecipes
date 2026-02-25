@@ -1,0 +1,15 @@
+{
+  "planPath": "docs/plans/2026-02-25-rubocop-configuration-plan.md",
+  "tasks": [
+    {"id": 6, "subject": "Task 1: Add gems to Gemfile", "status": "pending"},
+    {"id": 7, "subject": "Task 2: Rewrite .rubocop.yml", "status": "pending", "blockedBy": [6]},
+    {"id": 8, "subject": "Task 3: Run safe auto-correct", "status": "pending", "blockedBy": [7]},
+    {"id": 9, "subject": "Task 4: Fix manual offenses — Rails cops", "status": "pending", "blockedBy": [8]},
+    {"id": 10, "subject": "Task 5: Add inline disables for intentional violations", "status": "pending", "blockedBy": [9]},
+    {"id": 11, "subject": "Task 6: Add inline disables for metric-exceeding methods", "status": "pending", "blockedBy": [10]},
+    {"id": 12, "subject": "Task 7: Add unique index migration for categories.name", "status": "pending", "blockedBy": [10]},
+    {"id": 13, "subject": "Task 8: Handle new offenses from expanded scope", "status": "pending", "blockedBy": [11, 12]},
+    {"id": 14, "subject": "Task 9: Final verification and commit", "status": "pending", "blockedBy": [13]}
+  ],
+  "lastUpdated": "2026-02-25T12:00:00Z"
+}
