@@ -411,7 +411,7 @@ This is a native HTML **`<dialog>`** element — no framework, no custom modal. 
 - **`data-editor-on-success`** — what to do after a successful save (`redirect` navigates to the recipe)
 - **`data-editor-body-key`** — the JSON key to wrap the textarea content in (`markdown_source`)
 
-The JavaScript (`app/assets/javascripts/recipe-editor.js`) is generic. On page load, it finds every `.editor-dialog` on the page and wires each one up by reading its data attributes. There's no per-dialog JavaScript — the same code handles the recipe editor, the Quick Bites editor on the groceries page, and the aisle editor. Want a new editor dialog? Add a `<dialog>` with the right data attributes. No JS changes needed.
+The JavaScript (`app/assets/javascripts/editor-framework.js`) is generic. On page load, it finds every `.editor-dialog` on the page and wires each one up by reading its data attributes. There's no per-dialog JavaScript — the same code handles the recipe editor, the Quick Bites editor on the groceries page, and the aisle editor. Want a new editor dialog? Add a `<dialog>` with the right data attributes. No JS changes needed.
 
 When you click Save, the JavaScript does this:
 

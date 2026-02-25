@@ -1,5 +1,5 @@
 // Shared editor dialog utilities.
-// Both recipe-editor.js and nutrition-editor.js depend on this file.
+// Both editor-framework.js and nutrition-editor.js depend on this file.
 window.EditorUtils = (() => {
   function getCsrfToken() {
     return document.querySelector('meta[name="csrf-token"]')?.content;

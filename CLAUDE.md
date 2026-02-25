@@ -321,7 +321,7 @@ Seed entries are global (`kitchen_id: nil`); kitchens can add overrides. `lookup
 
 ### Editor dialogs
 
-`recipe-editor.js` is a data-driven multi-dialog handler. It finds all `.editor-dialog` elements and configures each via data attributes (`data-editor-open`, `data-editor-url`, `data-editor-method`, `data-editor-on-success`, `data-editor-body-key`). To add a new editor dialog, create a `<dialog class="editor-dialog">` with the right data attributes — no JS changes needed. See `recipes/_editor_dialog.html.erb` and `groceries/show.html.erb` for examples.
+`editor-framework.js` is a data-driven multi-dialog handler. It finds all `.editor-dialog` elements and configures each via data attributes (`data-editor-open`, `data-editor-url`, `data-editor-method`, `data-editor-on-success`, `data-editor-body-key`). To add a new editor dialog, create a `<dialog class="editor-dialog">` with the right data attributes — no JS changes needed. See `shared/_editor_dialog.html.erb` and `groceries/show.html.erb` for examples.
 
 ### Key conventions
 
