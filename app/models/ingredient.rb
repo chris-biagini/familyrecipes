@@ -13,7 +13,7 @@ class Ingredient < ApplicationRecord
   def quantity_value
     return unless quantity
 
-    FamilyRecipes::Ingredient.new(name: name, quantity: quantity_display).quantity_value
+    FamilyRecipes::Ingredient.numeric_value(quantity)
   end
 
   def quantity_unit

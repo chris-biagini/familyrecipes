@@ -17,6 +17,18 @@ module FamilyRecipes
       '3/4' => '0.75'
     }.freeze
 
+    # Converts a raw numeric string (e.g., "1/2", "2-3", "250") to its
+    # resolved value. Handles fractions via QUANTITY_FRACTIONS and ranges
+    # by taking the high end. Used by both the parser and AR model.
+    def self.numeric_value(raw)
+      return nil if raw.nil? || raw.strip.empty?
+
+      value_str = raw.strip
+      value_str = value_str.split(/[-–]/).last.strip if value_str.match?(/[-–]/)
+
+      QUANTITY_FRACTIONS[value_str] || value_str
+    end
+
     # name is required, quantity and prep_note are optional
     def initialize(name:, quantity: nil, prep_note: nil)
       @name = name
@@ -29,12 +41,7 @@ module FamilyRecipes
     def quantity_value
       return nil if quantity_blank?
 
-      value_str = parsed_quantity[0]
-
-      # If the value is a range (e.g., "2-5" or "2–5"), take the high end.
-      value_str = value_str.split(/[-–]/).last.strip if value_str =~ /[-–]/
-
-      QUANTITY_FRACTIONS[value_str] || value_str
+      self.class.numeric_value(parsed_quantity[0])
     end
 
     def quantity_unit
