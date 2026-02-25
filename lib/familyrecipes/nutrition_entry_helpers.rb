@@ -6,18 +6,6 @@ module FamilyRecipes
 
     NUTRITION_UNIT_OVERRIDES = { 'eggs' => '~unitless' }.freeze
 
-    def self.parse_fraction(str)
-      str = str.to_s.strip
-      if str.include?('/')
-        num, den = str.split('/')
-        return nil if den.nil? || den.to_f.zero?
-
-        num.to_f / den.to_i
-      else
-        Float(str, exception: false)
-      end
-    end
-
     def self.parse_serving_size(input)
       # Extract gram weight: "30g", "(30g)", "(3.3g)", "30 grams", "30 gram"
       grams_match = input.match(/(\d+(?:\.\d+)?)\s*(?:grams?|g)\b/)
@@ -40,7 +28,7 @@ module FamilyRecipes
       match = descriptor.match(%r{\A(\d+(?:[/.]\d+)?)\s+(.+)\z})
       return result unless match
 
-      amount = parse_fraction(match[1])
+      amount = FamilyRecipes::NumericParsing.parse_fraction(match[1])
       return result unless amount&.positive?
 
       raw_unit = match[2].strip
@@ -69,6 +57,8 @@ module FamilyRecipes
         result[:auto_portion] = { unit: singular, grams: grams_per_one }
       end
 
+      result
+    rescue ArgumentError
       result
     end
 
