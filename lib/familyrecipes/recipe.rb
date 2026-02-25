@@ -10,7 +10,7 @@ module FamilyRecipes
 
     # Shared markdown renderer with SmartyPants for typographic quotes/dashes
     MARKDOWN = Redcarpet::Markdown.new(
-      Redcarpet::Render::SmartyHTML.new,
+      Redcarpet::Render::SmartyHTML.new(escape_html: true),
       autolink: true,
       no_intra_emphasis: true
     )

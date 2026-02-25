@@ -43,7 +43,13 @@ module ScalableNumberPreprocessor
   end
 
   def process_yield_line(text)
-    text.sub(YIELD_NUMBER_PATTERN) { span_from_match(::Regexp.last_match(1), ::Regexp.last_match(2)) }
+    match = text.match(YIELD_NUMBER_PATTERN)
+    return ERB::Util.html_escape(text) unless match
+
+    span = span_from_match(match[1], match[2])
+    prefix = ERB::Util.html_escape(text[...match.begin(0)])
+    suffix = ERB::Util.html_escape(text[match.end(0)..])
+    "#{prefix}#{span}#{suffix}"
   end
 
   def process_yield_with_unit(text, unit_singular, unit_plural)
