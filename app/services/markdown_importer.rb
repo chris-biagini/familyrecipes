@@ -13,6 +13,7 @@ class MarkdownImporter
 
   def import
     recipe = save_recipe
+    CrossReference.resolve_pending(kitchen: kitchen)
     compute_nutrition(recipe)
     recipe
   end
@@ -126,10 +127,11 @@ class MarkdownImporter
   def import_cross_reference(step, data, position)
     target_slug = FamilyRecipes.slugify(data[:target_title])
     target = kitchen.recipes.find_by(slug: target_slug)
-    return unless target
 
     step.cross_references.create!(
       target_recipe: target,
+      target_slug: target_slug,
+      target_title: data[:target_title],
       multiplier: data[:multiplier] || 1.0,
       prep_note: data[:prep_note],
       position: position

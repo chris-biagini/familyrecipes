@@ -184,7 +184,7 @@ class MarkdownImporterTest < ActiveSupport::TestCase
     assert_equal 'pizza-dough', pizza.cross_references.first.target_slug
   end
 
-  test 'cross-references are not created when target recipe is missing' do
+  test 'creates pending cross-reference when target recipe is missing' do
     markdown_with_missing_ref = <<~MARKDOWN
       # Pasta
 
@@ -200,7 +200,71 @@ class MarkdownImporterTest < ActiveSupport::TestCase
 
     recipe = MarkdownImporter.import(markdown_with_missing_ref, kitchen: @kitchen)
 
-    assert_equal 0, recipe.cross_references.count
+    assert_equal 1, recipe.cross_references.count
+    assert_predicate recipe.cross_references.first, :pending?
+  end
+
+  test 'creates pending cross-reference with correct slug and title' do
+    markdown = <<~MARKDOWN
+      # Pasta
+
+      Category: Main
+
+      ## Cook (boil it)
+
+      - @[Nonexistent Sauce]
+      - Spaghetti, 1 lb
+
+      Cook and serve.
+    MARKDOWN
+
+    recipe = MarkdownImporter.import(markdown, kitchen: @kitchen)
+    ref = recipe.cross_references.first
+
+    assert_equal 1, recipe.cross_references.count
+    assert_equal 'nonexistent-sauce', ref.target_slug
+    assert_equal 'Nonexistent Sauce', ref.target_title
+    assert_nil ref.target_recipe_id
+    assert_predicate ref, :pending?
+  end
+
+  test 'resolves pending cross-references when target is imported later' do
+    pasta_md = <<~MARKDOWN
+      # Pasta
+
+      Category: Main
+
+      ## Cook (boil it)
+
+      - @[Marinara Sauce]
+      - Spaghetti, 1 lb
+
+      Cook and serve.
+    MARKDOWN
+
+    sauce_md = <<~MARKDOWN
+      # Marinara Sauce
+
+      Category: Sauce
+
+      ## Cook (simmer)
+
+      - Tomatoes, 1 can
+
+      Simmer for 30 minutes.
+    MARKDOWN
+
+    pasta = MarkdownImporter.import(pasta_md, kitchen: @kitchen)
+
+    assert_predicate pasta.cross_references.first, :pending?
+
+    # Now import the target recipe — resolve_pending runs after import
+    sauce = MarkdownImporter.import(sauce_md, kitchen: @kitchen)
+
+    pasta.cross_references.first.reload
+
+    assert_predicate pasta.cross_references.first, :resolved?
+    assert_equal sauce.id, pasta.cross_references.first.target_recipe_id
   end
 
   test 'quantity splitting handles various formats' do
