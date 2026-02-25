@@ -1,0 +1,14 @@
+<%# locals: (title:, id: nil, dialog_data: {}, footer_extra: nil) %>
+<%= tag.dialog id: id, class: 'editor-dialog', data: dialog_data do %>
+  <div class="editor-header">
+    <h2><%= title %></h2>
+    <button type="button" class="btn editor-close" aria-label="Close">&times;</button>
+  </div>
+  <div class="editor-errors" hidden></div>
+  <%= yield %>
+  <div class="editor-footer">
+    <%= footer_extra %>
+    <button type="button" class="btn editor-cancel">Cancel</button>
+    <button type="button" class="btn btn-primary editor-save">Save</button>
+  </div>
+<% end %>
