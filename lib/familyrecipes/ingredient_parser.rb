@@ -58,11 +58,7 @@ module IngredientParser
   end
 
   def self.parse_multiplier(str)
-    return 1.0 if str.nil?
-    return str.to_f unless str.include?('/')
-
-    num, den = str.split('/')
-    num.to_f / den.to_i
+    FamilyRecipes::NumericParsing.parse_fraction(str) || 1.0
   end
 
   private_class_method :parse_multiplier
