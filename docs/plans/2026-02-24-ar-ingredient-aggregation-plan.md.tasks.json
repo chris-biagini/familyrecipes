@@ -1,0 +1,11 @@
+{
+  "planPath": "docs/plans/2026-02-24-ar-ingredient-aggregation-plan.md",
+  "tasks": [
+    {"id": 3, "subject": "Task 1: Add expanded_ingredients to AR CrossReference", "status": "pending"},
+    {"id": 4, "subject": "Task 2: Add aggregation methods to AR Recipe", "status": "pending", "blockedBy": [3]},
+    {"id": 5, "subject": "Task 3: Update ShoppingListBuilder to use AR methods", "status": "pending", "blockedBy": [3, 4]},
+    {"id": 6, "subject": "Task 4: Update RecipeNutritionJob to use AR methods", "status": "pending", "blockedBy": [3, 4]},
+    {"id": 7, "subject": "Task 5: Full regression test and cleanup", "status": "pending", "blockedBy": [5, 6]}
+  ],
+  "lastUpdated": "2026-02-24T12:00:00Z"
+}
