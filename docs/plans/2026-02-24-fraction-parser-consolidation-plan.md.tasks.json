@@ -1,0 +1,11 @@
+{
+  "planPath": "docs/plans/2026-02-24-fraction-parser-consolidation-plan.md",
+  "tasks": [
+    {"id": 1, "subject": "Task 1: Create NumericParsing with tests (TDD)", "status": "pending"},
+    {"id": 2, "subject": "Task 2: Rewire IngredientParser.parse_multiplier", "status": "pending", "blockedBy": [1]},
+    {"id": 3, "subject": "Task 3: Rewire ScalableNumberPreprocessor.parse_numeral", "status": "pending", "blockedBy": [1]},
+    {"id": 4, "subject": "Task 4: Delete NutritionEntryHelpers.parse_fraction, update caller and tests", "status": "pending", "blockedBy": [1]},
+    {"id": 5, "subject": "Task 5: Full test suite and lint", "status": "pending", "blockedBy": [2, 3, 4]}
+  ],
+  "lastUpdated": "2026-02-24T12:00:00Z"
+}
