@@ -54,14 +54,16 @@ module ScalableNumberPreprocessor
 
   def process_yield_with_unit(text, unit_singular, unit_plural)
     match = text.match(YIELD_NUMBER_PATTERN)
-    return text unless match
+    return ERB::Util.html_escape(text) unless match
 
     value = match[1] ? WORD_VALUES[match[1].downcase] : parse_numeral(match[2])
     inner_span = build_span(value, match[1] || match[2])
-    rest = text[match.end(0)..]
-    "#{text[...match.begin(0)]}" \
+    rest = ERB::Util.html_escape(text[match.end(0)..])
+    escaped_singular = ERB::Util.html_escape(unit_singular)
+    escaped_plural = ERB::Util.html_escape(unit_plural)
+    "#{ERB::Util.html_escape(text[...match.begin(0)])}" \
       "<span class=\"yield\" data-base-value=\"#{value}\" " \
-      "data-unit-singular=\"#{unit_singular}\" data-unit-plural=\"#{unit_plural}\">" \
+      "data-unit-singular=\"#{escaped_singular}\" data-unit-plural=\"#{escaped_plural}\">" \
       "#{inner_span}#{rest}</span>"
   end
 
@@ -78,6 +80,7 @@ module ScalableNumberPreprocessor
   end
 
   def build_span(value, original_text)
-    %(<span class="scalable" data-base-value="#{value}" data-original-text="#{original_text}">#{original_text}</span>)
+    escaped = ERB::Util.html_escape(original_text)
+    %(<span class="scalable" data-base-value="#{value}" data-original-text="#{escaped}">#{escaped}</span>)
   end
 end

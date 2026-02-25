@@ -156,4 +156,31 @@ class ScalableNumberPreprocessorTest < Minitest::Test
     assert_includes result, 'data-base-value="1.0"'
     assert_includes result, '>1</span> loaf'
   end
+
+  # --- XSS escape tests ---
+
+  def test_build_span_escapes_html_in_original_text
+    result = ScalableNumberPreprocessor.send(:build_span, 3, '<b>3</b>')
+
+    refute_includes result, '<b>'
+    assert_includes result, '&lt;b&gt;'
+  end
+
+  def test_process_yield_with_unit_escapes_unit_singular_in_data_attribute
+    result = ScalableNumberPreprocessor.process_yield_with_unit(
+      '12 loaves', '"><script>alert(1)</script>', 'loaves'
+    )
+
+    refute_includes result, '<script>'
+    assert_includes result, '&lt;script&gt;'
+  end
+
+  def test_process_yield_with_unit_escapes_unit_plural_in_data_attribute
+    result = ScalableNumberPreprocessor.process_yield_with_unit(
+      '12 loaves', 'loaf', '"><script>alert(2)</script>'
+    )
+
+    refute_includes result, '<script>'
+    assert_includes result, '&lt;script&gt;'
+  end
 end
