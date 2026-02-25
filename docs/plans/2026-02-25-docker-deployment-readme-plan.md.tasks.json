@@ -1,0 +1,9 @@
+{
+  "planPath": "docs/plans/2026-02-25-docker-deployment-readme-plan.md",
+  "tasks": [
+    {"id": 0, "subject": "Task 0: Rewrite docker-compose.example.yml", "status": "pending"},
+    {"id": 1, "subject": "Task 1: Rewrite README.md", "status": "pending", "blockedBy": [0]},
+    {"id": 2, "subject": "Task 2: Final review and verify no stale references", "status": "pending", "blockedBy": [1]}
+  ],
+  "lastUpdated": "2026-02-25T12:00:00Z"
+}
