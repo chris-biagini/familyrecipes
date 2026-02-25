@@ -128,6 +128,34 @@ class BuildValidatorTest < ActiveSupport::TestCase
     assert_match(/All ingredients have nutrition data/, output.first)
   end
 
+  def test_validate_ingredients_matches_plural_variant
+    md = "# Test Recipe\n\nCategory: Test\n\n## Step (do it)\n\n- Egg, 2\n\nScramble."
+    recipe = make_recipe(md, id: 'test-recipe')
+    IngredientCatalog.find_or_create_by!(ingredient_name: 'Eggs', kitchen_id: nil) do |p|
+      p.basis_grams = 50
+      p.calories = 70
+    end
+    validator = build_validator(recipes: [recipe])
+
+    output = capture_io { validator.validate_ingredients }
+
+    assert_match(/All ingredients validated/, output.first)
+  end
+
+  def test_validate_ingredients_matches_singular_variant
+    md = "# Test Recipe\n\nCategory: Test\n\n## Step (do it)\n\n- Carrots, 3\n\nChop."
+    recipe = make_recipe(md, id: 'test-recipe')
+    IngredientCatalog.find_or_create_by!(ingredient_name: 'Carrot', kitchen_id: nil) do |p|
+      p.basis_grams = 50
+      p.calories = 25
+    end
+    validator = build_validator(recipes: [recipe])
+
+    output = capture_io { validator.validate_ingredients }
+
+    assert_match(/All ingredients validated/, output.first)
+  end
+
   private
 
   def make_recipe(markdown, id: 'test-recipe')

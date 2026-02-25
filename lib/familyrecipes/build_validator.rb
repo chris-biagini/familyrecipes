@@ -25,7 +25,7 @@ module FamilyRecipes
       print 'Validating ingredients...'
 
       ingredients_to_recipes = build_ingredient_recipe_index
-      known = IngredientCatalog.pluck(:ingredient_name).to_set(&:downcase)
+      known = build_known_ingredient_set
 
       unknown_ingredients = ingredients_to_recipes.keys.reject do |name|
         known.include?(name.downcase)
@@ -90,6 +90,12 @@ module FamilyRecipes
         @recipes.each { |r| r.all_ingredients.each { |i| index[i.name] << r.title } }
         @quick_bites.each { |qb| qb.ingredients.each { |name| index[name] << qb.title } }
       end
+    end
+
+    def build_known_ingredient_set
+      names = IngredientCatalog.pluck(:ingredient_name)
+      variants = names.flat_map { |name| FamilyRecipes::Inflector.ingredient_variants(name) }
+      (names + variants).to_set(&:downcase)
     end
 
     def print_unknown_ingredients(unknown_ingredients, ingredients_to_recipes)
