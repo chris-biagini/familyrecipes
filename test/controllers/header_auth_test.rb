@@ -114,5 +114,4 @@ class HeaderAuthTest < ActionDispatch::IntegrationTest
       }
     end
   end
-
 end

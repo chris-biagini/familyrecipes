@@ -5,6 +5,6 @@ class LandingController < ApplicationController
 
   def show
     @kitchens = ActsAsTenant.without_tenant { Kitchen.all.to_a }
-    return redirect_to kitchen_root_path(kitchen_slug: @kitchens.first.slug) if @kitchens.size == 1
+    redirect_to kitchen_root_path(kitchen_slug: @kitchens.first.slug) if @kitchens.size == 1
   end
 end

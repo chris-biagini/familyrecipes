@@ -3,7 +3,6 @@
 require 'test_helper'
 
 class LandingControllerTest < ActionDispatch::IntegrationTest
-
   test 'redirects to sole kitchen when exactly one exists' do
     kitchen = Kitchen.create!(name: 'Test Kitchen', slug: 'test-kitchen')
 
@@ -29,5 +28,4 @@ class LandingControllerTest < ActionDispatch::IntegrationTest
     assert_select 'a', 'Kitchen A'
     assert_select 'a', 'Kitchen B'
   end
-
 end

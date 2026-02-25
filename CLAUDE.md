@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-This is a fully dynamic Rails 8 app backed by SQLite with multi-tenant "Kitchen" support. Two-database architecture: primary (app data), cable (Solid Cable pub/sub). OmniAuth-based auth with database-backed sessions is in place (`:developer` strategy for dev/test; production OAuth providers not yet configured).
+This is a fully dynamic Rails 8 app backed by SQLite with multi-tenant "Kitchen" support. Two-database architecture: primary (app data), cable (Solid Cable pub/sub). Trusted-header authentication: in production, Authelia/Caddy sets `Remote-User`/`Remote-Email` headers; the app reads them to find-or-create users and establish sessions. In dev/test, `DevSessionsController` provides direct login. No OmniAuth, no passwords.
 Eventually, the goal is to ship this app as a Docker image for homelab install, while also maintaining a for-pay hosted copy (e.g., at fly.io).
 
 ## Design Philosophy
@@ -216,7 +216,7 @@ pkill -f puma; rm -f tmp/pids/server.pid
 ```
 
 ### Server restart after gem or concern changes
-Adding gems (e.g., `omniauth`) or creating new files in `app/controllers/concerns/` requires restarting Puma. The dev server does not hot-reload these. Run `pkill -f puma; rm -f tmp/pids/server.pid` then `bin/dev`.
+Adding gems or creating new files in `app/controllers/concerns/` requires restarting Puma. The dev server does not hot-reload these. Run `pkill -f puma; rm -f tmp/pids/server.pid` then `bin/dev`.
 
 ### GitHub Issues
 If I mention a GitHub issue (e.g., "#99"), review it and plan a fix. Close it via the commit message once confirmed.
@@ -265,7 +265,7 @@ ruby -Itest test/controllers/recipes_controller_test.rb              # single fi
 ruby -Itest test/models/recipe_test.rb -n test_requires_title        # single test method
 ```
 
-Test layout: `test/controllers/`, `test/models/`, `test/services/`, `test/jobs/`, `test/integration/`, `test/channels/`, `test/lib/`, plus top-level parser unit tests. `test/test_helper.rb` provides `create_kitchen_and_user` (sets `@kitchen`, `@user`, and tenant), `log_in` (logs in `@user` via dev login), and `kitchen_slug` for controller tests. OmniAuth test mode is enabled globally.
+Test layout: `test/controllers/`, `test/models/`, `test/services/`, `test/jobs/`, `test/integration/`, `test/channels/`, `test/lib/`, plus top-level parser unit tests. `test/test_helper.rb` provides `create_kitchen_and_user` (sets `@kitchen`, `@user`, and tenant), `log_in` (logs in `@user` via dev login), and `kitchen_slug` for controller tests.
 
 ## Dev Server
 
@@ -295,7 +295,7 @@ See `docker-compose.example.yml` for a reference deployment configuration. No ex
 
 ## Routes
 
-All routes live under `/kitchens/:kitchen_slug/` except the landing page (`/`), auth routes (`/auth/:provider/callback`, `/auth/failure`, `/logout`), login (`/login`), dev login (`/dev/login/:id`), and health check (`/up`). Kitchen-scoped routes include recipes (`show`, `create`, `update`, `destroy` — no index/new/edit), ingredients index, groceries (`show`, `state`, `select`, `check`, `custom_items`, `clear`, `quick_bites`, `aisle_order`, `aisle_order_content`), and nutrition entries (`POST`/`DELETE` at `/nutrition/:ingredient_name`). Views use Rails route helpers — `root_path` (landing), `kitchen_root_path` (kitchen homepage), `recipe_path(slug)`, `ingredients_path`, `groceries_path`. `ApplicationController#default_url_options` auto-fills `kitchen_slug` from `current_kitchen`, so most helpers work without explicitly passing it. When adding links, always use the `_path` helpers.
+All routes live under `/kitchens/:kitchen_slug/` except the landing page (`/`), logout (`DELETE /logout`), dev login (`/dev/login/:id`, dev/test only), and health check (`/up`). When exactly one kitchen exists, `/` redirects to that kitchen's homepage. Kitchen-scoped routes include recipes (`show`, `create`, `update`, `destroy` — no index/new/edit), ingredients index, groceries (`show`, `state`, `select`, `check`, `custom_items`, `clear`, `quick_bites`, `aisle_order`, `aisle_order_content`), and nutrition entries (`POST`/`DELETE` at `/nutrition/:ingredient_name`). Views use Rails route helpers — `root_path` (landing), `kitchen_root_path` (kitchen homepage), `recipe_path(slug)`, `ingredients_path`, `groceries_path`. `ApplicationController#default_url_options` auto-fills `kitchen_slug` from `current_kitchen`, so most helpers work without explicitly passing it. When adding links, always use the `_path` helpers.
 
 ## Architecture
 
@@ -311,9 +311,19 @@ All queries MUST go through `current_kitchen` (e.g., `current_kitchen.recipes.fi
 
 The parser runs only on the write path (`MarkdownImporter`). The database is the complete source of truth for rendering: `Step#processed_instructions` stores scalable number markup, `CrossReference` records store interleaved recipe links, and `Recipe#nutrition_data` stores pre-computed nutrition as json. Views render entirely from AR data.
 
+### Trusted-header authentication
+
+In production behind Authelia/Caddy, `Remote-User`/`Remote-Email`/`Remote-Name` headers identify users. `ApplicationController#authenticate_from_headers` reads these to find-or-create a `User` and establish a session cookie. Subsequent requests authenticate via the cookie — headers are only read when establishing a new session. In dev/test (no headers), `DevSessionsController` provides direct login at `/dev/login/:id`. No OmniAuth, no passwords, no login page. The session layer (`User`, `Session`, `Membership`, `Authentication` concern) is auth-agnostic — OAuth providers can be re-added later by adding a new "front door" that calls `start_new_session_for`.
+
+When a new user has zero memberships and exactly one Kitchen exists, `auto_join_sole_kitchen` auto-creates the membership.
+
+### Auth gates
+
+Read paths are public at the Rails level (Authelia provides the access boundary). Write paths require membership (`require_membership` before_action). `ActionCable::Connection` identifies users from the session cookie; `GroceryListChannel` checks kitchen membership. See `docs/plans/2026-02-25-trusted-header-auth-design.md` for the full auth design.
+
 ### Real-time sync (ActionCable)
 
-Grocery list state syncs across browser tabs/devices via ActionCable backed by Solid Cable (separate SQLite database for pub/sub). `GroceryListChannel` broadcasts version numbers on state changes; clients poll for fresh state when their version is stale.
+Grocery list state syncs across browser tabs/devices via ActionCable backed by Solid Cable (separate SQLite database for pub/sub). `GroceryListChannel` broadcasts version numbers on state changes; clients poll for fresh state when their version is stale. Connections require authentication (session cookie); subscriptions require kitchen membership.
 
 ### IngredientCatalog overlay model
 
