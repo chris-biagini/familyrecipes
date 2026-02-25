@@ -55,7 +55,7 @@ class CrossReferenceModelTest < ActiveSupport::TestCase
       target_slug: 'poolish', target_title: 'Poolish'
     )
 
-    assert cross_ref.valid?
+    assert_predicate cross_ref, :valid?
   end
 
   test 'requires position' do
@@ -126,7 +126,7 @@ class CrossReferenceModelTest < ActiveSupport::TestCase
       target_slug: 'poolish', target_title: 'Poolish'
     )
 
-    assert cross_ref.persisted?
+    assert_predicate cross_ref, :persisted?
     assert_nil cross_ref.target_recipe_id
   end
 
