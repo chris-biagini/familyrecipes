@@ -1,0 +1,10 @@
+{
+  "planPath": "docs/plans/2026-02-25-ingredient-name-normalization-plan.md",
+  "tasks": [
+    {"id": 2, "subject": "Task 1: Add Inflector.ingredient_variants", "status": "pending"},
+    {"id": 3, "subject": "Task 2: Enhance IngredientCatalog.lookup_for with variant keys", "status": "pending", "blockedBy": [2]},
+    {"id": 4, "subject": "Task 3: Update BuildValidator to check variants", "status": "pending", "blockedBy": [2]},
+    {"id": 5, "subject": "Task 4: Full test suite + seed validation", "status": "pending", "blockedBy": [3, 4]}
+  ],
+  "lastUpdated": "2026-02-25T12:00:00Z"
+}
