@@ -47,6 +47,7 @@ export default class extends Controller {
 
   open() {
     this.clearErrorDisplay()
+    this.resetSaveButton()
 
     if (this.hasLoadUrlValue) {
       this.openWithRemoteContent()
@@ -164,6 +165,13 @@ export default class extends Controller {
     if (this.isModified()) {
       event.preventDefault()
       this.close()
+    }
+  }
+
+  resetSaveButton() {
+    if (this.hasSaveButtonTarget) {
+      this.saveButtonTarget.disabled = false
+      this.saveButtonTarget.textContent = "Save"
     }
   }
 

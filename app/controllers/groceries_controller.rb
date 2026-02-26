@@ -73,7 +73,7 @@ class GroceriesController < ApplicationController
     current_kitchen.save!
 
     list = GroceryList.for_kitchen(current_kitchen)
-    list.with_optimistic_retry { list.save! }
+    list.update!(updated_at: Time.current)
     GroceryListChannel.broadcast_version(current_kitchen, list.lock_version)
     render json: { status: 'ok' }
   end

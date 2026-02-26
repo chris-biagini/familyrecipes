@@ -102,7 +102,7 @@ export default class extends Controller {
           this.saveCache()
           this.applyStateToUI(data)
           if (isRemoteUpdate) {
-            notifyShow("List updated from another device.")
+            notifyShow("Shopping list updated.")
           }
         }
       })
