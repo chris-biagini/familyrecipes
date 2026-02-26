@@ -1,0 +1,11 @@
+{
+  "planPath": "docs/plans/2026-02-25-docker-deploy-fixes-plan.md",
+  "tasks": [
+    {"id": 1, "subject": "Task 1: Fix trusted-header auth to use Rack env keys", "status": "pending"},
+    {"id": 2, "subject": "Task 2: Update header auth tests to match real proxy behavior", "status": "pending", "blockedBy": [1]},
+    {"id": 3, "subject": "Task 3: Fix container UID to 1000", "status": "pending"},
+    {"id": 4, "subject": "Task 4: Add bind-mount note to README", "status": "pending", "blockedBy": [3]},
+    {"id": 5, "subject": "Task 5: Update CLAUDE.md and run final verification", "status": "pending", "blockedBy": [2, 4]}
+  ],
+  "lastUpdated": "2026-02-25T00:00:00Z"
+}

@@ -322,7 +322,7 @@ The parser runs only on the write path (`MarkdownImporter`). The database is the
 
 ### Trusted-header authentication
 
-In production behind Authelia/Caddy, `Remote-User`/`Remote-Email`/`Remote-Name` headers identify users. `ApplicationController#authenticate_from_headers` reads these to find-or-create a `User` and establish a session cookie. Subsequent requests authenticate via the cookie — headers are only read when establishing a new session. In dev/test (no headers), `DevSessionsController` provides direct login at `/dev/login/:id`. No OmniAuth, no passwords, no login page. The session layer (`User`, `Session`, `Membership`, `Authentication` concern) is auth-agnostic — OAuth providers can be re-added later by adding a new "front door" that calls `start_new_session_for`.
+In production behind Authelia/Caddy, `Remote-User`/`Remote-Email`/`Remote-Name` HTTP headers identify users. `ApplicationController#authenticate_from_headers` reads these via `request.env['HTTP_REMOTE_USER']` (not `request.headers` — `Remote-User` collides with the CGI `REMOTE_USER` variable). Subsequent requests authenticate via the session cookie — headers are only read when establishing a new session. In dev/test (no headers), `DevSessionsController` provides direct login at `/dev/login/:id`. No OmniAuth, no passwords, no login page. The session layer (`User`, `Session`, `Membership`, `Authentication` concern) is auth-agnostic — OAuth providers can be re-added later by adding a new "front door" that calls `start_new_session_for`.
 
 When a new user has zero memberships and exactly one Kitchen exists, `auto_join_sole_kitchen` auto-creates the membership.
 
