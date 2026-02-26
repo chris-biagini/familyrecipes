@@ -15,13 +15,12 @@
 
 <% content_for(:scripts) do %>
   <%= javascript_include_tag 'notify', defer: true %>
-  <%= javascript_include_tag 'wake-lock', defer: true %>
   <%= javascript_include_tag 'recipe-state-manager', defer: true %>
   <%= javascript_include_tag 'editor-utils', defer: true %>
   <%= javascript_include_tag 'editor-framework', defer: true %>
 <% end %>
 
-<article class="recipe">
+<article class="recipe" data-controller="wake-lock">
   <header>
     <h1><%= @recipe.title %></h1>
     <%- if @recipe.description.present? -%>

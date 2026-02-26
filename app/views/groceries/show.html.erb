@@ -7,7 +7,6 @@
 <% content_for(:scripts) do %>
   <%= javascript_include_tag 'actioncable', defer: true %>
   <%= javascript_include_tag 'notify', defer: true %>
-  <%= javascript_include_tag 'wake-lock', defer: true %>
   <%= javascript_include_tag 'groceries', defer: true %>
   <%= javascript_include_tag 'editor-utils', defer: true %>
   <%= javascript_include_tag 'editor-framework', defer: true %>
@@ -31,6 +30,7 @@
 </noscript>
 
 <div id="groceries-app" class="hidden-until-js"
+     data-controller="wake-lock"
      data-kitchen-slug="<%= current_kitchen.slug %>"
      data-state-url="<%= groceries_state_path %>"
      data-select-url="<%= groceries_select_path %>"
