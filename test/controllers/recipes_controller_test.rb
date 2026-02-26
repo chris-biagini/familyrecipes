@@ -50,10 +50,10 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
-  test 'includes recipe JavaScript' do
+  test 'attaches recipe-state Stimulus controller' do
     get recipe_path('focaccia', kitchen_slug: kitchen_slug)
 
-    assert_select 'script[src*="recipe-state-manager"]'
+    assert_select 'article[data-controller*="recipe-state"]'
   end
 
   test 'renders edit button for members' do

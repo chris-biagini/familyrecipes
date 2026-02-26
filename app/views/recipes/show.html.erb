@@ -13,11 +13,7 @@
     </div>
 <% end %>
 
-<% content_for(:scripts) do %>
-  <%= javascript_include_tag 'recipe-state-manager', defer: true %>
-<% end %>
-
-<article class="recipe" data-controller="wake-lock">
+<article class="recipe" data-controller="wake-lock recipe-state">
   <header>
     <h1><%= @recipe.title %></h1>
     <%- if @recipe.description.present? -%>
