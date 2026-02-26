@@ -26,7 +26,7 @@ Eventually, the goal is to ship this app as a Docker image for homelab install, 
 
 ### XSS prevention — trust Rails, distrust `.html_safe`
 
-A strict Content Security Policy is enforcing (`config/initializers/content_security_policy.rb`). All directives use `'self'` only, plus `ws:`/`wss:` for ActionCable in `connect-src`. No inline scripts, no inline styles, no external resources are allowed. If you need to add any of these, update the CSP initializer first.
+A strict Content Security Policy is enforced (`config/initializers/content_security_policy.rb`). All directives use `'self'` only, plus `ws:`/`wss:` for ActionCable in `connect-src`. A nonce generator (`request.session.id`) is configured for `script-src` — importmap-rails uses this to permit its inline module-loading script. No inline styles, no external resources are allowed. If you need to add any of these, update the CSP initializer first.
 
 Rails auto-escapes all `<%= %>` output. The **only** XSS vectors are `.html_safe`, `raw()`, and rendering engines (like Redcarpet) whose output is marked safe. Rules:
 - **Never** call `.html_safe` on a string that interpolates user content without first escaping it via `ERB::Util.html_escape`.
@@ -357,15 +357,31 @@ Static error pages (`public/404.html`, `public/offline.html`) share `public/erro
 
 Seed entries are global (`kitchen_id: nil`); kitchens can add overrides. `lookup_for(kitchen)` merges global + kitchen entries with kitchen taking precedence.
 
-### Editor dialogs
+### Hotwire (Stimulus + Turbo)
 
-`editor-framework.js` is an event-driven multi-dialog handler. It finds all `.editor-dialog` elements and manages lifecycle (open, save, dirty-check, close). Simple dialogs configure entirely via data attributes (`data-editor-open`, `data-editor-url`, `data-editor-method`, `data-editor-on-success`, `data-editor-body-key`). Custom dialogs (like the nutrition editor) hook into lifecycle events (`editor:collect`, `editor:save`, `editor:modified`, `editor:reset`) on the `<dialog>` element and set `event.detail.handled = true` to override defaults. To add a new simple dialog, use `render layout: 'shared/editor_dialog'` with a textarea block and data attributes — no JS changes needed. For custom content, add a JS file that listens for the lifecycle events. See `groceries/show.html.erb` (simple) and `ingredients/index.html.erb` + `nutrition-editor.js` (custom).
+All client-side JavaScript uses the Hotwire stack: **Stimulus** for behavior, **Turbo Drive** for SPA-like navigation, **Turbo Streams** for server-pushed HTML updates. ES modules are loaded via **importmap-rails** (`config/importmap.rb`) — no Node, no bundler, no build step.
+
+**Stimulus controllers** (`app/javascript/controllers/`):
+- `editor_controller` — generic `<dialog>` lifecycle: open, save (PATCH/POST), dirty-check, close. Configurable via Stimulus values (`url`, `method`, `on-success`, `body-key`). Simple dialogs need zero custom JS — just data attributes on the `<dialog>`. Custom dialogs (nutrition editor) dispatch lifecycle events (`editor:collect`, `editor:save`, `editor:modified`, `editor:reset`).
+- `nutrition_editor_controller` — hooks into editor lifecycle events for the multi-row nutrition form on the ingredients page.
+- `grocery_sync_controller` — ActionCable subscription for grocery list state. Polls for fresh state when version is stale. Preserves checkbox state across Turbo Stream replacements.
+- `grocery_ui_controller` — shopping list rendering, recipe/quick-bite selection, custom items, checked items. Communicates with `grocery_sync_controller` via `this.application.getControllerForElementAndIdentifier()`.
+- `recipe_state_controller` — recipe page scaling, cross-off, and localStorage state persistence.
+- `wake_lock_controller` — Screen Wake Lock API for recipe pages (keeps screen on while cooking).
+
+**Shared utilities** (`app/javascript/utilities/`): `notify.js` (toast notifications), `editor_utils.js` (CSRF token helper), `vulgar_fractions.js` (number display).
+
+**Turbo Drive** is enabled globally for SPA-like page transitions. The progress bar is disabled (`Turbo.config.drive.progressBarDelay = Infinity`) because its inline styles conflict with the strict CSP.
+
+**Turbo Streams** broadcast grocery page content changes (quick bites edits) via `Turbo::StreamsChannel`. The groceries view subscribes with `turbo_stream_from`. When quick bites are saved, the server broadcasts a `replace` targeting `#recipe-selector` with fresh HTML. Grocery list *state* sync (selections, checks) still uses the version-polling ActionCable channel — Turbo Streams handle only content structure changes.
+
+To add a new simple editor dialog, use `render layout: 'shared/editor_dialog'` with a textarea block and Stimulus data attributes — no JS changes needed. For custom content, add a controller that listens for the editor lifecycle events.
 
 ### Key conventions
 
 - Domain classes in `lib/familyrecipes/` are loaded via `config/initializers/familyrecipes.rb` (not Zeitwerk-autoloaded).
-- Propshaft serves assets from `app/assets/`. No build step, no bundling, no Node.
-- Views use `content_for` blocks for page-specific titles, head tags, body attributes, and scripts.
+- Propshaft serves assets from `app/assets/`. importmap-rails handles JS module loading — no build step, no bundling, no Node.
+- Views use `content_for` blocks for page-specific titles, head tags, and body attributes.
 - Cross-references in views are rendered using duck typing (`respond_to?(:target_slug)`).
 - Edit UI is wrapped in `current_kitchen.member?(current_user)` checks — read-only visitors see no edit controls.
 - `config/site.yml` holds site identity; loaded as `Rails.configuration.site`.
