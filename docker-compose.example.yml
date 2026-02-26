@@ -1,12 +1,13 @@
 # docker-compose.example.yml
 #
 # Reference configuration for deploying familyrecipes.
+# Secrets are read from a .env file in the same directory (not checked into git).
 #
 # Quick start:
 #   1. cp docker-compose.example.yml docker-compose.yml
-#   2. Generate a secret:
+#   2. cp .env.example .env
+#   3. Generate a secret and add it to .env:
 #      docker run --rm ruby:3.2-slim ruby -rsecurerandom -e 'puts SecureRandom.hex(64)'
-#   3. Set SECRET_KEY_BASE and ALLOWED_HOSTS below
 #   4. docker compose up -d
 
 services:
@@ -16,10 +17,10 @@ services:
     ports:
       - "127.0.0.1:3030:3030"
     environment:
-      SECRET_KEY_BASE: # required — see step 2 above
-      ALLOWED_HOSTS: recipes.example.com
-      # RAILS_LOG_LEVEL: info
-      # USDA_API_KEY:
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-}
+      # RAILS_LOG_LEVEL: ${RAILS_LOG_LEVEL:-info}
+      # USDA_API_KEY: ${USDA_API_KEY:-}
     volumes:
       - app_storage:/app/storage
 

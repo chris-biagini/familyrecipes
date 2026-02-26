@@ -34,22 +34,22 @@ The recommended deployment is Docker behind [Caddy](https://caddyserver.com/) an
 ```bash
 mkdir familyrecipes && cd familyrecipes
 curl -O https://raw.githubusercontent.com/chris-biagini/familyrecipes/main/docker-compose.example.yml
+curl -O https://raw.githubusercontent.com/chris-biagini/familyrecipes/main/.env.example
 cp docker-compose.example.yml docker-compose.yml
+cp .env.example .env
 ```
 
-### 2. Generate a secret key
+### 2. Configure your .env
+
+Generate a secret key and add it to `.env`:
 
 ```bash
 docker run --rm ruby:3.2-slim ruby -rsecurerandom -e 'puts SecureRandom.hex(64)'
 ```
 
-Copy the output and set it as `SECRET_KEY_BASE` in your `docker-compose.yml`.
+Copy the output into `.env` as `SECRET_KEY_BASE`. Set `ALLOWED_HOSTS` to your domain (e.g., `recipes.example.com`) for DNS rebinding protection. Keep `.env` out of version control — it holds your secrets.
 
-### 3. Configure your domain
-
-Set `ALLOWED_HOSTS` to your domain (e.g., `recipes.example.com`). This protects against DNS rebinding attacks.
-
-### 4. Start the container
+### 3. Start the container
 
 ```bash
 docker compose up -d
@@ -57,7 +57,7 @@ docker compose up -d
 
 On first start, the entrypoint creates the database, runs migrations, and seeds recipe data. The app is available at `http://localhost:3030`. Subsequent starts skip already-applied migrations and already-imported recipes.
 
-### 5. Configure Caddy and Authelia
+### 4. Configure Caddy and Authelia
 
 Add a Caddyfile entry for your domain:
 
@@ -76,6 +76,8 @@ Caddy terminates TLS and forwards authenticated requests to the app. The app exp
 The health check endpoint at `/up` is excluded from SSL redirect and host authorization, making it safe for Docker health probes and uptime monitors.
 
 ## Configuration
+
+All configuration is done through environment variables in your `.env` file. Docker Compose reads `.env` automatically when it's in the same directory as `docker-compose.yml`. See `.env.example` for a template.
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
