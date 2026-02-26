@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+#
+# Safely remove a git worktree without bricking the shell.
+#
+# The critical step: cd to the repo root BEFORE removing the worktree.
+# If the shell's CWD is inside the worktree being removed, the directory
+# deletion orphans the shell process and every subsequent command fails.
+#
+# Usage: bin/worktree-remove <worktree-path-or-name>
+#
+# Examples:
+#   bin/worktree-remove .claude/worktrees/my-feature
+#   bin/worktree-remove my-feature   # shorthand for .claude/worktrees/my-feature
+
+set -euo pipefail
+
+if [ $# -eq 0 ]; then
+  echo "Usage: bin/worktree-remove <worktree-path-or-name>" >&2
+  echo "" >&2
+  echo "Active worktrees:" >&2
+  git worktree list >&2
+  exit 1
+fi
+
+repo_root="$(git rev-parse --show-toplevel)"
+target="$1"
+
+# If the argument doesn't contain a slash, treat it as a name under .claude/worktrees/
+if [[ "$target" != */* ]]; then
+  target=".claude/worktrees/$target"
+fi
+
+# Resolve to absolute path relative to repo root
+if [[ "$target" != /* ]]; then
+  target="$repo_root/$target"
+fi
+
+if [ ! -d "$target" ]; then
+  echo "Error: worktree directory not found: $target" >&2
+  echo "" >&2
+  echo "Active worktrees:" >&2
+  git worktree list >&2
+  exit 1
+fi
+
+# The critical step: move to repo root before removing
+cd "$repo_root"
+
+echo "Removing worktree: $target"
+git worktree remove "$target"
+git worktree prune
+
+echo "Done. Remaining worktrees:"
+git worktree list

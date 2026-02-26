@@ -65,7 +65,7 @@ both with fallback syntax.
 ## What this covers
 
 - All commits made locally (manual, Claude Code, GUI clients, IDE integrations).
-- Merge commits and rebase results.
+- Merge commits (via `post-merge` hook) and rebase results.
 - User-initiated `--amend` operations (the hook fires on the result).
 
 ## What this does not cover

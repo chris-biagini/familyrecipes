@@ -199,11 +199,13 @@ Extract anything beyond simple conditionals and loops into helper methods. Views
 
 ## Workflow Preferences
 
-### Worktree cleanup — ALWAYS cd first
-When a session runs inside a worktree, `git worktree remove` deletes the CWD and bricks the Bash tool for the rest of the session. **Before removing a worktree, always `cd` to the main repo first:**
+### Worktree cleanup — use the wrapper script
+When a session runs inside a worktree, `git worktree remove` deletes the CWD and bricks the Bash tool for the rest of the session. **Always use the wrapper script** which `cd`s to the repo root before removing:
 ```bash
-cd /home/claude/familyrecipes && git worktree remove .claude/worktrees/<name> && git worktree prune
+bin/worktree-remove <name>              # e.g., bin/worktree-remove my-feature
+bin/worktree-remove .claude/worktrees/<name>  # full path also works
 ```
+**Never run `git worktree remove` directly.** The wrapper exists because the "cd first" convention was forgotten repeatedly.
 
 ### Screenshots and Playwright
 Save screenshots and Playwright output to `~/screenshots/`, not inside the repo. When using browser tools, pass filenames like `/home/claude/screenshots/my-screenshot.png`. The `.gitignore` catches `.playwright-mcp/` and `*.png` as a safety net, but keep them out of the repo directory entirely.
