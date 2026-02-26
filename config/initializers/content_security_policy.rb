@@ -14,6 +14,10 @@ Rails.application.configure do
     policy.form_action :self
   end
 
-  config.content_security_policy_nonce_generator = ->(request) { request.session.id.to_s }
+  # Force session initialization so the ID is never nil on first cookieless request
+  config.content_security_policy_nonce_generator = lambda { |request|
+    request.session[:_nonce_init] ||= true
+    request.session.id.to_s
+  }
   config.content_security_policy_nonce_directives = %w[script-src]
 end

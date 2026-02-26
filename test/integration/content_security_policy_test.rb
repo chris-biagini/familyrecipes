@@ -25,4 +25,15 @@ class ContentSecurityPolicyTest < ActionDispatch::IntegrationTest
     assert_match(/base-uri 'self'/, csp)
     assert_match(/form-action 'self'/, csp)
   end
+
+  test 'first cookieless request gets a valid non-empty nonce' do
+    reset!
+
+    get root_path
+
+    csp = response.headers['Content-Security-Policy']
+    nonce = csp[/nonce-([^']+)/, 1]
+
+    assert_predicate nonce, :present?, 'Expected nonce to be non-empty on first cookieless request'
+  end
 end
