@@ -334,6 +334,25 @@ Homepage and recipe pages are public reads. Ingredients and groceries pages requ
 
 Grocery list state syncs across browser tabs/devices via ActionCable backed by Solid Cable (separate SQLite database for pub/sub). `GroceryListChannel` broadcasts version numbers on state changes; clients poll for fresh state when their version is stale. Connections require authentication (session cookie); subscriptions require kitchen membership.
 
+### PWA & Service Worker
+
+The app is installable as a PWA. `public/service-worker.js` uses runtime caching:
+- `/assets/*`: cache-first (Propshaft-fingerprinted, immutable)
+- HTML pages: network-first with cache fallback, offline fallback at `public/offline.html`
+- Grocery/nutrition API endpoints and `/cable`: skipped (not cached)
+
+The SW skip-list regex covers all grocery and nutrition API routes at both root and kitchen-scoped paths. **When adding new API endpoints**, update the `API_PATTERN` regex in `public/service-worker.js` or they'll be cached as HTML pages.
+
+`public/manifest.json` is static. The grocery shortcut URL (`/groceries`) works with the optional kitchen scope when one kitchen exists.
+
+### Icon generation
+
+All favicon/PWA icons are generated from `app/assets/images/favicon.svg` — no binary assets in the repo. `rake pwa:icons` uses `rsvg-convert` (from `librsvg2-bin`) to generate PNGs to `public/icons/` (gitignored by `*.png` rule). The Dockerfile builder stage runs this automatically. `bin/setup` runs it gracefully (skips if `rsvg-convert` is missing).
+
+### Error pages
+
+Static error pages (`public/404.html`, `public/offline.html`) share `public/error.css` with per-page emoji via body class (`.error-404`, `.error-offline`). Static files in `public/` bypass the Rails CSP middleware, so inline styles and external CSS both work without CSP changes.
+
 ### IngredientCatalog overlay model
 
 Seed entries are global (`kitchen_id: nil`); kitchens can add overrides. `lookup_for(kitchen)` merges global + kitchen entries with kitchen taking precedence.
