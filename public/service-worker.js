@@ -1,4 +1,4 @@
-var CACHE_NAME = 'familyrecipes-v1';
+var CACHE_NAME = 'familyrecipes-v2';
 
 var API_PATTERN = /^(\/kitchens\/[^/]+)?\/(groceries\/(state|select|check|custom_items|clear|quick_bites|aisle_order|aisle_order_content)|nutrition\/)/;
 
