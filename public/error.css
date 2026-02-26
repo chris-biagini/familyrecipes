@@ -3,7 +3,14 @@ body {
 }
 
 h1::after {
-  content: "\1F974";
   display: block;
   margin: 1rem;
+}
+
+.error-404 h1::after {
+  content: "\1F974";
+}
+
+.error-offline h1::after {
+  content: "\1F3DD\FE0F";
 }
