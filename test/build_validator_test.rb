@@ -43,7 +43,7 @@ class BuildValidatorTest < ActiveSupport::TestCase
     pizza = make_recipe(pizza_md, id: 'test-pizza')
     validator = build_validator(recipes: [dough, pizza])
 
-    validator.validate_cross_references
+    assert_nothing_raised { validator.validate_cross_references }
   end
 
   def test_self_referential_cross_reference

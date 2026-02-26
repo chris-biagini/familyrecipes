@@ -6,7 +6,7 @@ import {
 import { show as notifyShow } from "utilities/notify"
 
 export default class extends Controller {
-  static targets = ["textarea", "saveButton", "cancelButton", "closeButton", "deleteButton", "errors"]
+  static targets = ["textarea", "saveButton", "deleteButton", "errors"]
 
   static values = {
     url: String,

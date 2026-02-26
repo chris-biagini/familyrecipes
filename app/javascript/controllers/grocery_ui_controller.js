@@ -369,11 +369,8 @@ export default class extends Controller {
   }
 
   bindRecipeCheckboxes() {
-    const recipeSelector = this.element.querySelector("#recipe-selector")
-    if (!recipeSelector) return
-
     const handler = (e) => {
-      const cb = e.target.closest('input[type="checkbox"]')
+      const cb = e.target.closest('#recipe-selector input[type="checkbox"]')
       if (!cb) return
 
       const slug = cb.dataset.slug
@@ -387,7 +384,7 @@ export default class extends Controller {
       })
     }
 
-    this.addListener(recipeSelector, "change", handler)
+    this.addListener(this.element, "change", handler)
   }
 
   bindCustomItemInput() {

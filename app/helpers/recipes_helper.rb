@@ -26,7 +26,6 @@ module RecipesHelper
     ScalableNumberPreprocessor.process_yield_with_unit(text, singular, plural).html_safe # rubocop:disable Rails/OutputSafety
   end
 
-  # Returns array of [label, values_hash, is_scalable] tuples for the nutrition table.
   def nutrition_columns(nutrition) # rubocop:disable Metrics/PerceivedComplexity
     has_per_unit = nutrition['per_unit'] && nutrition['makes_quantity']&.to_f&.positive?
     has_per_serving = nutrition['per_serving'] && nutrition['serving_count']

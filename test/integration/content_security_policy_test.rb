@@ -17,7 +17,7 @@ class ContentSecurityPolicyTest < ActionDispatch::IntegrationTest
     assert csp, 'Expected Content-Security-Policy header to be present'
 
     assert_match(/default-src 'self'/, csp)
-    assert_match(/script-src 'self'/, csp)
+    assert_match(/script-src 'self' 'nonce-/, csp)
     assert_match(/style-src 'self'/, csp)
     assert_match(/connect-src 'self' ws: wss:/, csp)
     assert_match(/object-src 'none'/, csp)

@@ -1,7 +1,7 @@
 <% content_for(:title) { "#{current_kitchen.name}: Groceries" } %>
 
 <% content_for(:head) do %>
-  <%= stylesheet_link_tag 'groceries' %>
+  <%= stylesheet_link_tag 'groceries', "data-turbo-track": "reload" %>
 <% end %>
 
 <% if current_kitchen.member?(current_user) %>

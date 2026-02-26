@@ -2,7 +2,7 @@ let container = null
 let timer = null
 
 function getContainer() {
-  if (!container) {
+  if (!container || !container.isConnected) {
     container = document.createElement('div')
     container.className = 'notify-bar'
     container.hidden = true

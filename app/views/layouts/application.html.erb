@@ -6,7 +6,7 @@
   <meta name="theme-color" content="rgb(205, 71, 84)">
   <title><%= content_for?(:title) ? content_for(:title) : 'Biagini Family Recipes' %></title>
   <%= csrf_meta_tags %>
-  <%= stylesheet_link_tag 'style' %>
+  <%= stylesheet_link_tag 'style', "data-turbo-track": "reload" %>
   <link rel="icon" type="image/svg+xml" href="<%= asset_path('favicon.svg') %>">
   <link rel="icon" type="image/png" sizes="32x32" href="<%= versioned_icon_path('favicon-32.png') %>">
   <link rel="apple-touch-icon" sizes="180x180" href="<%= versioned_icon_path('apple-touch-icon.png') %>">

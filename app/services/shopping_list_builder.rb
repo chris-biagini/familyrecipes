@@ -20,12 +20,9 @@ class ShoppingListBuilder
     recipe_ingredients = aggregate_recipe_ingredients
     quick_bite_ingredients = aggregate_quick_bite_ingredients
 
-    quick_bite_ingredients.each do |name, amounts|
-      recipe_ingredients[name] =
-        recipe_ingredients.key?(name) ? IngredientAggregator.merge_amounts(recipe_ingredients[name], amounts) : amounts
+    recipe_ingredients.merge(quick_bite_ingredients) do |_name, existing, incoming|
+      IngredientAggregator.merge_amounts(existing, incoming)
     end
-
-    recipe_ingredients
   end
 
   def selected_recipes
@@ -64,17 +61,13 @@ class ShoppingListBuilder
   end
 
   def organize_by_aisle(ingredients)
-    result = Hash.new { |h, k| h[k] = [] }
-
-    ingredients.each do |name, amounts|
-      aisle = @profiles[name]&.aisle
-      next if aisle == 'omit'
-
-      target_aisle = aisle || 'Miscellaneous'
+    visible = ingredients.reject { |name, _| @profiles[name]&.aisle == 'omit' }
+    grouped = visible.each_with_object(Hash.new { |h, k| h[k] = [] }) do |(name, amounts), result|
+      target_aisle = @profiles[name]&.aisle || 'Miscellaneous'
       result[target_aisle] << { name: name, amounts: serialize_amounts(amounts) }
     end
 
-    sort_aisles(result)
+    sort_aisles(grouped)
   end
 
   def sort_aisles(aisles_hash)

@@ -39,8 +39,6 @@ module FamilyRecipes
 
     ABBREVIATED_FORMS = ABBREVIATIONS.values.to_set.freeze
 
-    # --- Public API ---
-
     def self.singular(word)
       return word if word.blank?
       return word if uncountable?(word)
@@ -90,8 +88,6 @@ module FamilyRecipes
 
       count == 1 ? unit : plural(unit)
     end
-
-    # --- Private helpers ---
 
     def self.apply_case(original, replacement)
       original[0] == original[0].upcase ? replacement.capitalize : replacement

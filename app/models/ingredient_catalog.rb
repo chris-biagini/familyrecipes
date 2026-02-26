@@ -21,10 +21,9 @@ class IngredientCatalog < ApplicationRecord
   end
 
   def self.add_ingredient_variants(lookup)
-    variants = {}
-    lookup.each_value do |entry|
+    variants = lookup.each_value.with_object({}) do |entry, acc|
       FamilyRecipes::Inflector.ingredient_variants(entry.ingredient_name).each do |variant|
-        variants[variant] = entry unless lookup.key?(variant)
+        acc[variant] = entry unless lookup.key?(variant)
       end
     end
     lookup.merge(variants)
