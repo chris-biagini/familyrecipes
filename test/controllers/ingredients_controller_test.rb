@@ -220,6 +220,71 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
     assert_select '.nutrition-custom'
   end
 
+  test 'consolidates singular and plural ingredient variants into one entry' do
+    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Focaccia
+
+      Category: Bread
+
+      ## Topping (add)
+
+      - Onion, 1: thinly sliced
+
+      Scatter over dough.
+    MD
+
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Pizza Dough
+
+      Category: Bread
+
+      ## Topping (add)
+
+      - Onions, 2: diced
+
+      Scatter over dough.
+    MD
+
+    log_in
+    get ingredients_path(kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    sections = css_select('article.index section')
+    onion_sections = sections.select { |s| s.at('h2').text.include?('Onion') }
+
+    assert_equal 1, onion_sections.size, 'Expected singular and plural Onion to merge into one section'
+    assert_select onion_sections.first, 'li', count: 2
+  end
+
+  test 'uses catalog entry name as canonical form for variants' do
+    IngredientCatalog.create!(ingredient_name: 'Eggs', basis_grams: 50, calories: 70)
+    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Brioche
+
+      Category: Bread
+
+      ## Mix (combine)
+
+      - Egg, 1
+
+      Mix well.
+    MD
+
+    log_in
+    get ingredients_path(kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    sections = css_select('article.index section')
+    egg_section = sections.detect { |s| s.at('h2').text.include?('Egg') }
+
+    assert egg_section, 'Expected a section for Eggs'
+    assert_includes egg_section.at('h2').text, 'Eggs', 'Should use catalog name "Eggs" not recipe name "Egg"'
+  end
+
   test 'shows missing ingredients banner when nutrition data is absent' do
     Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
     MarkdownImporter.import(<<~MD, kitchen: @kitchen)

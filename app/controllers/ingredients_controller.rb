@@ -4,8 +4,8 @@ class IngredientsController < ApplicationController
   before_action :require_membership
 
   def index
-    @ingredients_with_recipes = build_ingredient_index
     @nutrition_lookup = IngredientCatalog.lookup_for(current_kitchen)
+    @ingredients_with_recipes = build_ingredient_index
     @missing_ingredients = find_missing_ingredients
     @available_aisles = current_kitchen.all_aisles
   end
@@ -22,9 +22,17 @@ class IngredientsController < ApplicationController
 
     recipes.each_with_object(Hash.new { |h, k| h[k] = [] }) do |recipe, index|
       recipe.ingredients.each do |ingredient|
-        index[ingredient.name] << recipe if seen[ingredient.name].add?(recipe.id)
+        name = canonical_ingredient_name(ingredient.name, index)
+        index[name] << recipe if seen[name].add?(recipe.id)
       end
     end
+  end
+
+  def canonical_ingredient_name(name, index)
+    entry = @nutrition_lookup[name]
+    return entry.ingredient_name if entry
+
+    FamilyRecipes::Inflector.ingredient_variants(name).find { |v| index.key?(v) } || name
   end
 
   def find_missing_ingredients
