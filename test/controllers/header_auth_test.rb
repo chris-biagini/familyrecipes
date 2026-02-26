@@ -12,9 +12,9 @@ class HeaderAuthTest < ActionDispatch::IntegrationTest
     assert_difference 'User.count', 1 do
       assert_difference 'Session.count', 1 do
         get kitchen_root_path(kitchen_slug: @kitchen.slug), headers: {
-          'Remote-User' => 'alice',
-          'Remote-Name' => 'Alice Smith',
-          'Remote-Email' => 'alice@example.com'
+          'HTTP_REMOTE_USER' => 'alice',
+          'HTTP_REMOTE_NAME' => 'Alice Smith',
+          'HTTP_REMOTE_EMAIL' => 'alice@example.com'
         }
       end
     end
@@ -31,9 +31,9 @@ class HeaderAuthTest < ActionDispatch::IntegrationTest
 
     assert_no_difference 'User.count' do
       get kitchen_root_path(kitchen_slug: @kitchen.slug), headers: {
-        'Remote-User' => 'alice',
-        'Remote-Name' => 'Alice Updated',
-        'Remote-Email' => 'alice@example.com'
+        'HTTP_REMOTE_USER' => 'alice',
+        'HTTP_REMOTE_NAME' => 'Alice Updated',
+        'HTTP_REMOTE_EMAIL' => 'alice@example.com'
       }
     end
 
@@ -52,24 +52,24 @@ class HeaderAuthTest < ActionDispatch::IntegrationTest
 
   test 'does not create duplicate session when cookie already valid' do
     get kitchen_root_path(kitchen_slug: @kitchen.slug), headers: {
-      'Remote-User' => 'alice',
-      'Remote-Name' => 'Alice',
-      'Remote-Email' => 'alice@example.com'
+      'HTTP_REMOTE_USER' => 'alice',
+      'HTTP_REMOTE_NAME' => 'Alice',
+      'HTTP_REMOTE_EMAIL' => 'alice@example.com'
     }
 
     assert_difference 'Session.count', 0 do
       get kitchen_root_path(kitchen_slug: @kitchen.slug), headers: {
-        'Remote-User' => 'alice',
-        'Remote-Name' => 'Alice',
-        'Remote-Email' => 'alice@example.com'
+        'HTTP_REMOTE_USER' => 'alice',
+        'HTTP_REMOTE_NAME' => 'Alice',
+        'HTTP_REMOTE_EMAIL' => 'alice@example.com'
       }
     end
   end
 
   test 'uses Remote-User as name fallback when Remote-Name is absent' do
     get kitchen_root_path(kitchen_slug: @kitchen.slug), headers: {
-      'Remote-User' => 'bob',
-      'Remote-Email' => 'bob@example.com'
+      'HTTP_REMOTE_USER' => 'bob',
+      'HTTP_REMOTE_EMAIL' => 'bob@example.com'
     }
 
     assert_equal 'bob', User.find_by(email: 'bob@example.com').name
@@ -77,9 +77,9 @@ class HeaderAuthTest < ActionDispatch::IntegrationTest
 
   test 'auto-joins sole kitchen for new user' do
     get kitchen_root_path(kitchen_slug: @kitchen.slug), headers: {
-      'Remote-User' => 'alice',
-      'Remote-Name' => 'Alice',
-      'Remote-Email' => 'alice@example.com'
+      'HTTP_REMOTE_USER' => 'alice',
+      'HTTP_REMOTE_NAME' => 'Alice',
+      'HTTP_REMOTE_EMAIL' => 'alice@example.com'
     }
 
     user = User.find_by(email: 'alice@example.com')
@@ -92,9 +92,9 @@ class HeaderAuthTest < ActionDispatch::IntegrationTest
     Kitchen.create!(name: 'Second Kitchen', slug: 'second')
 
     get kitchen_root_path(kitchen_slug: @kitchen.slug), headers: {
-      'Remote-User' => 'alice',
-      'Remote-Name' => 'Alice',
-      'Remote-Email' => 'alice@example.com'
+      'HTTP_REMOTE_USER' => 'alice',
+      'HTTP_REMOTE_NAME' => 'Alice',
+      'HTTP_REMOTE_EMAIL' => 'alice@example.com'
     }
 
     user = User.find_by(email: 'alice@example.com')
@@ -108,9 +108,9 @@ class HeaderAuthTest < ActionDispatch::IntegrationTest
 
     assert_no_difference 'Membership.count' do
       get kitchen_root_path(kitchen_slug: @kitchen.slug), headers: {
-        'Remote-User' => 'alice',
-        'Remote-Name' => 'Alice',
-        'Remote-Email' => 'alice@example.com'
+        'HTTP_REMOTE_USER' => 'alice',
+        'HTTP_REMOTE_NAME' => 'Alice',
+        'HTTP_REMOTE_EMAIL' => 'alice@example.com'
       }
     end
   end

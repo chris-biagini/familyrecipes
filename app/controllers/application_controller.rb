@@ -49,11 +49,11 @@ class ApplicationController < ActionController::Base
   def authenticate_from_headers
     return if authenticated?
 
-    remote_user = request.headers['Remote-User']
-    return unless remote_user
+    remote_user = request.env['HTTP_REMOTE_USER']
+    return if remote_user.blank?
 
-    email = request.headers['Remote-Email'] || "#{remote_user}@header.local"
-    name = request.headers['Remote-Name'] || remote_user
+    email = request.env['HTTP_REMOTE_EMAIL'].presence || "#{remote_user}@header.local"
+    name = request.env['HTTP_REMOTE_NAME'].presence || remote_user
 
     user = User.find_or_create_by!(email: email) do |u|
       u.name = name
