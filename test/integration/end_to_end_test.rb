@@ -130,7 +130,7 @@ class EndToEndTest < ActionDispatch::IntegrationTest
 
     get kitchen_root_path(kitchen_slug: kitchen_slug)
 
-    assert_select '#recipe-editor[data-editor-method="POST"]'
+    assert_select '#recipe-editor[data-editor-method-value="POST"]'
     assert_select '.editor-textarea'
   end
 

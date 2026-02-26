@@ -6,10 +6,7 @@
 
 <% content_for(:scripts) do %>
   <%= javascript_include_tag 'actioncable', defer: true %>
-  <%= javascript_include_tag 'notify', defer: true %>
   <%= javascript_include_tag 'groceries', defer: true %>
-  <%= javascript_include_tag 'editor-utils', defer: true %>
-  <%= javascript_include_tag 'editor-framework', defer: true %>
 <% end %>
 
 <% if current_kitchen.member?(current_user) %>
@@ -100,7 +97,7 @@
                              editor_method: 'PATCH',
                              editor_on_success: 'reload',
                              editor_body_key: 'content' } } do %>
-  <textarea class="editor-textarea" spellcheck="false"><%= @quick_bites_content %></textarea>
+  <textarea class="editor-textarea" data-editor-target="textarea" spellcheck="false"><%= @quick_bites_content %></textarea>
 <% end %>
 
 <%= render layout: 'shared/editor_dialog',
@@ -112,6 +109,6 @@
                              editor_body_key: 'aisle_order',
                              editor_load_url: groceries_aisle_order_content_path,
                              editor_load_key: 'aisle_order' } } do %>
-  <textarea class="editor-textarea" spellcheck="false" placeholder="Loading..."></textarea>
+  <textarea class="editor-textarea" data-editor-target="textarea" spellcheck="false" placeholder="Loading..."></textarea>
 <% end %>
 <% end %>

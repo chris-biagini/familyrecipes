@@ -14,10 +14,7 @@
 <% end %>
 
 <% content_for(:scripts) do %>
-  <%= javascript_include_tag 'notify', defer: true %>
   <%= javascript_include_tag 'recipe-state-manager', defer: true %>
-  <%= javascript_include_tag 'editor-utils', defer: true %>
-  <%= javascript_include_tag 'editor-framework', defer: true %>
 <% end %>
 
 <article class="recipe" data-controller="wake-lock">
@@ -60,6 +57,6 @@
                              editor_on_success: 'redirect',
                              editor_body_key: 'markdown_source' },
               footer_extra: render('recipes/editor_delete_button', recipe: @recipe) } do %>
-  <textarea class="editor-textarea" spellcheck="false"><%= @recipe.markdown_source %></textarea>
+  <textarea class="editor-textarea" data-editor-target="textarea" spellcheck="false"><%= @recipe.markdown_source %></textarea>
 <% end %>
 <% end %>

@@ -141,7 +141,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select '#edit-aisle-order-button', 'Edit Aisle Order'
-    assert_select 'dialog[data-editor-open="#edit-aisle-order-button"]'
+    assert_select 'dialog[data-editor-open-selector-value="#edit-aisle-order-button"]'
   end
 
   test 'groups recipes by category' do

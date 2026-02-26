@@ -1,14 +1,25 @@
 <%# locals: (title:, id: nil, dialog_data: {}, footer_extra: nil) %>
-<%= tag.dialog id: id, class: 'editor-dialog', data: dialog_data do %>
+<%= tag.dialog id: id,
+    class: 'editor-dialog',
+    data: {
+      controller: 'editor',
+      editor_url_value: dialog_data[:editor_url],
+      editor_method_value: dialog_data[:editor_method] || 'PATCH',
+      editor_on_success_value: dialog_data[:editor_on_success] || 'redirect',
+      editor_body_key_value: dialog_data[:editor_body_key] || 'markdown_source',
+      editor_open_selector_value: dialog_data[:editor_open],
+      editor_load_url_value: dialog_data[:editor_load_url],
+      editor_load_key_value: dialog_data[:editor_load_key]
+    }.compact do %>
   <div class="editor-header">
     <h2><%= title %></h2>
-    <button type="button" class="btn editor-close" aria-label="Close">&times;</button>
+    <button type="button" class="btn editor-close" data-editor-target="closeButton" data-action="click->editor#close" aria-label="Close">&times;</button>
   </div>
-  <div class="editor-errors" hidden></div>
+  <div class="editor-errors" data-editor-target="errors" hidden></div>
   <%= yield %>
   <div class="editor-footer">
     <%= footer_extra %>
-    <button type="button" class="btn editor-cancel">Cancel</button>
-    <button type="button" class="btn btn-primary editor-save">Save</button>
+    <button type="button" class="btn editor-cancel" data-editor-target="cancelButton" data-action="click->editor#close">Cancel</button>
+    <button type="button" class="btn btn-primary editor-save" data-editor-target="saveButton" data-action="click->editor#save">Save</button>
   </div>
 <% end %>
