@@ -13,4 +13,7 @@ Rails.application.configure do
     policy.base_uri    :self
     policy.form_action :self
   end
+
+  config.content_security_policy_nonce_generator = ->(request) { request.session.id.to_s }
+  config.content_security_policy_nonce_directives = %w[script-src]
 end
