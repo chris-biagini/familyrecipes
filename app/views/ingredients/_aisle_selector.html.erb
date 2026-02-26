@@ -1,5 +1,7 @@
 <%# locals: (aisles:) %>
-<select id="nutrition-editor-aisle" class="aisle-select" aria-label="Grocery aisle">
+<select id="nutrition-editor-aisle" class="aisle-select" aria-label="Grocery aisle"
+        data-nutrition-editor-target="aisleSelect"
+        data-action="change->nutrition-editor#aisleChanged">
   <option value="">(none)</option>
   <%- aisles.each do |aisle| -%>
   <option value="<%= aisle %>"><%= aisle %></option>
@@ -9,5 +11,7 @@
   <option disabled>&#x2500;&#x2500;&#x2500;</option>
   <option value="__other__">New aisle&hellip;</option>
 </select>
-<input type="text" id="nutrition-editor-aisle-input" class="aisle-input" placeholder="New aisle name" hidden>
+<input type="text" id="nutrition-editor-aisle-input" class="aisle-input" placeholder="New aisle name" hidden
+       data-nutrition-editor-target="aisleInput"
+       data-action="keydown->nutrition-editor#aisleInputKeydown">
 <span class="editor-footer-spacer"></span>

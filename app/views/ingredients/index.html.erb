@@ -59,12 +59,8 @@
 <%= render layout: 'shared/editor_dialog',
     locals: { title: 'Edit Nutrition',
               id: 'nutrition-editor',
-              dialog_data: { editor_on_success: 'reload' },
+              dialog_data: { editor_on_success: 'reload', extra_controllers: 'nutrition-editor' },
               footer_extra: render('ingredients/aisle_selector', aisles: @available_aisles) } do %>
-  <textarea id="nutrition-editor-textarea" class="editor-textarea" data-editor-target="textarea" spellcheck="false"></textarea>
+  <textarea id="nutrition-editor-textarea" class="editor-textarea" data-editor-target="textarea" data-nutrition-editor-target="textarea" spellcheck="false"></textarea>
 <% end %>
-<% end %>
-
-<% content_for(:scripts) do %>
-  <%= javascript_include_tag 'nutrition-editor', defer: true %>
 <% end %>
