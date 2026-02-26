@@ -4,11 +4,6 @@
   <%= stylesheet_link_tag 'groceries' %>
 <% end %>
 
-<% content_for(:scripts) do %>
-  <%= javascript_include_tag 'actioncable', defer: true %>
-  <%= javascript_include_tag 'groceries', defer: true %>
-<% end %>
-
 <% if current_kitchen.member?(current_user) %>
 <% content_for(:extra_nav) do %>
   <div>
@@ -27,7 +22,7 @@
 </noscript>
 
 <div id="groceries-app" class="hidden-until-js"
-     data-controller="wake-lock grocery-sync"
+     data-controller="wake-lock grocery-sync grocery-ui"
      data-kitchen-slug="<%= current_kitchen.slug %>"
      data-state-url="<%= groceries_state_path %>"
      data-select-url="<%= groceries_select_path %>"

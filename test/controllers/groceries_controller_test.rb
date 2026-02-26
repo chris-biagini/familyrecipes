@@ -89,12 +89,13 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     assert_select 'input[type=checkbox][data-slug="focaccia"][data-title="Focaccia"]'
   end
 
-  test 'includes groceries CSS and JS' do
+  test 'includes groceries CSS and Stimulus controllers' do
     log_in
     get groceries_path(kitchen_slug: kitchen_slug)
 
     assert_select 'link[href*="groceries"]'
-    assert_select 'script[src*="groceries"]'
+    assert_select '[data-controller~="grocery-sync"]'
+    assert_select '[data-controller~="grocery-ui"]'
   end
 
   test 'renders custom items section' do
