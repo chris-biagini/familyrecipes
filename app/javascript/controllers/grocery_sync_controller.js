@@ -40,6 +40,7 @@ export default class extends Controller {
   }
 
   disconnect() {
+    if (this.fetchController) this.fetchController.abort()
     if (this.heartbeatId) {
       clearInterval(this.heartbeatId)
       this.heartbeatId = null
@@ -77,7 +78,13 @@ export default class extends Controller {
   }
 
   fetchState() {
-    fetch(this.urls.state, { headers: { "Accept": "application/json" } })
+    if (this.fetchController) this.fetchController.abort()
+    this.fetchController = new AbortController()
+
+    fetch(this.urls.state, {
+      headers: { "Accept": "application/json" },
+      signal: this.fetchController.signal
+    })
       .then(response => {
         if (!response.ok) throw new Error("fetch failed")
         return response.json()

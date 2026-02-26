@@ -177,6 +177,7 @@ export default class extends Controller {
       this.textareaTarget.disabled = true
       this.textareaTarget.placeholder = "Loading\u2026"
     }
+    if (this.hasSaveButtonTarget) this.saveButtonTarget.disabled = true
     this.element.showModal()
 
     fetch(this.loadUrlValue, {
@@ -191,6 +192,7 @@ export default class extends Controller {
           this.textareaTarget.placeholder = ""
           this.textareaTarget.focus()
         }
+        if (this.hasSaveButtonTarget) this.saveButtonTarget.disabled = false
       })
       .catch(() => {
         if (this.hasTextareaTarget) {

@@ -60,6 +60,7 @@
     locals: { title: 'Edit Nutrition',
               id: 'nutrition-editor',
               dialog_data: { editor_on_success: 'reload', extra_controllers: 'nutrition-editor' },
+              extra_data: { nutrition_editor_base_url_value: nutrition_entry_upsert_path(ingredient_name: '__NAME__') },
               footer_extra: render('ingredients/aisle_selector', aisles: @available_aisles) } do %>
   <textarea id="nutrition-editor-textarea" class="editor-textarea" data-editor-target="textarea" data-nutrition-editor-target="textarea" spellcheck="false"></textarea>
 <% end %>

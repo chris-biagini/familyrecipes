@@ -3,6 +3,7 @@ import { getCsrfToken, clearErrors, saveRequest } from "utilities/editor_utils"
 
 export default class extends Controller {
   static targets = ["textarea", "aisleSelect", "aisleInput"]
+  static values = { baseUrl: String }
 
   connect() {
     this.currentIngredient = null
@@ -148,9 +149,6 @@ export default class extends Controller {
 
   nutritionUrl(name) {
     const slug = name.replace(/ /g, "-")
-    const parts = window.location.pathname.split("/")
-    const kitchensIdx = parts.indexOf("kitchens")
-    const base = parts.slice(0, kitchensIdx + 2).join("/")
-    return `${base}/nutrition/${encodeURIComponent(slug)}`
+    return this.baseUrlValue.replace("__NAME__", encodeURIComponent(slug))
   }
 }
