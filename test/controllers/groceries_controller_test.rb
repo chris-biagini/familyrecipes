@@ -136,6 +136,20 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     assert_select 'noscript', /JavaScript/
   end
 
+  test 'groceries page includes Turbo Stream subscription' do
+    log_in
+    get groceries_path(kitchen_slug: kitchen_slug)
+
+    assert_select 'turbo-cable-stream-source'
+  end
+
+  test 'editor dialogs use close mode instead of reload' do
+    log_in
+    get groceries_path(kitchen_slug: kitchen_slug)
+
+    assert_select 'dialog[data-editor-on-success-value="close"]', count: 2
+  end
+
   test 'renders aisle order editor dialog for members' do
     log_in
     get groceries_path(kitchen_slug: kitchen_slug)

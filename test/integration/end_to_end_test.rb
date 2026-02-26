@@ -101,6 +101,12 @@ class EndToEndTest < ActionDispatch::IntegrationTest
     assert_select 'link[rel="icon"]'
   end
 
+  test 'layout includes importmap tags' do
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
+
+    assert_select 'script[type="importmap"]'
+  end
+
   # -- Homepage --
 
   test 'homepage renders site title and subtitle from config' do
