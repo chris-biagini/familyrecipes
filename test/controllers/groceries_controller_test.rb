@@ -1,8 +1,11 @@
 # frozen_string_literal: true
 
 require 'test_helper'
+require 'turbo/broadcastable/test_helper'
 
 class GroceriesControllerTest < ActionDispatch::IntegrationTest
+  include Turbo::Broadcastable::TestHelper
+
   setup do
     create_kitchen_and_user
   end
@@ -575,6 +578,71 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :conflict
+  end
+
+  # --- Broadcast assertions ---
+
+  test 'select broadcasts version' do
+    log_in
+    stream = GroceryListChannel.broadcasting_for(@kitchen)
+
+    assert_broadcasts(stream, 1) do
+      patch groceries_select_path(kitchen_slug: kitchen_slug),
+            params: { type: 'recipe', slug: 'focaccia', selected: true },
+            as: :json
+    end
+  end
+
+  test 'check broadcasts version' do
+    log_in
+    stream = GroceryListChannel.broadcasting_for(@kitchen)
+
+    assert_broadcasts(stream, 1) do
+      patch groceries_check_path(kitchen_slug: kitchen_slug),
+            params: { item: 'flour', checked: true },
+            as: :json
+    end
+  end
+
+  test 'update_custom_items broadcasts version' do
+    log_in
+    stream = GroceryListChannel.broadcasting_for(@kitchen)
+
+    assert_broadcasts(stream, 1) do
+      patch groceries_custom_items_path(kitchen_slug: kitchen_slug),
+            params: { item: 'birthday candles', action_type: 'add' },
+            as: :json
+    end
+  end
+
+  test 'clear broadcasts version' do
+    log_in
+    stream = GroceryListChannel.broadcasting_for(@kitchen)
+
+    assert_broadcasts(stream, 1) do
+      delete groceries_clear_path(kitchen_slug: kitchen_slug), as: :json
+    end
+  end
+
+  test 'update_aisle_order broadcasts version' do
+    log_in
+    stream = GroceryListChannel.broadcasting_for(@kitchen)
+
+    assert_broadcasts(stream, 1) do
+      patch groceries_aisle_order_path(kitchen_slug: kitchen_slug),
+            params: { aisle_order: "Produce\nBaking" },
+            as: :json
+    end
+  end
+
+  test 'update_quick_bites broadcasts recipe selector replacement' do
+    log_in
+
+    assert_turbo_stream_broadcasts [@kitchen, 'grocery_content'] do
+      patch groceries_quick_bites_path(kitchen_slug: kitchen_slug),
+            params: { content: "## Snacks\n  - Goldfish" },
+            as: :json
+    end
   end
 
   private
