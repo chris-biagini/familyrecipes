@@ -11,6 +11,7 @@
   <link rel="icon" type="image/png" sizes="32x32" href="<%= versioned_icon_path('favicon-32.png') %>">
   <link rel="apple-touch-icon" sizes="180x180" href="<%= versioned_icon_path('apple-touch-icon.png') %>">
   <link rel="manifest" href="/manifest.json">
+  <%= javascript_importmap_tags %>
   <%= javascript_include_tag 'sw-register', defer: true %>
   <%= yield :head %>
 </head>
