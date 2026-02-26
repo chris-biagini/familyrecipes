@@ -80,6 +80,10 @@ export default class extends Controller {
         this.element.close()
       } else {
         let redirectUrl = responseData.redirect_url
+        if (!redirectUrl || !redirectUrl.startsWith("/")) {
+          window.location.reload()
+          return
+        }
         if (responseData.updated_references?.length > 0) {
           const param = encodeURIComponent(responseData.updated_references.join(", "))
           const separator = redirectUrl.includes("?") ? "&" : "?"
@@ -119,7 +123,12 @@ export default class extends Controller {
       if (response.ok) {
         const data = await response.json()
         this.guard.markSaving()
-        window.location = data.redirect_url
+        const deleteRedirect = data.redirect_url
+        if (!deleteRedirect || !deleteRedirect.startsWith("/")) {
+          window.location.reload()
+          return
+        }
+        window.location = deleteRedirect
       } else {
         showErrors(this.errorsTarget, [`Failed to delete (${response.status}). Please try again.`])
         btn.disabled = false
