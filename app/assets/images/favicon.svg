@@ -1,14 +1,5 @@
 <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-  <style>
-    :root {
-      --gingham-base: rgb(249, 246, 243);
-      --gingham-stripe-color: rgba(190, 12, 30, 0.5);
-    }
-  </style>
-  <!-- Background -->
-  <rect x="0" y="0" width="16" height="16" fill="var(--gingham-base)" />
-  <!-- Vertical stripe covering left half -->
-  <rect x="0" y="0" width="8" height="16" fill="var(--gingham-stripe-color)" />
-  <!-- Horizontal stripe covering top half -->
-  <rect x="0" y="0" width="16" height="8" fill="var(--gingham-stripe-color)" />
+  <rect width="16" height="16" fill="rgb(249,246,243)" />
+  <rect width="8" height="16" fill="rgb(190,12,30)" fill-opacity="0.5" />
+  <rect width="16" height="8" fill="rgb(190,12,30)" fill-opacity="0.5" />
 </svg>
