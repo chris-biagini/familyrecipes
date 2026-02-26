@@ -2,6 +2,7 @@
 
 Rails.application.routes.draw do
   get 'up', to: 'rails/health#show', as: :rails_health_check
+  get 'manifest.json', to: 'pwa#manifest', as: :pwa_manifest
 
   root 'landing#show'
 

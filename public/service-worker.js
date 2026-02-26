@@ -1,4 +1,4 @@
-var CACHE_NAME = 'familyrecipes-v2';
+var CACHE_NAME = 'familyrecipes-v3';
 
 var API_PATTERN = /^(\/kitchens\/[^/]+)?\/(groceries\/(state|select|check|custom_items|clear|quick_bites|aisle_order|aisle_order_content)|nutrition\/)/;
 
@@ -42,7 +42,12 @@ self.addEventListener('fetch', function(event) {
     return;
   }
 
-  if (url.pathname.startsWith('/icons/') || url.pathname === '/manifest.json') {
+  if (url.pathname === '/manifest.json') {
+    event.respondWith(networkFirstHTML(event.request));
+    return;
+  }
+
+  if (url.pathname.startsWith('/icons/')) {
     event.respondWith(cacheFirst(event.request));
     return;
   }

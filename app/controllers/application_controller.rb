@@ -15,7 +15,7 @@ class ApplicationController < ActionController::Base
   before_action :auto_join_sole_kitchen
   before_action :set_kitchen_from_path
 
-  helper_method :current_kitchen, :logged_in?, :home_path
+  helper_method :current_kitchen, :logged_in?, :home_path, :versioned_icon_path
 
   private
 
@@ -44,6 +44,10 @@ class ApplicationController < ActionController::Base
 
   def home_path(**)
     params[:kitchen_slug] ? kitchen_root_path(**) : root_path(**)
+  end
+
+  def versioned_icon_path(filename)
+    "/icons/#{filename}?v=#{Rails.configuration.icon_version}"
   end
 
   def authenticate_from_headers
