@@ -17,11 +17,6 @@ FileUtils.chdir APP_ROOT do
   puts '== Installing dependencies =='
   system('bundle check') || system!('bundle install')
 
-  puts "\n== Generating PWA icons =="
-  unless system('bundle exec rake pwa:icons')
-    puts '   (skipped — install librsvg2-bin for PWA icon generation)'
-  end
-
   puts "\n== Removing old logs and tempfiles =="
   system! 'bin/rails log:clear tmp:clear'
 

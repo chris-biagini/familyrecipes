@@ -4,7 +4,7 @@
 FROM ruby:3.2-slim AS builder
 
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential libsqlite3-dev libyaml-dev librsvg2-bin && \
+    apt-get install --no-install-recommends -y build-essential libsqlite3-dev libyaml-dev && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -17,7 +17,6 @@ RUN bundle config set --local without "development test" && \
 COPY . .
 
 RUN SECRET_KEY_BASE=placeholder bin/rails assets:precompile
-RUN bin/rails pwa:icons
 
 # ---- Runtime stage ----
 FROM ruby:3.2-slim

@@ -14,7 +14,6 @@ desktop.ini
 
 # Playwright MCP output
 .playwright-mcp/
-*.png
 
 # Bundler
 .bundle/

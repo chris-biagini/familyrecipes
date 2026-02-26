@@ -347,7 +347,7 @@ The SW skip-list regex covers all grocery and nutrition API routes at both root 
 
 ### Icon generation
 
-All favicon/PWA icons are generated from `app/assets/images/favicon.svg` — no binary assets in the repo. `rake pwa:icons` uses `rsvg-convert` (from `librsvg2-bin`) to generate PNGs to `public/icons/` (gitignored by `*.png` rule). The Dockerfile builder stage runs this automatically. `bin/setup` runs it gracefully (skips if `rsvg-convert` is missing).
+PWA icons in `public/icons/` are committed to the repo and served as static files. To regenerate them from `app/assets/images/favicon.svg`, run `rake pwa:icons` (requires `rsvg-convert` from `librsvg2-bin`). Neither CI nor the Docker build generates icons — they come straight from the repo.
 
 ### Error pages
 
