@@ -90,6 +90,8 @@ All configuration is done through environment variables in your `.env` file. Doc
 
 Both SQLite databases (recipes and ActionCable) live in the Docker volume mounted at `/app/storage`. Back up this volume regularly.
 
+> **Bind mounts:** The container runs as UID 1000 (the default user on most Linux systems). If you use a bind mount instead of a named volume (e.g., `./storage:/app/storage`), ensure the host directory is writable by UID 1000: `chown -R 1000:1000 ./storage`. Named volumes (the default in `docker-compose.example.yml`) handle permissions automatically.
+
 **Offline backup (safest):**
 
 ```bash

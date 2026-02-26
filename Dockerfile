@@ -24,8 +24,8 @@ FROM ruby:3.2-slim
 RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y libsqlite3-0 libyaml-0-2 && \
     rm -rf /var/lib/apt/lists/* && \
-    groupadd --system rails && \
-    useradd --system --gid rails --create-home rails
+    groupadd --gid 1000 rails && \
+    useradd --uid 1000 --gid 1000 --create-home rails
 
 WORKDIR /app
 
