@@ -6,7 +6,7 @@ class GroceriesController < ApplicationController
   rescue_from ActiveRecord::StaleObjectError, with: :handle_stale_record
 
   def show
-    @categories = current_kitchen.categories.ordered.includes(recipes: { steps: :ingredients })
+    @categories = recipe_selector_categories
     @quick_bites_by_subsection = load_quick_bites_by_subsection
     @quick_bites_content = current_kitchen.quick_bites_content || ''
   end
@@ -59,7 +59,7 @@ class GroceriesController < ApplicationController
 
     current_kitchen.update!(quick_bites_content: content)
 
-    GroceryListChannel.broadcast_content_changed(current_kitchen)
+    broadcast_recipe_selector_update
     render json: { status: 'ok' }
   end
 
@@ -100,15 +100,14 @@ class GroceriesController < ApplicationController
 
   def validate_aisle_order
     lines = current_kitchen.parsed_aisle_order
-    errors = []
-    errors << "Too many aisles (max #{Kitchen::MAX_AISLES})" if lines.size > Kitchen::MAX_AISLES
+    too_many = lines.size > Kitchen::MAX_AISLES ? ["Too many aisles (max #{Kitchen::MAX_AISLES})"] : []
 
-    lines.each do |line|
-      next unless line.size > Kitchen::MAX_AISLE_NAME_LENGTH
-
-      errors << "Aisle name '#{line.truncate(20)}' is too long (max #{Kitchen::MAX_AISLE_NAME_LENGTH} characters)"
+    max = Kitchen::MAX_AISLE_NAME_LENGTH
+    too_long = lines.filter_map do |line|
+      "Aisle name '#{line.truncate(20)}' is too long (max #{max} characters)" if line.size > max
     end
-    errors
+
+    too_many + too_long
   end
 
   def build_aisle_order_text
@@ -121,5 +120,21 @@ class GroceriesController < ApplicationController
 
     FamilyRecipes.parse_quick_bites_content(content)
                  .group_by { |qb| qb.category.delete_prefix('Quick Bites: ') }
+  end
+
+  def recipe_selector_categories
+    current_kitchen.categories.ordered.includes(recipes: { steps: :ingredients })
+  end
+
+  def broadcast_recipe_selector_update
+    Turbo::StreamsChannel.broadcast_replace_to(
+      current_kitchen, 'grocery_content',
+      target: 'recipe-selector',
+      partial: 'groceries/recipe_selector',
+      locals: {
+        categories: recipe_selector_categories,
+        quick_bites_by_subsection: load_quick_bites_by_subsection
+      }
+    )
   end
 end

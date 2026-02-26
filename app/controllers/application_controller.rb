@@ -83,7 +83,7 @@ class ApplicationController < ActionController::Base
     user = current_user
     return if ActsAsTenant.without_tenant { user.memberships.exists? }
 
-    kitchens = ActsAsTenant.without_tenant { Kitchen.all }
+    kitchens = ActsAsTenant.without_tenant { Kitchen.limit(2).to_a }
     return unless kitchens.size == 1
 
     ActsAsTenant.with_tenant(kitchens.first) do

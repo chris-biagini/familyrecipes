@@ -200,7 +200,6 @@ class NutritionLabelParser # rubocop:disable Metrics/ClassLength
     @in_portions_section ||= lines.any? { |l| portions_header?(l) }
   end
 
-  # Formatter — reverse: IngredientCatalog -> plaintext label
   class Formatter
     def initialize(entry)
       @entry = entry

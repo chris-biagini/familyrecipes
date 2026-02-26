@@ -101,6 +101,12 @@ class EndToEndTest < ActionDispatch::IntegrationTest
     assert_select 'link[rel="icon"]'
   end
 
+  test 'layout includes importmap tags' do
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
+
+    assert_select 'script[type="importmap"]'
+  end
+
   # -- Homepage --
 
   test 'homepage renders site title and subtitle from config' do
@@ -130,7 +136,7 @@ class EndToEndTest < ActionDispatch::IntegrationTest
 
     get kitchen_root_path(kitchen_slug: kitchen_slug)
 
-    assert_select '#recipe-editor[data-editor-method="POST"]'
+    assert_select '#recipe-editor[data-editor-method-value="POST"]'
     assert_select '.editor-textarea'
   end
 

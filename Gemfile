@@ -14,6 +14,10 @@ gem 'sqlite3'
 gem 'acts_as_tenant'
 gem 'solid_cable'
 
+gem 'importmap-rails'
+gem 'stimulus-rails'
+gem 'turbo-rails'
+
 group :development do
   gem 'rubocop', require: false
   gem 'rubocop-minitest', require: false

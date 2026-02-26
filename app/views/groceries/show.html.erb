@@ -1,16 +1,7 @@
 <% content_for(:title) { "#{current_kitchen.name}: Groceries" } %>
 
 <% content_for(:head) do %>
-  <%= stylesheet_link_tag 'groceries' %>
-<% end %>
-
-<% content_for(:scripts) do %>
-  <%= javascript_include_tag 'actioncable', defer: true %>
-  <%= javascript_include_tag 'notify', defer: true %>
-  <%= javascript_include_tag 'wake-lock', defer: true %>
-  <%= javascript_include_tag 'groceries', defer: true %>
-  <%= javascript_include_tag 'editor-utils', defer: true %>
-  <%= javascript_include_tag 'editor-framework', defer: true %>
+  <%= stylesheet_link_tag 'groceries', "data-turbo-track": "reload" %>
 <% end %>
 
 <% if current_kitchen.member?(current_user) %>
@@ -22,6 +13,8 @@
 <% end %>
 <% end %>
 
+<%= turbo_stream_from current_kitchen, "grocery_content" %>
+
 <header id="groceries-header">
   <h1>Groceries</h1>
 </header>
@@ -31,6 +24,7 @@
 </noscript>
 
 <div id="groceries-app" class="hidden-until-js"
+     data-controller="wake-lock grocery-sync grocery-ui"
      data-kitchen-slug="<%= current_kitchen.slug %>"
      data-state-url="<%= groceries_state_path %>"
      data-select-url="<%= groceries_select_path %>"
@@ -40,53 +34,9 @@
 
   <p id="instructions">Select recipes to build your shopping list.</p>
 
-  <div id="recipe-selector" data-type="recipe">
-    <%- @categories.each do |category| -%>
-    <%- next if category.recipes.empty? -%>
-    <div class="category">
-      <h2><%= category.name %></h2>
-      <ul>
-      <%- category.recipes.sort_by(&:title).each do |recipe| -%>
-        <li>
-          <input type="checkbox" id="<%= recipe.slug %>-checkbox" data-slug="<%= recipe.slug %>" data-title="<%= h recipe.title %>">
-          <label for="<%= recipe.slug %>-checkbox"><%= recipe.title %></label>
-          <%= link_to "\u2192", recipe_path(recipe.slug), class: 'recipe-link', title: "Open #{recipe.title} in new tab", target: '_blank' %>
-        </li>
-      <%- end -%>
-      </ul>
-    </div>
-    <%- end -%>
-    <%- if @quick_bites_by_subsection.any? -%>
-    <div class="quick-bites" data-type="quick_bite">
-      <h2>Quick Bites</h2>
-      <div class="subsections">
-        <%- @quick_bites_by_subsection.each do |subsection, items| -%>
-        <div class="subsection">
-          <h3><%= subsection %></h3>
-          <ul>
-          <%- items.each do |item| -%>
-            <li>
-              <input type="checkbox" id="<%= item.id %>-checkbox" data-slug="<%= item.id %>" data-title="<%= h item.title %>">
-              <label for="<%= item.id %>-checkbox"><%= item.title %></label>
-            </li>
-          <%- end -%>
-          </ul>
-        </div>
-        <%- end -%>
-      </div>
-    </div>
-    <%- end -%>
-  </div>
+  <%= render 'groceries/recipe_selector', categories: @categories, quick_bites_by_subsection: @quick_bites_by_subsection %>
 
-  <div id="custom-items-section">
-    <h2>Additional Items</h2>
-    <div id="custom-input-row">
-      <label for="custom-input" class="sr-only">Add a custom item</label>
-      <input type="text" id="custom-input" placeholder="Add an item...">
-      <button id="custom-add" type="button" aria-label="Add item"><svg viewBox="0 0 24 24" width="18" height="18"><line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
-    </div>
-    <ul id="custom-items-list"></ul>
-  </div>
+  <%= render 'groceries/custom_items' %>
 
   <div id="shopping-list"></div>
 
@@ -98,9 +48,9 @@
               dialog_data: { editor_open: '#edit-quick-bites-button',
                              editor_url: groceries_quick_bites_path,
                              editor_method: 'PATCH',
-                             editor_on_success: 'reload',
+                             editor_on_success: 'close',
                              editor_body_key: 'content' } } do %>
-  <textarea class="editor-textarea" spellcheck="false"><%= @quick_bites_content %></textarea>
+  <textarea class="editor-textarea" data-editor-target="textarea" spellcheck="false"><%= @quick_bites_content %></textarea>
 <% end %>
 
 <%= render layout: 'shared/editor_dialog',
@@ -108,10 +58,10 @@
               dialog_data: { editor_open: '#edit-aisle-order-button',
                              editor_url: groceries_aisle_order_path,
                              editor_method: 'PATCH',
-                             editor_on_success: 'reload',
+                             editor_on_success: 'close',
                              editor_body_key: 'aisle_order',
                              editor_load_url: groceries_aisle_order_content_path,
                              editor_load_key: 'aisle_order' } } do %>
-  <textarea class="editor-textarea" spellcheck="false" placeholder="Loading..."></textarea>
+  <textarea class="editor-textarea" data-editor-target="textarea" spellcheck="false" placeholder="Loading..."></textarea>
 <% end %>
 <% end %>

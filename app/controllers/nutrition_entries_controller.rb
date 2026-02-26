@@ -116,6 +116,6 @@ class NutritionEntriesController < ApplicationController
                    .joins(steps: :ingredients)
                    .where('LOWER(ingredients.name) = ?', canonical)
                    .distinct
-                   .each { |recipe| RecipeNutritionJob.perform_now(recipe) }
+                   .find_each { |recipe| RecipeNutritionJob.perform_now(recipe) }
   end
 end
