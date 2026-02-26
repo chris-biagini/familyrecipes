@@ -1,0 +1,23 @@
+{
+  "planPath": "docs/plans/2026-02-26-hotwire-migration-plan.md",
+  "tasks": [
+    {"id": 0, "subject": "Task 0: Take baseline screenshots", "status": "pending"},
+    {"id": 1, "subject": "Task 1: Install Hotwire gems and importmap", "status": "pending", "blockedBy": [0]},
+    {"id": 2, "subject": "Task 2: Convert Notify to ES module", "status": "pending", "blockedBy": [1]},
+    {"id": 3, "subject": "Task 3: Convert EditorUtils to ES module", "status": "pending", "blockedBy": [1]},
+    {"id": 4, "subject": "Task 4: Convert wake-lock to Stimulus controller", "status": "pending", "blockedBy": [2]},
+    {"id": 5, "subject": "Task 5: Convert editor framework to Stimulus controller", "status": "pending", "blockedBy": [2, 3]},
+    {"id": 6, "subject": "Task 6: Convert nutrition editor to Stimulus controller", "status": "pending", "blockedBy": [5]},
+    {"id": 7, "subject": "Task 7: Convert recipe state manager to Stimulus controller", "status": "pending", "blockedBy": [5]},
+    {"id": 8, "subject": "Task 8: Convert GrocerySync to Stimulus controller", "status": "pending", "blockedBy": [5]},
+    {"id": 9, "subject": "Task 9: Convert GroceryUI to Stimulus controller", "status": "pending", "blockedBy": [8]},
+    {"id": 10, "subject": "Task 10: Clean up old JS files and script tags", "status": "pending", "blockedBy": [9]},
+    {"id": 11, "subject": "Task 11: Extract grocery page server-side partials", "status": "pending", "blockedBy": [10]},
+    {"id": 12, "subject": "Task 12: Add Turbo Streams for content changes", "status": "pending", "blockedBy": [11]},
+    {"id": 13, "subject": "Task 13: Update tests for Hotwire", "status": "pending", "blockedBy": [12]},
+    {"id": 14, "subject": "Task 14: Visual regression check", "status": "pending", "blockedBy": [13]},
+    {"id": 15, "subject": "Task 15: Stress test", "status": "pending", "blockedBy": [14]},
+    {"id": 16, "subject": "Task 16: Update CLAUDE.md and service worker", "status": "pending", "blockedBy": [15]}
+  ],
+  "lastUpdated": "2026-02-26T00:00:00Z"
+}
