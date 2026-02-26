@@ -13,6 +13,8 @@
 <% end %>
 <% end %>
 
+<%= turbo_stream_from current_kitchen, "grocery_content" %>
+
 <header id="groceries-header">
   <h1>Groceries</h1>
 </header>
@@ -46,7 +48,7 @@
               dialog_data: { editor_open: '#edit-quick-bites-button',
                              editor_url: groceries_quick_bites_path,
                              editor_method: 'PATCH',
-                             editor_on_success: 'reload',
+                             editor_on_success: 'close',
                              editor_body_key: 'content' } } do %>
   <textarea class="editor-textarea" data-editor-target="textarea" spellcheck="false"><%= @quick_bites_content %></textarea>
 <% end %>
@@ -56,7 +58,7 @@
               dialog_data: { editor_open: '#edit-aisle-order-button',
                              editor_url: groceries_aisle_order_path,
                              editor_method: 'PATCH',
-                             editor_on_success: 'reload',
+                             editor_on_success: 'close',
                              editor_body_key: 'aisle_order',
                              editor_load_url: groceries_aisle_order_content_path,
                              editor_load_key: 'aisle_order' } } do %>

@@ -76,6 +76,8 @@ export default class extends Controller {
 
       if (this.onSuccessValue === "reload") {
         window.location.reload()
+      } else if (this.onSuccessValue === "close") {
+        this.element.close()
       } else {
         let redirectUrl = responseData.redirect_url
         if (responseData.updated_references?.length > 0) {

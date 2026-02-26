@@ -34,6 +34,9 @@ export default class extends Controller {
     this.subscribe(slug)
     this.startHeartbeat()
     this.flushPending()
+
+    this.boundHandleStreamRender = this.handleStreamRender.bind(this)
+    document.addEventListener("turbo:before-stream-render", this.boundHandleStreamRender)
   }
 
   disconnect() {
@@ -49,6 +52,9 @@ export default class extends Controller {
       this.consumer.disconnect()
       this.consumer = null
     }
+    if (this.boundHandleStreamRender) {
+      document.removeEventListener("turbo:before-stream-render", this.boundHandleStreamRender)
+    }
   }
 
   get uiController() {
@@ -58,6 +64,16 @@ export default class extends Controller {
   applyStateToUI(state) {
     const ui = this.uiController
     if (ui) ui.applyState(state)
+  }
+
+  handleStreamRender(event) {
+    const originalRender = event.detail.render
+    event.detail.render = async (streamElement) => {
+      await originalRender(streamElement)
+      if (this.state && Object.keys(this.state).length > 0) {
+        this.applyStateToUI(this.state)
+      }
+    }
   }
 
   fetchState() {
@@ -139,13 +155,6 @@ export default class extends Controller {
       { channel: "GroceryListChannel", kitchen_slug: slug },
       {
         received: (data) => {
-          if (data.type === "content_changed") {
-            notifyShow("Recipes or ingredients have changed.", {
-              persistent: true,
-              action: { label: "Reload", callback: () => location.reload() }
-            })
-            return
-          }
           if (data.version && data.version > this.version && !this.awaitingOwnAction) {
             this.fetchState()
           }

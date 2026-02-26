@@ -59,7 +59,7 @@ class GroceriesController < ApplicationController
 
     current_kitchen.update!(quick_bites_content: content)
 
-    GroceryListChannel.broadcast_content_changed(current_kitchen)
+    broadcast_recipe_selector_update
     render json: { status: 'ok' }
   end
 
@@ -121,5 +121,17 @@ class GroceriesController < ApplicationController
 
     FamilyRecipes.parse_quick_bites_content(content)
                  .group_by { |qb| qb.category.delete_prefix('Quick Bites: ') }
+  end
+
+  def broadcast_recipe_selector_update
+    Turbo::StreamsChannel.broadcast_replace_to(
+      current_kitchen, 'grocery_content',
+      target: 'recipe-selector',
+      partial: 'groceries/recipe_selector',
+      locals: {
+        categories: current_kitchen.categories.ordered.includes(recipes: { steps: :ingredients }),
+        quick_bites_by_subsection: load_quick_bites_by_subsection
+      }
+    )
   end
 end
