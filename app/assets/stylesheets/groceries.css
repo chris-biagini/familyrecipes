@@ -38,8 +38,9 @@
 
 /* Custom Items */
 #custom-items-section {
-  margin-bottom: 2rem;
-  padding-top: 0.5rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid var(--separator-color);
 }
 
 #custom-input-row {
@@ -120,8 +121,7 @@
 
 /* Shopping List */
 #shopping-list {
-  padding-top: 2rem;
-  border-top: 2px solid var(--separator-color);
+  padding-top: 0;
 }
 
 .shopping-list-header {

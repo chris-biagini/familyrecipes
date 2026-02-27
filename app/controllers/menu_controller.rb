@@ -17,6 +17,13 @@ class MenuController < ApplicationController
                       selected: params[:selected])
   end
 
+  def select_all
+    plan = MealPlan.for_kitchen(current_kitchen)
+    plan.with_optimistic_retry { plan.select_all!(all_recipe_slugs, all_quick_bite_slugs) }
+    MealPlanChannel.broadcast_version(current_kitchen, plan.lock_version)
+    render json: { version: plan.lock_version }
+  end
+
   def clear
     plan = MealPlan.for_kitchen(current_kitchen)
     plan.with_optimistic_retry { plan.clear_selections! }
@@ -64,6 +71,17 @@ class MenuController < ApplicationController
 
   def recipe_selector_categories
     current_kitchen.categories.ordered.includes(recipes: { steps: :ingredients })
+  end
+
+  def all_recipe_slugs
+    current_kitchen.recipes.pluck(:slug)
+  end
+
+  def all_quick_bite_slugs
+    content = current_kitchen.quick_bites_content
+    return [] unless content
+
+    FamilyRecipes.parse_quick_bites_content(content).map(&:id)
   end
 
   def broadcast_recipe_selector_update

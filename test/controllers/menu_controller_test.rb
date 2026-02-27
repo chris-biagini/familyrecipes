@@ -114,6 +114,52 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'Meal plan was modified by another request. Please refresh.', json['error']
   end
 
+  # --- Select All ---
+
+  test 'select_all requires membership' do
+    patch menu_select_all_path(kitchen_slug: kitchen_slug), as: :json
+
+    assert_response :forbidden
+  end
+
+  test 'select_all selects all recipes and quick bites' do
+    log_in
+    @kitchen.update!(quick_bites_content: "## Snacks\n  - Goldfish: Goldfish crackers")
+
+    patch menu_select_all_path(kitchen_slug: kitchen_slug), as: :json
+
+    assert_response :success
+
+    plan = MealPlan.for_kitchen(@kitchen)
+    recipe_slugs = @kitchen.recipes.pluck(:slug)
+
+    assert_equal recipe_slugs.sort, plan.state['selected_recipes'].sort
+    assert_includes plan.state['selected_quick_bites'], 'goldfish'
+  end
+
+  test 'select_all preserves custom items and checked off' do
+    log_in
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('custom_items', item: 'birthday candles', action: 'add')
+    plan.apply_action('check', item: 'flour', checked: true)
+
+    patch menu_select_all_path(kitchen_slug: kitchen_slug), as: :json
+
+    plan.reload
+
+    assert_includes plan.state['custom_items'], 'birthday candles'
+    assert_includes plan.state['checked_off'], 'flour'
+  end
+
+  test 'select_all broadcasts version' do
+    log_in
+    stream = MealPlanChannel.broadcasting_for(@kitchen)
+
+    assert_broadcasts(stream, 1) do
+      patch menu_select_all_path(kitchen_slug: kitchen_slug), as: :json
+    end
+  end
+
   # --- Clear ---
 
   test 'clear resets selections only' do

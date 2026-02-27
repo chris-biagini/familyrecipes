@@ -14,6 +14,7 @@ Rails.application.routes.draw do
     get 'ingredients/:ingredient_name/edit', to: 'ingredients#edit', as: :ingredient_edit
     get 'menu', to: 'menu#show', as: :menu
     patch 'menu/select', to: 'menu#select', as: :menu_select
+    patch 'menu/select_all', to: 'menu#select_all', as: :menu_select_all
     delete 'menu/clear', to: 'menu#clear', as: :menu_clear
     patch 'menu/quick_bites', to: 'menu#update_quick_bites', as: :menu_quick_bites
     get 'menu/quick_bites_content', to: 'menu#quick_bites_content', as: :menu_quick_bites_content

@@ -123,6 +123,19 @@ class MealPlanTest < ActiveSupport::TestCase
     assert_operator list.lock_version, :>, old_version
   end
 
+  test 'select_all sets all recipes and quick bites while preserving custom items' do
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('custom_items', item: 'birthday candles', action: 'add')
+    list.apply_action('check', item: 'milk', checked: true)
+
+    list.select_all!(%w[focaccia bagels], %w[goldfish nachos])
+
+    assert_equal %w[focaccia bagels], list.state['selected_recipes']
+    assert_equal %w[goldfish nachos], list.state['selected_quick_bites']
+    assert_includes list.state['custom_items'], 'birthday candles'
+    assert_includes list.state['checked_off'], 'milk'
+  end
+
   test 'clear_selections resets selections but preserves custom items and checked off' do
     list = MealPlan.for_kitchen(@kitchen)
     list.apply_action('select', type: 'recipe', slug: 'pizza-dough', selected: true)

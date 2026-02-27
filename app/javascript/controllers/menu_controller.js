@@ -15,6 +15,7 @@ export default class extends Controller {
     this.urls = {
       state: this.element.dataset.stateUrl,
       select: this.element.dataset.selectUrl,
+      selectAll: this.element.dataset.selectAllUrl,
       clear: this.element.dataset.clearUrl
     }
 
@@ -169,6 +170,10 @@ export default class extends Controller {
 
       this.sendAction(this.urls.select, { type, slug, selected: cb.checked })
     })
+  }
+
+  selectAll() {
+    this.sendAction(this.urls.selectAll, {})
   }
 
   clear() {
