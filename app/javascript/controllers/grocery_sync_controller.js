@@ -16,10 +16,8 @@ export default class extends Controller {
 
     this.urls = {
       state: this.element.dataset.stateUrl,
-      select: this.element.dataset.selectUrl,
       check: this.element.dataset.checkUrl,
-      customItems: this.element.dataset.customItemsUrl,
-      clear: this.element.dataset.clearUrl
+      customItems: this.element.dataset.customItemsUrl
     }
 
     this.loadCache()
@@ -111,7 +109,7 @@ export default class extends Controller {
 
   sendAction(url, params) {
     const csrfToken = document.querySelector('meta[name="csrf-token"]')
-    const method = url === this.urls.clear ? "DELETE" : "PATCH"
+    const method = "PATCH"
 
     this.awaitingOwnAction = true
 
