@@ -226,6 +226,100 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  # --- structured JSON upsert ---
+
+  test 'upsert accepts structured JSON with nutrients and density' do
+    post nutrition_entry_upsert_path('flour', kitchen_slug: kitchen_slug),
+         params: {
+           nutrients: { basis_grams: 30, calories: 110, fat: 0.5, saturated_fat: 0,
+                        trans_fat: 0, cholesterol: 0, sodium: 5, carbs: 23,
+                        fiber: 1, total_sugars: 0, added_sugars: 0, protein: 3 },
+           density: { volume: 0.25, unit: 'cup', grams: 30 },
+           portions: {},
+           aisle: 'Baking'
+         },
+         as: :json
+
+    assert_response :success
+    entry = IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'flour')
+
+    assert_in_delta 30.0, entry.basis_grams
+    assert_in_delta 110.0, entry.calories
+    assert_equal 'cup', entry.density_unit
+    assert_equal 'Baking', entry.aisle
+  end
+
+  test 'upsert structured JSON maps each to ~unitless in portions' do
+    post nutrition_entry_upsert_path('eggs', kitchen_slug: kitchen_slug),
+         params: {
+           nutrients: { basis_grams: 50, calories: 70, fat: 5, saturated_fat: 1.5,
+                        trans_fat: 0, cholesterol: 185, sodium: 70, carbs: 0.5,
+                        fiber: 0, total_sugars: 0.5, added_sugars: 0, protein: 6 },
+           density: nil,
+           portions: { 'each' => 50, 'stick' => 113 },
+           aisle: 'Dairy'
+         },
+         as: :json
+
+    assert_response :success
+    entry = IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'eggs')
+
+    assert_equal 50, entry.portions['~unitless']
+    assert_equal 113, entry.portions['stick']
+    assert_nil entry.portions['each']
+  end
+
+  test 'upsert structured JSON validates basis_grams > 0' do
+    post nutrition_entry_upsert_path('flour', kitchen_slug: kitchen_slug),
+         params: { nutrients: { basis_grams: 0, calories: 110 }, density: nil, portions: {}, aisle: nil },
+         as: :json
+
+    assert_response :unprocessable_entity
+  end
+
+  test 'upsert structured JSON saves aisle-only when nutrients blank' do
+    post nutrition_entry_upsert_path('flour', kitchen_slug: kitchen_slug),
+         params: { nutrients: { basis_grams: nil }, density: nil, portions: {}, aisle: 'Baking' },
+         as: :json
+
+    assert_response :success
+    entry = IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'flour')
+
+    assert_equal 'Baking', entry.aisle
+    assert_nil entry.basis_grams
+  end
+
+  test 'upsert with save_and_next returns next ingredient name' do
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Focaccia
+
+      Category: Bread
+
+      ## Mix (combine)
+
+      - Flour, 3 cups
+      - Salt, 1 tsp
+
+      Mix well.
+    MD
+
+    post nutrition_entry_upsert_path('Flour', kitchen_slug: kitchen_slug),
+         params: {
+           nutrients: { basis_grams: 30, calories: 110, fat: 0.5, saturated_fat: 0,
+                        trans_fat: 0, cholesterol: 0, sodium: 5, carbs: 23,
+                        fiber: 1, total_sugars: 0, added_sugars: 0, protein: 3 },
+           density: { volume: 0.25, unit: 'cup', grams: 30 },
+           portions: {}, aisle: 'Baking', save_and_next: true
+         },
+         as: :json
+
+    assert_response :success
+    body = response.parsed_body
+
+    assert_equal 'ok', body['status']
+    assert_equal 'Salt', body['next_ingredient']
+  end
+
   # --- destroy ---
 
   test 'destroy deletes kitchen override' do
