@@ -2,15 +2,13 @@
   display: none;
 }
 
-/* Instructions */
-#instructions {
+.subtitle {
   text-align: center;
   font-size: 0.95rem;
   margin-bottom: 1.5rem;
 }
 
 /* Shared checkbox styles */
-#recipe-selector input[type="checkbox"],
 .check-off input[type="checkbox"] {
   appearance: none;
   -webkit-appearance: none;
@@ -23,13 +21,11 @@
   position: relative;
 }
 
-#recipe-selector input[type="checkbox"]:checked,
 .check-off input[type="checkbox"]:checked {
   background-color: var(--checked-color);
   border-color: var(--checked-color);
 }
 
-#recipe-selector input[type="checkbox"]:checked::after,
 .check-off input[type="checkbox"]:checked::after {
   content: '\2713';
   color: white;
@@ -40,151 +36,11 @@
   transform: translate(-50%, -50%);
 }
 
-/* Recipe Selector */
-#recipe-selector {
-  margin-bottom: 2rem;
-}
-
-#recipe-selector .category {
-  margin-bottom: 1.5rem;
-}
-
-#recipe-selector .category h2 {
-  font-family: "Futura", sans-serif;
-  font-size: 1.1rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  border-bottom: 1px solid var(--border-light);
-  padding-bottom: 0.4rem;
-  margin-bottom: 0.75rem;
-}
-
-#recipe-selector .category ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-#recipe-selector .category li {
-  display: flex;
-  align-items: center;
-  padding: 0.35rem 0;
-  cursor: pointer;
-}
-
-#recipe-selector .category li:hover {
-  background-color: var(--surface-alt);
-  margin: 0 -0.5rem;
-  padding-left: 0.5rem;
-  padding-right: 0.5rem;
-}
-
-#recipe-selector .category input[type="checkbox"] {
-  margin-right: 0.6rem;
-}
-
-#recipe-selector .category label {
-  flex: 1;
-  cursor: pointer;
-}
-
-#recipe-selector .category .recipe-link {
-  color: var(--text-color);
-  text-decoration: none;
-  font-size: 0.9rem;
-  padding-left: 0.5rem;
-}
-
-#recipe-selector .category .recipe-link:hover {
-  color: var(--accent-color);
-}
-
-/* Quick Bites */
-#recipe-selector .quick-bites {
-  margin-top: 1rem;
-  padding-top: 1.5rem;
-  border-top: 2px solid var(--separator-color);
-}
-
-#recipe-selector .quick-bites > h2 {
-  font-family: "Futura", sans-serif;
-  font-size: 1.2rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  text-align: center;
-  margin-bottom: 1.25rem;
-  border-bottom: none;
-  padding-bottom: 0;
-}
-
-#recipe-selector .quick-bites .subsections {
-  display: grid;
-  grid-template-columns: 1fr;
-  column-gap: 2rem;
-  align-items: start;
-}
-
-#recipe-selector .quick-bites .subsection {
-  margin-bottom: 1.5rem;
-}
-
-#recipe-selector .quick-bites .subsection h3 {
-  font-family: "Futura", sans-serif;
-  font-size: 0.85rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-bottom: 0.5rem;
-  padding-bottom: 0.25rem;
-  border-bottom: 1px dotted var(--border-light);
-}
-
-#recipe-selector .quick-bites .subsection ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-#recipe-selector .quick-bites .subsection li {
-  display: flex;
-  align-items: center;
-  padding: 0.25rem 0;
-  font-size: 0.95rem;
-  cursor: pointer;
-}
-
-#recipe-selector .quick-bites .subsection li:hover {
-  background-color: var(--surface-alt);
-  margin: 0 -0.5rem;
-  padding-left: 0.5rem;
-  padding-right: 0.5rem;
-}
-
-#recipe-selector .quick-bites .subsection input[type="checkbox"] {
-  margin-right: 0.5rem;
-}
-
-#recipe-selector .quick-bites .subsection label {
-  flex: 1;
-  cursor: pointer;
-}
-
 /* Custom Items */
 #custom-items-section {
-  margin-bottom: 2rem;
+  margin-top: 2rem;
   padding-top: 1.5rem;
   border-top: 2px solid var(--separator-color);
-}
-
-#custom-items-section h2 {
-  font-family: "Futura", sans-serif;
-  font-size: 1rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-bottom: 0.75rem;
 }
 
 #custom-input-row {
@@ -265,8 +121,7 @@
 
 /* Shopping List */
 #shopping-list {
-  padding-top: 2rem;
-  border-top: 2px solid var(--separator-color);
+  padding-top: 0;
 }
 
 .shopping-list-header {
@@ -397,23 +252,6 @@
   line-height: 1.4;
 }
 
-/* Desktop layout */
-@media (min-width: 700px) {
-  #recipe-selector {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    column-gap: 3rem;
-    align-items: start;
-  }
-
-  #recipe-selector .quick-bites {
-    grid-column: 1 / -1;
-  }
-
-  #recipe-selector .quick-bites .subsections {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
 
 @media print {
   /* Page margins for grocery list */
@@ -421,74 +259,16 @@
     margin: 0.5in 0.6in;
   }
 
-  /* --- Page 1: Recipe Menu --- */
-
   /* Hide interactive / UI-only elements */
-  #instructions,
   #custom-items-section,
   #grocery-preview-empty,
-  .shopping-list-header {
+  .shopping-list-header,
+  .subtitle {
     display: none !important;
   }
 
-  /* Hide checkboxes and link arrows in recipe selector */
-  #recipe-selector input[type="checkbox"],
-  #recipe-selector .recipe-link {
-    display: none;
-  }
-
-  /* Hide unselected recipes */
-  #recipe-selector .category li:has(input:not(:checked)),
-  #recipe-selector .quick-bites .subsection li:has(input:not(:checked)) {
-    display: none;
-  }
-
-  /* Hide empty categories / subsections */
-  #recipe-selector .category:not(:has(input:checked)),
-  #recipe-selector .quick-bites .subsection:not(:has(input:checked)),
-  #recipe-selector .quick-bites:not(:has(input:checked)) {
-    display: none;
-  }
-
-  /* Recipe selector: two-column grid for print */
-  #recipe-selector {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    column-gap: 2rem;
-    align-items: start;
-    margin-bottom: 1rem;
-  }
-
-  #recipe-selector .category {
-    margin-bottom: 0.75rem;
-    break-inside: avoid;
-  }
-
-  #recipe-selector .category li {
-    cursor: default;
-    padding: 0.2rem 0;
-  }
-
-  /* Quick bites: span both columns, two-column subsections */
-  #recipe-selector .quick-bites {
-    grid-column: 1 / -1;
-    border-top: 1px solid var(--border-light);
-    padding-top: 0.75rem;
-  }
-
-  #recipe-selector .quick-bites .subsections {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  #recipe-selector .quick-bites .subsection {
-    break-inside: avoid;
-  }
-
-  /* --- Page break between menu and shopping list --- */
   /* 4-column grid (not column-count, which is broken in WebKit print) */
-
   #shopping-list {
-    break-before: page;
     border-top: none;
     padding-top: 0;
     display: grid;

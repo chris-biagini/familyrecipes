@@ -80,6 +80,7 @@ class EndToEndTest < ActionDispatch::IntegrationTest
 
     assert_select 'nav a.home', 'Home'
     assert_select 'nav a.ingredients', 'Ingredients'
+    assert_select 'nav a.menu', 'Menu'
     assert_select 'nav a.groceries', 'Groceries'
   end
 
@@ -88,6 +89,7 @@ class EndToEndTest < ActionDispatch::IntegrationTest
 
     assert_select 'nav a.home', 'Home'
     assert_select 'nav a.ingredients', count: 0
+    assert_select 'nav a.menu', count: 0
     assert_select 'nav a.groceries', count: 0
   end
 
@@ -239,15 +241,19 @@ class EndToEndTest < ActionDispatch::IntegrationTest
 
   # -- Groceries --
 
-  test 'groceries page renders recipe checkboxes grouped by category' do
+  test 'menu page loads successfully' do
+    log_in
+    get menu_path(kitchen_slug: kitchen_slug)
+
+    assert_response :success
+  end
+
+  test 'groceries page does not include recipe selector' do
     log_in
     get groceries_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
-    assert_select '#recipe-selector .category h2', 'Bread'
-    assert_select '#recipe-selector .category h2', 'Pizza'
-    assert_select 'input[type=checkbox][data-slug="focaccia"][data-title="Focaccia"]'
-    assert_select 'input[type=checkbox][data-slug="pizza-dough"][data-title="Pizza Dough"]'
+    assert_select '#recipe-selector', count: 0
   end
 
   test 'groceries page includes noscript fallback' do
@@ -316,16 +322,12 @@ class EndToEndTest < ActionDispatch::IntegrationTest
     @kitchen.update!(quick_bites_content: "## Snacks\n  - Goldfish")
 
     log_in
-    patch groceries_quick_bites_path(kitchen_slug: kitchen_slug),
+    patch menu_quick_bites_path(kitchen_slug: kitchen_slug),
           params: { content: "## Snacks\n  - Goldfish\n  - Pretzels" },
           as: :json
 
     assert_response :success
-
-    get groceries_path(kitchen_slug: kitchen_slug)
-
-    assert_response :success
-    assert_select 'input[data-title="Pretzels"]'
+    assert_equal "## Snacks\n  - Goldfish\n  - Pretzels", @kitchen.reload.quick_bites_content
   end
 
   test 'delete recipe removes it from homepage' do

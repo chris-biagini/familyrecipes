@@ -16,10 +16,8 @@ export default class extends Controller {
 
     this.urls = {
       state: this.element.dataset.stateUrl,
-      select: this.element.dataset.selectUrl,
       check: this.element.dataset.checkUrl,
-      customItems: this.element.dataset.customItemsUrl,
-      clear: this.element.dataset.clearUrl
+      customItems: this.element.dataset.customItemsUrl
     }
 
     this.loadCache()
@@ -111,7 +109,7 @@ export default class extends Controller {
 
   sendAction(url, params) {
     const csrfToken = document.querySelector('meta[name="csrf-token"]')
-    const method = url === this.urls.clear ? "DELETE" : "PATCH"
+    const method = "PATCH"
 
     this.awaitingOwnAction = true
 
@@ -159,7 +157,7 @@ export default class extends Controller {
   subscribe(slug) {
     this.consumer = createConsumer()
     this.subscription = this.consumer.subscriptions.create(
-      { channel: "GroceryListChannel", kitchen_slug: slug },
+      { channel: "MealPlanChannel", kitchen_slug: slug },
       {
         received: (data) => {
           if (data.version && data.version > this.version && !this.awaitingOwnAction) {

@@ -8,15 +8,13 @@
 <% content_for(:extra_nav) do %>
   <div>
     <button type="button" id="edit-aisle-order-button" class="btn">Edit Aisle Order</button>
-    <button type="button" id="edit-quick-bites-button" class="btn">Edit Quick Bites</button>
   </div>
 <% end %>
 <% end %>
 
-<%= turbo_stream_from current_kitchen, "grocery_content" %>
-
 <header id="groceries-header">
   <h1>Groceries</h1>
+  <p class="subtitle">Your shopping list, built from the <%= link_to 'menu', menu_path %>.</p>
 </header>
 
 <noscript>
@@ -27,32 +25,16 @@
      data-controller="wake-lock grocery-sync grocery-ui"
      data-kitchen-slug="<%= current_kitchen.slug %>"
      data-state-url="<%= groceries_state_path %>"
-     data-select-url="<%= groceries_select_path %>"
      data-check-url="<%= groceries_check_path %>"
-     data-custom-items-url="<%= groceries_custom_items_path %>"
-     data-clear-url="<%= groceries_clear_path %>">
-
-  <p id="instructions">Select recipes to build your shopping list.</p>
-
-  <%= render 'groceries/recipe_selector', categories: @categories, quick_bites_by_subsection: @quick_bites_by_subsection %>
-
-  <%= render 'groceries/custom_items' %>
+     data-custom-items-url="<%= groceries_custom_items_path %>">
 
   <div id="shopping-list"></div>
+
+  <%= render 'groceries/custom_items' %>
 
 </div>
 
 <% if current_kitchen.member?(current_user) %>
-<%= render layout: 'shared/editor_dialog',
-    locals: { title: 'Edit Quick Bites',
-              dialog_data: { editor_open: '#edit-quick-bites-button',
-                             editor_url: groceries_quick_bites_path,
-                             editor_method: 'PATCH',
-                             editor_on_success: 'close',
-                             editor_body_key: 'content' } } do %>
-  <textarea class="editor-textarea" data-editor-target="textarea" spellcheck="false"><%= @quick_bites_content %></textarea>
-<% end %>
-
 <%= render layout: 'shared/editor_dialog',
     locals: { title: 'Aisle Order',
               dialog_data: { editor_open: '#edit-aisle-order-button',

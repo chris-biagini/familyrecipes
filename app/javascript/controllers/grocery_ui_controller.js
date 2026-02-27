@@ -1,7 +1,8 @@
 import { Controller } from "@hotwired/stimulus"
 
 function formatNumber(val) {
-  return parseFloat(val.toFixed(2)).toString()
+  const num = typeof val === "string" ? parseFloat(val) : val
+  return parseFloat(num.toFixed(2)).toString()
 }
 
 function formatAmounts(amounts) {
@@ -30,7 +31,6 @@ export default class extends Controller {
     this.aisleCollapseKey = "grocery-aisles-" + this.element.dataset.kitchenSlug
     this.boundHandlers = new Map()
 
-    this.bindRecipeCheckboxes()
     this.bindCustomItemInput()
     this.bindShoppingListEvents()
   }
@@ -55,29 +55,11 @@ export default class extends Controller {
   }
 
   applyState(state) {
-    this.syncCheckboxes(state)
     this.renderShoppingList(state.shopping_list || {})
     this.renderCustomItems(state.custom_items || [])
     this.syncCheckedOff(state.checked_off || [])
     this.renderItemCount()
     this.autoCollapseCompletedAisles()
-  }
-
-  syncCheckboxes(state) {
-    const selectedRecipes = state.selected_recipes || []
-    const selectedQuickBites = state.selected_quick_bites || []
-
-    this.element.querySelectorAll("#recipe-selector input[type=\"checkbox\"]").forEach(cb => {
-      const slug = cb.dataset.slug
-      const typeEl = cb.closest("[data-type]")
-      if (!typeEl || !slug) return
-
-      if (typeEl.dataset.type === "quick_bite") {
-        cb.checked = selectedQuickBites.indexOf(slug) !== -1
-      } else {
-        cb.checked = selectedRecipes.indexOf(slug) !== -1
-      }
-    })
   }
 
   renderShoppingList(shoppingList) {
@@ -100,7 +82,7 @@ export default class extends Controller {
     if (aisles.length === 0) {
       const emptyMsg = document.createElement("p")
       emptyMsg.id = "grocery-preview-empty"
-      emptyMsg.textContent = "Select recipes above to build your shopping list."
+      emptyMsg.textContent = "No items yet."
       container.appendChild(emptyMsg)
       return
     }
@@ -153,6 +135,11 @@ export default class extends Controller {
         label.appendChild(textSpan)
 
         li.appendChild(label)
+
+        if (item.sources && item.sources.length > 0) {
+          li.title = 'Needed for: ' + item.sources.join(', ')
+        }
+
         ul.appendChild(li)
       }
 
@@ -366,25 +353,6 @@ export default class extends Controller {
         ul.style.opacity = ""
       }
     }, 400)
-  }
-
-  bindRecipeCheckboxes() {
-    const handler = (e) => {
-      const cb = e.target.closest('#recipe-selector input[type="checkbox"]')
-      if (!cb) return
-
-      const slug = cb.dataset.slug
-      const typeEl = cb.closest("[data-type]")
-      const type = typeEl ? typeEl.dataset.type : "recipe"
-
-      this.syncController.sendAction(this.syncController.urls.select, {
-        type,
-        slug,
-        selected: cb.checked
-      })
-    }
-
-    this.addListener(this.element, "change", handler)
   }
 
   bindCustomItemInput() {

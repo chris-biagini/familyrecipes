@@ -32,10 +32,10 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
   end
 
   test 'builds shopping list organized by aisle' do
-    list = GroceryList.for_kitchen(@kitchen)
+    list = MealPlan.for_kitchen(@kitchen)
     list.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
 
-    result = ShoppingListBuilder.new(kitchen: @kitchen, grocery_list: list).build
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
 
     assert result.key?('Baking'), "Expected 'Baking' aisle"
     flour = result['Baking'].find { |i| i[:name] == 'Flour' }
@@ -44,11 +44,11 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
   end
 
   test 'puts unmapped ingredients in Miscellaneous' do
-    list = GroceryList.for_kitchen(@kitchen)
+    list = MealPlan.for_kitchen(@kitchen)
     list.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
     IngredientCatalog.find_by(ingredient_name: 'Salt', kitchen_id: nil)&.update!(aisle: nil)
 
-    result = ShoppingListBuilder.new(kitchen: @kitchen, grocery_list: list).build
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
 
     assert result.key?('Miscellaneous')
     salt = result['Miscellaneous'].find { |i| i[:name] == 'Salt' }
@@ -58,20 +58,20 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
 
   test 'omits ingredients with aisle omit' do
     IngredientCatalog.find_by(ingredient_name: 'Salt', kitchen_id: nil)&.update!(aisle: 'omit')
-    list = GroceryList.for_kitchen(@kitchen)
+    list = MealPlan.for_kitchen(@kitchen)
     list.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
 
-    result = ShoppingListBuilder.new(kitchen: @kitchen, grocery_list: list).build
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
     all_names = result.values.flatten.pluck(:name)
 
     assert_not_includes all_names, 'Salt'
   end
 
   test 'includes custom items in Miscellaneous' do
-    list = GroceryList.for_kitchen(@kitchen)
+    list = MealPlan.for_kitchen(@kitchen)
     list.apply_action('custom_items', item: 'birthday candles', action: 'add')
 
-    result = ShoppingListBuilder.new(kitchen: @kitchen, grocery_list: list).build
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
     custom = result['Miscellaneous'].find { |i| i[:name] == 'birthday candles' }
 
     assert custom
@@ -79,8 +79,8 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
   end
 
   test 'empty list returns empty hash' do
-    list = GroceryList.for_kitchen(@kitchen)
-    result = ShoppingListBuilder.new(kitchen: @kitchen, grocery_list: list).build
+    list = MealPlan.for_kitchen(@kitchen)
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
 
     assert_empty result
   end
@@ -99,11 +99,11 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
       Mix well.
     MD
 
-    list = GroceryList.for_kitchen(@kitchen)
+    list = MealPlan.for_kitchen(@kitchen)
     list.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
     list.apply_action('select', type: 'recipe', slug: 'sourdough', selected: true)
 
-    result = ShoppingListBuilder.new(kitchen: @kitchen, grocery_list: list).build
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
 
     flour = result['Baking'].find { |i| i[:name] == 'Flour' }
 
@@ -115,10 +115,10 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
 
   test 'respects kitchen aisle_order for sorting' do
     @kitchen.update!(aisle_order: "Spices\nBaking")
-    list = GroceryList.for_kitchen(@kitchen)
+    list = MealPlan.for_kitchen(@kitchen)
     list.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
 
-    result = ShoppingListBuilder.new(kitchen: @kitchen, grocery_list: list).build
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
     aisle_names = result.keys
 
     assert_equal 'Spices', aisle_names[0]
@@ -146,10 +146,10 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
     MD
 
     @kitchen.update!(aisle_order: "Spices\nBaking")
-    list = GroceryList.for_kitchen(@kitchen)
+    list = MealPlan.for_kitchen(@kitchen)
     list.apply_action('select', type: 'recipe', slug: 'scramble', selected: true)
 
-    result = ShoppingListBuilder.new(kitchen: @kitchen, grocery_list: list).build
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
     aisle_names = result.keys
 
     assert_equal %w[Spices Baking Refrigerated], aisle_names
@@ -159,10 +159,10 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
     IngredientCatalog.find_by(ingredient_name: 'Salt', kitchen_id: nil)&.update!(aisle: nil)
     @kitchen.update!(aisle_order: 'Baking')
 
-    list = GroceryList.for_kitchen(@kitchen)
+    list = MealPlan.for_kitchen(@kitchen)
     list.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
 
-    result = ShoppingListBuilder.new(kitchen: @kitchen, grocery_list: list).build
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
 
     assert_equal 'Miscellaneous', result.keys.last
   end
@@ -171,20 +171,20 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
     IngredientCatalog.find_by(ingredient_name: 'Salt', kitchen_id: nil)&.update!(aisle: nil)
     @kitchen.update!(aisle_order: "Miscellaneous\nBaking")
 
-    list = GroceryList.for_kitchen(@kitchen)
+    list = MealPlan.for_kitchen(@kitchen)
     list.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
 
-    result = ShoppingListBuilder.new(kitchen: @kitchen, grocery_list: list).build
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
 
     assert_equal %w[Miscellaneous Baking], result.keys
   end
 
   test 'falls back to alphabetical when aisle_order is nil' do
     @kitchen.update!(aisle_order: nil)
-    list = GroceryList.for_kitchen(@kitchen)
+    list = MealPlan.for_kitchen(@kitchen)
     list.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
 
-    result = ShoppingListBuilder.new(kitchen: @kitchen, grocery_list: list).build
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
     aisle_names = result.keys
 
     assert_equal %w[Baking Spices], aisle_names
@@ -196,10 +196,10 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
         - Hummus with Pretzels: Hummus, Pretzels
     MD
 
-    list = GroceryList.for_kitchen(@kitchen)
+    list = MealPlan.for_kitchen(@kitchen)
     list.apply_action('select', type: 'quick_bite', slug: 'hummus-with-pretzels', selected: true)
 
-    result = ShoppingListBuilder.new(kitchen: @kitchen, grocery_list: list).build
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
 
     all_names = result.values.flatten.pluck(:name)
 
@@ -239,14 +239,74 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
       p.aisle = 'Miscellaneous'
     end
 
-    list = GroceryList.for_kitchen(@kitchen)
+    list = MealPlan.for_kitchen(@kitchen)
     list.apply_action('select', type: 'recipe', slug: 'pizza', selected: true)
 
-    result = ShoppingListBuilder.new(kitchen: @kitchen, grocery_list: list).build
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
     all_names = result.values.flatten.pluck(:name)
 
     assert_includes all_names, 'Salt'
     assert_includes all_names, 'Flour'
     assert_includes all_names, 'Water'
+  end
+
+  test 'items include sources listing recipe titles' do
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
+    flour = result['Baking'].find { |i| i[:name] == 'Flour' }
+
+    assert_includes flour[:sources], 'Focaccia'
+  end
+
+  test 'shared ingredients list all contributing recipe titles' do
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Sourdough
+
+      Category: Bread
+
+      ## Mix (combine)
+
+      - Flour, 2 cups
+      - Salt, 0.5 tsp
+
+      Mix well.
+    MD
+
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+    list.apply_action('select', type: 'recipe', slug: 'sourdough', selected: true)
+
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
+    flour = result['Baking'].find { |i| i[:name] == 'Flour' }
+
+    assert_includes flour[:sources], 'Focaccia'
+    assert_includes flour[:sources], 'Sourdough'
+  end
+
+  test 'quick bite ingredients include quick bite title as source' do
+    @kitchen.update!(quick_bites_content: <<~MD)
+      ## Snacks
+        - Hummus with Pretzels: Hummus, Pretzels
+    MD
+
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'quick_bite', slug: 'hummus-with-pretzels', selected: true)
+
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
+    hummus = result.values.flatten.find { |i| i[:name] == 'Hummus' }
+
+    assert_includes hummus[:sources], 'Hummus with Pretzels'
+  end
+
+  test 'custom items have empty sources' do
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('custom_items', item: 'birthday candles', action: 'add')
+
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
+    custom = result['Miscellaneous'].find { |i| i[:name] == 'birthday candles' }
+
+    assert_empty custom[:sources]
   end
 end

@@ -1,0 +1,55 @@
+<% content_for(:title) { "#{current_kitchen.name}: Menu" } %>
+
+<% content_for(:head) do %>
+  <%= stylesheet_link_tag 'menu', "data-turbo-track": "reload" %>
+<% end %>
+
+<% if current_kitchen.member?(current_user) %>
+<% content_for(:extra_nav) do %>
+  <div>
+    <button type="button" id="edit-quick-bites-button" class="btn">Edit Quick Bites</button>
+  </div>
+<% end %>
+<% end %>
+
+<%= turbo_stream_from current_kitchen, "menu_content" %>
+
+<header id="menu-header">
+  <h1>Menu</h1>
+  <p>Pick recipes and quick bites that you want to have available.</p>
+</header>
+
+<noscript>
+  <p><em>This page requires JavaScript to manage your menu selections.</em></p>
+</noscript>
+
+<div id="menu-app" class="hidden-until-js"
+     data-controller="menu"
+     data-kitchen-slug="<%= current_kitchen.slug %>"
+     data-select-url="<%= menu_select_path %>"
+     data-select-all-url="<%= menu_select_all_path %>"
+     data-clear-url="<%= menu_clear_path %>"
+     data-state-url="<%= menu_state_path %>">
+
+  <%= render 'menu/recipe_selector', categories: @categories, quick_bites_by_subsection: @quick_bites_by_subsection %>
+
+  <div id="menu-actions">
+    <button type="button" class="btn" data-action="menu#selectAll">Select All</button>
+    <button type="button" class="btn btn-clear" data-action="menu#clear">Clear All</button>
+  </div>
+
+</div>
+
+<% if current_kitchen.member?(current_user) %>
+<%= render layout: 'shared/editor_dialog',
+    locals: { title: 'Edit Quick Bites',
+              dialog_data: { editor_open: '#edit-quick-bites-button',
+                             editor_url: menu_quick_bites_path,
+                             editor_method: 'PATCH',
+                             editor_on_success: 'close',
+                             editor_body_key: 'content',
+                             editor_load_url: menu_quick_bites_content_path,
+                             editor_load_key: 'content' } } do %>
+  <textarea class="editor-textarea" data-editor-target="textarea" spellcheck="false" placeholder="Loading..."></textarea>
+<% end %>
+<% end %>

@@ -41,7 +41,7 @@ class AuthTest < ActionDispatch::IntegrationTest
   end
 
   test 'unauthenticated PATCH to quick_bites returns 403' do
-    patch groceries_quick_bites_path(kitchen_slug: kitchen_slug),
+    patch menu_quick_bites_path(kitchen_slug: kitchen_slug),
           params: { content: '## Snacks' },
           as: :json
 
@@ -107,6 +107,6 @@ class AuthTest < ActionDispatch::IntegrationTest
     get groceries_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
-    assert_select '#edit-quick-bites-button', count: 1
+    assert_select '#edit-aisle-order-button', count: 1
   end
 end
