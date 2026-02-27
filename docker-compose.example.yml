@@ -22,7 +22,10 @@ services:
       # RAILS_LOG_LEVEL: ${RAILS_LOG_LEVEL:-info}
       # USDA_API_KEY: ${USDA_API_KEY:-}
     volumes:
+      # Named volume (default — works everywhere, managed by Docker):
       - app_storage:/app/storage
+      # Bind mount alternative (if you have an appdata convention for backups):
+      # - /path/to/familyrecipes/storage:/app/storage
 
 volumes:
   app_storage:
