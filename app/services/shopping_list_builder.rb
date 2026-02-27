@@ -21,8 +21,15 @@ class ShoppingListBuilder
     quick_bite_ingredients = aggregate_quick_bite_ingredients
 
     recipe_ingredients.merge(quick_bite_ingredients) do |_name, existing, incoming|
-      IngredientAggregator.merge_amounts(existing, incoming)
+      merge_entries(existing, incoming)
     end
+  end
+
+  def merge_entries(existing, incoming)
+    {
+      amounts: IngredientAggregator.merge_amounts(existing[:amounts], incoming[:amounts]),
+      sources: (existing[:sources] + incoming[:sources]).uniq
+    }
   end
 
   def selected_recipes
@@ -47,7 +54,7 @@ class ShoppingListBuilder
   def aggregate_recipe_ingredients
     selected_recipes.each_with_object({}) do |recipe, merged|
       recipe.all_ingredients_with_quantities.each do |name, amounts|
-        merged[name] = merged.key?(name) ? IngredientAggregator.merge_amounts(merged[name], amounts) : amounts
+        merge_ingredient(merged, name, amounts, source: recipe.title)
       end
     end
   end
@@ -55,16 +62,21 @@ class ShoppingListBuilder
   def aggregate_quick_bite_ingredients
     selected_quick_bites.each_with_object({}) do |qb, merged|
       qb.ingredients_with_quantities.each do |name, amounts|
-        merged[name] = merged.key?(name) ? IngredientAggregator.merge_amounts(merged[name], amounts) : amounts
+        merge_ingredient(merged, name, amounts, source: qb.title)
       end
     end
   end
 
+  def merge_ingredient(merged, name, amounts, source:)
+    entry = { amounts: amounts, sources: [source] }
+    merged[name] = merged.key?(name) ? merge_entries(merged[name], entry) : entry
+  end
+
   def organize_by_aisle(ingredients)
     visible = ingredients.reject { |name, _| @profiles[name]&.aisle == 'omit' }
-    grouped = visible.each_with_object(Hash.new { |h, k| h[k] = [] }) do |(name, amounts), result|
+    grouped = visible.each_with_object(Hash.new { |h, k| h[k] = [] }) do |(name, entry), result|
       target_aisle = @profiles[name]&.aisle || 'Miscellaneous'
-      result[target_aisle] << { name: name, amounts: serialize_amounts(amounts) }
+      result[target_aisle] << { name: name, amounts: serialize_amounts(entry[:amounts]), sources: entry[:sources] }
     end
 
     sort_aisles(grouped)
@@ -93,7 +105,7 @@ class ShoppingListBuilder
     return if custom.empty?
 
     organized['Miscellaneous'] ||= []
-    organized['Miscellaneous'].concat(custom.map { |item| { name: item, amounts: [] } })
+    organized['Miscellaneous'].concat(custom.map { |item| { name: item, amounts: [], sources: [] } })
   end
 
   def serialize_amounts(amounts)

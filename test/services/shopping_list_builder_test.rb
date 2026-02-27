@@ -249,4 +249,64 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
     assert_includes all_names, 'Flour'
     assert_includes all_names, 'Water'
   end
+
+  test 'items include sources listing recipe titles' do
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
+    flour = result['Baking'].find { |i| i[:name] == 'Flour' }
+
+    assert_includes flour[:sources], 'Focaccia'
+  end
+
+  test 'shared ingredients list all contributing recipe titles' do
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Sourdough
+
+      Category: Bread
+
+      ## Mix (combine)
+
+      - Flour, 2 cups
+      - Salt, 0.5 tsp
+
+      Mix well.
+    MD
+
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+    list.apply_action('select', type: 'recipe', slug: 'sourdough', selected: true)
+
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
+    flour = result['Baking'].find { |i| i[:name] == 'Flour' }
+
+    assert_includes flour[:sources], 'Focaccia'
+    assert_includes flour[:sources], 'Sourdough'
+  end
+
+  test 'quick bite ingredients include quick bite title as source' do
+    @kitchen.update!(quick_bites_content: <<~MD)
+      ## Snacks
+        - Hummus with Pretzels: Hummus, Pretzels
+    MD
+
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'quick_bite', slug: 'hummus-with-pretzels', selected: true)
+
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
+    hummus = result.values.flatten.find { |i| i[:name] == 'Hummus' }
+
+    assert_includes hummus[:sources], 'Hummus with Pretzels'
+  end
+
+  test 'custom items have empty sources' do
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('custom_items', item: 'birthday candles', action: 'add')
+
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
+    custom = result['Miscellaneous'].find { |i| i[:name] == 'birthday candles' }
+
+    assert_empty custom[:sources]
+  end
 end
