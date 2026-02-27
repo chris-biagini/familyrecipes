@@ -1,0 +1,19 @@
+{
+  "planPath": "docs/plans/2026-02-26-ingredients-page-redesign-plan.md",
+  "tasks": [
+    {"id": 5, "subject": "Task 0: Create worktree and branch", "status": "pending"},
+    {"id": 6, "subject": "Task 1: Add IngredientsHelper with summary data methods", "status": "pending", "blockedBy": [5]},
+    {"id": 7, "subject": "Task 2: Refactor IngredientsController — routes, show/edit, richer index", "status": "pending", "blockedBy": [6]},
+    {"id": 8, "subject": "Task 3: Rewrite index view with table layout and partials", "status": "pending", "blockedBy": [7]},
+    {"id": 9, "subject": "Task 4: CSS for ingredients table and responsive layout", "status": "pending", "blockedBy": [8]},
+    {"id": 10, "subject": "Task 5: Create ingredient_table_controller.js", "status": "pending", "blockedBy": [8]},
+    {"id": 11, "subject": "Task 6: Create structured editor form partial", "status": "pending", "blockedBy": [8]},
+    {"id": 12, "subject": "Task 7: Rewrite nutrition_editor_controller.js", "status": "pending", "blockedBy": [10]},
+    {"id": 13, "subject": "Task 8: Update NutritionEntriesController for structured JSON", "status": "pending", "blockedBy": [12]},
+    {"id": 14, "subject": "Task 9: Add Turbo Stream responses to upsert", "status": "pending", "blockedBy": [13]},
+    {"id": 15, "subject": "Task 10: Update tests for redesigned view structure", "status": "pending", "blockedBy": [8]},
+    {"id": 16, "subject": "Task 11: Polish — accessibility, keyboard nav, edge cases", "status": "pending", "blockedBy": [14, 15]},
+    {"id": 17, "subject": "Task 12: Final review and merge", "status": "pending", "blockedBy": [16]}
+  ],
+  "lastUpdated": "2026-02-26T00:00:00Z"
+}
