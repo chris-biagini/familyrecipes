@@ -44,7 +44,7 @@ Recipes:
 - CSS and JS are progressive enhancements. Every recipe page must be readable and functional with both disabled.
 - JavaScript is used sparingly and only for optional features (scaling, state preservation, cross-off). These are guilty indulgences—they must not interfere with the document nature of the page.
 
-Elsewhere (home page, ingredients editor, groceries page): the mandate here is looser.
+Elsewhere (home page, ingredients editor, menu page, groceries page): the mandate here is looser.
 More JavaScript is permitted, but keep things lean.
 Ask before adding any third-party resources.
 
@@ -306,7 +306,7 @@ Set `ALLOWED_HOSTS` (comma-separated domains) to enable DNS rebinding protection
 
 ## Routes
 
-Routes use an optional `(/kitchens/:kitchen_slug)` scope. When exactly one kitchen exists, URLs are root-level (`/recipes/bagels`, `/ingredients`, `/groceries`). When multiple kitchens exist, URLs are scoped (`/kitchens/:slug/recipes/bagels`). `default_url_options` returns `{ kitchen_slug: }` or `{}` based on whether the request arrived via a scoped URL. Kitchen-scoped routes include recipes (`show`, `create`, `update`, `destroy` — no index/new/edit), ingredients index, groceries (`show`, `state`, `select`, `check`, `custom_items`, `clear`, `quick_bites`, `aisle_order`, `aisle_order_content`), and nutrition entries (`POST`/`DELETE` at `/nutrition/:ingredient_name`). Views use `home_path` (not `kitchen_root_path`) for the homepage link — it returns `root_path` or `kitchen_root_path` depending on mode. Other helpers (`recipe_path`, `ingredients_path`, `groceries_path`) auto-adapt via `default_url_options`. When adding links, always use the `_path` helpers.
+Routes use an optional `(/kitchens/:kitchen_slug)` scope. When exactly one kitchen exists, URLs are root-level (`/recipes/bagels`, `/ingredients`, `/menu`, `/groceries`). When multiple kitchens exist, URLs are scoped (`/kitchens/:slug/recipes/bagels`). `default_url_options` returns `{ kitchen_slug: }` or `{}` based on whether the request arrived via a scoped URL. Kitchen-scoped routes include recipes (`show`, `create`, `update`, `destroy` — no index/new/edit), ingredients index, menu (`show`, `select`, `clear`, `quick_bites`, `quick_bites_content`), groceries (`show`, `state`, `check`, `custom_items`, `aisle_order`, `aisle_order_content`), and nutrition entries (`POST`/`DELETE` at `/nutrition/:ingredient_name`). The backing model for menu/groceries state is `MealPlan` (one row per kitchen). Both the menu and groceries pages require membership. Views use `home_path` (not `kitchen_root_path`) for the homepage link — it returns `root_path` or `kitchen_root_path` depending on mode. Other helpers (`recipe_path`, `ingredients_path`, `menu_path`, `groceries_path`) auto-adapt via `default_url_options`. When adding links, always use the `_path` helpers.
 
 ## Architecture
 
@@ -330,20 +330,20 @@ When a new user has zero memberships and exactly one Kitchen exists, `auto_join_
 
 ### Auth gates
 
-Homepage and recipe pages are public reads. Ingredients and groceries pages require membership entirely (`require_membership` on all actions). Write paths on recipes also require membership. In development, `auto_login_in_development` logs in as `User.first` automatically (simulating Authelia); `/logout` sets a `skip_dev_auto_login` cookie to test the logged-out experience. `ActionCable::Connection` identifies users from the session cookie; `GroceryListChannel` checks kitchen membership. See `docs/plans/2026-02-25-dev-auth-optimization-design.md` for the current auth design.
+Homepage and recipe pages are public reads. Ingredients, menu, and groceries pages require membership entirely (`require_membership` on all actions). Write paths on recipes also require membership. In development, `auto_login_in_development` logs in as `User.first` automatically (simulating Authelia); `/logout` sets a `skip_dev_auto_login` cookie to test the logged-out experience. `ActionCable::Connection` identifies users from the session cookie; `MealPlanChannel` checks kitchen membership. See `docs/plans/2026-02-25-dev-auth-optimization-design.md` for the current auth design.
 
 ### Real-time sync (ActionCable)
 
-Grocery list state syncs across browser tabs/devices via ActionCable backed by Solid Cable (separate SQLite database for pub/sub). `GroceryListChannel` broadcasts version numbers on state changes; clients poll for fresh state when their version is stale. Connections require authentication (session cookie); subscriptions require kitchen membership.
+Meal plan state syncs across browser tabs/devices via ActionCable backed by Solid Cable (separate SQLite database for pub/sub). `MealPlanChannel` broadcasts version numbers on state changes; clients poll for fresh state when their version is stale. Both the Menu and Groceries pages subscribe to the same channel. The Menu page also receives Turbo Stream broadcasts for quick bites content changes. Connections require authentication (session cookie); subscriptions require kitchen membership.
 
 ### PWA & Service Worker
 
 The app is installable as a PWA. `public/service-worker.js` uses runtime caching:
 - `/assets/*`: cache-first (Propshaft-fingerprinted, immutable)
 - HTML pages: network-first with cache fallback, offline fallback at `public/offline.html`
-- Grocery/nutrition API endpoints and `/cable`: skipped (not cached)
+- Grocery, menu, and nutrition API endpoints and `/cable`: skipped (not cached)
 
-The SW skip-list regex covers all grocery and nutrition API routes at both root and kitchen-scoped paths. **When adding new API endpoints**, update the `API_PATTERN` regex in `public/service-worker.js` or they'll be cached as HTML pages.
+The SW skip-list regex covers all grocery, menu, and nutrition API routes at both root and kitchen-scoped paths. **When adding new API endpoints**, update the `API_PATTERN` regex in `public/service-worker.js` or they'll be cached as HTML pages.
 
 `public/manifest.json` is static. The grocery shortcut URL (`/groceries`) works with the optional kitchen scope when one kitchen exists.
 
@@ -366,8 +366,9 @@ All client-side JavaScript uses the Hotwire stack: **Stimulus** for behavior, **
 **Stimulus controllers** (`app/javascript/controllers/`):
 - `editor_controller` — generic `<dialog>` lifecycle: open, save (PATCH/POST), dirty-check, close. Configurable via Stimulus values (`url`, `method`, `on-success`, `body-key`). Simple dialogs need zero custom JS — just data attributes on the `<dialog>`. Custom dialogs (nutrition editor) dispatch lifecycle events (`editor:collect`, `editor:save`, `editor:modified`, `editor:reset`).
 - `nutrition_editor_controller` — hooks into editor lifecycle events for the multi-row nutrition form on the ingredients page.
-- `grocery_sync_controller` — ActionCable subscription for grocery list state. Polls for fresh state when version is stale. Preserves checkbox state across Turbo Stream replacements.
-- `grocery_ui_controller` — shopping list rendering, recipe/quick-bite selection, custom items, checked items. Communicates with `grocery_sync_controller` via `this.application.getControllerForElementAndIdentifier()`.
+- `grocery_sync_controller` — ActionCable subscription for meal plan state on the Groceries page. Polls for fresh state when version is stale. Preserves checkbox state across Turbo Stream replacements.
+- `grocery_ui_controller` — Groceries page shopping list rendering, custom items, and checked items. Communicates with `grocery_sync_controller` via `this.application.getControllerForElementAndIdentifier()`.
+- `menu_controller` — Menu page recipe/quick-bite selection, ActionCable sync for meal plan state, and checkbox state preservation. Handles Turbo Stream broadcasts for quick bites content changes.
 - `recipe_state_controller` — recipe page scaling, cross-off, and localStorage state persistence.
 - `wake_lock_controller` — Screen Wake Lock API for recipe pages (keeps screen on while cooking).
 
@@ -375,7 +376,7 @@ All client-side JavaScript uses the Hotwire stack: **Stimulus** for behavior, **
 
 **Turbo Drive** is enabled globally for SPA-like page transitions. The progress bar is disabled (`Turbo.config.drive.progressBarDelay = Infinity`) because its inline styles conflict with the strict CSP.
 
-**Turbo Streams** broadcast grocery page content changes (quick bites edits) via `Turbo::StreamsChannel`. The groceries view subscribes with `turbo_stream_from`. When quick bites are saved, the server broadcasts a `replace` targeting `#recipe-selector` with fresh HTML. Grocery list *state* sync (selections, checks) still uses the version-polling ActionCable channel — Turbo Streams handle only content structure changes.
+**Turbo Streams** broadcast menu page content changes (quick bites edits) via `Turbo::StreamsChannel`. The menu view subscribes with `turbo_stream_from`. When quick bites are saved, the server broadcasts a `replace` targeting `#recipe-selector` with fresh HTML. Meal plan *state* sync (selections, checks) still uses the version-polling ActionCable channel — Turbo Streams handle only content structure changes.
 
 To add a new simple editor dialog, use `render layout: 'shared/editor_dialog'` with a textarea block and Stimulus data attributes — no JS changes needed. For custom content, add a controller that listens for the editor lifecycle events.
 
@@ -442,12 +443,12 @@ Optional footer content (notes, source, etc.)
 
 ## Quick Bites
 
-Quick Bites are "grocery bundles" (not recipes) — simple name + ingredient lists for quick shopping. They live on the **groceries page**, not the homepage. Source format in `db/seeds/recipes/Quick Bites.md`:
+Quick Bites are "grocery bundles" (not recipes) — simple name + ingredient lists for quick shopping. They live on the **menu page**, not the homepage. Source format in `db/seeds/recipes/Quick Bites.md`:
 ```
 ## Category Name
   - Recipe Name: Ingredient1, Ingredient2
 ```
-At seed time, the file content is stored in `Kitchen#quick_bites_content` and is web-editable via a dialog on the groceries page. `FamilyRecipes.parse_quick_bites_content(string)` parses the content.
+At seed time, the file content is stored in `Kitchen#quick_bites_content` and is web-editable via a dialog on the menu page. `FamilyRecipes.parse_quick_bites_content(string)` parses the content.
 
 ## Nutrition Data
 
