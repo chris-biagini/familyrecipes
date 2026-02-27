@@ -55,13 +55,35 @@
   </p>
 
   <% if current_kitchen.member?(current_user) %>
-    <%= render layout: 'shared/editor_dialog',
-        locals: { title: 'Edit Nutrition',
-                  id: 'nutrition-editor',
-                  dialog_data: { editor_on_success: 'reload', extra_controllers: 'nutrition-editor' },
-                  extra_data: { nutrition_editor_base_url_value: nutrition_entry_upsert_path(ingredient_name: '__NAME__') },
-                  footer_extra: render('ingredients/aisle_selector', aisles: @available_aisles) } do %>
-      <textarea id="nutrition-editor-textarea" class="editor-textarea" data-editor-target="textarea" data-nutrition-editor-target="textarea" spellcheck="false"></textarea>
-    <% end %>
+    <dialog class="nutrition-editor-dialog"
+            data-controller="nutrition-editor"
+            data-nutrition-editor-base-url-value="<%= nutrition_entry_upsert_path(ingredient_name: '__NAME__') %>"
+            data-nutrition-editor-edit-url-value="<%= ingredient_edit_path(ingredient_name: '__NAME__') %>"
+            data-nutrition-editor-target="dialog">
+      <div class="editor-header">
+        <h2 data-nutrition-editor-target="title">Edit Nutrition</h2>
+        <button type="button" class="btn editor-close"
+                data-action="click->nutrition-editor#close"
+                aria-label="Close">&times;</button>
+      </div>
+      <div class="editor-errors" data-nutrition-editor-target="errors" hidden></div>
+      <div class="editor-body">
+        <turbo-frame id="nutrition-editor-form">
+          <p class="loading-placeholder">Loading&hellip;</p>
+        </turbo-frame>
+      </div>
+      <div class="editor-footer">
+        <button type="button" class="btn editor-cancel"
+                data-action="click->nutrition-editor#close">Cancel</button>
+        <button type="button" class="btn btn-primary editor-save"
+                data-nutrition-editor-target="saveButton"
+                data-action="click->nutrition-editor#save">Save</button>
+        <button type="button" class="btn btn-primary editor-save-next"
+                data-nutrition-editor-target="saveNextButton"
+                data-action="click->nutrition-editor#saveAndNext" hidden>
+          Save &amp; Next<span data-nutrition-editor-target="nextLabel"></span>
+        </button>
+      </div>
+    </dialog>
   <% end %>
 </article>

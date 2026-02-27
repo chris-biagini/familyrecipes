@@ -1,0 +1,17 @@
+<%# locals: (name:, grams:) %>
+<div class="portion-row" data-nutrition-editor-target="portionRow">
+  <input type="text" class="portion-name-input"
+         value="<%= name == '~unitless' ? 'each' : name %>"
+         placeholder="e.g. stick, slice"
+         data-nutrition-editor-target="portionName"
+         aria-label="Portion name">
+  <span class="portion-eq">=</span>
+  <input type="number" class="portion-grams-input field-narrow"
+         value="<%= format_nutrient_value(grams) %>"
+         inputmode="decimal" step="any" min="0"
+         data-nutrition-editor-target="portionGrams"
+         aria-label="Portion grams">
+  <span class="portion-unit">g</span>
+  <button type="button" class="btn-icon" aria-label="Remove portion"
+          data-action="click->nutrition-editor#removePortion">&times;</button>
+</div>

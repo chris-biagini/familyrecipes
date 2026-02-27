@@ -999,6 +999,333 @@ footer small {
   color: var(--muted-text);
 }
 
+/*********************************/
+/* Nutrition Editor Dialog       */
+/*********************************/
+
+.nutrition-editor-dialog {
+  border: 1px solid var(--border-color);
+  border-radius: 0.25rem;
+  background: var(--content-background-color);
+  padding: 0;
+  width: min(90vw, 500px);
+  max-height: 90vh;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+}
+
+.nutrition-editor-dialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.nutrition-editor-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.nutrition-editor-dialog .editor-body {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.nutrition-editor-dialog .editor-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--content-background-color);
+}
+
+.nutrition-editor-dialog .editor-footer {
+  position: sticky;
+  bottom: 0;
+  background: var(--content-background-color);
+}
+
+.editor-form {
+  padding: 1rem 1.5rem;
+}
+
+.editor-section {
+  border: none;
+  padding: 0;
+  margin: 0 0 1.25rem;
+}
+
+.editor-section-title {
+  font-family: "Futura", sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted-text);
+  margin-bottom: 0.5rem;
+  cursor: default;
+}
+
+details.editor-section > summary.editor-section-title {
+  cursor: pointer;
+  list-style: none;
+}
+
+details.editor-section > summary.editor-section-title::before {
+  content: "\25B6\00a0";
+  font-size: 0.65em;
+  vertical-align: middle;
+}
+
+details.editor-section[open] > summary.editor-section-title::before {
+  content: "\25BC\00a0";
+}
+
+.editor-help {
+  font-size: 0.8rem;
+  color: var(--muted-text);
+  margin: 0 0 0.75rem;
+  line-height: 1.4;
+}
+
+.editor-note {
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--muted-text);
+  margin: 0.5rem 0 0;
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.4rem;
+}
+
+.form-row > label {
+  font-size: 0.9rem;
+  min-width: 5rem;
+  flex-shrink: 0;
+}
+
+.serving-row > label,
+.measured-as-row > label {
+  min-width: 6rem;
+}
+
+.nutrient-divider {
+  border: none;
+  border-top: 2px solid var(--border-color);
+  margin: 0.75rem 0;
+}
+
+.nutrient-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.3rem;
+}
+
+.nutrient-row > label {
+  flex: 1;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.nutrient-row.indent-1 > label {
+  padding-left: 1rem;
+  font-weight: normal;
+}
+
+.nutrient-row.indent-2 > label {
+  padding-left: 2rem;
+  font-weight: normal;
+}
+
+.field-narrow {
+  width: 5rem;
+  padding: 0.3rem 0.4rem;
+  border: 1px solid var(--border-light);
+  border-radius: 3px;
+  text-align: right;
+  background: white;
+  color: var(--text-color);
+}
+
+.field-narrow:focus {
+  outline: 2px solid var(--accent-color);
+  outline-offset: -1px;
+  border-color: var(--accent-color);
+}
+
+.field-unit {
+  font-size: 0.85rem;
+  color: var(--muted-text);
+  min-width: 1.5rem;
+}
+
+.field-unit-select {
+  padding: 0.3rem 0.3rem;
+  border: 1px solid var(--border-light);
+  border-radius: 3px;
+  background: white;
+  color: var(--text-color);
+}
+
+.measured-as-eq,
+.portion-eq {
+  color: var(--muted-text);
+  font-size: 0.9rem;
+}
+
+.measured-as-grams {
+  font-size: 0.9rem;
+  min-width: 2rem;
+  text-align: right;
+}
+
+.density-row {
+  margin-bottom: 0.5rem;
+}
+
+/* Portion rows */
+.portion-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.4rem;
+}
+
+.portion-name-input {
+  width: 6rem;
+  padding: 0.3rem 0.4rem;
+  border: 1px solid var(--border-light);
+  border-radius: 3px;
+  background: white;
+  color: var(--text-color);
+}
+
+.portion-name-input:focus,
+.portion-grams-input:focus {
+  outline: 2px solid var(--accent-color);
+  outline-offset: -1px;
+  border-color: var(--accent-color);
+}
+
+.portion-grams-input {
+  width: 5rem;
+  padding: 0.3rem 0.4rem;
+  border: 1px solid var(--border-light);
+  border-radius: 3px;
+  text-align: right;
+  background: white;
+  color: var(--text-color);
+}
+
+.portion-unit {
+  font-size: 0.85rem;
+  color: var(--muted-text);
+}
+
+.btn-icon {
+  appearance: none;
+  -webkit-appearance: none;
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  color: var(--muted-text);
+  cursor: pointer;
+  padding: 0.1rem 0.3rem;
+  line-height: 1;
+  border-radius: 3px;
+}
+
+.btn-icon:hover {
+  color: var(--danger-color);
+  background: rgba(204, 0, 0, 0.08);
+}
+
+.add-portion {
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+.aisle-section .form-row {
+  gap: 0.5rem;
+}
+
+.aisle-form-select {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--border-light);
+  border-radius: 3px;
+  background: white;
+  color: var(--text-color);
+  max-width: 14rem;
+}
+
+.aisle-new-input {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--border-light);
+  border-radius: 3px;
+  background: white;
+  color: var(--text-color);
+  max-width: 14rem;
+}
+
+.aisle-new-input:focus,
+.aisle-form-select:focus {
+  outline: 2px solid var(--accent-color);
+  outline-offset: -1px;
+  border-color: var(--accent-color);
+}
+
+/* iOS zoom prevention: all form inputs in the editor need 1rem+ */
+.editor-form input[type="number"],
+.editor-form select,
+.editor-form input[type="text"] {
+  font-size: 1rem;
+}
+
+.editor-save-next {
+  white-space: nowrap;
+}
+
+.editor-save-next span {
+  font-weight: normal;
+  font-size: 0.85em;
+}
+
+/* Mobile: nutrition editor goes fullscreen */
+@media (max-width: 640px) {
+  .nutrition-editor-dialog {
+    width: 100vw;
+    max-height: 100vh;
+    height: 100vh;
+    border-radius: 0;
+    margin: 0;
+    max-width: 100vw;
+  }
+
+  .editor-form {
+    padding: 0.75rem 1rem;
+  }
+
+  .form-row > label,
+  .serving-row > label,
+  .measured-as-row > label {
+    min-width: 4.5rem;
+    font-size: 0.85rem;
+  }
+
+  .nutrient-row > label {
+    font-size: 0.85rem;
+  }
+
+  .field-narrow {
+    width: 4.5rem;
+  }
+
+  .portion-name-input {
+    width: 5rem;
+  }
+}
+
 /********************/
 /* Styles for print */
 /********************/
@@ -1025,7 +1352,8 @@ footer small {
 
   nav,
   .notify-bar,
-  .editor-dialog {
+  .editor-dialog,
+  .nutrition-editor-dialog {
     display: none;
   }
 
