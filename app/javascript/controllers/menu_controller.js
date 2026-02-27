@@ -31,11 +31,21 @@ export default class extends Controller {
 
     this.bindRecipeCheckboxes()
 
+    this.element.addEventListener('click', (e) => {
+      const dot = e.target.closest('.availability-dot')
+      if (dot) {
+        e.preventDefault()
+        e.stopPropagation()
+        this.showPopover(dot)
+      }
+    })
+
     this.boundHandleStreamRender = this.handleStreamRender.bind(this)
     document.addEventListener("turbo:before-stream-render", this.boundHandleStreamRender)
   }
 
   disconnect() {
+    this.hidePopover()
     if (this.fetchController) this.fetchController.abort()
     if (this.heartbeatId) {
       clearInterval(this.heartbeatId)
@@ -150,6 +160,100 @@ export default class extends Controller {
         : 'Missing ' + missing + ': ' + info.missing_names.join(', ')
       dot.setAttribute('aria-label', label)
     })
+  }
+
+  showPopover(dot) {
+    const slug = dot.dataset.slug
+    const info = (this.state.availability || {})[slug]
+    if (!info) return
+
+    let popover = document.getElementById('ingredient-popover')
+    if (!popover) {
+      popover = document.createElement('div')
+      popover.id = 'ingredient-popover'
+      popover.setAttribute('role', 'tooltip')
+      document.body.appendChild(popover)
+    }
+
+    if (this.activePopoverDot === dot) {
+      this.hidePopover()
+      return
+    }
+
+    popover.textContent = ''
+
+    const ingredientsList = document.createElement('p')
+    ingredientsList.className = 'popover-ingredients'
+    ingredientsList.textContent = info.ingredients.join(', ')
+    popover.appendChild(ingredientsList)
+
+    if (info.missing_names.length > 0) {
+      const missingEl = document.createElement('p')
+      missingEl.className = 'popover-missing'
+      missingEl.textContent = 'Missing: ' + info.missing_names.join(', ')
+      popover.appendChild(missingEl)
+    }
+
+    popover.classList.add('visible')
+
+    const rect = dot.getBoundingClientRect()
+    popover.style.top = ''
+    popover.style.left = ''
+
+    const popoverRect = popover.getBoundingClientRect()
+    let top = rect.bottom + 6
+    let left = rect.left
+
+    if (top + popoverRect.height > window.innerHeight) {
+      top = rect.top - popoverRect.height - 6
+    }
+    if (left + popoverRect.width > window.innerWidth) {
+      left = window.innerWidth - popoverRect.width - 8
+    }
+    if (left < 8) left = 8
+
+    popover.style.top = (top + window.scrollY) + 'px'
+    popover.style.left = (left + window.scrollX) + 'px'
+
+    this.activePopoverDot = dot
+    dot.setAttribute('aria-expanded', 'true')
+    dot.setAttribute('aria-describedby', 'ingredient-popover')
+
+    setTimeout(() => {
+      this.boundHideOnClickOutside = (e) => {
+        if (!popover.contains(e.target) && e.target !== dot) {
+          this.hidePopover()
+        }
+      }
+      this.boundHideOnEscape = (e) => {
+        if (e.key === 'Escape') {
+          this.hidePopover()
+          dot.focus()
+        }
+      }
+      document.addEventListener('click', this.boundHideOnClickOutside)
+      document.addEventListener('keydown', this.boundHideOnEscape)
+    }, 0)
+  }
+
+  hidePopover() {
+    const popover = document.getElementById('ingredient-popover')
+    if (popover) popover.classList.remove('visible')
+
+    if (this.activePopoverDot) {
+      this.activePopoverDot.setAttribute('aria-expanded', 'false')
+      this.activePopoverDot.removeAttribute('aria-describedby')
+      this.activePopoverDot = null
+    }
+
+    if (this.boundHideOnClickOutside) {
+      document.removeEventListener('click', this.boundHideOnClickOutside)
+      this.boundHideOnClickOutside = null
+    }
+    if (this.boundHideOnEscape) {
+      document.removeEventListener('keydown', this.boundHideOnEscape)
+      this.boundHideOnEscape = null
+    }
   }
 
   sendAction(url, params) {

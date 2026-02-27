@@ -124,6 +124,35 @@
   background: #ff9800;
 }
 
+#ingredient-popover {
+  position: absolute;
+  z-index: 100;
+  background: var(--surface-color, #fff);
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.85rem;
+  max-width: 300px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  display: none;
+}
+
+#ingredient-popover.visible {
+  display: block;
+}
+
+.popover-ingredients {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.popover-missing {
+  margin: 0.4rem 0 0;
+  color: var(--danger-color);
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
 /* Quick Bites */
 #recipe-selector .quick-bites {
   margin-top: 1rem;
@@ -301,5 +330,9 @@
 
   .availability-dot {
     display: none;
+  }
+
+  #ingredient-popover {
+    display: none !important;
   }
 }
