@@ -40,9 +40,11 @@
       <% end %>
 
       <button type="button" class="btn btn-small"
+              data-open-editor
               data-ingredient-name="<%= ingredient_name %>">Edit</button>
       <% if entry&.custom? %>
         <button type="button" class="btn btn-small btn-secondary"
+                data-reset-ingredient
                 data-ingredient-name="<%= ingredient_name %>">Reset to built-in</button>
       <% end %>
     </div>
