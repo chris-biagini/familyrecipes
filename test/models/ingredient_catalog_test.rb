@@ -287,11 +287,24 @@ class IngredientCatalogTest < ActiveSupport::TestCase
     assert(entry.errors[:calories].any? { |e| e.include?('between 0 and 10000') })
   end
 
-  test 'rejects nutrient values over 10000' do
-    entry = IngredientCatalog.new(ingredient_name: 'Test', basis_grams: 100, sodium: 10_001)
+  test 'rejects nutrient values over default cap' do
+    entry = IngredientCatalog.new(ingredient_name: 'Test', basis_grams: 100, calories: 10_001)
 
     assert_not_predicate entry, :valid?
-    assert(entry.errors[:sodium].any? { |e| e.include?('between 0 and 10000') })
+    assert(entry.errors[:calories].any? { |e| e.include?('between 0 and 10000') })
+  end
+
+  test 'sodium allows higher values than default cap' do
+    entry = IngredientCatalog.new(ingredient_name: 'Salt', basis_grams: 100, sodium: 38_758)
+
+    assert_predicate entry, :valid?
+  end
+
+  test 'rejects sodium over 50000' do
+    entry = IngredientCatalog.new(ingredient_name: 'Test', basis_grams: 100, sodium: 50_001)
+
+    assert_not_predicate entry, :valid?
+    assert(entry.errors[:sodium].any? { |e| e.include?('between 0 and 50000') })
   end
 
   test 'allows nutrient values at boundaries' do

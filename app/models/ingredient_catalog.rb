@@ -25,6 +25,9 @@ class IngredientCatalog < ApplicationRecord
   DENSITY_FIELDS = %i[density_grams density_volume density_unit].freeze
   private_constant :DENSITY_FIELDS
 
+  # Sodium is in mg and legitimately exceeds 10,000 per 100g (salt: ~38,758)
+  NUTRIENT_MAX = Hash.new(10_000).merge(sodium: 50_000).freeze
+
   validates :ingredient_name, presence: true, uniqueness: { scope: :kitchen_id }
   validates :basis_grams, numericality: { greater_than: 0 }, allow_nil: true
   validates :aisle, length: { maximum: Kitchen::MAX_AISLE_NAME_LENGTH }, allow_nil: true
@@ -112,7 +115,8 @@ class IngredientCatalog < ApplicationRecord
       value = public_send(col)
       next unless value
 
-      errors.add(col, 'must be between 0 and 10000') unless value.between?(0, 10_000)
+      max = NUTRIENT_MAX[col]
+      errors.add(col, "must be between 0 and #{max}") unless value.between?(0, max)
     end
   end
 
