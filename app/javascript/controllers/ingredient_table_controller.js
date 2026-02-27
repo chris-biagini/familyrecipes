@@ -1,11 +1,12 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["searchInput", "row", "filterButton", "countLabel"]
+  static targets = ["searchInput", "row", "filterButton", "table"]
 
   connect() {
     this.currentFilter = "all"
-    this.expandedRowId = null
+    this.sortKey = "name"
+    this.sortAsc = true
   }
 
   search() {
@@ -22,28 +23,27 @@ export default class extends Controller {
     this.applyFilters()
   }
 
-  toggleRow(event) {
-    if (event.target.closest("button, a")) return
-
-    const row = event.currentTarget
-    const expandId = row.dataset.expandId
-    const expandRow = document.getElementById(expandId)
-    if (!expandRow) return
-
-    if (this.expandedRowId === expandId) {
-      this.collapseRow(expandRow, row)
+  sort(event) {
+    const key = event.currentTarget.dataset.sortKey
+    if (this.sortKey === key) {
+      this.sortAsc = !this.sortAsc
     } else {
-      this.collapseCurrentRow()
-      expandRow.hidden = false
-      this.expandedRowId = expandId
-      row.setAttribute("aria-expanded", "true")
+      this.sortKey = key
+      this.sortAsc = true
     }
+
+    this.updateSortIndicators()
+    this.sortRows()
+  }
+
+  openEditor(event) {
+    if (event.target.closest("a")) return
   }
 
   rowKeydown(event) {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault()
-      this.toggleRow(event)
+      event.currentTarget.click()
     }
   }
 
@@ -53,60 +53,74 @@ export default class extends Controller {
     const query = this.hasSearchInputTarget
       ? this.searchInputTarget.value.toLowerCase().trim()
       : ""
-    let visible = 0
-    const total = this.rowTargets.length
 
     this.rowTargets.forEach(row => {
       const name = (row.dataset.ingredientName || "").toLowerCase()
       const matchesSearch = !query || name.includes(query)
-      const matchesFilter = this.matchesStatus(row.dataset.status)
-      const show = matchesSearch && matchesFilter
-
-      row.hidden = !show
-      this.hideExpandRowWhenFiltered(row, show)
-      if (show) visible++
+      const matchesFilter = this.matchesStatus(row)
+      row.closest("tbody").hidden = !(matchesSearch && matchesFilter)
     })
-
-    if (this.hasCountLabelTarget) {
-      this.countLabelTarget.textContent = `Showing ${visible} of ${total} ingredients`
-    }
   }
 
-  matchesStatus(status) {
+  matchesStatus(row) {
     if (this.currentFilter === "all") return true
-    if (this.currentFilter === "incomplete") return status !== "complete"
-    if (this.currentFilter === "complete") return status === "complete"
+    if (this.currentFilter === "complete") return row.dataset.status === "complete"
+    if (this.currentFilter === "missing_nutrition") return row.dataset.hasNutrition === "false"
+    if (this.currentFilter === "missing_density") {
+      return row.dataset.hasNutrition === "true" && row.dataset.hasDensity === "false"
+    }
     return true
   }
 
-  hideExpandRowWhenFiltered(row, visible) {
-    const expandId = this.expandIdFor(row)
-    const expandRow = document.getElementById(expandId)
-    if (!expandRow || visible) return
-
-    expandRow.hidden = true
-    if (this.expandedRowId === expandId) this.expandedRowId = null
+  updateSortIndicators() {
+    this.element.querySelectorAll("th.sortable").forEach(th => {
+      const arrow = th.querySelector(".sort-arrow")
+      if (th.dataset.sortKey === this.sortKey) {
+        th.setAttribute("aria-sort", this.sortAsc ? "ascending" : "descending")
+        arrow.textContent = this.sortAsc ? " \u25B2" : " \u25BC"
+      } else {
+        th.removeAttribute("aria-sort")
+        arrow.textContent = ""
+      }
+    })
   }
 
-  collapseRow(expandRow, dataRow) {
-    expandRow.hidden = true
-    this.expandedRowId = null
-    dataRow.removeAttribute("aria-expanded")
+  sortRows() {
+    const table = this.tableTarget
+    const bodies = Array.from(table.querySelectorAll("tbody"))
+
+    bodies.sort((a, b) => {
+      const rowA = a.querySelector("tr")
+      const rowB = b.querySelector("tr")
+      const cmp = this.compareSortValues(rowA, rowB)
+      return this.sortAsc ? cmp : -cmp
+    })
+
+    bodies.forEach(tb => table.appendChild(tb))
   }
 
-  collapseCurrentRow() {
-    if (!this.expandedRowId) return
+  compareSortValues(rowA, rowB) {
+    const valA = this.sortValue(rowA)
+    const valB = this.sortValue(rowB)
 
-    const prev = document.getElementById(this.expandedRowId)
-    if (prev) {
-      prev.hidden = true
-      const prevDataRow = prev.previousElementSibling
-      if (prevDataRow) prevDataRow.removeAttribute("aria-expanded")
+    if (typeof valA === "string") return valA.localeCompare(valB)
+    return valA - valB
+  }
+
+  sortValue(row) {
+    switch (this.sortKey) {
+      case "name":
+        return (row.dataset.ingredientName || "").toLowerCase()
+      case "nutrition":
+        return row.dataset.hasNutrition === "true" ? 0 : 1
+      case "density":
+        return row.dataset.hasDensity === "true" ? 0 : 1
+      case "aisle": {
+        const aisle = (row.dataset.aisle || "").toLowerCase()
+        return aisle || "\uffff"
+      }
+      default:
+        return ""
     }
-    this.expandedRowId = null
-  }
-
-  expandIdFor(row) {
-    return row.dataset.expandId
   }
 }

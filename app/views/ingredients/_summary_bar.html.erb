@@ -1,14 +1,21 @@
 <%# locals: (summary:) %>
-<div id="ingredients-summary" class="ingredients-summary">
-  <span class="summary-total"><%= summary[:total] %> ingredients</span>
-  <span class="summary-sep">&mdash;</span>
-  <span class="summary-stat summary-complete"><span class="summary-count"><%= summary[:complete] %></span> complete</span>
-  <% if summary[:missing_nutrition] > 0 %>
-    <span class="summary-sep">&middot;</span>
-    <span class="summary-stat summary-attention"><span class="summary-count"><%= summary[:missing_nutrition] %></span> missing nutrition</span>
-  <% end %>
-  <% if summary[:missing_density] > 0 %>
-    <span class="summary-sep">&middot;</span>
-    <span class="summary-stat summary-attention"><span class="summary-count"><%= summary[:missing_density] %></span> missing density</span>
-  <% end %>
-</div>
+<button type="button" class="filter-pill active"
+        data-ingredient-table-target="filterButton"
+        data-filter="all"
+        data-action="click->ingredient-table#filter"
+        aria-pressed="true">All (<%= summary[:total] %>)</button>
+<button type="button" class="filter-pill"
+        data-ingredient-table-target="filterButton"
+        data-filter="complete"
+        data-action="click->ingredient-table#filter"
+        aria-pressed="false">Complete (<%= summary[:complete] %>)</button>
+<button type="button" class="filter-pill"
+        data-ingredient-table-target="filterButton"
+        data-filter="missing_nutrition"
+        data-action="click->ingredient-table#filter"
+        aria-pressed="false">Missing Nutrition (<%= summary[:missing_nutrition] %>)</button>
+<button type="button" class="filter-pill"
+        data-ingredient-table-target="filterButton"
+        data-filter="missing_density"
+        data-action="click->ingredient-table#filter"
+        aria-pressed="false">Missing Density (<%= summary[:missing_density] %>)</button>

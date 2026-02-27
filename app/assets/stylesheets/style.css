@@ -430,15 +430,6 @@ section h2 {
 
 .ingredients-page header { margin-bottom: 0.5rem; }
 
-.ingredients-summary {
-  font-size: 0.9rem;
-  color: var(--muted-text);
-  margin-bottom: 1rem;
-}
-.summary-count { font-weight: 600; }
-.summary-sep { margin: 0 0.3em; }
-.summary-attention .summary-count { color: #b45309; }
-
 /* Search + filter toolbar */
 .ingredients-toolbar { margin-bottom: 1rem; }
 .ingredients-search {
@@ -475,14 +466,18 @@ section h2 {
 .ingredients-table { width: 100%; border-collapse: collapse; }
 .ingredients-table thead th {
   text-align: left;
-  font-size: 0.75rem;
+  font-family: 'Futura', 'Trebuchet MS', Arial, sans-serif;
+  font-size: 0.8rem;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.03em;
   color: var(--muted-text);
   padding: 0.4rem 0.5rem;
   border-bottom: 2px solid var(--border-color, #e5e7eb);
 }
+
+.sortable { cursor: pointer; user-select: none; white-space: nowrap; }
+.sortable:hover { color: var(--text-color, #1f2937); }
+.sort-arrow { font-size: 0.65rem; margin-left: 0.15em; }
 
 .ingredient-row { cursor: pointer; transition: background 0.1s; }
 .ingredient-row:hover { background: var(--hover-bg, #f9fafb); }
@@ -495,12 +490,9 @@ section h2 {
 .col-name { font-weight: 500; word-break: break-word; }
 .col-nutrition, .col-density { width: 3rem; text-align: center; }
 .col-aisle { color: var(--muted-text); font-size: 0.9rem; }
-.col-recipes { width: 4rem; text-align: center; color: var(--muted-text); }
-
 .status-icon { font-size: 0.85rem; }
 .status-yes { color: #16a34a; }
 .status-no { color: #dc2626; }
-.status-na { color: var(--muted-text); }
 
 /* Expand panel */
 .ingredient-expand td {
@@ -539,12 +531,6 @@ section h2 {
 }
 .btn-small:hover { background: var(--hover-bg, #f3f4f6); }
 
-.ingredients-count {
-  font-size: 0.8rem;
-  color: var(--muted-text);
-  margin-top: 0.5rem;
-}
-
 .loading-placeholder {
   color: var(--muted-text);
   font-style: italic;
@@ -563,16 +549,11 @@ section h2 {
 }
 .btn-link:hover { color: var(--text-color); }
 
-/* Mobile: hide aisle and recipes columns */
+/* Mobile: hide aisle column */
 @media (max-width: 640px) {
   .col-aisle,
-  .col-recipes,
-  .ingredients-table thead .col-aisle,
-  .ingredients-table thead .col-recipes { display: none; }
+  .ingredients-table thead .col-aisle { display: none; }
   .col-nutrition, .col-density { width: 2rem; }
-  .ingredient-expand td { padding-left: 0.5rem; }
-  .detail-actions { flex-wrap: wrap; }
-  .detail-actions .btn-small { flex: 1; text-align: center; }
 }
 
 section > div:has(.ingredients):has(.instructions) {

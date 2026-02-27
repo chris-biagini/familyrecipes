@@ -263,7 +263,7 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
     get ingredients_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
-    assert_select '.ingredients-summary'
+    assert_select '#ingredients-summary'
   end
 
   # --- edit action (Turbo Frame editor form) ---

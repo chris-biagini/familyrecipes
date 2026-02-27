@@ -5,8 +5,6 @@
     <h1>Ingredients</h1>
   </header>
 
-  <%= render 'ingredients/summary_bar', summary: @summary %>
-
   <div class="ingredients-toolbar">
     <input type="search" class="ingredients-search"
            placeholder="Search ingredients…"
@@ -14,42 +12,36 @@
            data-ingredient-table-target="searchInput"
            data-action="input->ingredient-table#search"
            autocomplete="off">
-    <div class="filter-pills" role="group" aria-label="Filter ingredients">
-      <button type="button" class="filter-pill active"
-              data-ingredient-table-target="filterButton"
-              data-filter="all"
-              data-action="click->ingredient-table#filter"
-              aria-pressed="true">All</button>
-      <button type="button" class="filter-pill"
-              data-ingredient-table-target="filterButton"
-              data-filter="incomplete"
-              data-action="click->ingredient-table#filter"
-              aria-pressed="false">Needs Attention</button>
-      <button type="button" class="filter-pill"
-              data-ingredient-table-target="filterButton"
-              data-filter="complete"
-              data-action="click->ingredient-table#filter"
-              aria-pressed="false">Complete</button>
+    <div id="ingredients-summary" class="filter-pills" role="group" aria-label="Filter ingredients">
+      <%= render 'ingredients/summary_bar', summary: @summary %>
     </div>
   </div>
 
-  <table class="ingredients-table">
+  <table class="ingredients-table" data-ingredient-table-target="table">
     <thead>
       <tr>
-        <th class="col-name">Ingredient</th>
-        <th class="col-nutrition">Nutrition</th>
-        <th class="col-density">Density</th>
-        <th class="col-aisle">Aisle</th>
+        <th class="col-name sortable" data-sort-key="name" data-action="click->ingredient-table#sort"
+            role="columnheader" aria-sort="ascending">
+          Ingredient<span class="sort-arrow" aria-hidden="true"> &#9650;</span>
+        </th>
+        <th class="col-nutrition sortable" data-sort-key="nutrition" data-action="click->ingredient-table#sort"
+            role="columnheader">
+          Nutrition<span class="sort-arrow" aria-hidden="true"></span>
+        </th>
+        <th class="col-density sortable" data-sort-key="density" data-action="click->ingredient-table#sort"
+            role="columnheader">
+          Density<span class="sort-arrow" aria-hidden="true"></span>
+        </th>
+        <th class="col-aisle sortable" data-sort-key="aisle" data-action="click->ingredient-table#sort"
+            role="columnheader">
+          Aisle<span class="sort-arrow" aria-hidden="true"></span>
+        </th>
       </tr>
     </thead>
     <% @ingredient_rows.each do |row| %>
       <%= render 'ingredients/table_row', row: row %>
     <% end %>
   </table>
-
-  <p class="ingredients-count" data-ingredient-table-target="countLabel">
-    Showing <%= @ingredient_rows.size %> of <%= @ingredient_rows.size %> ingredients
-  </p>
 
   <% if current_kitchen.member?(current_user) %>
     <dialog class="nutrition-editor-dialog"
