@@ -262,4 +262,213 @@ class IngredientCatalogTest < ActiveSupport::TestCase
 
     assert_equal kitchen_entry.id, result['Egg'].id
   end
+
+  # --- validation: nutrients_require_basis_grams ---
+
+  test 'rejects nutrient values without basis_grams' do
+    entry = IngredientCatalog.new(ingredient_name: 'Test', calories: 100)
+
+    assert_not_predicate entry, :valid?
+    assert_includes entry.errors[:basis_grams].join, 'required when nutrient values are present'
+  end
+
+  test 'allows nil nutrients without basis_grams' do
+    entry = IngredientCatalog.new(ingredient_name: 'Test', aisle: 'Baking')
+
+    assert_predicate entry, :valid?
+  end
+
+  # --- validation: nutrient_values_in_range ---
+
+  test 'rejects negative nutrient values' do
+    entry = IngredientCatalog.new(ingredient_name: 'Test', basis_grams: 100, calories: -5)
+
+    assert_not_predicate entry, :valid?
+    assert(entry.errors[:calories].any? { |e| e.include?('between 0 and 10000') })
+  end
+
+  test 'rejects nutrient values over 10000' do
+    entry = IngredientCatalog.new(ingredient_name: 'Test', basis_grams: 100, sodium: 10_001)
+
+    assert_not_predicate entry, :valid?
+    assert(entry.errors[:sodium].any? { |e| e.include?('between 0 and 10000') })
+  end
+
+  test 'allows nutrient values at boundaries' do
+    entry = IngredientCatalog.new(ingredient_name: 'Test', basis_grams: 100, calories: 0, sodium: 10_000)
+
+    assert_predicate entry, :valid?
+  end
+
+  # --- validation: density_completeness ---
+
+  test 'rejects partial density — missing grams' do
+    entry = IngredientCatalog.new(ingredient_name: 'Test', density_volume: 1, density_unit: 'cup')
+
+    assert_not_predicate entry, :valid?
+    assert_includes entry.errors[:density_grams].join, 'required'
+  end
+
+  test 'rejects partial density — missing unit' do
+    entry = IngredientCatalog.new(ingredient_name: 'Test', density_volume: 1, density_grams: 120)
+
+    assert_not_predicate entry, :valid?
+    assert_includes entry.errors[:density_unit].join, 'required'
+  end
+
+  test 'allows complete density' do
+    entry = IngredientCatalog.new(
+      ingredient_name: 'Test', density_volume: 1, density_unit: 'cup', density_grams: 120
+    )
+
+    assert_predicate entry, :valid?
+  end
+
+  test 'allows no density fields at all' do
+    entry = IngredientCatalog.new(ingredient_name: 'Test')
+
+    assert_predicate entry, :valid?
+  end
+
+  # --- validation: portion_values_positive ---
+
+  test 'rejects zero portion value' do
+    entry = IngredientCatalog.new(ingredient_name: 'Test', portions: { 'stick' => 0 })
+
+    assert_not_predicate entry, :valid?
+    assert(entry.errors[:portions].any? { |e| e.include?('stick') })
+  end
+
+  test 'rejects negative portion value' do
+    entry = IngredientCatalog.new(ingredient_name: 'Test', portions: { 'each' => -10 })
+
+    assert_not_predicate entry, :valid?
+  end
+
+  test 'allows positive portion values' do
+    entry = IngredientCatalog.new(ingredient_name: 'Test', portions: { 'stick' => 113 })
+
+    assert_predicate entry, :valid?
+  end
+
+  # --- validation: aisle length ---
+
+  test 'rejects aisle name over max length' do
+    entry = IngredientCatalog.new(ingredient_name: 'Test', aisle: 'a' * 51)
+
+    assert_not_predicate entry, :valid?
+    assert(entry.errors[:aisle].any? { |e| e.include?('too long') })
+  end
+
+  test 'allows aisle name at max length' do
+    entry = IngredientCatalog.new(ingredient_name: 'Test', aisle: 'a' * 50)
+
+    assert_predicate entry, :valid?
+  end
+
+  # --- callback: normalize_portion_keys ---
+
+  test 'normalize_portion_keys converts each to ~unitless on save' do
+    entry = IngredientCatalog.create!(
+      kitchen: @kitchen, ingredient_name: 'Eggs',
+      portions: { 'each' => 50, 'stick' => 113 }
+    )
+
+    assert_equal 50, entry.portions['~unitless']
+    assert_equal 113, entry.portions['stick']
+    assert_nil entry.portions['each']
+  end
+
+  test 'normalize_portion_keys converts Each to ~unitless on save' do
+    entry = IngredientCatalog.create!(
+      kitchen: @kitchen, ingredient_name: 'Rolls',
+      portions: { 'Each' => 60 }
+    )
+
+    assert_equal 60, entry.portions['~unitless']
+    assert_nil entry.portions['Each']
+  end
+
+  # --- assign_from_params ---
+
+  test 'assign_from_params sets nutrients' do
+    entry = IngredientCatalog.new(kitchen: @kitchen, ingredient_name: 'Flour')
+    entry.assign_from_params(
+      nutrients: { basis_grams: 30, calories: 110, fat: 0.5 },
+      density: {}, portions: {}, aisle: nil,
+      sources: [{ 'type' => 'web' }]
+    )
+
+    assert_in_delta 30.0, entry.basis_grams
+    assert_in_delta 110.0, entry.calories
+    assert_in_delta 0.5, entry.fat
+  end
+
+  test 'assign_from_params sets density' do
+    entry = IngredientCatalog.new(kitchen: @kitchen, ingredient_name: 'Flour')
+    entry.assign_from_params(
+      nutrients: {}, density: { volume: 0.25, unit: 'cup', grams: 30 },
+      portions: {}, aisle: nil, sources: []
+    )
+
+    assert_in_delta 0.25, entry.density_volume
+    assert_equal 'cup', entry.density_unit
+    assert_in_delta 30.0, entry.density_grams
+  end
+
+  test 'assign_from_params clears density when blank' do
+    entry = IngredientCatalog.create!(
+      kitchen: @kitchen, ingredient_name: 'Flour',
+      density_volume: 0.25, density_unit: 'cup', density_grams: 30
+    )
+    entry.assign_from_params(
+      nutrients: {}, density: {}, portions: {}, aisle: nil, sources: []
+    )
+
+    assert_nil entry.density_volume
+    assert_nil entry.density_unit
+    assert_nil entry.density_grams
+  end
+
+  test 'assign_from_params normalizes each in portions' do
+    entry = IngredientCatalog.new(kitchen: @kitchen, ingredient_name: 'Eggs')
+    entry.assign_from_params(
+      nutrients: {}, density: {},
+      portions: { 'each' => 50 },
+      aisle: nil, sources: []
+    )
+
+    assert_equal 50, entry.portions['~unitless']
+    assert_nil entry.portions['each']
+  end
+
+  test 'assign_from_params sets aisle when present' do
+    entry = IngredientCatalog.new(kitchen: @kitchen, ingredient_name: 'Flour')
+    entry.assign_from_params(
+      nutrients: {}, density: {}, portions: {},
+      aisle: 'Baking', sources: []
+    )
+
+    assert_equal 'Baking', entry.aisle
+  end
+
+  test 'assign_from_params skips aisle when nil' do
+    entry = IngredientCatalog.new(kitchen: @kitchen, ingredient_name: 'Flour', aisle: 'Existing')
+    entry.assign_from_params(
+      nutrients: {}, density: {}, portions: {},
+      aisle: nil, sources: []
+    )
+
+    assert_equal 'Existing', entry.aisle
+  end
+
+  test 'assign_from_params sets sources' do
+    entry = IngredientCatalog.new(kitchen: @kitchen, ingredient_name: 'Flour')
+    entry.assign_from_params(
+      nutrients: {}, density: {}, portions: {},
+      aisle: nil, sources: [{ 'type' => 'web', 'note' => 'test' }]
+    )
+
+    assert_equal [{ 'type' => 'web', 'note' => 'test' }], entry.sources
+  end
 end

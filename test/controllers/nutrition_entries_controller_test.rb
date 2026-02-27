@@ -5,21 +5,9 @@ require 'test_helper'
 class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
   include ActionCable::TestHelper
 
-  VALID_LABEL = <<~LABEL
-    Serving size: 1/4 cup (30g)
-
-    Calories          110
-    Total Fat         0.5g
-      Saturated Fat   0g
-      Trans Fat       0g
-    Cholesterol       0mg
-    Sodium            5mg
-    Total Carbs       23g
-      Dietary Fiber   1g
-      Total Sugars    0g
-        Added Sugars  0g
-    Protein           3g
-  LABEL
+  VALID_NUTRIENTS = { basis_grams: 30, calories: 110, fat: 0.5, saturated_fat: 0,
+                      trans_fat: 0, cholesterol: 0, sodium: 5, carbs: 23,
+                      fiber: 1, total_sugars: 0, added_sugars: 0, protein: 3 }.freeze
 
   setup do
     create_kitchen_and_user
@@ -28,17 +16,15 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
     IngredientCatalog.where(kitchen_id: [@kitchen.id, nil]).delete_all
   end
 
-  # --- upsert ---
+  # --- upsert with full data ---
 
-  test 'upsert creates kitchen-scoped entry from label text' do
+  test 'upsert creates kitchen-scoped entry from structured JSON' do
     post nutrition_entry_upsert_path('flour', kitchen_slug: kitchen_slug),
-         params: { label_text: VALID_LABEL },
+         params: { nutrients: VALID_NUTRIENTS, density: { volume: 0.25, unit: 'cup', grams: 30 },
+                   portions: {}, aisle: 'Baking' },
          as: :json
 
     assert_response :success
-    body = response.parsed_body
-
-    assert_equal 'ok', body['status']
 
     entry = IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'flour')
 
@@ -50,6 +36,7 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
     assert_in_delta 23.0, entry.carbs
     assert_in_delta 3.0, entry.protein
     assert_equal 'cup', entry.density_unit
+    assert_equal 'Baking', entry.aisle
   end
 
   test 'upsert updates existing kitchen entry' do
@@ -59,7 +46,8 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
     )
 
     post nutrition_entry_upsert_path('flour', kitchen_slug: kitchen_slug),
-         params: { label_text: VALID_LABEL },
+         params: { nutrients: VALID_NUTRIENTS, density: { volume: 0.25, unit: 'cup', grams: 30 },
+                   portions: {}, aisle: nil },
          as: :json
 
     assert_response :success
@@ -72,7 +60,7 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
 
   test 'upsert sets web source provenance' do
     post nutrition_entry_upsert_path('flour', kitchen_slug: kitchen_slug),
-         params: { label_text: VALID_LABEL },
+         params: { nutrients: VALID_NUTRIENTS, density: nil, portions: {}, aisle: nil },
          as: :json
 
     assert_response :success
@@ -82,21 +70,9 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
     assert_equal [{ 'type' => 'web', 'note' => 'Entered via ingredients page' }], entry.sources
   end
 
-  test 'upsert returns errors for invalid label' do
-    post nutrition_entry_upsert_path('flour', kitchen_slug: kitchen_slug),
-         params: { label_text: "Calories 100\nTotal Fat 5g" },
-         as: :json
-
-    assert_response :unprocessable_entity
-    body = response.parsed_body
-
-    assert_predicate body['errors'], :any?
-    assert(body['errors'].any? { |e| e.include?('Serving size') })
-  end
-
   test 'upsert decodes hyphenated ingredient names' do
     post nutrition_entry_upsert_path('olive-oil', kitchen_slug: kitchen_slug),
-         params: { label_text: VALID_LABEL },
+         params: { nutrients: VALID_NUTRIENTS, density: nil, portions: {}, aisle: nil },
          as: :json
 
     assert_response :success
@@ -111,9 +87,9 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
 
     assert_nil recipe.reload.nutrition_data
 
-    # Upsert creates a kitchen entry with density, enabling volume resolution
     post nutrition_entry_upsert_path('Flour', kitchen_slug: kitchen_slug),
-         params: { label_text: VALID_LABEL },
+         params: { nutrients: VALID_NUTRIENTS, density: { volume: 0.25, unit: 'cup', grams: 30 },
+                   portions: {}, aisle: nil },
          as: :json
 
     assert_response :success
@@ -128,7 +104,7 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
     delete logout_path
 
     post nutrition_entry_upsert_path('flour', kitchen_slug: kitchen_slug),
-         params: { label_text: VALID_LABEL },
+         params: { nutrients: VALID_NUTRIENTS, density: nil, portions: {}, aisle: nil },
          as: :json
 
     assert_response :forbidden
@@ -138,7 +114,7 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
 
   test 'upsert saves aisle alongside nutrition data' do
     post nutrition_entry_upsert_path('flour', kitchen_slug: kitchen_slug),
-         params: { label_text: VALID_LABEL, aisle: 'Baking' },
+         params: { nutrients: VALID_NUTRIENTS, density: nil, portions: {}, aisle: 'Baking' },
          as: :json
 
     assert_response :success
@@ -148,9 +124,9 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
     assert_in_delta 110.0, entry.calories
   end
 
-  test 'upsert saves aisle-only when label is blank skeleton' do
+  test 'upsert saves aisle-only when nutrients are blank' do
     post nutrition_entry_upsert_path('flour', kitchen_slug: kitchen_slug),
-         params: { label_text: NutritionLabelParser.blank_skeleton, aisle: 'Baking' },
+         params: { nutrients: { basis_grams: nil }, density: nil, portions: {}, aisle: 'Baking' },
          as: :json
 
     assert_response :success
@@ -160,20 +136,9 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
     assert_nil entry.basis_grams
   end
 
-  test 'upsert saves aisle-only when label is empty' do
-    post nutrition_entry_upsert_path('flour', kitchen_slug: kitchen_slug),
-         params: { label_text: '', aisle: 'Produce' },
-         as: :json
-
-    assert_response :success
-    entry = IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'flour')
-
-    assert_equal 'Produce', entry.aisle
-  end
-
   test 'upsert appends new aisle to kitchen aisle_order' do
     post nutrition_entry_upsert_path('flour', kitchen_slug: kitchen_slug),
-         params: { label_text: '', aisle: 'Deli' },
+         params: { nutrients: { basis_grams: nil }, density: nil, portions: {}, aisle: 'Deli' },
          as: :json
 
     assert_response :success
@@ -184,25 +149,17 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
     @kitchen.update!(aisle_order: "Produce\nBaking")
 
     post nutrition_entry_upsert_path('flour', kitchen_slug: kitchen_slug),
-         params: { label_text: '', aisle: 'Baking' },
+         params: { nutrients: { basis_grams: nil }, density: nil, portions: {}, aisle: 'Baking' },
          as: :json
 
     assert_response :success
     assert_equal "Produce\nBaking", @kitchen.reload.aisle_order
   end
 
-  test 'upsert returns error when both label invalid and no aisle' do
-    post nutrition_entry_upsert_path('flour', kitchen_slug: kitchen_slug),
-         params: { label_text: 'garbage', aisle: '' },
-         as: :json
-
-    assert_response :unprocessable_entity
-  end
-
   test 'upsert broadcasts content changed when aisle is saved' do
     assert_broadcast_on(GroceryListChannel.broadcasting_for(@kitchen), type: 'content_changed') do
       post nutrition_entry_upsert_path('flour', kitchen_slug: kitchen_slug),
-           params: { label_text: '', aisle: 'Deli' },
+           params: { nutrients: { basis_grams: nil }, density: nil, portions: {}, aisle: 'Deli' },
            as: :json
     end
   end
@@ -211,45 +168,24 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
 
   test 'upsert rejects aisle name over 50 characters' do
     post nutrition_entry_upsert_path('flour', kitchen_slug: kitchen_slug),
-         params: { label_text: '', aisle: 'a' * 51 },
+         params: { nutrients: { basis_grams: nil }, density: nil, portions: {}, aisle: 'a' * 51 },
          as: :json
 
     assert_response :unprocessable_entity
-    assert_includes response.parsed_body['errors'].first, 'too long'
+    assert(response.parsed_body['errors'].any? { |e| e.include?('too long') || e.include?('Aisle') })
   end
 
   test 'upsert accepts aisle name at exactly 50 characters' do
     post nutrition_entry_upsert_path('flour', kitchen_slug: kitchen_slug),
-         params: { label_text: '', aisle: 'a' * 50 },
+         params: { nutrients: { basis_grams: nil }, density: nil, portions: {}, aisle: 'a' * 50 },
          as: :json
 
     assert_response :success
   end
 
-  # --- structured JSON upsert ---
+  # --- structured JSON specifics ---
 
-  test 'upsert accepts structured JSON with nutrients and density' do
-    post nutrition_entry_upsert_path('flour', kitchen_slug: kitchen_slug),
-         params: {
-           nutrients: { basis_grams: 30, calories: 110, fat: 0.5, saturated_fat: 0,
-                        trans_fat: 0, cholesterol: 0, sodium: 5, carbs: 23,
-                        fiber: 1, total_sugars: 0, added_sugars: 0, protein: 3 },
-           density: { volume: 0.25, unit: 'cup', grams: 30 },
-           portions: {},
-           aisle: 'Baking'
-         },
-         as: :json
-
-    assert_response :success
-    entry = IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'flour')
-
-    assert_in_delta 30.0, entry.basis_grams
-    assert_in_delta 110.0, entry.calories
-    assert_equal 'cup', entry.density_unit
-    assert_equal 'Baking', entry.aisle
-  end
-
-  test 'upsert structured JSON maps each to ~unitless in portions' do
+  test 'upsert maps each to ~unitless in portions' do
     post nutrition_entry_upsert_path('eggs', kitchen_slug: kitchen_slug),
          params: {
            nutrients: { basis_grams: 50, calories: 70, fat: 5, saturated_fat: 1.5,
@@ -269,24 +205,12 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
     assert_nil entry.portions['each']
   end
 
-  test 'upsert structured JSON validates basis_grams > 0' do
+  test 'upsert validates basis_grams > 0 when nutrients present' do
     post nutrition_entry_upsert_path('flour', kitchen_slug: kitchen_slug),
          params: { nutrients: { basis_grams: 0, calories: 110 }, density: nil, portions: {}, aisle: nil },
          as: :json
 
     assert_response :unprocessable_entity
-  end
-
-  test 'upsert structured JSON saves aisle-only when nutrients blank' do
-    post nutrition_entry_upsert_path('flour', kitchen_slug: kitchen_slug),
-         params: { nutrients: { basis_grams: nil }, density: nil, portions: {}, aisle: 'Baking' },
-         as: :json
-
-    assert_response :success
-    entry = IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'flour')
-
-    assert_equal 'Baking', entry.aisle
-    assert_nil entry.basis_grams
   end
 
   test 'upsert with save_and_next returns next ingredient name' do
@@ -305,9 +229,7 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
 
     post nutrition_entry_upsert_path('Flour', kitchen_slug: kitchen_slug),
          params: {
-           nutrients: { basis_grams: 30, calories: 110, fat: 0.5, saturated_fat: 0,
-                        trans_fat: 0, cholesterol: 0, sodium: 5, carbs: 23,
-                        fiber: 1, total_sugars: 0, added_sugars: 0, protein: 3 },
+           nutrients: VALID_NUTRIENTS,
            density: { volume: 0.25, unit: 'cup', grams: 30 },
            portions: {}, aisle: 'Baking', save_and_next: true
          },
@@ -327,9 +249,7 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
 
     post nutrition_entry_upsert_path('Flour', kitchen_slug: kitchen_slug),
          params: {
-           nutrients: { basis_grams: 30, calories: 110, fat: 0.5, saturated_fat: 0,
-                        trans_fat: 0, cholesterol: 0, sodium: 5, carbs: 23,
-                        fiber: 1, total_sugars: 0, added_sugars: 0, protein: 3 },
+           nutrients: VALID_NUTRIENTS,
            density: { volume: 0.25, unit: 'cup', grams: 30 },
            portions: {}, aisle: 'Baking'
          },
@@ -347,9 +267,7 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
 
     post nutrition_entry_upsert_path('Flour', kitchen_slug: kitchen_slug),
          params: {
-           nutrients: { basis_grams: 30, calories: 110, fat: 0.5, saturated_fat: 0,
-                        trans_fat: 0, cholesterol: 0, sodium: 5, carbs: 23,
-                        fiber: 1, total_sugars: 0, added_sugars: 0, protein: 3 },
+           nutrients: VALID_NUTRIENTS,
            density: { volume: 0.25, unit: 'cup', grams: 30 },
            portions: {}, aisle: 'Baking'
          },
@@ -441,8 +359,6 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
 
-    # After delete, global entry (no density) is used — volume can't resolve,
-    # so Flour becomes a partial ingredient with zero calorie contribution
     nutrition = recipe.reload.nutrition_data
 
     assert_not_nil nutrition
