@@ -4,7 +4,10 @@ set -e
 echo "Preparing database..."
 bin/rails db:prepare
 
-echo "Seeding data..."
+echo "Syncing ingredient catalog..."
+bin/rails catalog:sync
+
+echo "Seeding sample data..."
 bin/rails db:seed
 
 echo "Starting server..."
