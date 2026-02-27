@@ -71,12 +71,8 @@ class IngredientsController < ApplicationController
   end
 
   def recipes_for_ingredient(name, lookup)
-    seen = Set.new
     current_kitchen.recipes.includes(steps: :ingredients).select do |recipe|
-      recipe.ingredients.any? do |i|
-        resolved = lookup[i.name]&.ingredient_name || i.name
-        resolved == name && seen.add?(recipe.id)
-      end
+      recipe.ingredients.any? { |i| (lookup[i.name]&.ingredient_name || i.name) == name }
     end
   end
 

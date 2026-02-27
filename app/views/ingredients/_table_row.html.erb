@@ -1,9 +1,11 @@
 <%# locals: (row:) %>
+<%# Per-ingredient <tbody> enables Turbo Stream replace of both data row and expand row %>
 <tbody id="ingredient-<%= row[:name].parameterize %>">
 <tr id="ingredient-row-<%= row[:name].parameterize %>"
     class="ingredient-row"
     data-ingredient-table-target="row"
     data-ingredient-name="<%= row[:name] %>"
+    data-expand-id="ingredient-expand-<%= row[:name].parameterize %>"
     data-status="<%= row[:status] %>"
     data-has-nutrition="<%= row[:has_nutrition] %>"
     data-has-density="<%= row[:has_density] %>"

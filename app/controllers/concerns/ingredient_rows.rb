@@ -15,7 +15,7 @@ module IngredientRows
   def ingredient_row(name, recipes, lookup)
     entry = lookup[name]
     { name:, entry:, recipe_count: recipes.size, recipes:,
-      has_nutrition: entry&.calories.present?,
+      has_nutrition: entry&.basis_grams.present?,
       has_density: entry&.density_grams.present?,
       aisle: entry&.aisle,
       source: entry_source(entry),
@@ -36,7 +36,7 @@ module IngredientRows
   end
 
   def row_status(entry)
-    return 'missing' if entry&.calories.blank?
+    return 'missing' if entry&.basis_grams.blank?
     return 'incomplete' if entry.density_grams.blank?
 
     'complete'

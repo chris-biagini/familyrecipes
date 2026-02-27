@@ -26,7 +26,7 @@ export default class extends Controller {
     if (event.target.closest("button, a")) return
 
     const row = event.currentTarget
-    const expandId = `ingredient-expand-${row.dataset.ingredientName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`
+    const expandId = row.dataset.expandId
     const expandRow = document.getElementById(expandId)
     if (!expandRow) return
 
@@ -107,6 +107,6 @@ export default class extends Controller {
   }
 
   expandIdFor(row) {
-    return `ingredient-expand-${row.dataset.ingredientName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`
+    return row.dataset.expandId
   }
 }

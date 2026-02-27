@@ -207,21 +207,22 @@ class NutritionEntriesController < ApplicationController # rubocop:disable Metri
 
   def find_next_needing_attention
     lookup = IngredientCatalog.lookup_for(current_kitchen)
-    sorted = sorted_recipe_ingredient_names
+    sorted = canonical_ingredient_names(lookup)
     idx = sorted.index { |name| name.casecmp(ingredient_name).zero? }
     return unless idx
 
     sorted[(idx + 1)..].find { |name| ingredient_incomplete?(lookup[name]) }
   end
 
-  def sorted_recipe_ingredient_names
+  def canonical_ingredient_names(lookup)
     current_kitchen.recipes.includes(steps: :ingredients)
                    .flat_map(&:ingredients)
-                   .map(&:name).uniq
+                   .map { |i| lookup[i.name]&.ingredient_name || i.name }
+                   .uniq
                    .sort_by(&:downcase)
   end
 
   def ingredient_incomplete?(entry)
-    entry&.calories.blank? || entry.density_grams.blank?
+    entry&.basis_grams.blank? || entry.density_grams.blank?
   end
 end
