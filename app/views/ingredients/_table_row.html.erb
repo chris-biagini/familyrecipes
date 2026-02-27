@@ -21,7 +21,7 @@
       <%= density_icon_text(row) %>
     </span>
   </td>
-  <td class="col-aisle"><%= row[:aisle] || "\u2014" %></td>
+  <td class="col-aisle"><%= display_aisle(row[:aisle]) %></td>
   <td class="col-recipes"><%= row[:recipe_count] %></td>
 </tr>
 <tr id="ingredient-expand-<%= row[:name].parameterize %>"

@@ -58,6 +58,12 @@ module IngredientsHelper
     'Density not applicable'
   end
 
+  def display_aisle(aisle)
+    return "\u2014" unless aisle
+
+    aisle == 'omit' ? 'Omit' : aisle
+  end
+
   def format_nutrient_value(value)
     return '0' unless value
 

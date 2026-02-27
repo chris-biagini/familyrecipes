@@ -492,7 +492,7 @@ section h2 {
   vertical-align: middle;
 }
 
-.col-name { font-weight: 500; }
+.col-name { font-weight: 500; word-break: break-word; }
 .col-nutrition, .col-density { width: 3rem; text-align: center; }
 .col-aisle { color: var(--muted-text); font-size: 0.9rem; }
 .col-recipes { width: 4rem; text-align: center; color: var(--muted-text); }

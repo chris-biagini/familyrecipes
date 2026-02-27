@@ -35,15 +35,24 @@ export default class extends Controller {
 
     this.boundFrameLoad = () => this.onFrameLoad()
 
+    this.boundCancel = (event) => {
+      if (this.isModified()) {
+        event.preventDefault()
+        this.close()
+      }
+    }
+
     document.addEventListener("click", this.boundEditClick)
     document.addEventListener("click", this.boundResetClick)
 
+    this.dialogTarget.addEventListener("cancel", this.boundCancel)
     this.turboFrame.addEventListener("turbo:frame-load", this.boundFrameLoad)
   }
 
   disconnect() {
     document.removeEventListener("click", this.boundEditClick)
     document.removeEventListener("click", this.boundResetClick)
+    this.dialogTarget.removeEventListener("cancel", this.boundCancel)
     this.turboFrame.removeEventListener("turbo:frame-load", this.boundFrameLoad)
   }
 
