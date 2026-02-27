@@ -101,6 +101,29 @@
   color: var(--accent-color);
 }
 
+.availability-dot {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-left: 0.4rem;
+  cursor: pointer;
+  background: var(--border-muted);
+  transition: background-color 0.2s ease;
+}
+
+.availability-dot[data-missing="0"] {
+  background: #4caf50;
+}
+
+.availability-dot[data-missing="1"] {
+  background: #ffc107;
+}
+
+.availability-dot[data-missing="2"] {
+  background: #ff9800;
+}
+
 /* Quick Bites */
 #recipe-selector .quick-bites {
   margin-top: 1rem;
@@ -274,5 +297,9 @@
 
   #recipe-selector .quick-bites .subsection {
     break-inside: avoid;
+  }
+
+  .availability-dot {
+    display: none;
   }
 }
