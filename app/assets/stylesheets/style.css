@@ -1088,6 +1088,9 @@ footer small {
 }
 .editor-recipes a { white-space: nowrap; }
 
+.editor-reset { padding-top: 0.75rem; }
+.editor-recipes + .editor-reset { padding-top: 0.5rem; }
+
 .form-row {
   display: flex;
   align-items: center;

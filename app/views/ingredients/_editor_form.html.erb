@@ -111,6 +111,14 @@
       </div>
     <% end %>
 
+    <% if entry&.custom? %>
+      <div class="editor-reset">
+        <button type="button" class="btn btn-small btn-secondary"
+                data-reset-ingredient
+                data-ingredient-name="<%= ingredient_name %>">Reset to built-in</button>
+      </div>
+    <% end %>
+
     <% if next_name %>
       <input type="hidden" data-nutrition-editor-target="nextName" value="<%= next_name %>">
     <% end %>
