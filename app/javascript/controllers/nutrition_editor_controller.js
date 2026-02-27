@@ -7,8 +7,7 @@ export default class extends Controller {
     "dialog", "title", "errors", "formContent",
     "saveButton", "saveNextButton", "nextLabel", "nextName",
     "basisGrams", "nutrientField",
-    "servingVolume", "servingUnit", "servingDensityGrams",
-    "densitySection", "densityVolume", "densityUnit", "densityGrams", "densityDerivedNote",
+    "densityVolume", "densityUnit", "densityGrams",
     "portionList", "portionRow", "portionName", "portionGrams",
     "aisleSelect", "aisleInput"
   ]
@@ -82,28 +81,6 @@ export default class extends Controller {
 
   async saveAndNext() {
     await this.performSave(true)
-  }
-
-  servingVolumeChanged() {
-    const volume = parseFloat(this.servingVolumeTarget.value)
-    const unit = this.servingUnitTarget.value
-    const basisGrams = parseFloat(this.basisGramsTarget.value)
-
-    if (volume > 0 && unit) {
-      this.densityVolumeTarget.value = volume
-      this.densityUnitTarget.value = unit
-      this.densityGramsTarget.value = basisGrams > 0 ? basisGrams : ""
-      this.densitySectionTarget.open = true
-      this.densityDerivedNoteTarget.hidden = false
-
-      const gramsDisplay = basisGrams > 0 ? formatNumber(basisGrams) : ""
-      this.servingDensityGramsTarget.textContent = gramsDisplay
-      this.updateMeasuredAsUnitLabel(basisGrams > 0)
-    } else {
-      this.densityDerivedNoteTarget.hidden = true
-      this.servingDensityGramsTarget.textContent = ""
-      this.updateMeasuredAsUnitLabel(false)
-    }
   }
 
   addPortion() {
@@ -217,7 +194,7 @@ export default class extends Controller {
       .some(([key, val]) => key !== "basis_grams" && val !== null)
 
     if (hasAnyNutrient && (!data.nutrients.basis_grams || data.nutrients.basis_grams <= 0)) {
-      errors.push("Serving size (basis grams) must be greater than 0 when nutrients are provided.")
+      errors.push("Per (basis grams) must be greater than 0 when nutrients are provided.")
     }
 
     Object.entries(data.nutrients).forEach(([key, val]) => {
@@ -435,10 +412,6 @@ export default class extends Controller {
     if (this.hasSaveNextButtonTarget) this.saveNextButtonTarget.disabled = false
   }
 
-  updateMeasuredAsUnitLabel(show) {
-    const unitSpan = this.servingDensityGramsTarget.nextElementSibling
-    if (unitSpan) unitSpan.textContent = show ? "g" : ""
-  }
 }
 
 function parseFloatOrNull(value) {
@@ -448,7 +421,3 @@ function parseFloatOrNull(value) {
   return Number.isNaN(num) ? null : num
 }
 
-function formatNumber(value) {
-  if (Number.isInteger(value)) return String(value)
-  return String(parseFloat(value.toFixed(4)))
-}

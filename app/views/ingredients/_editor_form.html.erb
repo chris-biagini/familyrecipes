@@ -1,47 +1,20 @@
 <%# locals: (ingredient_name:, entry:, available_aisles:, next_name: nil) %>
 <% has_density = entry&.density_grams.present? %>
-<% has_serving_volume = entry&.density_unit.present? && has_density %>
 <turbo-frame id="nutrition-editor-form">
   <div class="editor-form" data-nutrition-editor-target="formContent">
 
-    <fieldset class="editor-section nutrition-section">
-      <legend class="editor-section-title">Nutrition Facts</legend>
+    <fieldset class="editor-section">
+      <legend class="editor-section-title">Nutrition Information</legend>
 
       <div class="form-row serving-row">
-        <label for="editor-basis-grams">Serving size</label>
+        <label for="editor-basis-grams">Per</label>
         <input type="number" id="editor-basis-grams" class="field-narrow"
                value="<%= format_nutrient_value(entry.basis_grams) if entry&.basis_grams %>"
                inputmode="decimal" step="any" min="0.1"
-               placeholder="30"
+               placeholder="100"
                data-nutrition-editor-target="basisGrams">
         <span class="field-unit">g</span>
       </div>
-
-      <div class="form-row measured-as-row">
-        <label>Measured as</label>
-        <input type="number" class="field-narrow"
-               value="<%= format_nutrient_value(entry.density_volume) if has_serving_volume %>"
-               inputmode="decimal" step="any" min="0"
-               placeholder="1"
-               data-nutrition-editor-target="servingVolume"
-               data-action="input->nutrition-editor#servingVolumeChanged"
-               aria-label="Serving volume amount">
-        <select class="field-unit-select"
-                data-nutrition-editor-target="servingUnit"
-                data-action="change->nutrition-editor#servingVolumeChanged"
-                aria-label="Serving volume unit">
-          <option value="">&mdash;</option>
-          <% %w[cup tbsp tsp ml l].each do |u| %>
-            <option value="<%= u %>" <%= 'selected' if has_serving_volume && entry.density_unit == u %>><%= u %></option>
-          <% end %>
-        </select>
-        <span class="measured-as-eq">=</span>
-        <span class="measured-as-grams"
-              data-nutrition-editor-target="servingDensityGrams"><%= format_nutrient_value(entry.density_grams) if has_serving_volume %></span>
-        <span class="field-unit"><%= 'g' if has_serving_volume %></span>
-      </div>
-
-      <hr class="nutrient-divider">
 
       <% NutritionLabelParser::LABEL_LINES.each do |label, key, unit| %>
         <% indent = label.size - label.lstrip.size %>
@@ -57,22 +30,22 @@
       <% end %>
     </fieldset>
 
-    <details class="editor-section" <%= 'open' if has_density %> data-nutrition-editor-target="densitySection">
-      <summary class="editor-section-title">Density</summary>
+    <fieldset class="editor-section">
+      <legend class="editor-section-title">Density</legend>
       <p class="editor-help">
         How much does a measured volume weigh? This lets the app convert
-        volume-based quantities (cups, tablespoons) to grams for nutrition math.
+        cups and tablespoons to grams for nutrition math.
       </p>
       <div class="form-row density-row">
         <input type="number" class="field-narrow"
                value="<%= format_nutrient_value(entry.density_volume) if has_density %>"
                inputmode="decimal" step="any" min="0"
-               placeholder="0.25"
+               placeholder="1"
                data-nutrition-editor-target="densityVolume"
-               aria-label="Density volume amount">
+               aria-label="Volume amount">
         <select class="field-unit-select"
                 data-nutrition-editor-target="densityUnit"
-                aria-label="Density volume unit">
+                aria-label="Volume unit">
           <option value="">unit</option>
           <% %w[cup tbsp tsp ml l].each do |u| %>
             <option value="<%= u %>" <%= 'selected' if has_density && entry.density_unit == u %>><%= u %></option>
@@ -82,18 +55,15 @@
         <input type="number" class="field-narrow"
                value="<%= format_nutrient_value(entry.density_grams) if has_density %>"
                inputmode="decimal" step="any" min="0"
-               placeholder="30"
+               placeholder="120"
                data-nutrition-editor-target="densityGrams"
-               aria-label="Density weight in grams">
+               aria-label="Weight in grams">
         <span class="field-unit">g</span>
       </div>
-      <p class="editor-note" data-nutrition-editor-target="densityDerivedNote" <%= 'hidden' unless has_serving_volume %>>
-        Derived from serving size measurement above.
-      </p>
-    </details>
+    </fieldset>
 
-    <details class="editor-section" <%= 'open' if entry&.portions.present? %>>
-      <summary class="editor-section-title">Portions</summary>
+    <fieldset class="editor-section">
+      <legend class="editor-section-title">Portions</legend>
       <p class="editor-help">
         Named portions map non-volume units to gram weights. Use "each" for
         items counted by number (eggs, rolls).
@@ -107,11 +77,11 @@
       </div>
       <button type="button" class="btn add-portion"
               data-action="click->nutrition-editor#addPortion">+ Add portion</button>
-    </details>
+    </fieldset>
 
     <fieldset class="editor-section aisle-section">
       <legend class="editor-section-title">Grocery Aisle</legend>
-      <div class="form-row">
+      <div class="form-row aisle-row">
         <select class="aisle-form-select"
                 data-nutrition-editor-target="aisleSelect"
                 data-action="change->nutrition-editor#aisleChanged"

@@ -1008,7 +1008,7 @@ footer small {
   border-radius: 0.25rem;
   background: var(--content-background-color);
   padding: 0;
-  width: min(90vw, 500px);
+  width: min(90vw, 550px);
   max-height: 90vh;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
 }
@@ -1062,21 +1062,6 @@ footer small {
   cursor: default;
 }
 
-details.editor-section > summary.editor-section-title {
-  cursor: pointer;
-  list-style: none;
-}
-
-details.editor-section > summary.editor-section-title::before {
-  content: "\25B6\00a0";
-  font-size: 0.65em;
-  vertical-align: middle;
-}
-
-details.editor-section[open] > summary.editor-section-title::before {
-  content: "\25BC\00a0";
-}
-
 .editor-help {
   font-size: 0.8rem;
   color: var(--muted-text);
@@ -1104,15 +1089,9 @@ details.editor-section[open] > summary.editor-section-title::before {
   flex-shrink: 0;
 }
 
-.serving-row > label,
-.measured-as-row > label {
-  min-width: 6rem;
-}
-
-.nutrient-divider {
-  border: none;
-  border-top: 2px solid var(--border-color);
-  margin: 0.75rem 0;
+.serving-row > label {
+  min-width: auto;
+  flex-shrink: 0;
 }
 
 .nutrient-row {
@@ -1168,16 +1147,9 @@ details.editor-section[open] > summary.editor-section-title::before {
   color: var(--text-color);
 }
 
-.measured-as-eq,
 .portion-eq {
   color: var(--muted-text);
   font-size: 0.9rem;
-}
-
-.measured-as-grams {
-  font-size: 0.9rem;
-  min-width: 2rem;
-  text-align: right;
 }
 
 .density-row {
@@ -1248,6 +1220,8 @@ details.editor-section[open] > summary.editor-section-title::before {
 
 .aisle-section .form-row {
   gap: 0.5rem;
+  flex-wrap: nowrap;
+  overflow: hidden;
 }
 
 .aisle-form-select {
@@ -1256,7 +1230,8 @@ details.editor-section[open] > summary.editor-section-title::before {
   border-radius: 3px;
   background: white;
   color: var(--text-color);
-  max-width: 14rem;
+  min-width: 0;
+  flex: 1;
 }
 
 .aisle-new-input {
@@ -1265,7 +1240,8 @@ details.editor-section[open] > summary.editor-section-title::before {
   border-radius: 3px;
   background: white;
   color: var(--text-color);
-  max-width: 14rem;
+  min-width: 0;
+  flex: 1;
 }
 
 .aisle-new-input:focus,
@@ -1307,8 +1283,7 @@ details.editor-section[open] > summary.editor-section-title::before {
   }
 
   .form-row > label,
-  .serving-row > label,
-  .measured-as-row > label {
+  .serving-row > label {
     min-width: 4.5rem;
     font-size: 0.85rem;
   }
