@@ -1,0 +1,15 @@
+{
+  "planPath": "docs/plans/2026-02-26-ingredients-table-redesign-plan.md",
+  "tasks": [
+    {"id": 7, "subject": "Task 0: Remove detail panel and show action", "status": "pending"},
+    {"id": 8, "subject": "Task 1: Add recipe links to editor form", "status": "pending", "blockedBy": [7]},
+    {"id": 9, "subject": "Task 2: Move reset-to-built-in into editor", "status": "pending", "blockedBy": [8]},
+    {"id": 10, "subject": "Task 3: Rewrite table row — no expansion, badge, binary icons", "status": "pending", "blockedBy": [7]},
+    {"id": 11, "subject": "Task 4: Rewrite filter buttons with integrated counts", "status": "pending", "blockedBy": [10]},
+    {"id": 12, "subject": "Task 5: Sortable table headers in Futura", "status": "pending", "blockedBy": [10]},
+    {"id": 13, "subject": "Task 6: Wire row click to open editor", "status": "pending", "blockedBy": [10]},
+    {"id": 14, "subject": "Task 7: CSS cleanup — remove dead styles", "status": "pending", "blockedBy": [11, 12, 13]},
+    {"id": 15, "subject": "Task 8: Final integration test and polish", "status": "pending", "blockedBy": [14]}
+  ],
+  "lastUpdated": "2026-02-26T00:00:00Z"
+}
