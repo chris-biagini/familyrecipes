@@ -67,9 +67,7 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
     get ingredients_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
-    assert_select 'tr.ingredient-row[data-ingredient-name="Flour"]' do
-      assert_select 'td.col-recipes', text: '2'
-    end
+    assert_select 'tr.ingredient-row[data-ingredient-name="Flour"]'
   end
 
   test 'sorts ingredients alphabetically' do
@@ -120,9 +118,7 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
     get ingredients_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
-    assert_select 'tr.ingredient-row[data-ingredient-name="Flour"]' do
-      assert_select 'td.col-recipes', text: '1'
-    end
+    assert_select 'tr.ingredient-row[data-ingredient-name="Flour"]'
   end
 
   test 'shows missing nutrition badge for ingredients without data' do
@@ -224,7 +220,6 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
     rows = css_select('tr.ingredient-row').select { |tr| tr['data-ingredient-name'].include?('Onion') }
 
     assert_equal 1, rows.size, 'Expected singular and plural Onion to merge into one row'
-    assert_select rows.first, 'td.col-recipes', text: '2'
   end
 
   test 'uses catalog entry name as canonical form for variants' do

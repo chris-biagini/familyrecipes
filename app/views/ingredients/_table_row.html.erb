@@ -1,26 +1,30 @@
 <%# locals: (row:) %>
 <tbody id="ingredient-<%= row[:name].parameterize %>">
-<tr id="ingredient-row-<%= row[:name].parameterize %>"
-    class="ingredient-row"
+<tr class="ingredient-row"
     data-ingredient-table-target="row"
     data-ingredient-name="<%= row[:name] %>"
     data-status="<%= row[:status] %>"
     data-has-nutrition="<%= row[:has_nutrition] %>"
     data-has-density="<%= row[:has_density] %>"
+    data-aisle="<%= row[:aisle] || '' %>"
+    data-open-editor
     tabindex="0"
-    role="button">
-  <td class="col-name"><%= row[:name] %></td>
+    role="button"
+    data-action="click->ingredient-table#openEditor keydown->ingredient-table#rowKeydown">
+  <td class="col-name">
+    <%= row[:name] %>
+    <span class="source-badge source-<%= row[:source] %>"><%= row[:source] %></span>
+  </td>
   <td class="col-nutrition" aria-label="<%= row[:has_nutrition] ? 'Has nutrition' : 'Missing nutrition' %>">
     <span class="status-icon <%= row[:has_nutrition] ? 'status-yes' : 'status-no' %>">
       <%= row[:has_nutrition] ? "\u2713" : "\u2717" %>
     </span>
   </td>
-  <td class="col-density" aria-label="<%= density_aria_label(row) %>">
-    <span class="status-icon <%= density_icon_class(row) %>">
-      <%= density_icon_text(row) %>
+  <td class="col-density" aria-label="<%= row[:has_density] ? 'Has density' : 'Missing density' %>">
+    <span class="status-icon <%= row[:has_density] ? 'status-yes' : 'status-no' %>">
+      <%= row[:has_density] ? "\u2713" : "\u2717" %>
     </span>
   </td>
   <td class="col-aisle"><%= display_aisle(row[:aisle]) %></td>
-  <td class="col-recipes"><%= row[:recipe_count] %></td>
 </tr>
 </tbody>

@@ -37,27 +37,6 @@ module IngredientsHelper
     :complete
   end
 
-  def density_icon_class(row)
-    return 'status-yes' if row[:has_density]
-    return 'status-no' if row[:has_nutrition]
-
-    'status-na'
-  end
-
-  def density_icon_text(row)
-    return "\u2713" if row[:has_density]
-    return "\u2717" if row[:has_nutrition]
-
-    "\u2014"
-  end
-
-  def density_aria_label(row)
-    return 'Has density' if row[:has_density]
-    return 'Missing density' if row[:has_nutrition]
-
-    'Density not applicable'
-  end
-
   def display_aisle(aisle)
     return "\u2014" unless aisle
 
