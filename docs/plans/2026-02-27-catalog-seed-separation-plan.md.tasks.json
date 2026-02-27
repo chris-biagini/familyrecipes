@@ -1,0 +1,12 @@
+{
+  "planPath": "docs/plans/2026-02-27-catalog-seed-separation-plan.md",
+  "tasks": [
+    {"id": 7, "subject": "Task 1: Create catalog:sync rake task", "status": "pending"},
+    {"id": 8, "subject": "Task 2: Write CI validation test", "status": "pending", "blockedBy": [7]},
+    {"id": 9, "subject": "Task 3: Remove catalog from seeds, rename sample data", "status": "pending", "blockedBy": [7]},
+    {"id": 10, "subject": "Task 4: De-brand the site title", "status": "pending"},
+    {"id": 11, "subject": "Task 5: Update Docker entrypoint", "status": "pending", "blockedBy": [7, 9]},
+    {"id": 12, "subject": "Task 6: Run full validation and push", "status": "pending", "blockedBy": [7, 8, 9, 10, 11]}
+  ],
+  "lastUpdated": "2026-02-27T00:00:00Z"
+}
