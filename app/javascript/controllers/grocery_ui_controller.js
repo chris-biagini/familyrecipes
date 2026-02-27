@@ -1,7 +1,8 @@
 import { Controller } from "@hotwired/stimulus"
 
 function formatNumber(val) {
-  return parseFloat(val.toFixed(2)).toString()
+  const num = typeof val === "string" ? parseFloat(val) : val
+  return parseFloat(num.toFixed(2)).toString()
 }
 
 function formatAmounts(amounts) {

@@ -97,6 +97,6 @@ class ShoppingListBuilder
   end
 
   def serialize_amounts(amounts)
-    amounts.compact.map { |q| [q.value, q.unit] }
+    amounts.compact.map { |q| [q.value.to_f, q.unit] }
   end
 end
