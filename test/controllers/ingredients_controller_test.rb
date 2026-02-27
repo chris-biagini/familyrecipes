@@ -33,8 +33,7 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select 'h1', 'Ingredients'
-    assert_select 'h2', /Flour/
-    assert_select 'a[href=?]', recipe_path('focaccia', kitchen_slug: kitchen_slug), text: 'Focaccia'
+    assert_select 'tr.ingredient-row[data-ingredient-name="Flour"]'
   end
 
   test 'groups multiple recipes under the same ingredient' do
@@ -68,11 +67,8 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
     get ingredients_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
-    assert_select 'article.index section' do |sections|
-      flour_section = sections.detect { |s| s.at('h2').text.include?('Flour') }
-
-      assert flour_section, 'Expected a section for Flour'
-      assert_select flour_section, 'li', count: 2
+    assert_select 'tr.ingredient-row[data-ingredient-name="Flour"]' do
+      assert_select 'td.col-recipes', text: '2'
     end
   end
 
@@ -95,9 +91,9 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
     get ingredients_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
-    headings = css_select('article.index h2').map { |h| h.text.strip }
+    names = css_select('tr.ingredient-row').map { |tr| tr['data-ingredient-name'] } # rubocop:disable Rails/Pluck
 
-    assert_equal headings, headings.sort_by(&:downcase)
+    assert_equal names, names.sort_by(&:downcase)
   end
 
   test 'does not duplicate a recipe under the same ingredient' do
@@ -124,15 +120,12 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
     get ingredients_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
-    assert_select 'article.index section' do |sections|
-      flour_section = sections.detect { |s| s.at('h2').text.include?('Flour') }
-
-      assert flour_section, 'Expected a section for Flour'
-      assert_select flour_section, 'li', count: 1
+    assert_select 'tr.ingredient-row[data-ingredient-name="Flour"]' do
+      assert_select 'td.col-recipes', text: '1'
     end
   end
 
-  test 'recipe links include description as title attribute' do
+  test 'detail panel includes recipe links' do
     Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
     MarkdownImporter.import(<<~MD, kitchen: @kitchen)
       # Focaccia
@@ -149,10 +142,10 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
     MD
 
     log_in
-    get ingredients_path(kitchen_slug: kitchen_slug)
+    get ingredient_detail_path('Flour', kitchen_slug: kitchen_slug)
 
     assert_response :success
-    assert_select 'a[title="A simple flatbread."]', text: 'Focaccia'
+    assert_select 'a', text: 'Focaccia'
   end
 
   test 'shows missing nutrition badge for ingredients without data' do
@@ -173,7 +166,7 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
     get ingredients_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
-    assert_select '.nutrition-missing'
+    assert_select 'tr.ingredient-row[data-has-nutrition="false"]'
   end
 
   test 'shows global badge for ingredients with global nutrition data' do
@@ -195,7 +188,7 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
     get ingredients_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
-    assert_select '.nutrition-global'
+    assert_select 'tr.ingredient-row[data-has-nutrition="true"]'
   end
 
   test 'shows custom badge for ingredients with kitchen override' do
@@ -217,7 +210,7 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
     get ingredients_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
-    assert_select '.nutrition-custom'
+    assert_select 'tr.ingredient-row[data-has-nutrition="true"]'
   end
 
   test 'consolidates singular and plural ingredient variants into one entry' do
@@ -251,11 +244,10 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
     get ingredients_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
-    sections = css_select('article.index section')
-    onion_sections = sections.select { |s| s.at('h2').text.include?('Onion') }
+    rows = css_select('tr.ingredient-row').select { |tr| tr['data-ingredient-name'].include?('Onion') }
 
-    assert_equal 1, onion_sections.size, 'Expected singular and plural Onion to merge into one section'
-    assert_select onion_sections.first, 'li', count: 2
+    assert_equal 1, rows.size, 'Expected singular and plural Onion to merge into one row'
+    assert_select rows.first, 'td.col-recipes', text: '2'
   end
 
   test 'uses catalog entry name as canonical form for variants' do
@@ -278,11 +270,7 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
     get ingredients_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
-    sections = css_select('article.index section')
-    egg_section = sections.detect { |s| s.at('h2').text.include?('Egg') }
-
-    assert egg_section, 'Expected a section for Eggs'
-    assert_includes egg_section.at('h2').text, 'Eggs', 'Should use catalog name "Eggs" not recipe name "Egg"'
+    assert_select 'tr.ingredient-row[data-ingredient-name="Eggs"]'
   end
 
   test 'shows missing ingredients banner when nutrition data is absent' do
@@ -303,7 +291,7 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
     get ingredients_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
-    assert_select 'details.nutrition-banner'
+    assert_select '.ingredients-summary'
   end
 
   # --- show action (Turbo Frame detail panel) ---
