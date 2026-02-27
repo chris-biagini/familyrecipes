@@ -4,7 +4,8 @@
         <%= link_to 'Home', home_path, class: 'home', title: 'Home (Table of Contents)' %>
         <% if logged_in? %>
           <%= link_to 'Ingredients', ingredients_path, class: 'ingredients', title: 'Ingredients' %>
-          <%= link_to 'Groceries', groceries_path, class: 'groceries', title: 'Printable grocery list' %>
+          <%= link_to 'Menu', menu_path, class: 'menu', title: 'Plan your meals' %>
+          <%= link_to 'Groceries', groceries_path, class: 'groceries', title: 'Shopping list' %>
         <% end %>
       <% else %>
         <%= link_to 'Home', root_path, class: 'home', title: 'Home' %>
