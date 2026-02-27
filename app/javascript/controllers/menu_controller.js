@@ -22,6 +22,7 @@ export default class extends Controller {
     this.loadCache()
     if (this.state && Object.keys(this.state).length > 0) {
       this.syncCheckboxes(this.state)
+      this.syncAvailability(this.state)
     }
 
     this.fetchState()
@@ -59,6 +60,7 @@ export default class extends Controller {
       await originalRender(streamElement)
       if (this.state && Object.keys(this.state).length > 0) {
         this.syncCheckboxes(this.state)
+        this.syncAvailability(this.state)
       }
     }
   }
@@ -87,6 +89,7 @@ export default class extends Controller {
           this.state = data
           this.saveCache()
           this.syncCheckboxes(data)
+          this.syncAvailability(data)
           if (isRemoteUpdate) {
             notifyShow("Menu updated.")
           }
@@ -111,6 +114,41 @@ export default class extends Controller {
       } else {
         cb.checked = selectedRecipes.indexOf(slug) !== -1
       }
+    })
+  }
+
+  syncAvailability(state) {
+    const availability = state.availability || {}
+
+    this.element.querySelectorAll('#recipe-selector input[type="checkbox"]').forEach(cb => {
+      const slug = cb.dataset.slug
+      if (!slug) return
+
+      const li = cb.closest('li')
+      if (!li) return
+
+      let dot = li.querySelector('.availability-dot')
+      const info = availability[slug]
+
+      if (!info) {
+        if (dot) dot.remove()
+        return
+      }
+
+      if (!dot) {
+        dot = document.createElement('span')
+        dot.className = 'availability-dot'
+        dot.dataset.slug = slug
+        li.appendChild(dot)
+      }
+
+      const missing = info.missing
+      dot.dataset.missing = missing > 2 ? '3+' : String(missing)
+
+      const label = missing === 0
+        ? 'All ingredients on hand'
+        : 'Missing ' + missing + ': ' + info.missing_names.join(', ')
+      dot.setAttribute('aria-label', label)
     })
   }
 
