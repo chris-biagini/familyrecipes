@@ -1,0 +1,97 @@
+.hidden-until-js {
+  display: none;
+}
+
+#menu-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+#menu-header p {
+  font-style: italic;
+  color: var(--muted-text);
+  margin-top: -0.5rem;
+}
+
+#menu-actions {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid var(--separator-color);
+  text-align: center;
+}
+
+.btn-clear {
+  color: var(--danger-color);
+  border-color: var(--danger-color);
+}
+
+.btn-clear:hover {
+  background: var(--danger-color);
+  color: white;
+  border-color: var(--danger-color);
+}
+
+@media print {
+  @page {
+    margin: 0.5in 0.6in;
+  }
+
+  #menu-actions {
+    display: none;
+  }
+
+  #menu-header p {
+    display: none;
+  }
+
+  /* Hide checkboxes and link arrows */
+  #recipe-selector input[type="checkbox"],
+  #recipe-selector .recipe-link {
+    display: none;
+  }
+
+  /* Hide unselected recipes */
+  #recipe-selector .category li:has(input:not(:checked)),
+  #recipe-selector .quick-bites .subsection li:has(input:not(:checked)) {
+    display: none;
+  }
+
+  /* Hide empty categories / subsections */
+  #recipe-selector .category:not(:has(input:checked)),
+  #recipe-selector .quick-bites .subsection:not(:has(input:checked)),
+  #recipe-selector .quick-bites:not(:has(input:checked)) {
+    display: none;
+  }
+
+  /* Two-column layout for selected recipes */
+  #recipe-selector {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 2rem;
+    align-items: start;
+  }
+
+  #recipe-selector .category {
+    margin-bottom: 0.75rem;
+    break-inside: avoid;
+  }
+
+  #recipe-selector .category li {
+    cursor: default;
+    padding: 0.2rem 0;
+  }
+
+  #recipe-selector .quick-bites {
+    grid-column: 1 / -1;
+    border-top: 1px solid var(--border-light);
+    padding-top: 0.75rem;
+  }
+
+  #recipe-selector .quick-bites .subsections {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  #recipe-selector .quick-bites .subsection {
+    break-inside: avoid;
+  }
+}

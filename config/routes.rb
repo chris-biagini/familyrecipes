@@ -16,6 +16,7 @@ Rails.application.routes.draw do
     patch 'menu/select', to: 'menu#select', as: :menu_select
     delete 'menu/clear', to: 'menu#clear', as: :menu_clear
     patch 'menu/quick_bites', to: 'menu#update_quick_bites', as: :menu_quick_bites
+    get 'menu/quick_bites_content', to: 'menu#quick_bites_content', as: :menu_quick_bites_content
     get 'groceries', to: 'groceries#show', as: :groceries
     get 'groceries/state', to: 'groceries#state', as: :groceries_state
     patch 'groceries/check', to: 'groceries#check', as: :groceries_check

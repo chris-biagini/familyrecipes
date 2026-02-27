@@ -25,6 +25,10 @@ class MenuController < ApplicationController
     render json: { version: plan.lock_version }
   end
 
+  def quick_bites_content
+    render json: { content: current_kitchen.quick_bites_content || '' }
+  end
+
   def update_quick_bites
     content = params[:content].to_s
     return render json: { errors: ['Content cannot be blank.'] }, status: :unprocessable_content if content.blank?

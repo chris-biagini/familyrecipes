@@ -47,6 +47,9 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     get menu_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
+    assert_select 'h1', 'Menu'
+    assert_select '[data-controller~="menu"]'
+    assert_select '#recipe-selector'
   end
 
   # --- Select ---
@@ -150,6 +153,28 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
   end
 
   # --- Quick Bites ---
+
+  test 'quick_bites_content returns current content' do
+    @kitchen.update!(quick_bites_content: "## Snacks\n  - Goldfish")
+
+    log_in
+    get menu_quick_bites_content_path(kitchen_slug: kitchen_slug), as: :json
+
+    assert_response :success
+    json = response.parsed_body
+
+    assert_equal "## Snacks\n  - Goldfish", json['content']
+  end
+
+  test 'quick_bites_content returns empty string when no content' do
+    log_in
+    get menu_quick_bites_content_path(kitchen_slug: kitchen_slug), as: :json
+
+    assert_response :success
+    json = response.parsed_body
+
+    assert_equal '', json['content']
+  end
 
   test 'update_quick_bites saves content' do
     log_in
