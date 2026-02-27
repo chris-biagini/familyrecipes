@@ -13,14 +13,6 @@ class IngredientsController < ApplicationController
     @next_needing_attention = first_needing_attention
   end
 
-  def show
-    ingredient_name, entry, recipes = load_ingredient_or_not_found
-    return unless ingredient_name
-
-    render partial: 'ingredients/detail_panel',
-           locals: { ingredient_name:, entry:, recipes: }
-  end
-
   def edit
     ingredient_name, entry = load_ingredient_data
     aisles = current_kitchen.all_aisles
@@ -54,26 +46,6 @@ class IngredientsController < ApplicationController
     name = decoded_ingredient_name
     entry = IngredientCatalog.lookup_for(current_kitchen)[name]
     [name, entry]
-  end
-
-  def load_ingredient_or_not_found
-    name = decoded_ingredient_name
-    lookup = IngredientCatalog.lookup_for(current_kitchen)
-    entry = lookup[name]
-    recipes = recipes_for_ingredient(name, lookup)
-
-    unless entry || recipes.any?
-      head :not_found
-      return
-    end
-
-    [name, entry, recipes]
-  end
-
-  def recipes_for_ingredient(name, lookup)
-    current_kitchen.recipes.includes(steps: :ingredients).select do |recipe|
-      recipe.ingredients.any? { |i| (lookup[i.name]&.ingredient_name || i.name) == name }
-    end
   end
 
   def decoded_ingredient_name

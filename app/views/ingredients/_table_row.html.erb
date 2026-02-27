@@ -1,17 +1,14 @@
 <%# locals: (row:) %>
-<%# Per-ingredient <tbody> enables Turbo Stream replace of both data row and expand row %>
 <tbody id="ingredient-<%= row[:name].parameterize %>">
 <tr id="ingredient-row-<%= row[:name].parameterize %>"
     class="ingredient-row"
     data-ingredient-table-target="row"
     data-ingredient-name="<%= row[:name] %>"
-    data-expand-id="ingredient-expand-<%= row[:name].parameterize %>"
     data-status="<%= row[:status] %>"
     data-has-nutrition="<%= row[:has_nutrition] %>"
     data-has-density="<%= row[:has_density] %>"
     tabindex="0"
-    role="button"
-    data-action="click->ingredient-table#toggleRow keydown->ingredient-table#rowKeydown">
+    role="button">
   <td class="col-name"><%= row[:name] %></td>
   <td class="col-nutrition" aria-label="<%= row[:has_nutrition] ? 'Has nutrition' : 'Missing nutrition' %>">
     <span class="status-icon <%= row[:has_nutrition] ? 'status-yes' : 'status-no' %>">
@@ -25,16 +22,5 @@
   </td>
   <td class="col-aisle"><%= display_aisle(row[:aisle]) %></td>
   <td class="col-recipes"><%= row[:recipe_count] %></td>
-</tr>
-<tr id="ingredient-expand-<%= row[:name].parameterize %>"
-    class="ingredient-expand"
-    hidden>
-  <td colspan="5">
-    <turbo-frame id="ingredient-detail-<%= row[:name].parameterize %>"
-                 src="<%= ingredient_detail_path(row[:name].tr(' ', '-')) %>"
-                 loading="lazy">
-      <p class="loading-placeholder">Loading&hellip;</p>
-    </turbo-frame>
-  </td>
 </tr>
 </tbody>

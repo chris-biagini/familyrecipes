@@ -125,29 +125,6 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test 'detail panel includes recipe links' do
-    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
-      # Focaccia
-
-      A simple flatbread.
-
-      Category: Bread
-
-      ## Mix (combine)
-
-      - Flour, 3 cups
-
-      Mix well.
-    MD
-
-    log_in
-    get ingredient_detail_path('Flour', kitchen_slug: kitchen_slug)
-
-    assert_response :success
-    assert_select 'a', text: 'Focaccia'
-  end
-
   test 'shows missing nutrition badge for ingredients without data' do
     Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
     MarkdownImporter.import(<<~MD, kitchen: @kitchen)
@@ -292,42 +269,6 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select '.ingredients-summary'
-  end
-
-  # --- show action (Turbo Frame detail panel) ---
-
-  test 'show returns detail panel for ingredient with catalog entry' do
-    IngredientCatalog.create!(ingredient_name: 'Flour', basis_grams: 30, calories: 110)
-    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
-      # Focaccia
-
-      Category: Bread
-
-      ## Mix (combine)
-
-      - Flour, 3 cups
-
-      Mix well.
-    MD
-
-    log_in
-    get ingredient_detail_path('Flour', kitchen_slug: kitchen_slug)
-
-    assert_response :success
-  end
-
-  test 'show returns 404 for unknown ingredient' do
-    log_in
-    get ingredient_detail_path('Nonexistent', kitchen_slug: kitchen_slug)
-
-    assert_response :not_found
-  end
-
-  test 'show requires membership' do
-    get ingredient_detail_path('Flour', kitchen_slug: kitchen_slug)
-
-    assert_response :forbidden
   end
 
   # --- edit action (Turbo Frame editor form) ---
