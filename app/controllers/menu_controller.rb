@@ -35,6 +35,18 @@ class MenuController < ApplicationController
     render json: { content: current_kitchen.quick_bites_content || '' }
   end
 
+  def state
+    plan = MealPlan.for_kitchen(current_kitchen)
+    checked_off = plan.state.fetch('checked_off', [])
+    availability = RecipeAvailabilityCalculator.new(kitchen: current_kitchen, checked_off: checked_off).call
+
+    render json: {
+      version: plan.lock_version,
+      **plan.state.slice('selected_recipes', 'selected_quick_bites'),
+      availability: availability
+    }
+  end
+
   def update_quick_bites
     content = params[:content].to_s
     return render json: { errors: ['Content cannot be blank.'] }, status: :unprocessable_content if content.blank?

@@ -259,6 +259,77 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  # --- State endpoint ---
+
+  test 'state requires membership' do
+    get menu_state_path(kitchen_slug: kitchen_slug), as: :json
+
+    assert_response :forbidden
+  end
+
+  test 'state returns version and selections' do
+    log_in
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+
+    get menu_state_path(kitchen_slug: kitchen_slug), as: :json
+
+    assert_response :success
+    json = response.parsed_body
+
+    assert json.key?('version')
+    assert_includes json['selected_recipes'], 'focaccia'
+    assert json.key?('selected_quick_bites')
+  end
+
+  test 'state includes availability map' do
+    log_in
+    get menu_state_path(kitchen_slug: kitchen_slug), as: :json
+
+    json = response.parsed_body
+
+    assert json.key?('availability')
+  end
+
+  test 'state availability reflects checked_off items' do
+    Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Focaccia
+
+      Category: Bread
+
+      ## Mix (combine)
+
+      - Flour, 3 cups
+      - Salt, 1 tsp
+
+      Mix well.
+    MD
+
+    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Flour') do |p|
+      p.basis_grams = 30
+      p.aisle = 'Baking'
+    end
+    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Salt') do |p|
+      p.basis_grams = 6
+      p.aisle = 'Spices'
+    end
+
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('check', item: 'Flour', checked: true)
+
+    log_in
+    get menu_state_path(kitchen_slug: kitchen_slug), as: :json
+
+    json = response.parsed_body
+    focaccia = json['availability']['focaccia']
+
+    assert_equal 1, focaccia['missing']
+    assert_includes focaccia['missing_names'], 'Salt'
+    assert_includes focaccia['ingredients'], 'Flour'
+    assert_includes focaccia['ingredients'], 'Salt'
+  end
+
   private
 
   def build_stale_plan(method_to_stub)

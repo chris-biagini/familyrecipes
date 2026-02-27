@@ -1,6 +1,6 @@
 var CACHE_NAME = 'familyrecipes-v4';
 
-var API_PATTERN = /^(\/kitchens\/[^/]+)?\/(groceries\/(state|check|custom_items|aisle_order|aisle_order_content)|menu\/(select|select_all|clear|quick_bites|quick_bites_content)|nutrition\/)/;
+var API_PATTERN = /^(\/kitchens\/[^/]+)?\/(groceries\/(state|check|custom_items|aisle_order|aisle_order_content)|menu\/(state|select|select_all|clear|quick_bites|quick_bites_content)|nutrition\/)/;
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
