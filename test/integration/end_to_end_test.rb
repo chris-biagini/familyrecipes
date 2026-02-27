@@ -225,16 +225,16 @@ class EndToEndTest < ActionDispatch::IntegrationTest
     get ingredients_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
-    assert_select 'h2', /Mozzarella/
-    assert_select 'h2', /Honey/
+    assert_select 'tr.ingredient-row[data-ingredient-name="Mozzarella"]'
+    assert_select 'tr.ingredient-row[data-ingredient-name="Honey"]'
   end
 
-  test 'ingredients index links back to recipe pages' do
+  test 'ingredients detail panel links back to recipe pages' do
     log_in
-    get ingredients_path(kitchen_slug: kitchen_slug)
+    get ingredient_detail_path('Mozzarella', kitchen_slug: kitchen_slug)
 
-    assert_select 'a[href=?]', recipe_path('pizza-dough', kitchen_slug: kitchen_slug)
-    assert_select 'a[href=?]', recipe_path('focaccia', kitchen_slug: kitchen_slug)
+    assert_response :success
+    assert_select 'a[href=?]', recipe_path('white-pizza', kitchen_slug: kitchen_slug)
   end
 
   # -- Groceries --
