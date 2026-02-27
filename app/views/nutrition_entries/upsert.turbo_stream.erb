@@ -1,0 +1,9 @@
+<% if @updated_row %>
+  <%= turbo_stream.replace "ingredient-#{@updated_row[:name].parameterize}" do %>
+    <%= render 'ingredients/table_row', row: @updated_row %>
+  <% end %>
+<% end %>
+
+<%= turbo_stream.replace "ingredients-summary" do %>
+  <%= render 'ingredients/summary_bar', summary: @summary %>
+<% end %>

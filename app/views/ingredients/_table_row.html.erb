@@ -1,4 +1,5 @@
 <%# locals: (row:) %>
+<tbody id="ingredient-<%= row[:name].parameterize %>">
 <tr id="ingredient-row-<%= row[:name].parameterize %>"
     class="ingredient-row"
     data-ingredient-table-target="row"
@@ -34,3 +35,4 @@
     </turbo-frame>
   </td>
 </tr>
+</tbody>

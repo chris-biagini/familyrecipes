@@ -43,11 +43,9 @@
         <th class="col-recipes">Recipes</th>
       </tr>
     </thead>
-    <tbody>
-      <% @ingredient_rows.each do |row| %>
-        <%= render 'ingredients/table_row', row: row %>
-      <% end %>
-    </tbody>
+    <% @ingredient_rows.each do |row| %>
+      <%= render 'ingredients/table_row', row: row %>
+    <% end %>
   </table>
 
   <p class="ingredients-count" data-ingredient-table-target="countLabel">

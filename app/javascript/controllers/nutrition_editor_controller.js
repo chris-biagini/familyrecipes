@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { Turbo } from "@hotwired/turbo-rails"
 import { getCsrfToken, showErrors, clearErrors } from "utilities/editor_utils"
 
 export default class extends Controller {
@@ -288,38 +289,71 @@ export default class extends Controller {
     this.saving = true
 
     try {
-      const response = await fetch(this.nutritionUrl(this.currentIngredient), {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRF-Token": getCsrfToken()
-        },
-        body: JSON.stringify(payload)
-      })
-
-      if (response.ok) {
-        const result = await response.json()
-
-        if (andNext && result.next_ingredient) {
-          this.currentIngredient = result.next_ingredient
-          this.titleTarget.textContent = `Edit ${result.next_ingredient}`
-          clearErrors(this.errorsTarget)
-          this.turboFrame.src = this.editUrlFor(result.next_ingredient)
-        } else {
-          this.dialogTarget.close()
-          window.location.reload()
-        }
-      } else if (response.status === 422) {
-        const result = await response.json()
-        showErrors(this.errorsTarget, result.errors)
+      if (andNext) {
+        await this.saveWithJson(payload)
       } else {
-        showErrors(this.errorsTarget, [`Server error (${response.status}). Please try again.`])
+        await this.saveWithTurboStream(payload)
       }
     } catch {
       showErrors(this.errorsTarget, ["Network error. Please check your connection and try again."])
     } finally {
       this.saving = false
       this.enableSaveButtons()
+    }
+  }
+
+  async saveWithTurboStream(payload) {
+    const response = await fetch(this.nutritionUrl(this.currentIngredient), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "text/vnd.turbo-stream.html",
+        "X-CSRF-Token": getCsrfToken()
+      },
+      body: JSON.stringify(payload)
+    })
+
+    if (response.ok) {
+      const html = await response.text()
+      Turbo.renderStreamMessage(html)
+      this.dialogTarget.close()
+      this.currentIngredient = null
+      this.originalSnapshot = null
+    } else if (response.status === 422) {
+      const result = await response.json()
+      showErrors(this.errorsTarget, result.errors)
+    } else {
+      showErrors(this.errorsTarget, [`Server error (${response.status}). Please try again.`])
+    }
+  }
+
+  async saveWithJson(payload) {
+    const response = await fetch(this.nutritionUrl(this.currentIngredient), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": getCsrfToken()
+      },
+      body: JSON.stringify(payload)
+    })
+
+    if (response.ok) {
+      const result = await response.json()
+
+      if (result.next_ingredient) {
+        this.currentIngredient = result.next_ingredient
+        this.titleTarget.textContent = `Edit ${result.next_ingredient}`
+        clearErrors(this.errorsTarget)
+        this.turboFrame.src = this.editUrlFor(result.next_ingredient)
+      } else {
+        this.dialogTarget.close()
+        window.location.reload()
+      }
+    } else if (response.status === 422) {
+      const result = await response.json()
+      showErrors(this.errorsTarget, result.errors)
+    } else {
+      showErrors(this.errorsTarget, [`Server error (${response.status}). Please try again.`])
     }
   }
 

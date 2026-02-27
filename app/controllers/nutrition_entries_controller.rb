@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class NutritionEntriesController < ApplicationController # rubocop:disable Metrics/ClassLength
+  include IngredientRows
+
   before_action :require_membership
 
   NUTRIENT_KEYS = %i[basis_grams calories fat saturated_fat trans_fat cholesterol
@@ -158,9 +160,26 @@ class NutritionEntriesController < ApplicationController # rubocop:disable Metri
     broadcast_aisle_change if aisle
     recalculate_affected_recipes if has_nutrition
 
+    respond_to do |format|
+      format.turbo_stream { render_turbo_stream_update }
+      format.json { render_json_response }
+    end
+  end
+
+  def render_json_response
     response_body = { status: 'ok' }
     response_body[:next_ingredient] = find_next_needing_attention if params[:save_and_next]
     render json: response_body
+  end
+
+  def render_turbo_stream_update
+    lookup = IngredientCatalog.lookup_for(current_kitchen)
+    all_rows = build_ingredient_rows(lookup)
+    @updated_row = all_rows.find { |r| r[:name].casecmp(ingredient_name).zero? }
+    @summary = build_summary(all_rows)
+    @next_ingredient = find_next_needing_attention if params[:save_and_next]
+
+    render :upsert
   end
 
   def sync_aisle_to_kitchen(aisle)

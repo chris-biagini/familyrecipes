@@ -320,6 +320,60 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'Salt', body['next_ingredient']
   end
 
+  # --- turbo stream response ---
+
+  test 'upsert responds with turbo stream when requested' do
+    import_recipe_with_flour
+
+    post nutrition_entry_upsert_path('Flour', kitchen_slug: kitchen_slug),
+         params: {
+           nutrients: { basis_grams: 30, calories: 110, fat: 0.5, saturated_fat: 0,
+                        trans_fat: 0, cholesterol: 0, sodium: 5, carbs: 23,
+                        fiber: 1, total_sugars: 0, added_sugars: 0, protein: 3 },
+           density: { volume: 0.25, unit: 'cup', grams: 30 },
+           portions: {}, aisle: 'Baking'
+         },
+         headers: { 'Accept' => 'text/vnd.turbo-stream.html, text/html, application/xhtml+xml' },
+         as: :json
+
+    assert_response :success
+    assert_includes response.media_type, 'turbo-stream'
+    assert_includes response.body, 'ingredient-flour'
+    assert_includes response.body, 'ingredients-summary'
+  end
+
+  test 'turbo stream response includes updated row data' do
+    import_recipe_with_flour
+
+    post nutrition_entry_upsert_path('Flour', kitchen_slug: kitchen_slug),
+         params: {
+           nutrients: { basis_grams: 30, calories: 110, fat: 0.5, saturated_fat: 0,
+                        trans_fat: 0, cholesterol: 0, sodium: 5, carbs: 23,
+                        fiber: 1, total_sugars: 0, added_sugars: 0, protein: 3 },
+           density: { volume: 0.25, unit: 'cup', grams: 30 },
+           portions: {}, aisle: 'Baking'
+         },
+         headers: { 'Accept' => 'text/vnd.turbo-stream.html, text/html, application/xhtml+xml' },
+         as: :json
+
+    assert_response :success
+    assert_includes response.body, 'Baking'
+    assert_includes response.body, 'data-status="complete"'
+  end
+
+  test 'turbo stream aisle-only update shows incomplete status' do
+    import_recipe_with_flour
+
+    post nutrition_entry_upsert_path('Flour', kitchen_slug: kitchen_slug),
+         params: { nutrients: { basis_grams: nil }, density: nil, portions: {}, aisle: 'Baking' },
+         headers: { 'Accept' => 'text/vnd.turbo-stream.html, text/html, application/xhtml+xml' },
+         as: :json
+
+    assert_response :success
+    assert_includes response.media_type, 'turbo-stream'
+    assert_includes response.body, 'data-status="missing"'
+  end
+
   # --- destroy ---
 
   test 'destroy deletes kitchen override' do
