@@ -1,0 +1,17 @@
+{
+  "planPath": "docs/plans/2026-02-27-menu-groceries-split-plan.md",
+  "tasks": [
+    {"id": 0, "subject": "Task 0: Create worktree for isolated development", "status": "pending"},
+    {"id": 1, "subject": "Task 1: Rename GroceryList model to MealPlan", "status": "pending", "blockedBy": [0]},
+    {"id": 2, "subject": "Task 2: Rename GroceryListChannel to MealPlanChannel", "status": "pending", "blockedBy": [1]},
+    {"id": 3, "subject": "Task 3: Create MenuController and routes", "status": "pending", "blockedBy": [1, 2]},
+    {"id": 4, "subject": "Task 4: Create Menu page view", "status": "pending", "blockedBy": [3]},
+    {"id": 5, "subject": "Task 5: Create menu Stimulus controller", "status": "pending", "blockedBy": [3]},
+    {"id": 6, "subject": "Task 6: Simplify Groceries page view and controllers", "status": "pending", "blockedBy": [3, 4]},
+    {"id": 7, "subject": "Task 7: Update navbar", "status": "pending", "blockedBy": [3]},
+    {"id": 8, "subject": "Task 8: Update service worker and PWA", "status": "pending", "blockedBy": [3]},
+    {"id": 9, "subject": "Task 9: Update CLAUDE.md and clean up", "status": "pending", "blockedBy": [6, 7, 8]},
+    {"id": 10, "subject": "Task 10: Manual testing and visual polish", "status": "pending", "blockedBy": [9]}
+  ],
+  "lastUpdated": "2026-02-27T00:00:00Z"
+}
