@@ -1076,6 +1076,18 @@ footer small {
   margin: 0.5rem 0 0;
 }
 
+.editor-recipes {
+  font-size: 0.85rem;
+  color: var(--muted-text);
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-color, #e5e7eb);
+}
+.editor-recipes-label {
+  font-weight: 600;
+  margin-right: 0.25em;
+}
+.editor-recipes a { white-space: nowrap; }
+
 .form-row {
   display: flex;
   align-items: center;

@@ -292,6 +292,27 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test 'edit includes recipe links for ingredient' do
+    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Focaccia
+
+      Category: Bread
+
+      ## Mix (combine)
+
+      - Flour, 3 cups
+
+      Mix well.
+    MD
+
+    log_in
+    get ingredient_edit_path('Flour', kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select 'a', text: 'Focaccia'
+  end
+
   test 'edit requires membership' do
     get ingredient_edit_path('Flour', kitchen_slug: kitchen_slug)
 

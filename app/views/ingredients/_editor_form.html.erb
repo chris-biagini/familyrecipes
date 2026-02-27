@@ -1,4 +1,4 @@
-<%# locals: (ingredient_name:, entry:, available_aisles:, next_name: nil) %>
+<%# locals: (ingredient_name:, entry:, available_aisles:, next_name: nil, recipes: []) %>
 <% has_density = entry&.density_grams.present? %>
 <turbo-frame id="nutrition-editor-form">
   <div class="editor-form" data-nutrition-editor-target="formContent">
@@ -16,7 +16,7 @@
         <span class="field-unit">g</span>
       </div>
 
-      <% NutritionLabelParser::LABEL_LINES.each do |label, key, unit| %>
+      <% IngredientCatalog::NUTRIENT_DISPLAY.each do |label, key, unit| %>
         <% indent = label.size - label.lstrip.size %>
         <div class="nutrient-row indent-<%= indent / 2 %>">
           <label for="editor-<%= key %>"><%= label.strip %></label>
@@ -100,6 +100,16 @@
                data-action="keydown->nutrition-editor#aisleInputKeydown">
       </div>
     </fieldset>
+
+    <% if recipes.any? %>
+      <div class="editor-recipes">
+        <span class="editor-recipes-label">Used in</span>
+        <% recipes.each_with_index do |recipe, i| %>
+          <% unless i.zero? %>, <% end %>
+          <%= link_to recipe.title, recipe_path(recipe.slug), target: "_blank" %>
+        <% end %>
+      </div>
+    <% end %>
 
     <% if next_name %>
       <input type="hidden" data-nutrition-editor-target="nextName" value="<%= next_name %>">

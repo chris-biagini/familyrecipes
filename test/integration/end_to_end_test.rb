@@ -229,6 +229,14 @@ class EndToEndTest < ActionDispatch::IntegrationTest
     assert_select 'tr.ingredient-row[data-ingredient-name="Honey"]'
   end
 
+  test 'ingredients edit form shows recipe links' do
+    log_in
+    get ingredient_edit_path('Mozzarella', kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select 'a[href=?]', recipe_path('white-pizza', kitchen_slug: kitchen_slug)
+  end
+
   # -- Groceries --
 
   test 'groceries page renders recipe checkboxes grouped by category' do

@@ -16,10 +16,12 @@ class IngredientsController < ApplicationController
   def edit
     ingredient_name, entry = load_ingredient_data
     aisles = current_kitchen.all_aisles
+    recipes = recipes_for_ingredient(ingredient_name)
 
     render partial: 'ingredients/editor_form',
            locals: { ingredient_name:, entry:, available_aisles: aisles,
-                     next_name: next_needing_attention(ingredient_name) }
+                     next_name: next_needing_attention(ingredient_name),
+                     recipes: }
   end
 
   private
@@ -40,6 +42,13 @@ class IngredientsController < ApplicationController
 
   def sorted_ingredient_names(lookup)
     recipes_by_ingredient(lookup).keys.sort_by(&:downcase)
+  end
+
+  def recipes_for_ingredient(name)
+    lookup = IngredientCatalog.lookup_for(current_kitchen)
+    current_kitchen.recipes.includes(steps: :ingredients).select do |recipe|
+      recipe.ingredients.any? { |i| (lookup[i.name]&.ingredient_name || i.name) == name }
+    end
   end
 
   def load_ingredient_data
