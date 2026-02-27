@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 class ShoppingListBuilder
-  def initialize(kitchen:, grocery_list:)
+  def initialize(kitchen:, meal_plan:)
     @kitchen = kitchen
-    @grocery_list = grocery_list
+    @meal_plan = meal_plan
     @profiles = IngredientCatalog.lookup_for(kitchen)
   end
 
@@ -26,7 +26,7 @@ class ShoppingListBuilder
   end
 
   def selected_recipes
-    slugs = @grocery_list.state.fetch('selected_recipes', [])
+    slugs = @meal_plan.state.fetch('selected_recipes', [])
     xref_includes = { cross_references: { target_recipe: { steps: :ingredients } } }
     @kitchen.recipes
             .includes(:category, steps: [:ingredients, xref_includes])
@@ -34,7 +34,7 @@ class ShoppingListBuilder
   end
 
   def selected_quick_bites
-    slugs = @grocery_list.state.fetch('selected_quick_bites', [])
+    slugs = @meal_plan.state.fetch('selected_quick_bites', [])
     return [] if slugs.empty?
 
     content = @kitchen.quick_bites_content
@@ -89,7 +89,7 @@ class ShoppingListBuilder
   end
 
   def add_custom_items(organized)
-    custom = @grocery_list.state.fetch('custom_items', [])
+    custom = @meal_plan.state.fetch('custom_items', [])
     return if custom.empty?
 
     organized['Miscellaneous'] ||= []

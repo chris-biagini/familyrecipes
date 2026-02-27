@@ -7,7 +7,7 @@ class Kitchen < ApplicationRecord
   has_many :categories, dependent: :destroy
   has_many :recipes, dependent: :destroy
   has_many :ingredient_catalog, dependent: :destroy, class_name: 'IngredientCatalog'
-  has_one :grocery_list, dependent: :destroy
+  has_one :meal_plan, dependent: :destroy
 
   MAX_AISLE_NAME_LENGTH = 50
   MAX_AISLES = 50

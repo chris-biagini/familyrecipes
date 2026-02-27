@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class GroceryList < ApplicationRecord
+class MealPlan < ApplicationRecord
   acts_as_tenant :kitchen
 
   validates :kitchen_id, uniqueness: true

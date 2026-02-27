@@ -12,12 +12,12 @@ class GroceriesController < ApplicationController
   end
 
   def state
-    list = GroceryList.for_kitchen(current_kitchen)
-    shopping_list = ShoppingListBuilder.new(kitchen: current_kitchen, grocery_list: list).build
+    list = MealPlan.for_kitchen(current_kitchen)
+    shopping_list = ShoppingListBuilder.new(kitchen: current_kitchen, meal_plan: list).build
 
     render json: {
       version: list.lock_version,
-      **list.state.slice(*GroceryList::STATE_KEYS),
+      **list.state.slice(*MealPlan::STATE_KEYS),
       shopping_list: shopping_list
     }
   end
@@ -37,7 +37,7 @@ class GroceriesController < ApplicationController
 
   def update_custom_items
     item = params[:item].to_s
-    max = GroceryList::MAX_CUSTOM_ITEM_LENGTH
+    max = MealPlan::MAX_CUSTOM_ITEM_LENGTH
     if item.size > max
       return render json: { errors: ["Custom item name is too long (max #{max} characters)"] },
                     status: :unprocessable_content
@@ -47,7 +47,7 @@ class GroceriesController < ApplicationController
   end
 
   def clear
-    list = GroceryList.for_kitchen(current_kitchen)
+    list = MealPlan.for_kitchen(current_kitchen)
     list.with_optimistic_retry { list.clear! }
     GroceryListChannel.broadcast_version(current_kitchen, list.lock_version)
     render json: { version: list.lock_version }
@@ -72,7 +72,7 @@ class GroceriesController < ApplicationController
 
     current_kitchen.save!
 
-    list = GroceryList.for_kitchen(current_kitchen)
+    list = MealPlan.for_kitchen(current_kitchen)
     list.update!(updated_at: Time.current)
     GroceryListChannel.broadcast_version(current_kitchen, list.lock_version)
     render json: { status: 'ok' }
@@ -85,7 +85,7 @@ class GroceriesController < ApplicationController
   private
 
   def apply_and_respond(action_type, **action_params)
-    list = GroceryList.for_kitchen(current_kitchen)
+    list = MealPlan.for_kitchen(current_kitchen)
     list.with_optimistic_retry do
       list.apply_action(action_type, **action_params)
     end

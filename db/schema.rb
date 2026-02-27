@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 7) do
+ActiveRecord::Schema[8.1].define(version: 8) do
   create_table "categories", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "kitchen_id", null: false
@@ -39,15 +39,6 @@ ActiveRecord::Schema[8.1].define(version: 7) do
     t.index ["step_id", "position"], name: "index_cross_references_on_step_id_and_position", unique: true
     t.index ["step_id"], name: "index_cross_references_on_step_id"
     t.index ["target_recipe_id"], name: "index_cross_references_on_target_recipe_id"
-  end
-
-  create_table "grocery_lists", force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.integer "kitchen_id", null: false
-    t.integer "lock_version", default: 0, null: false
-    t.json "state", default: {}, null: false
-    t.datetime "updated_at", null: false
-    t.index ["kitchen_id"], name: "index_grocery_lists_on_kitchen_id", unique: true
   end
 
   create_table "ingredient_catalog", force: :cascade do |t|
@@ -98,6 +89,15 @@ ActiveRecord::Schema[8.1].define(version: 7) do
     t.string "slug", null: false
     t.datetime "updated_at", null: false
     t.index ["slug"], name: "index_kitchens_on_slug", unique: true
+  end
+
+  create_table "meal_plans", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "kitchen_id", null: false
+    t.integer "lock_version", default: 0, null: false
+    t.json "state", default: {}, null: false
+    t.datetime "updated_at", null: false
+    t.index ["kitchen_id"], name: "index_meal_plans_on_kitchen_id", unique: true
   end
 
   create_table "memberships", force: :cascade do |t|
@@ -163,9 +163,9 @@ ActiveRecord::Schema[8.1].define(version: 7) do
   add_foreign_key "cross_references", "kitchens"
   add_foreign_key "cross_references", "recipes", column: "target_recipe_id"
   add_foreign_key "cross_references", "steps"
-  add_foreign_key "grocery_lists", "kitchens"
   add_foreign_key "ingredient_catalog", "kitchens"
   add_foreign_key "ingredients", "steps"
+  add_foreign_key "meal_plans", "kitchens"
   add_foreign_key "memberships", "kitchens"
   add_foreign_key "memberships", "users"
   add_foreign_key "recipes", "categories"

@@ -544,7 +544,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     log_in
     stale_list = build_stale_list(:apply_action)
 
-    GroceryList.stub(:for_kitchen, stale_list) do
+    MealPlan.stub(:for_kitchen, stale_list) do
       patch groceries_select_path(kitchen_slug: kitchen_slug),
             params: { type: 'recipe', slug: 'focaccia', selected: true },
             as: :json
@@ -560,7 +560,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     log_in
     stale_list = build_stale_list(:apply_action)
 
-    GroceryList.stub(:for_kitchen, stale_list) do
+    MealPlan.stub(:for_kitchen, stale_list) do
       patch groceries_check_path(kitchen_slug: kitchen_slug),
             params: { item: 'flour', checked: true },
             as: :json
@@ -573,7 +573,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     log_in
     stale_list = build_stale_list(:clear!)
 
-    GroceryList.stub(:for_kitchen, stale_list) do
+    MealPlan.stub(:for_kitchen, stale_list) do
       delete groceries_clear_path(kitchen_slug: kitchen_slug), as: :json
     end
 
@@ -648,7 +648,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
   private
 
   def build_stale_list(method_to_stub)
-    list = GroceryList.for_kitchen(@kitchen)
+    list = MealPlan.for_kitchen(@kitchen)
     list.define_singleton_method(method_to_stub) do |*|
       raise ActiveRecord::StaleObjectError, self
     end
