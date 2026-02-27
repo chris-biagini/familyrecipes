@@ -106,7 +106,7 @@
   height: 0.6rem;
   border-radius: 50%;
   flex-shrink: 0;
-  margin-left: 0.4rem;
+  margin-right: 0.4rem;
   cursor: pointer;
   background: var(--border-muted);
   transition: background-color 0.2s ease;

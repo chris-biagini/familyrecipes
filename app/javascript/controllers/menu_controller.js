@@ -149,11 +149,14 @@ export default class extends Controller {
         dot = document.createElement('span')
         dot.className = 'availability-dot'
         dot.dataset.slug = slug
-        li.appendChild(dot)
+        cb.after(dot)
       }
 
       const missing = info.missing
-      dot.dataset.missing = missing > 2 ? '3+' : String(missing)
+      const isQuickBite = cb.closest('[data-type="quick_bite"]')
+      dot.dataset.missing = isQuickBite
+        ? (missing === 0 ? '0' : '3+')
+        : (missing > 2 ? '3+' : String(missing))
 
       const label = missing === 0
         ? 'All ingredients on hand'
