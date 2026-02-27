@@ -135,6 +135,11 @@ export default class extends Controller {
         label.appendChild(textSpan)
 
         li.appendChild(label)
+
+        if (item.sources && item.sources.length > 0) {
+          li.title = 'Needed for: ' + item.sources.join(', ')
+        }
+
         ul.appendChild(li)
       }
 
