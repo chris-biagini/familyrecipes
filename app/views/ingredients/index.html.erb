@@ -1,67 +1,67 @@
 <% content_for(:title) { "#{current_kitchen.name}: Ingredients" } %>
 
-<article class="index ingredients">
+<article class="ingredients-page" data-controller="ingredient-table">
   <header>
     <h1>Ingredients</h1>
   </header>
 
-  <%- if current_kitchen.member?(current_user) && @missing_ingredients.any? -%>
-  <details class="nutrition-banner">
-    <summary><%= @missing_ingredients.size %> ingredient<%= 's' unless @missing_ingredients.size == 1 %> need<%= 's' if @missing_ingredients.size == 1 %> nutrition data</summary>
-    <p class="nutrition-banner-list">
-      <%- @missing_ingredients.each_with_index do |name, i| -%>
-        <%- unless i.zero? %> &middot; <% end -%>
-        <a href="#ingredient-<%= name.parameterize %>" class="nutrition-banner-link"><%= name %></a>
-      <%- end -%>
-    </p>
-  </details>
-  <%- end -%>
+  <%= render 'ingredients/summary_bar', summary: @summary %>
 
-  <%- @ingredients_with_recipes.each do |ingredient, recipes| -%>
-  <section id="ingredient-<%= ingredient.parameterize %>">
-    <h2>
-      <%= ingredient %>
-      <%- if current_kitchen.member?(current_user) -%>
-        <%- entry = @nutrition_lookup[ingredient] -%>
-        <%- if entry.nil? -%>
-          <span class="nutrition-badge nutrition-missing" title="No nutrition data">!</span>
-          <button type="button" class="btn-link nutrition-edit-btn"
-                  data-ingredient="<%= ingredient %>"
-                  data-nutrition-text="<%= NutritionLabelParser.blank_skeleton %>"
-                  data-aisle="">+ Add nutrition</button>
-        <%- elsif entry.global? -%>
-          <span class="nutrition-badge nutrition-global" title="Built-in nutrition data">built-in</span>
-          <button type="button" class="btn-link nutrition-edit-btn"
-                  data-ingredient="<%= ingredient %>"
-                  data-nutrition-text="<%= NutritionLabelParser.format(entry) %>"
-                  data-aisle="<%= entry&.aisle %>">Edit</button>
-        <%- else -%>
-          <span class="nutrition-badge nutrition-custom" title="Custom nutrition data">custom</span>
-          <button type="button" class="btn-link nutrition-edit-btn"
-                  data-ingredient="<%= ingredient %>"
-                  data-nutrition-text="<%= NutritionLabelParser.format(entry) %>"
-                  data-aisle="<%= entry&.aisle %>">Edit</button>
-          <button type="button" class="btn-link nutrition-reset-btn"
-                  data-ingredient="<%= ingredient %>">Reset</button>
-        <%- end -%>
-      <%- end -%>
-    </h2>
-    <ul>
-      <%- recipes.each do |recipe| -%>
-      <li><%= link_to recipe.title, recipe_path(recipe.slug), title: recipe.description %></li>
-      <%- end -%>
-    </ul>
-  </section>
-  <%- end -%>
+  <div class="ingredients-toolbar">
+    <input type="search" class="ingredients-search"
+           placeholder="Search ingredients…"
+           aria-label="Search ingredients"
+           data-ingredient-table-target="searchInput"
+           data-action="input->ingredient-table#search"
+           autocomplete="off">
+    <div class="filter-pills" role="group" aria-label="Filter ingredients">
+      <button type="button" class="filter-pill active"
+              data-ingredient-table-target="filterButton"
+              data-filter="all"
+              data-action="click->ingredient-table#filter"
+              aria-pressed="true">All</button>
+      <button type="button" class="filter-pill"
+              data-ingredient-table-target="filterButton"
+              data-filter="incomplete"
+              data-action="click->ingredient-table#filter"
+              aria-pressed="false">Needs Attention</button>
+      <button type="button" class="filter-pill"
+              data-ingredient-table-target="filterButton"
+              data-filter="complete"
+              data-action="click->ingredient-table#filter"
+              aria-pressed="false">Complete</button>
+    </div>
+  </div>
+
+  <table class="ingredients-table">
+    <thead>
+      <tr>
+        <th class="col-name">Ingredient</th>
+        <th class="col-nutrition" title="Nutrition data">Nutr</th>
+        <th class="col-density" title="Density data">Dens</th>
+        <th class="col-aisle">Aisle</th>
+        <th class="col-recipes">Recipes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @ingredient_rows.each do |row| %>
+        <%= render 'ingredients/table_row', row: row %>
+      <% end %>
+    </tbody>
+  </table>
+
+  <p class="ingredients-count" data-ingredient-table-target="countLabel">
+    Showing <%= @ingredient_rows.size %> of <%= @ingredient_rows.size %> ingredients
+  </p>
+
+  <% if current_kitchen.member?(current_user) %>
+    <%= render layout: 'shared/editor_dialog',
+        locals: { title: 'Edit Nutrition',
+                  id: 'nutrition-editor',
+                  dialog_data: { editor_on_success: 'reload', extra_controllers: 'nutrition-editor' },
+                  extra_data: { nutrition_editor_base_url_value: nutrition_entry_upsert_path(ingredient_name: '__NAME__') },
+                  footer_extra: render('ingredients/aisle_selector', aisles: @available_aisles) } do %>
+      <textarea id="nutrition-editor-textarea" class="editor-textarea" data-editor-target="textarea" data-nutrition-editor-target="textarea" spellcheck="false"></textarea>
+    <% end %>
+  <% end %>
 </article>
-
-<% if current_kitchen.member?(current_user) %>
-<%= render layout: 'shared/editor_dialog',
-    locals: { title: 'Edit Nutrition',
-              id: 'nutrition-editor',
-              dialog_data: { editor_on_success: 'reload', extra_controllers: 'nutrition-editor' },
-              extra_data: { nutrition_editor_base_url_value: nutrition_entry_upsert_path(ingredient_name: '__NAME__') },
-              footer_extra: render('ingredients/aisle_selector', aisles: @available_aisles) } do %>
-  <textarea id="nutrition-editor-textarea" class="editor-textarea" data-editor-target="textarea" data-nutrition-editor-target="textarea" spellcheck="false"></textarea>
-<% end %>
-<% end %>

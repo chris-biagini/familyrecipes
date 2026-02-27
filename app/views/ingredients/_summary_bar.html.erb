@@ -1,0 +1,14 @@
+<%# locals: (summary:) %>
+<div id="ingredients-summary" class="ingredients-summary">
+  <span class="summary-total"><%= summary[:total] %> ingredients</span>
+  <span class="summary-sep">&mdash;</span>
+  <span class="summary-stat summary-complete"><span class="summary-count"><%= summary[:complete] %></span> complete</span>
+  <% if summary[:missing_nutrition] > 0 %>
+    <span class="summary-sep">&middot;</span>
+    <span class="summary-stat summary-attention"><span class="summary-count"><%= summary[:missing_nutrition] %></span> missing nutrition</span>
+  <% end %>
+  <% if summary[:missing_density] > 0 %>
+    <span class="summary-sep">&middot;</span>
+    <span class="summary-stat summary-attention"><span class="summary-count"><%= summary[:missing_density] %></span> missing density</span>
+  <% end %>
+</div>

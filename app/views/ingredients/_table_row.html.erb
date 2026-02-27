@@ -1,0 +1,35 @@
+<%# locals: (row:) %>
+<tr id="ingredient-row-<%= row[:name].parameterize %>"
+    class="ingredient-row"
+    data-ingredient-table-target="row"
+    data-ingredient-name="<%= row[:name] %>"
+    data-status="<%= row[:status] %>"
+    data-has-nutrition="<%= row[:has_nutrition] %>"
+    data-has-density="<%= row[:has_density] %>"
+    tabindex="0"
+    role="button">
+  <td class="col-name"><%= row[:name] %></td>
+  <td class="col-nutrition" aria-label="<%= row[:has_nutrition] ? 'Has nutrition' : 'Missing nutrition' %>">
+    <span class="status-icon <%= row[:has_nutrition] ? 'status-yes' : 'status-no' %>">
+      <%= row[:has_nutrition] ? "\u2713" : "\u2717" %>
+    </span>
+  </td>
+  <td class="col-density" aria-label="<%= density_aria_label(row) %>">
+    <span class="status-icon <%= density_icon_class(row) %>">
+      <%= density_icon_text(row) %>
+    </span>
+  </td>
+  <td class="col-aisle"><%= row[:aisle] || "\u2014" %></td>
+  <td class="col-recipes"><%= row[:recipe_count] %></td>
+</tr>
+<tr id="ingredient-expand-<%= row[:name].parameterize %>"
+    class="ingredient-expand"
+    hidden>
+  <td colspan="5">
+    <turbo-frame id="ingredient-detail-<%= row[:name].parameterize %>"
+                 src="<%= ingredient_detail_path(row[:name].tr(' ', '-')) %>"
+                 loading="lazy">
+      <p class="loading-placeholder">Loading&hellip;</p>
+    </turbo-frame>
+  </td>
+</tr>
