@@ -11,7 +11,7 @@ class PwaControllerTest < ActionDispatch::IntegrationTest
 
     data = JSON.parse(response.body) # rubocop:disable Rails/ResponseParsedBody
 
-    assert_equal 'Biagini Family Recipes', data['name']
+    assert_equal 'Family Recipes', data['name']
     assert_equal 'Recipes', data['short_name']
     assert_equal '/', data['start_url']
     assert_equal 'standalone', data['display']
