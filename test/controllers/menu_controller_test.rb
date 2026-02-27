@@ -40,6 +40,12 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     assert_response :forbidden
   end
 
+  test 'quick_bites_content requires membership' do
+    get menu_quick_bites_content_path(kitchen_slug: kitchen_slug), as: :json
+
+    assert_response :forbidden
+  end
+
   # --- Show page ---
 
   test 'show renders successfully when logged in' do

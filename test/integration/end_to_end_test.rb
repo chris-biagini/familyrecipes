@@ -80,6 +80,7 @@ class EndToEndTest < ActionDispatch::IntegrationTest
 
     assert_select 'nav a.home', 'Home'
     assert_select 'nav a.ingredients', 'Ingredients'
+    assert_select 'nav a.menu', 'Menu'
     assert_select 'nav a.groceries', 'Groceries'
   end
 
@@ -88,6 +89,7 @@ class EndToEndTest < ActionDispatch::IntegrationTest
 
     assert_select 'nav a.home', 'Home'
     assert_select 'nav a.ingredients', count: 0
+    assert_select 'nav a.menu', count: 0
     assert_select 'nav a.groceries', count: 0
   end
 

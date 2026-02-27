@@ -8,7 +8,6 @@ class MenuController < ApplicationController
   def show
     @categories = recipe_selector_categories
     @quick_bites_by_subsection = load_quick_bites_by_subsection
-    @quick_bites_content = current_kitchen.quick_bites_content || ''
   end
 
   def select

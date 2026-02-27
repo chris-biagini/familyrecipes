@@ -2,7 +2,6 @@
 
 <% content_for(:head) do %>
   <%= stylesheet_link_tag 'menu', "data-turbo-track": "reload" %>
-  <%= stylesheet_link_tag 'groceries', "data-turbo-track": "reload" %>
 <% end %>
 
 <% if current_kitchen.member?(current_user) %>
