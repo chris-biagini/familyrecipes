@@ -11,6 +11,8 @@ Rails.application.routes.draw do
   scope '(/kitchens/:kitchen_slug)' do
     resources :recipes, only: %i[show create update destroy], param: :slug
     get 'ingredients', to: 'ingredients#index', as: :ingredients
+    get 'ingredients/:ingredient_name', to: 'ingredients#show', as: :ingredient_detail
+    get 'ingredients/:ingredient_name/edit', to: 'ingredients#edit', as: :ingredient_edit
     get 'groceries', to: 'groceries#show', as: :groceries
     get 'groceries/state', to: 'groceries#state', as: :groceries_state
     patch 'groceries/select', to: 'groceries#select', as: :groceries_select

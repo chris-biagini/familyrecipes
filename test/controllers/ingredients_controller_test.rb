@@ -305,4 +305,67 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select 'details.nutrition-banner'
   end
+
+  # --- show action (Turbo Frame detail panel) ---
+
+  test 'show returns detail panel for ingredient with catalog entry' do
+    IngredientCatalog.create!(ingredient_name: 'Flour', basis_grams: 30, calories: 110)
+    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Focaccia
+
+      Category: Bread
+
+      ## Mix (combine)
+
+      - Flour, 3 cups
+
+      Mix well.
+    MD
+
+    log_in
+    get ingredient_detail_path('Flour', kitchen_slug: kitchen_slug)
+
+    assert_response :success
+  end
+
+  test 'show returns 404 for unknown ingredient' do
+    log_in
+    get ingredient_detail_path('Nonexistent', kitchen_slug: kitchen_slug)
+
+    assert_response :not_found
+  end
+
+  test 'show requires membership' do
+    get ingredient_detail_path('Flour', kitchen_slug: kitchen_slug)
+
+    assert_response :forbidden
+  end
+
+  # --- edit action (Turbo Frame editor form) ---
+
+  test 'edit returns structured form for ingredient with data' do
+    IngredientCatalog.create!(ingredient_name: 'Flour', basis_grams: 30, calories: 110,
+                              fat: 0.5, saturated_fat: 0, trans_fat: 0, cholesterol: 0, sodium: 5,
+                              carbs: 23, fiber: 1, total_sugars: 0, added_sugars: 0, protein: 3,
+                              density_grams: 120, density_volume: 1, density_unit: 'cup')
+
+    log_in
+    get ingredient_edit_path('Flour', kitchen_slug: kitchen_slug)
+
+    assert_response :success
+  end
+
+  test 'edit returns blank form for ingredient without data' do
+    log_in
+    get ingredient_edit_path('Flour', kitchen_slug: kitchen_slug)
+
+    assert_response :success
+  end
+
+  test 'edit requires membership' do
+    get ingredient_edit_path('Flour', kitchen_slug: kitchen_slug)
+
+    assert_response :forbidden
+  end
 end
