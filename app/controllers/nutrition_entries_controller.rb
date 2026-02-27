@@ -96,7 +96,7 @@ class NutritionEntriesController < ApplicationController
   end
 
   def broadcast_aisle_change
-    GroceryListChannel.broadcast_content_changed(current_kitchen)
+    MealPlanChannel.broadcast_content_changed(current_kitchen)
   end
 
   def recalculate_affected_recipes

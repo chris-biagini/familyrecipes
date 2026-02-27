@@ -2,7 +2,7 @@
 
 require 'test_helper'
 
-class GroceryListChannelTest < ActionCable::Channel::TestCase
+class MealPlanChannelTest < ActionCable::Channel::TestCase
   setup do
     @kitchen = Kitchen.create!(name: 'Test Kitchen', slug: 'test-kitchen')
     @user = User.create!(name: 'Member', email: 'member@example.com')
@@ -43,10 +43,10 @@ class GroceryListChannelTest < ActionCable::Channel::TestCase
 
   test 'broadcasts version to kitchen' do
     assert_broadcast_on(
-      GroceryListChannel.broadcasting_for(@kitchen),
+      MealPlanChannel.broadcasting_for(@kitchen),
       version: 42
     ) do
-      GroceryListChannel.broadcast_version(@kitchen, 42)
+      MealPlanChannel.broadcast_version(@kitchen, 42)
     end
   end
 end

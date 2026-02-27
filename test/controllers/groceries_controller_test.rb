@@ -584,7 +584,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
 
   test 'select broadcasts version' do
     log_in
-    stream = GroceryListChannel.broadcasting_for(@kitchen)
+    stream = MealPlanChannel.broadcasting_for(@kitchen)
 
     assert_broadcasts(stream, 1) do
       patch groceries_select_path(kitchen_slug: kitchen_slug),
@@ -595,7 +595,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
 
   test 'check broadcasts version' do
     log_in
-    stream = GroceryListChannel.broadcasting_for(@kitchen)
+    stream = MealPlanChannel.broadcasting_for(@kitchen)
 
     assert_broadcasts(stream, 1) do
       patch groceries_check_path(kitchen_slug: kitchen_slug),
@@ -606,7 +606,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
 
   test 'update_custom_items broadcasts version' do
     log_in
-    stream = GroceryListChannel.broadcasting_for(@kitchen)
+    stream = MealPlanChannel.broadcasting_for(@kitchen)
 
     assert_broadcasts(stream, 1) do
       patch groceries_custom_items_path(kitchen_slug: kitchen_slug),
@@ -617,7 +617,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
 
   test 'clear broadcasts version' do
     log_in
-    stream = GroceryListChannel.broadcasting_for(@kitchen)
+    stream = MealPlanChannel.broadcasting_for(@kitchen)
 
     assert_broadcasts(stream, 1) do
       delete groceries_clear_path(kitchen_slug: kitchen_slug), as: :json
@@ -626,7 +626,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
 
   test 'update_aisle_order broadcasts version' do
     log_in
-    stream = GroceryListChannel.broadcasting_for(@kitchen)
+    stream = MealPlanChannel.broadcasting_for(@kitchen)
 
     assert_broadcasts(stream, 1) do
       patch groceries_aisle_order_path(kitchen_slug: kitchen_slug),

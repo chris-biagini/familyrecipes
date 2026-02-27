@@ -157,7 +157,7 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'upsert broadcasts content changed when aisle is saved' do
-    assert_broadcast_on(GroceryListChannel.broadcasting_for(@kitchen), type: 'content_changed') do
+    assert_broadcast_on(MealPlanChannel.broadcasting_for(@kitchen), type: 'content_changed') do
       post nutrition_entry_upsert_path('flour', kitchen_slug: kitchen_slug),
            params: { nutrients: { basis_grams: nil }, density: nil, portions: {}, aisle: 'Deli' },
            as: :json

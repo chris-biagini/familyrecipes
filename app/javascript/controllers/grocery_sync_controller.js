@@ -159,7 +159,7 @@ export default class extends Controller {
   subscribe(slug) {
     this.consumer = createConsumer()
     this.subscription = this.consumer.subscriptions.create(
-      { channel: "GroceryListChannel", kitchen_slug: slug },
+      { channel: "MealPlanChannel", kitchen_slug: slug },
       {
         received: (data) => {
           if (data.version && data.version > this.version && !this.awaitingOwnAction) {

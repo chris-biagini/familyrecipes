@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class GroceryListChannel < ApplicationCable::Channel
+class MealPlanChannel < ApplicationCable::Channel
   def subscribed
     kitchen = Kitchen.find_by(slug: params[:kitchen_slug])
     return reject unless authorized?(kitchen)

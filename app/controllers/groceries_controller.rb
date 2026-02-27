@@ -49,7 +49,7 @@ class GroceriesController < ApplicationController
   def clear
     list = MealPlan.for_kitchen(current_kitchen)
     list.with_optimistic_retry { list.clear! }
-    GroceryListChannel.broadcast_version(current_kitchen, list.lock_version)
+    MealPlanChannel.broadcast_version(current_kitchen, list.lock_version)
     render json: { version: list.lock_version }
   end
 
@@ -74,7 +74,7 @@ class GroceriesController < ApplicationController
 
     list = MealPlan.for_kitchen(current_kitchen)
     list.update!(updated_at: Time.current)
-    GroceryListChannel.broadcast_version(current_kitchen, list.lock_version)
+    MealPlanChannel.broadcast_version(current_kitchen, list.lock_version)
     render json: { status: 'ok' }
   end
 
@@ -89,7 +89,7 @@ class GroceriesController < ApplicationController
     list.with_optimistic_retry do
       list.apply_action(action_type, **action_params)
     end
-    GroceryListChannel.broadcast_version(current_kitchen, list.lock_version)
+    MealPlanChannel.broadcast_version(current_kitchen, list.lock_version)
     render json: { version: list.lock_version }
   end
 
