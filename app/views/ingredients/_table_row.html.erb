@@ -7,7 +7,8 @@
     data-has-nutrition="<%= row[:has_nutrition] %>"
     data-has-density="<%= row[:has_density] %>"
     tabindex="0"
-    role="button">
+    role="button"
+    data-action="click->ingredient-table#toggleRow keydown->ingredient-table#rowKeydown">
   <td class="col-name"><%= row[:name] %></td>
   <td class="col-nutrition" aria-label="<%= row[:has_nutrition] ? 'Has nutrition' : 'Missing nutrition' %>">
     <span class="status-icon <%= row[:has_nutrition] ? 'status-yes' : 'status-no' %>">
