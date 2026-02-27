@@ -28,6 +28,13 @@ class MealPlan < ApplicationRecord
     save!
   end
 
+  def clear_selections!
+    ensure_state_keys
+    state['selected_recipes'] = []
+    state['selected_quick_bites'] = []
+    save!
+  end
+
   def with_optimistic_retry(max_attempts: MAX_RETRY_ATTEMPTS)
     attempts = 0
 

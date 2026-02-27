@@ -1,0 +1,38 @@
+<%# locals: (categories:, quick_bites_by_subsection:) %>
+<div id="recipe-selector" data-type="recipe">
+  <%- categories.each do |category| -%>
+  <%- next if category.recipes.empty? -%>
+  <div class="category">
+    <h2><%= category.name %></h2>
+    <ul>
+    <%- category.recipes.sort_by(&:title).each do |recipe| -%>
+      <li>
+        <input type="checkbox" id="<%= recipe.slug %>-checkbox" data-slug="<%= recipe.slug %>" data-title="<%= h recipe.title %>">
+        <label for="<%= recipe.slug %>-checkbox"><%= recipe.title %></label>
+        <%= link_to "\u2192", recipe_path(recipe.slug), class: 'recipe-link', title: "Open #{recipe.title} in new tab", target: '_blank' %>
+      </li>
+    <%- end -%>
+    </ul>
+  </div>
+  <%- end -%>
+  <%- if quick_bites_by_subsection.any? -%>
+  <div class="quick-bites" data-type="quick_bite">
+    <h2>Quick Bites</h2>
+    <div class="subsections">
+      <%- quick_bites_by_subsection.each do |subsection, items| -%>
+      <div class="subsection">
+        <h3><%= subsection %></h3>
+        <ul>
+        <%- items.each do |item| -%>
+          <li>
+            <input type="checkbox" id="<%= item.id %>-checkbox" data-slug="<%= item.id %>" data-title="<%= h item.title %>">
+            <label for="<%= item.id %>-checkbox"><%= item.title %></label>
+          </li>
+        <%- end -%>
+        </ul>
+      </div>
+      <%- end -%>
+    </div>
+  </div>
+  <%- end -%>
+</div>

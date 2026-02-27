@@ -12,13 +12,14 @@ Rails.application.routes.draw do
     resources :recipes, only: %i[show create update destroy], param: :slug
     get 'ingredients', to: 'ingredients#index', as: :ingredients
     get 'ingredients/:ingredient_name/edit', to: 'ingredients#edit', as: :ingredient_edit
+    get 'menu', to: 'menu#show', as: :menu
+    patch 'menu/select', to: 'menu#select', as: :menu_select
+    delete 'menu/clear', to: 'menu#clear', as: :menu_clear
+    patch 'menu/quick_bites', to: 'menu#update_quick_bites', as: :menu_quick_bites
     get 'groceries', to: 'groceries#show', as: :groceries
     get 'groceries/state', to: 'groceries#state', as: :groceries_state
-    patch 'groceries/select', to: 'groceries#select', as: :groceries_select
     patch 'groceries/check', to: 'groceries#check', as: :groceries_check
     patch 'groceries/custom_items', to: 'groceries#update_custom_items', as: :groceries_custom_items
-    delete 'groceries/clear', to: 'groceries#clear', as: :groceries_clear
-    patch 'groceries/quick_bites', to: 'groceries#update_quick_bites', as: :groceries_quick_bites
     patch 'groceries/aisle_order', to: 'groceries#update_aisle_order', as: :groceries_aisle_order
     get 'groceries/aisle_order_content', to: 'groceries#aisle_order_content', as: :groceries_aisle_order_content
     post 'nutrition/:ingredient_name', to: 'nutrition_entries#upsert', as: :nutrition_entry_upsert

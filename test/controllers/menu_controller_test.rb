@@ -1,0 +1,195 @@
+# frozen_string_literal: true
+
+require 'test_helper'
+require 'turbo/broadcastable/test_helper'
+
+class MenuControllerTest < ActionDispatch::IntegrationTest
+  include Turbo::Broadcastable::TestHelper
+
+  setup do
+    create_kitchen_and_user
+  end
+
+  # --- Access control ---
+
+  test 'show requires membership' do
+    get menu_path(kitchen_slug: kitchen_slug)
+
+    assert_response :forbidden
+  end
+
+  test 'select requires membership' do
+    patch menu_select_path(kitchen_slug: kitchen_slug),
+          params: { type: 'recipe', slug: 'focaccia', selected: true },
+          as: :json
+
+    assert_response :forbidden
+  end
+
+  test 'clear requires membership' do
+    delete menu_clear_path(kitchen_slug: kitchen_slug), as: :json
+
+    assert_response :forbidden
+  end
+
+  test 'update_quick_bites requires membership' do
+    patch menu_quick_bites_path(kitchen_slug: kitchen_slug),
+          params: { content: "## Snacks\n  - Goldfish" },
+          as: :json
+
+    assert_response :forbidden
+  end
+
+  # --- Show page ---
+
+  test 'show renders successfully when logged in' do
+    log_in
+    get menu_path(kitchen_slug: kitchen_slug)
+
+    assert_response :success
+  end
+
+  # --- Select ---
+
+  test 'select adds recipe and returns version' do
+    log_in
+    patch menu_select_path(kitchen_slug: kitchen_slug),
+          params: { type: 'recipe', slug: 'focaccia', selected: true },
+          as: :json
+
+    assert_response :success
+    json = response.parsed_body
+
+    assert_operator json['version'], :>, 0
+  end
+
+  test 'select broadcasts version via MealPlanChannel' do
+    log_in
+    stream = MealPlanChannel.broadcasting_for(@kitchen)
+
+    assert_broadcasts(stream, 1) do
+      patch menu_select_path(kitchen_slug: kitchen_slug),
+            params: { type: 'recipe', slug: 'focaccia', selected: true },
+            as: :json
+    end
+  end
+
+  test 'select deselects recipe when selected is false' do
+    log_in
+    patch menu_select_path(kitchen_slug: kitchen_slug),
+          params: { type: 'recipe', slug: 'focaccia', selected: true },
+          as: :json
+
+    patch menu_select_path(kitchen_slug: kitchen_slug),
+          params: { type: 'recipe', slug: 'focaccia', selected: false },
+          as: :json
+
+    plan = MealPlan.for_kitchen(@kitchen)
+
+    assert_not_includes plan.state['selected_recipes'], 'focaccia'
+  end
+
+  test 'select returns 409 when retry exhausted' do
+    log_in
+    stale_plan = build_stale_plan(:apply_action)
+
+    MealPlan.stub(:for_kitchen, stale_plan) do
+      patch menu_select_path(kitchen_slug: kitchen_slug),
+            params: { type: 'recipe', slug: 'focaccia', selected: true },
+            as: :json
+    end
+
+    assert_response :conflict
+    json = response.parsed_body
+
+    assert_equal 'Meal plan was modified by another request. Please refresh.', json['error']
+  end
+
+  # --- Clear ---
+
+  test 'clear resets selections only' do
+    log_in
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+    plan.apply_action('custom_items', item: 'birthday candles', action: 'add')
+    plan.apply_action('check', item: 'flour', checked: true)
+
+    delete menu_clear_path(kitchen_slug: kitchen_slug), as: :json
+
+    assert_response :success
+    json = response.parsed_body
+
+    assert json.key?('version')
+
+    plan.reload
+
+    assert_empty plan.state['selected_recipes']
+    assert_empty plan.state['selected_quick_bites']
+    assert_includes plan.state['custom_items'], 'birthday candles'
+    assert_includes plan.state['checked_off'], 'flour'
+  end
+
+  test 'clear broadcasts version' do
+    log_in
+    stream = MealPlanChannel.broadcasting_for(@kitchen)
+
+    assert_broadcasts(stream, 1) do
+      delete menu_clear_path(kitchen_slug: kitchen_slug), as: :json
+    end
+  end
+
+  test 'clear returns 409 when retry exhausted' do
+    log_in
+    stale_plan = build_stale_plan(:clear_selections!)
+
+    MealPlan.stub(:for_kitchen, stale_plan) do
+      delete menu_clear_path(kitchen_slug: kitchen_slug), as: :json
+    end
+
+    assert_response :conflict
+  end
+
+  # --- Quick Bites ---
+
+  test 'update_quick_bites saves content' do
+    log_in
+    patch menu_quick_bites_path(kitchen_slug: kitchen_slug),
+          params: { content: "## Snacks\n  - Goldfish" },
+          as: :json
+
+    assert_response :success
+    assert_equal "## Snacks\n  - Goldfish", @kitchen.reload.quick_bites_content
+  end
+
+  test 'update_quick_bites rejects blank content' do
+    @kitchen.update!(quick_bites_content: 'old content')
+
+    log_in
+    patch menu_quick_bites_path(kitchen_slug: kitchen_slug),
+          params: { content: '' },
+          as: :json
+
+    assert_response :unprocessable_entity
+  end
+
+  test 'update_quick_bites broadcasts Turbo Stream to menu_content' do
+    log_in
+
+    assert_turbo_stream_broadcasts [@kitchen, 'menu_content'] do
+      patch menu_quick_bites_path(kitchen_slug: kitchen_slug),
+            params: { content: "## Snacks\n  - Goldfish" },
+            as: :json
+    end
+  end
+
+  private
+
+  def build_stale_plan(method_to_stub)
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.define_singleton_method(method_to_stub) do |*, **|
+      raise ActiveRecord::StaleObjectError, self
+    end
+    plan.define_singleton_method(:reload) { self }
+    plan
+  end
+end
