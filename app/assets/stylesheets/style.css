@@ -494,21 +494,6 @@ section h2 {
 .status-yes { color: #16a34a; }
 .status-no { color: #dc2626; }
 
-/* Expand panel */
-.ingredient-expand td {
-  padding: 0 0.5rem 0.75rem 1.5rem;
-  border-bottom: 1px solid var(--border-color, #e5e7eb);
-}
-.ingredient-detail p { margin: 0.25rem 0; font-size: 0.9rem; }
-.detail-missing { color: var(--muted-text); font-style: italic; }
-.detail-recipes a { white-space: nowrap; }
-.detail-actions {
-  margin-top: 0.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
 .source-badge {
   font-size: 0.7rem;
   font-weight: 600;
@@ -536,18 +521,6 @@ section h2 {
   font-style: italic;
   padding: 0.5rem 0;
 }
-
-.btn-link {
-  background: none;
-  border: none;
-  color: var(--muted-text);
-  font-size: 0.75rem;
-  cursor: pointer;
-  padding: 0;
-  text-decoration: underline;
-  vertical-align: middle;
-}
-.btn-link:hover { color: var(--text-color); }
 
 /* Mobile: hide aisle column */
 @media (max-width: 640px) {
