@@ -114,6 +114,12 @@ class ShoppingListBuilder
   end
 
   def serialize_amounts(amounts)
-    amounts.compact.map { |q| [q.value.to_f, q.unit] }
+    amounts.compact.map { |q| [q.value.to_f, display_unit(q)] }
+  end
+
+  def display_unit(quantity)
+    return quantity.unit unless quantity.unit
+
+    FamilyRecipes::Inflector.unit_display(quantity.unit, quantity.value)
   end
 end

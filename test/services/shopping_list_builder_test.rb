@@ -108,7 +108,7 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
     flour = result['Baking'].find { |i| i[:name] == 'Flour' }
 
     assert flour, 'Expected Flour in Baking aisle'
-    flour_cup = flour[:amounts].find { |_v, u| u == 'cup' }
+    flour_cup = flour[:amounts].find { |_v, u| u == 'cups' }
 
     assert_in_delta 5.0, flour_cup[0], 0.01
   end
@@ -357,5 +357,51 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
     custom = result['Miscellaneous'].find { |i| i[:name] == 'birthday candles' }
 
     assert_empty custom[:sources]
+  end
+
+  test 'serializes plural units for quantity greater than one' do
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
+    flour = result['Baking'].find { |i| i[:name] == 'Flour' }
+
+    flour_amount = flour[:amounts].find { |_v, u| u == 'cups' }
+    assert flour_amount, 'Expected plural unit "cups" for quantity 3.0'
+    assert_in_delta 3.0, flour_amount[0], 0.01
+  end
+
+  test 'serializes singular unit for quantity of one' do
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Toast
+
+      Category: Bread
+
+      ## Make (toast)
+
+      - Flour, 1 cup
+
+      Toast.
+    MD
+
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'recipe', slug: 'toast', selected: true)
+
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
+    flour = result['Baking'].find { |i| i[:name] == 'Flour' }
+
+    flour_amount = flour[:amounts].find { |_v, u| u == 'cup' }
+    assert flour_amount, 'Expected singular unit "cup" for quantity 1.0'
+  end
+
+  test 'abbreviated units stay singular regardless of quantity' do
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
+    salt = result['Spices'].find { |i| i[:name] == 'Salt' }
+
+    salt_amount = salt[:amounts].find { |_v, u| u == 'tsp' }
+    assert salt_amount, 'Abbreviated units should not pluralize'
   end
 end
