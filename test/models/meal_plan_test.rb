@@ -200,4 +200,120 @@ class MealPlanTest < ActiveSupport::TestCase
       end
     end
   end
+
+  test 'deselecting recipe prunes orphaned checked_off items' do
+    setup_recipe_with_ingredients
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+    list.apply_action('check', item: 'Flour', checked: true)
+    list.apply_action('check', item: 'Salt', checked: true)
+
+    list.apply_action('select', type: 'recipe', slug: 'focaccia', selected: false)
+
+    assert_empty list.state['checked_off']
+  end
+
+  test 'deselecting recipe preserves checked items still on shopping list' do
+    setup_two_recipes_sharing_ingredient
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+    list.apply_action('select', type: 'recipe', slug: 'bagels', selected: true)
+    list.apply_action('check', item: 'Flour', checked: true)
+    list.apply_action('check', item: 'Salt', checked: true)
+
+    list.apply_action('select', type: 'recipe', slug: 'focaccia', selected: false)
+
+    assert_includes list.state['checked_off'], 'Flour'
+    assert_not_includes list.state['checked_off'], 'Salt'
+  end
+
+  test 'deselecting quick bite prunes orphaned checked_off items' do
+    @kitchen.update!(quick_bites_content: "## Snacks\n  - Nachos: Chips, Salsa")
+    ensure_catalog_entries('Chips' => 'Snacks', 'Salsa' => 'Condiments')
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'quick_bite', slug: 'nachos', selected: true)
+    list.apply_action('check', item: 'Chips', checked: true)
+
+    list.apply_action('select', type: 'quick_bite', slug: 'nachos', selected: false)
+
+    assert_empty list.state['checked_off']
+  end
+
+  test 'selecting does not prune checked_off' do
+    setup_recipe_with_ingredients
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('check', item: 'Milk', checked: true)
+
+    list.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+
+    assert_includes list.state['checked_off'], 'Milk'
+  end
+
+  test 'prune preserves custom items in checked_off' do
+    setup_recipe_with_ingredients
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('custom_items', item: 'birthday candles', action: 'add')
+    list.apply_action('check', item: 'birthday candles', checked: true)
+    list.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+
+    list.apply_action('select', type: 'recipe', slug: 'focaccia', selected: false)
+
+    assert_includes list.state['checked_off'], 'birthday candles'
+  end
+
+  private
+
+  def setup_recipe_with_ingredients
+    Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Focaccia
+
+      Category: Bread
+
+      ## Mix (combine)
+
+      - Flour, 3 cups
+      - Salt, 1 tsp
+
+      Mix well.
+    MD
+    ensure_catalog_entries('Flour' => 'Baking', 'Salt' => 'Spices')
+  end
+
+  def setup_two_recipes_sharing_ingredient
+    Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Focaccia
+
+      Category: Bread
+
+      ## Mix (combine)
+
+      - Flour, 3 cups
+      - Salt, 1 tsp
+
+      Mix well.
+    MD
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Bagels
+
+      Category: Bread
+
+      ## Mix (combine)
+
+      - Flour, 4 cups
+      - Yeast, 1 tsp
+
+      Mix well.
+    MD
+    ensure_catalog_entries('Flour' => 'Baking', 'Salt' => 'Spices', 'Yeast' => 'Baking')
+  end
+
+  def ensure_catalog_entries(name_aisle_pairs)
+    name_aisle_pairs.each do |name, aisle|
+      IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: name) do |entry|
+        entry.aisle = aisle
+      end
+    end
+  end
 end
