@@ -274,7 +274,7 @@ ruby -Itest test/controllers/recipes_controller_test.rb              # single fi
 ruby -Itest test/models/recipe_test.rb -n test_requires_title        # single test method
 ```
 
-Test layout: `test/controllers/`, `test/models/`, `test/services/`, `test/jobs/`, `test/integration/`, `test/channels/`, `test/lib/`, plus top-level parser unit tests. `test/test_helper.rb` provides `create_kitchen_and_user` (sets `@kitchen`, `@user`, and tenant), `log_in` (logs in `@user` via dev login), and `kitchen_slug` for controller tests. **Two test hierarchies:** controller/model/integration tests inherit `ActiveSupport::TestCase`; top-level parser unit tests (`test/recipe_test.rb`, `test/nutrition_calculator_test.rb`, etc.) inherit `Minitest::Test` directly and do NOT have ActiveSupport extensions like `assert_not_*`.
+Test layout: `test/controllers/`, `test/models/`, `test/services/`, `test/jobs/`, `test/integration/`, `test/channels/`, `test/helpers/`, `test/lib/`, plus top-level parser unit tests. `test/test_helper.rb` provides `create_kitchen_and_user` (sets `@kitchen`, `@user`, and tenant), `log_in` (logs in `@user` via dev login), and `kitchen_slug` for controller tests. **Two test hierarchies:** controller/model/integration tests inherit `ActiveSupport::TestCase`; top-level parser unit tests (`test/recipe_test.rb`, `test/nutrition_calculator_test.rb`, etc.) inherit `Minitest::Test` directly and do NOT have ActiveSupport extensions like `assert_not_*`.
 
 ## Dev Server
 
@@ -314,7 +314,7 @@ curl -X POST "https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/purge_cac
 
 ## Routes
 
-Routes use an optional `(/kitchens/:kitchen_slug)` scope. When exactly one kitchen exists, URLs are root-level (`/recipes/bagels`, `/ingredients`, `/menu`, `/groceries`). When multiple kitchens exist, URLs are scoped (`/kitchens/:slug/recipes/bagels`). `default_url_options` returns `{ kitchen_slug: }` or `{}` based on whether the request arrived via a scoped URL. Kitchen-scoped routes include recipes (`show`, `create`, `update`, `destroy` — no index/new/edit), ingredients index, menu (`show`, `select`, `clear`, `quick_bites`, `quick_bites_content`), groceries (`show`, `state`, `check`, `custom_items`, `aisle_order`, `aisle_order_content`), and nutrition entries (`POST`/`DELETE` at `/nutrition/:ingredient_name`). The backing model for menu/groceries state is `MealPlan` (one row per kitchen). Both the menu and groceries pages require membership. Views use `home_path` (not `kitchen_root_path`) for the homepage link — it returns `root_path` or `kitchen_root_path` depending on mode. Other helpers (`recipe_path`, `ingredients_path`, `menu_path`, `groceries_path`) auto-adapt via `default_url_options`. When adding links, always use the `_path` helpers.
+Routes use an optional `(/kitchens/:kitchen_slug)` scope. When exactly one kitchen exists, URLs are root-level (`/recipes/bagels`, `/ingredients`, `/menu`, `/groceries`). When multiple kitchens exist, URLs are scoped (`/kitchens/:slug/recipes/bagels`). `default_url_options` returns `{ kitchen_slug: }` or `{}` based on whether the request arrived via a scoped URL. The root route is handled by `LandingController` — it renders the sole kitchen's homepage directly when one kitchen exists, or a kitchen-list landing page when multiple exist. Kitchen-scoped routes include recipes (`show`, `create`, `update`, `destroy` — no index/new/edit), ingredients (`index`, `edit`), menu (`show`, `select`, `select_all`, `clear`, `state`, `quick_bites`, `quick_bites_content`), groceries (`show`, `state`, `check`, `custom_items`, `aisle_order`, `aisle_order_content`), and nutrition entries (`POST`/`DELETE` at `/nutrition/:ingredient_name`). The backing model for menu/groceries state is `MealPlan` (one row per kitchen). Both the menu and groceries pages require membership. Views use `home_path` (not `kitchen_root_path`) for the homepage link — it returns `root_path` or `kitchen_root_path` depending on mode. Other helpers (`recipe_path`, `ingredients_path`, `menu_path`, `groceries_path`) auto-adapt via `default_url_options`. When adding links, always use the `_path` helpers.
 
 ## Architecture
 
@@ -340,9 +340,11 @@ When a new user has zero memberships and exactly one Kitchen exists, `auto_join_
 
 Homepage and recipe pages are public reads. Ingredients, menu, and groceries pages require membership entirely (`require_membership` on all actions). Write paths on recipes also require membership. In development, `auto_login_in_development` logs in as `User.first` automatically (simulating Authelia); `/logout` sets a `skip_dev_auto_login` cookie to test the logged-out experience. `ActionCable::Connection` identifies users from the session cookie; `MealPlanChannel` checks kitchen membership. See `docs/plans/2026-02-25-dev-auth-optimization-design.md` for the current auth design.
 
-### Real-time sync (ActionCable)
+### Real-time sync (ActionCable + Turbo Streams)
 
-Meal plan state syncs across browser tabs/devices via ActionCable backed by Solid Cable (separate SQLite database for pub/sub). `MealPlanChannel` broadcasts version numbers on state changes; clients poll for fresh state when their version is stale. Both the Menu and Groceries pages subscribe to the same channel. The Menu page also receives Turbo Stream broadcasts for quick bites content changes. Connections require authentication (session cookie); subscriptions require kitchen membership.
+Meal plan state syncs across browser tabs/devices via ActionCable backed by Solid Cable (separate SQLite database for pub/sub). `MealPlanChannel` broadcasts version numbers on state changes; clients poll for fresh state when their version is stale. Both the Menu and Groceries pages subscribe to the same channel. Connections require authentication (session cookie); subscriptions require kitchen membership.
+
+`RecipeBroadcaster` bridges recipe CRUD events to real-time updates. On recipe create/update/destroy it broadcasts Turbo Stream replacements to the home page (recipe listings), menu page (recipe selector), ingredients page (table + summary bar), and the recipe page itself. It also fires toast notifications via the `toast_controller` Stimulus controller and calls `MealPlanChannel.broadcast_content_changed` to trigger grocery/menu state refresh. On recipe changes it prunes orphaned checked-off entries from the meal plan via `MealPlan#prune_checked_off`. The broadcaster shares the `IngredientRows` concern with `IngredientsController`.
 
 ### PWA & Service Worker
 
@@ -390,6 +392,8 @@ All client-side JavaScript uses the Hotwire stack: **Stimulus** for behavior, **
 - `menu_controller` — Menu page recipe/quick-bite selection, ActionCable sync for meal plan state, and checkbox state preservation. Handles Turbo Stream broadcasts for quick bites content changes.
 - `recipe_state_controller` — recipe page scaling, cross-off, and localStorage state persistence.
 - `wake_lock_controller` — Screen Wake Lock API for recipe pages (keeps screen on while cooking).
+- `ingredient_table_controller` — ingredients page search filtering, status filtering (all/complete/missing nutrition/missing density), sortable columns, and keyboard navigation.
+- `toast_controller` — fires a toast notification on connect and removes itself. Used by `RecipeBroadcaster`'s Turbo Stream broadcasts to show notifications on recipe changes.
 
 **Shared utilities** (`app/javascript/utilities/`): `notify.js` (toast notifications), `editor_utils.js` (CSRF token helper), `vulgar_fractions.js` (number display).
 
