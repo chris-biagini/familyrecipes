@@ -1,0 +1,26 @@
+<%# locals: (ingredient_rows:) %>
+<table id="ingredients-table" class="ingredients-table" data-ingredient-table-target="table">
+  <thead>
+    <tr>
+      <th class="col-name sortable" data-sort-key="name" data-action="click->ingredient-table#sort"
+          role="columnheader" aria-sort="ascending">
+        Ingredient<span class="sort-arrow" aria-hidden="true"> &#9650;</span>
+      </th>
+      <th class="col-nutrition sortable" data-sort-key="nutrition" data-action="click->ingredient-table#sort"
+          role="columnheader">
+        Nutrition<span class="sort-arrow" aria-hidden="true"></span>
+      </th>
+      <th class="col-density sortable" data-sort-key="density" data-action="click->ingredient-table#sort"
+          role="columnheader">
+        Density<span class="sort-arrow" aria-hidden="true"></span>
+      </th>
+      <th class="col-aisle sortable" data-sort-key="aisle" data-action="click->ingredient-table#sort"
+          role="columnheader">
+        Aisle<span class="sort-arrow" aria-hidden="true"></span>
+      </th>
+    </tr>
+  </thead>
+  <% ingredient_rows.each do |row| %>
+    <%= render 'ingredients/table_row', row: row %>
+  <% end %>
+</table>
