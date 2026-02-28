@@ -3,178 +3,110 @@
 require_relative 'test_helper'
 
 class InflectorTest < Minitest::Test
-  # --- singular ---
+  # --- safe_plural ---
 
-  def test_singular_regular_s
-    assert_equal 'carrot', FamilyRecipes::Inflector.singular('carrots')
+  def test_safe_plural_known_unit
+    assert_equal 'cups', FamilyRecipes::Inflector.safe_plural('cup')
   end
 
-  def test_singular_ies_to_y
-    assert_equal 'berry', FamilyRecipes::Inflector.singular('berries')
+  def test_safe_plural_known_ingredient
+    assert_equal 'eggs', FamilyRecipes::Inflector.safe_plural('egg')
   end
 
-  def test_singular_ses
-    assert_equal 'glass', FamilyRecipes::Inflector.singular('glasses')
+  def test_safe_plural_known_yield_noun
+    assert_equal 'loaves', FamilyRecipes::Inflector.safe_plural('loaf')
   end
 
-  def test_singular_ches
-    assert_equal 'peach', FamilyRecipes::Inflector.singular('peaches')
+  def test_safe_plural_unknown_word_passes_through
+    assert_equal 'oregano', FamilyRecipes::Inflector.safe_plural('oregano')
   end
 
-  def test_singular_shes
-    assert_equal 'dish', FamilyRecipes::Inflector.singular('dishes')
+  def test_safe_plural_preserves_capitalization
+    assert_equal 'Eggs', FamilyRecipes::Inflector.safe_plural('Egg')
   end
 
-  def test_singular_xes
-    assert_equal 'box', FamilyRecipes::Inflector.singular('boxes')
+  def test_safe_plural_already_plural_passes_through
+    assert_equal 'eggs', FamilyRecipes::Inflector.safe_plural('eggs')
   end
 
-  def test_singular_zes
-    assert_equal 'buzz', FamilyRecipes::Inflector.singular('buzzes')
+  def test_safe_plural_abbreviated_passes_through
+    assert_equal 'g', FamilyRecipes::Inflector.safe_plural('g')
   end
 
-  def test_singular_oes
-    assert_equal 'potato', FamilyRecipes::Inflector.singular('potatoes')
+  def test_safe_plural_nil
+    assert_nil FamilyRecipes::Inflector.safe_plural(nil)
   end
 
-  def test_singular_irregular_leaves
-    assert_equal 'leaf', FamilyRecipes::Inflector.singular('leaves')
+  def test_safe_plural_empty
+    assert_equal '', FamilyRecipes::Inflector.safe_plural('')
   end
 
-  def test_singular_irregular_loaves
-    assert_equal 'loaf', FamilyRecipes::Inflector.singular('loaves')
+  # --- safe_singular ---
+
+  def test_safe_singular_known_unit
+    assert_equal 'cup', FamilyRecipes::Inflector.safe_singular('cups')
   end
 
-  def test_singular_already_singular
-    assert_equal 'carrot', FamilyRecipes::Inflector.singular('carrot')
+  def test_safe_singular_known_ingredient
+    assert_equal 'egg', FamilyRecipes::Inflector.safe_singular('eggs')
   end
 
-  def test_singular_preserves_capitalization
-    assert_equal 'Carrot', FamilyRecipes::Inflector.singular('Carrots')
+  def test_safe_singular_known_yield_noun
+    assert_equal 'loaf', FamilyRecipes::Inflector.safe_singular('loaves')
   end
 
-  def test_singular_irregular_preserves_capitalization
-    assert_equal 'Leaf', FamilyRecipes::Inflector.singular('Leaves')
+  def test_safe_singular_unknown_word_passes_through
+    assert_equal 'paprikas', FamilyRecipes::Inflector.safe_singular('paprikas')
   end
 
-  def test_singular_nil
-    assert_nil FamilyRecipes::Inflector.singular(nil)
+  def test_safe_singular_preserves_capitalization
+    assert_equal 'Egg', FamilyRecipes::Inflector.safe_singular('Eggs')
   end
 
-  def test_singular_empty
-    assert_equal '', FamilyRecipes::Inflector.singular('')
+  def test_safe_singular_already_singular_passes_through
+    assert_equal 'cup', FamilyRecipes::Inflector.safe_singular('cup')
   end
 
-  def test_singular_uncountable_unchanged
-    assert_equal 'butter', FamilyRecipes::Inflector.singular('butter')
+  def test_safe_singular_nil
+    assert_nil FamilyRecipes::Inflector.safe_singular(nil)
   end
 
-  def test_singular_ss_unchanged
-    assert_equal 'grass', FamilyRecipes::Inflector.singular('grass')
+  def test_safe_singular_empty
+    assert_equal '', FamilyRecipes::Inflector.safe_singular('')
   end
 
-  # --- plural ---
+  # --- display_name ---
 
-  def test_plural_regular_s
-    assert_equal 'carrots', FamilyRecipes::Inflector.plural('carrot')
+  def test_display_name_pluralizes_known_ingredient
+    assert_equal 'Eggs', FamilyRecipes::Inflector.display_name('Egg', 2)
   end
 
-  def test_plural_consonant_y_to_ies
-    assert_equal 'berries', FamilyRecipes::Inflector.plural('berry')
+  def test_display_name_singularizes_known_ingredient
+    assert_equal 'Egg', FamilyRecipes::Inflector.display_name('Eggs', 1)
   end
 
-  def test_plural_vowel_y_adds_s
-    assert_equal 'days', FamilyRecipes::Inflector.plural('day')
+  def test_display_name_unknown_ingredient_passes_through
+    assert_equal 'Oregano', FamilyRecipes::Inflector.display_name('Oregano', 5)
   end
 
-  def test_plural_sibilant_s
-    assert_equal 'glasses', FamilyRecipes::Inflector.plural('glass')
+  def test_display_name_multi_word_inflects_last
+    assert_equal 'Egg yolks', FamilyRecipes::Inflector.display_name('Egg yolk', 2)
   end
 
-  def test_plural_sibilant_x
-    assert_equal 'boxes', FamilyRecipes::Inflector.plural('box')
+  def test_display_name_qualifier_preserved
+    assert_equal 'Tomatoes (canned)', FamilyRecipes::Inflector.display_name('Tomato (canned)', 2)
   end
 
-  def test_plural_sibilant_z
-    assert_equal 'buzzes', FamilyRecipes::Inflector.plural('buzz')
+  def test_display_name_nil
+    assert_nil FamilyRecipes::Inflector.display_name(nil, 2)
   end
 
-  def test_plural_sibilant_ch
-    assert_equal 'peaches', FamilyRecipes::Inflector.plural('peach')
+  def test_display_name_empty
+    assert_equal '', FamilyRecipes::Inflector.display_name('', 2)
   end
 
-  def test_plural_sibilant_sh
-    assert_equal 'dishes', FamilyRecipes::Inflector.plural('dish')
-  end
-
-  def test_plural_consonant_o
-    assert_equal 'potatoes', FamilyRecipes::Inflector.plural('potato')
-  end
-
-  def test_plural_irregular_leaf
-    assert_equal 'leaves', FamilyRecipes::Inflector.plural('leaf')
-  end
-
-  def test_plural_irregular_loaf
-    assert_equal 'loaves', FamilyRecipes::Inflector.plural('loaf')
-  end
-
-  def test_plural_irregular_taco
-    assert_equal 'tacos', FamilyRecipes::Inflector.plural('taco')
-  end
-
-  def test_plural_abbreviated_form_unchanged
-    assert_equal 'ml', FamilyRecipes::Inflector.plural('ml')
-  end
-
-  def test_plural_preserves_capitalization
-    assert_equal 'Carrots', FamilyRecipes::Inflector.plural('Carrot')
-  end
-
-  def test_plural_irregular_preserves_capitalization
-    assert_equal 'Leaves', FamilyRecipes::Inflector.plural('Leaf')
-  end
-
-  def test_plural_nil
-    assert_nil FamilyRecipes::Inflector.plural(nil)
-  end
-
-  def test_plural_empty
-    assert_equal '', FamilyRecipes::Inflector.plural('')
-  end
-
-  def test_plural_uncountable_unchanged
-    assert_equal 'butter', FamilyRecipes::Inflector.plural('butter')
-  end
-
-  # --- uncountable? ---
-
-  def test_uncountable_true_for_butter
-    assert FamilyRecipes::Inflector.uncountable?('butter')
-  end
-
-  def test_uncountable_true_case_insensitive
-    assert FamilyRecipes::Inflector.uncountable?('Butter')
-  end
-
-  def test_uncountable_true_for_flour
-    assert FamilyRecipes::Inflector.uncountable?('flour')
-  end
-
-  def test_uncountable_true_for_cream_cheese
-    assert FamilyRecipes::Inflector.uncountable?('cream cheese')
-  end
-
-  def test_uncountable_true_for_heavy_cream
-    assert FamilyRecipes::Inflector.uncountable?('heavy cream')
-  end
-
-  def test_uncountable_false_for_carrot
-    refute FamilyRecipes::Inflector.uncountable?('carrot')
-  end
-
-  def test_uncountable_false_for_egg
-    refute FamilyRecipes::Inflector.uncountable?('egg')
+  def test_display_name_already_correct_form_passes_through
+    assert_equal 'Egg', FamilyRecipes::Inflector.display_name('Egg', 1)
   end
 
   # --- normalize_unit ---
@@ -355,12 +287,12 @@ class InflectorTest < Minitest::Test
     assert_equal ['Eggs'], FamilyRecipes::Inflector.ingredient_variants('Egg')
   end
 
-  def test_ingredient_variants_uncountable_returns_empty
-    assert_empty FamilyRecipes::Inflector.ingredient_variants('Butter')
+  def test_ingredient_variants_mass_noun_returns_variant
+    assert_equal ['Butters'], FamilyRecipes::Inflector.ingredient_variants('Butter')
   end
 
-  def test_ingredient_variants_uncountable_with_qualifier_returns_empty
-    assert_empty FamilyRecipes::Inflector.ingredient_variants('Flour (all-purpose)')
+  def test_ingredient_variants_mass_noun_with_qualifier_returns_variant
+    assert_equal ['Flours (all-purpose)'], FamilyRecipes::Inflector.ingredient_variants('Flour (all-purpose)')
   end
 
   def test_ingredient_variants_qualified_name_inflects_base
@@ -383,16 +315,16 @@ class InflectorTest < Minitest::Test
     assert_empty FamilyRecipes::Inflector.ingredient_variants('')
   end
 
-  def test_ingredient_variants_irregular_leaves
-    assert_equal ['Bay leaf'], FamilyRecipes::Inflector.ingredient_variants('Bay leaves')
+  # Rules produce imperfect variants for catalog matching — lookup keys, never displayed
+  def test_ingredient_variants_irregular_leaves_via_rules
+    assert_equal ['Bay leave'], FamilyRecipes::Inflector.ingredient_variants('Bay leaves')
   end
 
-  def test_ingredient_variants_irregular_singular_to_plural
-    assert_equal ['Bay leaves'], FamilyRecipes::Inflector.ingredient_variants('Bay leaf')
+  def test_ingredient_variants_irregular_leaf_via_rules
+    assert_equal ['Bay leafs'], FamilyRecipes::Inflector.ingredient_variants('Bay leaf')
   end
 
   def test_ingredient_variants_already_both_forms_same
-    # "grass" singularizes to "grass" (ss ending) — no useful variant
     assert_empty FamilyRecipes::Inflector.ingredient_variants('grass')
   end
 end
