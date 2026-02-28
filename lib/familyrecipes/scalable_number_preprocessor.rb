@@ -53,7 +53,7 @@ module ScalableNumberPreprocessor
     "#{ERB::Util.html_escape(text[...match.begin(0)])}" \
       "<span class=\"yield\" data-base-value=\"#{value}\" " \
       "data-unit-singular=\"#{escaped_singular}\" data-unit-plural=\"#{escaped_plural}\">" \
-      "#{inner_span}#{rest}</span>"
+      "#{inner_span}<span class=\"yield-unit\">#{rest}</span></span>"
   end
 
   def span_from_match(word_match, numeral_match)

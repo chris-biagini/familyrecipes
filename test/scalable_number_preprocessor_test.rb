@@ -138,7 +138,7 @@ class ScalableNumberPreprocessorTest < Minitest::Test
     assert_includes result, 'data-unit-singular="pancake"'
     assert_includes result, 'data-unit-plural="pancakes"'
     assert_includes result, '<span class="scalable"'
-    assert_includes result, '>12</span> pancakes'
+    assert_includes result, '<span class="yield-unit"> pancakes</span>'
   end
 
   def test_yield_with_unit_handles_word_numbers
@@ -147,14 +147,14 @@ class ScalableNumberPreprocessorTest < Minitest::Test
     assert_includes result, 'data-base-value="2"'
     assert_includes result, 'data-unit-singular="loaf"'
     assert_includes result, 'data-unit-plural="loaves"'
-    assert_includes result, '>two</span> loaves'
+    assert_includes result, '<span class="yield-unit"> loaves</span>'
   end
 
   def test_yield_with_unit_handles_single_item
     result = ScalableNumberPreprocessor.process_yield_with_unit('1 loaf', 'loaf', 'loaves')
 
     assert_includes result, 'data-base-value="1.0"'
-    assert_includes result, '>1</span> loaf'
+    assert_includes result, '<span class="yield-unit"> loaf</span>'
   end
 
   # --- XSS escape tests ---
