@@ -15,7 +15,7 @@ potential regression.
 The root issue is that **display and matching have different risk profiles**, but
 the code treats them identically.
 
-### Harm taxonomy (from user)
+### Harm taxonomy
 
 1. **Wrong pluralization** is the worst offense. "Oreganoes" or "Egg yolk" (when
    it should be "Egg yolks") makes the app feel broken. The system should avoid
@@ -89,11 +89,36 @@ O(1) lookups.
 
 | Old | New |
 |-----|-----|
-| UNCOUNTABLE set (33 entries) | Dropped. Words not in KNOWN_PLURALS pass through unchanged. |
-| IRREGULAR_SINGULAR_TO_PLURAL (4 entries) | Subsumed by KNOWN_PLURALS. |
-| IRREGULAR_PLURAL_TO_SINGULAR | Subsumed by inverted KNOWN_PLURALS. |
+| UNCOUNTABLE set (33 entries) | Dropped entirely. Words not in KNOWN_PLURALS pass through unchanged. |
+| IRREGULAR_SINGULAR_TO_PLURAL (4 entries) | Dropped entirely. Subsumed by KNOWN_PLURALS for display. |
+| IRREGULAR_PLURAL_TO_SINGULAR | Dropped entirely. Subsumed by inverted KNOWN_PLURALS. |
+| `uncountable?()` public method | Dropped. No external callers. |
 | `singular()` / `plural()` (rule-based) | `safe_singular()` / `safe_plural()` (allowlist-only for display). Rules stay private for matching. |
 | ABBREVIATIONS | Stays as-is. Abbreviated units never pluralize. |
+
+### Why UNCOUNTABLE and IRREGULAR can be dropped entirely
+
+The private rule engine (used only by `ingredient_variants` and
+`normalize_unit`) no longer checks UNCOUNTABLE or IRREGULAR. This means:
+
+- `ingredient_variants('Butter')` returns `['Butters']` instead of `[]`.
+  The spurious variant is harmless — it's a lookup key, not display text.
+  If nothing in the catalog is called "Butters", the key doesn't match.
+- `ingredient_variants('Leaf')` returns `['Leafs']` instead of `['Leaves']`.
+  The imperfect variant won't match "Leaves" in the catalog, but that's
+  acceptable — the direct lookup for "Leaf" handles the common case.
+
+All three callers of `ingredient_variants` were analyzed:
+
+| Caller | Impact of spurious variants |
+|--------|---------------------------|
+| `BuildValidator` (once per seed) | Harmless — widens the "known" set slightly |
+| `IngredientCatalog.lookup_for` (once per request) | Harmless — extra keys point to real entries |
+| `IngredientRows` (per ingredient per request) | Harmless — direct lookup succeeds first |
+
+The UNCOUNTABLE set doesn't scale: you can't anticipate every uncountable
+ingredient in English, and the list was growing with every new ingredient.
+Dropping it eliminates the maintenance burden entirely.
 
 ### Inflector public API
 
@@ -114,7 +139,8 @@ Inflector.normalize_unit(raw_unit)
 ```
 
 The old `singular()` and `plural()` methods become private, used only by
-`ingredient_variants()` for fuzzy catalog matching.
+`ingredient_variants()` for fuzzy catalog matching. The private rules run
+unguarded — no UNCOUNTABLE or IRREGULAR checks.
 
 ### KNOWN_PLURALS in JavaScript
 
@@ -123,7 +149,7 @@ singular and plural forms per HTML element:
 
 - Ingredient `<li>`: `data-quantity-unit` / `data-quantity-unit-plural` (already
   exists), plus new `data-name-singular` / `data-name-plural` for known-safe
-  ingredient names.
+  **unitless** ingredient names only.
 - Yield `.yield` span: `data-unit-singular` / `data-unit-plural` (already
   exists).
 
@@ -143,7 +169,7 @@ def serialize_amounts(amounts)
 end
 
 def display_unit(quantity)
-  return quantity.unit if quantity.unit.nil?
+  return quantity.unit unless quantity.unit
   FamilyRecipes::Inflector.unit_display(quantity.unit, quantity.value)
 end
 ```
@@ -161,31 +187,80 @@ catalog's natural display form is what users expect on a shopping list.
 ### 3. Recipe scaling — ingredient lines
 
 **Fix fraction singular check.** Use `isVulgarSingular()` (already imported)
-instead of `=== 1`. This matches the yield-line scaling behavior.
+instead of `=== 1`. This matches the yield-line scaling behavior. Also use
+`formatVulgar()` for consistent number display.
 
-**Add ingredient name adjustment for known-safe words.** The `_step.html.erb`
-partial emits `data-name-singular` / `data-name-plural` when the ingredient
-name's last word is in KNOWN_PLURALS. The JS picks the correct form based on
-scaled quantity.
+**Add ingredient name adjustment for known-safe unitless words.** The
+`_step.html.erb` partial emits `data-name-singular` / `data-name-plural` only
+when the ingredient has no unit and the name's last word is in KNOWN_PLURALS.
+The JS picks the correct form based on scaled quantity.
 
-**Replace `<b>` with `<span>` for ingredient names.** The `<b>` tag was a legacy
-decision. Using `<span class="ingredient-name">` (or similar) gives cleaner
-styling hooks. Update CSS to compensate.
+Name data attributes are restricted to unitless ingredients because unit-bearing
+ingredients describe a measured amount, not a count: "Eggs, 2 cups" scaled to
+½x should stay "Eggs, 1 cup", not become "Egg, 1 cup".
 
-Example HTML:
-```html
-<li data-quantity-value="1"
-    data-quantity-unit="cup" data-quantity-unit-plural="cups"
-    data-name-singular="Egg" data-name-plural="Eggs">
-  <span class="ingredient-name">Egg</span>,
-  <span class="quantity">1</span>
+**Keep `<b>` tag, add class.** Replace `<b>` with `<b class="ingredient-name">`
+to add a JS selector hook while preserving semantic HTML. No CSS change needed.
+
+**Use `tag.attributes` for data attributes.** Replace the inline
+`ERB::Util.html_escape` + `.html_safe` pattern with a `RecipesHelper` method
+that returns all ingredient data attributes via `tag.attributes`. This eliminates
+`.html_safe` calls entirely — `tag.attributes` handles escaping internally.
+
+```ruby
+# RecipesHelper
+def ingredient_data_attrs(item)
+  attrs = {}
+  return tag.attributes(attrs) unless item.quantity_value
+
+  attrs[:'data-quantity-value'] = item.quantity_value
+  attrs[:'data-quantity-unit'] = item.quantity_unit
+  if item.quantity_unit
+    attrs[:'data-quantity-unit-plural'] =
+      FamilyRecipes::Inflector.unit_display(item.quantity_unit, 2)
+  end
+
+  unless item.quantity_unit
+    singular = FamilyRecipes::Inflector.display_name(item.name, 1)
+    plural = FamilyRecipes::Inflector.display_name(item.name, 2)
+    if singular != plural
+      attrs[:'data-name-singular'] = singular
+      attrs[:'data-name-plural'] = plural
+    end
+  end
+
+  tag.attributes(attrs)
+end
+```
+
+Template simplifies to:
+```erb
+<li <%= ingredient_data_attrs(item) %>>
+  <b class="ingredient-name"><%= item.name %></b>...
 </li>
 ```
 
-Scaled 2x: "Eggs, 2". Scaled ½x: "Egg, ½".
+**Initial render uses catalog name as-is.** The server does not call
+`display_name` for the initial text content. If the catalog says "Eggs" and the
+recipe quantity is 1, the initial render shows "Eggs, 1". After a scale+reset
+cycle, the JS might show "Egg, 1". This is the "inconsistent names" tier — the
+least harmful, and the simplest approach.
 
-For unknown names (not in KNOWN_PLURALS), no name data attributes are emitted and
-the JS leaves the name unchanged. "Oregano, 2 tsp" stays "Oregano, 2 tsp".
+Example HTML (unitless ingredient):
+```html
+<li data-quantity-value="1"
+    data-name-singular="Egg" data-name-plural="Eggs">
+  <b class="ingredient-name">Egg</b>, <span class="quantity">1</span>
+</li>
+```
+
+Example HTML (ingredient with unit — no name data attrs):
+```html
+<li data-quantity-value="3"
+    data-quantity-unit="cup" data-quantity-unit-plural="cups">
+  <b class="ingredient-name">Flour</b>, <span class="quantity">3 cups</span>
+</li>
+```
 
 ### 4. Recipe scaling — yield lines
 
@@ -214,7 +289,7 @@ Three scaling patterns, each with a clear role:
 
 | Element | Data attributes | JS behavior |
 |---------|----------------|-------------|
-| Ingredient `<li>` | `data-quantity-value`, `data-quantity-unit`, `data-quantity-unit-plural`, optional `data-name-singular`/`data-name-plural` | Scale number, pick unit form, optionally pick name form |
+| Ingredient `<li>` | `data-quantity-value`, `data-quantity-unit`, `data-quantity-unit-plural`, optional `data-name-singular`/`data-name-plural` (unitless only) | Scale number, pick unit form, optionally pick name form |
 | Yield `.yield` | `data-base-value`, `data-unit-singular`, `data-unit-plural` | Scale inner `.scalable`, update `.yield-unit` span |
 | Instruction `.scalable` | `data-base-value`, `data-original-text` | Scale number only |
 
@@ -229,11 +304,20 @@ Three scaling patterns, each with a clear role:
 
 ## What gets dropped
 
-- UNCOUNTABLE set
-- IRREGULAR_SINGULAR_TO_PLURAL / IRREGULAR_PLURAL_TO_SINGULAR
+- UNCOUNTABLE set (33 entries)
+- IRREGULAR_SINGULAR_TO_PLURAL / IRREGULAR_PLURAL_TO_SINGULAR (4 entries)
+- `uncountable?` public method
 - Public `singular()` / `plural()` methods (become private, match-only)
-- `<b>` tag for ingredient names (replaced by `<span>`)
+- `.html_safe` call for unit-plural data attribute (replaced by `tag.attributes`)
 - Text node manipulation for yield unit display
+
+## What gets added
+
+- KNOWN_PLURALS / KNOWN_SINGULARS constants (~35 entries)
+- `safe_plural`, `safe_singular`, `display_name` public methods
+- `ingredient_data_attrs` helper (replaces inline attribute building)
+- `.ingredient-name` class on `<b>` tags
+- `.yield-unit` span in yield markup
 
 ## Migration path
 
@@ -244,24 +328,30 @@ adds them to the allowlist. This is the correct default — showing "2 persimmon
 is better than showing "2 persimmons" if we're not sure, and far better than
 "2 persimmones".
 
+Adding a new word to KNOWN_PLURALS requires re-running nutrition calculation for
+affected recipes (or `rake db:seed`) to update stored `makes_unit_singular` /
+`makes_unit_plural` in nutrition_data JSON.
+
 ## File changes
 
 ### Ruby
-- `lib/familyrecipes/inflector.rb` — KNOWN_PLURALS, new API, rules become private
+- `lib/familyrecipes/inflector.rb` — KNOWN_PLURALS, new API, rules become private, drop UNCOUNTABLE/IRREGULAR
 - `lib/familyrecipes/scalable_number_preprocessor.rb` — `.yield-unit` span
+- `lib/familyrecipes/nutrition_calculator.rb` — `safe_singular`/`safe_plural` calls
 - `app/services/shopping_list_builder.rb` — unit display in `serialize_amounts`
-- `app/views/recipes/_step.html.erb` — name data attributes, `<b>` → `<span>`
-- `app/views/recipes/show.html.erb` — yield line markup if needed
-- `app/helpers/recipes_helper.rb` — helper for name data attributes
+- `app/views/recipes/_step.html.erb` — `ingredient_data_attrs` helper, `<b class="ingredient-name">`
+- `app/helpers/recipes_helper.rb` — `ingredient_data_attrs` helper method
+- `config/html_safe_allowlist.yml` — remove line 19 entry (replaced by `tag.attributes`)
 
 ### JavaScript
 - `app/javascript/controllers/recipe_state_controller.js` — `isVulgarSingular`
-  for ingredients, `.yield-unit` span, ingredient name adjustment
+  for ingredients, `formatVulgar` for number display, `.yield-unit` span,
+  ingredient name adjustment
 
 ### CSS
-- `app/assets/stylesheets/` — replace `b` selector with `.ingredient-name`
+- No changes needed. `<b>` is bold natively; `.ingredient-name` class is for JS only.
 
 ### Tests
-- `test/inflector_test.rb` — update for new API, KNOWN_PLURALS
+- `test/inflector_test.rb` — update for new API, KNOWN_PLURALS, remove UNCOUNTABLE/IRREGULAR tests
 - `test/services/shopping_list_builder_test.rb` — unit display assertions
 - `test/lib/scalable_number_preprocessor_test.rb` — `.yield-unit` span
