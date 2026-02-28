@@ -367,6 +367,7 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
     flour = result['Baking'].find { |i| i[:name] == 'Flour' }
 
     flour_amount = flour[:amounts].find { |_v, u| u == 'cups' }
+
     assert flour_amount, 'Expected plural unit "cups" for quantity 3.0'
     assert_in_delta 3.0, flour_amount[0], 0.01
   end
@@ -391,6 +392,7 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
     flour = result['Baking'].find { |i| i[:name] == 'Flour' }
 
     flour_amount = flour[:amounts].find { |_v, u| u == 'cup' }
+
     assert flour_amount, 'Expected singular unit "cup" for quantity 1.0'
   end
 
@@ -402,6 +404,7 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
     salt = result['Spices'].find { |i| i[:name] == 'Salt' }
 
     salt_amount = salt[:amounts].find { |_v, u| u == 'tsp' }
+
     assert salt_amount, 'Abbreviated units should not pluralize'
   end
 end
