@@ -300,6 +300,55 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
     assert_includes hummus[:sources], 'Hummus with Pretzels'
   end
 
+  test 'consolidates singular and plural ingredient names into canonical form' do
+    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Eggs') do |p|
+      p.basis_grams = 50
+      p.aisle = 'Refrigerated'
+    end
+
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Omelet
+
+      Category: Bread
+
+      ## Cook (fry)
+
+      - Eggs, 3
+
+      Cook.
+    MD
+
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Custard
+
+      Category: Bread
+
+      ## Mix (combine)
+
+      - Egg, 1
+
+      Mix.
+    MD
+
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'recipe', slug: 'omelet', selected: true)
+    list.apply_action('select', type: 'recipe', slug: 'custard', selected: true)
+
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
+
+    all_names = result.values.flatten.pluck(:name)
+
+    assert_includes all_names, 'Eggs'
+    assert_not_includes all_names, 'Egg'
+
+    eggs = result['Refrigerated'].find { |i| i[:name] == 'Eggs' }
+
+    assert eggs
+    assert_equal [[4.0, nil]], eggs[:amounts]
+    assert_includes eggs[:sources], 'Omelet'
+    assert_includes eggs[:sources], 'Custard'
+  end
+
   test 'custom items have empty sources' do
     list = MealPlan.for_kitchen(@kitchen)
     list.apply_action('custom_items', item: 'birthday candles', action: 'add')

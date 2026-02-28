@@ -3,7 +3,8 @@
 class RecipeAvailabilityCalculator
   def initialize(kitchen:, checked_off:)
     @kitchen = kitchen
-    @checked_off = Set.new(checked_off)
+    @profiles = IngredientCatalog.lookup_for(kitchen)
+    @checked_off = Set.new(checked_off.map { |name| canonical_name(name) })
     @omitted = build_omit_set
   end
 
@@ -16,8 +17,7 @@ class RecipeAvailabilityCalculator
   private
 
   def build_omit_set
-    profiles = IngredientCatalog.lookup_for(@kitchen)
-    Set.new(profiles.each_value.select { |p| p.aisle == 'omit' }.map(&:ingredient_name))
+    Set.new(@profiles.each_value.select { |p| p.aisle == 'omit' }.map(&:ingredient_name))
   end
 
   def recipe_availability
@@ -40,7 +40,13 @@ class RecipeAvailabilityCalculator
   end
 
   def needed_ingredients(names)
-    names.reject { |name| @omitted.include?(name) }.uniq
+    names.map { |name| canonical_name(name) }
+         .reject { |name| @omitted.include?(name) }
+         .uniq
+  end
+
+  def canonical_name(name)
+    @profiles[name]&.ingredient_name || name
   end
 
   def loaded_recipes

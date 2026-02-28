@@ -68,8 +68,13 @@ class ShoppingListBuilder
   end
 
   def merge_ingredient(merged, name, amounts, source:)
+    key = canonical_name(name)
     entry = { amounts: amounts, sources: [source] }
-    merged[name] = merged.key?(name) ? merge_entries(merged[name], entry) : entry
+    merged[key] = merged.key?(key) ? merge_entries(merged[key], entry) : entry
+  end
+
+  def canonical_name(name)
+    @profiles[name]&.ingredient_name || name
   end
 
   def organize_by_aisle(ingredients)

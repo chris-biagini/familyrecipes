@@ -107,6 +107,37 @@ class RecipeAvailabilityCalculatorTest < ActiveSupport::TestCase
     assert_includes result['focaccia'][:ingredients], 'Salt'
   end
 
+  test 'treats singular and plural ingredient names as equivalent' do
+    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Eggs') do |p|
+      p.basis_grams = 50
+      p.aisle = 'Refrigerated'
+    end
+
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Custard
+
+      Category: Bread
+
+      ## Mix (combine)
+
+      - Egg, 1
+
+      Mix.
+    MD
+
+    result = RecipeAvailabilityCalculator.new(
+      kitchen: @kitchen,
+      checked_off: %w[Eggs]
+    ).call
+
+    assert_equal 0, result['custard'][:missing],
+                 'Checking off "Eggs" should satisfy a recipe that uses "Egg"'
+    assert_includes result['custard'][:ingredients], 'Eggs',
+                    'Ingredient should be reported under canonical name'
+    assert_not_includes result['custard'][:ingredients], 'Egg',
+                        'Non-canonical name should not appear'
+  end
+
   test 'includes quick bites when present' do
     @kitchen.update!(quick_bites_content: <<~MD)
       ## Snacks
