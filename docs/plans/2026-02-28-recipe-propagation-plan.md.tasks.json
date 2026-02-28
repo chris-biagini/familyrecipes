@@ -1,0 +1,15 @@
+{
+  "planPath": "docs/plans/2026-02-28-recipe-propagation-plan.md",
+  "tasks": [
+    {"id": 6, "subject": "Task 1: Toast infrastructure", "status": "pending"},
+    {"id": 7, "subject": "Task 2: Extract homepage recipe listings partial", "status": "pending"},
+    {"id": 8, "subject": "Task 3: Prepare ingredients page for Turbo Stream", "status": "pending"},
+    {"id": 9, "subject": "Task 4: Prepare recipe page for Turbo Stream", "status": "pending"},
+    {"id": 10, "subject": "Task 5: Add Turbo Stream subscriptions to views", "status": "pending", "blockedBy": [7, 8, 9]},
+    {"id": 11, "subject": "Task 6: RecipeBroadcaster service", "status": "pending", "blockedBy": [6, 7, 8, 9, 10]},
+    {"id": 12, "subject": "Task 7: Wire RecipeBroadcaster into RecipesController", "status": "pending", "blockedBy": [11]},
+    {"id": 13, "subject": "Task 8: Groceries and menu auto-fetch on content_changed", "status": "pending"},
+    {"id": 14, "subject": "Task 9: Full test suite and manual verification", "status": "pending", "blockedBy": [12, 13]}
+  ],
+  "lastUpdated": "2026-02-28T00:00:00Z"
+}
