@@ -136,7 +136,7 @@ class MealPlanTest < ActiveSupport::TestCase
     assert_includes list.state['checked_off'], 'milk'
   end
 
-  test 'clear_selections resets selections but preserves custom items and checked off' do
+  test 'clear_selections resets selections and checked off but preserves custom items' do
     list = MealPlan.for_kitchen(@kitchen)
     list.apply_action('select', type: 'recipe', slug: 'pizza-dough', selected: true)
     list.apply_action('select', type: 'quick_bite', slug: 'nachos', selected: true)
@@ -148,7 +148,7 @@ class MealPlanTest < ActiveSupport::TestCase
     assert_empty list.state['selected_recipes']
     assert_empty list.state['selected_quick_bites']
     assert_includes list.state['custom_items'], 'birthday candles'
-    assert_includes list.state['checked_off'], 'milk'
+    assert_empty list.state['checked_off']
   end
 
   test 'apply_action bumps version' do

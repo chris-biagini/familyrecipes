@@ -162,7 +162,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
 
   # --- Clear ---
 
-  test 'clear resets selections only' do
+  test 'clear resets selections and checked off' do
     log_in
     plan = MealPlan.for_kitchen(@kitchen)
     plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
@@ -181,7 +181,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     assert_empty plan.state['selected_recipes']
     assert_empty plan.state['selected_quick_bites']
     assert_includes plan.state['custom_items'], 'birthday candles'
-    assert_includes plan.state['checked_off'], 'flour'
+    assert_empty plan.state['checked_off']
   end
 
   test 'clear broadcasts version' do

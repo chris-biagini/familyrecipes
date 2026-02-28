@@ -39,6 +39,7 @@ class MealPlan < ApplicationRecord
     ensure_state_keys
     state['selected_recipes'] = []
     state['selected_quick_bites'] = []
+    state['checked_off'] = []
     save!
   end
 
