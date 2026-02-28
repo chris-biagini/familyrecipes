@@ -48,7 +48,35 @@ module RecipesHelper
     ((nutrition['missing_ingredients'] || []) + (nutrition['partial_ingredients'] || [])).uniq
   end
 
+  def ingredient_data_attrs(item)
+    attrs = {}
+    return tag.attributes(attrs) unless item.quantity_value
+
+    attrs[:'data-quantity-value'] = item.quantity_value
+    attrs[:'data-quantity-unit'] = item.quantity_unit
+    add_unit_plural_attr(attrs, item.quantity_unit)
+    add_name_inflection_attrs(attrs, item) unless item.quantity_unit
+
+    tag.attributes(attrs)
+  end
+
   private
+
+  def add_unit_plural_attr(attrs, unit)
+    return unless unit
+
+    attrs[:'data-quantity-unit-plural'] =
+      FamilyRecipes::Inflector.unit_display(unit, 2)
+  end
+
+  def add_name_inflection_attrs(attrs, item)
+    singular = FamilyRecipes::Inflector.display_name(item.name, 1)
+    plural = FamilyRecipes::Inflector.display_name(item.name, 2)
+    return if singular == plural
+
+    attrs[:'data-name-singular'] = singular
+    attrs[:'data-name-plural'] = plural
+  end
 
   def per_serving_label(nutrition)
     ups = nutrition['units_per_serving']
