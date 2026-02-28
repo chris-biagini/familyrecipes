@@ -166,12 +166,17 @@ export default class extends Controller {
         const unitSingular = li.dataset.quantityUnit || ''
         const unitPlural = li.dataset.quantityUnitPlural || unitSingular
         const scaled = orig * factor
-        const unit = (scaled === 1) ? unitSingular : unitPlural
-        const pretty = Number.isInteger(scaled)
-          ? scaled
-          : Math.round(scaled * 100) / 100
+        const unit = isVulgarSingular(scaled) ? unitSingular : unitPlural
+        const pretty = formatVulgar(scaled)
         const span = li.querySelector('.quantity')
         if (span) span.textContent = pretty + (unit ? ' ' + unit : '')
+
+        const nameEl = li.querySelector('.ingredient-name')
+        if (nameEl && li.dataset.nameSingular) {
+          nameEl.textContent = isVulgarSingular(scaled)
+            ? li.dataset.nameSingular
+            : li.dataset.namePlural
+        }
       })
 
     this.element.querySelectorAll('.nutrition-facts td[data-nutrient]').forEach(td => {
@@ -207,27 +212,21 @@ export default class extends Controller {
       const plural = container.dataset.unitPlural || singular
 
       const scalableSpan = container.querySelector('.scalable')
-      if (!scalableSpan) return
+      const unitSpan = container.querySelector('.yield-unit')
+      if (!scalableSpan || !unitSpan) return
 
       if (factor === 1) {
         scalableSpan.textContent = scalableSpan.dataset.originalText
         scalableSpan.classList.remove('scaled')
         scalableSpan.removeAttribute('title')
-        const originalUnit = isVulgarSingular(base) ? singular : plural
-        const textAfterSpan = scalableSpan.nextSibling
-        if (textAfterSpan && textAfterSpan.nodeType === Node.TEXT_NODE) {
-          textAfterSpan.textContent = ' ' + originalUnit
-        }
+        unitSpan.textContent = ' ' + (isVulgarSingular(base) ? singular : plural)
       } else {
         const pretty = formatVulgar(scaled)
         const unit = isVulgarSingular(scaled) ? singular : plural
         scalableSpan.textContent = pretty
         scalableSpan.classList.add('scaled')
         scalableSpan.title = 'Originally: ' + scalableSpan.dataset.originalText
-        const textAfterSpan = scalableSpan.nextSibling
-        if (textAfterSpan && textAfterSpan.nodeType === Node.TEXT_NODE) {
-          textAfterSpan.textContent = ' ' + unit
-        }
+        unitSpan.textContent = ' ' + unit
       }
     })
   }
