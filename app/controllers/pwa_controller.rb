@@ -4,7 +4,14 @@ class PwaController < ApplicationController
   skip_before_action :set_kitchen_from_path
 
   def manifest
+    response.headers['Cache-Control'] = 'no-cache'
     render json: manifest_data, content_type: 'application/manifest+json'
+  end
+
+  def service_worker
+    response.headers['Cache-Control'] = 'no-cache'
+    response.headers['Service-Worker-Allowed'] = '/'
+    render template: 'pwa/service_worker', layout: false, content_type: 'application/javascript'
   end
 
   private

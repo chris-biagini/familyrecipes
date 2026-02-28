@@ -4,6 +4,7 @@ class IngredientsController < ApplicationController
   include IngredientRows
 
   before_action :require_membership
+  before_action :prevent_html_caching, only: :index
 
   def index
     lookup = IngredientCatalog.lookup_for(current_kitchen)

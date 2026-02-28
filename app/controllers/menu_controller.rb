@@ -2,6 +2,7 @@
 
 class MenuController < ApplicationController
   before_action :require_membership
+  before_action :prevent_html_caching, only: :show
 
   rescue_from ActiveRecord::StaleObjectError, with: :handle_stale_record
 

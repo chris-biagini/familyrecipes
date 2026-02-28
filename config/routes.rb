@@ -3,6 +3,7 @@
 Rails.application.routes.draw do # rubocop:disable Metrics/BlockLength
   get 'up', to: 'rails/health#show', as: :rails_health_check
   get 'manifest.json', to: 'pwa#manifest', as: :pwa_manifest
+  get 'service-worker.js', to: 'pwa#service_worker', as: :pwa_service_worker
 
   root 'landing#show'
 

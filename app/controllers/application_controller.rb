@@ -108,6 +108,10 @@ class ApplicationController < ActionController::Base
     response.headers['Cache-Control'] = 'no-store' if request.format.json?
   end
 
+  def prevent_html_caching
+    response.headers['Cache-Control'] = 'private, no-cache'
+  end
+
   def record_not_found
     respond_to do |format|
       format.html { render file: Rails.public_path.join('404.html'), status: :not_found, layout: false }

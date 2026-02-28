@@ -304,6 +304,14 @@ See `docker-compose.example.yml` for a reference deployment configuration. No ex
 
 Set `ALLOWED_HOSTS` (comma-separated domains) to enable DNS rebinding protection in production. Omit to allow all hosts. See `.env.example` for all environment variables.
 
+**Cloudflare cache purge:** After deploying changes to non-fingerprinted static files (error pages, icons, `robots.txt`), purge Cloudflare's edge cache. Fingerprinted assets (`/assets/*`) self-bust and don't need purging. The service worker and manifest are served via Rails with `no-cache` headers, so Cloudflare revalidates them automatically.
+```bash
+curl -X POST "https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/purge_cache" \
+  -H "Authorization: Bearer ${CF_API_TOKEN}" \
+  -H "Content-Type: application/json" \
+  --data '{"purge_everything":true}'
+```
+
 ## Routes
 
 Routes use an optional `(/kitchens/:kitchen_slug)` scope. When exactly one kitchen exists, URLs are root-level (`/recipes/bagels`, `/ingredients`, `/menu`, `/groceries`). When multiple kitchens exist, URLs are scoped (`/kitchens/:slug/recipes/bagels`). `default_url_options` returns `{ kitchen_slug: }` or `{}` based on whether the request arrived via a scoped URL. Kitchen-scoped routes include recipes (`show`, `create`, `update`, `destroy` — no index/new/edit), ingredients index, menu (`show`, `select`, `clear`, `quick_bites`, `quick_bites_content`), groceries (`show`, `state`, `check`, `custom_items`, `aisle_order`, `aisle_order_content`), and nutrition entries (`POST`/`DELETE` at `/nutrition/:ingredient_name`). The backing model for menu/groceries state is `MealPlan` (one row per kitchen). Both the menu and groceries pages require membership. Views use `home_path` (not `kitchen_root_path`) for the homepage link — it returns `root_path` or `kitchen_root_path` depending on mode. Other helpers (`recipe_path`, `ingredients_path`, `menu_path`, `groceries_path`) auto-adapt via `default_url_options`. When adding links, always use the `_path` helpers.
@@ -338,14 +346,25 @@ Meal plan state syncs across browser tabs/devices via ActionCable backed by Soli
 
 ### PWA & Service Worker
 
-The app is installable as a PWA. `public/service-worker.js` uses runtime caching:
+The app is installable as a PWA. The service worker (`app/views/pwa/service_worker.js.erb`) is served via `PwaController#service_worker` with `Cache-Control: no-cache` — never place it in `public/` or Cloudflare will edge-cache it with the static file TTL.
+
+**SW caching strategy — opt-in, not opt-out:**
 - `/assets/*`: cache-first (Propshaft-fingerprinted, immutable)
-- HTML pages: network-first with cache fallback, offline fallback at `public/offline.html`
-- Grocery, menu, and nutrition API endpoints and `/cable`: skipped (not cached)
+- `/icons/*`: cache-first (versioned via query param)
+- `/manifest.json`: network-first
+- HTML pages (`Accept: text/html`): network-first with offline fallback at `public/offline.html`
+- Everything else: **pass-through** (no `respondWith`, browser handles normally)
 
-The SW skip-list regex covers all grocery, menu, and nutrition API routes at both root and kitchen-scoped paths. **When adding new API endpoints**, update the `API_PATTERN` regex in `public/service-worker.js` or they'll be cached as HTML pages.
+The `API_PATTERN` regex skips grocery, menu, and nutrition API routes as defense-in-depth, but the default is safe — unrecognized requests are never cached by the SW.
 
-`public/manifest.json` is static. The grocery shortcut URL (`/groceries`) works with the optional kitchen scope when one kitchen exists.
+`manifest.json` is served via `PwaController#manifest` with `Cache-Control: no-cache`. The grocery shortcut URL (`/groceries`) works with the optional kitchen scope when one kitchen exists.
+
+### Caching layers
+
+Three caching layers, each with explicit defaults:
+- **Cloudflare edge**: caches static files from `public/` using Rails' `public_file_server.headers` (1 hour). Propshaft-fingerprinted `/assets/*` get far-future headers from Propshaft's own middleware. `service-worker.js` and `manifest.json` are served via Rails with `no-cache`.
+- **Service worker**: only caches what it explicitly handles (assets, icons, HTML for offline). Everything else passes through.
+- **Browser HTTP cache**: JSON API responses get `Cache-Control: no-store`. Member-only HTML pages (menu, groceries, ingredients) get `private, no-cache`. Public pages use Rails defaults.
 
 ### Icon generation
 
