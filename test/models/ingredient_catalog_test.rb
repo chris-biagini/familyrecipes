@@ -26,7 +26,7 @@ class IngredientCatalogTest < ActiveSupport::TestCase
     IngredientCatalog.create!(ingredient_name: 'Butter', basis_grams: 100, calories: 717)
     result = IngredientCatalog.lookup_for(@kitchen)
 
-    assert_equal 1, result.size
+    assert_equal 2, result.size
     assert_in_delta 717, result['Butter'].calories.to_f
     assert_predicate result['Butter'], :global?
   end
@@ -37,7 +37,7 @@ class IngredientCatalogTest < ActiveSupport::TestCase
 
     result = IngredientCatalog.lookup_for(@kitchen)
 
-    assert_equal 1, result.size
+    assert_equal 2, result.size
     assert_in_delta 700, result['Butter'].calories.to_f
     assert_predicate result['Butter'], :custom?
   end
@@ -48,7 +48,7 @@ class IngredientCatalogTest < ActiveSupport::TestCase
 
     result = IngredientCatalog.lookup_for(@kitchen)
 
-    assert_equal 2, result.size
+    assert_equal 4, result.size
     assert result.key?('Butter')
     assert result.key?('Flour')
   end
@@ -239,12 +239,13 @@ class IngredientCatalogTest < ActiveSupport::TestCase
     assert_equal egg_entry.id, result['Egg'].id
   end
 
-  test 'lookup_for skips variants for uncountable names' do
+  test 'lookup_for includes variants for mass nouns' do
     IngredientCatalog.create!(ingredient_name: 'Butter', basis_grams: 14)
     result = IngredientCatalog.lookup_for(@kitchen)
 
     assert result.key?('Butter')
-    assert_equal 1, result.size
+    assert result.key?('Butters')
+    assert_equal 2, result.size
   end
 
   test 'lookup_for handles qualified names with variants' do

@@ -104,13 +104,13 @@ module FamilyRecipes
     def per_unit_metadata(recipe, totals, serving_count)
       makes_qty = recipe.makes_quantity&.to_i
       makes_qty = nil unless makes_qty&.positive?
-      unit_singular = Inflector.singular(recipe.makes_unit_noun) if recipe.makes_unit_noun
+      unit_singular = Inflector.safe_singular(recipe.makes_unit_noun) if recipe.makes_unit_noun
 
       {
         per_unit: divide_nutrients(totals, makes_qty),
         makes_quantity: makes_qty,
         makes_unit_singular: unit_singular,
-        makes_unit_plural: (Inflector.plural(unit_singular) if unit_singular),
+        makes_unit_plural: (Inflector.safe_plural(unit_singular) if unit_singular),
         units_per_serving: (makes_qty.to_f / serving_count if makes_qty && recipe.serves)
       }
     end
