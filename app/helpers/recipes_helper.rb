@@ -53,7 +53,7 @@ module RecipesHelper
     return tag.attributes(attrs) unless item.quantity_value
 
     attrs[:'data-quantity-value'] = item.quantity_value
-    attrs[:'data-quantity-unit'] = item.quantity_unit
+    attrs[:'data-quantity-unit'] = item.quantity_unit if item.quantity_unit
     add_unit_plural_attr(attrs, item.quantity_unit)
     add_name_inflection_attrs(attrs, item) unless item.quantity_unit
 
