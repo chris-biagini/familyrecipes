@@ -98,11 +98,13 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
   test 'homepage includes turbo stream subscription for members' do
     log_in
     get kitchen_root_path(kitchen_slug: kitchen_slug)
+
     assert_select 'turbo-cable-stream-source'
   end
 
   test 'homepage excludes turbo stream subscription for non-members' do
     get kitchen_root_path(kitchen_slug: kitchen_slug)
+
     assert_select 'turbo-cable-stream-source', count: 0
   end
 

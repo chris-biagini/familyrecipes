@@ -16,7 +16,7 @@
     </header>
 
     <% recipe.steps.each do |step| %>
-      <%= render 'step', step: step %>
+      <%= render 'recipes/step', step: step %>
     <% end %>
 
     <%- if recipe.footer.present? -%>
@@ -26,7 +26,7 @@
     <%- end -%>
 
     <%- if nutrition && nutrition['totals']&.values&.any? { |v| v.to_f > 0 } -%>
-      <%= render 'nutrition_table', nutrition: nutrition %>
+      <%= render 'recipes/nutrition_table', nutrition: nutrition %>
     <%- end -%>
   </article>
 </div>
