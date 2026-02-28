@@ -212,12 +212,6 @@
   color: var(--checked-color);
 }
 
-/* Aisle auto-collapse/expand animation */
-#shopping-list details.aisle-collapsing > ul,
-#shopping-list details.aisle-expanding > ul {
-  transition: height 0.3s ease, opacity 0.3s ease, padding-bottom 0.3s ease;
-}
-
 #shopping-list ul {
   list-style: none;
   margin: 0;

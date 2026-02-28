@@ -15,16 +15,6 @@ function formatAmounts(amounts) {
   return "(" + parts.join(" + ") + ")"
 }
 
-function cleanupAnimation(details) {
-  const ul = details.querySelector("ul")
-  if (!ul) return
-  details.classList.remove("aisle-collapsing", "aisle-expanding")
-  ul.style.height = ""
-  ul.style.overflow = ""
-  ul.style.opacity = ""
-  ul.style.paddingBottom = ""
-}
-
 export default class extends Controller {
   connect() {
     this.element.classList.remove("hidden-until-js")
@@ -59,7 +49,6 @@ export default class extends Controller {
     this.renderCustomItems(state.custom_items || [])
     this.syncCheckedOff(state.checked_off || [])
     this.renderItemCount()
-    this.autoCollapseCompletedAisles()
   }
 
   renderShoppingList(shoppingList) {
@@ -238,24 +227,6 @@ export default class extends Controller {
     })
   }
 
-  autoCollapseCompletedAisles() {
-    document.querySelectorAll("#shopping-list details.aisle").forEach(details => {
-      const items = details.querySelectorAll("li[data-item]")
-      if (items.length === 0) return
-
-      let allChecked = true
-      items.forEach(li => {
-        const cb = li.querySelector('input[type="checkbox"]')
-        if (cb && !cb.checked) allChecked = false
-      })
-
-      if (allChecked && details.open) {
-        details.open = false
-        this.saveAisleCollapse()
-      }
-    })
-  }
-
   saveAisleCollapse() {
     const collapsed = []
     document.querySelectorAll("#shopping-list details.aisle").forEach(details => {
@@ -274,85 +245,6 @@ export default class extends Controller {
     } catch {
       return []
     }
-  }
-
-  animateCollapse(details) {
-    const ul = details.querySelector("ul")
-    if (!ul) { details.open = false; return }
-
-    cleanupAnimation(details)
-
-    const startHeight = ul.scrollHeight
-    ul.style.height = startHeight + "px"
-    ul.style.overflow = "hidden"
-    ul.offsetHeight // force reflow
-
-    details.classList.add("aisle-collapsing")
-    ul.style.height = "0"
-    ul.style.opacity = "0"
-    ul.style.paddingBottom = "0"
-
-    function onEnd(e) {
-      if (e.target !== ul) return
-      ul.removeEventListener("transitionend", onEnd)
-      details.classList.remove("aisle-collapsing")
-      ul.style.height = ""
-      ul.style.overflow = ""
-      ul.style.opacity = ""
-      ul.style.paddingBottom = ""
-      details.open = false
-    }
-    ul.addEventListener("transitionend", onEnd)
-
-    setTimeout(() => {
-      if (details.classList.contains("aisle-collapsing")) {
-        details.classList.remove("aisle-collapsing")
-        ul.style.height = ""
-        ul.style.overflow = ""
-        ul.style.opacity = ""
-        ul.style.paddingBottom = ""
-        details.open = false
-      }
-    }, 400)
-  }
-
-  animateExpand(details) {
-    const ul = details.querySelector("ul")
-    if (!ul) { details.open = true; return }
-
-    cleanupAnimation(details)
-
-    details.open = true
-    const targetHeight = ul.scrollHeight
-    ul.style.height = "0"
-    ul.style.opacity = "0"
-    ul.style.overflow = "hidden"
-    ul.style.paddingBottom = "0"
-    ul.offsetHeight // force reflow
-
-    details.classList.add("aisle-expanding")
-    ul.style.height = targetHeight + "px"
-    ul.style.opacity = "1"
-    ul.style.paddingBottom = ""
-
-    function onEnd(e) {
-      if (e.target !== ul) return
-      ul.removeEventListener("transitionend", onEnd)
-      details.classList.remove("aisle-expanding")
-      ul.style.height = ""
-      ul.style.overflow = ""
-      ul.style.opacity = ""
-    }
-    ul.addEventListener("transitionend", onEnd)
-
-    setTimeout(() => {
-      if (details.classList.contains("aisle-expanding")) {
-        details.classList.remove("aisle-expanding")
-        ul.style.height = ""
-        ul.style.overflow = ""
-        ul.style.opacity = ""
-      }
-    }, 400)
   }
 
   bindCustomItemInput() {
@@ -409,24 +301,6 @@ export default class extends Controller {
       })
 
       this.renderItemCount()
-
-      const details = cb.closest("details.aisle")
-      if (!details) return
-
-      if (cb.checked) {
-        let allChecked = true
-        details.querySelectorAll("li[data-item]").forEach(li => {
-          const itemCb = li.querySelector('input[type="checkbox"]')
-          if (itemCb && !itemCb.checked) allChecked = false
-        })
-        if (allChecked && details.open) {
-          this.animateCollapse(details)
-        }
-      } else {
-        if (!details.open) {
-          this.animateExpand(details)
-        }
-      }
     })
   }
 }
