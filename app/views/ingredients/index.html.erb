@@ -1,5 +1,7 @@
 <% content_for(:title) { "#{current_kitchen.name}: Ingredients" } %>
 
+<%= turbo_stream_from current_kitchen, "recipes" %>
+
 <article class="ingredients-page" data-controller="ingredient-table">
   <header>
     <h1>Ingredients</h1>

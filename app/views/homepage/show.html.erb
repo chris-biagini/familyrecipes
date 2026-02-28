@@ -8,6 +8,10 @@
 <% end %>
 <% end %>
 
+<% if current_user && current_kitchen.member?(current_user) %>
+  <%= turbo_stream_from current_kitchen, "recipes" %>
+<% end %>
+
 <article class="homepage">
   <header>
     <h1><%= @site_config.homepage_heading %></h1>

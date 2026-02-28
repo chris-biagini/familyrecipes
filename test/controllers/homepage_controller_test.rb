@@ -95,6 +95,17 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
     assert_select 'section#empty', count: 0
   end
 
+  test 'homepage includes turbo stream subscription for members' do
+    log_in
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
+    assert_select 'turbo-cable-stream-source'
+  end
+
+  test 'homepage excludes turbo stream subscription for non-members' do
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
+    assert_select 'turbo-cable-stream-source', count: 0
+  end
+
   test 'recipe links include description as title attribute' do
     Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
     MarkdownImporter.import(<<~MD, kitchen: @kitchen)

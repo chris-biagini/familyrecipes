@@ -85,6 +85,17 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     assert_match(/data-quantity-value=/, response.body)
   end
 
+  test 'recipe page includes turbo stream subscription for members' do
+    log_in
+    get recipe_path('focaccia', kitchen_slug: kitchen_slug)
+    assert_select 'turbo-cable-stream-source'
+  end
+
+  test 'recipe page excludes turbo stream subscription for non-members' do
+    get recipe_path('focaccia', kitchen_slug: kitchen_slug)
+    assert_select 'turbo-cable-stream-source', count: 0
+  end
+
   test 'update saves valid markdown and returns redirect URL' do
     updated_markdown = <<~MD
       # Focaccia
