@@ -1,0 +1,21 @@
+<%# locals: (categories:) %>
+<div id="recipe-listings">
+  <div class="toc_nav">
+    <ul>
+      <%- categories.each do |category| -%>
+      <li><%= link_to category.name, "##{category.slug}" %></li>
+      <%- end -%>
+    </ul>
+  </div>
+
+  <%- categories.each do |category| -%>
+  <section id="<%= category.slug %>">
+    <h2><%= category.name %></h2>
+    <ul>
+      <%- category.recipes.sort_by(&:title).each do |recipe| -%>
+      <li><%= link_to recipe.title, recipe_path(recipe.slug), title: recipe.description %></li>
+      <%- end -%>
+    </ul>
+  </section>
+  <%- end -%>
+</div>
