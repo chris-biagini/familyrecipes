@@ -13,35 +13,7 @@
     </div>
 <% end %>
 
-<article class="recipe" data-controller="wake-lock recipe-state">
-  <header>
-    <h1><%= @recipe.title %></h1>
-    <%- if @recipe.description.present? -%>
-    <p><%= @recipe.description %></p>
-    <%- end -%>
-    <p class="recipe-meta">
-      <%= link_to @recipe.category.name, home_path(anchor: @recipe.category.slug) %><%- if @recipe.makes -%>
-      <%- if @nutrition&.dig('makes_unit_singular') -%>
-      &middot; Makes <%= format_yield_with_unit(@recipe.makes, @nutrition['makes_unit_singular'], @nutrition['makes_unit_plural']) %><%- else -%>
-      &middot; Makes <%= format_yield_line(@recipe.makes) %><%- end -%><%- end -%><%- if @recipe.serves -%>
-      &middot; Serves <%= format_yield_line(@recipe.serves.to_s) %><%- end -%>
-    </p>
-  </header>
-
-  <% @recipe.steps.each do |step| %>
-    <%= render 'step', step: step %>
-  <% end %>
-
-  <%- if @recipe.footer.present? -%>
-  <footer>
-    <%= render_markdown(@recipe.footer) %>
-  </footer>
-  <%- end -%>
-
-  <%- if @nutrition && @nutrition['totals']&.values&.any? { |v| v.to_f > 0 } -%>
-    <%= render 'nutrition_table', nutrition: @nutrition %>
-  <%- end -%>
-</article>
+<%= render 'recipes/recipe_content', recipe: @recipe, nutrition: @nutrition %>
 
 <% if current_kitchen.member?(current_user) %>
 <%= render layout: 'shared/editor_dialog',

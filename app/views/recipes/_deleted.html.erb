@@ -1,0 +1,11 @@
+<%# locals: (recipe_title:, redirect_path: nil, redirect_title: nil) %>
+<div id="recipe-content">
+  <article class="recipe">
+    <header>
+      <h1><%= recipe_title %></h1>
+    </header>
+    <p>This recipe has been deleted.<%- if redirect_path -%>
+      <%= link_to redirect_title || 'Return to recipes', redirect_path %><%- end -%>
+    </p>
+  </article>
+</div>
