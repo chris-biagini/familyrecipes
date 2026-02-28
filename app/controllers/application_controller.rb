@@ -14,6 +14,7 @@ class ApplicationController < ActionController::Base
   before_action :auto_login_in_development
   before_action :auto_join_sole_kitchen
   before_action :set_kitchen_from_path
+  before_action :prevent_api_caching
 
   helper_method :current_kitchen, :logged_in?, :home_path, :versioned_icon_path
 
@@ -101,6 +102,10 @@ class ApplicationController < ActionController::Base
     return { kitchen_slug: params[:kitchen_slug] } if params[:kitchen_slug]
 
     {}
+  end
+
+  def prevent_api_caching
+    response.headers['Cache-Control'] = 'no-store' if request.format.json?
   end
 
   def record_not_found
