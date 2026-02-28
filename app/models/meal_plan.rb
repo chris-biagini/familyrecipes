@@ -64,7 +64,11 @@ class MealPlan < ApplicationRecord
 
   def apply_select(type:, slug:, selected:, **)
     key = type == 'recipe' ? 'selected_recipes' : 'selected_quick_bites'
-    toggle_array(key, slug, truthy?(selected))
+    adding = truthy?(selected)
+    toggle_array(key, slug, adding)
+    return if adding
+
+    prune_checked_off
   end
 
   def apply_check(item:, checked:, **)
@@ -73,6 +77,19 @@ class MealPlan < ApplicationRecord
 
   def apply_custom_items(item:, action:, **)
     toggle_array('custom_items', item, action == 'add')
+  end
+
+  def prune_checked_off
+    visible = visible_item_names
+    before_size = state['checked_off'].size
+    state['checked_off'].select! { |item| visible.include?(item) }
+    save! if state['checked_off'].size < before_size
+  end
+
+  def visible_item_names
+    shopping_list = ShoppingListBuilder.new(kitchen: kitchen, meal_plan: self).build
+    names = shopping_list.each_value.flat_map { |items| items.map { |i| i[:name] } }
+    Set.new(names)
   end
 
   def toggle_array(key, value, add)
