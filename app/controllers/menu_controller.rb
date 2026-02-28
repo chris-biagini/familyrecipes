@@ -53,6 +53,7 @@ class MenuController < ApplicationController
     return render json: { errors: ['Content cannot be blank.'] }, status: :unprocessable_content if content.blank?
 
     current_kitchen.update!(quick_bites_content: content)
+    MealPlan.for_kitchen(current_kitchen).prune_checked_off
 
     broadcast_recipe_selector_update
     render json: { status: 'ok' }

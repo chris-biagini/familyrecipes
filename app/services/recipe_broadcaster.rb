@@ -7,6 +7,21 @@ class RecipeBroadcaster
     new(kitchen).broadcast(action:, recipe_title:, recipe:)
   end
 
+  def self.notify_recipe_deleted(recipe, recipe_title:)
+    Turbo::StreamsChannel.broadcast_replace_to(
+      recipe, 'content',
+      target: 'recipe-content',
+      partial: 'recipes/deleted',
+      locals: { recipe_title: }
+    )
+    Turbo::StreamsChannel.broadcast_append_to(
+      recipe, 'content',
+      target: 'notifications',
+      partial: 'shared/toast',
+      locals: { message: "#{recipe_title} was deleted" }
+    )
+  end
+
   def self.broadcast_rename(old_recipe, new_title:, new_slug:)
     Turbo::StreamsChannel.broadcast_replace_to(
       old_recipe, 'content',
@@ -80,11 +95,7 @@ class RecipeBroadcaster
   def broadcast_recipe_page(recipe, action:, recipe_title:)
     return unless recipe
 
-    if action == :deleted
-      broadcast_recipe_deleted(recipe, recipe_title:)
-    else
-      broadcast_recipe_updated(recipe)
-    end
+    broadcast_recipe_updated(recipe)
     broadcast_recipe_toast(recipe, action:, recipe_title:)
   end
 
@@ -99,15 +110,6 @@ class RecipeBroadcaster
       target: 'recipe-content',
       partial: 'recipes/recipe_content',
       locals: { recipe: fresh, nutrition: fresh.nutrition_data }
-    )
-  end
-
-  def broadcast_recipe_deleted(recipe, recipe_title:)
-    Turbo::StreamsChannel.broadcast_replace_to(
-      recipe, 'content',
-      target: 'recipe-content',
-      partial: 'recipes/deleted',
-      locals: { recipe_title: }
     )
   end
 

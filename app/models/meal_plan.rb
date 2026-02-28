@@ -57,6 +57,14 @@ class MealPlan < ApplicationRecord
     end
   end
 
+  def prune_checked_off
+    ensure_state_keys
+    visible = visible_item_names
+    before_size = state['checked_off'].size
+    state['checked_off'].select! { |item| visible.include?(item) }
+    save! if state['checked_off'].size < before_size
+  end
+
   private
 
   def ensure_state_keys
@@ -78,13 +86,6 @@ class MealPlan < ApplicationRecord
 
   def apply_custom_items(item:, action:, **)
     toggle_array('custom_items', item, action == 'add')
-  end
-
-  def prune_checked_off
-    visible = visible_item_names
-    before_size = state['checked_off'].size
-    state['checked_off'].select! { |item| visible.include?(item) }
-    save! if state['checked_off'].size < before_size
   end
 
   def visible_item_names

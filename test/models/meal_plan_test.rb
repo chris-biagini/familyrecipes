@@ -249,6 +249,32 @@ class MealPlanTest < ActiveSupport::TestCase
     assert_includes list.state['checked_off'], 'Milk'
   end
 
+  test 'prune_checked_off removes orphaned entries when called directly' do
+    setup_recipe_with_ingredients
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+    list.apply_action('check', item: 'Flour', checked: true)
+    list.apply_action('check', item: 'Salt', checked: true)
+
+    @kitchen.recipes.find_by!(slug: 'focaccia').destroy!
+    list.prune_checked_off
+    list.reload
+
+    assert_empty list.state['checked_off']
+  end
+
+  test 'prune_checked_off is idempotent when nothing to prune' do
+    setup_recipe_with_ingredients
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+    list.apply_action('check', item: 'Flour', checked: true)
+    version_before = list.lock_version
+
+    list.prune_checked_off
+
+    assert_equal version_before, list.lock_version
+  end
+
   test 'prune preserves custom items in checked_off' do
     setup_recipe_with_ingredients
     list = MealPlan.for_kitchen(@kitchen)

@@ -52,13 +52,19 @@ class RecipeBroadcasterTest < ActiveSupport::TestCase
     end
   end
 
-  test 'broadcasts deleted partial for recipe-specific stream on delete' do
+  test 'broadcast without recipe skips recipe-specific stream' do
+    assert_no_turbo_stream_broadcasts [Recipe.new(id: 0), 'content'] do
+      RecipeBroadcaster.broadcast(
+        kitchen: @kitchen, action: :deleted, recipe_title: 'Focaccia'
+      )
+    end
+  end
+
+  test 'notify_recipe_deleted broadcasts to recipe-specific stream' do
     recipe = @kitchen.recipes.find_by!(slug: 'focaccia')
 
     assert_turbo_stream_broadcasts [recipe, 'content'] do
-      RecipeBroadcaster.broadcast(
-        kitchen: @kitchen, action: :deleted, recipe_title: 'Focaccia', recipe: recipe
-      )
+      RecipeBroadcaster.notify_recipe_deleted(recipe, recipe_title: 'Focaccia')
     end
   end
 end

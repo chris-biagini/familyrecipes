@@ -46,6 +46,7 @@ class RecipesController < ApplicationController
     end
     recipe.update!(edited_at: Time.current)
     Category.cleanup_orphans(current_kitchen)
+    MealPlan.for_kitchen(current_kitchen).prune_checked_off
 
     RecipeBroadcaster.broadcast(kitchen: current_kitchen, action: :updated, recipe_title: recipe.title, recipe: recipe)
     response_json = { redirect_url: recipe_path(recipe.slug) }
@@ -59,10 +60,13 @@ class RecipesController < ApplicationController
     @recipe = current_kitchen.recipes.find_by!(slug: params[:slug])
 
     updated_references = CrossReferenceUpdater.strip_references(@recipe)
-    RecipeBroadcaster.broadcast(kitchen: current_kitchen, action: :deleted,
-                                recipe_title: @recipe.title, recipe: @recipe)
+    RecipeBroadcaster.notify_recipe_deleted(@recipe, recipe_title: @recipe.title)
     @recipe.destroy!
     Category.cleanup_orphans(current_kitchen)
+    MealPlan.for_kitchen(current_kitchen).prune_checked_off
+
+    RecipeBroadcaster.broadcast(kitchen: current_kitchen, action: :deleted,
+                                recipe_title: @recipe.title)
 
     response_json = { redirect_url: home_path }
     response_json[:updated_references] = updated_references if updated_references.any?
