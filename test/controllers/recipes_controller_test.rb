@@ -1,8 +1,11 @@
 # frozen_string_literal: true
 
 require 'test_helper'
+require 'turbo/broadcastable/test_helper'
 
 class RecipesControllerTest < ActionDispatch::IntegrationTest
+  include Turbo::Broadcastable::TestHelper
+
   setup do
     create_kitchen_and_user
     Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
@@ -390,6 +393,46 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     delete recipe_path('nonexistent', kitchen_slug: kitchen_slug), as: :json
 
     assert_response :not_found
+  end
+
+  test 'create broadcasts Turbo Streams to recipes stream' do
+    log_in
+    markdown = <<~MD
+      # New Bread
+
+      Category: Bread
+
+      ## Step (do it)
+
+      - Flour, 1 cup
+
+      Mix.
+    MD
+
+    assert_turbo_stream_broadcasts [@kitchen, 'recipes'] do
+      post recipes_path(kitchen_slug: kitchen_slug),
+           params: { markdown_source: markdown },
+           as: :json
+    end
+  end
+
+  test 'update broadcasts Turbo Streams to recipes stream' do
+    log_in
+    recipe = @kitchen.recipes.find_by!(slug: 'focaccia')
+
+    assert_turbo_stream_broadcasts [@kitchen, 'recipes'] do
+      patch recipe_path('focaccia', kitchen_slug: kitchen_slug),
+            params: { markdown_source: recipe.markdown_source },
+            as: :json
+    end
+  end
+
+  test 'destroy broadcasts Turbo Streams to recipes stream' do
+    log_in
+
+    assert_turbo_stream_broadcasts [@kitchen, 'recipes'] do
+      delete recipe_path('focaccia', kitchen_slug: kitchen_slug), as: :json
+    end
   end
 
   test 'full edit round-trip: edit, save, re-render' do

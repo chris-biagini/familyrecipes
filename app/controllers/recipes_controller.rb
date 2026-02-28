@@ -17,7 +17,7 @@ class RecipesController < ApplicationController
     recipe = MarkdownImporter.import(params[:markdown_source], kitchen: current_kitchen)
     recipe.update!(edited_at: Time.current)
 
-    MealPlanChannel.broadcast_content_changed(current_kitchen)
+    RecipeBroadcaster.broadcast(kitchen: current_kitchen, action: :created, recipe_title: recipe.title, recipe: recipe)
     render json: { redirect_url: recipe_path(recipe.slug) }
   rescue ActiveRecord::RecordInvalid, RuntimeError => error
     render json: { errors: [error.message] }, status: :unprocessable_content
@@ -40,11 +40,14 @@ class RecipesController < ApplicationController
                            )
                          end
 
-    @recipe.destroy! if recipe.slug != @recipe.slug
+    if recipe.slug != @recipe.slug
+      RecipeBroadcaster.broadcast_rename(@recipe, new_title: recipe.title, new_slug: recipe.slug)
+      @recipe.destroy!
+    end
     recipe.update!(edited_at: Time.current)
     Category.cleanup_orphans(current_kitchen)
 
-    MealPlanChannel.broadcast_content_changed(current_kitchen)
+    RecipeBroadcaster.broadcast(kitchen: current_kitchen, action: :updated, recipe_title: recipe.title, recipe: recipe)
     response_json = { redirect_url: recipe_path(recipe.slug) }
     response_json[:updated_references] = updated_references if updated_references.any?
     render json: response_json
@@ -56,10 +59,11 @@ class RecipesController < ApplicationController
     @recipe = current_kitchen.recipes.find_by!(slug: params[:slug])
 
     updated_references = CrossReferenceUpdater.strip_references(@recipe)
+    RecipeBroadcaster.broadcast(kitchen: current_kitchen, action: :deleted,
+                                recipe_title: @recipe.title, recipe: @recipe)
     @recipe.destroy!
     Category.cleanup_orphans(current_kitchen)
 
-    MealPlanChannel.broadcast_content_changed(current_kitchen)
     response_json = { redirect_url: home_path }
     response_json[:updated_references] = updated_references if updated_references.any?
     render json: response_json
