@@ -292,6 +292,10 @@ export default class extends Controller {
       { channel: "MealPlanChannel", kitchen_slug: slug },
       {
         received: (data) => {
+          if (data.type === 'content_changed') {
+            this.fetchState()
+            return
+          }
           if (data.version && data.version > this.version && !this.awaitingOwnAction) {
             this.fetchState()
           }

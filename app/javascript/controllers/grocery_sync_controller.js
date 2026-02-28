@@ -107,6 +107,28 @@ export default class extends Controller {
       .catch(() => {})
   }
 
+  fetchStateWithNotification() {
+    if (this.fetchController) this.fetchController.abort()
+    this.fetchController = new AbortController()
+
+    fetch(this.urls.state, {
+      headers: { "Accept": "application/json" },
+      signal: this.fetchController.signal
+    })
+      .then(response => {
+        if (!response.ok) throw new Error("fetch failed")
+        return response.json()
+      })
+      .then(data => {
+        this.version = data.version
+        this.state = data
+        this.saveCache()
+        this.applyStateToUI(data)
+        notifyShow("Shopping list updated.")
+      })
+      .catch(() => {})
+  }
+
   sendAction(url, params) {
     const csrfToken = document.querySelector('meta[name="csrf-token"]')
     const method = "PATCH"
@@ -160,6 +182,10 @@ export default class extends Controller {
       { channel: "MealPlanChannel", kitchen_slug: slug },
       {
         received: (data) => {
+          if (data.type === 'content_changed') {
+            this.fetchStateWithNotification()
+            return
+          }
           if (data.version && data.version > this.version && !this.awaitingOwnAction) {
             this.fetchState()
           }
