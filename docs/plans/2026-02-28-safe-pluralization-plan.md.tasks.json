@@ -4,13 +4,11 @@
     {"id": 1, "subject": "Task 1: Rewrite Inflector with KNOWN_PLURALS allowlist", "status": "pending"},
     {"id": 2, "subject": "Task 2: Update NutritionCalculator to use safe API", "status": "pending", "blockedBy": [1]},
     {"id": 3, "subject": "Task 3: Pluralize grocery list units server-side", "status": "pending", "blockedBy": [1]},
-    {"id": 4, "subject": "Task 4: Add .yield-unit span to ScalableNumberPreprocessor", "status": "pending", "blockedBy": [1]},
-    {"id": 5, "subject": "Task 5: Update _step.html.erb — ingredient name markup", "status": "pending", "blockedBy": [1, 4]},
-    {"id": 6, "subject": "Task 6: Update recipe_state_controller.js — ingredient scaling", "status": "pending", "blockedBy": [5]},
-    {"id": 7, "subject": "Task 7: Update recipe_state_controller.js — yield line scaling", "status": "pending", "blockedBy": [4]},
-    {"id": 8, "subject": "Task 8: Run full test suite and lint", "status": "pending", "blockedBy": [2, 3, 4, 5, 6, 7]},
-    {"id": 9, "subject": "Task 9: Manual smoke test in browser", "status": "pending", "blockedBy": [8]},
-    {"id": 10, "subject": "Task 10: Final cleanup and commit summary", "status": "pending", "blockedBy": [9]}
+    {"id": 4, "subject": "Task 4: Add .yield-unit span to ScalableNumberPreprocessor", "status": "pending"},
+    {"id": 5, "subject": "Task 5: Update _step.html.erb and RecipesHelper", "status": "pending", "blockedBy": [1]},
+    {"id": 6, "subject": "Task 6: Update recipe_state_controller.js", "status": "pending", "blockedBy": [5, 4]},
+    {"id": 7, "subject": "Task 7: Run full test suite, lint, and html_safe audit", "status": "pending", "blockedBy": [6]},
+    {"id": 8, "subject": "Task 8: Manual smoke test in browser", "status": "pending", "blockedBy": [7]}
   ],
   "lastUpdated": "2026-02-28T00:00:00Z"
 }
