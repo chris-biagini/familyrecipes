@@ -7,8 +7,8 @@ module IngredientRows
 
   private
 
-  def build_ingredient_rows(lookup)
-    index = recipes_by_ingredient(lookup)
+  def build_ingredient_rows(lookup, recipes: nil)
+    index = recipes_by_ingredient(lookup, recipes:)
     index.sort_by { |name, _| name.downcase }.map { |name, recipes| ingredient_row(name, recipes, lookup) }
   end
 
@@ -42,9 +42,9 @@ module IngredientRows
     'complete'
   end
 
-  def recipes_by_ingredient(lookup)
+  def recipes_by_ingredient(lookup, recipes: nil)
     seen = Hash.new { |h, k| h[k] = Set.new }
-    recipes = current_kitchen.recipes.includes(steps: :ingredients)
+    recipes ||= current_kitchen.recipes.includes(steps: :ingredients)
 
     recipes.each_with_object(Hash.new { |h, k| h[k] = [] }) do |recipe, index|
       recipe.ingredients.each do |ingredient|

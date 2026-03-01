@@ -38,9 +38,11 @@ class RecipeBroadcaster
   end
 
   def broadcast(action:, recipe_title:, recipe: nil)
-    broadcast_recipe_listings
-    broadcast_recipe_selector
-    broadcast_ingredients
+    categories = preload_categories
+
+    broadcast_recipe_listings(categories)
+    broadcast_recipe_selector(categories)
+    broadcast_ingredients(categories.flat_map(&:recipes))
     broadcast_recipe_page(recipe, action:, recipe_title:)
     broadcast_toast(action:, recipe_title:)
     MealPlanChannel.broadcast_content_changed(kitchen)
@@ -52,18 +54,20 @@ class RecipeBroadcaster
 
   def current_kitchen = kitchen
 
-  def broadcast_recipe_listings
-    categories = kitchen.categories.ordered.includes(:recipes).reject { |c| c.recipes.empty? }
+  def preload_categories
+    kitchen.categories.ordered.includes(recipes: { steps: :ingredients })
+  end
+
+  def broadcast_recipe_listings(categories)
     Turbo::StreamsChannel.broadcast_replace_to(
       kitchen, 'recipes',
       target: 'recipe-listings',
       partial: 'homepage/recipe_listings',
-      locals: { categories: }
+      locals: { categories: categories.reject { |c| c.recipes.empty? } }
     )
   end
 
-  def broadcast_recipe_selector
-    categories = kitchen.categories.ordered.includes(recipes: { steps: :ingredients })
+  def broadcast_recipe_selector(categories)
     quick_bites = parse_quick_bites
     Turbo::StreamsChannel.broadcast_replace_to(
       kitchen, 'recipes',
@@ -73,9 +77,9 @@ class RecipeBroadcaster
     )
   end
 
-  def broadcast_ingredients
+  def broadcast_ingredients(recipes)
     lookup = IngredientCatalog.lookup_for(kitchen)
-    rows = build_ingredient_rows(lookup)
+    rows = build_ingredient_rows(lookup, recipes:)
     summary = build_summary(rows)
 
     Turbo::StreamsChannel.broadcast_replace_to(
