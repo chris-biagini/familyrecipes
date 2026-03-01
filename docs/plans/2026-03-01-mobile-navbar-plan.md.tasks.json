@@ -1,0 +1,10 @@
+{
+  "planPath": "docs/plans/2026-03-01-mobile-navbar-plan.md",
+  "tasks": [
+    {"id": 1, "subject": "Task 1: Add SVG icons and rename Home → Recipes in nav partial", "status": "pending"},
+    {"id": 2, "subject": "Task 2: Update CSS for icon+text layout and mobile icon-only", "status": "pending", "blockedBy": [1]},
+    {"id": 3, "subject": "Task 3: Update tests for Home → Recipes rename", "status": "pending", "blockedBy": [1, 2]},
+    {"id": 4, "subject": "Task 4: Visual verification", "status": "pending", "blockedBy": [1, 2, 3]}
+  ],
+  "lastUpdated": "2026-03-01T00:00:00Z"
+}
