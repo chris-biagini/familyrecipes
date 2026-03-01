@@ -184,6 +184,24 @@ nav a:focus::after {
 nav > div:first-child {
   display: flex;
   align-items: center;
+  flex: 1;
+  min-width: 0;
+  container-type: inline-size;
+}
+
+@container (max-width: 570px) {
+  nav a {
+    padding: 0.5rem 0.6rem;
+  }
+
+  nav a span {
+    display: none;
+  }
+
+  .nav-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
 }
 
 nav > div:last-child:not(:first-child) {
@@ -698,19 +716,6 @@ footer small {
 @media screen and (max-width: 600px) {
   :root {
     --breathing-room: 1.5rem;
-  }
-
-  nav a {
-    padding: 0.5rem 0.6rem;
-  }
-
-  nav a span {
-    display: none;
-  }
-
-  .nav-icon {
-    width: 1.25rem;
-    height: 1.25rem;
   }
 
   main {
