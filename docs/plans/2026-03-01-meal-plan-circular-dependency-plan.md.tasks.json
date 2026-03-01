@@ -1,0 +1,10 @@
+{
+  "planPath": "docs/plans/2026-03-01-meal-plan-circular-dependency-plan.md",
+  "tasks": [
+    {"id": 3, "subject": "Task 1: Update MealPlan#prune_checked_off to accept injected visible names", "status": "pending"},
+    {"id": 4, "subject": "Task 2: Add build_visible_names helper to MealPlanActions concern", "status": "pending", "blockedBy": [3]},
+    {"id": 5, "subject": "Task 3: Update controller prune call sites", "status": "pending", "blockedBy": [4]},
+    {"id": 6, "subject": "Task 4: Update MealPlan header comment and close issue", "status": "pending", "blockedBy": [5]}
+  ],
+  "lastUpdated": "2026-03-01T00:00:00Z"
+}
