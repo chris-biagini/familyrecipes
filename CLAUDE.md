@@ -316,7 +316,7 @@ curl -X POST "https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/purge_cac
 
 ## Routes
 
-Routes use an optional `(/kitchens/:kitchen_slug)` scope. When exactly one kitchen exists, URLs are root-level (`/recipes/bagels`, `/ingredients`, `/menu`, `/groceries`). When multiple kitchens exist, URLs are scoped (`/kitchens/:slug/recipes/bagels`). `default_url_options` returns `{ kitchen_slug: }` or `{}` based on whether the request arrived via a scoped URL. The root route is handled by `LandingController` — it renders the sole kitchen's homepage directly when one kitchen exists, or a kitchen-list landing page when multiple exist. Kitchen-scoped routes include recipes (`show`, `create`, `update`, `destroy` — no index/new/edit), ingredients (`index`, `edit`), menu (`show`, `select`, `select_all`, `clear`, `state`, `quick_bites`, `quick_bites_content`), groceries (`show`, `state`, `check`, `custom_items`, `aisle_order`, `aisle_order_content`), and nutrition entries (`POST`/`DELETE` at `/nutrition/:ingredient_name`). The backing model for menu/groceries state is `MealPlan` (one row per kitchen). Both the menu and groceries pages require membership. Views use `home_path` (not `kitchen_root_path`) for the homepage link — it returns `root_path` or `kitchen_root_path` depending on mode. Other helpers (`recipe_path`, `ingredients_path`, `menu_path`, `groceries_path`) auto-adapt via `default_url_options`. When adding links, always use the `_path` helpers.
+Routes use an optional `(/kitchens/:kitchen_slug)` scope. When exactly one kitchen exists, URLs are root-level (`/recipes/bagels`, `/ingredients`, `/menu`, `/groceries`). When multiple kitchens exist, URLs are scoped (`/kitchens/:slug/recipes/bagels`). `default_url_options` returns `{ kitchen_slug: }` or `{}` based on whether the request arrived via a scoped URL. The root route is handled by `LandingController` — it renders the sole kitchen's homepage directly when one kitchen exists, or a kitchen-list landing page when multiple exist. Kitchen-scoped routes include recipes (`show`, `create`, `update`, `destroy` — no index/new/edit), ingredients (`index`, `edit`), menu (`show`, `select`, `select_all`, `clear`, `state`, `update_quick_bites`, `quick_bites_content`), groceries (`show`, `state`, `check`, `update_custom_items`, `update_aisle_order`, `aisle_order_content`), and nutrition entries (`POST`/`DELETE` at `/nutrition/:ingredient_name`). The backing model for menu/groceries state is `MealPlan` (one row per kitchen). Both the menu and groceries pages require membership. Views use `home_path` (not `kitchen_root_path`) for the homepage link — it returns `root_path` or `kitchen_root_path` depending on mode. Other helpers (`recipe_path`, `ingredients_path`, `menu_path`, `groceries_path`) auto-adapt via `default_url_options`. When adding links, always use the `_path` helpers.
 
 ## Architecture
 
@@ -347,6 +347,8 @@ Homepage and recipe pages are public reads. Ingredients, menu, and groceries pag
 Meal plan state syncs across browser tabs/devices via ActionCable backed by Solid Cable (separate SQLite database for pub/sub). `MealPlanChannel` broadcasts version numbers on state changes; clients poll for fresh state when their version is stale. Both the Menu and Groceries pages subscribe to the same channel. Connections require authentication (session cookie); subscriptions require kitchen membership.
 
 `RecipeBroadcaster` bridges recipe CRUD events to real-time updates. On recipe create/update/destroy it broadcasts Turbo Stream replacements to the home page (recipe listings), menu page (recipe selector), ingredients page (table + summary bar), and the recipe page itself. It also fires toast notifications via the `toast_controller` Stimulus controller and calls `MealPlanChannel.broadcast_content_changed` to trigger grocery/menu state refresh. On recipe changes it prunes orphaned checked-off entries from the meal plan via `MealPlan#prune_checked_off`. The broadcaster shares the `IngredientRows` concern with `IngredientsController`.
+
+Other services: `RecipeAvailabilityCalculator` determines which recipes have all ingredients available (used by the menu page). `MarkdownValidator` validates recipe markdown before import. `NutritionLabelParser` parses nutrition label data for the `bin/nutrition` CLI tool.
 
 ### PWA & Service Worker
 
@@ -412,6 +414,7 @@ To add a new simple editor dialog, use `render layout: 'shared/editor_dialog'` w
 - Views use `content_for` blocks for page-specific titles, head tags, and body attributes.
 - Cross-references in views are rendered using duck typing (`respond_to?(:target_slug)`).
 - Edit UI is wrapped in `current_kitchen.member?(current_user)` checks — read-only visitors see no edit controls.
+- `RecipesHelper` handles Markdown rendering, scalable number display, and nutrition formatting. `IngredientsHelper` handles nutrition summaries, density display, status badges, and aisle labels.
 - `config/site.yml` holds site identity; loaded as `Rails.configuration.site`.
 - `MarkdownImporter` requires `kitchen:` keyword. `CrossReferenceUpdater.rename_references` also requires `kitchen:`.
 
