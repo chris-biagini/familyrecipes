@@ -1,33 +1,26 @@
 import { Controller } from "@hotwired/stimulus"
-import { createConsumer } from "@rails/actioncable"
-import { show as notifyShow } from "utilities/notify"
+import MealPlanSync from "utilities/meal_plan_sync"
 
 export default class extends Controller {
   connect() {
     const slug = this.element.dataset.kitchenSlug
 
-    this.storageKey = `menu-state-${slug}`
-    this.version = 0
-    this.state = {}
-    this.awaitingOwnAction = false
-    this.initialFetch = true
-
     this.urls = {
-      state: this.element.dataset.stateUrl,
       select: this.element.dataset.selectUrl,
       selectAll: this.element.dataset.selectAllUrl,
       clear: this.element.dataset.clearUrl
     }
 
-    this.loadCache()
-    if (this.state && Object.keys(this.state).length > 0) {
-      this.syncCheckboxes(this.state)
-      this.syncAvailability(this.state)
-    }
-
-    this.fetchState()
-    this.subscribe(slug)
-    this.startHeartbeat()
+    this.sync = new MealPlanSync({
+      slug,
+      stateUrl: this.element.dataset.stateUrl,
+      cachePrefix: "menu-state",
+      onStateUpdate: (data) => {
+        this.syncCheckboxes(data)
+        this.syncAvailability(data)
+      },
+      remoteUpdateMessage: "Menu updated."
+    })
 
     this.bindRecipeCheckboxes()
 
@@ -39,73 +32,11 @@ export default class extends Controller {
         this.showPopover(dot)
       }
     })
-
-    this.boundHandleStreamRender = this.handleStreamRender.bind(this)
-    document.addEventListener("turbo:before-stream-render", this.boundHandleStreamRender)
   }
 
   disconnect() {
     this.hidePopover()
-    if (this.fetchController) this.fetchController.abort()
-    if (this.heartbeatId) {
-      clearInterval(this.heartbeatId)
-      this.heartbeatId = null
-    }
-    if (this.subscription) {
-      this.subscription.unsubscribe()
-      this.subscription = null
-    }
-    if (this.consumer) {
-      this.consumer.disconnect()
-      this.consumer = null
-    }
-    if (this.boundHandleStreamRender) {
-      document.removeEventListener("turbo:before-stream-render", this.boundHandleStreamRender)
-    }
-  }
-
-  handleStreamRender(event) {
-    const originalRender = event.detail.render
-    event.detail.render = async (streamElement) => {
-      await originalRender(streamElement)
-      if (this.state && Object.keys(this.state).length > 0) {
-        this.syncCheckboxes(this.state)
-        this.syncAvailability(this.state)
-      }
-    }
-  }
-
-  fetchState() {
-    if (this.fetchController) this.fetchController.abort()
-    this.fetchController = new AbortController()
-
-    fetch(this.urls.state, {
-      headers: { "Accept": "application/json" },
-      signal: this.fetchController.signal
-    })
-      .then(response => {
-        if (!response.ok) throw new Error("fetch failed")
-        return response.json()
-      })
-      .then(data => {
-        if (data.version >= this.version) {
-          const isRemoteUpdate = data.version > this.version
-            && this.version > 0
-            && !this.awaitingOwnAction
-            && !this.initialFetch
-          this.awaitingOwnAction = false
-          this.initialFetch = false
-          this.version = data.version
-          this.state = data
-          this.saveCache()
-          this.syncCheckboxes(data)
-          this.syncAvailability(data)
-          if (isRemoteUpdate) {
-            notifyShow("Menu updated.")
-          }
-        }
-      })
-      .catch(() => {})
+    if (this.sync) this.sync.disconnect()
   }
 
   syncCheckboxes(state) {
@@ -167,7 +98,8 @@ export default class extends Controller {
 
   showPopover(dot) {
     const slug = dot.dataset.slug
-    const info = (this.state.availability || {})[slug]
+    const state = this.sync.state
+    const info = (state.availability || {})[slug]
     if (!info) return
 
     let popover = document.getElementById('ingredient-popover')
@@ -259,55 +191,6 @@ export default class extends Controller {
     }
   }
 
-  sendAction(url, params) {
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')
-    const method = url === this.urls.clear ? "DELETE" : "PATCH"
-
-    this.awaitingOwnAction = true
-
-    return fetch(url, {
-      method,
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-        "X-CSRF-Token": csrfToken ? csrfToken.content : ""
-      },
-      body: JSON.stringify(params)
-    })
-      .then(response => {
-        if (!response.ok) throw new Error("action failed")
-        return response.json()
-      })
-      .then(() => {
-        this.fetchState()
-      })
-      .catch(() => {
-        this.awaitingOwnAction = false
-      })
-  }
-
-  subscribe(slug) {
-    this.consumer = createConsumer()
-    this.subscription = this.consumer.subscriptions.create(
-      { channel: "MealPlanChannel", kitchen_slug: slug },
-      {
-        received: (data) => {
-          if (data.type === 'content_changed') {
-            this.fetchState()
-            return
-          }
-          if (data.version && data.version > this.version && !this.awaitingOwnAction) {
-            this.fetchState()
-          }
-        }
-      }
-    )
-  }
-
-  startHeartbeat() {
-    this.heartbeatId = setInterval(() => this.fetchState(), 30000)
-  }
-
   bindRecipeCheckboxes() {
     this.element.addEventListener("change", (e) => {
       const cb = e.target.closest('#recipe-selector input[type="checkbox"]')
@@ -317,36 +200,15 @@ export default class extends Controller {
       const typeEl = cb.closest("[data-type]")
       const type = typeEl ? typeEl.dataset.type : "recipe"
 
-      this.sendAction(this.urls.select, { type, slug, selected: cb.checked })
+      this.sync.sendAction(this.urls.select, { type, slug, selected: cb.checked })
     })
   }
 
   selectAll() {
-    this.sendAction(this.urls.selectAll, {})
+    this.sync.sendAction(this.urls.selectAll, {})
   }
 
   clear() {
-    this.sendAction(this.urls.clear, {})
-  }
-
-  saveCache() {
-    try {
-      localStorage.setItem(this.storageKey, JSON.stringify({
-        version: this.version,
-        state: this.state
-      }))
-    } catch { /* localStorage full or unavailable */ }
-  }
-
-  loadCache() {
-    try {
-      const raw = localStorage.getItem(this.storageKey)
-      if (!raw) return
-      const cached = JSON.parse(raw)
-      if (cached && cached.version) {
-        this.version = cached.version
-        this.state = cached.state || {}
-      }
-    } catch { /* corrupted cache */ }
+    this.sync.sendAction(this.urls.clear, {}, "DELETE")
   }
 }
