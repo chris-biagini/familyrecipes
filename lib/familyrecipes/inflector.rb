@@ -11,6 +11,7 @@ module FamilyRecipes
       # Units
       'cup' => 'cups', 'clove' => 'cloves', 'slice' => 'slices',
       'can' => 'cans', 'bunch' => 'bunches', 'spoonful' => 'spoonfuls',
+      'pint' => 'pints', 'quart' => 'quarts', 'gallon' => 'gallons',
       'head' => 'heads', 'stalk' => 'stalks', 'sprig' => 'sprigs',
       'piece' => 'pieces', 'stick' => 'sticks', 'item' => 'items',
       # Yield nouns
@@ -38,7 +39,10 @@ module FamilyRecipes
       'oz' => 'oz', 'ounce' => 'oz', 'ounces' => 'oz',
       'lb' => 'lb', 'lbs' => 'lb', 'pound' => 'lb', 'pounds' => 'lb',
       'l' => 'l', 'liter' => 'l', 'liters' => 'l',
-      'ml' => 'ml'
+      'ml' => 'ml',
+      'pt' => 'pt', 'pint' => 'pt', 'pints' => 'pt',
+      'qt' => 'qt', 'quart' => 'qt', 'quarts' => 'qt',
+      'gal' => 'gal', 'gallon' => 'gal', 'gallons' => 'gal'
     }.freeze
 
     UNIT_ALIASES = {
