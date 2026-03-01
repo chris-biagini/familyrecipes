@@ -80,7 +80,7 @@ class EndToEndTest < ActionDispatch::IntegrationTest
     log_in
     get kitchen_root_path(kitchen_slug: kitchen_slug)
 
-    assert_select 'nav a.home', 'Home'
+    assert_select 'nav a.recipes', 'Recipes'
     assert_select 'nav a.ingredients', 'Ingredients'
     assert_select 'nav a.menu', 'Menu'
     assert_select 'nav a.groceries', 'Groceries'
@@ -89,7 +89,7 @@ class EndToEndTest < ActionDispatch::IntegrationTest
   test 'layout hides ingredients and groceries links when not logged in' do
     get kitchen_root_path(kitchen_slug: kitchen_slug)
 
-    assert_select 'nav a.home', 'Home'
+    assert_select 'nav a.recipes', 'Recipes'
     assert_select 'nav a.ingredients', count: 0
     assert_select 'nav a.menu', count: 0
     assert_select 'nav a.groceries', count: 0
