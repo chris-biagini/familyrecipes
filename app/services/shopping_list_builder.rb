@@ -5,6 +5,8 @@ class ShoppingListBuilder
     @kitchen = kitchen
     @meal_plan = meal_plan
     @profiles = IngredientCatalog.lookup_for(kitchen)
+    @profiles_ci = @profiles.transform_keys(&:downcase)
+    @uncataloged_names = {}
   end
 
   def build
@@ -74,7 +76,11 @@ class ShoppingListBuilder
   end
 
   def canonical_name(name)
-    @profiles[name]&.ingredient_name || name
+    profile = @profiles[name] || @profiles_ci[name.downcase]
+    return profile.ingredient_name if profile
+
+    # For uncataloged ingredients, keep first-seen capitalization
+    @uncataloged_names[name.downcase] ||= name
   end
 
   def organize_by_aisle(ingredients)

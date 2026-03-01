@@ -349,6 +349,81 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
     assert_includes eggs[:sources], 'Custard'
   end
 
+  test 'merges ingredients case-insensitively when catalog entry exists' do
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Soda Bread
+
+      Category: Bread
+
+      ## Mix (combine)
+
+      - flour, 2 cups
+
+      Mix.
+    MD
+
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+    list.apply_action('select', type: 'recipe', slug: 'soda-bread', selected: true)
+
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
+    all_names = result.values.flatten.pluck(:name)
+
+    assert_equal 1, all_names.count { |n| n.casecmp('flour').zero? },
+                 'Expected one Flour entry, not separate entries for different cases'
+    flour = result['Baking'].find { |i| i[:name] == 'Flour' }
+
+    assert flour, 'Expected canonical catalog name "Flour", not lowercase "flour"'
+    flour_cups = flour[:amounts].find { |_v, u| u == 'cups' }
+
+    assert_in_delta 5.0, flour_cups[0], 0.01
+  end
+
+  test 'merges uncataloged ingredients case-insensitively' do
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Fizzy Water
+
+      Category: Bread
+
+      ## Pour (serve)
+
+      - Seltzer, 2 cups
+
+      Pour.
+    MD
+
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Sparkling Lemonade
+
+      Category: Bread
+
+      ## Mix (combine)
+
+      - seltzer, 1 cup
+
+      Mix.
+    MD
+
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'recipe', slug: 'fizzy-water', selected: true)
+    list.apply_action('select', type: 'recipe', slug: 'sparkling-lemonade', selected: true)
+
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
+    all_names = result.values.flatten.pluck(:name)
+
+    assert_equal 1, all_names.count { |n| n.casecmp('seltzer').zero? },
+                 'Expected one Seltzer entry, not separate entries for different cases'
+
+    seltzer = result.values.flatten.find { |i| i[:name].casecmp('seltzer').zero? }
+
+    assert seltzer
+    seltzer_cups = seltzer[:amounts].find { |_v, u| u == 'cups' }
+
+    assert_in_delta 3.0, seltzer_cups[0], 0.01
+    assert_includes seltzer[:sources], 'Fizzy Water'
+    assert_includes seltzer[:sources], 'Sparkling Lemonade'
+  end
+
   test 'custom items have empty sources' do
     list = MealPlan.for_kitchen(@kitchen)
     list.apply_action('custom_items', item: 'birthday candles', action: 'add')
