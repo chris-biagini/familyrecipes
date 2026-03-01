@@ -387,15 +387,15 @@ All client-side JavaScript uses the Hotwire stack: **Stimulus** for behavior, **
 **Stimulus controllers** (`app/javascript/controllers/`):
 - `editor_controller` — generic `<dialog>` lifecycle: open, save (PATCH/POST), dirty-check, close. Configurable via Stimulus values (`url`, `method`, `on-success`, `body-key`). Simple dialogs need zero custom JS — just data attributes on the `<dialog>`. Custom dialogs (nutrition editor) dispatch lifecycle events (`editor:collect`, `editor:save`, `editor:modified`, `editor:reset`).
 - `nutrition_editor_controller` — hooks into editor lifecycle events for the multi-row nutrition form on the ingredients page.
-- `grocery_sync_controller` — ActionCable subscription for meal plan state on the Groceries page. Polls for fresh state when version is stale. Preserves checkbox state across Turbo Stream replacements.
+- `grocery_sync_controller` — Thin wrapper around `MealPlanSync` for the Groceries page. Delegates sync to the shared utility, exposes `sendAction` and `urls` for `grocery_ui_controller`.
 - `grocery_ui_controller` — Groceries page shopping list rendering, custom items, and checked items. Communicates with `grocery_sync_controller` via `this.application.getControllerForElementAndIdentifier()`.
-- `menu_controller` — Menu page recipe/quick-bite selection, ActionCable sync for meal plan state, and checkbox state preservation. Handles Turbo Stream broadcasts for quick bites content changes.
+- `menu_controller` — Menu page recipe/quick-bite selection, checkbox sync, availability dots, and ingredient popovers. Delegates sync to `MealPlanSync`. Handles select/select-all/clear actions.
 - `recipe_state_controller` — recipe page scaling, cross-off, and localStorage state persistence.
 - `wake_lock_controller` — Screen Wake Lock API for recipe pages (keeps screen on while cooking).
 - `ingredient_table_controller` — ingredients page search filtering, status filtering (all/complete/missing nutrition/missing density), sortable columns, and keyboard navigation.
 - `toast_controller` — fires a toast notification on connect and removes itself. Used by `RecipeBroadcaster`'s Turbo Stream broadcasts to show notifications on recipe changes.
 
-**Shared utilities** (`app/javascript/utilities/`): `notify.js` (toast notifications), `editor_utils.js` (CSRF token helper), `vulgar_fractions.js` (number display).
+**Shared utilities** (`app/javascript/utilities/`): `meal_plan_sync.js` (ActionCable sync: subscription, version-based polling, heartbeat, localStorage cache, offline queue, Turbo Stream interception — used by both `menu_controller` and `grocery_sync_controller`), `notify.js` (toast notifications), `editor_utils.js` (CSRF token helper), `vulgar_fractions.js` (number display).
 
 **Turbo Drive** is enabled globally for SPA-like page transitions. The progress bar is disabled (`Turbo.config.drive.progressBarDelay = Infinity`) because its inline styles conflict with the strict CSP.
 
