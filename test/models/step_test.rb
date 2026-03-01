@@ -17,11 +17,16 @@ class StepModelTest < ActiveSupport::TestCase
 
   # --- validations ---
 
-  test 'requires title' do
-    step = Step.new(recipe: @recipe, position: 1)
+  test 'allows nil title for implicit steps' do
+    step = Step.new(recipe: @recipe, title: nil, position: 1)
+
+    assert_predicate step, :valid?
+  end
+
+  test 'rejects blank title' do
+    step = Step.new(recipe: @recipe, title: '', position: 1)
 
     assert_not step.valid?
-    assert_includes step.errors[:title], "can't be blank"
   end
 
   test 'requires position' do

@@ -6,7 +6,7 @@ class Step < ApplicationRecord
   has_many :ingredients, -> { order(:position) }, dependent: :destroy, inverse_of: :step
   has_many :cross_references, -> { order(:position) }, dependent: :destroy, inverse_of: :step
 
-  validates :title, presence: true
+  validates :title, length: { minimum: 1 }, allow_nil: true
   validates :position, presence: true
 
   def ingredient_list_items
