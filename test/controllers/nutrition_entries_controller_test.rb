@@ -205,6 +205,49 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
     assert_nil entry.portions['each']
   end
 
+  # --- permitted_portions sanitization ---
+
+  test 'upsert rejects portion keys over 50 characters' do
+    long_key = 'a' * 51
+
+    post nutrition_entry_upsert_path('flour', kitchen_slug: kitchen_slug),
+         params: { nutrients: VALID_NUTRIENTS, density: nil,
+                   portions: { long_key => 50 }, aisle: nil },
+         as: :json
+
+    assert_response :success
+    entry = IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'flour')
+
+    assert_empty entry.portions
+  end
+
+  test 'upsert rejects non-numeric portion values' do
+    post nutrition_entry_upsert_path('flour', kitchen_slug: kitchen_slug),
+         params: { nutrients: VALID_NUTRIENTS, density: nil,
+                   portions: { 'stick' => '113', 'evil' => 'DROP TABLE' }, aisle: nil },
+         as: :json
+
+    assert_response :success
+    entry = IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'flour')
+
+    assert_equal '113', entry.portions['stick']
+    assert_nil entry.portions['evil']
+  end
+
+  test 'upsert accepts portion key at exactly 50 characters' do
+    boundary_key = 'a' * 50
+
+    post nutrition_entry_upsert_path('flour', kitchen_slug: kitchen_slug),
+         params: { nutrients: VALID_NUTRIENTS, density: nil,
+                   portions: { boundary_key => 100 }, aisle: nil },
+         as: :json
+
+    assert_response :success
+    entry = IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'flour')
+
+    assert_equal 100, entry.portions[boundary_key]
+  end
+
   test 'upsert validates basis_grams > 0 when nutrients present' do
     post nutrition_entry_upsert_path('flour', kitchen_slug: kitchen_slug),
          params: { nutrients: { basis_grams: 0, calories: 110 }, density: nil, portions: {}, aisle: nil },
@@ -330,6 +373,14 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
     delete nutrition_entry_destroy_path('flour', kitchen_slug: kitchen_slug), as: :json
 
     assert_response :forbidden
+  end
+
+  test 'destroy broadcasts content changed' do
+    IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'flour', basis_grams: 30, calories: 110)
+
+    assert_broadcast_on(MealPlanChannel.broadcasting_for(@kitchen), type: 'content_changed') do
+      delete nutrition_entry_destroy_path('flour', kitchen_slug: kitchen_slug), as: :json
+    end
   end
 
   test 'destroy recalculates affected recipes with global fallback' do

@@ -97,4 +97,27 @@ class RecipeBroadcasterTest < ActiveSupport::TestCase
       RecipeBroadcaster.notify_recipe_deleted(recipe, recipe_title: 'Focaccia')
     end
   end
+
+  test 'broadcast_rename broadcasts redirect to old recipe stream' do
+    recipe = @kitchen.recipes.find_by!(slug: 'focaccia')
+
+    calls = []
+    capture = ->(*args, **kw) { calls << { args:, kw: } }
+    Turbo::StreamsChannel.stub :broadcast_replace_to, capture do
+      RecipeBroadcaster.broadcast_rename(
+        recipe, new_title: 'Focaccia Genovese',
+                redirect_path: '/recipes/focaccia-genovese'
+      )
+    end
+
+    assert_equal 1, calls.size
+    call = calls.first
+
+    assert_equal recipe, call[:args][0]
+    assert_equal 'content', call[:args][1]
+    assert_equal 'recipe-content', call[:kw][:target]
+    assert_equal 'Focaccia Genovese', call[:kw][:locals][:redirect_title]
+    assert_equal '/recipes/focaccia-genovese', call[:kw][:locals][:redirect_path]
+    assert_equal 'Focaccia', call[:kw][:locals][:recipe_title]
+  end
 end
