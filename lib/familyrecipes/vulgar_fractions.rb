@@ -2,9 +2,10 @@
 
 module FamilyRecipes
   # Formats decimal quantities as Unicode vulgar fraction glyphs (e.g., 0.5 → "½",
-  # 1.25 → "1¼"). Used by views and the JS vulgar_fractions utility for display.
-  # Also provides singular_noun? for deciding singular vs. plural unit display
-  # (fractions like ½ are treated as singular: "½ cup", not "½ cups").
+  # 1.25 → "1¼"). Unit-aware: metric units (g, kg, ml, l) bypass glyph conversion
+  # and keep plain decimal form (12.5 g, not 12½ g). Used by views and the JS
+  # vulgar_fractions utility for display. Also provides singular_noun? for deciding
+  # singular vs. plural unit display (fractions like ½ are singular: "½ cup").
   module VulgarFractions
     GLYPHS = {
       1 / 2r => "\u00BD",
@@ -19,10 +20,12 @@ module FamilyRecipes
     }.freeze
 
     TOLERANCE = 0.001
+    METRIC_UNITS = %w[g kg ml l].to_set.freeze
 
     module_function
 
-    def format(value)
+    def format(value, unit: nil)
+      return format_decimal(value) if metric_unit?(unit)
       return value.to_i.to_s if integer?(value)
 
       integer_part = value.to_i
@@ -60,6 +63,10 @@ module FamilyRecipes
       rounded.to_s.sub(/\.?0+\z/, '')
     end
 
-    private_class_method :find_glyph, :integer?, :fractional_part, :format_with_glyph, :format_decimal
+    def metric_unit?(unit)
+      METRIC_UNITS.include?(unit&.downcase)
+    end
+
+    private_class_method :find_glyph, :integer?, :fractional_part, :format_with_glyph, :format_decimal, :metric_unit?
   end
 end

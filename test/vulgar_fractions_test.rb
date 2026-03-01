@@ -118,4 +118,42 @@ class VulgarFractionsTest < Minitest::Test
   def test_plural_for_non_matching_decimal_less_than_one
     refute FamilyRecipes::VulgarFractions.singular_noun?(0.7)
   end
+
+  # --- unit-aware formatting ---
+
+  def test_metric_unit_keeps_decimal
+    assert_equal '12.5', FamilyRecipes::VulgarFractions.format(12.5, unit: 'g')
+  end
+
+  def test_metric_kg_keeps_decimal
+    assert_equal '0.5', FamilyRecipes::VulgarFractions.format(0.5, unit: 'kg')
+  end
+
+  def test_metric_ml_keeps_decimal
+    assert_equal '2.5', FamilyRecipes::VulgarFractions.format(2.5, unit: 'ml')
+  end
+
+  def test_metric_l_keeps_decimal
+    assert_equal '0.25', FamilyRecipes::VulgarFractions.format(0.25, unit: 'l')
+  end
+
+  def test_metric_integer_stays_integer
+    assert_equal '12', FamilyRecipes::VulgarFractions.format(12.0, unit: 'g')
+  end
+
+  def test_us_customary_gets_vulgar
+    assert_equal "\u00BD", FamilyRecipes::VulgarFractions.format(0.5, unit: 'cup')
+  end
+
+  def test_unitless_gets_vulgar
+    assert_equal "\u00BD", FamilyRecipes::VulgarFractions.format(0.5, unit: nil)
+  end
+
+  def test_unknown_unit_gets_vulgar
+    assert_equal "\u00BD", FamilyRecipes::VulgarFractions.format(0.5, unit: 'cloves')
+  end
+
+  def test_backward_compatible_without_unit
+    assert_equal "\u00BD", FamilyRecipes::VulgarFractions.format(0.5)
+  end
 end
