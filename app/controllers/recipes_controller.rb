@@ -49,7 +49,7 @@ class RecipesController < ApplicationController
                          end
 
     if recipe.slug != @recipe.slug
-      RecipeBroadcaster.broadcast_rename(@recipe, new_title: recipe.title, new_slug: recipe.slug)
+      RecipeBroadcaster.broadcast_rename(@recipe, new_title: recipe.title, redirect_path: recipe_path(recipe))
       @recipe.destroy!
     end
     recipe.update!(edited_at: Time.current)

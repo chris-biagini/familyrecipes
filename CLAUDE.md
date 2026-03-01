@@ -112,7 +112,7 @@ Every class has an architectural header comment — read them first. This sectio
 
 **Two namespaces.** Rails app module: `Familyrecipes` (lowercase r). Domain parser module: `FamilyRecipes` (uppercase R). Different constants, no collision. Parser pipeline: `LineClassifier` → `RecipeBuilder` → `FamilyRecipes::Recipe`; `MarkdownImporter` is the sole write-path entry point.
 
-**Routing.** Routes use an optional `(/kitchens/:kitchen_slug)` scope. `default_url_options` auto-injects `kitchen_slug` — always use `_path` helpers. Use `home_path` (not `kitchen_root_path`) for homepage links. `MealPlan` (one row per kitchen) backs both the menu and groceries pages.
+**Routing.** Routes use an optional `(/kitchens/:kitchen_slug)` scope. When exactly one Kitchen exists, URLs are root-level (`/recipes/bagels`); when multiple exist, URLs include the prefix (`/kitchens/ours/recipes/bagels`). `default_url_options` auto-injects `kitchen_slug` — always use `_path` helpers, never hard-code URL strings. Use `home_path` (not `kitchen_root_path`) for homepage links. `MealPlan` (one row per kitchen) backs both the menu and groceries pages.
 
 **Editor dialogs.** Use `render layout: 'shared/editor_dialog'` with Stimulus data attributes — no JS needed. For custom content, add a controller listening to editor lifecycle events.
 

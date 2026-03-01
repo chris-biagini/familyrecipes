@@ -33,13 +33,13 @@ class RecipeBroadcaster
     )
   end
 
-  def self.broadcast_rename(old_recipe, new_title:, new_slug:)
+  def self.broadcast_rename(old_recipe, new_title:, redirect_path:)
     Turbo::StreamsChannel.broadcast_replace_to(
       old_recipe, 'content',
       target: 'recipe-content',
       partial: 'recipes/deleted',
       locals: { recipe_title: old_recipe.title,
-                redirect_path: "/recipes/#{new_slug}",
+                redirect_path:,
                 redirect_title: new_title }
     )
   end
