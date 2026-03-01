@@ -67,15 +67,20 @@ module RecipesHelper
 
   private
 
-  # rubocop:disable Lint/FloatComparison -- scale_factor is always a literal or DB float
   def scaled_quantity_display(item, scale_factor)
-    return item.quantity_display if scale_factor == 1.0 || !item.quantity_value
+    return format_quantity_display(item) unless scale_factor != 1.0 && item.quantity_value # rubocop:disable Lint/FloatComparison
 
     scaled = item.quantity_value.to_f * scale_factor
-    formatted = scaled == scaled.to_i ? scaled.to_i.to_s : scaled.to_s
+    formatted = FamilyRecipes::VulgarFractions.format(scaled, unit: item.quantity_unit)
     [formatted, item.unit].compact.join(' ')
   end
-  # rubocop:enable Lint/FloatComparison
+
+  def format_quantity_display(item)
+    return unless item.quantity_value
+
+    formatted = FamilyRecipes::VulgarFractions.format(item.quantity_value.to_f, unit: item.quantity_unit)
+    [formatted, item.unit].compact.join(' ')
+  end
 
   def add_unit_plural_attr(attrs, unit)
     return unless unit
