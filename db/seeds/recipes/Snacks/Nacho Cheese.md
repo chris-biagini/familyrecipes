@@ -6,8 +6,6 @@ Category: Snacks
 Makes: 1 cup
 Serves: 4
 
-## Prepare.
-
 - Cheddar, 225 g: Cut into small cubes.
 - Milk, 225 g
 - Sodium citrate, 8 g
