@@ -1,8 +1,10 @@
 /**
  * Client-side mirror of FamilyRecipes::VulgarFractions. Formats decimals as
- * Unicode fraction glyphs (0.5 → "½") for scaled ingredient display. Also
- * determines singular/plural noun agreement for fractional quantities (½ is
- * singular: "½ cup", not "½ cups"). Used by recipe_state_controller.
+ * Unicode fraction glyphs (0.5 → "½") for scaled ingredient display. When a
+ * metric unit (g, kg, ml, l) is passed, skips vulgar fractions and returns
+ * plain decimals instead. Also determines singular/plural noun agreement for
+ * fractional quantities (½ is singular: "½ cup", not "½ cups"). Used by
+ * recipe_state_controller.
  */
 const VULGAR_FRACTIONS = [
   [1/2, '\u00BD'], [1/3, '\u2153'], [2/3, '\u2154'],
@@ -10,7 +12,14 @@ const VULGAR_FRACTIONS = [
   [1/8, '\u215B'], [3/8, '\u215C'], [5/8, '\u215D'], [7/8, '\u215E']
 ]
 
-export function formatVulgar(value) {
+const METRIC_UNITS = new Set(['g', 'kg', 'ml', 'l'])
+
+export function formatVulgar(value, unit = null) {
+  if (unit && METRIC_UNITS.has(unit.toLowerCase())) {
+    if (Number.isInteger(value)) return String(value)
+    const rounded = Math.round(value * 100) / 100
+    return String(rounded)
+  }
   if (Number.isInteger(value)) return String(value)
   const intPart = Math.floor(value)
   const fracPart = value - intPart
