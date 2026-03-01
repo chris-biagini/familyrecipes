@@ -91,7 +91,7 @@ class MenuController < ApplicationController
   end
 
   def recipe_selector_categories
-    current_kitchen.categories.ordered.includes(recipes: { steps: :ingredients })
+    current_kitchen.categories.ordered.includes(:recipes)
   end
 
   def all_recipe_slugs
