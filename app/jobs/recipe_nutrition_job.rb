@@ -11,10 +11,12 @@ class RecipeNutritionJob < ApplicationJob
   def perform(recipe)
     loaded = eager_load_recipe(recipe)
 
-    nutrition_data = build_nutrition_lookup(loaded.kitchen)
-    return if nutrition_data.empty?
+    catalog = IngredientCatalog.lookup_for(loaded.kitchen)
+    return if catalog.empty?
 
-    calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data, omit_set: omit_set)
+    nutrition_data = build_nutrition_data(catalog)
+    omits = extract_omit_set(catalog)
+    calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data, omit_set: omits)
     result = calculator.calculate(loaded, {})
 
     recipe.update_column(:nutrition_data, serialize_result(result)) # rubocop:disable Rails/SkipsModelValidations
@@ -27,13 +29,19 @@ class RecipeNutritionJob < ApplicationJob
           .find(recipe.id)
   end
 
-  def build_nutrition_lookup(kitchen)
-    IngredientCatalog.lookup_for(kitchen).transform_values do |entry|
+  def build_nutrition_data(catalog)
+    catalog.transform_values do |entry|
       data = { 'nutrients' => nutrients_hash(entry) }
       data['density'] = density_hash(entry) if entry.density_grams && entry.density_volume && entry.density_unit
       data['portions'] = entry.portions if entry.portions.present?
       data
     end
+  end
+
+  def extract_omit_set(catalog)
+    catalog.each_value
+           .select { |entry| entry.aisle == 'omit' }
+           .to_set { |entry| entry.ingredient_name.downcase }
   end
 
   def nutrients_hash(entry)
@@ -48,10 +56,6 @@ class RecipeNutritionJob < ApplicationJob
       'volume' => entry.density_volume.to_f,
       'unit' => entry.density_unit
     }
-  end
-
-  def omit_set
-    @omit_set ||= IngredientCatalog.where(aisle: 'omit').pluck(:ingredient_name).to_set(&:downcase)
   end
 
   def serialize_result(result)
