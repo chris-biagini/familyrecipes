@@ -15,7 +15,9 @@ module FamilyRecipes
       value_str = raw.strip
       value_str = value_str.split(/[-–]/).last.strip if value_str.match?(/[-–]/)
 
-      return NumericParsing.parse_fraction(value_str).to_s if value_str.match?(%r{/}o) || value_str.match?(NumericParsing::VULGAR_PATTERN)
+      if value_str.match?(%r{/}o) || value_str.match?(NumericParsing::VULGAR_PATTERN)
+        return NumericParsing.parse_fraction(value_str).to_s
+      end
 
       value_str
     end
