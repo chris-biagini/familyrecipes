@@ -10,9 +10,10 @@
 class RecipeBroadcaster
   include IngredientRows
 
-  SHOW_INCLUDES = {
-    steps: [:ingredients, { cross_references: { target_recipe: { steps: %i[ingredients cross_references] } } }]
-  }.freeze
+  SHOW_INCLUDES = [
+    :category,
+    { steps: [:ingredients, { cross_references: { target_recipe: { steps: %i[ingredients cross_references] } } }] }
+  ].freeze
 
   def self.broadcast(kitchen:, action:, recipe_title:, recipe: nil)
     new(kitchen).broadcast(action:, recipe_title:, recipe:)

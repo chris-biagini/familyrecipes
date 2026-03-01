@@ -12,7 +12,8 @@ class RecipesController < ApplicationController
   def show
     embedded_steps = { steps: %i[ingredients cross_references] }
     @recipe = current_kitchen.recipes
-                             .includes(steps: [:ingredients,
+                             .includes(:category,
+                                       steps: [:ingredients,
                                                { cross_references: { target_recipe: embedded_steps } }])
                              .find_by!(slug: params[:slug])
     @nutrition = @recipe.nutrition_data
