@@ -1,15 +1,52 @@
-  <nav>
-    <div>
-      <% if current_kitchen %>
-        <%= link_to 'Home', home_path, class: 'home', title: 'Home (Table of Contents)' %>
-        <% if logged_in? %>
-          <%= link_to 'Ingredients', ingredients_path, class: 'ingredients', title: 'Ingredients' %>
-          <%= link_to 'Menu', menu_path, class: 'menu', title: 'Plan your meals' %>
-          <%= link_to 'Groceries', groceries_path, class: 'groceries', title: 'Shopping list' %>
-        <% end %>
-      <% else %>
-        <%= link_to 'Home', root_path, class: 'home', title: 'Home' %>
+<nav>
+  <div>
+    <% if current_kitchen %>
+      <%= link_to home_path, class: 'recipes', title: 'Recipes (Table of Contents)', aria: { label: 'Recipes' } do %>
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M2 4c0-1 .5-2 2-2 1 0 7 .5 8 2 1-1.5 7-2 8-2 1.5 0 2 1 2 2v13c0 1-.5 1.5-1.5 1.5S14 17 12 18.5C10 17 4.5 18.5 3.5 18.5S2 18 2 17z"/>
+          <path d="M12 2v16.5"/>
+        </svg>
+        <span>Recipes</span>
       <% end %>
-    </div>
-    <%= yield :extra_nav if content_for?(:extra_nav) %>
-  </nav>
+      <% if logged_in? %>
+        <%= link_to ingredients_path, class: 'ingredients', title: 'Ingredients', aria: { label: 'Ingredients' } do %>
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6 6h12v1c0 1-.5 2-2 2H8c-1.5 0-2-1-2-2z"/>
+            <path d="M7 9c-.3 2-.5 5 0 8 .3 2 1.5 3 3 3h4c1.5 0 2.7-1 3-3 .5-3 .3-6 0-8"/>
+            <line x1="9" y1="13" x2="15" y2="13"/>
+            <line x1="9" y1="16" x2="13" y2="16"/>
+          </svg>
+          <span>Ingredients</span>
+        <% end %>
+        <%= link_to menu_path, class: 'menu', title: 'Plan your meals', aria: { label: 'Menu' } do %>
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="5" y="2" width="14" height="20" rx="1.5"/>
+            <line x1="9" y1="7" x2="16" y2="7"/>
+            <line x1="9" y1="11" x2="16" y2="11"/>
+            <line x1="9" y1="15" x2="14" y2="15"/>
+            <path d="M5 2v20" stroke-width="2"/>
+          </svg>
+          <span>Menu</span>
+        <% end %>
+        <%= link_to groceries_path, class: 'groceries', title: 'Shopping list', aria: { label: 'Groceries' } do %>
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="9" cy="20" r="1.5"/>
+            <circle cx="18" cy="20" r="1.5"/>
+            <path d="M3 3h2l1.5 9h12L20 6H7.5"/>
+            <path d="M6.5 12h12"/>
+          </svg>
+          <span>Groceries</span>
+        <% end %>
+      <% end %>
+    <% else %>
+      <%= link_to root_path, class: 'recipes', title: 'Recipes', aria: { label: 'Recipes' } do %>
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M2 4c0-1 .5-2 2-2 1 0 7 .5 8 2 1-1.5 7-2 8-2 1.5 0 2 1 2 2v13c0 1-.5 1.5-1.5 1.5S14 17 12 18.5C10 17 4.5 18.5 3.5 18.5S2 18 2 17z"/>
+          <path d="M12 2v16.5"/>
+        </svg>
+        <span>Recipes</span>
+      <% end %>
+    <% end %>
+  </div>
+  <%= yield :extra_nav if content_for?(:extra_nav) %>
+</nav>
