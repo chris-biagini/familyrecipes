@@ -4,8 +4,8 @@
 # blob: selected recipes, selected quick bites, custom grocery items, and
 # checked-off items. Synced across devices via MealPlanChannel (ActionCable)
 # with optimistic locking (lock_version). Both the menu and groceries pages
-# read and write this model; ShoppingListBuilder consumes it to produce the
-# grocery list.
+# read and write this model. Controllers inject visible_names into
+# prune_checked_off — this model has no dependency on ShoppingListBuilder.
 class MealPlan < ApplicationRecord
   acts_as_tenant :kitchen
 
@@ -63,12 +63,12 @@ class MealPlan < ApplicationRecord
     end
   end
 
-  def prune_checked_off(force_save: false)
+  def prune_checked_off(visible_names:)
     ensure_state_keys
-    visible = visible_item_names
+    custom = Set.new(state['custom_items'])
     before_size = state['checked_off'].size
-    state['checked_off'].select! { |item| visible.include?(item) }
-    save! if force_save || state['checked_off'].size < before_size
+    state['checked_off'].select! { |item| visible_names.include?(item) || custom.include?(item) }
+    save! if state['checked_off'].size < before_size
   end
 
   private
@@ -79,14 +79,7 @@ class MealPlan < ApplicationRecord
 
   def apply_select(type:, slug:, selected:, **)
     key = type == 'recipe' ? 'selected_recipes' : 'selected_quick_bites'
-    adding = truthy?(selected)
-
-    if adding
-      toggle_array(key, slug, true)
-    else
-      toggle_array(key, slug, false, save: false)
-      prune_checked_off(force_save: true)
-    end
+    toggle_array(key, slug, truthy?(selected))
   end
 
   def apply_check(item:, checked:, **)
@@ -95,12 +88,6 @@ class MealPlan < ApplicationRecord
 
   def apply_custom_items(item:, action:, **)
     toggle_array('custom_items', item, action == 'add')
-  end
-
-  def visible_item_names
-    shopping_list = ShoppingListBuilder.new(kitchen: kitchen, meal_plan: self).build
-    names = shopping_list.each_value.flat_map { |items| items.map { |i| i[:name] } }
-    Set.new(names)
   end
 
   def toggle_array(key, value, add, save: true)
