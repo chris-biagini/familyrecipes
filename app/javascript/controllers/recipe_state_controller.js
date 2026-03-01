@@ -179,7 +179,7 @@ export default class extends Controller {
         const unitPlural = li.dataset.quantityUnitPlural || unitSingular
         const scaled = orig * factor
         const unit = isVulgarSingular(scaled) ? unitSingular : unitPlural
-        const pretty = formatVulgar(scaled)
+        const pretty = formatVulgar(scaled, unitSingular)
         const span = li.querySelector('.quantity')
         if (span) span.textContent = pretty + (unit ? ` ${unit}` : '')
 
