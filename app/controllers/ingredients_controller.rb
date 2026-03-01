@@ -12,8 +12,7 @@ class IngredientsController < ApplicationController
   before_action :prevent_html_caching, only: :index
 
   def index
-    lookup = IngredientCatalog.lookup_for(current_kitchen)
-    @ingredient_rows = build_ingredient_rows(lookup)
+    @ingredient_rows = build_ingredient_rows(catalog_lookup)
     @summary = build_summary(@ingredient_rows)
     @available_aisles = current_kitchen.all_aisles
     @next_needing_attention = first_needing_attention
@@ -38,12 +37,11 @@ class IngredientsController < ApplicationController
   end
 
   def next_needing_attention(current_name)
-    lookup = IngredientCatalog.lookup_for(current_kitchen)
-    sorted = sorted_ingredient_names(lookup)
+    sorted = sorted_ingredient_names(catalog_lookup)
     idx = sorted.index(current_name)
     return unless idx
 
-    sorted[(idx + 1)..].find { |name| row_status(lookup[name]) != 'complete' }
+    sorted[(idx + 1)..].find { |name| row_status(catalog_lookup[name]) != 'complete' }
   end
 
   def sorted_ingredient_names(lookup)
@@ -51,16 +49,18 @@ class IngredientsController < ApplicationController
   end
 
   def recipes_for_ingredient(name)
-    lookup = IngredientCatalog.lookup_for(current_kitchen)
     current_kitchen.recipes.includes(steps: :ingredients).select do |recipe|
-      recipe.ingredients.any? { |i| (lookup[i.name]&.ingredient_name || i.name) == name }
+      recipe.ingredients.any? { |i| (catalog_lookup[i.name]&.ingredient_name || i.name) == name }
     end
   end
 
   def load_ingredient_data
     name = decoded_ingredient_name
-    entry = IngredientCatalog.lookup_for(current_kitchen)[name]
-    [name, entry]
+    [name, catalog_lookup[name]]
+  end
+
+  def catalog_lookup
+    @catalog_lookup ||= IngredientCatalog.lookup_for(current_kitchen)
   end
 
   def decoded_ingredient_name

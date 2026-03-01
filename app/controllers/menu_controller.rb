@@ -6,10 +6,10 @@
 # bites content is web-editable; changes broadcast Turbo Stream replacements
 # to update all connected clients.
 class MenuController < ApplicationController
+  include MealPlanActions
+
   before_action :require_membership
   before_action :prevent_html_caching, only: :show
-
-  rescue_from ActiveRecord::StaleObjectError, with: :handle_stale_record
 
   def show
     @categories = recipe_selector_categories
@@ -67,20 +67,6 @@ class MenuController < ApplicationController
   end
 
   private
-
-  def apply_and_respond(action_type, **action_params)
-    plan = MealPlan.for_kitchen(current_kitchen)
-    plan.with_optimistic_retry do
-      plan.apply_action(action_type, **action_params)
-    end
-    MealPlanChannel.broadcast_version(current_kitchen, plan.lock_version)
-    render json: { version: plan.lock_version }
-  end
-
-  def handle_stale_record
-    render json: { error: 'Meal plan was modified by another request. Please refresh.' },
-           status: :conflict
-  end
 
   def load_quick_bites_by_subsection
     current_kitchen.parsed_quick_bites

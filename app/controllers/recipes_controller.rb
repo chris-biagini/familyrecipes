@@ -5,9 +5,9 @@
 # cross-reference updates, recalculate nutrition, prune stale meal plan entries,
 # and broadcast real-time updates via RecipeBroadcaster.
 class RecipesController < ApplicationController
-  before_action :require_membership, only: %i[create update destroy]
+  include MealPlanActions
 
-  rescue_from ActiveRecord::StaleObjectError, with: :handle_stale_record
+  before_action :require_membership, only: %i[create update destroy]
 
   def show
     embedded_steps = { steps: %i[ingredients cross_references] }
@@ -95,10 +95,5 @@ class RecipesController < ApplicationController
         locals: { recipe: parent, nutrition: parent.nutrition_data }
       )
     end
-  end
-
-  def handle_stale_record
-    render json: { error: 'Meal plan was modified by another request. Please refresh.' },
-           status: :conflict
   end
 end

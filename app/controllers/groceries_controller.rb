@@ -5,10 +5,10 @@
 # custom items, and aisle ordering. All state mutations broadcast version updates
 # via MealPlanChannel for cross-device sync.
 class GroceriesController < ApplicationController
+  include MealPlanActions
+
   before_action :require_membership
   before_action :prevent_html_caching, only: :show
-
-  rescue_from ActiveRecord::StaleObjectError, with: :handle_stale_record
 
   def show; end
 
@@ -60,20 +60,6 @@ class GroceriesController < ApplicationController
   end
 
   private
-
-  def apply_and_respond(action_type, **action_params)
-    list = MealPlan.for_kitchen(current_kitchen)
-    list.with_optimistic_retry do
-      list.apply_action(action_type, **action_params)
-    end
-    MealPlanChannel.broadcast_version(current_kitchen, list.lock_version)
-    render json: { version: list.lock_version }
-  end
-
-  def handle_stale_record
-    render json: { error: 'Meal plan was modified by another request. Please refresh.' },
-           status: :conflict
-  end
 
   def validate_aisle_order
     lines = current_kitchen.parsed_aisle_order
