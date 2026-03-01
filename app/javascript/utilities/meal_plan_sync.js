@@ -160,6 +160,7 @@ export default class MealPlanSync {
       if (Object.keys(this.state).length > 0) {
         this.onStateUpdate(this.state)
       }
+      this.fetchState()
     }
   }
 

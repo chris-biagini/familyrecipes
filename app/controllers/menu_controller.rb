@@ -57,6 +57,7 @@ class MenuController < ApplicationController
     plan.with_optimistic_retry { plan.prune_checked_off }
 
     broadcast_recipe_selector_update
+    MealPlanChannel.broadcast_content_changed(current_kitchen)
     render json: { status: 'ok' }
   end
 
