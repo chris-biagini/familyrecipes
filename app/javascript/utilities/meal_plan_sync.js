@@ -19,7 +19,7 @@ export default class MealPlanSync {
     this.loadCache()
     this.loadPending()
 
-    if (this.state && Object.keys(this.state).length > 0) {
+    if (Object.keys(this.state).length > 0) {
       this.onStateUpdate(this.state)
     }
 
@@ -83,7 +83,7 @@ export default class MealPlanSync {
     }
   }
 
-  fetchState() {
+  fetchState(forceNotify = false) {
     if (this.fetchController) this.fetchController.abort()
     this.fetchController = new AbortController()
 
@@ -96,8 +96,9 @@ export default class MealPlanSync {
         return response.json()
       })
       .then(data => {
-        if (data.version >= this.version) {
-          const isRemoteUpdate = data.version > this.version
+        if (forceNotify || data.version >= this.version) {
+          const isRemoteUpdate = !forceNotify
+            && data.version > this.version
             && this.version > 0
             && !this.awaitingOwnAction
             && !this.initialFetch
@@ -107,32 +108,10 @@ export default class MealPlanSync {
           this.state = data
           this.saveCache()
           this.onStateUpdate(data)
-          if (isRemoteUpdate) {
+          if (forceNotify || isRemoteUpdate) {
             notifyShow(this.remoteUpdateMessage)
           }
         }
-      })
-      .catch(() => {})
-  }
-
-  fetchStateWithNotification() {
-    if (this.fetchController) this.fetchController.abort()
-    this.fetchController = new AbortController()
-
-    fetch(this.stateUrl, {
-      headers: { "Accept": "application/json" },
-      signal: this.fetchController.signal
-    })
-      .then(response => {
-        if (!response.ok) throw new Error("fetch failed")
-        return response.json()
-      })
-      .then(data => {
-        this.version = data.version
-        this.state = data
-        this.saveCache()
-        this.onStateUpdate(data)
-        notifyShow(this.remoteUpdateMessage)
       })
       .catch(() => {})
   }
@@ -144,7 +123,7 @@ export default class MealPlanSync {
       {
         received: (data) => {
           if (data.type === "content_changed") {
-            this.fetchStateWithNotification()
+            this.fetchState(true)
             return
           }
           if (data.version && data.version > this.version && !this.awaitingOwnAction) {
@@ -178,7 +157,7 @@ export default class MealPlanSync {
     const originalRender = event.detail.render
     event.detail.render = async (streamElement) => {
       await originalRender(streamElement)
-      if (this.state && Object.keys(this.state).length > 0) {
+      if (Object.keys(this.state).length > 0) {
         this.onStateUpdate(this.state)
       }
     }
