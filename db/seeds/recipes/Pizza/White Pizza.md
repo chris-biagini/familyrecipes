@@ -4,8 +4,7 @@ Category: Pizza
 Makes: 2 pizzas
 
 ## Make dough.
-
-- @[Pizza Dough]
+>>> @[Pizza Dough]
 
 ## Make poached garlic.
 

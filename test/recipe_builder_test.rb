@@ -435,4 +435,123 @@ class RecipeBuilderTest < Minitest::Test
     assert_equal 'Step one', result[:steps][0][:tldr]
     assert_equal 'Step two', result[:steps][1][:tldr]
   end
+
+  # --- Cross-reference blocks ---
+
+  def test_cross_reference_step
+    text = <<~RECIPE
+      # Pizza
+
+      Category: Pizza
+
+      ## Make dough.
+
+      >>> @[Pizza Dough]
+
+      ## Top.
+
+      - Mozzarella, 8 oz
+
+      Add toppings.
+    RECIPE
+
+    result = build_recipe(text)
+
+    assert_equal 2, result[:steps].size
+
+    dough_step = result[:steps][0]
+
+    assert_equal 'Make dough.', dough_step[:tldr]
+    assert_equal({ target_title: 'Pizza Dough', multiplier: 1.0, prep_note: nil }, dough_step[:cross_reference])
+    assert_empty dough_step[:ingredients]
+    assert_equal '', dough_step[:instructions]
+
+    top_step = result[:steps][1]
+
+    assert_equal 'Top.', top_step[:tldr]
+    assert_nil top_step[:cross_reference]
+    assert_equal 1, top_step[:ingredients].size
+  end
+
+  def test_cross_reference_with_multiplier_and_prep_note
+    text = <<~RECIPE
+      # Pizza
+
+      Category: Pizza
+
+      ## Make dough.
+
+      >>> @[Pizza Dough], 2: Let rest 30 min.
+    RECIPE
+
+    result = build_recipe(text)
+    xref = result[:steps][0][:cross_reference]
+
+    assert_equal 'Pizza Dough', xref[:target_title]
+    assert_in_delta 2.0, xref[:multiplier]
+    assert_equal 'Let rest 30 min.', xref[:prep_note]
+  end
+
+  def test_rejects_cross_reference_in_implicit_step
+    text = <<~RECIPE
+      # Pizza
+
+      Category: Pizza
+
+      >>> @[Pizza Dough]
+    RECIPE
+
+    error = assert_raises(StandardError) { build_recipe(text) }
+    assert_includes error.message, 'must appear inside an explicit step'
+  end
+
+  def test_rejects_cross_reference_mixed_with_ingredients
+    text = <<~RECIPE
+      # Pizza
+
+      Category: Pizza
+
+      ## Make dough.
+
+      - Flour, 3 cups
+
+      >>> @[Pizza Dough]
+    RECIPE
+
+    error = assert_raises(StandardError) { build_recipe(text) }
+    assert_includes error.message, 'cannot be mixed with ingredients'
+  end
+
+  def test_rejects_cross_reference_mixed_with_instructions
+    text = <<~RECIPE
+      # Pizza
+
+      Category: Pizza
+
+      ## Make dough.
+
+      >>> @[Pizza Dough]
+
+      Mix everything.
+    RECIPE
+
+    error = assert_raises(StandardError) { build_recipe(text) }
+    assert_includes error.message, 'cannot be mixed with instructions'
+  end
+
+  def test_rejects_multiple_cross_references_in_one_step
+    text = <<~RECIPE
+      # Pizza
+
+      Category: Pizza
+
+      ## Prepare.
+
+      >>> @[Pizza Dough]
+      >>> @[Pizza Sauce]
+    RECIPE
+
+    error = assert_raises(StandardError) { build_recipe(text) }
+    assert_includes error.message, 'Only one cross-reference'
+  end
 end

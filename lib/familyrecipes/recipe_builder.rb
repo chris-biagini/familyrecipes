@@ -5,7 +5,7 @@
 # steps, footer) that FamilyRecipes::Recipe uses to populate itself. Works as
 # a single-pass cursor over the token array — peek/advance/skip_blanks. Handles
 # both explicit steps (## headers) and implicit steps (ingredients without headers).
-class RecipeBuilder
+class RecipeBuilder # rubocop:disable Metrics/ClassLength
   attr_reader :errors
 
   def initialize(tokens)
@@ -83,6 +83,7 @@ class RecipeBuilder
     skip_blanks
 
     if !at_end? && peek.type != :step_header && peek.type != :divider
+      reject_implicit_cross_reference(peek) if peek.type == :cross_reference_block
       step = parse_implicit_step
       return step[:ingredients].any? ? [step] : []
     end
@@ -105,30 +106,59 @@ class RecipeBuilder
     steps
   end
 
-  def collect_step_body(stop_at: %i[divider])
+  def collect_step_body(stop_at: %i[divider], implicit: false) # rubocop:disable Metrics/MethodLength
     ingredients = []
     instruction_lines = []
+    cross_reference = nil
 
     until at_end? || stop_at.include?(peek.type)
       token = advance
 
       case token.type
+      when :cross_reference_block
+        reject_implicit_cross_reference(token) if implicit
+        validate_cross_reference_placement(token, ingredients, instruction_lines, cross_reference)
+        cross_reference = CrossReferenceParser.parse(token.content[0])
       when :ingredient
+        raise_mixed_content_error(token, 'ingredients') if cross_reference
         ingredients << IngredientParser.parse(token.content[0])
       when :prose
+        raise_mixed_content_error(token, 'instructions') if cross_reference
         instruction_lines << token.content
       end
     end
 
-    { tldr: nil, ingredients: ingredients, instructions: instruction_lines.join("\n\n") }
-  end
+    { tldr: nil, ingredients: ingredients, instructions: instruction_lines.join("\n\n"),
+      cross_reference: cross_reference }
+  end # rubocop:enable Metrics/MethodLength
 
-  def parse_implicit_step = collect_step_body
+  def parse_implicit_step = collect_step_body(implicit: true)
 
   def parse_step
     tldr = advance.content[0]
     skip_blanks
     collect_step_body(stop_at: %i[step_header divider]).merge(tldr: tldr)
+  end
+
+  def reject_implicit_cross_reference(token)
+    raise "Cross-reference (>>>) at line #{token.line_number} must appear inside " \
+          'an explicit step (## Step Name)'
+  end
+
+  def validate_cross_reference_placement(token, ingredients, instruction_lines, existing_xref)
+    raise_duplicate_cross_reference(token) if existing_xref
+    raise_mixed_content_error(token, 'ingredients') if ingredients.any?
+    raise_mixed_content_error(token, 'instructions') if instruction_lines.any?
+  end
+
+  def raise_duplicate_cross_reference(token)
+    raise 'Only one cross-reference (>>>) is allowed per step ' \
+          "(line #{token.line_number})"
+  end
+
+  def raise_mixed_content_error(token, content_type)
+    raise "Cross-reference (>>>) at line #{token.line_number} " \
+          "cannot be mixed with #{content_type} in the same step"
   end
 
   def parse_footer # rubocop:disable Metrics/MethodLength

@@ -12,15 +12,19 @@ import { formatVulgar, isVulgarSingular } from "utilities/vulgar_fractions"
 const STORED_STATE_TTL = 48 * 60 * 60 * 1000
 
 export default class extends Controller {
+  static values = { recipeId: String, versionHash: String }
+
   connect() {
-    this.recipeId = document.body.dataset.recipeId
-    this.versionHash = document.body.dataset.versionHash
+    this.recipeId = this.hasRecipeIdValue ? this.recipeIdValue : document.body.dataset.recipeId
+    this.versionHash = this.hasVersionHashValue ? this.versionHashValue : document.body.dataset.versionHash
     this.lastScaleInput = '1'
 
-    this.crossableItemNodes = this.element.querySelectorAll(
-      '.ingredients li, .instructions p'
-    )
-    this.sectionTogglerNodes = this.element.querySelectorAll('section h2')
+    this.crossableItemNodes = Array.from(
+      this.element.querySelectorAll('.ingredients li, .instructions p')
+    ).filter(node => node.closest('[data-controller*="recipe-state"]') === this.element)
+    this.sectionTogglerNodes = Array.from(
+      this.element.querySelectorAll('section :is(h2, h3)')
+    ).filter(node => node.closest('[data-controller*="recipe-state"]') === this.element)
 
     this.boundHandlers = new Map()
     this.setupEventListeners()

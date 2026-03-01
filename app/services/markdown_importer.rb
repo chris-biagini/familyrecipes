@@ -6,6 +6,10 @@
 # transaction. Also processes instructions through ScalableNumberPreprocessor
 # to generate the scalable-number HTML stored in Step#processed_instructions.
 #
+# Steps come in two flavors: content steps (ingredients + instructions) and
+# cross-reference steps (>>> syntax, exactly one CrossReference, no ingredients
+# or instructions). The step-level :cross_reference key drives this branching.
+#
 # Kitchen-scoped (requires kitchen: keyword) and idempotent — db:seed calls
 # this repeatedly. After import, resolves pending cross-references and triggers
 # nutrition calculation via RecipeNutritionJob and CascadeNutritionJob.
@@ -96,12 +100,16 @@ class MarkdownImporter
     parsed[:steps].each_with_index do |step_data, index|
       step = recipe.steps.create!(
         title: step_data[:tldr],
-        instructions: step_data[:instructions],
-        processed_instructions: process_instructions(step_data[:instructions]),
+        instructions: step_data[:cross_reference] ? nil : step_data[:instructions],
+        processed_instructions: step_data[:cross_reference] ? nil : process_instructions(step_data[:instructions]),
         position: index
       )
 
-      import_step_items(step, step_data[:ingredients])
+      if step_data[:cross_reference]
+        import_cross_reference(step, step_data[:cross_reference])
+      else
+        import_step_items(step, step_data[:ingredients])
+      end
     end
   end
 
@@ -115,11 +123,7 @@ class MarkdownImporter
 
   def import_step_items(step, ingredient_data_list)
     ingredient_data_list.each_with_index do |data, index|
-      if data[:cross_reference]
-        import_cross_reference(step, data, index)
-      else
-        import_ingredient(step, data, index)
-      end
+      import_ingredient(step, data, index)
     end
   end
 
@@ -135,7 +139,7 @@ class MarkdownImporter
     )
   end
 
-  def import_cross_reference(step, data, position)
+  def import_cross_reference(step, data, position = 0)
     target_slug = FamilyRecipes.slugify(data[:target_title])
     target = kitchen.recipes.find_by(slug: target_slug)
 

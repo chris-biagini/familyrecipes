@@ -222,9 +222,11 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
 
       Category: Bread
 
+      ## Make bread.
+      >>> @[Focaccia], 1
+
       ## Assemble (put it together)
 
-      - @[Focaccia], 1
       - Tomatoes, 3
 
       Tear bread and toss with tomatoes.
@@ -340,52 +342,162 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     assert_nil Category.find_by(slug: 'bread')
   end
 
-  test 'destroy strips cross-references from referencing recipes' do
+  test 'destroy nullifies inbound cross-references' do
     MarkdownImporter.import(<<~MD, kitchen: @kitchen)
       # Panzanella
 
       Category: Bread
 
+      ## Make bread.
+      >>> @[Focaccia], 1
+
       ## Assemble (put it together)
 
-      - @[Focaccia], 1
       - Tomatoes, 3
 
       Tear bread and toss.
     MD
 
+    panzanella = Recipe.find_by!(slug: 'panzanella')
+    original_source = panzanella.markdown_source
+    xref = panzanella.cross_references.find_by!(target_title: 'Focaccia')
+
     log_in
     delete recipe_path('focaccia', kitchen_slug: kitchen_slug), as: :json
 
     assert_response :success
-    body = response.parsed_body
 
-    assert_includes body['updated_references'], 'Panzanella'
+    xref.reload
 
-    panzanella = Recipe.find_by!(slug: 'panzanella')
-
-    assert_includes panzanella.markdown_source, 'Focaccia'
-    assert_not_includes panzanella.markdown_source, '@[Focaccia]'
+    assert_nil xref.target_recipe_id
+    assert_equal original_source, panzanella.reload.markdown_source
   end
 
-  test 'show renders pending cross-reference as plain text' do
-    category = Category.create!(name: 'Main', slug: 'main', kitchen: @kitchen)
-    recipe = Recipe.create!(
-      title: 'Pasta', slug: 'pasta', category: category,
-      markdown_source: "# Pasta\n\nCategory: Main\n\n## Cook\n\n- Spaghetti\n\nCook.",
-      kitchen: @kitchen
-    )
-    step = recipe.steps.create!(title: 'Cook', position: 0)
-    step.cross_references.create!(
-      target_slug: 'missing-sauce', target_title: 'Missing Sauce',
-      position: 0, multiplier: 1.0
-    )
+  test 'show renders resolved cross-reference as embedded recipe card' do
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Pizza Dough
 
-    get recipe_path('pasta', kitchen_slug: kitchen_slug)
+      Category: Bread
+
+      ## Mix.
+      - Flour, 500 g
+      - Water, 300 ml
+
+      Combine ingredients.
+    MD
+
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # White Pizza
+
+      Category: Bread
+
+      ## Make dough.
+      >>> @[Pizza Dough]
+
+      ## Top.
+      - Mozzarella, 200 g
+    MD
+
+    get recipe_path('white-pizza')
 
     assert_response :success
-    assert_select 'li.cross-reference b', 'Missing Sauce'
-    assert_select 'li.cross-reference a', count: 0
+
+    assert_select 'article.embedded-recipe' do
+      assert_select 'h3', text: 'Pizza Dough'
+      assert_select 'a.embedded-recipe-link[href=?]', recipe_path('pizza-dough')
+      assert_select '.ingredients li', count: 2
+    end
+  end
+
+  test 'show renders pending cross-reference as broken reference card' do
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # White Pizza
+
+      Category: Bread
+
+      ## Make dough.
+      >>> @[Nonexistent Recipe]
+    MD
+
+    get recipe_path('white-pizza')
+
+    assert_response :success
+
+    assert_select '.broken-reference', text: /Nonexistent Recipe/
+    assert_select '.broken-reference', text: /no recipe with that name exists/
+  end
+
+  test 'show renders nested cross-reference as link when embedded' do
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Starter
+
+      Category: Bread
+
+      ## Feed.
+      - Flour, 100 g
+    MD
+
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Pizza Dough
+
+      Category: Bread
+
+      ## Make starter.
+      >>> @[Starter]
+
+      ## Mix.
+      - Flour, 400 g
+    MD
+
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # White Pizza
+
+      Category: Bread
+
+      ## Make dough.
+      >>> @[Pizza Dough]
+    MD
+
+    get recipe_path('white-pizza')
+
+    assert_response :success
+
+    # Only one embedded card (Pizza Dough) — Starter is a link, not a nested card
+    assert_select 'article.embedded-recipe', count: 1
+    assert_select 'article.embedded-recipe h3', text: 'Pizza Dough'
+    assert_select 'article.embedded-recipe a', text: 'Starter'
+  end
+
+  test 'destroy broadcasts to referencing recipe pages' do
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Pizza Dough
+
+      Category: Bread
+
+      ## Mix.
+      - Flour, 3 cups
+    MD
+
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # White Pizza
+
+      Category: Bread
+
+      ## Make dough.
+      >>> @[Pizza Dough]
+    MD
+
+    streams = []
+    Turbo::StreamsChannel.stub :broadcast_replace_to, ->(*args, **kwargs) { streams << [args, kwargs] } do
+      Turbo::StreamsChannel.stub :broadcast_append_to, ->(*args, **kwargs) {} do
+        log_in
+        delete recipe_path('pizza-dough')
+      end
+    end
+
+    parent_broadcasts = streams.select { |args, _| args[0].is_a?(Recipe) && args[0].slug == 'white-pizza' }
+
+    assert_predicate parent_broadcasts, :any?, 'Expected broadcast to referencing recipe page'
   end
 
   test 'destroy returns 404 for unknown recipe' do
@@ -432,6 +544,34 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
 
     assert_turbo_stream_broadcasts [@kitchen, 'recipes'] do
       delete recipe_path('focaccia', kitchen_slug: kitchen_slug), as: :json
+    end
+  end
+
+  test 'embedded recipe with multiplier shows scaled quantities' do
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Pizza Dough
+
+      Category: Bread
+
+      ## Mix.
+      - Flour, 500 g
+    MD
+
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Double Pizza
+
+      Category: Bread
+
+      ## Make dough.
+      >>> @[Pizza Dough], 2
+    MD
+
+    get recipe_path('double-pizza')
+
+    assert_response :success
+
+    assert_select 'article.embedded-recipe' do
+      assert_select '.quantity', text: /1000/
     end
   end
 

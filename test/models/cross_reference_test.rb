@@ -201,6 +201,19 @@ class CrossReferenceModelTest < ActiveSupport::TestCase
 
     assert_nil ref.target_recipe_id
   end
+
+  test 'destroying a recipe nullifies inbound cross-references' do
+    xref = CrossReference.create!(
+      step: @step, target_recipe: @target_recipe, position: 1,
+      target_slug: 'poolish', target_title: 'Poolish'
+    )
+
+    @target_recipe.destroy!
+    xref.reload
+
+    assert_nil xref.target_recipe_id
+    assert_predicate xref, :persisted?
+  end
 end
 
 class StepIngredientListItemsTest < ActiveSupport::TestCase
@@ -264,6 +277,56 @@ class StepIngredientListItemsTest < ActiveSupport::TestCase
 
     assert_equal 1, items.size
     assert_instance_of CrossReference, items.first
+  end
+end
+
+class StepCrossReferenceQueryTest < ActiveSupport::TestCase
+  setup do
+    @kitchen = Kitchen.find_or_create_by!(name: 'Test Kitchen', slug: 'test-kitchen')
+    ActsAsTenant.current_tenant = @kitchen
+
+    @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread')
+    @target = Recipe.find_or_create_by!(
+      title: 'Poolish', slug: 'poolish',
+      category: @category, markdown_source: "# Poolish\n\nCategory: Bread\n\n## Mix\n\n- Flour, 1 cup\n\nMix."
+    )
+    @recipe = Recipe.find_or_create_by!(
+      title: 'Focaccia', slug: 'focaccia',
+      category: @category, markdown_source: "# Focaccia\n\nCategory: Bread\n\n## Mix\n\n- Flour, 2 cups\n\nMix."
+    )
+  end
+
+  test 'cross_reference_step? returns true when step has a cross-reference' do
+    step = @recipe.steps.create!(title: 'Make dough', position: 10)
+    step.cross_references.create!(
+      target_recipe: @target, position: 1,
+      target_slug: 'poolish', target_title: 'Poolish'
+    )
+
+    assert_predicate step, :cross_reference_step?
+  end
+
+  test 'cross_reference_step? returns false for normal steps' do
+    step = @recipe.steps.create!(title: 'Bake', position: 11)
+    step.ingredients.create!(name: 'Flour', position: 1)
+
+    assert_not step.cross_reference_step?
+  end
+
+  test 'cross_reference_block returns the single cross-reference' do
+    step = @recipe.steps.create!(title: 'Make dough', position: 12)
+    xref = step.cross_references.create!(
+      target_recipe: @target, position: 1,
+      target_slug: 'poolish', target_title: 'Poolish'
+    )
+
+    assert_equal xref, step.cross_reference_block
+  end
+
+  test 'cross_reference_block returns nil for normal steps' do
+    step = @recipe.steps.create!(title: 'Bake', position: 13)
+
+    assert_nil step.cross_reference_block
   end
 end
 

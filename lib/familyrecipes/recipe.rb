@@ -131,9 +131,20 @@ module FamilyRecipes
         Step.new(
           tldr: data[:tldr],
           ingredient_list_items: build_ingredient_items(data[:ingredients]),
-          instructions: data[:instructions]
+          instructions: data[:instructions],
+          cross_reference: build_cross_reference(data[:cross_reference])
         )
       end
+    end
+
+    def build_cross_reference(data)
+      return unless data
+
+      CrossReference.new(
+        target_title: data[:target_title],
+        multiplier: data[:multiplier],
+        prep_note: data[:prep_note]
+      )
     end
 
     def build_ingredient_items(ingredient_data)

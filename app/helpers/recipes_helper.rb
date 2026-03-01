@@ -53,11 +53,11 @@ module RecipesHelper
     ((nutrition['missing_ingredients'] || []) + (nutrition['partial_ingredients'] || [])).uniq
   end
 
-  def ingredient_data_attrs(item)
+  def ingredient_data_attrs(item, scale_factor: 1.0)
     attrs = {}
     return tag.attributes(attrs) unless item.quantity_value
 
-    attrs[:'data-quantity-value'] = item.quantity_value
+    attrs[:'data-quantity-value'] = item.quantity_value.to_f * scale_factor
     attrs[:'data-quantity-unit'] = item.quantity_unit if item.quantity_unit
     add_unit_plural_attr(attrs, item.quantity_unit)
     add_name_inflection_attrs(attrs, item) unless item.quantity_unit
@@ -66,6 +66,16 @@ module RecipesHelper
   end
 
   private
+
+  # rubocop:disable Lint/FloatComparison -- scale_factor is always a literal or DB float
+  def scaled_quantity_display(item, scale_factor)
+    return item.quantity_display if scale_factor == 1.0 || !item.quantity_value
+
+    scaled = item.quantity_value.to_f * scale_factor
+    formatted = scaled == scaled.to_i ? scaled.to_i.to_s : scaled.to_s
+    [formatted, item.unit].compact.join(' ')
+  end
+  # rubocop:enable Lint/FloatComparison
 
   def add_unit_plural_attr(attrs, unit)
     return unless unit

@@ -226,10 +226,12 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
 
       Category: Bread
 
+      ## Make poolish.
+      >>> @[Poolish]
+
       ## Dough (assemble)
 
       - Salt, 1 tsp
-      - @[Poolish]
 
       Make dough.
     MD

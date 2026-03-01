@@ -3,10 +3,16 @@
 # Bridges recipe CRUD events to real-time Turbo Stream updates. On create/update/
 # destroy, broadcasts HTML replacements to every page that shows recipe data:
 # homepage (recipe listings), menu (recipe selector), ingredients (table + summary
-# bar), and the recipe page itself. Also fires toast notifications and triggers
+# bar), and the recipe page itself. When a recipe is updated, also cascades a
+# content replacement to every recipe that embeds it via cross-reference (one
+# level only). Also fires toast notifications and triggers
 # MealPlanChannel.broadcast_content_changed to refresh grocery/menu state.
 class RecipeBroadcaster
   include IngredientRows
+
+  SHOW_INCLUDES = {
+    steps: [:ingredients, { cross_references: { target_recipe: { steps: %i[ingredients cross_references] } } }]
+  }.freeze
 
   def self.broadcast(kitchen:, action:, recipe_title:, recipe: nil)
     new(kitchen).broadcast(action:, recipe_title:, recipe:)
@@ -109,34 +115,40 @@ class RecipeBroadcaster
   end
 
   def broadcast_recipe_updated(recipe)
-    fresh = kitchen.recipes
-                   .includes(steps: [:ingredients, { cross_references: :target_recipe }])
-                   .find_by(slug: recipe.slug)
+    fresh = kitchen.recipes.includes(SHOW_INCLUDES).find_by(slug: recipe.slug)
     return unless fresh
 
+    replace_recipe_content(fresh)
+    broadcast_referencing_recipes(fresh)
+  end
+
+  def broadcast_referencing_recipes(recipe)
+    recipe.referencing_recipes.includes(SHOW_INCLUDES).find_each do |parent|
+      replace_recipe_content(parent)
+    end
+  end
+
+  def replace_recipe_content(recipe)
     Turbo::StreamsChannel.broadcast_replace_to(
-      fresh, 'content',
+      recipe, 'content',
       target: 'recipe-content',
       partial: 'recipes/recipe_content',
-      locals: { recipe: fresh, nutrition: fresh.nutrition_data }
+      locals: { recipe:, nutrition: recipe.nutrition_data }
     )
   end
 
   def broadcast_toast(action:, recipe_title:)
-    Turbo::StreamsChannel.broadcast_append_to(
-      kitchen, 'recipes',
-      target: 'notifications',
-      partial: 'shared/toast',
-      locals: { message: "#{recipe_title} was #{action}" }
-    )
+    message = "#{recipe_title} was #{action}"
+    append_toast([kitchen, 'recipes'], message)
   end
 
   def broadcast_recipe_toast(recipe, action:, recipe_title:)
+    append_toast([recipe, 'content'], "#{recipe_title} was #{action}")
+  end
+
+  def append_toast(stream, message)
     Turbo::StreamsChannel.broadcast_append_to(
-      recipe, 'content',
-      target: 'notifications',
-      partial: 'shared/toast',
-      locals: { message: "#{recipe_title} was #{action}" }
+      *stream, target: 'notifications', partial: 'shared/toast', locals: { message: }
     )
   end
 

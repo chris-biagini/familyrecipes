@@ -3,86 +3,6 @@
 require_relative 'test_helper'
 
 class CrossReferenceTest < Minitest::Test
-  # --- IngredientParser cross-reference detection ---
-
-  def test_parses_simple_cross_reference
-    result = IngredientParser.parse('@[Pizza Dough]')
-
-    assert result[:cross_reference]
-    assert_equal 'Pizza Dough', result[:target_title]
-    assert_in_delta(1.0, result[:multiplier])
-    assert_nil result[:prep_note]
-  end
-
-  def test_parses_cross_reference_with_integer_multiplier
-    result = IngredientParser.parse('@[Pizza Dough], 2')
-
-    assert result[:cross_reference]
-    assert_equal 'Pizza Dough', result[:target_title]
-    assert_in_delta(2.0, result[:multiplier])
-  end
-
-  def test_parses_cross_reference_with_fraction_multiplier
-    result = IngredientParser.parse('@[Pizza Dough], 1/2')
-
-    assert result[:cross_reference]
-    assert_in_delta(0.5, result[:multiplier])
-  end
-
-  def test_parses_cross_reference_with_decimal_multiplier
-    result = IngredientParser.parse('@[Pizza Dough], 0.5')
-
-    assert result[:cross_reference]
-    assert_in_delta(0.5, result[:multiplier])
-  end
-
-  def test_parses_cross_reference_with_prep_note
-    result = IngredientParser.parse('@[Pizza Dough], 2: Let rest 30 min.')
-
-    assert result[:cross_reference]
-    assert_in_delta(2.0, result[:multiplier])
-    assert_equal 'Let rest 30 min.', result[:prep_note]
-  end
-
-  def test_parses_cross_reference_with_trailing_period
-    result = IngredientParser.parse('@[Pizza Dough].')
-
-    assert result[:cross_reference]
-    assert_equal 'Pizza Dough', result[:target_title]
-    assert_in_delta(1.0, result[:multiplier])
-  end
-
-  def test_parses_cross_reference_with_multiplier_and_trailing_period
-    result = IngredientParser.parse('@[Pizza Dough]., 1')
-
-    assert result[:cross_reference]
-    assert_equal 'Pizza Dough', result[:target_title]
-    assert_in_delta(1.0, result[:multiplier])
-  end
-
-  def test_old_syntax_quantity_before_reference_raises_error
-    error = assert_raises(RuntimeError) do
-      IngredientParser.parse('2 @[Pizza Dough]')
-    end
-
-    assert_match(/Invalid cross-reference syntax/, error.message)
-  end
-
-  def test_old_syntax_quantity_with_x_before_reference_raises_error
-    error = assert_raises(RuntimeError) do
-      IngredientParser.parse('2x @[Pizza Dough]')
-    end
-
-    assert_match(/Invalid cross-reference syntax/, error.message)
-  end
-
-  def test_regular_ingredient_not_detected_as_cross_reference
-    result = IngredientParser.parse('Flour, 250 g')
-
-    assert_nil result[:cross_reference]
-    assert_equal 'Flour', result[:name]
-  end
-
   # --- CrossReference object ---
 
   def test_cross_reference_slug_generation
@@ -122,66 +42,110 @@ class CrossReferenceTest < Minitest::Test
     assert_includes salt[1], nil
   end
 
-  # --- Recipe integration ---
+  # --- Recipe integration (>>> syntax) ---
 
   def test_recipe_with_cross_reference_has_cross_references
-    md = "# White Pizza\n\nCategory: Test\n\n## Dough (make dough)\n\n- @[Pizza Dough]\n\nStretch."
-    recipe = make_recipe(md)
+    recipe = make_recipe(<<~MD)
+      # Pizza
+      Category: Test
+      ## Make dough.
+      >>> @[Pizza Dough]
+      ## Top.
+      - Cheese
+      Add cheese.
+    MD
 
     assert_equal 1, recipe.cross_references.size
     assert_equal 'Pizza Dough', recipe.cross_references.first.target_title
   end
 
   def test_recipe_cross_reference_not_in_own_ingredients
-    md = "# White Pizza\n\nCategory: Test\n\n## Dough (make dough)\n\n- @[Pizza Dough]\n- Olive oil\n\nStretch."
-    recipe = make_recipe(md)
+    recipe = make_recipe(<<~MD)
+      # Pizza
+      Category: Test
+      ## Make dough.
+      >>> @[Pizza Dough]
+      ## Top.
+      - Cheese
+      Add cheese.
+    MD
 
-    names = recipe.all_ingredient_names
-
-    assert_includes names, 'Olive oil'
-    refute_includes names, 'Pizza Dough'
+    assert_equal ['Cheese'], recipe.all_ingredient_names
   end
 
   def test_recipe_all_ingredients_with_quantities_includes_sub_recipe
-    dough_md = "# Pizza Dough\n\nCategory: Test\n\n## Mix (make dough)\n\n- Flour, 500 g\n- Salt\n\nKnead."
-    dough = make_recipe(dough_md, id: 'pizza-dough')
-    pizza_md = "# White Pizza\n\nCategory: Test\n\n## Dough (make dough)\n\n" \
-               "- @[Pizza Dough]\n- Olive oil, 60 g\n\nStretch."
-    pizza = make_recipe(pizza_md)
+    dough = make_recipe(<<~MD, id: 'pizza-dough')
+      # Pizza Dough
+      Category: Test
+      ## Mix (make dough)
+      - Flour, 500 g
+      - Water, 325 g
+      Knead.
+    MD
+
+    pizza = make_recipe(<<~MD)
+      # Pizza
+      Category: Test
+      ## Make dough.
+      >>> @[Pizza Dough]
+      ## Top.
+      - Cheese, 200 g
+      Add cheese.
+    MD
+
     recipe_map = { 'pizza-dough' => dough }
+    all = pizza.all_ingredients_with_quantities(recipe_map)
 
-    expanded = pizza.all_ingredients_with_quantities(recipe_map)
-    names = expanded.map(&:first)
+    flour = all.find { |name, _| name == 'Flour' }
 
-    assert_includes names, 'Olive oil'
-    assert_includes names, 'Flour'
-    assert_includes names, 'Salt'
+    refute_nil flour
+    assert_in_delta 500.0, flour[1].first.value
   end
 
   def test_recipe_all_ingredients_with_quantities_scales_sub_recipe
-    dough_md = "# Pizza Dough\n\nCategory: Test\n\n## Mix (make dough)\n\n- Flour, 500 g\n\nKnead."
-    dough = make_recipe(dough_md, id: 'pizza-dough')
-    pizza_md = "# White Pizza\n\nCategory: Test\n\n## Dough (make dough)\n\n- @[Pizza Dough], 2\n\nStretch."
-    pizza = make_recipe(pizza_md)
-    recipe_map = { 'pizza-dough' => dough }
+    dough = make_recipe(<<~MD, id: 'pizza-dough')
+      # Pizza Dough
+      Category: Test
+      ## Mix (make dough)
+      - Flour, 500 g
+      Knead.
+    MD
 
-    expanded = pizza.all_ingredients_with_quantities(recipe_map)
-    flour = expanded.find { |name, _| name == 'Flour' }
+    pizza = make_recipe(<<~MD)
+      # Pizza
+      Category: Test
+      ## Make dough.
+      >>> @[Pizza Dough], 2
+      ## Top.
+      - Cheese
+      Add cheese.
+    MD
+
+    recipe_map = { 'pizza-dough' => dough }
+    all = pizza.all_ingredients_with_quantities(recipe_map)
+
+    flour = all.find { |name, _| name == 'Flour' }
 
     refute_nil flour
-    assert_in_delta 1000.0, flour[1].find { |a| a.is_a?(Quantity) }.value
+    assert_in_delta 1000.0, flour[1].first.value
   end
 
-  def test_step_ingredient_list_items_preserves_order
-    md = "# Test\n\nCategory: Test\n\n## Cook (mix)\n\n- Olive oil, 60 g\n- @[Pizza Dough]\n- Salt\n\nMix."
-    recipe = make_recipe(md)
+  def test_step_cross_reference_accessible_on_step
+    recipe = make_recipe(<<~MD)
+      # Pizza
+      Category: Test
+      ## Make dough.
+      >>> @[Pizza Dough]
+      ## Top.
+      - Cheese
+      Add cheese.
+    MD
 
-    items = recipe.steps.first.ingredient_list_items
+    dough_step = recipe.steps.first
 
-    assert_equal 3, items.size
-    assert_instance_of FamilyRecipes::Ingredient, items[0]
-    assert_instance_of FamilyRecipes::CrossReference, items[1]
-    assert_instance_of FamilyRecipes::Ingredient, items[2]
+    refute_nil dough_step.cross_reference
+    assert_equal 'Pizza Dough', dough_step.cross_reference.target_title
+    assert_nil recipe.steps.last.cross_reference
   end
 
   private

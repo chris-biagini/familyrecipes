@@ -60,6 +60,36 @@ class RecipeBroadcasterTest < ActiveSupport::TestCase
     end
   end
 
+  test 'broadcast_recipe_updated also broadcasts to referencing recipe pages' do
+    dough = MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Pizza Dough
+
+      Category: Bread
+
+      ## Mix.
+      - Flour, 3 cups
+    MD
+
+    _pizza = MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # White Pizza
+
+      Category: Bread
+
+      ## Make dough.
+      >>> @[Pizza Dough]
+    MD
+
+    streams = []
+    Turbo::StreamsChannel.stub :broadcast_replace_to, ->(*args, **) { streams << args[0] } do
+      RecipeBroadcaster.broadcast(kitchen: @kitchen, action: :updated, recipe_title: 'Pizza Dough', recipe: dough)
+    end
+
+    assert streams.any? { |s| s.is_a?(Recipe) && s.slug == 'pizza-dough' },
+           'Expected broadcast to pizza-dough recipe stream'
+    assert streams.any? { |s| s.is_a?(Recipe) && s.slug == 'white-pizza' },
+           'Expected broadcast to white-pizza recipe stream (referencing recipe)'
+  end
+
   test 'notify_recipe_deleted broadcasts to recipe-specific stream' do
     recipe = @kitchen.recipes.find_by!(slug: 'focaccia')
 

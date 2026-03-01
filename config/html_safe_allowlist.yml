@@ -10,14 +10,15 @@
 #   - ScalableNumberPreprocessor output is safe (escapes user content internally)
 
 # RecipesHelper — renderer and preprocessor output (safe by construction)
-- "app/helpers/recipes_helper.rb:7"     # render_markdown: Redcarpet with escape_html: true
-- "app/helpers/recipes_helper.rb:14"    # scalable_instructions: preprocessor escapes internally
-- "app/helpers/recipes_helper.rb:20"    # format_yield_line: preprocessor escapes internally
-- "app/helpers/recipes_helper.rb:26"    # format_yield_with_unit: preprocessor escapes internally
-- "app/helpers/recipes_helper.rb:86"    # per_serving_label: user values escaped with ERB::Util.html_escape
+- "app/helpers/recipes_helper.rb:6"     # header comment mentions .html_safe (not a call)
+- "app/helpers/recipes_helper.rb:12"    # render_markdown: Redcarpet with escape_html: true
+- "app/helpers/recipes_helper.rb:19"    # scalable_instructions: preprocessor escapes internally
+- "app/helpers/recipes_helper.rb:25"    # format_yield_line: preprocessor escapes internally
+- "app/helpers/recipes_helper.rb:31"    # format_yield_with_unit: preprocessor escapes internally
+- "app/helpers/recipes_helper.rb:101"   # per_serving_label: user values escaped with ERB::Util.html_escape
 
 # _step.html.erb
-- "app/views/recipes/_step.html.erb:33" # processed_instructions: pre-rendered HTML from parse-on-save
+- "app/views/recipes/_step.html.erb:44" # processed_instructions: pre-rendered HTML from parse-on-save
 
 # _nutrition_table.html.erb — hardcoded literals, no user content
 - "app/views/recipes/_nutrition_table.html.erb:27" # indent class: hardcoded integer

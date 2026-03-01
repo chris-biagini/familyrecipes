@@ -1,0 +1,38 @@
+<%# locals: (cross_reference:) %>
+<%# Renders a resolved cross-reference as an inline card — the target recipe's steps
+    nested inside the parent recipe. Has its own recipe-state controller for independent
+    cross-off state. The embedded title is a cross-off peer of the parent step's h2 —
+    both act as section togglers and auto-strikethrough when all items are crossed off.
+    The arrow link navigates to the full recipe. Nested cross-references render as
+    links, not cards. %>
+<% target = cross_reference.target_recipe %>
+<article class="embedded-recipe"
+         data-controller="recipe-state"
+         data-recipe-state-recipe-id-value="xref-<%= cross_reference.target_slug %>"
+         data-recipe-state-version-hash-value="<%= Digest::SHA256.hexdigest(target.markdown_source) %>">
+  <header>
+    <h3><%= cross_reference.target_title %></h3>
+    <%= link_to "\u2192", recipe_path(cross_reference.target_slug), class: 'embedded-recipe-link', title: "Open #{cross_reference.target_title}" %>
+    <%- if cross_reference.multiplier != 1.0 -%>
+    <span class="embedded-multiplier">&times; <%= cross_reference.multiplier == cross_reference.multiplier.to_i ? cross_reference.multiplier.to_i : cross_reference.multiplier %></span>
+    <%- end -%>
+    <%- if cross_reference.prep_note -%>
+    <p class="embedded-prep-note"><%= cross_reference.prep_note %></p>
+    <%- end -%>
+  </header>
+
+  <%- if target.description.present? -%>
+  <p class="embedded-description"><%= target.description %></p>
+  <%- end -%>
+
+  <%- target.steps.each do |step| -%>
+    <%= render 'recipes/step', step: step, embedded: true, heading_level: 3,
+               scale_factor: cross_reference.multiplier %>
+  <%- end -%>
+
+  <%- if target.footer.present? -%>
+  <footer class="embedded-footer">
+    <%= render_markdown(target.footer) %>
+  </footer>
+  <%- end -%>
+</article>
