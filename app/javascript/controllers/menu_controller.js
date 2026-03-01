@@ -43,6 +43,8 @@ export default class extends Controller {
 
   disconnect() {
     this.hidePopover()
+    const popover = document.getElementById('ingredient-popover')
+    if (popover) popover.remove()
     if (this.sync) this.sync.disconnect()
   }
 

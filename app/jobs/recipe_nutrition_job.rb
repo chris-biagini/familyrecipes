@@ -3,8 +3,7 @@
 # Recalculates a recipe's nutrition_data JSON from its ingredients and the
 # IngredientCatalog. Bridges the AR world (IngredientCatalog entries) to the
 # domain NutritionCalculator by building a lookup hash in the format the
-# calculator expects. Runs synchronously via perform_now at import time;
-# will move to async when Solid Queue is added.
+# calculator expects. Runs synchronously via perform_now at import time.
 class RecipeNutritionJob < ApplicationJob
   NUTRIENT_COLUMNS = %w[calories fat saturated_fat trans_fat cholesterol
                         sodium carbs fiber total_sugars added_sugars protein].freeze

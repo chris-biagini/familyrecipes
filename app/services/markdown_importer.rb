@@ -116,7 +116,6 @@ class MarkdownImporter
   def process_instructions(text)
     return if text.blank?
 
-    # Render markdown first (escapes user HTML), then insert scalable spans
     html = FamilyRecipes::Recipe::MARKDOWN.render(text)
     ScalableNumberPreprocessor.process_instructions(html)
   end

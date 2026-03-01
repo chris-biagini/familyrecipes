@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 
 # Parses "@[Recipe Title], multiplier: prep note" cross-reference syntax into a
-# structured hash. Extracted from IngredientParser to isolate cross-reference
-# concerns for the inline-rendering pipeline. Used by RecipeBuilder when
+# structured hash. Extracted from IngredientParser. Used by RecipeBuilder when
 # processing :cross_reference_block tokens.
 module CrossReferenceParser
   PATTERN = %r{\A@\[(.+?)\](?:\.\s*)?(?:,\s*(\d+(?:/\d+)?(?:\.\d+)?))?\s*(?::\s*(.+))?\z}

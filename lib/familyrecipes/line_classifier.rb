@@ -7,7 +7,6 @@
 module LineClassifier
   LineToken = Data.define(:type, :content, :line_number)
 
-  # Order matters — more specific patterns must come before :prose fallthrough
   LINE_PATTERNS = {
     title: /^# (.+)$/,
     step_header: /^## (.+)$/,

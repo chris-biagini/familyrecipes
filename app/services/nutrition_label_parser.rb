@@ -141,7 +141,6 @@ class NutritionLabelParser # rubocop:disable Metrics/ClassLength
     cleaned = line.strip
     return nil if cleaned.empty?
 
-    # Split on the boundary between name and value: last word group with digits
     match = cleaned.match(/\A(.+?)\s+([\d.]+\s*(?:g|mg|mcg)?)\s*\z/i)
     return [cleaned, ''] unless match
 
@@ -174,7 +173,6 @@ class NutritionLabelParser # rubocop:disable Metrics/ClassLength
     idx = lines.index { |l| density_header?(l) }
     return nil unless idx
 
-    # Look for "X unit = Yg" on the next non-empty line
     lines[(idx + 1)..].each do |line|
       next if line.empty?
 

@@ -6,8 +6,6 @@
 # arrays (used when folding cross-reference ingredients into a recipe's totals).
 # nil entries represent unquantified ingredients (e.g., "Salt" with no amount).
 module IngredientAggregator
-  # Merges two Quantity arrays, summing values per unit.
-  # nil entries represent unquantified ingredients ("Salt" with no amount).
   def self.merge_amounts(existing, new_amounts)
     all = existing + new_amounts
     has_nil = all.include?(nil)

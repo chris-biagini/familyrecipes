@@ -137,9 +137,12 @@ Serves: 4
 
 - Ingredient name, quantity: prep note
 - Another ingredient
-- @[Different Recipe], 2: Recipe cross-reference, with optional quantity and prep note.
 
 Instructions for this step as prose.
+
+## Cross-Reference Step
+
+>>> @[Different Recipe], 2: optional prep note
 
 ## Another Step
 
