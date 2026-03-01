@@ -13,6 +13,14 @@ class Step < ApplicationRecord
   validates :title, length: { minimum: 1 }, allow_nil: true
   validates :position, presence: true
 
+  def cross_reference_step?
+    cross_references.any?
+  end
+
+  def cross_reference_block
+    cross_references.first
+  end
+
   def ingredient_list_items
     (ingredients + cross_references).sort_by(&:position)
   end

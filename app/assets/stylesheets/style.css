@@ -666,12 +666,19 @@ footer small {
     cursor: pointer;
   }
 
-  /* Target h2 in a section where every <li> and <p> is "crossed-off". */
+  /* Target h2 in a section where every <li> and instructions <p> is "crossed-off".
+     Scoped to .instructions p so decorative paragraphs (prep notes, descriptions)
+     don't block the auto-strikethrough. */
   .crossed-off,
-  section:not(:has(li:not(.crossed-off), p:not(.crossed-off))) h2 {
+  section:not(:has(li:not(.crossed-off), .instructions p:not(.crossed-off))) h2 {
     text-decoration: line-through;
     color: var(--muted-text-light);
     border-color: var(--muted-text-light);
+  }
+
+  /* Fade the entire embedded card when the parent step is crossed off */
+  section:not(:has(li:not(.crossed-off), .instructions p:not(.crossed-off))) .embedded-recipe {
+    opacity: 0.4;
   }
 }
 
@@ -1270,6 +1277,107 @@ footer small {
   }
 }
 
+/*********************************/
+/* Embedded recipe cards         */
+/*********************************/
+
+/* "Paper on paper" effect — matches main card's border, radius, shadow */
+.embedded-recipe {
+  border: 1px solid var(--border-color);
+  border-radius: 0.25rem;
+  background-color: var(--content-background-color);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.08),
+    0 4px 12px rgba(0, 0, 0, 0.06);
+  padding: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+.embedded-recipe header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.embedded-recipe header h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.embedded-recipe-link {
+  margin-left: auto;
+  font-size: 1.1rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.embedded-recipe-link:hover {
+  color: var(--accent-color);
+}
+
+.embedded-description {
+  font-size: 0.9rem;
+  font-style: italic;
+  color: var(--muted-text);
+  margin: 0 0 0.5rem;
+}
+
+.embedded-footer {
+  font-size: 0.85rem;
+  color: var(--muted-text);
+  border-top: 1px solid var(--separator-color);
+  margin-top: 1.5rem;
+  padding-top: 0.75rem;
+}
+
+.embedded-multiplier {
+  font-size: 0.9rem;
+  color: var(--muted-text);
+  margin-left: 0.5rem;
+}
+
+.embedded-prep-note {
+  font-size: 0.9rem;
+  color: var(--muted-text);
+  margin: 0.25rem 0 0;
+}
+
+.embedded-recipe section {
+  margin-top: 1.5rem;
+}
+
+.embedded-recipe section:first-of-type {
+  margin-top: 0;
+}
+
+.embedded-recipe section h3 {
+  font-family: "Futura", sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.broken-reference {
+  background-color: #fdf6f0;
+  color: var(--muted-text);
+}
+
+.broken-reference p {
+  margin: 0;
+  font-style: italic;
+}
+
+/* Mobile: keep embedded card border/shadow even when main drops it */
+@media (max-width: 640px) {
+  .embedded-recipe {
+    padding: 1rem;
+  }
+}
+
 /********************/
 /* Styles for print */
 /********************/
@@ -1321,5 +1429,9 @@ footer small {
 
   .scalable.scaled {
     background-color: transparent;
+  }
+
+  .embedded-recipe {
+    box-shadow: none;
   }
 }

@@ -44,9 +44,11 @@ class EndToEndTest < ActionDispatch::IntegrationTest
       Category: Pizza
       Serves: 4
 
+      ## Make dough.
+      >>> @[Pizza Dough]
+
       ## Assemble (top the dough)
 
-      - @[Pizza Dough]
       - Mozzarella, 8 oz: Sliced.
       - Ricotta, 4 oz
 
@@ -198,13 +200,14 @@ class EndToEndTest < ActionDispatch::IntegrationTest
     assert_select '.ingredients small', 'Warm.'
   end
 
-  test 'recipe page renders cross-reference as link' do
+  test 'recipe page renders cross-reference as embedded recipe card' do
     get recipe_path('white-pizza', kitchen_slug: kitchen_slug)
 
     assert_response :success
     dough_path = recipe_path('pizza-dough', kitchen_slug: kitchen_slug)
 
-    assert_select 'li.cross-reference a[href=?]', dough_path, text: 'Pizza Dough'
+    assert_select 'article.embedded-recipe h3', text: 'Pizza Dough'
+    assert_select 'article.embedded-recipe a.embedded-recipe-link[href=?]', dough_path
   end
 
   test 'recipe page includes body data attributes for state manager' do

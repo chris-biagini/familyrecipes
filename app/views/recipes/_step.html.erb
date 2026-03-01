@@ -1,30 +1,39 @@
+<%# locals: (step:, embedded: false, heading_level: 2, scale_factor: 1.0) %>
+<%# Three rendering branches: normal step (ingredients + instructions), resolved
+    cross-reference (embedded card or link depending on nesting depth), and broken
+    reference (target recipe deleted or not yet created). The embedded: flag prevents
+    recursive embedding — nested cross-references render as links. %>
 <section>
+  <%- if step.cross_reference_step? -%>
+  <%- xref = step.cross_reference_block -%>
   <%- if step.title -%>
-  <h2><%= step.title %></h2>
+  <%= content_tag("h#{heading_level}", step.title) %>
+  <%- end -%>
+  <%- if xref.resolved? -%>
+    <%- if embedded -%>
+    <p><%= link_to xref.target_title, recipe_path(xref.target_slug) %></p>
+    <%- else -%>
+    <%= render 'recipes/embedded_recipe', cross_reference: xref %>
+    <%- end -%>
+  <%- else -%>
+    <%= render 'recipes/broken_reference', cross_reference: xref %>
+  <%- end -%>
+  <%- else -%>
+  <%- if step.title -%>
+  <%= content_tag("h#{heading_level}", step.title) %>
   <%- end -%>
   <div>
-    <%- unless step.ingredient_list_items.empty? -%>
+    <%- unless step.ingredients.empty? -%>
     <div class="ingredients">
       <ul>
-        <%- step.ingredient_list_items.each do |item| -%>
-        <%- if item.respond_to?(:target_slug) -%>
-        <%- if item.resolved? -%>
-        <li class="cross-reference"><b><%= link_to item.target_title, recipe_path(item.target_slug) %></b><% if item.multiplier != 1.0 %>, <span class="quantity"><%= item.multiplier == item.multiplier.to_i ? item.multiplier.to_i : item.multiplier %></span><% end %>
-        <%- else -%>
-        <li class="cross-reference"><b><%= item.target_title %></b><% if item.multiplier != 1.0 %>, <span class="quantity"><%= item.multiplier == item.multiplier.to_i ? item.multiplier.to_i : item.multiplier %></span><% end %>
-        <%- end -%>
+        <%- step.ingredients.each do |item| -%>
+        <% display = scaled_quantity_display(item, scale_factor) %>
+        <li <%= ingredient_data_attrs(item, scale_factor: scale_factor) %>>
+          <b class="ingredient-name"><%= item.name %></b><% if display %>, <span class="quantity"><%= display %></span><% end %>
         <%- if item.prep_note -%>
           <small><%= item.prep_note %></small>
         <%- end -%>
         </li>
-        <%- else -%>
-        <li <%= ingredient_data_attrs(item) %>>
-          <b class="ingredient-name"><%= item.name %></b><% if item.quantity_display %>, <span class="quantity"><%= item.quantity_display %></span><% end %>
-        <%- if item.prep_note -%>
-          <small><%= item.prep_note %></small>
-        <%- end -%>
-        </li>
-        <%- end -%>
         <%- end -%>
       </ul>
     </div>
@@ -40,4 +49,5 @@
     </div>
     <%- end -%>
   </div>
+  <%- end -%>
 </section>

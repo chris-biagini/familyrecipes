@@ -124,6 +124,26 @@ class LineClassifierTest < Minitest::Test
     assert_equal %w[Serves 4], content
   end
 
+  def test_classifies_cross_reference_block
+    type, content = LineClassifier.classify_line('>>> @[Pizza Dough]')
+
+    assert_equal :cross_reference_block, type
+    assert_equal ['@[Pizza Dough]'], content
+  end
+
+  def test_classifies_cross_reference_block_with_quantity_and_prep
+    type, content = LineClassifier.classify_line('>>> @[Pizza Dough], 2: Let rest.')
+
+    assert_equal :cross_reference_block, type
+    assert_equal ['@[Pizza Dough], 2: Let rest.'], content
+  end
+
+  def test_four_angle_brackets_is_not_cross_reference_block
+    type, _content = LineClassifier.classify_line('>>>> not a cross-ref')
+
+    assert_equal :prose, type
+  end
+
   def test_front_matter_requires_colon_space
     type, _content = LineClassifier.classify_line('Makes 30 gougères.')
 

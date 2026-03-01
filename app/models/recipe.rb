@@ -15,7 +15,7 @@ class Recipe < ApplicationRecord
   has_many :inbound_cross_references, class_name: 'CrossReference',
                                       foreign_key: :target_recipe_id,
                                       inverse_of: :target_recipe,
-                                      dependent: :destroy
+                                      dependent: :nullify
 
   def referencing_recipes
     Recipe.where(id: inbound_cross_references.joins(:step).select('steps.recipe_id')).distinct

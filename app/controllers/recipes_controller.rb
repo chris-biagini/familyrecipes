@@ -10,8 +10,10 @@ class RecipesController < ApplicationController
   rescue_from ActiveRecord::StaleObjectError, with: :handle_stale_record
 
   def show
+    embedded_steps = { steps: %i[ingredients cross_references] }
     @recipe = current_kitchen.recipes
-                             .includes(steps: [:ingredients, { cross_references: :target_recipe }])
+                             .includes(steps: [:ingredients,
+                                               { cross_references: { target_recipe: embedded_steps } }])
                              .find_by!(slug: params[:slug])
     @nutrition = @recipe.nutrition_data
   end
@@ -65,10 +67,11 @@ class RecipesController < ApplicationController
 
   def destroy
     @recipe = current_kitchen.recipes.find_by!(slug: params[:slug])
+    parent_ids = @recipe.referencing_recipes.pluck(:id)
 
-    updated_references = CrossReferenceUpdater.strip_references(@recipe)
     RecipeBroadcaster.notify_recipe_deleted(@recipe, recipe_title: @recipe.title)
     @recipe.destroy!
+    broadcast_to_referencing_recipes(parent_ids) if parent_ids.any?
     Category.cleanup_orphans(current_kitchen)
     plan = MealPlan.for_kitchen(current_kitchen)
     plan.with_optimistic_retry { plan.prune_checked_off }
@@ -76,12 +79,22 @@ class RecipesController < ApplicationController
     RecipeBroadcaster.broadcast(kitchen: current_kitchen, action: :deleted,
                                 recipe_title: @recipe.title)
 
-    response_json = { redirect_url: home_path }
-    response_json[:updated_references] = updated_references if updated_references.any?
-    render json: response_json
+    render json: { redirect_url: home_path }
   end
 
   private
+
+  def broadcast_to_referencing_recipes(parent_ids)
+    parents = current_kitchen.recipes.where(id: parent_ids).includes(RecipeBroadcaster::SHOW_INCLUDES)
+    parents.find_each do |parent|
+      Turbo::StreamsChannel.broadcast_replace_to(
+        parent, 'content',
+        target: 'recipe-content',
+        partial: 'recipes/recipe_content',
+        locals: { recipe: parent, nutrition: parent.nutrition_data }
+      )
+    end
+  end
 
   def handle_stale_record
     render json: { error: 'Meal plan was modified by another request. Please refresh.' },

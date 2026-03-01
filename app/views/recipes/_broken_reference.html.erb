@@ -1,0 +1,6 @@
+<%# locals: (cross_reference:) %>
+<%# Placeholder card for a cross-reference whose target recipe doesn't exist (yet).
+    Uses the same card shape as embedded_recipe so layout doesn't shift if resolved. %>
+<div class="embedded-recipe broken-reference">
+  <p>This step references "<%= cross_reference.target_title %>", but no recipe with that name exists.</p>
+</div>

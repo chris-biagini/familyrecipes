@@ -29,40 +29,15 @@ class CrossReferenceUpdaterTest < ActiveSupport::TestCase
 
       Category: Bread
 
+      ## Make dough.
+      >>> @[Pizza Dough], 1
+
       ## Assemble (put it together)
 
-      - @[Pizza Dough], 1
       - Mozzarella, 8 oz
 
       Stretch dough and top.
     MD
-  end
-
-  test 'strip_references replaces @[Title] with plain Title in referencing recipes' do
-    CrossReferenceUpdater.strip_references(@dough)
-
-    @pizza.reload
-
-    assert_includes @pizza.markdown_source, 'Pizza Dough'
-    assert_not_includes @pizza.markdown_source, '@[Pizza Dough]'
-  end
-
-  test 'strip_references returns titles of updated recipes' do
-    updated = CrossReferenceUpdater.strip_references(@dough)
-
-    assert_includes updated, 'Margherita Pizza'
-  end
-
-  test 'strip_references removes inbound cross-references' do
-    CrossReferenceUpdater.strip_references(@dough)
-
-    assert_empty @dough.reload.inbound_cross_references
-  end
-
-  test 'strip_references is a no-op when no recipes reference this one' do
-    updated = CrossReferenceUpdater.strip_references(@pizza)
-
-    assert_empty updated
   end
 
   test 'rename_references updates @[Old] to @[New] in referencing recipes' do

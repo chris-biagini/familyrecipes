@@ -340,9 +340,11 @@ class NutritionCalculatorTest < Minitest::Test
 
       Category: Test
 
+      ## Make dough.
+      >>> @[Pizza Dough]
+
       ## Assemble (put together)
 
-      - @[Pizza Dough]
       - Olive oil, 2 Tbsp
 
       Bake.
@@ -381,9 +383,10 @@ class NutritionCalculatorTest < Minitest::Test
 
       Category: Test
 
-      ## Assemble (put together)
+      ## Make dough.
+      >>> @[Pizza Dough], 2
 
-      - @[Pizza Dough], 2
+      ## Assemble (put together)
 
       Bake.
     MD

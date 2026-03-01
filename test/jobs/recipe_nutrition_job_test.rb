@@ -97,9 +97,9 @@ class RecipeNutritionJobTest < ActiveSupport::TestCase
     dough = MarkdownImporter.import(
       "# Dough\n\nCategory: Cat\nServes: 2\n\n## Mix\n\n- Flour, 60 g\n\nMix.", kitchen: @kitchen
     )
-    pizza = MarkdownImporter.import(
-      "# Pizza\n\nCategory: Cat\nServes: 4\n\n## Build\n\n- @[Dough]\n\nBuild.", kitchen: @kitchen
-    )
+    pizza_md = "# Pizza\n\nCategory: Cat\nServes: 4\n\n" \
+               "## Make dough.\n>>> @[Dough]\n\n## Build\n\n- Cheese, 1 oz\n\nBuild."
+    pizza = MarkdownImporter.import(pizza_md, kitchen: @kitchen)
 
     CascadeNutritionJob.perform_now(dough)
     pizza.reload

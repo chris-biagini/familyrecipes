@@ -16,7 +16,7 @@
     </header>
 
     <% recipe.steps.each do |step| %>
-      <%= render 'recipes/step', step: step %>
+      <%= render 'recipes/step', step: step, embedded: false, heading_level: 2, scale_factor: 1.0 %>
     <% end %>
 
     <%- if recipe.footer.present? -%>
