@@ -1,19 +1,39 @@
 name: Build and Push Docker Image
 
 on:
-  workflow_run:
-    workflows: [Test]
-    types: [completed]
-    branches: [main]
+  push:
+    tags: ['v*']
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
-    if: github.event.workflow_run.conclusion == 'success'
+    env:
+      RAILS_ENV: test
+      CI: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+
+      - name: Set up database
+        run: bin/rails db:create db:migrate
+
+      - name: Lint and test
+        run: bundle exec rake
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
@@ -36,6 +56,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=latest
+            type=semver,pattern={{version}}
             type=sha,prefix=
 
       - name: Set up Docker Buildx
