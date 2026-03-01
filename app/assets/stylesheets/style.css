@@ -149,7 +149,9 @@ nav {
 
 nav a {
   font-family: "Futura", sans-serif;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   text-decoration: none;
   font-weight: 600;
   font-size: 0.8rem;
@@ -182,17 +184,6 @@ nav a:focus::after {
 nav > div:first-child {
   display: flex;
   align-items: center;
-}
-
-nav > div:first-child a + a::before {
-  content: "\00b7";
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  color: var(--border-muted);
-  font-size: 1rem;
-  letter-spacing: 0;
 }
 
 nav > div:last-child:not(:first-child) {
@@ -278,6 +269,12 @@ nav a:focus-visible {
   outline: 2px solid var(--accent-color);
   outline-offset: 2px;
   border-radius: 2px;
+}
+
+.nav-icon {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
 }
 
 main a {
@@ -704,13 +701,16 @@ footer small {
   }
 
   nav a {
-    padding: 0.5rem 0.5rem;
-    font-size: 0.7rem;
+    padding: 0.5rem 0.6rem;
   }
 
-  nav a::after {
-    left: 0.5rem;
-    right: 0.5rem;
+  nav a span {
+    display: none;
+  }
+
+  .nav-icon {
+    width: 1.25rem;
+    height: 1.25rem;
   }
 
   main {
