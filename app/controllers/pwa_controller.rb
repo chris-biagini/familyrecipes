@@ -5,6 +5,7 @@
 # Cloudflare from edge-caching them with the static file TTL. Skips
 # set_kitchen_from_path because these URLs are kitchen-agnostic.
 class PwaController < ApplicationController
+  skip_forgery_protection
   skip_before_action :set_kitchen_from_path
 
   def manifest
