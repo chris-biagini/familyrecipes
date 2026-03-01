@@ -5,7 +5,7 @@ module FamilyRecipes
     attr_reader :tldr, :ingredients, :cross_references, :instructions, :ingredient_list_items
 
     def initialize(tldr:, instructions:, ingredient_list_items: [])
-      raise ArgumentError, 'Step must have a tldr.' if tldr.nil? || tldr.strip.empty?
+      raise ArgumentError, 'Step must have a tldr.' if !tldr.nil? && tldr.strip.empty?
 
       if ingredient_list_items.empty? && (instructions.nil? || instructions.strip.empty?)
         raise ArgumentError,

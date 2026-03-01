@@ -39,13 +39,15 @@ class StepTest < Minitest::Test
     assert_equal 'Preheat oven to 400F.', step.instructions
   end
 
-  def test_raises_on_nil_tldr
-    assert_raises(ArgumentError) do
-      FamilyRecipes::Step.new(
-        tldr: nil, ingredient_list_items: [FamilyRecipes::Ingredient.new(name: 'Salt')],
-        instructions: 'Season.'
-      )
-    end
+  def test_valid_with_nil_tldr
+    step = FamilyRecipes::Step.new(
+      tldr: nil,
+      ingredient_list_items: [FamilyRecipes::Ingredient.new(name: 'Salt')],
+      instructions: 'Season.'
+    )
+
+    assert_nil step.tldr
+    assert_equal 1, step.ingredients.size
   end
 
   def test_raises_on_blank_tldr
