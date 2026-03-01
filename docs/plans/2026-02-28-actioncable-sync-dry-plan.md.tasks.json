@@ -1,0 +1,10 @@
+{
+  "planPath": "docs/plans/2026-02-28-actioncable-sync-dry-plan.md",
+  "tasks": [
+    {"id": 6, "subject": "Task 1: Create MealPlanSync utility class", "status": "pending"},
+    {"id": 7, "subject": "Task 2: Rewrite grocery_sync_controller to use MealPlanSync", "status": "pending", "blockedBy": [6]},
+    {"id": 8, "subject": "Task 3: Rewrite menu_controller to use MealPlanSync", "status": "pending", "blockedBy": [6]},
+    {"id": 9, "subject": "Task 4: Manual smoke test and final verification", "status": "pending", "blockedBy": [7, 8]}
+  ],
+  "lastUpdated": "2026-02-28T00:00:00Z"
+}
