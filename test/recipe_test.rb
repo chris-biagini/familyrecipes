@@ -290,6 +290,32 @@ class RecipeTest < Minitest::Test
     refute_equal recipe_a.version_hash, recipe_b.version_hash
   end
 
+  def test_parses_implicit_step_recipe
+    markdown = <<~MD
+      # Nacho Cheese
+
+      Worth the effort.
+
+      Category: Test
+      Makes: 1 cup
+      Serves: 4
+
+      - Cheddar, 225 g: Cut into small cubes.
+      - Milk, 225 g
+
+      Combine all ingredients in saucepan.
+    MD
+
+    recipe = make_recipe(markdown)
+
+    assert_equal 'Nacho Cheese', recipe.title
+    assert_equal 1, recipe.steps.size
+    assert_nil recipe.steps[0].tldr
+    assert_equal 2, recipe.steps[0].ingredients.size
+    assert_equal 'Cheddar', recipe.steps[0].ingredients[0].name
+    assert_includes recipe.steps[0].instructions, 'Combine all ingredients'
+  end
+
   def test_raises_on_recipe_with_no_steps
     assert_raises(StandardError) do
       make_recipe("# Title\n\nCategory: Test\n\nJust a description, no steps.\n")
