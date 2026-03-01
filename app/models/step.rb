@@ -1,5 +1,9 @@
 # frozen_string_literal: true
 
+# One step within a recipe. Holds a title (nil for implicit steps), position,
+# raw and processed instructions (with scalable number HTML), and ordered
+# collections of Ingredients and CrossReferences. The mixed ingredient list
+# is reconstructed via #ingredient_list_items for rendering.
 class Step < ApplicationRecord
   belongs_to :recipe, inverse_of: :steps
 

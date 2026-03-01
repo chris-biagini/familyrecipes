@@ -1,5 +1,9 @@
 # frozen_string_literal: true
 
+# Recipe grouping derived from directory names under db/seeds/recipes/ (e.g.,
+# "Bread", "Mains"). Created by MarkdownImporter during seed, validated against
+# the Category: front matter field. Ordered by position for homepage display.
+# Orphaned categories (with no recipes) are cleaned up via .cleanup_orphans.
 class Category < ApplicationRecord
   acts_as_tenant :kitchen
 

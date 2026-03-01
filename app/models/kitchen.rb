@@ -1,5 +1,11 @@
 # frozen_string_literal: true
 
+# Multi-tenant container — the top-level scope for all user-facing data. Every
+# query on tenant-scoped models must go through current_kitchen; unscoped finders
+# like Recipe.find_by would cross kitchen boundaries. Owns recipes, categories,
+# ingredient catalog entries, a single MealPlan, and its member Users via
+# Memberships. Also holds quick_bites_content (web-editable) and aisle_order
+# (user-customized grocery aisle sequence).
 class Kitchen < ApplicationRecord
   has_many :memberships, dependent: :destroy
   has_many :users, through: :memberships

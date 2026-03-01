@@ -1,5 +1,10 @@
 # frozen_string_literal: true
 
+# A recipe-to-recipe dependency (e.g., Pizza references Pizza Dough). Lives
+# within a Step alongside Ingredients, ordered by position. Links to the target
+# Recipe via target_recipe_id (resolved) or target_slug (pending). Pending
+# references are resolved in bulk by .resolve_pending after imports. Multiplier
+# scales the target's ingredient quantities for aggregation.
 class CrossReference < ApplicationRecord
   acts_as_tenant :kitchen
 

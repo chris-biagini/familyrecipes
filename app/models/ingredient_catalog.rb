@@ -1,5 +1,11 @@
 # frozen_string_literal: true
 
+# Nutrition and grocery metadata for ingredients. Uses an overlay model: seed
+# entries are global (kitchen_id: nil), kitchens can add overrides. lookup_for
+# merges global + kitchen entries with kitchen taking precedence, then adds
+# inflected name variants for fuzzy matching. Stores FDA-label nutrients,
+# density (for volume-to-gram conversion), named portions, aisle assignments,
+# and provenance sources. NutritionCalculator and ShoppingListBuilder consume this.
 class IngredientCatalog < ApplicationRecord
   self.table_name = 'ingredient_catalog'
 

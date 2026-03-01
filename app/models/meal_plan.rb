@@ -1,5 +1,11 @@
 # frozen_string_literal: true
 
+# Singleton-per-kitchen record that stores shared meal planning state as a JSON
+# blob: selected recipes, selected quick bites, custom grocery items, and
+# checked-off items. Synced across devices via MealPlanChannel (ActionCable)
+# with optimistic locking (lock_version). Both the menu and groceries pages
+# read and write this model; ShoppingListBuilder consumes it to produce the
+# grocery list.
 class MealPlan < ApplicationRecord
   acts_as_tenant :kitchen
 

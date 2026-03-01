@@ -1,5 +1,10 @@
 # frozen_string_literal: true
 
+# Persistent recipe record, populated by MarkdownImporter from parsed Markdown.
+# Stores the original markdown_source plus pre-computed data (nutrition_data JSON,
+# processed instructions with scalable number markup). Views render entirely from
+# this model and its associations — the parser is never invoked on the read path.
+# Kitchen-scoped via acts_as_tenant.
 class Recipe < ApplicationRecord
   acts_as_tenant :kitchen
   belongs_to :category
