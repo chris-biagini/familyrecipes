@@ -42,4 +42,36 @@ class NumericParsingTest < Minitest::Test
   def test_empty_string_raises
     assert_raises(ArgumentError) { FamilyRecipes::NumericParsing.parse_fraction('') }
   end
+
+  def test_vulgar_half
+    assert_in_delta 0.5, FamilyRecipes::NumericParsing.parse_fraction('½'), 0.001
+  end
+
+  def test_vulgar_third
+    assert_in_delta 0.333, FamilyRecipes::NumericParsing.parse_fraction('⅓'), 0.001
+  end
+
+  def test_vulgar_two_thirds
+    assert_in_delta 0.667, FamilyRecipes::NumericParsing.parse_fraction('⅔'), 0.001
+  end
+
+  def test_vulgar_quarter
+    assert_in_delta 0.25, FamilyRecipes::NumericParsing.parse_fraction('¼'), 0.001
+  end
+
+  def test_vulgar_three_quarters
+    assert_in_delta 0.75, FamilyRecipes::NumericParsing.parse_fraction('¾'), 0.001
+  end
+
+  def test_vulgar_eighth
+    assert_in_delta 0.125, FamilyRecipes::NumericParsing.parse_fraction('⅛'), 0.001
+  end
+
+  def test_mixed_vulgar
+    assert_in_delta 2.5, FamilyRecipes::NumericParsing.parse_fraction('2½'), 0.001
+  end
+
+  def test_mixed_vulgar_with_space
+    assert_in_delta 1.25, FamilyRecipes::NumericParsing.parse_fraction('1 ¼'), 0.001
+  end
 end
