@@ -1,6 +1,11 @@
 # frozen_string_literal: true
 
 module FamilyRecipes
+  # Seed-time integrity checker. Validates cross-references resolve and are
+  # acyclic, verifies all recipe ingredients exist in IngredientCatalog, and
+  # checks that ingredients with nutrition data have resolvable units. Prints
+  # warnings to stdout for missing entries — used by db:seed to surface data
+  # gaps without failing the build.
   class BuildValidator # rubocop:disable Metrics/ClassLength
     def initialize(recipes:, quick_bites:, recipe_map:, nutrition_calculator: nil)
       @recipes = recipes

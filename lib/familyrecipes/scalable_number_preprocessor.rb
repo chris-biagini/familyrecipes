@@ -1,5 +1,11 @@
 # frozen_string_literal: true
 
+# Transforms recipe instruction text into HTML with scalable number spans.
+# Numbers suffixed with * in instructions (e.g., "eight*", "2*") become
+# <span class="scalable" data-base-value="..."> elements that the client-side
+# recipe_state_controller scales when the user adjusts serving size. Also
+# processes yield lines (Makes/Serves) with unit-aware spans. Output is stored
+# in Step#processed_instructions at import time — this runs on the write path only.
 module ScalableNumberPreprocessor
   WORD_VALUES = {
     'zero' => 0, 'one' => 1, 'two' => 2, 'three' => 3, 'four' => 4,

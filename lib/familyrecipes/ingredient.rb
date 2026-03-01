@@ -1,6 +1,10 @@
 # frozen_string_literal: true
 
 module FamilyRecipes
+  # Parsed ingredient from a recipe step's bullet list (e.g., "Flour, 2 cups:
+  # sifted"). Carries name, optional quantity string, and optional prep note.
+  # IngredientAggregator and NutritionCalculator consume the parsed quantity_value
+  # and quantity_unit for math; Inflector normalizes unit strings.
   class Ingredient
     attr_reader :name, :quantity, :prep_note
 

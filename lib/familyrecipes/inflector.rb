@@ -1,6 +1,11 @@
 # frozen_string_literal: true
 
 module FamilyRecipes
+  # Minimal inflection engine for ingredient names and measurement units. Handles
+  # singular/plural forms via a curated lookup table (KNOWN_PLURALS) with rule-based
+  # fallback, unit normalization (abbreviations, aliases), and ingredient variant
+  # generation for fuzzy catalog matching. Avoids ActiveSupport::Inflector because
+  # recipe-domain words ("gougères", "pizzelle") need explicit control.
   module Inflector # rubocop:disable Metrics/ModuleLength
     KNOWN_PLURALS = {
       # Units

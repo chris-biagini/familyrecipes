@@ -1,6 +1,12 @@
 # frozen_string_literal: true
 
 module FamilyRecipes
+  # Computes FDA-label nutrition facts for a recipe from ingredient-catalog YAML
+  # data. Resolves ingredient quantities to grams via a priority chain: weight
+  # units → named portions → density-derived volume conversions. Produces a Result
+  # with totals, per-serving, and per-unit breakdowns, plus lists of missing and
+  # partially resolvable ingredients. RecipeNutritionJob calls this at save time;
+  # the Result is stored as JSON on the AR Recipe.
   class NutritionCalculator # rubocop:disable Metrics/ClassLength
     NUTRIENTS = %i[calories fat saturated_fat trans_fat cholesterol sodium
                    carbs fiber total_sugars added_sugars protein].freeze

@@ -1,6 +1,14 @@
 # frozen_string_literal: true
 
 module FamilyRecipes
+  # Parsed representation of a single Markdown recipe file. Constructed from raw
+  # Markdown via LineClassifier → RecipeBuilder → Recipe. Holds the full parse
+  # tree: title, description, front matter (category/makes/serves), steps with
+  # their ingredients and cross-references, and an optional footer.
+  #
+  # This is a read-only parse artifact — MarkdownImporter consumes it to upsert
+  # the corresponding AR Recipe, Steps, Ingredients, and CrossReferences. Views
+  # never see this class; they render from the database.
   class Recipe
     attr_reader :title, :description, :makes, :serves, :steps, :footer, :source, :id, :version_hash, :category
 

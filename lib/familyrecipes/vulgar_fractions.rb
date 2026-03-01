@@ -1,6 +1,10 @@
 # frozen_string_literal: true
 
 module FamilyRecipes
+  # Formats decimal quantities as Unicode vulgar fraction glyphs (e.g., 0.5 → "½",
+  # 1.25 → "1¼"). Used by views and the JS vulgar_fractions utility for display.
+  # Also provides singular_noun? for deciding singular vs. plural unit display
+  # (fractions like ½ are treated as singular: "½ cup", not "½ cups").
   module VulgarFractions
     GLYPHS = {
       1 / 2r => "\u00BD",

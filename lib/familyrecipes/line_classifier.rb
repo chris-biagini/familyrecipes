@@ -1,5 +1,9 @@
 # frozen_string_literal: true
 
+# First stage of the parser pipeline. Converts raw Markdown lines into typed
+# LineToken values (:title, :step_header, :ingredient, :front_matter, :divider,
+# :blank, :prose) that RecipeBuilder consumes as a token stream. Pattern order
+# matters — more specific patterns must precede the :prose fallthrough.
 module LineClassifier
   LineToken = Data.define(:type, :content, :line_number)
 

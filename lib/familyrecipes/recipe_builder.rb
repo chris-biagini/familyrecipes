@@ -1,5 +1,10 @@
 # frozen_string_literal: true
 
+# Second stage of the parser pipeline. Consumes LineTokens from LineClassifier
+# and assembles them into a structured hash (title, description, front_matter,
+# steps, footer) that FamilyRecipes::Recipe uses to populate itself. Works as
+# a single-pass cursor over the token array — peek/advance/skip_blanks. Handles
+# both explicit steps (## headers) and implicit steps (ingredients without headers).
 class RecipeBuilder
   attr_reader :errors
 

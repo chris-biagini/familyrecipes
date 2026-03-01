@@ -1,6 +1,11 @@
 # frozen_string_literal: true
 
 module FamilyRecipes
+  # Shared logic for the bin/nutrition CLI and the web nutrition editor. Parses
+  # FDA serving-size strings (e.g., "2 tbsp (30g)") into structured hashes with
+  # gram weight, optional volume density, and optional discrete portions. The
+  # density and portion data feeds into IngredientCatalog entries that
+  # NutritionCalculator uses for unit resolution at nutrition-calculation time.
   module NutritionEntryHelpers
     KNOWN_VOLUME_UNITS = %w[cup cups tbsp tablespoon tablespoons tsp teaspoon teaspoons ml l liter liters].freeze
 

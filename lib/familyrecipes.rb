@@ -6,6 +6,12 @@ require 'digest'
 require 'json'
 require 'yaml'
 
+# Root module for the recipe parser pipeline — a pure-Ruby domain layer that
+# knows nothing about Rails. Parses Markdown recipe files into structured value
+# objects (Recipe, Step, Ingredient, CrossReference, QuickBite) and computes
+# nutrition data. Loaded once at boot via config/initializers/familyrecipes.rb,
+# not through Zeitwerk. The Rails app module is Familyrecipes (lowercase r);
+# this module is FamilyRecipes (uppercase R) — different constants, no collision.
 module FamilyRecipes
   CONFIG = {
     quick_bites_filename: 'Quick Bites.md',

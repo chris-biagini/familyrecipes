@@ -1,5 +1,10 @@
 # frozen_string_literal: true
 
+# Parses a single ingredient bullet line into a structured hash. Handles two
+# formats: cross-references ("@[Recipe Title], multiplier: prep note") and
+# regular ingredients ("Name, quantity: prep note"). Called by RecipeBuilder
+# for each :ingredient token. Detects and rejects the legacy quantity-first
+# cross-reference syntax with a helpful error message.
 module IngredientParser
   CROSS_REF_PATTERN = %r{\A@\[(.+?)\](?:\.\s*)?(?:,\s*(\d+(?:/\d+)?(?:\.\d+)?))?\s*(?::\s*(.+))?\z}
 

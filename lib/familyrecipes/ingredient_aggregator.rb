@@ -1,5 +1,10 @@
 # frozen_string_literal: true
 
+# Combines ingredient quantities across recipe steps and cross-references.
+# aggregate_amounts collapses multiple occurrences of the same ingredient into
+# summed Quantity values grouped by unit. merge_amounts combines two Quantity
+# arrays (used when folding cross-reference ingredients into a recipe's totals).
+# nil entries represent unquantified ingredients (e.g., "Salt" with no amount).
 module IngredientAggregator
   # Merges two Quantity arrays, summing values per unit.
   # nil entries represent unquantified ingredients ("Salt" with no amount).
