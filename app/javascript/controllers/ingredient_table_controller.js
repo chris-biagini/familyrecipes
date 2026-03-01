@@ -1,5 +1,11 @@
 import { Controller } from "@hotwired/stimulus"
 
+/**
+ * Ingredients page table: client-side search filtering, status filtering
+ * (all/complete/missing nutrition/missing density), sortable columns (name,
+ * nutrition, density, aisle), and keyboard navigation for row activation.
+ * Works entirely on DOM data attributes — no server calls.
+ */
 export default class extends Controller {
   static targets = ["searchInput", "row", "filterButton", "table"]
 

@@ -1,6 +1,13 @@
 import { Controller } from "@hotwired/stimulus"
 import { show as notifyShow, dismiss as notifyDismiss } from "utilities/notify"
 
+/**
+ * Screen Wake Lock API for recipe pages — keeps the screen on while cooking.
+ * Acquires a wake lock on connect, releases it after a configurable inactivity
+ * timeout (default 10 minutes). Shows a "stay awake" warning before releasing.
+ * Activity (scroll, pointer, input) resets the timer. Gracefully degrades to
+ * no-op on browsers without Wake Lock support.
+ */
 export default class extends Controller {
   static values = {
     timeout: { type: Number, default: 600000 },

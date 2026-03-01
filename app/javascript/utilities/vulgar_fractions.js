@@ -1,3 +1,9 @@
+/**
+ * Client-side mirror of FamilyRecipes::VulgarFractions. Formats decimals as
+ * Unicode fraction glyphs (0.5 → "½") for scaled ingredient display. Also
+ * determines singular/plural noun agreement for fractional quantities (½ is
+ * singular: "½ cup", not "½ cups"). Used by recipe_state_controller.
+ */
 const VULGAR_FRACTIONS = [
   [1/2, '\u00BD'], [1/3, '\u2153'], [2/3, '\u2154'],
   [1/4, '\u00BC'], [3/4, '\u00BE'],

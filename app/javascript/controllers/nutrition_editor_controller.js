@@ -2,6 +2,14 @@ import { Controller } from "@hotwired/stimulus"
 import { Turbo } from "@hotwired/turbo-rails"
 import { getCsrfToken, showErrors, clearErrors } from "utilities/editor_utils"
 
+/**
+ * Multi-field nutrition editor dialog for the ingredients page. Manages the
+ * structured form (nutrients, density, portions, aisle) loaded via Turbo Frame.
+ * Supports save (Turbo Stream update to refresh the table row in-place) and
+ * save-and-next (JSON response that advances to the next incomplete ingredient).
+ * Client-side validation prevents invalid submissions. Also handles the "reset
+ * to built-in" action that deletes a kitchen-scoped override.
+ */
 export default class extends Controller {
   static targets = [
     "dialog", "title", "errors", "formContent",

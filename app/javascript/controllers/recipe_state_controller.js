@@ -1,6 +1,14 @@
 import { Controller } from "@hotwired/stimulus"
 import { formatVulgar, isVulgarSingular } from "utilities/vulgar_fractions"
 
+/**
+ * Recipe page progressive enhancement: ingredient scaling, cross-off (click to
+ * strike through ingredients/instructions), and section toggling (click h2 to
+ * cross off entire step). State is persisted to localStorage keyed by recipe ID
+ * and version hash — stale or mismatched state is discarded. Scale factor
+ * applies to quantities, scalable numbers in instructions, yield lines, and
+ * nutrition facts. All of this is optional JS — the recipe renders fine without it.
+ */
 const STORED_STATE_TTL = 48 * 60 * 60 * 1000
 
 export default class extends Controller {

@@ -1,3 +1,9 @@
+/**
+ * Shared utilities for editor dialogs: CSRF token extraction, error display/clear,
+ * close-with-confirmation, beforeunload guard, and a generic save-request handler.
+ * Used by editor_controller and nutrition_editor_controller to avoid duplicating
+ * fetch boilerplate and UI state management.
+ */
 export function getCsrfToken() {
   return document.querySelector('meta[name="csrf-token"]')?.content
 }

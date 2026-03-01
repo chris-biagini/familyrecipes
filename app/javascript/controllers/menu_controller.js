@@ -1,6 +1,13 @@
 import { Controller } from "@hotwired/stimulus"
 import MealPlanSync from "utilities/meal_plan_sync"
 
+/**
+ * Menu page recipe/quick-bite selection and availability display. Manages
+ * checkboxes for recipe selection, select-all/clear actions, and availability
+ * dots (colored indicators of how many ingredients are on hand). Delegates
+ * sync to MealPlanSync. Availability dots show a popover with ingredient lists
+ * on click.
+ */
 export default class extends Controller {
   connect() {
     const slug = this.element.dataset.kitchenSlug

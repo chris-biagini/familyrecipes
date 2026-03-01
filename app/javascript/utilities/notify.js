@@ -1,3 +1,10 @@
+/**
+ * Toast notification bar. Creates a fixed-position notification that auto-dismisses
+ * after 5 seconds (or stays persistent with options.persistent). Supports an
+ * optional action button (e.g., "Stay awake" for wake_lock_controller). Used
+ * by MealPlanSync for remote update alerts and by toast_controller for
+ * server-pushed notifications.
+ */
 let container = null
 let timer = null
 

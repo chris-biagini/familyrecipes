@@ -1,5 +1,12 @@
 import { Controller } from "@hotwired/stimulus"
 
+/**
+ * Groceries page rendering and interaction. Builds the shopping list DOM from
+ * state provided by grocery_sync_controller: aisle sections with collapsible
+ * <details>, check-off checkboxes, item counts, and custom items. Persists
+ * aisle collapse state in localStorage. Delegates all server communication to
+ * the co-located grocery_sync_controller.
+ */
 function formatNumber(val) {
   const num = typeof val === "string" ? parseFloat(val) : val
   return parseFloat(num.toFixed(2)).toString()

@@ -5,6 +5,14 @@ import {
 } from "utilities/editor_utils"
 import { show as notifyShow } from "utilities/notify"
 
+/**
+ * Generic <dialog> lifecycle controller for editor modals. Handles open, save
+ * (PATCH/POST via fetch), dirty-checking, close with confirmation, and
+ * beforeunload guards. Simple dialogs need zero custom JS — just Stimulus data
+ * attributes on the <dialog>. Custom dialogs (nutrition editor) hook in via
+ * lifecycle events: editor:collect, editor:save, editor:modified, editor:reset.
+ * Also supports remote-loaded content via loadUrl for lazy-fetched dialogs.
+ */
 export default class extends Controller {
   static targets = ["textarea", "saveButton", "deleteButton", "errors"]
 

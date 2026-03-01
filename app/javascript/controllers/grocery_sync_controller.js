@@ -1,6 +1,13 @@
 import { Controller } from "@hotwired/stimulus"
 import MealPlanSync from "utilities/meal_plan_sync"
 
+/**
+ * Thin sync wrapper for the groceries page. Delegates all ActionCable and state
+ * management to MealPlanSync, then pipes state updates to the co-located
+ * grocery_ui_controller (looked up via Stimulus' getControllerForElementAndIdentifier).
+ * Exposes sendAction and urls so grocery_ui_controller can dispatch check-off
+ * and custom item actions without its own sync logic.
+ */
 export default class extends Controller {
   connect() {
     const slug = this.element.dataset.kitchenSlug

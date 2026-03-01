@@ -2,6 +2,16 @@ import { createConsumer } from "@rails/actioncable"
 import { getCsrfToken } from "utilities/editor_utils"
 import { show as notifyShow } from "utilities/notify"
 
+/**
+ * Shared sync engine for meal plan state (menu + groceries pages). Manages the
+ * MealPlanChannel ActionCable subscription, version-based polling (fetch fresh
+ * state when the server broadcasts a newer version), a 30-second heartbeat
+ * fallback, localStorage cache for instant rendering on page load, and an
+ * offline action queue that flushes on reconnect. Also intercepts
+ * turbo:before-stream-render to restore state after Turbo Stream HTML
+ * replacements that would otherwise lose checkbox state. Both menu_controller
+ * and grocery_sync_controller delegate to instances of this class.
+ */
 export default class MealPlanSync {
   constructor({ slug, stateUrl, cachePrefix, onStateUpdate, remoteUpdateMessage }) {
     this.stateUrl = stateUrl
