@@ -1,0 +1,25 @@
+{
+  "planPath": "docs/plans/2026-03-01-inline-cross-references-plan.md",
+  "tasks": [
+    {"id": 0, "subject": "Task 0: Create CrossReferenceParser module", "status": "pending"},
+    {"id": 1, "subject": "Task 1: Add :cross_reference_block token to LineClassifier", "status": "pending", "blockedBy": [0]},
+    {"id": 2, "subject": "Task 2: Remove cross-reference handling from IngredientParser", "status": "pending", "blockedBy": [0]},
+    {"id": 3, "subject": "Task 3: Teach RecipeBuilder to handle >>> blocks with validation", "status": "pending", "blockedBy": [1, 2]},
+    {"id": 4, "subject": "Task 4: Update MarkdownImporter for new step data shape", "status": "pending", "blockedBy": [3]},
+    {"id": 5, "subject": "Task 5: Update domain parser classes for new syntax", "status": "pending", "blockedBy": [3]},
+    {"id": 6, "subject": "Task 6: Add cross_reference_step? and cross_reference_block to Step AR model", "status": "pending", "blockedBy": [3]},
+    {"id": 7, "subject": "Task 7: Change Recipe dependent: :destroy to dependent: :nullify", "status": "pending", "blockedBy": [6]},
+    {"id": 8, "subject": "Task 8: Update CrossReferenceUpdater — remove strip_references", "status": "pending", "blockedBy": [7, 4]},
+    {"id": 9, "subject": "Task 9: Update seed files to >>> syntax", "status": "pending", "blockedBy": [4]},
+    {"id": 10, "subject": "Task 10: Create embedded recipe view partials", "status": "pending", "blockedBy": [4, 6]},
+    {"id": 11, "subject": "Task 11: Add CSS for embedded recipe cards", "status": "pending", "blockedBy": [10]},
+    {"id": 12, "subject": "Task 12: Add broadcaster cascade for referencing recipes", "status": "pending", "blockedBy": [10]},
+    {"id": 13, "subject": "Task 13: Update RecipesController#destroy to re-broadcast parent pages", "status": "pending", "blockedBy": [10, 7]},
+    {"id": 14, "subject": "Task 14: Handle multiplier scaling in embedded recipe view", "status": "pending", "blockedBy": [10]},
+    {"id": 15, "subject": "Task 15: Namespace crossed-off state for embedded recipe steps", "status": "pending", "blockedBy": [10]},
+    {"id": 16, "subject": "Task 16: Update html_safe allowlist and run full lint", "status": "pending", "blockedBy": [14, 15, 13, 12, 11]},
+    {"id": 17, "subject": "Task 17: Add architectural header comments to new files", "status": "pending", "blockedBy": [16]},
+    {"id": 18, "subject": "Task 18: Final verification — end-to-end manual testing", "status": "pending", "blockedBy": [17]}
+  ],
+  "lastUpdated": "2026-03-01T00:00:00Z"
+}
