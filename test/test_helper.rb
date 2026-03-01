@@ -1,6 +1,17 @@
 # frozen_string_literal: true
 
-# Test helper - loads the library and sets up test environment
+# Two test hierarchies coexist in this project:
+#
+# 1. Rails tests (test/controllers/, test/models/, test/services/, test/integration/,
+#    test/channels/, test/helpers/, test/jobs/, test/lib/) inherit
+#    ActiveSupport::TestCase and have access to assert_not_*, assert_difference, etc.
+#
+# 2. Top-level parser unit tests (test/recipe_test.rb, test/nutrition_calculator_test.rb,
+#    etc.) inherit Minitest::Test directly and do NOT have ActiveSupport extensions.
+#    RuboCop's Rails/RefuteMethods cop is excluded for these files.
+#
+# Helpers below: create_kitchen_and_user (sets @kitchen, @user, tenant),
+# log_in (logs in @user via dev login), kitchen_slug (returns @kitchen.slug).
 
 ENV['RAILS_ENV'] ||= 'test'
 

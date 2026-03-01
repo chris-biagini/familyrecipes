@@ -59,6 +59,8 @@ class ApplicationController < ActionController::Base
   def authenticate_from_headers
     return if authenticated?
 
+    # Must use request.env, not request.headers — 'Remote-User' collides with
+    # the CGI REMOTE_USER variable, so request.headers['Remote-User'] is unreliable.
     remote_user = request.env['HTTP_REMOTE_USER']
     return if remote_user.blank?
 

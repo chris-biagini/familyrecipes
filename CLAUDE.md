@@ -4,8 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-This is a fully dynamic Rails 8 app backed by SQLite with multi-tenant "Kitchen" support. Two-database architecture: primary (app data), cable (Solid Cable pub/sub). Trusted-header authentication: in production, Authelia/Caddy sets `Remote-User`/`Remote-Email`/`Remote-Name` headers; the app reads them to find-or-create users and establish sessions. In dev/test, `DevSessionsController` provides direct login. No OmniAuth, no passwords.
-Eventually, the goal is to ship this app as a Docker image for homelab install, while also maintaining a for-pay hosted copy (e.g., at fly.io).
+Rails 8 app backed by SQLite with multi-tenant "Kitchen" support and trusted-header authentication (Authelia/Caddy in production, `DevSessionsController` in dev/test). Two-database architecture: primary (app data), cable (Solid Cable pub/sub). Eventually shipping as a Docker image for homelab installs and a hosted copy.
 
 ## Design Philosophy
 
@@ -17,6 +16,37 @@ Eventually, the goal is to ship this app as a Docker image for homelab install, 
 - Let's walk before we run. Don't solve scale problems I don't have.
 - Always use the superpowers skill when getting ready to write code or build a new feature.
 
+## Architectural comments — every file tells its own story
+
+Class-level and module-level comments are the primary carrier of architectural context in this codebase. CLAUDE.md provides a map; the comments provide the territory. When you need to understand a class's role, read its header comment first.
+
+### When to write them
+
+Every Ruby class/module and every JavaScript controller/utility gets a header comment explaining its **role**, **key collaborators**, and **non-obvious constraints**. Add one when creating a new file. Update it when a file's responsibilities change.
+
+### What they sound like
+
+Plain prose. 2–5 lines. Answer: *what role does this play?*, *who does it talk to?*, and *why is it this way?*
+
+```ruby
+# The sole write path for getting recipes into the database. Parses Markdown
+# through the FamilyRecipes parser pipeline, then upserts the Recipe and its
+# Steps, Ingredients, and CrossReferences in a transaction.
+#
+# Kitchen-scoped (requires kitchen: keyword) and idempotent — db:seed
+# calls this repeatedly. Views never call the parser; they render from
+# stored ActiveRecord data exclusively.
+class MarkdownImporter
+```
+
+### What they don't sound like
+
+Never restate the class name, method name, or what the code obviously does. The general comment rules in "Ruby code conventions" apply here too — if a comment says `# The Recipe model` or `# Controller for recipes`, delete it.
+
+### Keeping them honest
+
+Header comments are code. When you change a class's responsibilities, update its comment in the same commit. A stale comment is worse than no comment — it's a lie that the next reader (human or AI) will trust.
+
 ## Recipe source files
 
 - Recipe source files are Markdown. They should read naturally in plaintext, as if written for a person, not a parser. Some custom syntax is necessary but should be limited.
@@ -26,7 +56,7 @@ Eventually, the goal is to ship this app as a Docker image for homelab install, 
 
 ### XSS prevention — trust Rails, distrust `.html_safe`
 
-A strict Content Security Policy is enforced (`config/initializers/content_security_policy.rb`). All directives use `'self'` only, plus `ws:`/`wss:` for ActionCable in `connect-src`. A nonce generator (`request.session.id`) is configured for `script-src` — importmap-rails uses this to permit its inline module-loading script. No inline styles, no external resources are allowed. If you need to add any of these, update the CSP initializer first.
+A strict Content Security Policy is enforced (`config/initializers/content_security_policy.rb`). No inline styles, no external resources. If you need to add any of these, update the CSP initializer first.
 
 Rails auto-escapes all `<%= %>` output. The **only** XSS vectors are `.html_safe`, `raw()`, and rendering engines (like Redcarpet) whose output is marked safe. Rules:
 - **Never** call `.html_safe` on a string that interpolates user content without first escaping it via `ERB::Util.html_escape`.
@@ -163,12 +193,11 @@ end
 
 Comments that narrate code are the #1 tell of LLM-generated Ruby. This is a hard rule:
 
-**Architectural breadcrumbs:** Every Ruby class/module and JS controller/utility has a class-level comment explaining its role, key collaborators, and non-obvious constraints. When adding or significantly modifying a class, update its breadcrumb comment to stay accurate. When adding a new class, write one.
-
 - **Never** write a comment that restates the method name, class name, or what the code obviously does.
 - **Never** write `# ClassName` or `# ClassName class` above a class definition.
 - **Do** add comments that explain *why* — business rules, non-obvious constraints, or links to external references.
 - If code needs a comment explaining *what*, extract a method with a descriptive name instead.
+- Architectural header comments are covered in "Architectural comments" above — read that section.
 
 ```ruby
 # WRONG — every one of these restates the obvious
@@ -213,7 +242,7 @@ bin/worktree-remove .claude/worktrees/<name>  # full path also works
 Save screenshots and Playwright output to `~/screenshots/`, not inside the repo. When using browser tools, pass filenames like `/home/claude/screenshots/my-screenshot.png`. The `.gitignore` catches `.playwright-mcp/` and `*.png` as a safety net, but keep them out of the repo directory entirely.
 
 ### Data.define and Rails JSON serialization
-`Data.define` classes with custom `to_json` must also define `as_json` — ActiveSupport calls `as_json` (not `to_json`) on nested objects. See `Quantity` for the pattern. Without both, value objects serialize as hashes instead of the intended format when embedded in arrays/hashes passed to `.to_json`.
+`Data.define` classes with custom `to_json` must also define `as_json` — see `Quantity` in `lib/familyrecipes/quantity.rb` for the pattern and explanation.
 
 ### Stale server PID
 If `bin/dev` fails with "A server is already running", kill the process and remove the PID file:
@@ -228,26 +257,18 @@ Adding gems, creating new files in `app/controllers/concerns/`, or modifying fil
 If I mention a GitHub issue (e.g., "#99"), review it and plan a fix. Close it via the commit message once confirmed.
 
 ### Commit timestamp privacy
-A post-commit hook (`.git/hooks/post-commit`) rewrites commit timestamps for privacy. The hook replaces time-of-day with synthetic UTC timestamps while preserving the calendar date and chronological commit order. Since `.git/hooks/` is not tracked by git, the hook must be installed manually on fresh clones. See `docs/plans/2026-02-23-commit-privacy-design.md` for details.
+A post-commit hook (`.git/hooks/post-commit`) rewrites commit timestamps for privacy. See `docs/plans/2026-02-23-commit-privacy-design.md` for details.
 
 ## Database Setup
 
-Ruby 3.2+ and SQLite3 are required. Install dependencies first:
+Ruby 3.2+ and SQLite3 are required.
 
 ```bash
 bundle install
 rails db:create db:migrate db:seed
 ```
 
-Two databases: primary (`storage/production.sqlite3`), cable (`storage/production_cable.sqlite3`). Development/test use parallel files under `storage/`. `db:seed` imports all markdown files from `db/seeds/recipes/` into the database via `MarkdownImporter` and loads ingredient catalog from `db/seeds/resources/ingredient-catalog.yaml`. The seed is idempotent — safe to re-run.
-
-### Background Jobs
-
-Save-time operations (nutrition calculation, cross-reference cascades) run synchronously
-via `perform_now`. When this becomes too slow, add Solid Queue (`gem 'solid_queue'`) with
-a dedicated database and Puma plugin. Job classes:
-- `RecipeNutritionJob` — recalculates a recipe's `nutrition_data` json from its ingredients
-- `CascadeNutritionJob` — recalculates nutrition for all recipes that reference a given recipe (triggered after a recipe's nutrition changes)
+`db:seed` imports recipes from `db/seeds/recipes/` via `MarkdownImporter` and loads Quick Bites content. Idempotent — safe to re-run.
 
 ## Lint Command
 
@@ -261,7 +282,7 @@ Runs RuboCop on all Ruby files. Configuration is in `.rubocop.yml`. Plugins: `ru
 
 ### RuboCop metric thresholds
 
-Metric thresholds in `.rubocop.yml` are **aspirational** — tighter than what all code currently meets. Methods/classes that exceed them have inline `# rubocop:disable` comments. When writing new code, respect the thresholds. When modifying existing code with a disable, try to refactor below the threshold and remove the disable. The 6 worst offenders are documented in `docs/plans/2026-02-25-rubocop-configuration-design.md`.
+Metric thresholds in `.rubocop.yml` are **aspirational** — tighter than what all code currently meets. Methods/classes that exceed them have inline `# rubocop:disable` comments. When writing new code, respect the thresholds. When modifying existing code with a disable, try to refactor below the threshold and remove the disable.
 
 ## Test Command
 
@@ -276,7 +297,7 @@ ruby -Itest test/controllers/recipes_controller_test.rb              # single fi
 ruby -Itest test/models/recipe_test.rb -n test_requires_title        # single test method
 ```
 
-Test layout: `test/controllers/`, `test/models/`, `test/services/`, `test/jobs/`, `test/integration/`, `test/channels/`, `test/helpers/`, `test/lib/`, plus top-level parser unit tests. `test/test_helper.rb` provides `create_kitchen_and_user` (sets `@kitchen`, `@user`, and tenant), `log_in` (logs in `@user` via dev login), and `kitchen_slug` for controller tests. **Two test hierarchies:** controller/model/integration tests inherit `ActiveSupport::TestCase`; top-level parser unit tests (`test/recipe_test.rb`, `test/nutrition_calculator_test.rb`, etc.) inherit `Minitest::Test` directly and do NOT have ActiveSupport extensions like `assert_not_*`.
+See `test/test_helper.rb` for test setup helpers (`create_kitchen_and_user`, `log_in`, `kitchen_slug`) and the two test hierarchy conventions.
 
 ## Dev Server
 
@@ -316,111 +337,42 @@ curl -X POST "https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/purge_cac
 
 ## Routes
 
-Routes use an optional `(/kitchens/:kitchen_slug)` scope. When exactly one kitchen exists, URLs are root-level (`/recipes/bagels`, `/ingredients`, `/menu`, `/groceries`). When multiple kitchens exist, URLs are scoped (`/kitchens/:slug/recipes/bagels`). `default_url_options` returns `{ kitchen_slug: }` or `{}` based on whether the request arrived via a scoped URL. The root route is handled by `LandingController` — it renders the sole kitchen's homepage directly when one kitchen exists, or a kitchen-list landing page when multiple exist. Kitchen-scoped routes include recipes (`show`, `create`, `update`, `destroy` — no index/new/edit), ingredients (`index`, `edit`), menu (`show`, `select`, `select_all`, `clear`, `state`, `update_quick_bites`, `quick_bites_content`), groceries (`show`, `state`, `check`, `update_custom_items`, `update_aisle_order`, `aisle_order_content`), and nutrition entries (`POST`/`DELETE` at `/nutrition/:ingredient_name`). The backing model for menu/groceries state is `MealPlan` (one row per kitchen). Both the menu and groceries pages require membership. Views use `home_path` (not `kitchen_root_path`) for the homepage link — it returns `root_path` or `kitchen_root_path` depending on mode. Other helpers (`recipe_path`, `ingredients_path`, `menu_path`, `groceries_path`) auto-adapt via `default_url_options`. When adding links, always use the `_path` helpers.
+Routes use an optional `(/kitchens/:kitchen_slug)` scope — see `config/routes.rb` for the full routing table. Key conventions:
+
+- `default_url_options` auto-injects `kitchen_slug` when the request arrived via a scoped URL — all `_path` helpers adapt automatically. Always use `_path` helpers when adding links.
+- Use `home_path` (not `kitchen_root_path`) for homepage links — it returns `root_path` or `kitchen_root_path` depending on mode.
+- `MealPlan` (one row per kitchen) backs both the menu and groceries pages.
 
 ## Architecture
 
-### Two namespaces, no conflict
-
-The Rails app module is `Familyrecipes` (lowercase r); the domain/parser module is `FamilyRecipes` (uppercase R). Different constants, no collision. Parser classes that would collide with ActiveRecord model names (`Recipe`, `Step`, `Ingredient`, `CrossReference`, `QuickBite`) are namespaced under `FamilyRecipes::`. Utility classes without collisions (`LineClassifier`, `RecipeBuilder`, etc.) remain top-level.
+Every class has an architectural header comment explaining its role, collaborators, and constraints. Read them first — this section covers only cross-cutting concerns that no single file explains.
 
 ### Multi-tenant scoping — non-negotiable
 
-All queries MUST go through `current_kitchen` (e.g., `current_kitchen.recipes.find_by!`). Never use unscoped model queries like `Recipe.find_by` — that crosses kitchen boundaries. `Kitchen` is the tenant container; most data tables have a `kitchen_id` FK.
+All queries MUST go through `current_kitchen` (e.g., `current_kitchen.recipes.find_by!`). Never use unscoped model queries like `Recipe.find_by` — that crosses kitchen boundaries.
 
-### Parse-on-save architecture
+### Two namespaces
 
-The parser runs only on the write path (`MarkdownImporter`). The database is the complete source of truth for rendering: `Step#processed_instructions` stores scalable number markup, `CrossReference` records store interleaved recipe links, and `Recipe#nutrition_data` stores pre-computed nutrition as json. Views render entirely from AR data.
-
-### Trusted-header authentication
-
-In production behind Authelia/Caddy, `Remote-User`/`Remote-Email`/`Remote-Name` HTTP headers identify users. `ApplicationController#authenticate_from_headers` reads these via `request.env['HTTP_REMOTE_USER']` (not `request.headers` — `Remote-User` collides with the CGI `REMOTE_USER` variable). Subsequent requests authenticate via the session cookie — headers are only read when establishing a new session. In dev/test (no headers), `DevSessionsController` provides direct login at `/dev/login/:id`. No OmniAuth, no passwords, no login page. The session layer (`User`, `Session`, `Membership`, `Authentication` concern) is auth-agnostic — OAuth providers can be re-added later by adding a new "front door" that calls `start_new_session_for`.
-
-When a new user has zero memberships and exactly one Kitchen exists, `auto_join_sole_kitchen` auto-creates the membership.
-
-### Auth gates
-
-Homepage and recipe pages are public reads. Ingredients, menu, and groceries pages require membership entirely (`require_membership` on all actions). Write paths on recipes also require membership. In development, `auto_login_in_development` logs in as `User.first` automatically (simulating Authelia); `/logout` sets a `skip_dev_auto_login` cookie to test the logged-out experience. `ActionCable::Connection` identifies users from the session cookie; `MealPlanChannel` checks kitchen membership. See `docs/plans/2026-02-25-dev-auth-optimization-design.md` for the current auth design.
-
-### Real-time sync (ActionCable + Turbo Streams)
-
-Meal plan state syncs across browser tabs/devices via ActionCable backed by Solid Cable (separate SQLite database for pub/sub). `MealPlanChannel` broadcasts version numbers on state changes; clients poll for fresh state when their version is stale. Both the Menu and Groceries pages subscribe to the same channel. Connections require authentication (session cookie); subscriptions require kitchen membership.
-
-`RecipeBroadcaster` bridges recipe CRUD events to real-time updates. On recipe create/update/destroy it broadcasts Turbo Stream replacements to the home page (recipe listings), menu page (recipe selector), ingredients page (table + summary bar), and the recipe page itself. It also fires toast notifications via the `toast_controller` Stimulus controller and calls `MealPlanChannel.broadcast_content_changed` to trigger grocery/menu state refresh. On recipe changes it prunes orphaned checked-off entries from the meal plan via `MealPlan#prune_checked_off`. The broadcaster shares the `IngredientRows` concern with `IngredientsController`.
-
-Other services: `RecipeAvailabilityCalculator` determines which recipes have all ingredients available (used by the menu page). `MarkdownValidator` validates recipe markdown before import. `NutritionLabelParser` parses nutrition label data for the `bin/nutrition` CLI tool.
-
-### PWA & Service Worker
-
-The app is installable as a PWA. The service worker (`app/views/pwa/service_worker.js.erb`) is served via `PwaController#service_worker` with `Cache-Control: no-cache` — never place it in `public/` or Cloudflare will edge-cache it with the static file TTL.
-
-**SW caching strategy — opt-in, not opt-out:**
-- `/assets/*`: cache-first (Propshaft-fingerprinted, immutable)
-- `/icons/*`: cache-first (versioned via query param)
-- `/manifest.json`: network-first
-- HTML pages (`Accept: text/html`): network-first with offline fallback at `public/offline.html`
-- Everything else: **pass-through** (no `respondWith`, browser handles normally)
-
-The `API_PATTERN` regex skips grocery, menu, and nutrition API routes as defense-in-depth, but the default is safe — unrecognized requests are never cached by the SW.
-
-`manifest.json` is served via `PwaController#manifest` with `Cache-Control: no-cache`. The grocery shortcut URL (`/groceries`) works with the optional kitchen scope when one kitchen exists.
+Rails app module: `Familyrecipes` (lowercase r). Domain parser module: `FamilyRecipes` (uppercase R). Different constants, no collision. See `lib/familyrecipes.rb`.
 
 ### Caching layers
 
-Three caching layers, each with explicit defaults:
-- **Cloudflare edge**: caches static files from `public/` using Rails' `public_file_server.headers` (1 hour). Propshaft-fingerprinted `/assets/*` get far-future headers from Propshaft's own middleware. `service-worker.js` and `manifest.json` are served via Rails with `no-cache`.
-- **Service worker**: only caches what it explicitly handles (assets, icons, HTML for offline). Everything else passes through.
-- **Browser HTTP cache**: JSON API responses get `Cache-Control: no-store`. Member-only HTML pages (menu, groceries, ingredients) get `private, no-cache`. Public pages use Rails defaults.
+Three layers, each opt-in:
+- **Cloudflare edge**: static files from `public/` (1 hour). Propshaft-fingerprinted `/assets/*` get far-future headers.
+- **Service worker**: assets + icons (cache-first), HTML (network-first with offline fallback). Everything else passes through. See `app/views/pwa/service_worker.js.erb`.
+- **Browser HTTP cache**: JSON API → `no-store`. Member-only HTML → `private, no-cache`. Public pages → Rails defaults.
 
 ### Icon generation
 
-PWA icons in `public/icons/` are committed to the repo and served as static files. To regenerate them from `app/assets/images/favicon.svg`, run `rake pwa:icons` (requires `rsvg-convert` from `librsvg2-bin`). Neither CI nor the Docker build generates icons — they come straight from the repo.
+Run `rake pwa:icons` to regenerate PWA icons from `app/assets/images/favicon.svg` (requires `rsvg-convert` from `librsvg2-bin`).
 
-### Error pages
+### Adding a new editor dialog
 
-Static error pages (`public/404.html`, `public/offline.html`) share `public/error.css` with per-page emoji via body class (`.error-404`, `.error-offline`). Static files in `public/` bypass the Rails CSP middleware, so inline styles and external CSS both work without CSP changes.
-
-### IngredientCatalog overlay model
-
-Seed entries are global (`kitchen_id: nil`); kitchens can add overrides. `lookup_for(kitchen)` merges global + kitchen entries with kitchen taking precedence.
-
-### Hotwire (Stimulus + Turbo)
-
-All client-side JavaScript uses the Hotwire stack: **Stimulus** for behavior, **Turbo Drive** for SPA-like navigation, **Turbo Streams** for server-pushed HTML updates. ES modules are loaded via **importmap-rails** (`config/importmap.rb`) — no Node, no bundler, no build step.
-
-**Stimulus controllers** (`app/javascript/controllers/`):
-- `editor_controller` — generic `<dialog>` lifecycle: open, save (PATCH/POST), dirty-check, close. Configurable via Stimulus values (`url`, `method`, `on-success`, `body-key`). Simple dialogs need zero custom JS — just data attributes on the `<dialog>`. Custom dialogs (nutrition editor) dispatch lifecycle events (`editor:collect`, `editor:save`, `editor:modified`, `editor:reset`).
-- `nutrition_editor_controller` — hooks into editor lifecycle events for the multi-row nutrition form on the ingredients page.
-- `grocery_sync_controller` — Thin wrapper around `MealPlanSync` for the Groceries page. Delegates sync to the shared utility, exposes `sendAction` and `urls` for `grocery_ui_controller`.
-- `grocery_ui_controller` — Groceries page shopping list rendering, custom items, and checked items. Communicates with `grocery_sync_controller` via `this.application.getControllerForElementAndIdentifier()`.
-- `menu_controller` — Menu page recipe/quick-bite selection, checkbox sync, availability dots, and ingredient popovers. Delegates sync to `MealPlanSync`. Handles select/select-all/clear actions.
-- `recipe_state_controller` — recipe page scaling, cross-off, and localStorage state persistence.
-- `wake_lock_controller` — Screen Wake Lock API for recipe pages (keeps screen on while cooking).
-- `ingredient_table_controller` — ingredients page search filtering, status filtering (all/complete/missing nutrition/missing density), sortable columns, and keyboard navigation.
-- `toast_controller` — fires a toast notification on connect and removes itself. Used by `RecipeBroadcaster`'s Turbo Stream broadcasts to show notifications on recipe changes.
-
-**Shared utilities** (`app/javascript/utilities/`): `meal_plan_sync.js` (ActionCable sync: subscription, version-based polling, heartbeat, localStorage cache, offline queue, Turbo Stream interception — used by both `menu_controller` and `grocery_sync_controller`), `notify.js` (toast notifications), `editor_utils.js` (CSRF token helper), `vulgar_fractions.js` (number display).
-
-**Turbo Drive** is enabled globally for SPA-like page transitions. The progress bar is disabled (`Turbo.config.drive.progressBarDelay = Infinity`) because its inline styles conflict with the strict CSP.
-
-**Turbo Streams** broadcast menu page content changes (quick bites edits) via `Turbo::StreamsChannel`. The menu view subscribes with `turbo_stream_from`. When quick bites are saved, the server broadcasts a `replace` targeting `#recipe-selector` with fresh HTML. Meal plan *state* sync (selections, checks) still uses the version-polling ActionCable channel — Turbo Streams handle only content structure changes.
-
-To add a new simple editor dialog, use `render layout: 'shared/editor_dialog'` with a textarea block and Stimulus data attributes — no JS changes needed. For custom content, add a controller that listens for the editor lifecycle events.
-
-### Key conventions
-
-- Domain classes in `lib/familyrecipes/` are loaded via `config/initializers/familyrecipes.rb` (not Zeitwerk-autoloaded).
-- Propshaft serves assets from `app/assets/`. importmap-rails handles JS module loading — no build step, no bundling, no Node.
-- Views use `content_for` blocks for page-specific titles, head tags, and body attributes.
-- Cross-references in views are rendered using duck typing (`respond_to?(:target_slug)`).
-- Edit UI is wrapped in `current_kitchen.member?(current_user)` checks — read-only visitors see no edit controls.
-- `RecipesHelper` handles Markdown rendering, scalable number display, and nutrition formatting. `IngredientsHelper` handles nutrition summaries, density display, status badges, and aisle labels.
-- `config/site.yml` holds site identity; loaded as `Rails.configuration.site`.
-- `MarkdownImporter` requires `kitchen:` keyword. `CrossReferenceUpdater.rename_references` also requires `kitchen:`.
+Use `render layout: 'shared/editor_dialog'` with Stimulus data attributes — no JS needed. For custom content, add a controller listening to editor lifecycle events (see `editor_controller.js`).
 
 ### Design History
 
-`docs/plans/` contains dated design documents (`*-design.md`) and implementation plans (`*-plan.md`) for major features and architectural decisions. Files are date-prefixed (e.g., `2026-02-23-web-nutrition-editor-design.md`). Consult these when working on related features to understand past decisions.
+`docs/plans/` contains dated design documents (`*-design.md`) and implementation plans (`*-plan.md`) for major features and architectural decisions. Consult when working on related features.
 
 ## Recipe Format
 
@@ -464,7 +416,7 @@ Optional footer content (notes, source, etc.)
 - **Makes** (optional) — `Makes: <number> <unit noun>`. Unit noun required when present. Represents countable output (e.g., `Makes: 30 gougères`).
 - **Serves** (optional) — `Serves: <number>`. People count only, no unit noun.
 - A recipe can have both Makes and Serves, just one, or neither (Category is always required).
-- `NutritionCalculator` uses Serves (preferred) or Makes quantity for per-serving nutrition. `Recipe` exposes `makes_quantity` and `makes_unit_noun` for the parsed components.
+- `NutritionCalculator` uses Serves (preferred) or Makes quantity for per-serving nutrition.
 - In HTML, front matter renders as an inline metadata line: `Category · Makes X · Serves Y` (class `recipe-meta`), with the category linking to its homepage section.
 
 **Recipe categories** are derived from directory names under `db/seeds/recipes/` (e.g., `db/seeds/recipes/Bread/` → category "Bread") and validated against the `Category:` front matter field. To add a new category, create a new subdirectory.
@@ -476,7 +428,7 @@ Quick Bites are "grocery bundles" (not recipes) — simple name + ingredient lis
 ## Category Name
   - Recipe Name: Ingredient1, Ingredient2
 ```
-At seed time, the file content is stored in `Kitchen#quick_bites_content` and is web-editable via a dialog on the menu page. `FamilyRecipes.parse_quick_bites_content(string)` parses the content.
+Content is stored in `Kitchen#quick_bites_content` and web-editable via a dialog on the menu page. See `FamilyRecipes::QuickBite` for the parsed representation.
 
 ## Nutrition Data
 
@@ -504,11 +456,7 @@ Flour (all-purpose):
       description: "Wheat flour, white, all-purpose, enriched, unbleached"
 ```
 
-**Key principles:**
-- `basis_grams` is the gram weight the nutrient values correspond to (not necessarily 100g)
-- Volume units (cup, tbsp, tsp) are **derived from `density` at runtime** — never stored as portions
-- `portions` only holds non-volume units like `stick`, `~unitless`, `slice`, etc.
-- `NutritionCalculator` resolves units in order: weight > named portion > density-derived volume
+See `FamilyRecipes::NutritionCalculator` for unit resolution logic and `IngredientCatalog` for the overlay model.
 
 **Entry tool:**
 
@@ -519,5 +467,3 @@ bin/nutrition --manual "Flour"  # Force manual entry from package labels
 ```
 
 `bin/nutrition` auto-detects `USDA_API_KEY` (from `.env` or environment): when present, it searches the USDA SR Legacy dataset first and falls back to manual entry; when absent, it defaults to manual entry from package labels. Existing entries open in an edit menu for surgical fixes (e.g., adding missing portions). Requires `USDA_API_KEY` for USDA mode (free at https://fdc.nal.usda.gov/api-key-signup).
-
-During `db:seed`, `BuildValidator` checks that all recipe ingredients have entries in the ingredient catalog and prints warnings for any that are missing.

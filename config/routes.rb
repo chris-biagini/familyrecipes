@@ -1,5 +1,14 @@
 # frozen_string_literal: true
 
+# All tenant-scoped routes live inside an optional (/kitchens/:kitchen_slug) scope.
+# When exactly one Kitchen exists, URLs are root-level (/recipes/bagels, /menu).
+# When multiple Kitchens exist, URLs are scoped (/kitchens/ours/recipes/bagels).
+#
+# ApplicationController#default_url_options auto-injects kitchen_slug when the
+# request arrived via a scoped URL, so all _path helpers adapt transparently.
+# Use home_path (not kitchen_root_path) for homepage links — it picks the right root.
+# LandingController handles the root URL: renders the sole kitchen's homepage
+# directly, or a kitchen-list page when multiple exist.
 Rails.application.routes.draw do # rubocop:disable Metrics/BlockLength
   get 'up', to: 'rails/health#show', as: :rails_health_check
   get 'manifest.json', to: 'pwa#manifest', as: :pwa_manifest

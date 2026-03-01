@@ -1,3 +1,15 @@
+// Service worker caching strategy — opt-in, not opt-out.
+//
+// /assets/*:     cache-first (Propshaft-fingerprinted, immutable)
+// /icons/*:      cache-first (versioned via query param)
+// /manifest.json: network-first
+// HTML pages:    network-first with offline fallback (public/offline.html)
+// Everything else: pass-through (no respondWith, browser handles normally)
+//
+// API_PATTERN skips grocery, menu, and nutrition API routes as defense-in-depth,
+// but the default is already safe — unrecognized requests are never cached.
+// Served via PwaController with Cache-Control: no-cache — never place this file
+// in public/ or Cloudflare will edge-cache it with the static file TTL.
 var CACHE_NAME = 'familyrecipes-v5';
 
 var API_PATTERN = /^(\/kitchens\/[^/]+)?\/(groceries\/(state|check|custom_items|aisle_order|aisle_order_content)|menu\/(state|select|select_all|clear|quick_bites|quick_bites_content)|nutrition\/)/;
