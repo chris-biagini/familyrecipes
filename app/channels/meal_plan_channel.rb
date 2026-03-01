@@ -6,6 +6,9 @@ class MealPlanChannel < ApplicationCable::Channel
     return reject unless authorized?(kitchen)
 
     stream_for kitchen
+    ActsAsTenant.with_tenant(kitchen) do
+      self.class.broadcast_version(kitchen, MealPlan.for_kitchen(kitchen).lock_version)
+    end
   end
 
   def self.broadcast_version(kitchen, version)

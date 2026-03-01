@@ -3,6 +3,8 @@
 class RecipesController < ApplicationController
   before_action :require_membership, only: %i[create update destroy]
 
+  rescue_from ActiveRecord::StaleObjectError, with: :handle_stale_record
+
   def show
     @recipe = current_kitchen.recipes
                              .includes(steps: [:ingredients, { cross_references: :target_recipe }])
@@ -46,7 +48,8 @@ class RecipesController < ApplicationController
     end
     recipe.update!(edited_at: Time.current)
     Category.cleanup_orphans(current_kitchen)
-    MealPlan.for_kitchen(current_kitchen).prune_checked_off
+    plan = MealPlan.for_kitchen(current_kitchen)
+    plan.with_optimistic_retry { plan.prune_checked_off }
 
     RecipeBroadcaster.broadcast(kitchen: current_kitchen, action: :updated, recipe_title: recipe.title, recipe: recipe)
     response_json = { redirect_url: recipe_path(recipe.slug) }
@@ -63,7 +66,8 @@ class RecipesController < ApplicationController
     RecipeBroadcaster.notify_recipe_deleted(@recipe, recipe_title: @recipe.title)
     @recipe.destroy!
     Category.cleanup_orphans(current_kitchen)
-    MealPlan.for_kitchen(current_kitchen).prune_checked_off
+    plan = MealPlan.for_kitchen(current_kitchen)
+    plan.with_optimistic_retry { plan.prune_checked_off }
 
     RecipeBroadcaster.broadcast(kitchen: current_kitchen, action: :deleted,
                                 recipe_title: @recipe.title)
@@ -71,5 +75,12 @@ class RecipesController < ApplicationController
     response_json = { redirect_url: home_path }
     response_json[:updated_references] = updated_references if updated_references.any?
     render json: response_json
+  end
+
+  private
+
+  def handle_stale_record
+    render json: { error: 'Meal plan was modified by another request. Please refresh.' },
+           status: :conflict
   end
 end

@@ -169,7 +169,7 @@ export default class extends Controller {
         const unit = isVulgarSingular(scaled) ? unitSingular : unitPlural
         const pretty = formatVulgar(scaled)
         const span = li.querySelector('.quantity')
-        if (span) span.textContent = pretty + (unit ? ' ' + unit : '')
+        if (span) span.textContent = pretty + (unit ? ` ${unit}` : '')
 
         const nameEl = li.querySelector('.ingredient-name')
         if (nameEl && li.dataset.nameSingular) {
@@ -184,7 +184,7 @@ export default class extends Controller {
       const scaled = base * factor
       const nutrient = td.dataset.nutrient
       const unit = (nutrient === 'sodium' || nutrient === 'cholesterol') ? 'mg' : (nutrient === 'calories' ? '' : 'g')
-      td.textContent = Math.round(scaled) + unit
+      td.textContent = `${Math.round(scaled)}${unit}`
     })
 
     this.element.querySelectorAll('.scalable[data-base-value]').forEach(span => {
@@ -201,7 +201,7 @@ export default class extends Controller {
           : Math.round(scaled * 100) / 100
         span.textContent = String(pretty)
         span.classList.add('scaled')
-        span.title = 'Originally: ' + span.dataset.originalText
+        span.title = `Originally: ${span.dataset.originalText}`
       }
     })
 
@@ -219,14 +219,14 @@ export default class extends Controller {
         scalableSpan.textContent = scalableSpan.dataset.originalText
         scalableSpan.classList.remove('scaled')
         scalableSpan.removeAttribute('title')
-        unitSpan.textContent = ' ' + (isVulgarSingular(base) ? singular : plural)
+        unitSpan.textContent = ` ${isVulgarSingular(base) ? singular : plural}`
       } else {
         const pretty = formatVulgar(scaled)
         const unit = isVulgarSingular(scaled) ? singular : plural
         scalableSpan.textContent = pretty
         scalableSpan.classList.add('scaled')
-        scalableSpan.title = 'Originally: ' + scalableSpan.dataset.originalText
-        unitSpan.textContent = ' ' + unit
+        scalableSpan.title = `Originally: ${scalableSpan.dataset.originalText}`
+        unitSpan.textContent = ` ${unit}`
       }
     })
   }

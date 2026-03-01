@@ -33,7 +33,7 @@ class QuickBiteTest < Minitest::Test
     # "and" in ingredient names should not cause splitting
     qb = FamilyRecipes::QuickBite.new(text_source: 'Snack: Salt and Vinegar Chips', category: 'Snacks')
 
-    assert_equal 1, qb.ingredients.length
+    assert_equal 1, qb.ingredients.size
     assert_equal 'Salt and Vinegar Chips', qb.ingredients[0]
   end
 
@@ -41,7 +41,7 @@ class QuickBiteTest < Minitest::Test
     # "with" in ingredient names should not cause splitting
     qb = FamilyRecipes::QuickBite.new(text_source: 'Crackers: Crackers with Everything Seasoning', category: 'Snacks')
 
-    assert_equal 1, qb.ingredients.length
+    assert_equal 1, qb.ingredients.size
     assert_equal 'Crackers with Everything Seasoning', qb.ingredients[0]
   end
 
@@ -86,7 +86,7 @@ class QuickBiteTest < Minitest::Test
     qb = FamilyRecipes::QuickBite.new(text_source: 'PB&J: Peanut butter, Jelly, Bread', category: 'Sandwiches')
     iwq = qb.ingredients_with_quantities
 
-    assert_equal 3, iwq.length
+    assert_equal 3, iwq.size
     iwq.each do |name, amounts|
       assert_equal [nil], amounts, "#{name} should have [nil] amounts"
     end

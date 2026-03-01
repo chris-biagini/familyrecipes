@@ -97,7 +97,7 @@ class ScalableNumberPreprocessorTest < Minitest::Test
     # Second number (2) should NOT be wrapped
     assert_includes result, ' 2 batches.'
     # Only one scalable span
-    assert_equal 1, result.scan('scalable').length
+    assert_equal 1, result.scan('scalable').size
   end
 
   def test_yield_line_with_no_number

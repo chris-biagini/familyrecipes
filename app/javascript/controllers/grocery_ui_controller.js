@@ -10,15 +10,15 @@ function formatAmounts(amounts) {
 
   const parts = amounts.map(([value, unit]) => {
     const formatted = formatNumber(value)
-    return unit ? formatted + "\u00a0" + unit : formatted
+    return unit ? `${formatted}\u00a0${unit}` : formatted
   })
-  return "(" + parts.join(" + ") + ")"
+  return `(${parts.join(" + ")})`
 }
 
 export default class extends Controller {
   connect() {
     this.element.classList.remove("hidden-until-js")
-    this.aisleCollapseKey = "grocery-aisles-" + this.element.dataset.kitchenSlug
+    this.aisleCollapseKey = `grocery-aisles-${this.element.dataset.kitchenSlug}`
     this.boundHandlers = new Map()
 
     this.bindCustomItemInput()
@@ -76,8 +76,7 @@ export default class extends Controller {
       return
     }
 
-    for (let i = 0; i < aisles.length; i++) {
-      const aisle = aisles[i]
+    for (const aisle of aisles) {
       const items = shoppingList[aisle]
       const isCollapsed = collapsed.indexOf(aisle) !== -1
 
@@ -87,7 +86,7 @@ export default class extends Controller {
       if (!isCollapsed) details.open = true
 
       const summary = document.createElement("summary")
-      summary.appendChild(document.createTextNode(aisle + " "))
+      summary.appendChild(document.createTextNode(`${aisle} `))
       const aisleCount = document.createElement("span")
       aisleCount.className = "aisle-count"
       summary.appendChild(aisleCount)
@@ -95,8 +94,7 @@ export default class extends Controller {
 
       const ul = document.createElement("ul")
 
-      for (let j = 0; j < items.length; j++) {
-        const item = items[j]
+      for (const item of items) {
         const amountStr = formatAmounts(item.amounts)
 
         const li = document.createElement("li")
@@ -111,7 +109,7 @@ export default class extends Controller {
 
         const textSpan = document.createElement("span")
         textSpan.className = "item-text"
-        textSpan.textContent = amountStr ? item.name + " " : item.name
+        textSpan.textContent = amountStr ? `${item.name} ` : item.name
 
         if (amountStr) {
           const amountNode = document.createElement("span")
@@ -126,7 +124,7 @@ export default class extends Controller {
         li.appendChild(label)
 
         if (item.sources && item.sources.length > 0) {
-          li.title = 'Needed for: ' + item.sources.join(', ')
+          li.title = `Needed for: ${item.sources.join(', ')}`
         }
 
         ul.appendChild(li)
@@ -144,8 +142,7 @@ export default class extends Controller {
     const container = document.getElementById("custom-items-list")
     container.textContent = ""
 
-    for (let i = 0; i < items.length; i++) {
-      const name = items[i]
+    for (const name of items) {
       const li = document.createElement("li")
 
       const span = document.createElement("span")
@@ -155,7 +152,7 @@ export default class extends Controller {
       btn.className = "custom-item-remove"
       btn.type = "button"
       btn.textContent = "\u00d7"
-      btn.setAttribute("aria-label", "Remove " + name)
+      btn.setAttribute("aria-label", `Remove ${name}`)
       btn.dataset.item = name
 
       li.appendChild(span)
@@ -195,9 +192,9 @@ export default class extends Controller {
     } else {
       countEl.classList.remove("all-done")
       if (checked > 0) {
-        countEl.textContent = remaining + " of " + total + " items needed"
+        countEl.textContent = `${remaining} of ${total} items needed`
       } else {
-        countEl.textContent = total + (total === 1 ? " item" : " items")
+        countEl.textContent = `${total} ${total === 1 ? "item" : "items"}`
       }
     }
   }
@@ -221,7 +218,7 @@ export default class extends Controller {
         countSpan.textContent = "\u2713"
         countSpan.classList.add("aisle-done")
       } else {
-        countSpan.textContent = "(" + remaining + ")"
+        countSpan.textContent = `(${remaining})`
         countSpan.classList.remove("aisle-done")
       }
     })

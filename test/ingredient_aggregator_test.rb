@@ -10,7 +10,7 @@ class IngredientAggregatorTest < Minitest::Test
     ]
     result = IngredientAggregator.aggregate_amounts(ingredients)
 
-    assert_equal 1, result.length
+    assert_equal 1, result.size
     assert_in_delta 200.0, result[0].value
     assert_equal 'g', result[0].unit
   end
@@ -22,7 +22,7 @@ class IngredientAggregatorTest < Minitest::Test
     ]
     result = IngredientAggregator.aggregate_amounts(ingredients)
 
-    assert_equal 2, result.length
+    assert_equal 2, result.size
     units = result.map(&:unit).sort
 
     assert_includes units, 'g'
@@ -57,7 +57,7 @@ class IngredientAggregatorTest < Minitest::Test
     ]
     result = IngredientAggregator.aggregate_amounts(ingredients)
 
-    assert_equal 1, result.length
+    assert_equal 1, result.size
     assert_in_delta 3.0, result[0].value
     assert_nil result[0].unit
   end
@@ -69,7 +69,7 @@ class IngredientAggregatorTest < Minitest::Test
     ]
     result = IngredientAggregator.aggregate_amounts(ingredients)
 
-    assert_equal 1, result.length
+    assert_equal 1, result.size
     assert_in_delta 0.75, result[0].value
     assert_equal 'cup', result[0].unit
   end

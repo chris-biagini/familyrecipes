@@ -160,7 +160,7 @@ export default class extends Controller {
 
       const label = missing === 0
         ? 'All ingredients on hand'
-        : 'Missing ' + missing + ': ' + info.missing_names.join(', ')
+        : `Missing ${missing}: ${info.missing_names.join(', ')}`
       dot.setAttribute('aria-label', label)
     })
   }
@@ -193,7 +193,7 @@ export default class extends Controller {
     if (info.missing_names.length > 0) {
       const missingEl = document.createElement('p')
       missingEl.className = 'popover-missing'
-      missingEl.textContent = 'Missing: ' + info.missing_names.join(', ')
+      missingEl.textContent = `Missing: ${info.missing_names.join(', ')}`
       popover.appendChild(missingEl)
     }
 

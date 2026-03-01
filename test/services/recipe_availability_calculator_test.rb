@@ -65,8 +65,7 @@ class RecipeAvailabilityCalculatorTest < ActiveSupport::TestCase
     result = RecipeAvailabilityCalculator.new(kitchen: @kitchen, checked_off: []).call
 
     assert_equal 2, result['focaccia'][:missing]
-    assert_includes result['focaccia'][:missing_names], 'Flour'
-    assert_includes result['focaccia'][:missing_names], 'Salt'
+    assert_equal %w[Flour Salt], result['focaccia'][:missing_names].sort
     assert_not_includes result['focaccia'][:missing_names], 'Water'
   end
 
@@ -96,8 +95,7 @@ class RecipeAvailabilityCalculatorTest < ActiveSupport::TestCase
     assert_equal ['Salt'], result['focaccia'][:missing_names]
 
     assert_equal 2, result['bagels'][:missing]
-    assert_includes result['bagels'][:missing_names], 'Salt'
-    assert_includes result['bagels'][:missing_names], 'Yeast'
+    assert_equal %w[Salt Yeast], result['bagels'][:missing_names].sort
   end
 
   test 'includes ingredient names list per recipe' do
@@ -184,7 +182,7 @@ class RecipeAvailabilityCalculatorTest < ActiveSupport::TestCase
     ).call
 
     assert_equal 1, result['pizza'][:missing]
-    assert_includes result['pizza'][:missing_names], 'Flour'
+    assert_equal ['Flour'], result['pizza'][:missing_names]
     assert_not_includes result['pizza'][:missing_names], 'Water'
   end
 end

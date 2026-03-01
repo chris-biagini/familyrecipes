@@ -33,7 +33,7 @@ class RecipeTest < Minitest::Test
     refute_nil butter
     amounts = butter[1]
 
-    assert_equal 1, amounts.length
+    assert_equal 1, amounts.size
     assert_in_delta 200.0, amounts[0].value
     assert_equal 'g', amounts[0].unit
   end
@@ -96,7 +96,7 @@ class RecipeTest < Minitest::Test
     refute_nil butter
     amounts = butter[1]
 
-    assert_equal 2, amounts.length
+    assert_equal 2, amounts.size
     units = amounts.map(&:unit).sort
 
     assert_includes units, 'g'
@@ -167,7 +167,7 @@ class RecipeTest < Minitest::Test
     refute_nil egg
     amounts = egg[1]
 
-    assert_equal 1, amounts.length
+    assert_equal 1, amounts.size
     assert_in_delta 3.0, amounts[0].value
     assert_nil amounts[0].unit
   end

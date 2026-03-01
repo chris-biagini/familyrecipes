@@ -21,7 +21,7 @@ class RecipeBuilderTest < Minitest::Test
 
     assert_equal 'Simple Recipe', result[:title]
     assert_nil result[:description]
-    assert_equal 1, result[:steps].length
+    assert_equal 1, result[:steps].size
     assert_nil result[:footer]
   end
 
@@ -40,7 +40,7 @@ class RecipeBuilderTest < Minitest::Test
 
     assert_equal 'Cookies', result[:title]
     assert_equal 'Delicious chocolate chip cookies.', result[:description]
-    assert_equal 1, result[:steps].length
+    assert_equal 1, result[:steps].size
   end
 
   def test_parses_step_tldr
@@ -72,7 +72,7 @@ class RecipeBuilderTest < Minitest::Test
     result = build_recipe(text)
     ingredients = result[:steps][0][:ingredients]
 
-    assert_equal 2, ingredients.length
+    assert_equal 2, ingredients.size
     assert_equal 'Flour', ingredients[0][:name]
     assert_equal '250 g', ingredients[0][:quantity]
     assert_equal 'Sugar', ingredients[1][:name]
@@ -116,7 +116,7 @@ class RecipeBuilderTest < Minitest::Test
 
     result = build_recipe(text)
 
-    assert_equal 3, result[:steps].length
+    assert_equal 3, result[:steps].size
     assert_equal 'Step one', result[:steps][0][:tldr]
     assert_equal 'Step two', result[:steps][1][:tldr]
     assert_equal 'Step three', result[:steps][2][:tldr]
@@ -184,7 +184,7 @@ class RecipeBuilderTest < Minitest::Test
 
     result = build_recipe(text)
 
-    assert_equal 2, result[:steps].length
+    assert_equal 2, result[:steps].size
     assert_equal '', result[:steps][0][:instructions]
   end
 
@@ -369,7 +369,7 @@ class RecipeBuilderTest < Minitest::Test
 
     result = build_recipe(text)
 
-    assert_equal 2, result[:steps].length
+    assert_equal 2, result[:steps].size
     assert_equal 'Step one', result[:steps][0][:tldr]
     assert_equal 'Step two', result[:steps][1][:tldr]
   end
