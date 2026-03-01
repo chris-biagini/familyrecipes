@@ -23,7 +23,10 @@ module FamilyRecipes
       value_str = raw.strip
       value_str = value_str.split(/[-–]/).last.strip if value_str.match?(/[-–]/)
 
-      QUANTITY_FRACTIONS[value_str] || value_str
+      return QUANTITY_FRACTIONS[value_str] if QUANTITY_FRACTIONS.key?(value_str)
+      return NumericParsing.parse_fraction(value_str).to_s if value_str.match?(NumericParsing::VULGAR_PATTERN)
+
+      value_str
     end
 
     def initialize(name:, quantity: nil, prep_note: nil)

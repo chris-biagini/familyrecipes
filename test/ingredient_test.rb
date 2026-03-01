@@ -77,6 +77,24 @@ class IngredientTest < Minitest::Test
     assert_equal '0.75', ingredient.quantity_value
   end
 
+  def test_quantity_value_vulgar_half
+    ingredient = FamilyRecipes::Ingredient.new(name: 'Butter', quantity: '½ cup')
+
+    assert_equal '0.5', ingredient.quantity_value
+  end
+
+  def test_quantity_value_vulgar_quarter
+    ingredient = FamilyRecipes::Ingredient.new(name: 'Oil', quantity: '¼ cup')
+
+    assert_equal '0.25', ingredient.quantity_value
+  end
+
+  def test_quantity_value_mixed_vulgar
+    ingredient = FamilyRecipes::Ingredient.new(name: 'Flour', quantity: '2½ cups')
+
+    assert_equal '2.5', ingredient.quantity_value
+  end
+
   # Representative integration tests for unit normalization
   # (Inflector.normalize_unit is exhaustively tested in inflector_test.rb)
   def test_quantity_unit_downcases
