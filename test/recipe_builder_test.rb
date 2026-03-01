@@ -351,6 +351,68 @@ class RecipeBuilderTest < Minitest::Test
     assert_equal 'Categroy: Dessert', result[:description]
   end
 
+  def test_builds_implicit_step_when_no_headers
+    text = <<~RECIPE
+      # Nacho Cheese
+
+      Category: Snacks
+
+      - Cheddar, 225 g
+      - Milk, 225 g
+
+      Combine all ingredients.
+    RECIPE
+
+    result = build_recipe(text)
+
+    assert_equal 1, result[:steps].size
+    assert_nil result[:steps][0][:tldr]
+    assert_equal 2, result[:steps][0][:ingredients].size
+    assert_includes result[:steps][0][:instructions], 'Combine all ingredients.'
+  end
+
+  def test_implicit_step_with_footer
+    text = <<~RECIPE
+      # Simple
+
+      Category: Test
+
+      - Salt
+
+      Season.
+
+      ---
+
+      A note.
+    RECIPE
+
+    result = build_recipe(text)
+
+    assert_equal 1, result[:steps].size
+    assert_nil result[:steps][0][:tldr]
+    assert_equal 'A note.', result[:footer]
+  end
+
+  def test_explicit_steps_still_work
+    text = <<~RECIPE
+      # Recipe
+
+      ## Step one
+
+      Do thing.
+
+      ## Step two
+
+      Do other thing.
+    RECIPE
+
+    result = build_recipe(text)
+
+    assert_equal 2, result[:steps].size
+    assert_equal 'Step one', result[:steps][0][:tldr]
+    assert_equal 'Step two', result[:steps][1][:tldr]
+  end
+
   def test_consecutive_blank_lines_ignored
     text = <<~RECIPE
       # Recipe

@@ -75,9 +75,15 @@ class RecipeBuilder
   end
 
   def parse_steps
-    steps = []
-
     skip_blanks
+
+    return [parse_implicit_step] if !at_end? && peek.type != :step_header && peek.type != :divider
+
+    parse_explicit_steps
+  end
+
+  def parse_explicit_steps
+    steps = []
 
     until at_end? || peek.type == :divider
       if peek.type == :step_header
@@ -91,16 +97,11 @@ class RecipeBuilder
     steps
   end
 
-  def parse_step # rubocop:disable Metrics/MethodLength
-    header_token = advance
-    tldr = header_token.content[0]
-
+  def collect_step_body(stop_at: %i[divider])
     ingredients = []
     instruction_lines = []
 
-    skip_blanks
-
-    until at_end? || peek.type == :step_header || peek.type == :divider
+    until at_end? || stop_at.include?(peek.type)
       token = advance
 
       case token.type
@@ -108,17 +109,19 @@ class RecipeBuilder
         ingredients << IngredientParser.parse(token.content[0])
       when :prose
         instruction_lines << token.content
-      when :blank
-        next
       end
     end
 
-    {
-      tldr: tldr,
-      ingredients: ingredients,
-      instructions: instruction_lines.join("\n\n")
-    }
-  end # rubocop:enable Metrics/MethodLength
+    { tldr: nil, ingredients: ingredients, instructions: instruction_lines.join("\n\n") }
+  end
+
+  def parse_implicit_step = collect_step_body
+
+  def parse_step
+    tldr = advance.content[0]
+    skip_blanks
+    collect_step_body(stop_at: %i[step_header divider]).merge(tldr: tldr)
+  end
 
   def parse_footer # rubocop:disable Metrics/MethodLength
     skip_blanks
