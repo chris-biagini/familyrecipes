@@ -77,7 +77,10 @@ class RecipeBuilder
   def parse_steps
     skip_blanks
 
-    return [parse_implicit_step] if !at_end? && peek.type != :step_header && peek.type != :divider
+    if !at_end? && peek.type != :step_header && peek.type != :divider
+      step = parse_implicit_step
+      return step[:ingredients].any? ? [step] : []
+    end
 
     parse_explicit_steps
   end

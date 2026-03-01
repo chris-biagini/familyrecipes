@@ -366,6 +366,47 @@ class MarkdownImporterTest < ActiveSupport::TestCase
     end
   end
 
+  test 'imports implicit step recipe without L2 headers' do
+    markdown = <<~MARKDOWN
+      # Nacho Cheese
+
+      Worth the effort.
+
+      Category: Snacks
+      Makes: 1 cup
+      Serves: 4
+
+      - Cheddar, 225 g: Cut into small cubes.
+      - Milk, 225 g
+      - Sodium citrate, 8 g
+      - Salt, 2 g
+      - Pickled jalapeños, 40 g
+
+      Combine all ingredients in saucepan.
+
+      Warm over low heat, stirring occasionally, until cheese is mostly melted. Puree with immersion blender.
+
+      ---
+
+      Based on a recipe from ChefSteps.
+    MARKDOWN
+
+    recipe = MarkdownImporter.import(markdown, kitchen: @kitchen)
+
+    assert_equal 'Nacho Cheese', recipe.title
+    assert_equal 1, recipe.steps.size
+
+    step = recipe.steps.first
+
+    assert_nil step.title
+    assert_equal 0, step.position
+    assert_equal 5, step.ingredients.count
+    assert_equal 'Cheddar', step.ingredients.first.name
+    assert_includes step.instructions, 'Combine all ingredients'
+    assert_includes step.processed_instructions, 'Combine all ingredients'
+    assert_includes recipe.footer, 'ChefSteps'
+  end
+
   test 'category is reused when it already exists' do
     bread1 = <<~MARKDOWN
       # Focaccia

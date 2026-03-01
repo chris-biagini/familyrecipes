@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 8) do
+ActiveRecord::Schema[8.1].define(version: 9) do
   create_table "categories", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "kitchen_id", null: false
@@ -146,7 +146,7 @@ ActiveRecord::Schema[8.1].define(version: 8) do
     t.integer "position", null: false
     t.text "processed_instructions"
     t.integer "recipe_id", null: false
-    t.string "title", null: false
+    t.string "title"
     t.datetime "updated_at", null: false
     t.index ["recipe_id", "position"], name: "index_steps_on_recipe_id_and_position", unique: true
   end
