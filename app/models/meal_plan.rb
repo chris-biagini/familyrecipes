@@ -57,12 +57,12 @@ class MealPlan < ApplicationRecord
     end
   end
 
-  def prune_checked_off
+  def prune_checked_off(force_save: false)
     ensure_state_keys
     visible = visible_item_names
     before_size = state['checked_off'].size
     state['checked_off'].select! { |item| visible.include?(item) }
-    save! if state['checked_off'].size < before_size
+    save! if force_save || state['checked_off'].size < before_size
   end
 
   private
@@ -74,10 +74,13 @@ class MealPlan < ApplicationRecord
   def apply_select(type:, slug:, selected:, **)
     key = type == 'recipe' ? 'selected_recipes' : 'selected_quick_bites'
     adding = truthy?(selected)
-    toggle_array(key, slug, adding)
-    return if adding
 
-    prune_checked_off
+    if adding
+      toggle_array(key, slug, true)
+    else
+      toggle_array(key, slug, false, save: false)
+      prune_checked_off(force_save: true)
+    end
   end
 
   def apply_check(item:, checked:, **)
@@ -94,16 +97,16 @@ class MealPlan < ApplicationRecord
     Set.new(names)
   end
 
-  def toggle_array(key, value, add)
+  def toggle_array(key, value, add, save: true)
     list = state[key]
     already_present = list.include?(value)
 
     if add && !already_present
       list << value
-      save!
+      save! if save
     elsif !add && already_present
       list.delete(value)
-      save!
+      save! if save
     end
   end
 
