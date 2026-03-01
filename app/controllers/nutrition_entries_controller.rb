@@ -33,7 +33,7 @@ class NutritionEntriesController < ApplicationController
   private
 
   def ingredient_name
-    params[:ingredient_name].tr('-', ' ')
+    params[:ingredient_name]
   end
 
   def catalog_params

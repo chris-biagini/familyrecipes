@@ -70,14 +70,14 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
     assert_equal [{ 'type' => 'web', 'note' => 'Entered via ingredients page' }], entry.sources
   end
 
-  test 'upsert decodes hyphenated ingredient names' do
-    post nutrition_entry_upsert_path('olive-oil', kitchen_slug: kitchen_slug),
+  test 'upsert preserves hyphenated ingredient names' do
+    post nutrition_entry_upsert_path('all-purpose flour', kitchen_slug: kitchen_slug),
          params: { nutrients: VALID_NUTRIENTS, density: nil, portions: {}, aisle: nil },
          as: :json
 
     assert_response :success
 
-    entry = IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'olive oil')
+    entry = IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'all-purpose flour')
 
     assert_predicate entry, :present?
   end

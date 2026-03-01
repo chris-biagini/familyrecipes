@@ -399,13 +399,11 @@ export default class extends Controller {
   }
 
   nutritionUrl(name) {
-    const slug = name.replace(/ /g, "-")
-    return this.baseUrlValue.replace("__NAME__", encodeURIComponent(slug))
+    return this.baseUrlValue.replace("__NAME__", encodeURIComponent(name))
   }
 
   editUrlFor(name) {
-    const slug = name.replace(/ /g, "-")
-    return this.editUrlValue.replace("__NAME__", encodeURIComponent(slug))
+    return this.editUrlValue.replace("__NAME__", encodeURIComponent(name))
   }
 
   disableSaveButtons(text) {

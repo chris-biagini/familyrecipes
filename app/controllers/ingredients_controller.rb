@@ -64,6 +64,6 @@ class IngredientsController < ApplicationController
   end
 
   def decoded_ingredient_name
-    params[:ingredient_name].tr('-', ' ')
+    params[:ingredient_name]
   end
 end
