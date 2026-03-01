@@ -24,6 +24,7 @@ class NutritionEntriesController < ApplicationController
     entry = IngredientCatalog.find_by!(kitchen: current_kitchen, ingredient_name:)
     entry.destroy!
     recalculate_affected_recipes
+    MealPlanChannel.broadcast_content_changed(current_kitchen)
     render json: { status: 'ok' }
   rescue ActiveRecord::RecordNotFound
     head :not_found
@@ -123,11 +124,14 @@ class NutritionEntriesController < ApplicationController
   end
 
   def canonical_ingredient_names(lookup)
-    current_kitchen.recipes.includes(steps: :ingredients)
-                   .flat_map(&:ingredients)
-                   .map { |i| lookup[i.name]&.ingredient_name || i.name }
-                   .uniq
-                   .sort_by(&:downcase)
+    raw_names = Ingredient.joins(step: :recipe)
+                          .where(recipes: { kitchen: current_kitchen })
+                          .distinct
+                          .pluck(:name)
+
+    raw_names.map { |name| lookup[name]&.ingredient_name || name }
+             .uniq
+             .sort_by(&:downcase)
   end
 
   def ingredient_incomplete?(entry)

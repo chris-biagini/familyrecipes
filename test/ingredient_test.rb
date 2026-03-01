@@ -62,13 +62,13 @@ class IngredientTest < Minitest::Test
   def test_quantity_value_fraction_third
     ingredient = FamilyRecipes::Ingredient.new(name: 'Cream', quantity: '1/3 cup')
 
-    assert_equal '0.333', ingredient.quantity_value
+    assert_equal (1.0 / 3).to_s, ingredient.quantity_value
   end
 
   def test_quantity_value_fraction_two_thirds
     ingredient = FamilyRecipes::Ingredient.new(name: 'Cream', quantity: '2/3 cup')
 
-    assert_equal '0.667', ingredient.quantity_value
+    assert_equal (2.0 / 3).to_s, ingredient.quantity_value
   end
 
   def test_quantity_value_fraction_three_quarters

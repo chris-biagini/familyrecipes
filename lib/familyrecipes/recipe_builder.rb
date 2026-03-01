@@ -6,12 +6,9 @@
 # a single-pass cursor over the token array — peek/advance/skip_blanks. Handles
 # both explicit steps (## headers) and implicit steps (ingredients without headers).
 class RecipeBuilder # rubocop:disable Metrics/ClassLength
-  attr_reader :errors
-
   def initialize(tokens)
     @tokens = tokens
     @position = 0
-    @errors = []
   end
 
   def build

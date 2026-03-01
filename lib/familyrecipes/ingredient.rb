@@ -8,14 +8,6 @@ module FamilyRecipes
   class Ingredient
     attr_reader :name, :quantity, :prep_note
 
-    QUANTITY_FRACTIONS = {
-      '1/2' => '0.5',
-      '1/4' => '0.25',
-      '1/3' => '0.333',
-      '2/3' => '0.667',
-      '3/4' => '0.75'
-    }.freeze
-
     # Resolves fractions and ranges (takes high end) to a numeric string.
     def self.numeric_value(raw)
       return nil if raw.nil? || raw.strip.empty?
@@ -23,8 +15,7 @@ module FamilyRecipes
       value_str = raw.strip
       value_str = value_str.split(/[-–]/).last.strip if value_str.match?(/[-–]/)
 
-      return QUANTITY_FRACTIONS[value_str] if QUANTITY_FRACTIONS.key?(value_str)
-      return NumericParsing.parse_fraction(value_str).to_s if value_str.match?(NumericParsing::VULGAR_PATTERN)
+      return NumericParsing.parse_fraction(value_str).to_s if value_str.match?(%r{/}o) || value_str.match?(NumericParsing::VULGAR_PATTERN)
 
       value_str
     end
