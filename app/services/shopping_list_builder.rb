@@ -51,11 +51,7 @@ class ShoppingListBuilder
     slugs = @meal_plan.state.fetch('selected_quick_bites', [])
     return [] if slugs.empty?
 
-    content = @kitchen.quick_bites_content
-    return [] unless content
-
-    all_bites = FamilyRecipes.parse_quick_bites_content(content)
-    all_bites.select { |qb| slugs.include?(qb.id) }
+    @kitchen.parsed_quick_bites.select { |qb| slugs.include?(qb.id) }
   end
 
   def aggregate_recipe_ingredients

@@ -154,10 +154,7 @@ class RecipeBroadcaster
   end
 
   def parse_quick_bites
-    content = kitchen.quick_bites_content
-    return {} unless content
-
-    FamilyRecipes.parse_quick_bites_content(content)
-                 .group_by { |qb| qb.category.delete_prefix('Quick Bites: ') }
+    kitchen.parsed_quick_bites
+           .group_by { |qb| qb.category.delete_prefix('Quick Bites: ') }
   end
 end

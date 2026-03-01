@@ -83,11 +83,8 @@ class MenuController < ApplicationController
   end
 
   def load_quick_bites_by_subsection
-    content = current_kitchen.quick_bites_content
-    return {} unless content
-
-    FamilyRecipes.parse_quick_bites_content(content)
-                 .group_by { |qb| qb.category.delete_prefix('Quick Bites: ') }
+    current_kitchen.parsed_quick_bites
+                   .group_by { |qb| qb.category.delete_prefix('Quick Bites: ') }
   end
 
   def recipe_selector_categories
@@ -99,10 +96,7 @@ class MenuController < ApplicationController
   end
 
   def all_quick_bite_slugs
-    content = current_kitchen.quick_bites_content
-    return [] unless content
-
-    FamilyRecipes.parse_quick_bites_content(content).map(&:id)
+    current_kitchen.parsed_quick_bites.map(&:id)
   end
 
   def broadcast_recipe_selector_update

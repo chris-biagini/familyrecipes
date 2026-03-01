@@ -59,9 +59,6 @@ class RecipeAvailabilityCalculator
   end
 
   def quick_bites
-    content = @kitchen.quick_bites_content
-    return [] unless content
-
-    FamilyRecipes.parse_quick_bites_content(content)
+    @kitchen.parsed_quick_bites
   end
 end
