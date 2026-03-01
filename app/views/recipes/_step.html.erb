@@ -1,5 +1,7 @@
 <section>
+  <%- if step.title -%>
   <h2><%= step.title %></h2>
+  <%- end -%>
   <div>
     <%- unless step.ingredient_list_items.empty? -%>
     <div class="ingredients">
