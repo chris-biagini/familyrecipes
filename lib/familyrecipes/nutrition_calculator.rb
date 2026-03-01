@@ -70,23 +70,16 @@ module FamilyRecipes
     private
 
     def sum_totals(recipe, recipe_map)
+      active = recipe.all_ingredients_with_quantities(recipe_map)
+                     .reject { |name, _| @omit_set.include?(name.downcase) }
+      known, unknown = active.partition { |name, _| @nutrition_data.key?(name) }
+
       totals = NUTRIENTS.index_with { |_n| 0.0 }
-      missing = []
-      partial = []
-
-      recipe.all_ingredients_with_quantities(recipe_map).each do |name, amounts|
-        next if @omit_set.include?(name.downcase)
-
-        entry = @nutrition_data[name]
-        unless entry
-          missing << name
-          next
-        end
-
-        accumulate_amounts(totals, partial, name, amounts, entry)
+      partial = known.each_with_object([]) do |(name, amounts), partials|
+        accumulate_amounts(totals, partials, name, amounts, @nutrition_data[name])
       end
 
-      [totals, missing, partial]
+      [totals, unknown.map(&:first), partial]
     end
 
     def accumulate_amounts(totals, partial, name, amounts, entry)
