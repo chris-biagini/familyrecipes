@@ -163,6 +163,8 @@ end
 
 Comments that narrate code are the #1 tell of LLM-generated Ruby. This is a hard rule:
 
+**Architectural breadcrumbs:** Every Ruby class/module and JS controller/utility has a class-level comment explaining its role, key collaborators, and non-obvious constraints. When adding or significantly modifying a class, update its breadcrumb comment to stay accurate. When adding a new class, write one.
+
 - **Never** write a comment that restates the method name, class name, or what the code obviously does.
 - **Never** write `# ClassName` or `# ClassName class` above a class definition.
 - **Do** add comments that explain *why* — business rules, non-obvious constraints, or links to external references.
