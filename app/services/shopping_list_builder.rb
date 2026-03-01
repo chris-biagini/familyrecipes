@@ -1,5 +1,10 @@
 # frozen_string_literal: true
 
+# Produces the grocery shopping list from a MealPlan's selected recipes and quick
+# bites. Aggregates ingredient quantities (via IngredientAggregator), canonicalizes
+# names through IngredientCatalog, organizes items by grocery aisle, appends custom
+# items, and sorts aisles by the kitchen's user-defined order. Consumed by
+# GroceriesController#state and MealPlan#prune_checked_off.
 class ShoppingListBuilder
   def initialize(kitchen:, meal_plan:)
     @kitchen = kitchen

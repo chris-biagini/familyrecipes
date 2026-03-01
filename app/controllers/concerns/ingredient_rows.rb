@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
-# Shared logic for building ingredient table row data.
-# Used by IngredientsController (full index) and NutritionEntriesController (turbo stream updates).
+# Shared logic for building ingredient table row data. Consumed by three places:
+# IngredientsController (full index), NutritionEntriesController (Turbo Stream
+# updates after save), and RecipeBroadcaster (real-time ingredient table refresh).
+# Canonicalizes ingredient names through IngredientCatalog and Inflector variants.
 module IngredientRows
   extend ActiveSupport::Concern
 

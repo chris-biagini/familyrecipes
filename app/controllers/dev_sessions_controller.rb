@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+# Dev/test-only authentication bypass. Provides direct login at /dev/login/:id
+# (blocked in production). Also handles /logout with a cookie that suppresses
+# the auto-login-in-development flow, enabling logged-out experience testing.
 class DevSessionsController < ApplicationController
   skip_before_action :set_kitchen_from_path
   before_action :require_non_production_environment, only: :create

@@ -1,5 +1,10 @@
 # frozen_string_literal: true
 
+# Meal planning page — member-only. Displays a recipe selector (recipes + quick
+# bites) with checkboxes. Manages MealPlan state (select/select_all/clear) and
+# broadcasts version updates via MealPlanChannel for cross-device sync. Quick
+# bites content is web-editable; changes broadcast Turbo Stream replacements
+# to update all connected clients.
 class MenuController < ApplicationController
   before_action :require_membership
   before_action :prevent_html_caching, only: :show

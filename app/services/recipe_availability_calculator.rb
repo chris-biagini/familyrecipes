@@ -1,5 +1,9 @@
 # frozen_string_literal: true
 
+# Computes per-recipe and per-quick-bite ingredient availability for the menu
+# page's "availability dots." For each recipe/quick bite, reports how many
+# ingredients are still needed (not yet checked off on the grocery list). Used
+# by MenuController#state to provide real-time availability data.
 class RecipeAvailabilityCalculator
   def initialize(kitchen:, checked_off:)
     @kitchen = kitchen

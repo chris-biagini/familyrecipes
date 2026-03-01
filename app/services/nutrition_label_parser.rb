@@ -1,5 +1,10 @@
 # frozen_string_literal: true
 
+# Bidirectional parser/formatter for the plain-text nutrition label format used
+# in the web editor's textarea. Parses FDA-label-style text ("Serving size: 30g",
+# "Calories 110", etc.) into structured nutrients, density, and portions hashes
+# that IngredientCatalog can store. The nested Formatter class serializes an
+# IngredientCatalog entry back to the same text format for editing.
 class NutritionLabelParser # rubocop:disable Metrics/ClassLength
   Result = Data.define(:nutrients, :density, :portions, :errors) do
     def success? = errors.empty?

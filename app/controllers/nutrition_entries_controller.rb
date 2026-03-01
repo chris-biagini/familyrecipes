@@ -1,5 +1,10 @@
 # frozen_string_literal: true
 
+# JSON/Turbo Stream API for creating, updating, and deleting kitchen-scoped
+# IngredientCatalog entries from the web nutrition editor. On save, syncs new
+# aisles to the kitchen's aisle_order, broadcasts aisle changes via
+# MealPlanChannel, and recalculates nutrition for all affected recipes.
+# Responds with Turbo Stream updates to refresh the ingredients table in-place.
 class NutritionEntriesController < ApplicationController
   include IngredientRows
 

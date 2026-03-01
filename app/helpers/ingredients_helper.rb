@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+# View helpers for the ingredients management page. Formats nutrient summaries,
+# density/portion displays, status badges, and aisle labels from IngredientCatalog
+# entries for table rendering.
 module IngredientsHelper
   def nutrition_summary(entry)
     return unless entry&.basis_grams

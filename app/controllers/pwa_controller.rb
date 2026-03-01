@@ -1,5 +1,9 @@
 # frozen_string_literal: true
 
+# Serves the PWA manifest and service worker via Rails (not as static files)
+# so they can use ERB and get Cache-Control: no-cache headers. This prevents
+# Cloudflare from edge-caching them with the static file TTL. Skips
+# set_kitchen_from_path because these URLs are kitchen-agnostic.
 class PwaController < ApplicationController
   skip_before_action :set_kitchen_from_path
 

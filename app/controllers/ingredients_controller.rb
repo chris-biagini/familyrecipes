@@ -1,5 +1,10 @@
 # frozen_string_literal: true
 
+# Ingredients management page — member-only. Displays a searchable, filterable
+# table of all ingredients across recipes with their nutrition/density status
+# and aisle assignments. The edit action renders the nutrition editor form as a
+# partial for the dialog. Uses the shared IngredientRows concern for row-building
+# logic shared with NutritionEntriesController and RecipeBroadcaster.
 class IngredientsController < ApplicationController
   include IngredientRows
 

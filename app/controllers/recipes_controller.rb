@@ -1,5 +1,9 @@
 # frozen_string_literal: true
 
+# CRUD for recipes. Show is public; create/update/destroy require membership.
+# Write actions validate Markdown, run MarkdownImporter (parser → DB), cascade
+# cross-reference updates, recalculate nutrition, prune stale meal plan entries,
+# and broadcast real-time updates via RecipeBroadcaster.
 class RecipesController < ApplicationController
   before_action :require_membership, only: %i[create update destroy]
 

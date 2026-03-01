@@ -1,5 +1,9 @@
 # frozen_string_literal: true
 
+# Quick-check validator for user-submitted recipe Markdown. Runs the parser
+# pipeline without touching the database to surface structural errors (missing
+# title, missing category, no steps) before MarkdownImporter is called. Used
+# by RecipesController on create and update.
 class MarkdownValidator
   def self.validate(markdown_source)
     new(markdown_source).validate

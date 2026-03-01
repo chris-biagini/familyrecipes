@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+# Root route handler. When exactly one Kitchen exists, renders the homepage
+# directly (no redirect). When multiple Kitchens exist, renders a kitchen-list
+# landing page. Skips set_kitchen_from_path because the root URL has no slug.
 class LandingController < ApplicationController
   skip_before_action :set_kitchen_from_path
 

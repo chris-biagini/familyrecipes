@@ -1,5 +1,10 @@
 # frozen_string_literal: true
 
+# Central before_action pipeline: resume session → authenticate from trusted
+# headers (Authelia in production) → auto-login in dev → auto-join sole kitchen
+# → set tenant from path. Public reads are allowed (allow_unauthenticated_access);
+# write paths and member-only pages call require_membership. Also manages the
+# optional kitchen_slug URL scope and JSON/HTML cache headers.
 class ApplicationController < ActionController::Base
   include Authentication
 

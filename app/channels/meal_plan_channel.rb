@@ -1,5 +1,12 @@
 # frozen_string_literal: true
 
+# ActionCable channel for real-time meal plan sync across devices. Broadcasts
+# version numbers on state changes (selections, checks, custom items) so clients
+# can poll for fresh state when stale. Also broadcasts content_changed events
+# when recipes, quick bites, or aisle mappings change — clients show a reload
+# prompt. Both menu and groceries pages subscribe to the same channel. Must wrap
+# MealPlan.for_kitchen in ActsAsTenant.with_tenant because channel methods don't
+# inherit the controller's tenant context.
 class MealPlanChannel < ApplicationCable::Channel
   def subscribed
     kitchen = Kitchen.find_by(slug: params[:kitchen_slug])

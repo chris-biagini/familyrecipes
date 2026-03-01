@@ -1,5 +1,10 @@
 # frozen_string_literal: true
 
+# Cascading Markdown updates when a recipe is renamed or deleted. On rename,
+# rewrites "@[Old Title]" → "@[New Title]" in all referencing recipes' Markdown
+# source and re-imports them. On delete, strips the "@[...]" syntax to leave
+# plain text. Both operations return the list of affected recipe titles so the
+# controller can report them.
 class CrossReferenceUpdater
   def self.strip_references(recipe)
     new(recipe).strip_references

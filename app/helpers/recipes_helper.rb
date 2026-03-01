@@ -1,5 +1,10 @@
 # frozen_string_literal: true
 
+# View helpers for recipe pages: Markdown rendering (via Redcarpet with
+# escape_html), scalable number formatting for instructions and yield lines,
+# nutrition label column layout, and ingredient data attributes for the
+# client-side scaling controller. All .html_safe calls are audited by
+# rake lint:html_safe and allowlisted.
 module RecipesHelper
   def render_markdown(text)
     return '' if text.blank?

@@ -1,5 +1,9 @@
 # frozen_string_literal: true
 
+# Shopping list page — member-only. Renders the grocery list built by
+# ShoppingListBuilder from the MealPlan's selections. Manages check-off state,
+# custom items, and aisle ordering. All state mutations broadcast version updates
+# via MealPlanChannel for cross-device sync.
 class GroceriesController < ApplicationController
   before_action :require_membership
   before_action :prevent_html_caching, only: :show

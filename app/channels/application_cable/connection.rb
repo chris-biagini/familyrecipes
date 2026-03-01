@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
 module ApplicationCable
+  # Authenticates WebSocket connections via the same signed session cookie used
+  # by HTTP requests. Rejects connections without a valid session — ActionCable
+  # is member-only, unlike the public HTTP read paths.
   class Connection < ActionCable::Connection::Base
     identified_by :current_user
 

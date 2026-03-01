@@ -1,5 +1,14 @@
 # frozen_string_literal: true
 
+# The sole write path for getting recipes into the database. Parses Markdown
+# through the FamilyRecipes parser pipeline (LineClassifier → RecipeBuilder),
+# then upserts the Recipe and its Steps, Ingredients, and CrossReferences in a
+# transaction. Also processes instructions through ScalableNumberPreprocessor
+# to generate the scalable-number HTML stored in Step#processed_instructions.
+#
+# Kitchen-scoped (requires kitchen: keyword) and idempotent — db:seed calls
+# this repeatedly. After import, resolves pending cross-references and triggers
+# nutrition calculation via RecipeNutritionJob and CascadeNutritionJob.
 class MarkdownImporter
   def self.import(markdown_source, kitchen:)
     new(markdown_source, kitchen: kitchen).import

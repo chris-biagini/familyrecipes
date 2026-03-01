@@ -1,5 +1,10 @@
 # frozen_string_literal: true
 
+# Bridges recipe CRUD events to real-time Turbo Stream updates. On create/update/
+# destroy, broadcasts HTML replacements to every page that shows recipe data:
+# homepage (recipe listings), menu (recipe selector), ingredients (table + summary
+# bar), and the recipe page itself. Also fires toast notifications and triggers
+# MealPlanChannel.broadcast_content_changed to refresh grocery/menu state.
 class RecipeBroadcaster
   include IngredientRows
 

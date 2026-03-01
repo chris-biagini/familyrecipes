@@ -1,5 +1,11 @@
 # frozen_string_literal: true
 
+# Auth-agnostic session management concern. Provides session resume from signed
+# cookies, session creation (start_new_session_for), and termination. The "front
+# door" that calls start_new_session_for varies by environment — trusted headers
+# in production (Authelia), DevSessionsController in dev/test — but this concern
+# doesn't care which one. ActionCable connections also authenticate through the
+# same session cookie.
 module Authentication
   extend ActiveSupport::Concern
 
