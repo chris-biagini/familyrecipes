@@ -1,3 +1,8 @@
+/**
+ * JS entry point. Boots Turbo Drive + Stimulus (via controllers/index.js) and
+ * registers the service worker. Turbo's progress bar is disabled because CSP
+ * blocks its inline styles. Pinned in config/importmap.rb as "application".
+ */
 import { Turbo } from "@hotwired/turbo-rails"
 import "controllers"
 

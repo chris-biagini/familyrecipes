@@ -110,11 +110,15 @@ Every class has an architectural header comment — read them first. This sectio
 
 **Multi-tenant scoping — non-negotiable.** All queries MUST go through `current_kitchen` (e.g., `current_kitchen.recipes.find_by!`). Never use unscoped model queries like `Recipe.find_by`.
 
-**Two namespaces.** Rails app module: `Familyrecipes` (lowercase r). Domain parser module: `FamilyRecipes` (uppercase R). Different constants, no collision.
+**Two namespaces.** Rails app module: `Familyrecipes` (lowercase r). Domain parser module: `FamilyRecipes` (uppercase R). Different constants, no collision. Parser pipeline: `LineClassifier` → `RecipeBuilder` → `FamilyRecipes::Recipe`; `MarkdownImporter` is the sole write-path entry point.
 
 **Routing.** Routes use an optional `(/kitchens/:kitchen_slug)` scope. `default_url_options` auto-injects `kitchen_slug` — always use `_path` helpers. Use `home_path` (not `kitchen_root_path`) for homepage links. `MealPlan` (one row per kitchen) backs both the menu and groceries pages.
 
 **Editor dialogs.** Use `render layout: 'shared/editor_dialog'` with Stimulus data attributes — no JS needed. For custom content, add a controller listening to editor lifecycle events.
+
+**Hotwire stack.** Turbo Drive + Turbo Streams, Stimulus controllers, importmap-rails for ES modules. New JS modules must be pinned in `config/importmap.rb`; new Stimulus controllers auto-register via `pin_all_from`. CSP requires nonces for importmap's inline `<script>` — the nonce generator uses `request.session.id` (see `content_security_policy.rb`). Turbo's progress bar is disabled (`Turbo.config.drive.progressBarDelay = Infinity`) because CSP blocks its inline styles.
+
+**ActionCable.** `MealPlanChannel` syncs menu/groceries state via Solid Cable. Channel methods don't inherit controller tenant context — always wrap queries in `ActsAsTenant.with_tenant(kitchen)`. `broadcast_content_changed` notifies clients when recipes, Quick Bites, or aisle mappings change.
 
 ## Recipe & Data Formats
 
@@ -189,12 +193,14 @@ Flour (all-purpose):
 ## Commands
 
 ```bash
+bundle install && rails db:setup   # first-time setup (needs sqlite3-dev headers)
 rake lint          # RuboCop — always use `bundle exec rubocop`, not bare `rubocop`
 rake lint:html_safe # audit .html_safe / raw() calls against allowlist
 rake test          # all tests via Minitest
 ruby -Itest test/controllers/recipes_controller_test.rb              # single file
 ruby -Itest test/models/recipe_test.rb -n test_requires_title        # single test
 bin/dev            # Puma on port 3030
+# test helpers: create_kitchen_and_user, log_in, kitchen_slug (see test/test_helper.rb)
 ```
 
 The default `rake` task runs both lint and test.
@@ -211,5 +217,7 @@ bin/worktree-remove <name>
 **`Data.define` + Rails JSON.** Classes with custom `to_json` must also define `as_json` — see `Quantity` in `lib/familyrecipes/quantity.rb`.
 
 **Server restart.** Adding gems, new concerns, or modifying `lib/familyrecipes/` requires restarting Puma (`pkill -f puma; rm -f tmp/pids/server.pid` then `bin/dev`). Domain classes in `lib/` are loaded once at boot — they do not hot-reload.
+
+**PWA.** `rake pwa:icons` generates PNGs from `app/assets/images/favicon.svg` (requires `rsvg-convert`/`librsvg2-bin`). Service worker is ERB-rendered (`app/views/pwa/service_worker.js.erb`) — update the `API_PATTERN` regex when adding new API routes.
 
 **Commit timestamps.** A post-commit hook rewrites timestamps for privacy.
