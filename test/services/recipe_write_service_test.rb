@@ -193,7 +193,9 @@ class RecipeWriteServiceTest < ActiveSupport::TestCase
       Tear bread and toss.
     MD
 
-    xref = Recipe.find_by!(slug: 'panzanella').cross_references.find_by!(target_title: 'Focaccia')
+    panzanella = Recipe.find_by!(slug: 'panzanella')
+    xref_step = panzanella.steps.find_by!(title: 'Make bread.')
+    xref = xref_step.cross_references.find_by!(target_title: 'Focaccia')
 
     RecipeWriteService.destroy(slug: 'focaccia', kitchen: @kitchen)
 

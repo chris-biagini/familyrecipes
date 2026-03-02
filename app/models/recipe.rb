@@ -11,7 +11,7 @@ class Recipe < ApplicationRecord
 
   has_many :steps, -> { order(:position) }, dependent: :destroy, inverse_of: :recipe
   has_many :ingredients, through: :steps
-  has_many :cross_references, through: :steps
+  has_many :cross_references, through: :steps, strict_loading: true
   has_many :inbound_cross_references, class_name: 'CrossReference',
                                       foreign_key: :target_recipe_id,
                                       inverse_of: :target_recipe,
@@ -35,8 +35,12 @@ class Recipe < ApplicationRecord
     end
   end
 
+  # Accepts optional _recipe_map for duck-typing parity with FamilyRecipes::Recipe,
+  # which needs a recipe_map to resolve cross-references from parsed objects.
+  # Accesses cross-references via steps (not the through-association) so callers'
+  # preloading of steps: { cross_references: ... } is honored.
   def all_ingredients_with_quantities(_recipe_map = nil)
-    cross_references.each_with_object(own_ingredients_aggregated) do |xref, merged|
+    steps.flat_map(&:cross_references).each_with_object(own_ingredients_aggregated) do |xref, merged|
       xref.expanded_ingredients.each do |name, amounts|
         merged[name] = merged.key?(name) ? IngredientAggregator.merge_amounts(merged[name], amounts) : amounts
       end

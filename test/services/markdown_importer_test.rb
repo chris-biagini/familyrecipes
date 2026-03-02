@@ -185,9 +185,10 @@ class MarkdownImporterTest < ActiveSupport::TestCase
 
     MarkdownImporter.import(dough_markdown, kitchen: @kitchen)
     pizza = MarkdownImporter.import(pizza_markdown, kitchen: @kitchen)
+    xref_step = pizza.steps.find_by!(title: 'Make dough.')
 
-    assert_equal 1, pizza.cross_references.count
-    assert_equal 'pizza-dough', pizza.cross_references.first.target_slug
+    assert_equal 1, xref_step.cross_references.count
+    assert_equal 'pizza-dough', xref_step.cross_references.first.target_slug
   end
 
   test 'creates pending cross-reference when target recipe is missing' do
@@ -207,9 +208,10 @@ class MarkdownImporterTest < ActiveSupport::TestCase
     MARKDOWN
 
     recipe = MarkdownImporter.import(markdown_with_missing_ref, kitchen: @kitchen)
+    xref_step = recipe.steps.find_by!(title: 'Make sauce.')
 
-    assert_equal 1, recipe.cross_references.count
-    assert_predicate recipe.cross_references.first, :pending?
+    assert_equal 1, xref_step.cross_references.count
+    assert_predicate xref_step.cross_references.first, :pending?
   end
 
   test 'creates pending cross-reference with correct slug and title' do
@@ -229,9 +231,10 @@ class MarkdownImporterTest < ActiveSupport::TestCase
     MARKDOWN
 
     recipe = MarkdownImporter.import(markdown, kitchen: @kitchen)
-    ref = recipe.cross_references.first
+    xref_step = recipe.steps.find_by!(title: 'Make sauce.')
+    ref = xref_step.cross_references.first
 
-    assert_equal 1, recipe.cross_references.count
+    assert_equal 1, xref_step.cross_references.count
     assert_equal 'nonexistent-sauce', ref.target_slug
     assert_equal 'Nonexistent Sauce', ref.target_title
     assert_nil ref.target_recipe_id
@@ -267,15 +270,16 @@ class MarkdownImporterTest < ActiveSupport::TestCase
     MARKDOWN
 
     pasta = MarkdownImporter.import(pasta_md, kitchen: @kitchen)
+    xref_step = pasta.steps.find_by!(title: 'Make sauce.')
+    xref = xref_step.cross_references.first
 
-    assert_predicate pasta.cross_references.first, :pending?
+    assert_predicate xref, :pending?
 
     sauce = MarkdownImporter.import(sauce_md, kitchen: @kitchen)
+    xref.reload
 
-    pasta.cross_references.first.reload
-
-    assert_predicate pasta.cross_references.first, :resolved?
-    assert_equal sauce.id, pasta.cross_references.first.target_recipe_id
+    assert_predicate xref, :resolved?
+    assert_equal sauce.id, xref.target_recipe_id
   end
 
   test 'quantity splitting handles various formats' do

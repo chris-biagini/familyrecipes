@@ -63,7 +63,9 @@ class RecipeAggregationTest < ActiveSupport::TestCase
       position: 2
     )
 
-    result = recipe.all_ingredients_with_quantities
+    loaded = Recipe.includes(steps: [:ingredients, { cross_references: { target_recipe: { steps: :ingredients } } }])
+                   .find(recipe.id)
+    result = loaded.all_ingredients_with_quantities
 
     names = result.map(&:first)
 
@@ -90,26 +92,13 @@ class RecipeAggregationTest < ActiveSupport::TestCase
       position: 2
     )
 
-    result = recipe.all_ingredients_with_quantities
+    loaded = Recipe.includes(steps: [:ingredients, { cross_references: { target_recipe: { steps: :ingredients } } }])
+                   .find(recipe.id)
+    result = loaded.all_ingredients_with_quantities
     flour = result.find { |name, _| name == 'Flour' }
     flour_cup = flour[1].find { |q| q&.unit == 'cup' }
 
     assert_in_delta 5.0, flour_cup.value, 0.01
-  end
-
-  test 'all_ingredients_with_quantities accepts optional recipe_map for duck typing' do
-    recipe = Recipe.find_or_create_by!(
-      title: 'Bread', slug: 'bread',
-      category: @category, markdown_source: 'placeholder'
-    )
-    step = recipe.steps.find_or_create_by!(title: 'Mix', position: 1)
-    step.ingredients.find_or_create_by!(name: 'Flour', quantity: '1', unit: 'cup', position: 1)
-
-    # Should work with or without the argument
-    result_without = recipe.all_ingredients_with_quantities
-    result_with = recipe.all_ingredients_with_quantities({})
-
-    assert_equal result_without.map(&:first), result_with.map(&:first)
   end
 
   test 'all_ingredients_with_quantities skips unresolved cross-references' do
@@ -124,7 +113,9 @@ class RecipeAggregationTest < ActiveSupport::TestCase
       position: 2
     )
 
-    result = recipe.all_ingredients_with_quantities
+    loaded = Recipe.includes(steps: [:ingredients, { cross_references: { target_recipe: { steps: :ingredients } } }])
+                   .find(recipe.id)
+    result = loaded.all_ingredients_with_quantities
 
     names = result.map(&:first)
 

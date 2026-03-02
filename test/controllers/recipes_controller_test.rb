@@ -360,7 +360,8 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
 
     panzanella = Recipe.find_by!(slug: 'panzanella')
     original_source = panzanella.markdown_source
-    xref = panzanella.cross_references.find_by!(target_title: 'Focaccia')
+    xref_step = panzanella.steps.find_by!(title: 'Make bread.')
+    xref = xref_step.cross_references.find_by!(target_title: 'Focaccia')
 
     log_in
     delete recipe_path('focaccia', kitchen_slug: kitchen_slug), as: :json
