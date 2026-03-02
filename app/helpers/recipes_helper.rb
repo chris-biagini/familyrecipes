@@ -74,7 +74,7 @@ module RecipesHelper
   private
 
   def scaled_quantity_display(item, scale_factor)
-    return format_quantity_display(item) unless scale_factor != 1.0 && item.quantity_value # rubocop:disable Lint/FloatComparison
+    return format_quantity_display(item) if scale_factor == 1.0 || !item.quantity_value # rubocop:disable Lint/FloatComparison
 
     scaled = item.quantity_value.to_f * scale_factor
     formatted = FamilyRecipes::VulgarFractions.format(scaled, unit: item.quantity_unit)
