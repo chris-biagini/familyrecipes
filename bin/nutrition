@@ -373,6 +373,30 @@ def enter_usda(api_key, name)
   entry
 end
 
+# --- Alias prompting ---
+
+def suggest_aliases(name, _entry)
+  base, qualifier = name.match(/\A(.+?)\s*\(([^)]+)\)\z/)&.captures || [name, nil]
+  return [] unless qualifier
+
+  [base, "#{qualifier.capitalize} #{base.downcase}"].uniq - [name]
+end
+
+def prompt_aliases(name, entry)
+  existing = entry['aliases'] || []
+  suggestions = suggest_aliases(name, entry)
+
+  puts "\nAliases (current: #{existing.any? ? existing.join(', ') : 'none'}):"
+  suggestions.each { |s| puts "  Suggested: #{s}" }
+  print '  Enter aliases (comma-separated), or Enter to keep current: '
+
+  input = $stdin.gets&.strip
+  return existing if input.nil? || input.empty?
+
+  new_aliases = input.split(',').map(&:strip).reject(&:empty?)
+  (existing + new_aliases).uniq
+end
+
 # --- Review ---
 
 def review_and_save(name, entry, needed_units, nutrition_data, api_key:)
@@ -388,6 +412,8 @@ def review_and_save(name, entry, needed_units, nutrition_data, api_key:)
 
     case choice
     when 's'
+      aliases = prompt_aliases(name, entry)
+      entry['aliases'] = aliases if aliases.any?
       nutrition_data[name] = entry
       save_nutrition_data(nutrition_data)
       return
