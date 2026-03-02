@@ -49,6 +49,6 @@ module IngredientsHelper
   def format_nutrient_value(value)
     return '0' unless value
 
-    value == value.to_i ? value.to_i.to_s : value.to_s
+    format_numeric(value)
   end
 end

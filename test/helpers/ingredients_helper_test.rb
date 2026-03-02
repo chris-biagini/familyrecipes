@@ -3,6 +3,8 @@
 require 'test_helper'
 
 class IngredientsHelperTest < ActionView::TestCase
+  include ApplicationHelper
+
   setup do
     @kitchen = Kitchen.create!(name: 'Test Kitchen', slug: 'test-kitchen')
     ActsAsTenant.current_tenant = @kitchen
