@@ -121,6 +121,37 @@ class IngredientTest < Minitest::Test
     assert_equal 'slice', ingredient.quantity_unit
   end
 
+  # Mixed ASCII fraction tests (e.g., "1 1/2 cups")
+  def test_quantity_value_mixed_ascii
+    ingredient = FamilyRecipes::Ingredient.new(name: 'Flour', quantity: '1 1/2 cups')
+
+    assert_equal '1.5', ingredient.quantity_value
+  end
+
+  def test_quantity_unit_mixed_ascii
+    ingredient = FamilyRecipes::Ingredient.new(name: 'Flour', quantity: '1 1/2 cups')
+
+    assert_equal 'cup', ingredient.quantity_unit
+  end
+
+  def test_quantity_value_mixed_ascii_three_quarters
+    ingredient = FamilyRecipes::Ingredient.new(name: 'Butter', quantity: '2 3/4 tbsp')
+
+    assert_equal '2.75', ingredient.quantity_value
+  end
+
+  def test_quantity_value_mixed_ascii_no_unit
+    ingredient = FamilyRecipes::Ingredient.new(name: 'Eggs', quantity: '1 1/2')
+
+    assert_equal '1.5', ingredient.quantity_value
+  end
+
+  def test_quantity_unit_mixed_ascii_no_unit
+    ingredient = FamilyRecipes::Ingredient.new(name: 'Eggs', quantity: '1 1/2')
+
+    assert_nil ingredient.quantity_unit
+  end
+
   # Normalized name tests
   def test_normalized_name_returns_name
     ingredient = FamilyRecipes::Ingredient.new(name: 'Flour')

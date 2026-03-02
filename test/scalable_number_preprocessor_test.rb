@@ -157,6 +157,30 @@ class ScalableNumberPreprocessorTest < Minitest::Test
     assert_includes result, '<span class="yield-unit"> loaf</span>'
   end
 
+  # --- mixed number tests ---
+
+  def test_mixed_number_with_asterisk
+    result = ScalableNumberPreprocessor.process_instructions('Add 1 1/2* cups.')
+
+    assert_includes result, 'data-base-value="1.5"'
+    assert_includes result, 'data-original-text="1 1/2"'
+    refute_includes result, '1 1/2*'
+  end
+
+  def test_yield_line_mixed_number
+    result = ScalableNumberPreprocessor.process_yield_line('Makes 1 1/2 dozen.')
+
+    assert_includes result, 'data-base-value="1.5"'
+    assert_includes result, 'data-original-text="1 1/2"'
+  end
+
+  def test_yield_with_unit_mixed_number
+    result = ScalableNumberPreprocessor.process_yield_with_unit('1 1/2 dozen', 'dozen', 'dozen')
+
+    assert_includes result, 'data-base-value="1.5"'
+    assert_includes result, 'data-unit-singular="dozen"'
+  end
+
   # --- XSS escape tests ---
 
   def test_build_span_escapes_html_in_original_text

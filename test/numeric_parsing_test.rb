@@ -74,4 +74,20 @@ class NumericParsingTest < Minitest::Test
   def test_mixed_vulgar_with_space
     assert_in_delta 1.25, FamilyRecipes::NumericParsing.parse_fraction('1 ¼'), 0.001
   end
+
+  def test_mixed_ascii_fraction
+    assert_in_delta 1.5, FamilyRecipes::NumericParsing.parse_fraction('1 1/2'), 0.001
+  end
+
+  def test_mixed_ascii_fraction_three_quarters
+    assert_in_delta 2.75, FamilyRecipes::NumericParsing.parse_fraction('2 3/4'), 0.001
+  end
+
+  def test_mixed_ascii_fraction_third
+    assert_in_delta 1.333, FamilyRecipes::NumericParsing.parse_fraction('1 1/3'), 0.001
+  end
+
+  def test_mixed_ascii_fraction_with_extra_spaces
+    assert_in_delta 1.5, FamilyRecipes::NumericParsing.parse_fraction('1  1/2'), 0.001
+  end
 end

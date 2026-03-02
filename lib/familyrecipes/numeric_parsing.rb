@@ -26,7 +26,11 @@ module FamilyRecipes
       parse_vulgar(str) || parse_ascii_fraction(str)
     end
 
+    MIXED_ASCII_PATTERN = %r{\A(\d+)\s+(\d+/\d+)\z}
+
     def parse_ascii_fraction(str)
+      mixed = str.match(MIXED_ASCII_PATTERN)
+      return mixed[1].to_f + parse_fraction_parts(mixed[2]) if mixed
       return parse_fraction_parts(str) if str.include?('/')
 
       result = Float(str, exception: false)

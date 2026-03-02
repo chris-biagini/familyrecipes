@@ -52,7 +52,18 @@ module FamilyRecipes
     end
 
     def parsed_quantity
-      @parsed_quantity ||= @quantity.strip.split(' ', 2)
+      @parsed_quantity ||= begin
+        parts = @quantity.strip.split(' ', 3)
+        if parts.size >= 2 && fraction_token?(parts[1])
+          ["#{parts[0]} #{parts[1]}", parts[2]]
+        else
+          @quantity.strip.split(' ', 2)
+        end
+      end
+    end
+
+    def fraction_token?(token)
+      token.match?(%r{\A\d+/\d+\z}) || token.match?(NumericParsing::VULGAR_PATTERN)
     end
   end
 end

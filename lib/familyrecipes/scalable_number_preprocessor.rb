@@ -17,17 +17,17 @@ module ScalableNumberPreprocessor
 
   INSTRUCTION_PATTERN = %r{
     (?:
-      (#{WORD_PATTERN})\*                  # word number with asterisk
+      (#{WORD_PATTERN})\*                                       # word number with asterisk
     |
-      (\d+(?:\.\d+)?(?:/\d+(?:\.\d+)?)?)\* # numeral (int, decimal, or fraction) with asterisk
+      (\d+\s+\d+/\d+|\d+(?:\.\d+)?(?:/\d+(?:\.\d+)?)?)\*      # numeral with asterisk
     )
   }ix
 
   YIELD_NUMBER_PATTERN = %r{
     (?:
-      \b(#{WORD_PATTERN})\b     # word number
+      \b(#{WORD_PATTERN})\b                                     # word number
     |
-      \b(\d+(?:\.\d+)?(?:/\d+(?:\.\d+)?)?)\b  # numeral
+      \b(\d+\s+\d+/\d+|\d+(?:\.\d+)?(?:/\d+(?:\.\d+)?)?)\b    # numeral
     )
   }ix
 
