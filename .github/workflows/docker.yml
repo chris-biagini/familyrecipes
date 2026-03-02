@@ -3,6 +3,8 @@ name: Build and Push Docker Image
 on:
   push:
     tags: ['v*']
+  schedule:
+    - cron: '0 8 * * *'  # 3 AM US-Eastern (EST; 4 AM during EDT)
   workflow_dispatch:
 
 env:
@@ -10,7 +12,41 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
+  check:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      packages: read
+    outputs:
+      should_build: ${{ steps.compare.outputs.should_build }}
+    steps:
+      - name: Check if HEAD already built
+        id: compare
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMMIT_SHA: ${{ github.sha }}
+          REPO_OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ github.event.repository.name }}
+        run: |
+          SHORT_SHA=$(echo "$COMMIT_SHA" | cut -c1-7)
+          TAGS=$(gh api \
+            "/users/${REPO_OWNER}/packages/container/${REPO_NAME}/versions" \
+            --paginate --jq '.[].metadata.container.tags[]' 2>/dev/null || true)
+          if echo "$TAGS" | grep -qx "$SHORT_SHA"; then
+            echo "should_build=false" >> "$GITHUB_OUTPUT"
+            echo "Image for $SHORT_SHA already exists — skipping build"
+          else
+            echo "should_build=true" >> "$GITHUB_OUTPUT"
+            echo "No image for $SHORT_SHA — will build"
+          fi
+
   test:
+    needs: check
+    if: >-
+      always() &&
+      !cancelled() &&
+      (github.event_name != 'schedule' ||
+       needs.check.outputs.should_build == 'true')
     runs-on: ubuntu-latest
     env:
       RAILS_ENV: test
@@ -56,6 +92,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=latest
+            type=raw,value=nightly,enable=${{ github.event_name == 'schedule' }}
             type=semver,pattern={{version}}
             type=sha,prefix=
 
