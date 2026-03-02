@@ -299,6 +299,17 @@ end
 
 # --- USDA search and pick ---
 
+SEARCH_NUTRIENTS = { '208' => 'cal', '204' => 'fat', '205' => 'carbs', '203' => 'protein' }.freeze
+
+def search_nutrient_summary(food)
+  lookup = (food['foodNutrients'] || []).to_h { |fn| [fn['nutrientNumber'], fn['value']] }
+  parts = SEARCH_NUTRIENTS.map do |number, label|
+    value = (lookup[number] || 0).round(0).to_i
+    label == 'cal' ? "#{value} #{label}" : "#{value}g #{label}"
+  end
+  parts.join(' | ')
+end
+
 def search_and_pick(api_key, name)
   default_query = name.sub(/\s*\(.*\)/, '').strip
 
@@ -321,6 +332,7 @@ def search_and_pick(api_key, name)
     puts "\nResults:"
     foods.each_with_index do |food, idx|
       puts "  #{idx + 1}. [#{food['fdcId']}] #{food['description']}"
+      puts "         #{search_nutrient_summary(food)}"
     end
     puts '  s. Search again'
     puts '  q. Quit'
