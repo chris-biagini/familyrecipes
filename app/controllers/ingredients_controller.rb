@@ -37,9 +37,17 @@ class IngredientsController < ApplicationController
   end
 
   def recipes_for_ingredient(name)
-    current_kitchen.recipes.includes(steps: :ingredients).select do |recipe|
-      recipe.ingredients.any? { |i| (catalog_lookup[i.name]&.ingredient_name || i.name) == name }
-    end
+    raw_names = matching_raw_names(name)
+    current_kitchen.recipes
+                   .joins(steps: :ingredients)
+                   .where(ingredients: { name: raw_names })
+                   .distinct
+  end
+
+  def matching_raw_names(canonical_name)
+    catalog_lookup.filter_map { |raw, entry| raw if entry.ingredient_name == canonical_name }
+                  .push(canonical_name)
+                  .uniq
   end
 
   def load_ingredient_data

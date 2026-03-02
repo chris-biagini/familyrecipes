@@ -308,6 +308,79 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'a', text: 'Focaccia'
   end
 
+  test 'edit finds recipes via inflected variant names' do
+    IngredientCatalog.create!(ingredient_name: 'Eggs', basis_grams: 50, calories: 70)
+    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Brioche
+
+      Category: Bread
+
+      ## Mix (combine)
+
+      - Egg, 1
+
+      Mix well.
+    MD
+
+    log_in
+    get ingredient_edit_path('Eggs', kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select 'a', text: 'Brioche'
+  end
+
+  test 'edit finds recipes via catalog alias names' do
+    IngredientCatalog.create!(ingredient_name: 'Flour (all-purpose)',
+                              basis_grams: 30, calories: 110,
+                              aliases: ['AP flour', 'All-purpose flour'])
+    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Focaccia
+
+      Category: Bread
+
+      ## Mix (combine)
+
+      - All-purpose flour, 3 cups
+
+      Mix well.
+    MD
+
+    log_in
+    get ingredient_edit_path('Flour (all-purpose)', kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select 'a', text: 'Focaccia'
+  end
+
+  test 'edit does not duplicate recipes using ingredient in multiple steps' do
+    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Focaccia
+
+      Category: Bread
+
+      ## Step One (mix)
+
+      - Flour, 2 cups
+
+      Mix.
+
+      ## Step Two (more flour)
+
+      - Flour, 1 cup
+
+      Add more flour.
+    MD
+
+    log_in
+    get ingredient_edit_path('Flour', kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select 'a', text: 'Focaccia', count: 1
+  end
+
   test 'edit requires membership' do
     get ingredient_edit_path('Flour', kitchen_slug: kitchen_slug)
 
