@@ -1,0 +1,23 @@
+{
+  "planPath": "docs/plans/2026-03-02-ingredient-catalog-improvements-plan.md",
+  "tasks": [
+    {"id": 1, "subject": "Task 1: Add aliases column to ingredient_catalog", "status": "pending"},
+    {"id": 2, "subject": "Task 2: Wire aliases into model and lookup", "status": "pending", "blockedBy": [1]},
+    {"id": 3, "subject": "Task 3: Wire aliases into catalog_sync.rake", "status": "pending", "blockedBy": [1, 2]},
+    {"id": 4, "subject": "Task 4: Add aliases to existing YAML entries", "status": "pending", "blockedBy": [2, 3]},
+    {"id": 5, "subject": "Task 5: Lint and full suite after alias work", "status": "pending", "blockedBy": [3, 4]},
+    {"id": 6, "subject": "Task 6: Strip manual entry from bin/nutrition", "status": "pending", "blockedBy": [4, 5]},
+    {"id": 7, "subject": "Task 7: Add richer USDA search result previews", "status": "pending", "blockedBy": [6]},
+    {"id": 8, "subject": "Task 8: Add alias prompting after save", "status": "pending", "blockedBy": [7]},
+    {"id": 9, "subject": "Task 9: Add --coverage flag to bin/nutrition", "status": "pending", "blockedBy": [7]},
+    {"id": 10, "subject": "Task 10: Trial runs — Batch 1 (Dairy & Oils)", "status": "pending", "blockedBy": [7]},
+    {"id": 11, "subject": "Task 11: Trial runs — Batch 2 (Meats & Proteins)", "status": "pending", "blockedBy": [8, 9, 10]},
+    {"id": 12, "subject": "Task 12: Trial runs — Batch 3 (Produce & Spices)", "status": "pending", "blockedBy": [11]},
+    {"id": 13, "subject": "Task 13: Trial runs — Batch 4 (Grains, Canned, Compound)", "status": "pending", "blockedBy": [12]},
+    {"id": 14, "subject": "Task 14: Mid-trial tool iteration", "status": "pending", "blockedBy": [13]},
+    {"id": 15, "subject": "Task 15: Trial runs — Batch 5 (Remaining ingredients)", "status": "pending", "blockedBy": [14]},
+    {"id": 16, "subject": "Task 16: Forward-looking validation — Recipe analysis", "status": "pending", "blockedBy": [14, 15]},
+    {"id": 17, "subject": "Task 17: Final lint, test suite, and sync", "status": "pending", "blockedBy": [15]}
+  ],
+  "lastUpdated": "2026-03-02T00:00:00Z"
+}
