@@ -41,6 +41,17 @@ class RecipeWriteService
     Result.new(recipe:, updated_references:)
   end
 
+  def destroy(slug:)
+    recipe = kitchen.recipes.find_by!(slug:)
+    parent_ids = recipe.referencing_recipes.pluck(:id)
+    RecipeBroadcaster.notify_recipe_deleted(recipe, recipe_title: recipe.title)
+    recipe.destroy!
+    broadcast_to_referencing_recipes(parent_ids)
+    RecipeBroadcaster.broadcast(kitchen:, action: :deleted, recipe_title: recipe.title)
+    post_write_cleanup
+    Result.new(recipe:, updated_references: [])
+  end
+
   private
 
   attr_reader :kitchen
@@ -67,6 +78,19 @@ class RecipeWriteService
       redirect_path: Rails.application.routes.url_helpers.recipe_path(new_recipe)
     )
     old_recipe.destroy!
+  end
+
+  def broadcast_to_referencing_recipes(parent_ids)
+    return if parent_ids.empty?
+
+    kitchen.recipes.where(id: parent_ids).includes(RecipeBroadcaster::SHOW_INCLUDES).find_each do |parent|
+      Turbo::StreamsChannel.broadcast_replace_to(
+        parent, 'content',
+        target: 'recipe-content',
+        partial: 'recipes/recipe_content',
+        locals: { recipe: parent, nutrition: parent.nutrition_data }
+      )
+    end
   end
 
   def post_write_cleanup

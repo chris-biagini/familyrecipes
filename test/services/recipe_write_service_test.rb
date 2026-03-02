@@ -157,4 +157,46 @@ class RecipeWriteServiceTest < ActiveSupport::TestCase
     assert_nil Category.find_by(slug: 'bread')
     assert Category.find_by(slug: 'pastry')
   end
+
+  test 'destroy removes recipe and returns Result' do
+    RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen)
+
+    result = RecipeWriteService.destroy(slug: 'focaccia', kitchen: @kitchen)
+
+    assert_equal 'Focaccia', result.recipe.title
+    assert_nil Recipe.find_by(slug: 'focaccia')
+  end
+
+  test 'destroy cleans up orphan categories' do
+    RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen)
+
+    RecipeWriteService.destroy(slug: 'focaccia', kitchen: @kitchen)
+
+    assert_nil Category.find_by(slug: 'bread')
+  end
+
+  test 'destroy nullifies inbound cross-references' do
+    RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen)
+
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Panzanella
+
+      Category: Bread
+
+      ## Make bread.
+      >>> @[Focaccia], 1
+
+      ## Assemble (put it together)
+
+      - Tomatoes, 3
+
+      Tear bread and toss.
+    MD
+
+    xref = Recipe.find_by!(slug: 'panzanella').cross_references.find_by!(target_title: 'Focaccia')
+
+    RecipeWriteService.destroy(slug: 'focaccia', kitchen: @kitchen)
+
+    assert_nil xref.reload.target_recipe_id
+  end
 end
