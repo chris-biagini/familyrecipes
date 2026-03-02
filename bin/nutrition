@@ -348,23 +348,22 @@ def review_and_save(name, entry, needed_units, nutrition_data, client:)
     display_entry(name, entry)
     display_unit_coverage(name, entry, needed_units)
 
-    puts "\n  s. Save"
-    puts '  e. Edit'
-    puts '  d. Discard and start fresh'
-    print "\nAction: "
-    choice = $stdin.gets&.strip&.downcase
+    choices = [
+      { name: 'Save', value: :save },
+      { name: 'Edit', value: :edit },
+      { name: 'Discard and start fresh', value: :discard }
+    ]
+    action = PROMPT.select("\nAction:", choices)
 
-    case choice
-    when 's'
-      aliases = prompt_aliases(name, entry)
-      entry['aliases'] = aliases if aliases.any?
+    case action
+    when :save
+      entry['aliases'] = prompt_aliases(name, entry)
       nutrition_data[name] = entry
       save_nutrition_data(nutrition_data)
       return
-    when 'd'
-      puts 'Starting fresh...'
+    when :discard
       return enter_new_ingredient(name, needed_units, nutrition_data, client: client)
-    when 'e'
+    when :edit
       entry = edit_entry(name, entry, needed_units, client: client)
     end
   end
@@ -374,49 +373,40 @@ end
 
 def edit_sources(sources)
   loop do
-    puts "\n  Sources:"
-    if sources.empty?
-      puts '    (none)'
-    else
+    if sources.any?
+      puts PASTEL.dim("\n  Sources:")
       sources.each_with_index { |s, i| puts "    #{i + 1}. #{format_source(s)}" }
+    else
+      puts PASTEL.dim("\n  Sources: none")
     end
 
-    puts "\n  a. Add USDA source"
-    puts '  r. Remove source' if sources.any?
-    puts '  d. Done'
-    print '  Action: '
-    choice = $stdin.gets&.strip&.downcase
+    choices = [{ name: 'Add USDA source', value: :add }]
+    choices << { name: 'Remove source', value: :remove } if sources.any?
+    choices << { name: 'Done', value: :done }
 
-    case choice
-    when 'a'
-      new_source = prompt_usda_source
-      sources << new_source if new_source
-    when 'r'
-      next if sources.empty?
+    action = PROMPT.select('Sources:', choices)
 
-      print "  Remove which? (1-#{sources.size}): "
-      idx = $stdin.gets&.strip.to_i - 1
-      sources.delete_at(idx) if idx >= 0 && idx < sources.size
-    when 'd'
-      return sources
+    case action
+    when :add    then sources << prompt_usda_source
+    when :remove then remove_source(sources)
+    when :done   then return sources
     end
   end
 end
 
+def remove_source(sources)
+  labels = sources.each_with_index.map { |s, i| { name: format_source(s), value: i } }
+  idx = PROMPT.select('Remove which?', labels)
+  sources.delete_at(idx) if PROMPT.yes?('Confirm removal?')
+end
+
 def prompt_usda_source
-  source = { 'type' => 'usda' }
-  print '  Dataset (e.g. SR Legacy): '
-  source['dataset'] = $stdin.gets&.strip
-  print '  FDC ID: '
-  id_input = $stdin.gets&.strip
-  source['fdc_id'] = id_input.to_i if id_input.present?
-  print '  Description: '
-  desc = $stdin.gets&.strip
-  source['description'] = desc if desc.present?
-  print '  Note (optional): '
-  note = $stdin.gets&.strip
-  source['note'] = note if note.present?
-  source
+  {
+    'type' => 'usda',
+    'dataset' => PROMPT.ask('Dataset:', default: 'SR Legacy'),
+    'fdc_id' => PROMPT.ask('FDC ID:', convert: :int),
+    'description' => PROMPT.ask('Description:')
+  }.compact
 end
 
 def edit_entry(name, entry, needed_units, client:)
@@ -424,23 +414,126 @@ def edit_entry(name, entry, needed_units, client:)
     display_entry(name, entry)
     display_unit_coverage(name, entry, needed_units)
 
-    puts "\n  Edit:"
-    puts '  1. Re-import from USDA'
-    puts '  2. Sources'
-    puts '  s. Done editing'
-    print "\nAction: "
-    choice = $stdin.gets&.strip
+    choices = [
+      { name: "Density (#{density_label(entry)})", value: :density },
+      { name: "Portions (#{(entry['portions'] || {}).size} defined)", value: :portions },
+      { name: 'Nutrients', value: :nutrients },
+      { name: 'Re-import from USDA', value: :reimport },
+      { name: 'Sources', value: :sources },
+      { name: 'Done editing', value: :done }
+    ]
+    action = PROMPT.select("\nEdit:", choices)
 
-    case choice
-    when '1'
+    case action
+    when :density   then edit_density(entry)
+    when :portions  then edit_portions(entry)
+    when :nutrients then edit_nutrients(entry)
+    when :reimport
       new_entry = enter_usda(client, name)
       entry = new_entry if new_entry
-    when '2'
+    when :sources
       entry['sources'] = edit_sources(entry['sources'] || [])
-    when 's'
+    when :done
       return entry
     end
   end
+end
+
+def density_label(entry)
+  return 'none' unless entry['density']
+
+  d = entry['density']
+  "#{d['grams']}g/#{d['volume']} #{d['unit']}"
+end
+
+# --- Density editing ---
+
+def edit_density(entry)
+  choices = [
+    { name: 'Enter custom values', value: :custom },
+    { name: 'Remove density', value: :remove },
+    { name: 'Cancel', value: :cancel }
+  ]
+  action = PROMPT.select('Density:', choices)
+
+  case action
+  when :custom
+    grams = PROMPT.ask('Grams:', convert: :float)
+    volume = PROMPT.ask('Volume:', convert: :float)
+    unit = PROMPT.ask('Unit (e.g., cup, tbsp, tsp):')
+    entry['density'] = { 'grams' => grams, 'volume' => volume, 'unit' => unit }
+  when :remove
+    entry.delete('density')
+  end
+end
+
+# --- Portions editing ---
+
+def edit_portions(entry)
+  entry['portions'] ||= {}
+
+  loop do
+    display_current_portions(entry)
+
+    choices = [{ name: 'Add portion', value: :add }]
+    choices << { name: 'Edit portion', value: :edit } if entry['portions'].any?
+    choices << { name: 'Remove portion', value: :remove } if entry['portions'].any?
+    choices << { name: 'Done', value: :done }
+
+    action = PROMPT.select('Portions:', choices)
+
+    case action
+    when :add    then add_portion(entry)
+    when :edit   then edit_single_portion(entry)
+    when :remove then remove_portion(entry)
+    when :done   then return
+    end
+  end
+end
+
+def display_current_portions(entry)
+  return puts(PASTEL.dim("\n  No portions defined.")) if entry['portions'].empty?
+
+  puts PASTEL.dim("\n  Current portions:")
+  entry['portions'].each { |k, v| puts "    #{k} = #{v}g" }
+end
+
+def add_portion(entry)
+  default_name = entry['portions'].key?('~unitless') ? nil : '~unitless'
+  portion_name = PROMPT.ask('Portion name:', default: default_name)
+  grams = PROMPT.ask('Gram weight:', convert: :float)
+  entry['portions'][portion_name] = grams if portion_name && grams
+end
+
+def edit_single_portion(entry)
+  key = PROMPT.select('Edit which?', entry['portions'].keys)
+  new_value = PROMPT.ask("New gram weight for #{key}:", default: entry['portions'][key].to_s, convert: :float)
+  entry['portions'][key] = new_value if new_value
+end
+
+def remove_portion(entry)
+  key = PROMPT.select('Remove which?', entry['portions'].keys)
+  entry['portions'].delete(key) if PROMPT.yes?("Remove #{key}?")
+end
+
+# --- Nutrients editing ---
+
+def edit_nutrients(entry)
+  entry['nutrients'] ||= {}
+
+  choices = NUTRIENTS.map do |n|
+    value = entry.dig('nutrients', n[:key]) || 0
+    suffix = n[:unit].empty? ? '' : " #{n[:unit]}"
+    { name: "#{n[:label]}: #{value}#{suffix}", value: n[:key] }
+  end
+  choices << { name: 'Done', value: :done }
+
+  nutrient = PROMPT.select('Edit which nutrient?', choices, per_page: 15)
+  return if nutrient == :done
+
+  current = entry.dig('nutrients', nutrient) || 0
+  new_value = PROMPT.ask("New value for #{nutrient}:", default: current.to_s, convert: :float)
+  entry['nutrients'][nutrient] = new_value if new_value
 end
 
 # --- New ingredient entry ---
