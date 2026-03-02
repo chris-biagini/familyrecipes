@@ -2,47 +2,12 @@
 
 def sync_catalog_entry(name, entry)
   profile = IngredientCatalog.find_or_initialize_by(kitchen_id: nil, ingredient_name: name)
-  profile.assign_attributes(catalog_attrs(entry))
+  profile.assign_attributes(IngredientCatalog.attrs_from_yaml(entry))
 
   return :created if profile.new_record? && profile.save!
   return :updated if profile.changed? && profile.save!
 
   :unchanged
-end
-
-def catalog_attrs(entry) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
-  attrs = { aisle: entry['aisle'] }
-
-  if (nutrients = entry['nutrients'])
-    attrs.merge!(
-      basis_grams: nutrients['basis_grams'],
-      calories: nutrients['calories'],
-      fat: nutrients['fat'],
-      saturated_fat: nutrients['saturated_fat'],
-      trans_fat: nutrients['trans_fat'],
-      cholesterol: nutrients['cholesterol'],
-      sodium: nutrients['sodium'],
-      carbs: nutrients['carbs'],
-      fiber: nutrients['fiber'],
-      total_sugars: nutrients['total_sugars'],
-      added_sugars: nutrients['added_sugars'],
-      protein: nutrients['protein']
-    )
-  end
-
-  if (density = entry['density'])
-    attrs.merge!(
-      density_grams: density['grams'],
-      density_volume: density['volume'],
-      density_unit: density['unit']
-    )
-  end
-
-  attrs[:aliases] = entry['aliases'] || []
-  attrs[:portions] = entry['portions'] || {}
-  attrs[:sources] = entry['sources'] || []
-
-  attrs
 end
 
 namespace :catalog do

@@ -559,4 +559,40 @@ class IngredientCatalogTest < ActiveSupport::TestCase
 
     assert_empty entry.aliases
   end
+
+  # --- attrs_from_yaml ---
+
+  test 'attrs_from_yaml extracts all fields from a complete entry' do
+    entry = {
+      'aisle' => 'Baking',
+      'nutrients' => { 'basis_grams' => 30, 'calories' => 110, 'fat' => 0.5,
+                       'saturated_fat' => 0.1, 'trans_fat' => 0, 'cholesterol' => 0,
+                       'sodium' => 0, 'carbs' => 23, 'fiber' => 1, 'total_sugars' => 0,
+                       'added_sugars' => 0, 'protein' => 3 },
+      'density' => { 'grams' => 30.0, 'volume' => 0.25, 'unit' => 'cup' },
+      'portions' => { 'stick' => 113.0 },
+      'aliases' => ['AP flour', 'Plain flour'],
+      'sources' => [{ 'type' => 'usda', 'fdc_id' => 168_913 }]
+    }
+
+    attrs = IngredientCatalog.attrs_from_yaml(entry)
+
+    assert_equal 'Baking', attrs[:aisle]
+    assert_equal 30, attrs[:basis_grams]
+    assert_equal 110, attrs[:calories]
+    assert_in_delta 30.0, attrs[:density_grams]
+    assert_in_delta 0.25, attrs[:density_volume]
+    assert_equal 'cup', attrs[:density_unit]
+    assert_equal({ 'stick' => 113.0 }, attrs[:portions])
+    assert_equal ['AP flour', 'Plain flour'], attrs[:aliases]
+  end
+
+  test 'attrs_from_yaml handles entry with no density' do
+    entry = { 'nutrients' => { 'basis_grams' => 100, 'calories' => 50 } }
+    attrs = IngredientCatalog.attrs_from_yaml(entry)
+
+    assert_nil attrs[:density_grams]
+    assert_empty attrs[:portions]
+    assert_empty attrs[:aliases]
+  end
 end

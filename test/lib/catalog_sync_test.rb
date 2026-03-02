@@ -24,7 +24,7 @@ class CatalogSyncTest < ActiveSupport::TestCase
     catalog_data = YAML.safe_load_file(CATALOG_PATH, permitted_classes: [], permitted_symbols: [], aliases: false)
 
     failures = catalog_data.filter_map do |name, entry|
-      record = IngredientCatalog.new(ingredient_name: name, **build_attrs(entry))
+      record = IngredientCatalog.new(ingredient_name: name, **IngredientCatalog.attrs_from_yaml(entry))
       "#{name}: #{record.errors.full_messages.join('; ')}" unless record.valid?
     end
 
@@ -45,49 +45,12 @@ class CatalogSyncTest < ActiveSupport::TestCase
 
     yaml_content.each do |name, entry|
       profile = IngredientCatalog.find_or_initialize_by(kitchen_id: nil, ingredient_name: name)
-      profile.assign_attributes(build_attrs(entry))
+      profile.assign_attributes(IngredientCatalog.attrs_from_yaml(entry))
       profile.save!
     end
 
     record = IngredientCatalog.find_by!(kitchen_id: nil, ingredient_name: 'Flour (all-purpose)')
 
     assert_equal ['AP flour', 'Plain flour'], record.aliases
-  end
-
-  private
-
-  def build_attrs(entry)
-    attrs = { aisle: entry['aisle'] }
-
-    if (nutrients = entry['nutrients'])
-      attrs.merge!(
-        basis_grams: nutrients['basis_grams'],
-        calories: nutrients['calories'],
-        fat: nutrients['fat'],
-        saturated_fat: nutrients['saturated_fat'],
-        trans_fat: nutrients['trans_fat'],
-        cholesterol: nutrients['cholesterol'],
-        sodium: nutrients['sodium'],
-        carbs: nutrients['carbs'],
-        fiber: nutrients['fiber'],
-        total_sugars: nutrients['total_sugars'],
-        added_sugars: nutrients['added_sugars'],
-        protein: nutrients['protein']
-      )
-    end
-
-    if (density = entry['density'])
-      attrs.merge!(
-        density_grams: density['grams'],
-        density_volume: density['volume'],
-        density_unit: density['unit']
-      )
-    end
-
-    attrs[:aliases] = entry['aliases'] || []
-    attrs[:portions] = entry['portions'] || {}
-    attrs[:sources] = entry['sources'] || []
-
-    attrs
   end
 end

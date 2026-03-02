@@ -6,7 +6,7 @@
 # inflected name variants for fuzzy matching. Stores FDA-label nutrients,
 # density (for volume-to-gram conversion), named portions, aisle assignments,
 # and provenance sources. NutritionCalculator and ShoppingListBuilder consume this.
-class IngredientCatalog < ApplicationRecord
+class IngredientCatalog < ApplicationRecord # rubocop:disable Metrics/ClassLength
   self.table_name = 'ingredient_catalog'
 
   belongs_to :kitchen, optional: true
@@ -62,6 +62,27 @@ class IngredientCatalog < ApplicationRecord
     base = global.index_by(&:ingredient_name)
                  .merge(for_kitchen(kitchen).index_by(&:ingredient_name))
     add_ingredient_variants(base)
+  end
+
+  def self.attrs_from_yaml(entry)
+    attrs = { aisle: entry['aisle'] }
+
+    if (nutrients = entry['nutrients'])
+      NUTRIENT_COLUMNS.each { |col| attrs[col] = nutrients[col.to_s] }
+      attrs[:basis_grams] = nutrients['basis_grams']
+    end
+
+    if (density = entry['density'])
+      attrs[:density_grams] = density['grams']
+      attrs[:density_volume] = density['volume']
+      attrs[:density_unit] = density['unit']
+    end
+
+    attrs[:aliases] = entry['aliases'] || []
+    attrs[:portions] = entry['portions'] || {}
+    attrs[:sources] = entry['sources'] || []
+
+    attrs
   end
 
   def self.add_ingredient_variants(lookup)
