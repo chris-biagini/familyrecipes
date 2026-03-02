@@ -250,4 +250,53 @@ class MealPlanTest < ActiveSupport::TestCase
 
     assert_operator list.lock_version, :>, version_before
   end
+
+  test 'prune_stale_items removes checked items not on shopping list' do
+    Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Focaccia
+
+      Category: Bread
+
+      ## Mix (combine)
+
+      - Flour, 3 cups
+      - Salt, 1 tsp
+
+      Mix well.
+    MD
+
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+    plan.apply_action('check', item: 'Flour', checked: true)
+    plan.apply_action('check', item: 'Phantom Item', checked: true)
+
+    MealPlan.prune_stale_items(kitchen: @kitchen)
+
+    plan.reload
+
+    assert_includes plan.state['checked_off'], 'Flour'
+    assert_not_includes plan.state['checked_off'], 'Phantom Item'
+  end
+
+  test 'prune_stale_items preserves custom items' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('custom_items', item: 'birthday candles', action: 'add')
+    plan.apply_action('check', item: 'birthday candles', checked: true)
+
+    MealPlan.prune_stale_items(kitchen: @kitchen)
+
+    plan.reload
+
+    assert_includes plan.state['checked_off'], 'birthday candles'
+  end
+
+  test 'prune_stale_items is no-op when nothing to prune' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    version_before = plan.lock_version
+
+    MealPlan.prune_stale_items(kitchen: @kitchen)
+
+    assert_equal version_before, plan.reload.lock_version
+  end
 end

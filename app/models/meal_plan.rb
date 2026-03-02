@@ -4,8 +4,9 @@
 # blob: selected recipes, selected quick bites, custom grocery items, and
 # checked-off items. Synced across devices via MealPlanChannel (ActionCable)
 # with optimistic locking (lock_version). Both the menu and groceries pages
-# read and write this model. Controllers inject visible_names into
-# prune_checked_off — this model has no dependency on ShoppingListBuilder.
+# read and write this model. MealPlan.prune_stale_items encapsulates the full
+# prune operation (building the shopping list + retry) so callers need not
+# depend on ShoppingListBuilder directly.
 class MealPlan < ApplicationRecord
   acts_as_tenant :kitchen
 
@@ -19,6 +20,13 @@ class MealPlan < ApplicationRecord
     find_or_create_by!(kitchen: kitchen)
   rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotUnique
     find_by!(kitchen: kitchen)
+  end
+
+  def self.prune_stale_items(kitchen:)
+    plan = for_kitchen(kitchen)
+    shopping_list = ShoppingListBuilder.new(kitchen:, meal_plan: plan).build
+    visible = shopping_list.each_value.flat_map { |items| items.map { |i| i[:name] } }.to_set
+    plan.with_optimistic_retry { plan.prune_checked_off(visible_names: visible) }
   end
 
   def apply_action(action_type, **params)
