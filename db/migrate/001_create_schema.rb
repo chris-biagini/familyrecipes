@@ -6,6 +6,7 @@ class CreateSchema < ActiveRecord::Migration[8.1]
       t.string :name, null: false
       t.string :slug, null: false
       t.text :quick_bites_content
+      t.text :aisle_order
       t.timestamps
       t.index :slug, unique: true
     end
@@ -32,20 +33,13 @@ class CreateSchema < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    create_table :connected_services do |t|
-      t.references :user, null: false, foreign_key: true
-      t.string :provider, null: false
-      t.string :uid, null: false
-      t.timestamps
-      t.index %i[provider uid], unique: true
-    end
-
     create_table :categories do |t|
       t.references :kitchen, null: false, foreign_key: true
       t.string :name, null: false
       t.string :slug, null: false
       t.integer :position, null: false, default: 0
       t.timestamps
+      t.index %i[kitchen_id name], unique: true
       t.index %i[kitchen_id slug], unique: true
       t.index :position
     end
@@ -69,11 +63,12 @@ class CreateSchema < ActiveRecord::Migration[8.1]
 
     create_table :steps do |t|
       t.references :recipe, null: false, foreign_key: true
-      t.string :title, null: false
+      t.string :title
       t.integer :position, null: false
       t.text :instructions
       t.text :processed_instructions
       t.timestamps
+      t.index %i[recipe_id position], unique: true
     end
 
     create_table :ingredients do |t|
@@ -84,12 +79,15 @@ class CreateSchema < ActiveRecord::Migration[8.1]
       t.string :prep_note
       t.integer :position, null: false
       t.timestamps
+      t.index %i[step_id position], unique: true
     end
 
     create_table :cross_references do |t|
       t.references :kitchen, null: false, foreign_key: true
       t.references :step, null: false, foreign_key: true
-      t.references :target_recipe, null: false, foreign_key: { to_table: :recipes }
+      t.references :target_recipe, foreign_key: { to_table: :recipes }
+      t.string :target_title, null: false
+      t.string :target_slug, null: false
       t.decimal :multiplier, precision: 8, scale: 2, null: false, default: 1.0
       t.string :prep_note
       t.integer :position, null: false
@@ -124,10 +122,10 @@ class CreateSchema < ActiveRecord::Migration[8.1]
       t.index %i[kitchen_id ingredient_name], unique: true
     end
 
-    create_table :grocery_lists do |t|
+    create_table :meal_plans do |t|
       t.references :kitchen, null: false, foreign_key: true, index: { unique: true }
       t.json :state, null: false, default: {}
-      t.integer :version, null: false, default: 0
+      t.integer :lock_version, null: false, default: 0
       t.timestamps
     end
   end
