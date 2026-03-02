@@ -121,11 +121,19 @@ Every class has an architectural header comment — read them first. This sectio
 
 **Hotwire stack.** Turbo Drive + Turbo Streams, Stimulus controllers, importmap-rails for ES modules. New JS modules must be pinned in `config/importmap.rb`; new Stimulus controllers auto-register via `pin_all_from`. CSP requires nonces for importmap's inline `<script>` — the nonce generator uses `request.session.id` (see `content_security_policy.rb`). Turbo's progress bar is disabled (`Turbo.config.drive.progressBarDelay = Infinity`) because CSP blocks its inline styles.
 
-**ActionCable.** `MealPlanChannel` syncs menu/groceries state via Solid Cable. Channel methods don't inherit controller tenant context — always wrap queries in `ActsAsTenant.with_tenant(kitchen)`. `broadcast_content_changed` notifies clients when recipes, Quick Bites, or aisle mappings change.
+**ActionCable.** `MealPlanChannel` syncs menu/groceries state via Solid Cable. Channel methods don't inherit controller tenant context — always wrap queries in `ActsAsTenant.with_tenant(kitchen)`. Two broadcast types: `broadcast_version` (state changes — clients poll for fresh data when stale) and `broadcast_content_changed` (recipe/Quick Bites/aisle changes — clients show a reload prompt).
 
 **Services.** Beyond `MarkdownImporter`, `app/services/` has: `ShoppingListBuilder` (grocery aggregation + aisle sorting), `RecipeBroadcaster` (Turbo Stream broadcasts on recipe CRUD, cascading through cross-references), `CrossReferenceUpdater` (rewrites `@[Title]` references in Markdown on rename/delete), `RecipeAvailabilityCalculator` (menu page ingredient-availability dots), `MarkdownValidator` (quick parse check without DB writes).
 
-**Nutrition pipeline.** `IngredientCatalog` is an overlay model — global seed entries plus per-kitchen overrides, merged by `lookup_for` with `Inflector` variant matching. `RecipeNutritionJob` recomputes a recipe's nutrition JSON from catalog data; `CascadeNutritionJob` fans out to cross-referencing recipes. `bin/nutrition` is a standalone TUI (TTY gems) for managing `ingredient-catalog.yaml` — USDA search, density/portions/nutrients editing. Modes: interactive, `--missing`, `--coverage`. Not loaded by Rails; `rake catalog:sync` pushes YAML changes into the database.
+**Controllers.** `LandingController` (root splash), `HomepageController` (kitchen home), `RecipesController`, `MenuController`, `GroceriesController`, `IngredientsController` (catalog admin), `NutritionEntriesController`, `PwaController`, `DevSessionsController` (test/dev login).
+
+**Concerns.** `Authentication` (session management, agnostic to auth entry point), `MealPlanActions` (optimistic-locking retry + version broadcasting for concurrent edits), `IngredientRows` (shared ingredient table data for index, Turbo Streams, and broadcasts).
+
+**Helpers.** `RecipesHelper` (Markdown rendering via Redcarpet, scalable quantities, nutrition labels — all `.html_safe` calls allowlisted), `IngredientsHelper` (catalog table formatting), `ApplicationHelper` (numeric display).
+
+**JS utilities.** `meal_plan_sync` (ActionCable subscription, version polling, offline queue, localStorage cache), `editor_utils` (CSRF, fetch, error handling for editor dialogs), `notify` (toast notifications), `vulgar_fractions` (Unicode fraction formatting for scaled ingredients).
+
+**Nutrition pipeline.** `IngredientCatalog` is an overlay model — global seed entries plus per-kitchen overrides, merged by `lookup_for` with `Inflector` variant matching and a JSON `aliases` column for explicit alternate names (e.g., "all-purpose flour" → "Flour (all-purpose)"). `RecipeNutritionJob` recomputes a recipe's nutrition JSON from catalog data; `CascadeNutritionJob` fans out to cross-referencing recipes. `bin/nutrition` is a standalone TUI (TTY gems) for managing `ingredient-catalog.yaml` — USDA search, density/portions/nutrients editing. Modes: interactive, `--missing`, `--coverage`. Not loaded by Rails; `rake catalog:sync` pushes YAML changes into the database.
 
 ## Recipe & Data Formats
 
