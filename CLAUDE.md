@@ -120,6 +120,10 @@ Every class has an architectural header comment — read them first. This sectio
 
 **ActionCable.** `MealPlanChannel` syncs menu/groceries state via Solid Cable. Channel methods don't inherit controller tenant context — always wrap queries in `ActsAsTenant.with_tenant(kitchen)`. `broadcast_content_changed` notifies clients when recipes, Quick Bites, or aisle mappings change.
 
+**Services.** Beyond `MarkdownImporter`, `app/services/` has: `ShoppingListBuilder` (grocery aggregation + aisle sorting), `RecipeBroadcaster` (Turbo Stream broadcasts on recipe CRUD, cascading through cross-references), `CrossReferenceUpdater` (rewrites `@[Title]` references in Markdown on rename/delete), `RecipeAvailabilityCalculator` (menu page ingredient-availability dots), `MarkdownValidator` (quick parse check without DB writes).
+
+**Nutrition pipeline.** `IngredientCatalog` is an overlay model — global seed entries plus per-kitchen overrides, merged by `lookup_for` with `Inflector` variant matching. `RecipeNutritionJob` recomputes a recipe's nutrition JSON from catalog data; `CascadeNutritionJob` fans out to cross-referencing recipes. `bin/nutrition` is a standalone TUI (TTY gems) for managing `ingredient-catalog.yaml` — USDA search, density/portions/nutrients editing. Modes: interactive, `--missing`, `--coverage`. Not loaded by Rails; `rake catalog:sync` pushes YAML changes into the database.
+
 ## Recipe & Data Formats
 
 Recipe source files are Markdown with some custom syntax:

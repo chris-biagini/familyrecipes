@@ -1,6 +1,13 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
+# Standalone TUI for managing ingredient-catalog.yaml — the seed file that
+# populates IngredientCatalog rows. Searches USDA FoodData Central, lets you
+# review/edit density, portions, and nutrients, then writes back to YAML.
+# Three modes: interactive (single ingredient), --missing (batch iterate
+# uncataloged ingredients), --coverage (resolution summary). Uses the TTY gem
+# suite for prompts/tables/spinners. Not loaded by Rails.
+
 require 'bundler/setup'
 require 'active_support/core_ext/object/blank'
 require 'active_support/core_ext/enumerable'

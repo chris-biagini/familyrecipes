@@ -1,5 +1,9 @@
 # frozen_string_literal: true
 
+# Syncs ingredient-catalog.yaml into global (kitchen_id: nil) IngredientCatalog
+# rows. Idempotent — creates, updates, or skips each entry. Used after editing
+# the YAML seed file to push changes into the database without a full db:seed.
+
 def sync_catalog_entry(name, entry)
   profile = IngredientCatalog.find_or_initialize_by(kitchen_id: nil, ingredient_name: name)
   profile.assign_attributes(IngredientCatalog.attrs_from_yaml(entry))
