@@ -32,6 +32,28 @@ class CatalogSyncTest < ActiveSupport::TestCase
                  "#{failures.size} catalog entries failed validation:\n  #{failures.join("\n  ")}"
   end
 
+  test 'sync preserves aliases from YAML entries' do
+    IngredientCatalog.where(kitchen_id: nil).delete_all
+
+    yaml_content = {
+      'Flour (all-purpose)' => {
+        'aisle' => 'Baking',
+        'aliases' => ['AP flour', 'Plain flour'],
+        'nutrients' => { 'basis_grams' => 30, 'calories' => 110 }
+      }
+    }
+
+    yaml_content.each do |name, entry|
+      profile = IngredientCatalog.find_or_initialize_by(kitchen_id: nil, ingredient_name: name)
+      profile.assign_attributes(build_attrs(entry))
+      profile.save!
+    end
+
+    record = IngredientCatalog.find_by!(kitchen_id: nil, ingredient_name: 'Flour (all-purpose)')
+
+    assert_equal ['AP flour', 'Plain flour'], record.aliases
+  end
+
   private
 
   def build_attrs(entry)
@@ -62,6 +84,7 @@ class CatalogSyncTest < ActiveSupport::TestCase
       )
     end
 
+    attrs[:aliases] = entry['aliases'] || []
     attrs[:portions] = entry['portions'] || {}
     attrs[:sources] = entry['sources'] || []
 

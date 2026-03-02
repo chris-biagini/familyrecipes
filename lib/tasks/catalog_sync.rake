@@ -38,6 +38,7 @@ def catalog_attrs(entry) # rubocop:disable Metrics/MethodLength
     )
   end
 
+  attrs[:aliases] = entry['aliases'] || []
   attrs[:portions] = entry['portions'] || {}
   attrs[:sources] = entry['sources'] || []
 
