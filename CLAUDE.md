@@ -123,11 +123,11 @@ Every class has an architectural header comment — read them first. This sectio
 
 **ActionCable.** `MealPlanChannel` syncs menu/groceries state via Solid Cable. Channel methods don't inherit controller tenant context — always wrap queries in `ActsAsTenant.with_tenant(kitchen)`. Two broadcast types: `broadcast_version` (state changes — clients poll for fresh data when stale) and `broadcast_content_changed` (recipe/Quick Bites/aisle changes — clients show a reload prompt).
 
-**Services.** Beyond `MarkdownImporter`, `app/services/` has: `ShoppingListBuilder` (grocery aggregation + aisle sorting), `RecipeBroadcaster` (Turbo Stream broadcasts on recipe CRUD, cascading through cross-references), `CrossReferenceUpdater` (rewrites `@[Title]` references in Markdown on rename/delete), `RecipeAvailabilityCalculator` (menu page ingredient-availability dots), `MarkdownValidator` (quick parse check without DB writes).
+**Services.** Beyond `MarkdownImporter`, `app/services/` has: `RecipeWriteService` (create/update/destroy orchestration — import, cross-reference cascades, broadcasting, category cleanup, meal plan pruning), `ShoppingListBuilder` (grocery aggregation + aisle sorting), `RecipeBroadcaster` (Turbo Stream broadcasts on recipe CRUD, cascading through cross-references), `CrossReferenceUpdater` (rewrites `@[Title]` references in Markdown on rename/delete), `RecipeAvailabilityCalculator` (menu page ingredient-availability dots), `MarkdownValidator` (quick parse check without DB writes).
 
 **Controllers.** `LandingController` (root splash), `HomepageController` (kitchen home), `RecipesController`, `MenuController`, `GroceriesController`, `IngredientsController` (catalog admin), `NutritionEntriesController`, `PwaController`, `DevSessionsController` (test/dev login).
 
-**Concerns.** `Authentication` (session management, agnostic to auth entry point), `MealPlanActions` (optimistic-locking retry + version broadcasting for concurrent edits), `IngredientRows` (shared ingredient table data for index, Turbo Streams, and broadcasts).
+**Concerns.** `Authentication` (session management, agnostic to auth entry point), `MealPlanActions` (optimistic-locking retry + version broadcasting for concurrent edits; used by MenuController and GroceriesController), `IngredientRows` (shared ingredient table data for index, Turbo Streams, and broadcasts).
 
 **Helpers.** `RecipesHelper` (Markdown rendering via Redcarpet, scalable quantities, nutrition labels — all `.html_safe` calls allowlisted), `IngredientsHelper` (catalog table formatting), `ApplicationHelper` (numeric display).
 
