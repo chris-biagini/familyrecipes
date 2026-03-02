@@ -53,4 +53,108 @@ class RecipeWriteServiceTest < ActiveSupport::TestCase
       RecipeWriteService.create(markdown: 'not a recipe at all', kitchen: @kitchen)
     end
   end
+
+  test 'update imports recipe and returns Result' do
+    RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen)
+
+    updated = <<~MD
+      # Focaccia
+
+      A revised flatbread.
+
+      Category: Bread
+      Serves: 12
+
+      ## Make the dough (combine ingredients)
+
+      - Flour, 4 cups
+
+      Mix everything.
+    MD
+
+    result = RecipeWriteService.update(slug: 'focaccia', markdown: updated, kitchen: @kitchen)
+
+    assert_equal 'Focaccia', result.recipe.title
+    assert_equal 'A revised flatbread.', result.recipe.description
+    assert_empty result.updated_references
+  end
+
+  test 'update with title rename returns updated_references' do
+    RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen)
+
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Panzanella
+
+      Category: Bread
+
+      ## Make bread.
+      >>> @[Focaccia], 1
+
+      ## Assemble (put it together)
+
+      - Tomatoes, 3
+
+      Tear bread and toss.
+    MD
+
+    renamed = <<~MD
+      # Rosemary Focaccia
+
+      Category: Bread
+      Serves: 8
+
+      ## Make the dough (combine ingredients)
+
+      - Flour, 4 cups
+
+      Mix everything.
+    MD
+
+    result = RecipeWriteService.update(slug: 'focaccia', markdown: renamed, kitchen: @kitchen)
+
+    assert_includes result.updated_references, 'Panzanella'
+    assert_equal 'rosemary-focaccia', result.recipe.slug
+  end
+
+  test 'update with slug change destroys old record' do
+    RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen)
+
+    renamed = <<~MD
+      # Rosemary Focaccia
+
+      Category: Bread
+
+      ## Make (do it)
+
+      - Flour, 4 cups
+
+      Mix.
+    MD
+
+    RecipeWriteService.update(slug: 'focaccia', markdown: renamed, kitchen: @kitchen)
+
+    assert_nil Recipe.find_by(slug: 'focaccia')
+    assert Recipe.find_by(slug: 'rosemary-focaccia')
+  end
+
+  test 'update cleans up orphan categories' do
+    RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen)
+
+    recategorized = <<~MD
+      # Focaccia
+
+      Category: Pastry
+
+      ## Make (do it)
+
+      - Flour, 3 cups
+
+      Mix.
+    MD
+
+    RecipeWriteService.update(slug: 'focaccia', markdown: recategorized, kitchen: @kitchen)
+
+    assert_nil Category.find_by(slug: 'bread')
+    assert Category.find_by(slug: 'pastry')
+  end
 end

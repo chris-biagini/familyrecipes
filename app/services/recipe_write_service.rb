@@ -31,6 +31,16 @@ class RecipeWriteService
     Result.new(recipe:, updated_references: [])
   end
 
+  def update(slug:, markdown:)
+    old_recipe = kitchen.recipes.find_by!(slug:)
+    recipe = import_and_timestamp(markdown)
+    updated_references = rename_cross_references(old_recipe, recipe)
+    handle_slug_change(old_recipe, recipe)
+    RecipeBroadcaster.broadcast(kitchen:, action: :updated, recipe_title: recipe.title, recipe:)
+    post_write_cleanup
+    Result.new(recipe:, updated_references:)
+  end
+
   private
 
   attr_reader :kitchen
@@ -39,6 +49,24 @@ class RecipeWriteService
     recipe = MarkdownImporter.import(markdown, kitchen:)
     recipe.update!(edited_at: Time.current)
     recipe
+  end
+
+  def rename_cross_references(old_recipe, new_recipe)
+    return [] if old_recipe.title == new_recipe.title
+
+    CrossReferenceUpdater.rename_references(
+      old_title: old_recipe.title, new_title: new_recipe.title, kitchen:
+    )
+  end
+
+  def handle_slug_change(old_recipe, new_recipe)
+    return if new_recipe.slug == old_recipe.slug
+
+    RecipeBroadcaster.broadcast_rename(
+      old_recipe, new_title: new_recipe.title,
+      redirect_path: Rails.application.routes.url_helpers.recipe_path(new_recipe)
+    )
+    old_recipe.destroy!
   end
 
   def post_write_cleanup
