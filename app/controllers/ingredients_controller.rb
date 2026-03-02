@@ -25,7 +25,7 @@ class IngredientsController < ApplicationController
 
     render partial: 'ingredients/editor_form',
            locals: { ingredient_name:, entry:, available_aisles: aisles,
-                     next_name: next_needing_attention(ingredient_name),
+                     next_name: next_needing_attention(after: ingredient_name, lookup: catalog_lookup),
                      recipes: }
   end
 
@@ -34,18 +34,6 @@ class IngredientsController < ApplicationController
   def first_needing_attention
     row = @ingredient_rows.find { |r| r[:status] != 'complete' }
     row&.fetch(:name)
-  end
-
-  def next_needing_attention(current_name)
-    sorted = sorted_ingredient_names(catalog_lookup)
-    idx = sorted.index(current_name)
-    return unless idx
-
-    sorted[(idx + 1)..].find { |name| row_status(catalog_lookup[name]) != 'complete' }
-  end
-
-  def sorted_ingredient_names(lookup)
-    recipes_by_ingredient(lookup).keys.sort_by(&:downcase)
   end
 
   def recipes_for_ingredient(name)

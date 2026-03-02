@@ -79,7 +79,10 @@ class NutritionEntriesController < ApplicationController
 
   def render_json_response
     response_body = { status: 'ok' }
-    response_body[:next_ingredient] = find_next_needing_attention if params[:save_and_next]
+    if params[:save_and_next]
+      lookup = IngredientCatalog.lookup_for(current_kitchen)
+      response_body[:next_ingredient] = next_needing_attention(after: ingredient_name, lookup:)
+    end
     render json: response_body
   end
 
@@ -88,7 +91,7 @@ class NutritionEntriesController < ApplicationController
     all_rows = build_ingredient_rows(lookup)
     @updated_row = all_rows.find { |r| r[:name].casecmp(ingredient_name).zero? }
     @summary = build_summary(all_rows)
-    @next_ingredient = find_next_needing_attention if params[:save_and_next]
+    @next_ingredient = next_needing_attention(after: ingredient_name, lookup:) if params[:save_and_next]
 
     render :upsert
   end
@@ -112,29 +115,5 @@ class NutritionEntriesController < ApplicationController
                    .where('LOWER(ingredients.name) = ?', canonical)
                    .distinct
                    .find_each { |recipe| RecipeNutritionJob.perform_now(recipe) }
-  end
-
-  def find_next_needing_attention
-    lookup = IngredientCatalog.lookup_for(current_kitchen)
-    sorted = canonical_ingredient_names(lookup)
-    idx = sorted.index { |name| name.casecmp(ingredient_name).zero? }
-    return unless idx
-
-    sorted[(idx + 1)..].find { |name| ingredient_incomplete?(lookup[name]) }
-  end
-
-  def canonical_ingredient_names(lookup)
-    raw_names = Ingredient.joins(step: :recipe)
-                          .where(recipes: { kitchen: current_kitchen })
-                          .distinct
-                          .pluck(:name)
-
-    raw_names.map { |name| lookup[name]&.ingredient_name || name }
-             .uniq
-             .sort_by(&:downcase)
-  end
-
-  def ingredient_incomplete?(entry)
-    entry&.basis_grams.blank? || entry.density_grams.blank?
   end
 end

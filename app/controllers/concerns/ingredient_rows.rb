@@ -56,6 +56,14 @@ module IngredientRows
     end
   end
 
+  def next_needing_attention(after:, lookup:)
+    sorted = recipes_by_ingredient(lookup).keys.sort_by(&:downcase)
+    idx = sorted.index { |name| name.casecmp(after).zero? }
+    return unless idx
+
+    sorted[(idx + 1)..].find { |name| row_status(lookup[name]) != 'complete' }
+  end
+
   def canonical_ingredient_name(name, index, lookup)
     entry = lookup[name]
     return entry.ingredient_name if entry
