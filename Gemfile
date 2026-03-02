@@ -23,4 +23,10 @@ group :development do
   gem 'rubocop-minitest', require: false
   gem 'rubocop-performance', require: false
   gem 'rubocop-rails', require: false
+
+  gem 'pastel'
+  gem 'tty-box'
+  gem 'tty-prompt'
+  gem 'tty-spinner'
+  gem 'tty-table'
 end
