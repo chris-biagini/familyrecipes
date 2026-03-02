@@ -17,6 +17,8 @@ class MealPlan < ApplicationRecord
 
   def self.for_kitchen(kitchen)
     find_or_create_by!(kitchen: kitchen)
+  rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotUnique
+    find_by!(kitchen: kitchen)
   end
 
   def apply_action(action_type, **params)

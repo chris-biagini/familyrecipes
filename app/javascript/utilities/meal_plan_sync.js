@@ -106,24 +106,24 @@ export default class MealPlanSync {
         return response.json()
       })
       .then(data => {
-        if (forceNotify || data.version >= this.version) {
-          const isRemoteUpdate = !forceNotify
-            && data.version > this.version
-            && this.version > 0
-            && !this.awaitingOwnAction
-            && !this.initialFetch
-          this.awaitingOwnAction = false
-          this.initialFetch = false
-          this.version = data.version
-          this.state = data
-          this.saveCache()
-          this.onStateUpdate(data)
-          if (forceNotify || isRemoteUpdate) {
-            notifyShow(this.remoteUpdateMessage)
-          }
+        const isRemoteUpdate = !forceNotify
+          && data.version > this.version
+          && this.version > 0
+          && !this.awaitingOwnAction
+          && !this.initialFetch
+        this.awaitingOwnAction = false
+        this.initialFetch = false
+        this.version = data.version
+        this.state = data
+        this.saveCache()
+        this.onStateUpdate(data)
+        if (forceNotify || isRemoteUpdate) {
+          notifyShow(this.remoteUpdateMessage)
         }
       })
-      .catch(() => {})
+      .catch(() => {
+        this.awaitingOwnAction = false
+      })
   }
 
   subscribe(slug) {
@@ -136,7 +136,7 @@ export default class MealPlanSync {
             this.fetchState(true)
             return
           }
-          if (data.version && data.version > this.version && !this.awaitingOwnAction) {
+          if (data.version && data.version !== this.version && !this.awaitingOwnAction) {
             this.fetchState()
           }
         },
