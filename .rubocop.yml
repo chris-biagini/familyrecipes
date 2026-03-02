@@ -91,3 +91,4 @@ Rails/RefuteMethods:
     - test/recipe_test.rb
     - test/scalable_number_preprocessor_test.rb
     - test/vulgar_fractions_test.rb
+    - test/usda_client_test.rb
