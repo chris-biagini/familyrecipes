@@ -7,7 +7,6 @@ require 'active_support/core_ext/enumerable'
 require 'tty-prompt'
 require 'tty-table'
 require 'tty-spinner'
-require 'tty-box'
 require 'pastel'
 require_relative '../lib/familyrecipes'
 
@@ -42,18 +41,21 @@ end
 
 def save_nutrition_data(data)
   sorted = data.sort_by { |k, _| k.downcase }.to_h
-
-  sorted.each_value do |entry|
-    entry['nutrients'].transform_values! { |v| v.is_a?(Float) ? v.round(4) : v } if entry['nutrients'].is_a?(Hash)
-    entry['portions'].transform_values! { |v| v.is_a?(Float) ? v.round(2) : v } if entry['portions'].is_a?(Hash)
-    next unless entry['density'].is_a?(Hash)
-
-    entry['density']['grams'] = entry['density']['grams'].round(2) if entry['density']['grams'].is_a?(Float)
-    entry['density']['volume'] = entry['density']['volume'].round(4) if entry['density']['volume'].is_a?(Float)
-  end
+  sorted.each_value { |entry| round_entry_values(entry) }
 
   File.write(NUTRITION_PATH, YAML.dump(sorted))
   puts "Saved to #{NUTRITION_PATH}"
+end
+
+def round_entry_values(entry)
+  entry['nutrients'].transform_values! { |v| v.is_a?(Float) ? v.round(4) : v } if entry['nutrients'].is_a?(Hash)
+  entry['portions'].transform_values! { |v| v.is_a?(Float) ? v.round(2) : v } if entry['portions'].is_a?(Hash)
+  round_density(entry['density']) if entry['density'].is_a?(Hash)
+end
+
+def round_density(density)
+  density['grams'] = density['grams'].round(2) if density['grams'].is_a?(Float)
+  density['volume'] = density['volume'].round(4) if density['volume'].is_a?(Float)
 end
 
 # --- Variant-aware lookup (mirrors IngredientCatalog.lookup_for) ---
@@ -573,45 +575,54 @@ end
 
 def find_missing_ingredients(nutrition_data, ctx)
   lookup = build_lookup(nutrition_data)
+  recipes_map = build_ingredients_to_recipes(ctx)
 
-  ingredients_to_recipes = Hash.new { |h, k| h[k] = [] }
-  ctx[:recipes].each do |recipe|
+  missing = recipes_map.keys.reject { |name| resolve_to_canonical(name, lookup) }
+  missing.sort_by! { |name| [-recipes_map[name].uniq.size, name] }
+
+  unresolvable = find_unresolvable_units(nutrition_data, ctx, lookup)
+
+  { missing: missing, ingredients_to_recipes: recipes_map, unresolvable: unresolvable }
+end
+
+def build_ingredients_to_recipes(ctx)
+  ctx[:recipes].each_with_object(Hash.new { |h, k| h[k] = [] }) do |recipe, map|
     recipe.all_ingredient_names.each do |name|
-      ingredients_to_recipes[name] << recipe.title unless ctx[:omit_set].include?(name.downcase)
+      map[name] << recipe.title unless ctx[:omit_set].include?(name.downcase)
     end
   end
+end
 
-  missing = ingredients_to_recipes.keys.reject { |name| resolve_to_canonical(name, lookup) }
-  missing.sort_by! { |name| [-ingredients_to_recipes[name].uniq.size, name] }
-
-  # Find entries with unresolvable units
+def find_unresolvable_units(nutrition_data, ctx, lookup)
   calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data, omit_set: ctx[:omit_set])
 
-  unresolvable = Hash.new { |h, k| h[k] = { units: Set.new, recipes: [] } }
-
-  ctx[:recipes].each do |recipe|
+  ctx[:recipes].each_with_object(Hash.new { |h, k| h[k] = { units: Set.new, recipes: [] } }) do |recipe, result|
     recipe.all_ingredients_with_quantities(ctx[:recipe_map]).each do |name, amounts|
       next if ctx[:omit_set].include?(name.downcase)
 
-      canonical = resolve_to_canonical(name, lookup)
-      next unless canonical
-
-      calc_entry = calculator.nutrition_data[canonical]
+      calc_entry = resolve_calc_entry(name, lookup, calculator)
       next unless calc_entry
 
-      amounts.each do |amount|
-        next if amount.nil?
-        next if amount.value.nil?
-        next if calculator.resolvable?(amount.value, amount.unit, calc_entry)
-
-        info = unresolvable[name]
-        info[:units] << (amount.unit || '(bare count)')
-        info[:recipes] |= [recipe.title]
+      collect_bad_units(amounts, calc_entry, calculator).each do |unit|
+        result[name][:units] << unit
+        result[name][:recipes] |= [recipe.title]
       end
     end
   end
+end
 
-  { missing: missing, ingredients_to_recipes: ingredients_to_recipes, unresolvable: unresolvable }
+def resolve_calc_entry(name, lookup, calculator)
+  canonical = resolve_to_canonical(name, lookup)
+  canonical && calculator.nutrition_data[canonical]
+end
+
+def collect_bad_units(amounts, calc_entry, calculator)
+  amounts.filter_map do |amount|
+    next if amount.nil? || amount.value.nil?
+    next if calculator.resolvable?(amount.value, amount.unit, calc_entry)
+
+    amount.unit || '(bare count)'
+  end
 end
 
 def display_missing_report(missing, recipes_map)
@@ -681,19 +692,10 @@ def count_resolvable(nutrition_data, ctx)
     recipe.all_ingredients_with_quantities(ctx[:recipe_map]).each do |name, amounts|
       next if ctx[:omit_set].include?(name.downcase)
 
-      canonical = resolve_to_canonical(name, lookup)
-      next unless canonical
-
-      calc_entry = calculator.nutrition_data[canonical]
+      calc_entry = resolve_calc_entry(name, lookup, calculator)
       next unless calc_entry
 
-      amounts.each do |amount|
-        next if amount.nil? || amount.value.nil?
-        next if calculator.resolvable?(amount.value, amount.unit, calc_entry)
-
-        fully[name] = false
-      end
-
+      fully[name] = false if collect_bad_units(amounts, calc_entry, calculator).any?
       fully[name] = true unless fully.key?(name)
     end
   end
