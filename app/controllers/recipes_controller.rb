@@ -1,12 +1,10 @@
 # frozen_string_literal: true
 
-# CRUD for recipes. Show is public; create/update/destroy require membership.
-# Write actions validate Markdown, run MarkdownImporter (parser → DB), cascade
-# cross-reference updates, recalculate nutrition, prune stale meal plan entries,
-# and broadcast real-time updates via RecipeBroadcaster.
+# Thin HTTP adapter for recipe CRUD. Show is public; writes require membership.
+# Validates Markdown params, delegates to RecipeWriteService for orchestration,
+# and renders JSON responses. All domain logic (import, broadcast, cleanup)
+# lives in the service.
 class RecipesController < ApplicationController
-  include MealPlanActions
-
   before_action :require_membership, only: %i[create update destroy]
 
   def show
@@ -20,80 +18,44 @@ class RecipesController < ApplicationController
   end
 
   def create
-    errors = MarkdownValidator.validate(params[:markdown_source])
-    return render json: { errors: }, status: :unprocessable_content if errors.any?
+    return render_validation_errors if validation_errors.any?
 
-    recipe = MarkdownImporter.import(params[:markdown_source], kitchen: current_kitchen)
-    recipe.update!(edited_at: Time.current)
-
-    RecipeBroadcaster.broadcast(kitchen: current_kitchen, action: :created, recipe_title: recipe.title, recipe: recipe)
-    render json: { redirect_url: recipe_path(recipe.slug) }
+    result = RecipeWriteService.create(markdown: params[:markdown_source], kitchen: current_kitchen)
+    render json: { redirect_url: recipe_path(result.recipe.slug) }
   rescue ActiveRecord::RecordInvalid, RuntimeError => error
     render json: { errors: [error.message] }, status: :unprocessable_content
   end
 
-  def update # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
-    @recipe = current_kitchen.recipes.find_by!(slug: params[:slug])
+  def update
+    current_kitchen.recipes.find_by!(slug: params[:slug])
+    return render_validation_errors if validation_errors.any?
 
-    errors = MarkdownValidator.validate(params[:markdown_source])
-    return render json: { errors: }, status: :unprocessable_content if errors.any?
-
-    old_title = @recipe.title
-    recipe = MarkdownImporter.import(params[:markdown_source], kitchen: current_kitchen)
-
-    updated_references = if old_title == recipe.title
-                           []
-                         else
-                           CrossReferenceUpdater.rename_references(
-                             old_title:, new_title: recipe.title, kitchen: current_kitchen
-                           )
-                         end
-
-    if recipe.slug != @recipe.slug
-      RecipeBroadcaster.broadcast_rename(@recipe, new_title: recipe.title, redirect_path: recipe_path(recipe))
-      @recipe.destroy!
-    end
-    recipe.update!(edited_at: Time.current)
-    Category.cleanup_orphans(current_kitchen)
-    plan = MealPlan.for_kitchen(current_kitchen)
-    plan.with_optimistic_retry { plan.prune_checked_off(visible_names: build_visible_names(plan)) }
-
-    RecipeBroadcaster.broadcast(kitchen: current_kitchen, action: :updated, recipe_title: recipe.title, recipe: recipe)
-    response_json = { redirect_url: recipe_path(recipe.slug) }
-    response_json[:updated_references] = updated_references if updated_references.any?
-    render json: response_json
+    result = RecipeWriteService.update(
+      slug: params[:slug], markdown: params[:markdown_source], kitchen: current_kitchen
+    )
+    render json: update_response(result)
   rescue ActiveRecord::RecordInvalid, RuntimeError => error
     render json: { errors: [error.message] }, status: :unprocessable_content
-  end # rubocop:enable Metrics/MethodLength, Metrics/AbcSize
+  end
 
   def destroy
-    @recipe = current_kitchen.recipes.find_by!(slug: params[:slug])
-    parent_ids = @recipe.referencing_recipes.pluck(:id)
-
-    RecipeBroadcaster.notify_recipe_deleted(@recipe, recipe_title: @recipe.title)
-    @recipe.destroy!
-    broadcast_to_referencing_recipes(parent_ids) if parent_ids.any?
-    Category.cleanup_orphans(current_kitchen)
-    plan = MealPlan.for_kitchen(current_kitchen)
-    plan.with_optimistic_retry { plan.prune_checked_off(visible_names: build_visible_names(plan)) }
-
-    RecipeBroadcaster.broadcast(kitchen: current_kitchen, action: :deleted,
-                                recipe_title: @recipe.title)
-
+    RecipeWriteService.destroy(slug: params[:slug], kitchen: current_kitchen)
     render json: { redirect_url: home_path }
   end
 
   private
 
-  def broadcast_to_referencing_recipes(parent_ids)
-    parents = current_kitchen.recipes.where(id: parent_ids).includes(RecipeBroadcaster::SHOW_INCLUDES)
-    parents.find_each do |parent|
-      Turbo::StreamsChannel.broadcast_replace_to(
-        parent, 'content',
-        target: 'recipe-content',
-        partial: 'recipes/recipe_content',
-        locals: { recipe: parent, nutrition: parent.nutrition_data }
-      )
-    end
+  def validation_errors
+    @validation_errors ||= MarkdownValidator.validate(params[:markdown_source])
+  end
+
+  def render_validation_errors
+    render json: { errors: @validation_errors }, status: :unprocessable_content
+  end
+
+  def update_response(result)
+    response = { redirect_url: recipe_path(result.recipe.slug) }
+    response[:updated_references] = result.updated_references if result.updated_references.any?
+    response
   end
 end
