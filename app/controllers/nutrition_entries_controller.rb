@@ -56,7 +56,7 @@ class NutritionEntriesController < ApplicationController
   def permitted_portions
     return {} unless params[:portions]
 
-    params[:portions].to_unsafe_h.select { |k, v| k.is_a?(String) && k.size <= 50 && v.to_s.match?(/\A[\d.]+\z/) }
+    params[:portions].permit!.to_h.select { |k, v| k.size <= 50 && v.to_s.match?(/\A[\d.]+\z/) }
   end
 
   def render_errors(entry)
