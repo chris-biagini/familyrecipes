@@ -616,6 +616,73 @@ def run_missing_mode(nutrition_data, ctx, api_key:)
   end
 end
 
+# --- Coverage mode ---
+
+def count_resolvable(nutrition_data, ctx)
+  calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data, omit_set: ctx[:omit_set])
+
+  ctx[:recipes].each_with_object(Hash.new { |h, k| h[k] = true }) do |recipe, fully|
+    recipe.all_ingredients_with_quantities(ctx[:recipe_map]).each do |name, amounts|
+      next if ctx[:omit_set].include?(name.downcase)
+      next unless calculator.nutrition_data.key?(name)
+
+      amounts.each do |amount|
+        next if amount.nil? || amount.value.nil?
+        next if calculator.resolvable?(amount.value, amount.unit, calculator.nutrition_data[name])
+
+        fully[name] = false
+      end
+
+      fully[name] = true unless fully.key?(name)
+    end
+  end
+end
+
+def format_pct(count, total)
+  return '0%' if total.zero?
+
+  "#{(100.0 * count / total).round(0)}%"
+end
+
+def print_coverage_summary(total:, found:, resolvable:, missing:, omitted:)
+  puts 'Ingredient Coverage Report'
+  puts "  Total unique ingredients: #{total}"
+  puts "  Catalog entries found: #{found} (#{format_pct(found, total)})"
+  puts "  Fully resolvable: #{resolvable} (#{format_pct(resolvable, total)})"
+  puts "  Missing entirely: #{missing} (#{format_pct(missing, total)})"
+  puts "  Omitted: #{omitted}"
+end
+
+def print_top_missing(missing_names, recipes_map, limit: 15)
+  return if missing_names.empty?
+
+  puts "\nTop missing (by recipe count):"
+  missing_names.first(limit).each do |name|
+    puts "  #{name} (#{recipes_map[name].uniq.size} recipes)"
+  end
+end
+
+def run_coverage_mode
+  nutrition_data = load_nutrition_data
+  ctx = load_context
+
+  result = find_missing_ingredients(nutrition_data, ctx)
+  missing = result[:missing]
+  recipes_map = result[:ingredients_to_recipes]
+
+  total = recipes_map.size
+  missing_count = missing.size
+  found = total - missing_count
+  omitted = nutrition_data.count { |_, e| e['aisle'] == 'omit' }
+
+  resolvable_map = count_resolvable(nutrition_data, ctx)
+  resolvable = resolvable_map.count { |_, v| v }
+
+  print_coverage_summary(total: total, found: found, resolvable: resolvable,
+                         missing: missing_count, omitted: omitted)
+  print_top_missing(missing, recipes_map)
+end
+
 # --- Main ---
 
 if ARGV.include?('--help') || ARGV.include?('-h')
@@ -623,9 +690,15 @@ if ARGV.include?('--help') || ARGV.include?('-h')
   puts '  bin/nutrition                        Interactive prompt'
   puts '  bin/nutrition "Cream cheese"         Enter/edit data for an ingredient'
   puts '  bin/nutrition --missing              Report + batch iterate missing data'
+  puts '  bin/nutrition --coverage             Ingredient coverage summary report'
   puts ''
   puts 'Requires USDA_API_KEY in .env or environment.'
   puts '  Free key: https://fdc.nal.usda.gov/api-key-signup'
+  exit 0
+end
+
+if ARGV.include?('--coverage')
+  run_coverage_mode
   exit 0
 end
 
