@@ -302,13 +302,15 @@ Celery:
 Cereal:
   aisle: Cereal
 Cheddar:
+  aliases:
+  - Cheddar cheese
   aisle: Refrigerated
   nutrients:
     basis_grams: 100.0
     calories: 410.0
     fat: 33.82
-    saturated_fat: 19.368
-    trans_fat: 1.179
+    saturated_fat: 19.37
+    trans_fat: 1.18
     cholesterol: 99.0
     sodium: 644.0
     carbs: 2.13
@@ -317,7 +319,7 @@ Cheddar:
     protein: 24.25
     added_sugars: 0.0
   portions:
-    slice: 19.0
+    slice: 28.0
   sources:
   - type: usda
     dataset: SR Legacy
@@ -365,6 +367,30 @@ Cinnamon:
     description: Spices, cinnamon, ground
 Clementines:
   aisle: Produce
+Coconut oil:
+  aisle: Pantry
+  nutrients:
+    basis_grams: 100.0
+    calories: 892.0
+    fat: 99.06
+    saturated_fat: 82.48
+    trans_fat: 0.03
+    cholesterol: 0.0
+    sodium: 0.0
+    carbs: 0.0
+    fiber: 0.0
+    total_sugars: 0.0
+    protein: 0.0
+    added_sugars: 0.0
+  density:
+    grams: 218.0
+    volume: 1.0
+    unit: cup
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 171412
+    description: Oil, coconut
 Coffee:
   aisle: Pantry
 Coffee (decaf):
@@ -628,6 +654,28 @@ Heavy cream:
   - Whipping cream
   - Heavy whipping cream
   aisle: Refrigerated
+  nutrients:
+    basis_grams: 100.0
+    calories: 340.0
+    fat: 36.08
+    saturated_fat: 23.03
+    trans_fat: 1.24
+    cholesterol: 113.0
+    sodium: 27.0
+    carbs: 2.84
+    fiber: 0.0
+    total_sugars: 2.92
+    protein: 2.84
+    added_sugars: 0.0
+  density:
+    grams: 238.0
+    volume: 1.0
+    unit: cup
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 170859
+    description: Cream, fluid, heavy whipping
 Hershey's Kisses:
   aisle: Snacks
 Honey:
@@ -813,19 +861,21 @@ Mexican oregano:
 Mezze rigatoni:
   aisle: Pantry
 Milk:
+  aliases:
+  - Whole milk
   aisle: Refrigerated
   nutrients:
     basis_grams: 100.0
-    calories: 64.0
-    fat: 3.66
-    saturated_fat: 2.278
+    calories: 61.0
+    fat: 3.25
+    saturated_fat: 1.87
     trans_fat: 0.0
-    cholesterol: 14.0
-    sodium: 49.0
-    carbs: 4.65
+    cholesterol: 10.0
+    sodium: 43.0
+    carbs: 4.8
     fiber: 0.0
-    total_sugars: 0.0
-    protein: 3.28
+    total_sugars: 5.05
+    protein: 3.15
     added_sugars: 0.0
   density:
     grams: 244.0
@@ -834,8 +884,8 @@ Milk:
   sources:
   - type: usda
     dataset: SR Legacy
-    fdc_id: 171266
-    description: Milk, producer, fluid, 3.7% milkfat
+    fdc_id: 171265
+    description: Milk, whole, 3.25% milkfat, with added vitamin D
 Monterey jack cheese:
   aisle: Refrigerated
 Mozzarella (fresh):
@@ -1149,6 +1199,28 @@ Sorbet:
   aisle: Frozen
 Sour cream:
   aisle: Refrigerated
+  nutrients:
+    basis_grams: 100.0
+    calories: 198.0
+    fat: 19.35
+    saturated_fat: 10.14
+    trans_fat: 0.8
+    cholesterol: 59.0
+    sodium: 31.0
+    carbs: 4.63
+    fiber: 0.0
+    total_sugars: 3.41
+    protein: 2.44
+    added_sugars: 0.0
+  density:
+    grams: 230.0
+    volume: 1.0
+    unit: cup
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 171257
+    description: Cream, sour, cultured
 Sourdough starter:
   aisle: omit
 Soy sauce:
