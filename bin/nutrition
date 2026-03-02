@@ -4,6 +4,11 @@
 require 'bundler/setup'
 require 'active_support/core_ext/object/blank'
 require 'active_support/core_ext/enumerable'
+require 'tty-prompt'
+require 'tty-table'
+require 'tty-spinner'
+require 'tty-box'
+require 'pastel'
 require_relative '../lib/familyrecipes'
 
 PROJECT_ROOT = File.expand_path('..', __dir__)
@@ -23,6 +28,9 @@ NUTRIENTS = [
   { key: 'added_sugars',  label: 'Added sugars',    unit: 'g',  indent: 2 },
   { key: 'protein',       label: 'Protein',         unit: 'g',  indent: 0 }
 ].freeze
+
+PROMPT = TTY::Prompt.new
+PASTEL = Pastel.new
 
 # --- Data I/O ---
 
@@ -204,44 +212,69 @@ end
 
 # --- USDA search and pick ---
 
+def with_spinner(message)
+  spinner = TTY::Spinner.new("[:spinner] #{message}", format: :dots)
+  spinner.auto_spin
+  result = yield
+  spinner.success
+  result
+rescue FamilyRecipes::UsdaClient::Error => error
+  spinner.error
+  puts PASTEL.red(error.message)
+  nil
+end
+
+def default_search_query(name)
+  name.gsub(/[(),]/, ' ').squeeze(' ').strip
+end
+
+def search_header(result)
+  "Page #{result[:current_page] + 1} of #{result[:total_pages]} (#{result[:total_hits]} results)"
+end
+
+def build_search_choices(result)
+  choices = result[:foods].map do |food|
+    { name: "#{food[:description]}\n    #{PASTEL.dim(food[:nutrient_summary])}", value: food }
+  end
+
+  choices << { name: PASTEL.cyan('Next page →'), value: :next_page } if result[:current_page] + 1 < result[:total_pages]
+  choices << { name: PASTEL.cyan('← Previous page'), value: :prev_page } if result[:current_page].positive?
+  choices << { name: 'Search again', value: :search }
+  choices << { name: 'Quit', value: :quit }
+  choices
+end
+
 def search_and_pick(client, name)
-  default_query = name.sub(/\s*\(.*\)/, '').strip
+  query = default_search_query(name)
 
   loop do
-    print "\nSearch USDA [#{default_query}]: "
-    input = $stdin.gets&.strip
-    return nil if input&.downcase == 'q'
+    query = PROMPT.ask('Search USDA:', default: query)
+    return nil unless query
 
-    query = input.presence || default_query
+    page = 0
+    loop do
+      result = with_spinner("Searching for \"#{query}\"...") { client.search(query, page: page) }
+      break unless result
 
-    puts "Searching for \"#{query}\"..."
-    result = client.search(query)
-    foods = result[:foods]
+      if result[:foods].empty?
+        puts PASTEL.yellow('No results found.')
+        break
+      end
 
-    if foods.empty?
-      puts '  No results found. Try a different search, or q to quit.'
-      next
+      selection = PROMPT.select(search_header(result), build_search_choices(result), per_page: 15)
+
+      case selection
+      when :next_page then page += 1
+      when :prev_page then page -= 1
+      when :search    then break
+      when :quit      then return nil
+      else
+        detail = with_spinner("Fetching #{selection[:description]}...") do
+          client.fetch(fdc_id: selection[:fdc_id])
+        end
+        return detail if detail
+      end
     end
-
-    puts "\nResults:"
-    foods.each_with_index do |food, idx|
-      puts "  #{idx + 1}. [#{food[:fdc_id]}] #{food[:description]}"
-      puts "         #{food[:nutrient_summary]}"
-    end
-    puts '  s. Search again'
-    puts '  q. Quit'
-
-    print "\nPick (1-#{foods.size}): "
-    choice = $stdin.gets&.strip
-    return nil if choice&.downcase == 'q'
-    next if choice&.downcase == 's'
-
-    idx = choice.to_i - 1
-    next unless idx >= 0 && idx < foods.size
-
-    picked = foods[idx]
-    puts "\nFetching detail for #{picked[:description]}..."
-    client.fetch(fdc_id: picked[:fdc_id])
   end
 end
 
