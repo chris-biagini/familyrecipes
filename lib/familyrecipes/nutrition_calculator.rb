@@ -169,7 +169,7 @@ module FamilyRecipes
     def parse_serving_count(recipe)
       if recipe.serves
         recipe.serves.to_i
-      elsif recipe.makes
+      elsif recipe.makes_quantity
         recipe.makes_quantity&.to_i
       end
     end

@@ -29,13 +29,6 @@ class Recipe < ApplicationRecord
 
   before_validation :generate_slug, if: -> { slug.blank? && title.present? }
 
-  def makes
-    return unless makes_quantity
-
-    unit = makes_unit_noun
-    "#{makes_quantity.to_i == makes_quantity ? makes_quantity.to_i : makes_quantity} #{unit}"
-  end
-
   def own_ingredients_aggregated
     ingredients.group_by(&:name).transform_values do |group|
       IngredientAggregator.aggregate_amounts(group)

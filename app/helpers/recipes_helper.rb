@@ -31,6 +31,12 @@ module RecipesHelper
     ScalableNumberPreprocessor.process_yield_with_unit(text, singular, plural).html_safe # rubocop:disable Rails/OutputSafety
   end
 
+  def format_makes(recipe)
+    return unless recipe.makes_quantity
+
+    "#{format_numeric(recipe.makes_quantity)} #{recipe.makes_unit_noun}"
+  end
+
   def nutrition_columns(nutrition) # rubocop:disable Metrics/PerceivedComplexity
     has_per_unit = nutrition['per_unit'] && nutrition['makes_quantity']&.to_f&.positive?
     has_per_serving = nutrition['per_serving'] && nutrition['serving_count']
