@@ -323,22 +323,33 @@ def suggest_aliases(name, _entry)
   base, qualifier = name.match(/\A(.+?)\s*\(([^)]+)\)\z/)&.captures || [name, nil]
   return [] unless qualifier
 
-  [base, "#{qualifier.capitalize} #{base.downcase}"].uniq - [name]
+  [base.strip, "#{qualifier.strip.capitalize} #{base.strip.downcase}"].uniq - [name]
 end
 
 def prompt_aliases(name, entry)
   existing = entry['aliases'] || []
-  suggestions = suggest_aliases(name, entry)
+  suggestions = suggest_aliases(name, entry) - existing
 
-  puts "\nAliases (current: #{existing.any? ? existing.join(', ') : 'none'}):"
-  suggestions.each { |s| puts "  Suggested: #{s}" }
-  print '  Enter aliases (comma-separated), or Enter to keep current: '
+  all_options = existing.map { |a| { name: a, value: a } } +
+                suggestions.map { |a| { name: "#{a} #{PASTEL.dim('(suggested)')}", value: a } }
 
-  input = $stdin.gets&.strip
-  return existing if input.blank?
+  return prompt_custom_aliases(name) if all_options.empty?
 
-  new_aliases = input.split(',').map(&:strip).reject(&:empty?)
-  (existing + new_aliases).uniq
+  defaults = (1..existing.size).to_a
+  selected = PROMPT.multi_select("Aliases for #{name}:", all_options, default: defaults)
+
+  custom = PROMPT.ask('Additional aliases (comma-separated, or Enter to skip):')
+  (selected + parse_comma_aliases(custom)).uniq
+end
+
+def prompt_custom_aliases(name)
+  parse_comma_aliases(PROMPT.ask("Aliases for #{name} (comma-separated, or Enter to skip):"))
+end
+
+def parse_comma_aliases(input)
+  return [] if input.nil? || input.strip.empty?
+
+  input.split(',').map(&:strip).reject(&:empty?)
 end
 
 # --- Review ---
