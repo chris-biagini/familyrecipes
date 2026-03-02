@@ -65,6 +65,33 @@ def save_nutrition_data(data)
   puts "Saved to #{NUTRITION_PATH}"
 end
 
+# --- Variant-aware lookup (mirrors IngredientCatalog.lookup_for) ---
+
+def build_lookup(nutrition_data)
+  lookup = {}
+  nutrition_data.each do |name, entry|
+    lookup[name] = name
+    lookup[name.downcase] = name
+
+    FamilyRecipes::Inflector.ingredient_variants(name).each do |variant|
+      lookup[variant] ||= name
+      lookup[variant.downcase] ||= name
+    end
+
+    (entry['aliases'] || []).each do |alias_name|
+      next if nutrition_data.key?(alias_name)
+
+      lookup[alias_name] ||= name
+      lookup[alias_name.downcase] ||= name
+    end
+  end
+  lookup
+end
+
+def resolve_to_canonical(name, lookup)
+  lookup[name] || lookup[name.downcase]
+end
+
 # --- Context loading and name resolution ---
 
 def load_context
@@ -525,6 +552,8 @@ end
 # --- Missing mode ---
 
 def find_missing_ingredients(nutrition_data, ctx)
+  lookup = build_lookup(nutrition_data)
+
   ingredients_to_recipes = Hash.new { |h, k| h[k] = [] }
   ctx[:recipes].each do |recipe|
     recipe.all_ingredient_names.each do |name|
@@ -532,7 +561,7 @@ def find_missing_ingredients(nutrition_data, ctx)
     end
   end
 
-  missing = ingredients_to_recipes.keys.reject { |name| nutrition_data.key?(name) }
+  missing = ingredients_to_recipes.keys.reject { |name| resolve_to_canonical(name, lookup) }
   missing.sort_by! { |name| [-ingredients_to_recipes[name].uniq.size, name] }
 
   # Find entries with unresolvable units
@@ -544,15 +573,16 @@ def find_missing_ingredients(nutrition_data, ctx)
     recipe.all_ingredients_with_quantities(ctx[:recipe_map]).each do |name, amounts|
       next if ctx[:omit_set].include?(name.downcase)
 
-      entry = nutrition_data[name]
-      next unless entry
-      next unless calculator.nutrition_data.key?(name)
+      canonical = resolve_to_canonical(name, lookup)
+      next unless canonical
+
+      calc_entry = calculator.nutrition_data[canonical]
+      next unless calc_entry
 
       amounts.each do |amount|
         next if amount.nil?
         next if amount.value.nil?
-
-        next if calculator.resolvable?(amount.value, amount.unit, calculator.nutrition_data[name])
+        next if calculator.resolvable?(amount.value, amount.unit, calc_entry)
 
         info = unresolvable[name]
         info[:units] << (amount.unit || '(bare count)')
@@ -620,16 +650,22 @@ end
 # --- Coverage mode ---
 
 def count_resolvable(nutrition_data, ctx)
+  lookup = build_lookup(nutrition_data)
   calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data, omit_set: ctx[:omit_set])
 
   ctx[:recipes].each_with_object(Hash.new { |h, k| h[k] = true }) do |recipe, fully|
     recipe.all_ingredients_with_quantities(ctx[:recipe_map]).each do |name, amounts|
       next if ctx[:omit_set].include?(name.downcase)
-      next unless calculator.nutrition_data.key?(name)
+
+      canonical = resolve_to_canonical(name, lookup)
+      next unless canonical
+
+      calc_entry = calculator.nutrition_data[canonical]
+      next unless calc_entry
 
       amounts.each do |amount|
         next if amount.nil? || amount.value.nil?
-        next if calculator.resolvable?(amount.value, amount.unit, calculator.nutrition_data[name])
+        next if calculator.resolvable?(amount.value, amount.unit, calc_entry)
 
         fully[name] = false
       end

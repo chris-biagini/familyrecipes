@@ -632,6 +632,31 @@ Eggs:
     dataset: SR Legacy
     fdc_id: 171287
     description: Egg, whole, raw, fresh
+Egg yolks:
+  aliases:
+  - Egg yolk
+  aisle: Refrigerated
+  nutrients:
+    basis_grams: 100.0
+    calories: 322.0
+    fat: 26.54
+    saturated_fat: 9.55
+    trans_fat: 0.0
+    cholesterol: 1085.0
+    sodium: 48.0
+    carbs: 3.59
+    fiber: 0.0
+    total_sugars: 0.56
+    protein: 15.86
+    added_sugars: 0.0
+  portions:
+    large: 17.0
+    "~unitless": 17.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 172184
+    description: Egg, yolk, raw, fresh
 Everclear 151:
   aisle: Specialty
 Farro:
@@ -669,6 +694,8 @@ Flour (all-purpose):
   aliases:
   - AP flour
   - All-purpose flour
+  - All purpose flour
+  - Flour (All purpose)
   - Plain flour
   - Flour
   aisle: Baking
@@ -1310,6 +1337,10 @@ Paprika:
 Parmalat milk:
   aisle: Baking
 Parmesan:
+  aliases:
+  - Parmesan cheese
+  - Parmigiano-Reggiano
+  - Parmigiano
   aisle: Gourmet
   nutrients:
     basis_grams: 100.0
