@@ -6,6 +6,8 @@
 # items, and sorts aisles by the kitchen's user-defined order. Consumed by
 # GroceriesController#state and MealPlanActions#build_visible_names.
 class ShoppingListBuilder
+  AISLE_SORT_PRIORITY = { ordered: 0, unordered: 1, miscellaneous: 2 }.freeze
+
   def initialize(kitchen:, meal_plan:)
     @kitchen = kitchen
     @meal_plan = meal_plan
@@ -96,20 +98,17 @@ class ShoppingListBuilder
 
   def sort_aisles(aisles_hash)
     order = @kitchen.parsed_aisle_order
-    return aisles_hash.sort_by { |aisle, _| aisle == 'Miscellaneous' ? 'zzz' : aisle }.to_h if order.empty?
-
     aisles_hash.sort_by { |aisle, _| aisle_sort_key(aisle, order) }.to_h
   end
 
   def aisle_sort_key(aisle, order)
     position = order.index(aisle)
-    return [0, position] if position
+    return [AISLE_SORT_PRIORITY[:ordered], position] if position
 
     # Miscellaneous defaults to last unless explicitly ordered
-    return [2, 0] if aisle == 'Miscellaneous'
+    return [AISLE_SORT_PRIORITY[:miscellaneous], 0] if aisle == 'Miscellaneous'
 
-    # Unordered aisles sort alphabetically after ordered ones
-    [1, aisle]
+    [AISLE_SORT_PRIORITY[:unordered], aisle]
   end
 
   def add_custom_items(organized)
