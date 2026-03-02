@@ -170,13 +170,10 @@ class MealPlanTest < ActiveSupport::TestCase
     assert_equal version_after_first, list.lock_version
   end
 
-  test 'ignores unknown action types' do
+  test 'raises on unknown action types' do
     list = MealPlan.for_kitchen(@kitchen)
-    old_version = list.lock_version
 
-    list.apply_action('bogus', foo: 'bar')
-
-    assert_equal old_version, list.lock_version
+    assert_raises(ArgumentError) { list.apply_action('bogus', foo: 'bar') }
   end
 
   test 'with_optimistic_retry retries on StaleObjectError' do

@@ -26,6 +26,7 @@ class MealPlan < ApplicationRecord
     when 'select' then apply_select(**params)
     when 'check' then apply_check(**params)
     when 'custom_items' then apply_custom_items(**params)
+    else raise ArgumentError, "unknown action: #{action_type}"
     end
   end
 
