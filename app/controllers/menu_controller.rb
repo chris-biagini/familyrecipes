@@ -59,7 +59,7 @@ class MenuController < ApplicationController
 
     current_kitchen.update!(quick_bites_content: content)
     plan = MealPlan.for_kitchen(current_kitchen)
-    plan.with_optimistic_retry { plan.prune_checked_off }
+    plan.with_optimistic_retry { plan.prune_checked_off(visible_names: build_visible_names(plan)) }
 
     broadcast_recipe_selector_update
     MealPlanChannel.broadcast_content_changed(current_kitchen)

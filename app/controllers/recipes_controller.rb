@@ -56,7 +56,7 @@ class RecipesController < ApplicationController
     recipe.update!(edited_at: Time.current)
     Category.cleanup_orphans(current_kitchen)
     plan = MealPlan.for_kitchen(current_kitchen)
-    plan.with_optimistic_retry { plan.prune_checked_off }
+    plan.with_optimistic_retry { plan.prune_checked_off(visible_names: build_visible_names(plan)) }
 
     RecipeBroadcaster.broadcast(kitchen: current_kitchen, action: :updated, recipe_title: recipe.title, recipe: recipe)
     response_json = { redirect_url: recipe_path(recipe.slug) }
@@ -75,7 +75,7 @@ class RecipesController < ApplicationController
     broadcast_to_referencing_recipes(parent_ids) if parent_ids.any?
     Category.cleanup_orphans(current_kitchen)
     plan = MealPlan.for_kitchen(current_kitchen)
-    plan.with_optimistic_retry { plan.prune_checked_off }
+    plan.with_optimistic_retry { plan.prune_checked_off(visible_names: build_visible_names(plan)) }
 
     RecipeBroadcaster.broadcast(kitchen: current_kitchen, action: :deleted,
                                 recipe_title: @recipe.title)
