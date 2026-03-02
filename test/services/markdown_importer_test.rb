@@ -279,14 +279,13 @@ class MarkdownImporterTest < ActiveSupport::TestCase
   end
 
   test 'quantity splitting handles various formats' do
-    importer = MarkdownImporter.new("# Dummy\n\nCategory: Test\n\n## Step\n\n- Salt\n\nText.", kitchen: @kitchen)
-
-    assert_equal [nil, nil], importer.send(:split_quantity, nil)
-    assert_equal [nil, nil], importer.send(:split_quantity, '')
-    assert_equal [nil, nil], importer.send(:split_quantity, '  ')
-    assert_equal %w[2 cups], importer.send(:split_quantity, '2 cups')
-    assert_equal %w[500 g], importer.send(:split_quantity, '500 g')
-    assert_equal ['4', nil], importer.send(:split_quantity, '4')
+    assert_equal [nil, nil], FamilyRecipes::Ingredient.split_quantity(nil)
+    assert_equal [nil, nil], FamilyRecipes::Ingredient.split_quantity('')
+    assert_equal [nil, nil], FamilyRecipes::Ingredient.split_quantity('  ')
+    assert_equal %w[2 cups], FamilyRecipes::Ingredient.split_quantity('2 cups')
+    assert_equal %w[500 g], FamilyRecipes::Ingredient.split_quantity('500 g')
+    assert_equal ['4', nil], FamilyRecipes::Ingredient.split_quantity('4')
+    assert_equal ['2 1/2', 'cups'], FamilyRecipes::Ingredient.split_quantity('2 1/2 cups')
   end
 
   test 'recipe without makes or serves' do

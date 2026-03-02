@@ -39,16 +39,21 @@ module FamilyRecipes
       @id
     end
 
-    def makes_quantity
-      return unless @makes
+    # Splits a makes string like "12 rolls" into ["12", "rolls"].
+    # Returns [nil, nil] for blank input.
+    def self.parse_makes(makes_string)
+      return [nil, nil] unless makes_string
 
-      @makes.match(/\A(\S+)/)&.captures&.first
+      match = makes_string.match(/\A(\S+)\s+(.+)/)
+      match ? [match[1], match[2]] : [nil, nil]
+    end
+
+    def makes_quantity
+      self.class.parse_makes(@makes)[0]
     end
 
     def makes_unit_noun
-      return unless @makes
-
-      @makes.match(/\A\S+\s+(.+)/)&.captures&.first
+      self.class.parse_makes(@makes)[1]
     end
 
     def cross_references

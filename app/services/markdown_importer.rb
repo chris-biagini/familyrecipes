@@ -62,7 +62,7 @@ class MarkdownImporter
 
   def update_recipe_attributes(recipe)
     category = find_or_create_category(parsed[:front_matter][:category])
-    makes_qty, makes_unit = parse_makes(parsed[:front_matter][:makes])
+    makes_qty, makes_unit = FamilyRecipes::Recipe.parse_makes(parsed[:front_matter][:makes])
 
     recipe.assign_attributes(
       title: parsed[:title],
@@ -83,15 +83,6 @@ class MarkdownImporter
       cat.name = name
       cat.position = kitchen.categories.maximum(:position).to_i + 1
     end
-  end
-
-  def parse_makes(makes_string)
-    return [nil, nil] unless makes_string
-
-    match = makes_string.match(/\A(\S+)\s+(.+)/)
-    return [nil, nil] unless match
-
-    [match[1].to_f, match[2]]
   end
 
   def replace_steps(recipe)
@@ -127,7 +118,7 @@ class MarkdownImporter
   end
 
   def import_ingredient(step, data, position)
-    qty, unit = split_quantity(data[:quantity])
+    qty, unit = FamilyRecipes::Ingredient.split_quantity(data[:quantity])
 
     step.ingredients.create!(
       name: data[:name],
@@ -150,12 +141,5 @@ class MarkdownImporter
       prep_note: data[:prep_note],
       position: position
     )
-  end
-
-  def split_quantity(quantity_string)
-    return [nil, nil] if quantity_string.nil? || quantity_string.strip.empty?
-
-    parts = quantity_string.strip.split(' ', 2)
-    [parts[0], parts[1]]
   end
 end

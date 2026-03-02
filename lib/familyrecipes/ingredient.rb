@@ -22,6 +22,25 @@ module FamilyRecipes
       value_str
     end
 
+    # Splits a raw quantity string into [value, unit], merging mixed numbers
+    # like "2 1/2 cups" into ["2 1/2", "cups"]. Returns [nil, nil] for blank.
+    def self.split_quantity(raw)
+      return [nil, nil] if raw.nil? || raw.strip.empty?
+
+      parts = raw.strip.split(' ', 3)
+      if parts.size >= 2 && fraction_token?(parts[1])
+        ["#{parts[0]} #{parts[1]}", parts[2]]
+      else
+        value, unit = raw.strip.split(' ', 2)
+        [value, unit]
+      end
+    end
+
+    def self.fraction_token?(token)
+      token.match?(%r{\A\d+/\d+\z}) || token.match?(NumericParsing::VULGAR_PATTERN)
+    end
+    private_class_method :fraction_token?
+
     def initialize(name:, quantity: nil, prep_note: nil)
       @name = name
       @quantity = quantity
@@ -52,18 +71,7 @@ module FamilyRecipes
     end
 
     def parsed_quantity
-      @parsed_quantity ||= begin
-        parts = @quantity.strip.split(' ', 3)
-        if parts.size >= 2 && fraction_token?(parts[1])
-          ["#{parts[0]} #{parts[1]}", parts[2]]
-        else
-          @quantity.strip.split(' ', 2)
-        end
-      end
-    end
-
-    def fraction_token?(token)
-      token.match?(%r{\A\d+/\d+\z}) || token.match?(NumericParsing::VULGAR_PATTERN)
+      @parsed_quantity ||= self.class.split_quantity(@quantity)
     end
   end
 end
