@@ -17,6 +17,31 @@ Baby spinach:
   aliases:
   - Spinach
   aisle: Produce
+Bacon:
+  aliases:
+  - Pork bacon
+  aisle: Meat & Seafood
+  nutrients:
+    basis_grams: 100.0
+    calories: 393.0
+    fat: 37.1
+    saturated_fat: 12.6
+    trans_fat: 0.147
+    cholesterol: 66.0
+    sodium: 751.0
+    carbs: 0.0
+    fiber: 0.0
+    total_sugars: 0.35
+    protein: 13.7
+    added_sugars: 0.0
+  portions:
+    slice: 28.0
+    "~unitless": 28.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 168277
+    description: Pork, cured, bacon, unprepared
 Baking powder:
   aisle: Baking
   nutrients:
@@ -327,6 +352,33 @@ Cheddar:
     description: Cheese, cheddar, sharp, sliced
 Cherries:
   aisle: Produce
+Chicken breast:
+  aliases:
+  - Boneless chicken breast
+  - Boneless skinless chicken breast
+  - Chicken breasts
+  aisle: Meat & Seafood
+  nutrients:
+    basis_grams: 100.0
+    calories: 120.0
+    fat: 2.62
+    saturated_fat: 0.563
+    trans_fat: 0.007
+    cholesterol: 73.0
+    sodium: 45.0
+    carbs: 0.0
+    fiber: 0.0
+    total_sugars: 0.0
+    protein: 22.5
+    added_sugars: 0.0
+  portions:
+    "~unitless": 272.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 171077
+    description: Chicken, broiler or fryers, breast, skinless, boneless, meat only,
+      raw
 Chickpeas (canned):
   aliases:
   - Canned chickpeas
@@ -645,6 +697,30 @@ Green bell peppers:
   aisle: Produce
 Green onions:
   aisle: Produce
+Ground beef:
+  aliases:
+  - Hamburger meat
+  - Minced beef
+  - Beef mince
+  aisle: Meat & Seafood
+  nutrients:
+    basis_grams: 100.0
+    calories: 215.0
+    fat: 15.0
+    saturated_fat: 5.72
+    trans_fat: 0.86
+    cholesterol: 68.0
+    sodium: 66.0
+    carbs: 0.0
+    fiber: 0.0
+    total_sugars: 0.0
+    protein: 18.6
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 171796
+    description: Beef, ground, 85% lean meat / 15% fat, raw
 Gruyère:
   aisle: Gourmet
 Hamburger buns:
@@ -1083,6 +1159,32 @@ Pickles:
   aisle: Pantry
 Poolish:
   aisle: omit
+Pork chops:
+  aliases:
+  - Pork loin chops
+  - Bone-in pork chops
+  aisle: Meat & Seafood
+  nutrients:
+    basis_grams: 100.0
+    calories: 170.0
+    fat: 9.03
+    saturated_fat: 2.99
+    trans_fat: 0.092
+    cholesterol: 69.0
+    sodium: 55.0
+    carbs: 0.0
+    fiber: 0.0
+    total_sugars: 0.0
+    protein: 20.7
+    added_sugars: 0.0
+  portions:
+    "~unitless": 199.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 168238
+    description: Pork, fresh, loin, center loin (chops), bone-in, separable lean
+      and fat, raw
 Potatoes:
   aisle: Produce
 Pretzels:
@@ -1285,6 +1387,35 @@ Thyme:
   aisle: Spices
 Toilet paper:
   aisle: Household
+Tofu:
+  aliases:
+  - Firm tofu
+  - Bean curd
+  aisle: Refrigerated
+  nutrients:
+    basis_grams: 100.0
+    calories: 144.0
+    fat: 8.72
+    saturated_fat: 1.261
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 14.0
+    carbs: 2.78
+    fiber: 2.3
+    total_sugars: 0.0
+    protein: 17.27
+    added_sugars: 0.0
+  density:
+    grams: 252.0
+    volume: 1.0
+    unit: cup
+  portions:
+    block: 324.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 172475
+    description: Tofu, raw, firm, prepared with calcium sulfate
 Tomato passata:
   aisle: Pantry
   nutrients:
