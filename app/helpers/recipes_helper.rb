@@ -6,6 +6,20 @@
 # client-side scaling controller. All .html_safe calls are audited by
 # rake lint:html_safe and allowlisted.
 module RecipesHelper
+  NUTRITION_ROWS = [
+    ['Calories', 'calories', '', 0],
+    ['Total Fat', 'fat', 'g', 0],
+    ['Sat. Fat', 'saturated_fat', 'g', 1],
+    ['Trans Fat', 'trans_fat', 'g', 1],
+    ['Cholesterol', 'cholesterol', 'mg', 0],
+    ['Sodium', 'sodium', 'mg', 0],
+    ['Total Carbs', 'carbs', 'g', 0],
+    ['Fiber', 'fiber', 'g', 1],
+    ['Total Sugars', 'total_sugars', 'g', 1],
+    ['Added Sugars', 'added_sugars', 'g', 2],
+    ['Protein', 'protein', 'g', 0]
+  ].freeze
+
   def render_markdown(text)
     return '' if text.blank?
 

@@ -194,8 +194,7 @@ export default class extends Controller {
     this.element.querySelectorAll('.nutrition-facts td[data-nutrient]').forEach(td => {
       const base = parseFloat(td.dataset.baseValue)
       const scaled = base * factor
-      const nutrient = td.dataset.nutrient
-      const unit = (nutrient === 'sodium' || nutrient === 'cholesterol') ? 'mg' : (nutrient === 'calories' ? '' : 'g')
+      const unit = td.dataset.unit || ''
       td.textContent = `${Math.round(scaled)}${unit}`
     })
 

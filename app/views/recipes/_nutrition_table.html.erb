@@ -11,23 +11,11 @@
       </tr>
     </thead>
     <tbody>
-      <%- [
-        ['Calories', 'calories', '', 0],
-        ['Total Fat', 'fat', 'g', 0],
-        ['Sat. Fat', 'saturated_fat', 'g', 1],
-        ['Trans Fat', 'trans_fat', 'g', 1],
-        ['Cholesterol', 'cholesterol', 'mg', 0],
-        ['Sodium', 'sodium', 'mg', 0],
-        ['Total Carbs', 'carbs', 'g', 0],
-        ['Fiber', 'fiber', 'g', 1],
-        ['Total Sugars', 'total_sugars', 'g', 1],
-        ['Added Sugars', 'added_sugars', 'g', 2],
-        ['Protein', 'protein', 'g', 0],
-      ].each do |label, key, unit_label, indent| -%>
+      <%- RecipesHelper::NUTRITION_ROWS.each do |label, key, unit_label, indent| -%>
       <tr<%= %( class="indent-#{indent}").html_safe if indent > 0 %>>
         <td><%= label %></td>
         <%- columns.each do |_, values, is_scalable| -%>
-        <td<%= %( data-nutrient="#{key}" data-base-value="#{values[key].to_f.round(1)}").html_safe if is_scalable %>><%= values[key].to_f.round %><%= unit_label %></td>
+        <td<%= %( data-nutrient="#{key}" data-base-value="#{values[key].to_f.round(1)}" data-unit="#{unit_label}").html_safe if is_scalable %>><%= values[key].to_f.round %><%= unit_label %></td>
         <%- end -%>
       </tr>
       <%- end -%>
