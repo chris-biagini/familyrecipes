@@ -2,6 +2,7 @@
 # frozen_string_literal: true
 
 require 'bundler/setup'
+require 'active_support/core_ext/object/blank'
 require 'net/http'
 require 'json'
 require_relative '../lib/familyrecipes'
