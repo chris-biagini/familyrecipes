@@ -1,6 +1,33 @@
 ---
 Air freshener:
   aisle: Household
+Almonds:
+  aliases:
+  - Raw almonds
+  - Whole almonds
+  aisle: Pantry
+  nutrients:
+    basis_grams: 100.0
+    calories: 579.0
+    fat: 49.93
+    saturated_fat: 3.8
+    trans_fat: 0.02
+    cholesterol: 0.0
+    sodium: 1.0
+    carbs: 21.55
+    fiber: 12.5
+    total_sugars: 4.35
+    protein: 21.15
+    added_sugars: 0.0
+  density:
+    grams: 143.0
+    volume: 1.0
+    unit: cup
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 170567
+    description: Nuts, almonds
 American cheese:
   aisle: Refrigerated
 Apples:
@@ -379,6 +406,32 @@ Chicken breast:
     fdc_id: 171077
     description: Chicken, broiler or fryers, breast, skinless, boneless, meat only,
       raw
+Chicken broth:
+  aliases:
+  - Chicken stock
+  aisle: Pantry
+  nutrients:
+    basis_grams: 100.0
+    calories: 6.0
+    fat: 0.21
+    saturated_fat: 0.01
+    trans_fat: 0.0
+    cholesterol: 2.0
+    sodium: 371.0
+    carbs: 0.44
+    fiber: 0.0
+    total_sugars: 0.43
+    protein: 0.64
+    added_sugars: 0.0
+  density:
+    grams: 249.0
+    volume: 1.0
+    unit: cup
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 174536
+    description: Soup, chicken broth, ready-to-serve
 Chickpeas (canned):
   aliases:
   - Canned chickpeas
@@ -422,6 +475,35 @@ Cinnamon:
     description: Spices, cinnamon, ground
 Clementines:
   aisle: Produce
+Coconut milk (canned):
+  aliases:
+  - Canned coconut milk
+  - Coconut milk
+  aisle: International
+  nutrients:
+    basis_grams: 100.0
+    calories: 197.0
+    fat: 21.33
+    saturated_fat: 18.92
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 13.0
+    carbs: 2.81
+    fiber: 0.0
+    total_sugars: 0.0
+    protein: 2.02
+    added_sugars: 0.0
+  density:
+    grams: 226.0
+    volume: 1.0
+    unit: cup
+  portions:
+    can: 400.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 170173
+    description: Nuts, coconut milk, canned (liquid expressed from grated meat and water)
 Coconut oil:
   aisle: Pantry
   nutrients:
@@ -909,7 +991,32 @@ Lemons:
     fdc_id: 167746
     description: Lemons, raw, without peel
 Lentils:
+  aliases:
+  - Dry lentils
+  - Dried lentils
   aisle: International
+  nutrients:
+    basis_grams: 100.0
+    calories: 352.0
+    fat: 1.06
+    saturated_fat: 0.15
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 6.0
+    carbs: 63.35
+    fiber: 10.7
+    total_sugars: 2.03
+    protein: 24.63
+    added_sugars: 0.0
+  density:
+    grams: 192.0
+    volume: 1.0
+    unit: cup
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 172420
+    description: Lentils, raw
 Limes:
   aisle: Produce
   nutrients:
@@ -1225,7 +1332,30 @@ Parmesan:
 Parsley:
   aisle: Produce
 Pasta:
+  aliases:
+  - Dry pasta
+  - Dried pasta
   aisle: Pantry
+  nutrients:
+    basis_grams: 100.0
+    calories: 371.0
+    fat: 1.51
+    saturated_fat: 0.28
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 6.0
+    carbs: 74.67
+    fiber: 3.2
+    total_sugars: 2.67
+    protein: 13.04
+    added_sugars: 0.0
+  portions:
+    serving: 57.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 169736
+    description: Pasta, dry, enriched
 Pasta sauce (jarred):
   aliases:
   - Jarred pasta sauce
@@ -1363,7 +1493,32 @@ Red onions:
 Red pepper flakes:
   aisle: Spices
 Rice:
-  aisle: International
+  aliases:
+  - White rice
+  - Long grain rice
+  aisle: Pantry
+  nutrients:
+    basis_grams: 100.0
+    calories: 365.0
+    fat: 0.66
+    saturated_fat: 0.18
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 5.0
+    carbs: 79.95
+    fiber: 1.3
+    total_sugars: 0.12
+    protein: 7.13
+    added_sugars: 0.0
+  density:
+    grams: 185.0
+    volume: 1.0
+    unit: cup
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 168877
+    description: Rice, white, long-grain, regular, raw, enriched
 Ricotta:
   aisle: Refrigerated
 Ritz crackers:
@@ -1409,9 +1564,54 @@ Salt:
     fdc_id: 173468
     description: Salt, table
 Sandwich bread:
+  aliases:
+  - White bread
+  - Sliced bread
   aisle: Bread
+  nutrients:
+    basis_grams: 100.0
+    calories: 266.0
+    fat: 3.33
+    saturated_fat: 0.7
+    trans_fat: 0.03
+    cholesterol: 0.0
+    sodium: 490.0
+    carbs: 49.42
+    fiber: 2.7
+    total_sugars: 5.67
+    protein: 8.85
+    added_sugars: 0.0
+  portions:
+    slice: 29.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 174924
+    description: Bread, white, commercially prepared (includes soft bread crumbs)
 Sesame seeds:
   aisle: Spices
+  nutrients:
+    basis_grams: 100.0
+    calories: 573.0
+    fat: 49.67
+    saturated_fat: 6.96
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 11.0
+    carbs: 23.45
+    fiber: 11.8
+    total_sugars: 0.3
+    protein: 17.73
+    added_sugars: 0.0
+  density:
+    grams: 9.0
+    volume: 1.0
+    unit: tbsp
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 170150
+    description: Seeds, sesame seeds, whole, dried
 Shampoo:
   aisle: Personal
 Small pasta:
@@ -1478,6 +1678,28 @@ Sourdough starter:
   aisle: omit
 Soy sauce:
   aisle: International
+  nutrients:
+    basis_grams: 100.0
+    calories: 53.0
+    fat: 0.57
+    saturated_fat: 0.07
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 5493.0
+    carbs: 4.93
+    fiber: 0.8
+    total_sugars: 0.4
+    protein: 8.14
+    added_sugars: 0.0
+  density:
+    grams: 16.0
+    volume: 1.0
+    unit: tbsp
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 174277
+    description: Soy sauce made from soy and wheat (shoyu)
 Spaghetti:
   aisle: Pantry
 Strawberries:
@@ -1624,6 +1846,30 @@ Tomatoes (canned):
   aliases:
   - Canned tomatoes
   aisle: Pantry
+  nutrients:
+    basis_grams: 100.0
+    calories: 16.0
+    fat: 0.25
+    saturated_fat: 0.03
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 115.0
+    carbs: 3.47
+    fiber: 1.9
+    total_sugars: 2.55
+    protein: 0.79
+    added_sugars: 0.0
+  density:
+    grams: 240.0
+    volume: 1.0
+    unit: cup
+  portions:
+    can: 411.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 170051
+    description: Tomatoes, red, ripe, canned, packed in tomato juice
 Tomatoes (fresh):
   aliases:
   - Fresh tomatoes
@@ -1699,6 +1945,32 @@ Whipped cream:
   aisle: Refrigerated
 Wine:
   aisle: Alcohol
+Worcestershire sauce:
+  aliases:
+  - Worcestershire
+  aisle: Condiments
+  nutrients:
+    basis_grams: 100.0
+    calories: 77.0
+    fat: 0.0
+    saturated_fat: 0.0
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 1300.0
+    carbs: 19.17
+    fiber: 0.0
+    total_sugars: 10.03
+    protein: 0.0
+    added_sugars: 0.0
+  density:
+    grams: 17.0
+    volume: 1.0
+    unit: tbsp
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 171610
+    description: Sauce, worcestershire
 Yeast:
   aisle: Baking
   nutrients:
