@@ -49,6 +49,13 @@ puts "  WARNING: #{pending_count} unresolved cross-references remain" if pending
 
 puts "Done! #{Recipe.count} recipes, #{Category.count} categories."
 
+# Seed aisle order
+aisle_order_path = seeds_dir.join('resources/aisle-order.txt')
+if File.exist?(aisle_order_path)
+  kitchen.update!(aisle_order: File.read(aisle_order_path).strip)
+  puts 'Aisle order loaded.'
+end
+
 # Seed Quick Bites content onto kitchen
 quick_bites_path = recipes_dir.join('Quick Bites.md')
 if File.exist?(quick_bites_path)
