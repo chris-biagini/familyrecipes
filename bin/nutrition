@@ -3,8 +3,7 @@
 
 require 'bundler/setup'
 require 'active_support/core_ext/object/blank'
-require 'net/http'
-require 'json'
+require 'active_support/core_ext/enumerable'
 require_relative '../lib/familyrecipes'
 
 PROJECT_ROOT = File.expand_path('..', __dir__)
@@ -24,22 +23,6 @@ NUTRIENTS = [
   { key: 'added_sugars',  label: 'Added sugars',    unit: 'g',  indent: 2 },
   { key: 'protein',       label: 'Protein',         unit: 'g',  indent: 0 }
 ].freeze
-
-# USDA nutrient number -> our key (per 100g basis)
-NUTRIENT_MAP = {
-  '208' => 'calories',      # Energy (kcal)
-  '204' => 'fat',           # Total lipid (fat)
-  '606' => 'saturated_fat', # Fatty acids, total saturated
-  '605' => 'trans_fat',     # Fatty acids, total trans
-  '601' => 'cholesterol',   # Cholesterol
-  '307' => 'sodium',        # Sodium
-  '205' => 'carbs',         # Carbohydrate, by difference
-  '291' => 'fiber',         # Fiber, total dietary
-  '269' => 'total_sugars',  # Sugars, total
-  '203' => 'protein'        # Protein
-}.freeze
-
-VOLUME_UNITS = %w[cup cups tbsp tablespoon tablespoons tsp teaspoon teaspoons].freeze
 
 # --- Data I/O ---
 
@@ -68,8 +51,7 @@ end
 # --- Variant-aware lookup (mirrors IngredientCatalog.lookup_for) ---
 
 def build_lookup(nutrition_data)
-  lookup = {}
-  nutrition_data.each do |name, entry|
+  nutrition_data.each_with_object({}) do |(name, entry), lookup|
     lookup[name] = name
     lookup[name.downcase] = name
 
@@ -85,7 +67,6 @@ def build_lookup(nutrition_data)
       lookup[alias_name.downcase] ||= name
     end
   end
-  lookup
 end
 
 def resolve_to_canonical(name, lookup)
@@ -96,105 +77,25 @@ end
 
 def load_context
   recipes = FamilyRecipes.parse_recipes(RECIPES_DIR)
-  recipe_map = recipes.to_h { |r| [r.id, r] }
+  recipe_map = recipes.index_by(&:id)
 
-  omit_set = Set.new
   catalog = load_nutrition_data
-  catalog.each do |name, entry|
-    omit_set << name.downcase if entry['aisle'] == 'omit'
+  omit_set = catalog.each_with_object(Set.new) do |(name, entry), set|
+    set << name.downcase if entry['aisle'] == 'omit'
   end
 
   { recipes: recipes, recipe_map: recipe_map, omit_set: omit_set }
 end
 
-def resolve_name(raw_name, _ctx)
-  raw_name
-end
-
 def find_needed_units(name, ctx)
-  units = Set.new
-  ctx[:recipes].each do |recipe|
-    recipe.all_ingredients_with_quantities(ctx[:recipe_map]).each do |ing_name, amounts|
-      next unless ing_name == name
-
-      amounts.each do |amount|
-        next if amount.nil?
-
-        units << amount.unit
-      end
-    end
-  end
-  units.to_a
+  ctx[:recipes].flat_map do |recipe|
+    recipe.all_ingredients_with_quantities(ctx[:recipe_map])
+          .select { |ing_name, _| ing_name == name }
+          .flat_map { |_, amounts| amounts.compact.map(&:unit) }
+  end.uniq
 end
 
-# --- API key ---
-
-def load_api_key
-  return ENV['USDA_API_KEY'] if ENV['USDA_API_KEY']
-
-  env_path = File.join(PROJECT_ROOT, '.env')
-  return nil unless File.exist?(env_path)
-
-  File.readlines(env_path).each do |line|
-    key, value = line.strip.split('=', 2)
-    return value if key == 'USDA_API_KEY' && value && !value.empty?
-  end
-  nil
-end
-
-# --- USDA API interaction ---
-
-def search_usda(api_key, query)
-  uri = URI('https://api.nal.usda.gov/fdc/v1/foods/search')
-  body = {
-    query: query,
-    dataType: ['SR Legacy'],
-    pageSize: 10
-  }.to_json
-
-  request = Net::HTTP::Post.new(uri, 'Content-Type' => 'application/json')
-  request['X-Api-Key'] = api_key
-  request.body = body
-
-  response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(request) }
-  JSON.parse(response.body)
-end
-
-def fetch_usda_detail(api_key, fdc_id)
-  uri = URI("https://api.nal.usda.gov/fdc/v1/food/#{fdc_id}")
-  request = Net::HTTP::Get.new(uri)
-  request['X-Api-Key'] = api_key
-
-  response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(request) }
-  JSON.parse(response.body)
-end
-
-# --- USDA data extraction ---
-
-def extract_nutrients(food_detail)
-  nutrients = { 'basis_grams' => 100.0 }
-  NUTRIENT_MAP.each_value { |key| nutrients[key] = 0.0 }
-
-  food_detail['foodNutrients']&.each do |fn|
-    number = fn.dig('nutrient', 'number')
-    next unless number
-
-    our_key = NUTRIENT_MAP[number]
-    next unless our_key
-
-    nutrients[our_key] = (fn['amount'] || 0.0).round(4)
-  end
-
-  # added_sugars not in SR Legacy — default to 0
-  nutrients['added_sugars'] = 0.0
-
-  nutrients
-end
-
-def volume_unit?(modifier)
-  clean = modifier.to_s.downcase.sub(/\s*\(.*\)/, '').strip
-  VOLUME_UNITS.include?(clean)
-end
+# --- Portion helpers ---
 
 def normalize_volume_unit(modifier)
   clean = modifier.to_s.downcase.sub(/\s*\(.*\)/, '').strip
@@ -204,30 +105,6 @@ def normalize_volume_unit(modifier)
   when 'teaspoon', 'teaspoons' then 'tsp'
   else clean
   end
-end
-
-def classify_portions(food_detail)
-  volume = []
-  non_volume = []
-
-  food_detail['foodPortions']&.each do |portion|
-    modifier = portion['modifier'].to_s
-    next if modifier.empty?
-
-    grams = portion['gramWeight']
-    amount = portion['amount'] || 1.0
-    next unless grams&.positive?
-
-    entry = { modifier: modifier, grams: grams, amount: amount }
-
-    if volume_unit?(modifier)
-      volume << entry
-    else
-      non_volume << entry
-    end
-  end
-
-  { volume: volume, non_volume: non_volume }
 end
 
 def pick_density(volume_portions)
@@ -327,18 +204,7 @@ end
 
 # --- USDA search and pick ---
 
-SEARCH_NUTRIENTS = { '208' => 'cal', '204' => 'fat', '205' => 'carbs', '203' => 'protein' }.freeze
-
-def search_nutrient_summary(food)
-  lookup = (food['foodNutrients'] || []).to_h { |fn| [fn['nutrientNumber'], fn['value']] }
-  parts = SEARCH_NUTRIENTS.map do |number, label|
-    value = (lookup[number] || 0).round(0).to_i
-    label == 'cal' ? "#{value} #{label}" : "#{value}g #{label}"
-  end
-  parts.join(' | ')
-end
-
-def search_and_pick(api_key, name)
+def search_and_pick(client, name)
   default_query = name.sub(/\s*\(.*\)/, '').strip
 
   loop do
@@ -346,11 +212,11 @@ def search_and_pick(api_key, name)
     input = $stdin.gets&.strip
     return nil if input&.downcase == 'q'
 
-    query = input.nil? || input.empty? ? default_query : input
+    query = input.presence || default_query
 
     puts "Searching for \"#{query}\"..."
-    result = search_usda(api_key, query)
-    foods = result['foods'] || []
+    result = client.search(query)
+    foods = result[:foods]
 
     if foods.empty?
       puts '  No results found. Try a different search, or q to quit.'
@@ -359,8 +225,8 @@ def search_and_pick(api_key, name)
 
     puts "\nResults:"
     foods.each_with_index do |food, idx|
-      puts "  #{idx + 1}. [#{food['fdcId']}] #{food['description']}"
-      puts "         #{search_nutrient_summary(food)}"
+      puts "  #{idx + 1}. [#{food[:fdc_id]}] #{food[:description]}"
+      puts "         #{food[:nutrient_summary]}"
     end
     puts '  s. Search again'
     puts '  q. Quit'
@@ -373,31 +239,28 @@ def search_and_pick(api_key, name)
     idx = choice.to_i - 1
     next unless idx >= 0 && idx < foods.size
 
-    fdc_id = foods[idx]['fdcId']
-    puts "\nFetching detail for #{foods[idx]['description']}..."
-    return fetch_usda_detail(api_key, fdc_id)
+    picked = foods[idx]
+    puts "\nFetching detail for #{picked[:description]}..."
+    client.fetch(fdc_id: picked[:fdc_id])
   end
 end
 
-def enter_usda(api_key, name)
-  food_detail = search_and_pick(api_key, name)
-  return nil unless food_detail
+def enter_usda(client, name)
+  detail = search_and_pick(client, name)
+  return nil unless detail
 
-  nutrients = extract_nutrients(food_detail)
-  classified = classify_portions(food_detail)
-  density = pick_density(classified[:volume])
-  portions = build_non_volume_portions(classified)
+  density = pick_density(detail[:portions][:volume])
+  portions = build_non_volume_portions(detail[:portions])
 
-  entry = { 'nutrients' => nutrients }
+  entry = { 'nutrients' => detail[:nutrients] }
   entry['density'] = density if density
   entry['portions'] = portions unless portions.empty?
   entry['sources'] = [{
     'type' => 'usda',
-    'dataset' => food_detail['dataType'] || 'SR Legacy',
-    'fdc_id' => food_detail['fdcId'],
-    'description' => food_detail['description']
+    'dataset' => detail[:data_type],
+    'fdc_id' => detail[:fdc_id],
+    'description' => detail[:description]
   }]
-
   entry
 end
 
@@ -419,7 +282,7 @@ def prompt_aliases(name, entry)
   print '  Enter aliases (comma-separated), or Enter to keep current: '
 
   input = $stdin.gets&.strip
-  return existing if input.nil? || input.empty?
+  return existing if input.blank?
 
   new_aliases = input.split(',').map(&:strip).reject(&:empty?)
   (existing + new_aliases).uniq
@@ -427,7 +290,7 @@ end
 
 # --- Review ---
 
-def review_and_save(name, entry, needed_units, nutrition_data, api_key:)
+def review_and_save(name, entry, needed_units, nutrition_data, client:)
   loop do
     display_entry(name, entry)
     display_unit_coverage(name, entry, needed_units)
@@ -447,9 +310,9 @@ def review_and_save(name, entry, needed_units, nutrition_data, api_key:)
       return
     when 'd'
       puts 'Starting fresh...'
-      return enter_new_ingredient(name, needed_units, nutrition_data, api_key: api_key)
+      return enter_new_ingredient(name, needed_units, nutrition_data, client: client)
     when 'e'
-      entry = edit_entry(name, entry, needed_units, api_key: api_key)
+      entry = edit_entry(name, entry, needed_units, client: client)
     end
   end
 end
@@ -465,7 +328,7 @@ def edit_sources(sources)
       sources.each_with_index { |s, i| puts "    #{i + 1}. #{format_source(s)}" }
     end
 
-    puts "\n  a. Add source"
+    puts "\n  a. Add USDA source"
     puts '  r. Remove source' if sources.any?
     puts '  d. Done'
     print '  Action: '
@@ -493,17 +356,17 @@ def prompt_usda_source
   source['dataset'] = $stdin.gets&.strip
   print '  FDC ID: '
   id_input = $stdin.gets&.strip
-  source['fdc_id'] = id_input.to_i if id_input && !id_input.empty?
+  source['fdc_id'] = id_input.to_i if id_input.present?
   print '  Description: '
   desc = $stdin.gets&.strip
-  source['description'] = desc if desc && !desc.empty?
+  source['description'] = desc if desc.present?
   print '  Note (optional): '
   note = $stdin.gets&.strip
-  source['note'] = note if note && !note.empty?
+  source['note'] = note if note.present?
   source
 end
 
-def edit_entry(name, entry, needed_units, api_key:)
+def edit_entry(name, entry, needed_units, client:)
   loop do
     display_entry(name, entry)
     display_unit_coverage(name, entry, needed_units)
@@ -517,7 +380,7 @@ def edit_entry(name, entry, needed_units, api_key:)
 
     case choice
     when '1'
-      new_entry = enter_usda(api_key, name)
+      new_entry = enter_usda(client, name)
       entry = new_entry if new_entry
     when '2'
       entry['sources'] = edit_sources(entry['sources'] || [])
@@ -529,23 +392,23 @@ end
 
 # --- New ingredient entry ---
 
-def enter_new_ingredient(name, needed_units, nutrition_data, api_key:)
-  entry = enter_usda(api_key, name)
+def enter_new_ingredient(name, needed_units, nutrition_data, client:)
+  entry = enter_usda(client, name)
   return unless entry
 
-  review_and_save(name, entry, needed_units, nutrition_data, api_key: api_key)
+  review_and_save(name, entry, needed_units, nutrition_data, client: client)
 end
 
 # --- Main dispatcher ---
 
-def handle_ingredient(name, nutrition_data, ctx, api_key:)
+def handle_ingredient(name, nutrition_data, ctx, client:)
   needed_units = find_needed_units(name, ctx)
   existing = nutrition_data[name]
 
   if existing
-    review_and_save(name, existing.dup, needed_units, nutrition_data, api_key: api_key)
+    review_and_save(name, existing.dup, needed_units, nutrition_data, client: client)
   else
-    enter_new_ingredient(name, needed_units, nutrition_data, api_key: api_key)
+    enter_new_ingredient(name, needed_units, nutrition_data, client: client)
   end
 end
 
@@ -594,7 +457,7 @@ def find_missing_ingredients(nutrition_data, ctx)
   { missing: missing, ingredients_to_recipes: ingredients_to_recipes, unresolvable: unresolvable }
 end
 
-def run_missing_mode(nutrition_data, ctx, api_key:)
+def run_missing_mode(nutrition_data, ctx, client:)
   result = find_missing_ingredients(nutrition_data, ctx)
   missing = result[:missing]
   recipes_map = result[:ingredients_to_recipes]
@@ -636,13 +499,13 @@ def run_missing_mode(nutrition_data, ctx, api_key:)
 
   missing.each do |name|
     puts "\n=== #{name} ==="
-    handle_ingredient(name, nutrition_data, ctx, api_key: api_key)
+    handle_ingredient(name, nutrition_data, ctx, client: client)
     puts ''
   end
 
   unresolvable.sort_by { |_, info| -info[:recipes].size }.each do |name, _info|
     puts "\n=== #{name} (fix unit conversions) ==="
-    handle_ingredient(name, nutrition_data, ctx, api_key: api_key)
+    handle_ingredient(name, nutrition_data, ctx, client: client)
     puts ''
   end
 end
@@ -739,21 +602,20 @@ if ARGV.include?('--coverage')
   exit 0
 end
 
-api_key = load_api_key
-
+api_key = FamilyRecipes::UsdaClient.load_api_key(project_root: PROJECT_ROOT)
 unless api_key
   warn 'No USDA_API_KEY found. Set USDA_API_KEY in .env or environment.'
   warn '  Free key: https://fdc.nal.usda.gov/api-key-signup'
   exit 1
 end
-
+client = FamilyRecipes::UsdaClient.new(api_key: api_key)
 puts 'USDA mode (API key found).'
 
 nutrition_data = load_nutrition_data
 ctx = load_context
 
 if ARGV.include?('--missing')
-  run_missing_mode(nutrition_data, ctx, api_key: api_key)
+  run_missing_mode(nutrition_data, ctx, client: client)
 else
   ingredient_name = ARGV.reject { |a| a.start_with?('-') }.first
 
@@ -762,13 +624,10 @@ else
     ingredient_name = $stdin.gets&.strip
   end
 
-  if ingredient_name.nil? || ingredient_name.empty?
+  if ingredient_name.blank?
     warn 'No ingredient name provided.'
     exit 1
   end
 
-  resolved = resolve_name(ingredient_name, ctx)
-  exit 0 unless resolved
-
-  handle_ingredient(resolved, nutrition_data, ctx, api_key: api_key)
+  handle_ingredient(ingredient_name, nutrition_data, ctx, client: client)
 end
