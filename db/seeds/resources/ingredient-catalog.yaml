@@ -394,6 +394,9 @@ Chocolate chips:
 Chocolate milk:
   aisle: Refrigerated
 Cinnamon:
+  aliases:
+  - Ground cinnamon
+  - Cinnamon powder
   aisle: Spices
   nutrients:
     basis_grams: 100.0
@@ -409,9 +412,9 @@ Cinnamon:
     protein: 3.99
     added_sugars: 0.0
   density:
-    grams: 7.8
+    grams: 2.6
     volume: 1.0
-    unit: tbsp
+    unit: tsp
   sources:
   - type: usda
     dataset: SR Legacy
@@ -482,7 +485,32 @@ Cream cheese:
 Cucumbers:
   aisle: Produce
 Cumin:
+  aliases:
+  - Ground cumin
+  - Cumin powder
   aisle: Spices
+  nutrients:
+    basis_grams: 100.0
+    calories: 375.0
+    fat: 22.27
+    saturated_fat: 1.535
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 168.0
+    carbs: 44.24
+    fiber: 10.5
+    total_sugars: 2.25
+    protein: 17.81
+    added_sugars: 0.0
+  density:
+    grams: 2.1
+    volume: 1.0
+    unit: tsp
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 170923
+    description: Spices, cumin seed
 Diastatic malt powder:
   aisle: Baking
 Diet Coke:
@@ -658,6 +686,8 @@ Fruit juice:
 Fruit preserves:
   aisle: Pantry
 Garlic:
+  aliases:
+  - Garlic cloves
   aisle: Produce
   nutrients:
     basis_grams: 100.0
@@ -673,9 +703,9 @@ Garlic:
     protein: 6.36
     added_sugars: 0.0
   density:
-    grams: 136.0
+    grams: 2.8
     volume: 1.0
-    unit: cup
+    unit: tsp
   portions:
     clove: 3.0
   sources:
@@ -694,7 +724,37 @@ Greek yogurt:
 Green beans:
   aisle: Frozen
 Green bell peppers:
+  aliases:
+  - Green pepper
+  - Green bell pepper
   aisle: Produce
+  nutrients:
+    basis_grams: 100.0
+    calories: 20.0
+    fat: 0.17
+    saturated_fat: 0.058
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 3.0
+    carbs: 4.64
+    fiber: 1.7
+    total_sugars: 2.4
+    protein: 0.86
+    added_sugars: 0.0
+  density:
+    grams: 149.0
+    volume: 1.0
+    unit: cup
+  portions:
+    large: 164.0
+    medium: 119.0
+    small: 74.0
+    "~unitless": 164.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 170427
+    description: Peppers, sweet, green, raw
 Green onions:
   aisle: Produce
 Ground beef:
@@ -1059,6 +1119,9 @@ Olive oil (mild):
 Olives:
   aisle: Gourmet
 Onions:
+  aliases:
+  - Onion
+  - Yellow onion
   aisle: Produce
   nutrients:
     basis_grams: 100.0
@@ -1073,6 +1136,10 @@ Onions:
     total_sugars: 4.24
     protein: 1.1
     added_sugars: 0.0
+  density:
+    grams: 160.0
+    volume: 1.0
+    unit: cup
   portions:
     medium: 110.0
     large: 150.0
@@ -1107,6 +1174,32 @@ Oregano:
     description: Spices, oregano, dried
 Paper towels:
   aisle: Household
+Paprika:
+  aliases:
+  - Sweet paprika
+  aisle: Spices
+  nutrients:
+    basis_grams: 100.0
+    calories: 282.0
+    fat: 12.89
+    saturated_fat: 2.14
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 68.0
+    carbs: 53.99
+    fiber: 34.9
+    total_sugars: 10.34
+    protein: 14.14
+    added_sugars: 0.0
+  density:
+    grams: 2.3
+    volume: 1.0
+    unit: tsp
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 171329
+    description: Spices, paprika
 Parmalat milk:
   aisle: Baking
 Parmesan:
@@ -1186,7 +1279,38 @@ Pork chops:
     description: Pork, fresh, loin, center loin (chops), bone-in, separable lean
       and fat, raw
 Potatoes:
+  aliases:
+  - Potato
+  - Russet potato
+  - Russet potatoes
   aisle: Produce
+  nutrients:
+    basis_grams: 100.0
+    calories: 77.0
+    fat: 0.09
+    saturated_fat: 0.025
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 6.0
+    carbs: 17.49
+    fiber: 2.1
+    total_sugars: 0.82
+    protein: 2.05
+    added_sugars: 0.0
+  density:
+    grams: 150.0
+    volume: 1.0
+    unit: cup
+  portions:
+    small: 170.0
+    medium: 213.0
+    large: 369.0
+    "~unitless": 213.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 170026
+    description: Potatoes, flesh and skin, raw
 Pretzels:
   aisle: Snacks
 Protein shake mix:
@@ -1203,6 +1327,9 @@ Red beans (dry):
   - Dried red beans
   aisle: International
 Red bell peppers:
+  aliases:
+  - Red pepper
+  - Red bell pepper
   aisle: Produce
   nutrients:
     basis_grams: 100.0
@@ -1218,9 +1345,9 @@ Red bell peppers:
     protein: 0.99
     added_sugars: 0.0
   density:
-    grams: 9.3
+    grams: 149.0
     volume: 1.0
-    unit: tbsp
+    unit: cup
   portions:
     large: 164.0
     medium: 119.0
@@ -1290,7 +1417,31 @@ Shampoo:
 Small pasta:
   aisle: Pantry
 Smoked paprika:
+  aliases:
+  - "Pimentón"
   aisle: Spices
+  nutrients:
+    basis_grams: 100.0
+    calories: 282.0
+    fat: 12.89
+    saturated_fat: 2.14
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 68.0
+    carbs: 53.99
+    fiber: 34.9
+    total_sugars: 10.34
+    protein: 14.14
+    added_sugars: 0.0
+  density:
+    grams: 2.3
+    volume: 1.0
+    unit: tsp
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 171329
+    description: Spices, paprika
 Sodium carbonate:
   aisle: Baking
 Sodium citrate:
