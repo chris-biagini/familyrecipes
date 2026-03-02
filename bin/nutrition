@@ -753,9 +753,11 @@ if ARGV.include?('--help') || ARGV.include?('-h')
   puts '  bin/nutrition                        Interactive prompt'
   puts '  bin/nutrition "Cream cheese"         Enter/edit data for an ingredient'
   puts '  bin/nutrition --missing              Report + batch iterate missing data'
-  puts '  bin/nutrition --coverage             Ingredient coverage summary report'
+  puts '  bin/nutrition --coverage             Ingredient coverage summary (no API key needed)'
   puts ''
-  puts 'Requires USDA_API_KEY in .env or environment.'
+  puts 'Searches USDA FoodData Central with paginated results and arrow-key navigation.'
+  puts ''
+  puts 'Requires USDA_API_KEY in .env or environment (except --coverage).'
   puts '  Free key: https://fdc.nal.usda.gov/api-key-signup'
   exit 0
 end
