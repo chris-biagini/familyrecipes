@@ -5,9 +5,6 @@
 # domain NutritionCalculator by building a lookup hash in the format the
 # calculator expects. Runs synchronously via perform_now at import time.
 class RecipeNutritionJob < ApplicationJob
-  NUTRIENT_COLUMNS = %w[calories fat saturated_fat trans_fat cholesterol
-                        sodium carbs fiber total_sugars added_sugars protein].freeze
-
   def perform(recipe)
     loaded = eager_load_recipe(recipe)
 
@@ -45,8 +42,8 @@ class RecipeNutritionJob < ApplicationJob
   end
 
   def nutrients_hash(entry)
-    NUTRIENT_COLUMNS.each_with_object({ 'basis_grams' => entry.basis_grams.to_f }) do |col, hash|
-      hash[col] = entry.public_send(col)&.to_f || 0
+    IngredientCatalog::NUTRIENT_COLUMNS.each_with_object({ 'basis_grams' => entry.basis_grams.to_f }) do |col, hash|
+      hash[col.to_s] = entry.public_send(col)&.to_f || 0
     end
   end
 
