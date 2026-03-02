@@ -80,6 +80,19 @@ class CategoryTest < ActiveSupport::TestCase
     assert_equal 'cafe-entrees', category.slug
   end
 
+  # --- with_recipes scope ---
+
+  test 'with_recipes excludes empty categories' do
+    empty = Category.create!(name: 'Empty')
+    populated = Category.create!(name: 'Populated')
+    Recipe.create!(title: 'Test', slug: 'test', markdown_source: '# Test', category: populated)
+
+    results = Category.with_recipes
+
+    assert_includes results, populated
+    assert_not_includes results, empty
+  end
+
   # --- ordered scope ---
 
   test 'ordered scope sorts by position then name' do

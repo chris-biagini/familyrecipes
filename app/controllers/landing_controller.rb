@@ -16,11 +16,7 @@ class LandingController < ApplicationController
   def render_sole_kitchen_homepage
     set_current_tenant(@kitchens.first)
     @site_config = Rails.configuration.site
-    @categories = categories_with_recipes
+    @categories = current_kitchen.categories.ordered.with_recipes.includes(:recipes)
     render 'homepage/show'
-  end
-
-  def categories_with_recipes
-    current_kitchen.categories.ordered.includes(:recipes).reject { |cat| cat.recipes.empty? }
   end
 end

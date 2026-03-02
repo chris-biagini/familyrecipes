@@ -13,6 +13,7 @@ class Category < ApplicationRecord
   validates :slug, presence: true, uniqueness: { scope: :kitchen_id }
 
   scope :ordered, -> { order(:position, :name) }
+  scope :with_recipes, -> { where.associated(:recipes).distinct }
 
   def self.cleanup_orphans(kitchen)
     kitchen.categories.where.missing(:recipes).destroy_all
