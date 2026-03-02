@@ -79,20 +79,23 @@ return [2, 0] if aisle == 'Miscellaneous'
 
 ## Architectural Comments
 
-Every Ruby class/module and every JavaScript controller/utility gets a header comment explaining its **role**, **key collaborators**, and **non-obvious constraints**. CLAUDE.md is the map; the comments are the territory. Read a class's header comment first.
+To avoid overburdening this file, documentation on architecture is located primarily in the code itself, next to the classes it describes. 
 
-Plain prose. 2–5 lines. Answer: *what role does this play?*, *who does it talk to?*, and *why is it this way?* Add one when creating a new file. Update it when responsibilities change — a stale comment is worse than none.
+Every Ruby class/module and every JavaScript controller/utility gets a header comment explaining its **role**, **key collaborators**, and **non-obvious constraints**. Plain prose. Short, around 5 lines, with a bulleted list of collaborators. The comments answer: *what role does this play?*, *who does it talk to?*, and *why is it this way?* 
 
-```ruby
-# The sole write path for getting recipes into the database. Parses Markdown
-# through the FamilyRecipes parser pipeline, then upserts the Recipe and its
-# Steps, Ingredients, and CrossReferences in a transaction.
-#
-# Kitchen-scoped (requires kitchen: keyword) and idempotent — db:seed
-# calls this repeatedly. Views never call the parser; they render from
-# stored ActiveRecord data exclusively.
-class MarkdownImporter
-```
+This file need only contain a concise map of conventions and workflows. CLAUDE.md is the map; the comments are the territory. 
+
+Goals:
+- All modules should be easily discoverable by starting in CLAUDE.md and reading comments.
+- All modules should have header comments that follow the guidelines above.
+- CLAUDE.md should be minimal enough to avoid flooding the context window
+  with irrelevant information, but comprehensive enough to make all
+  modules discoverable.
+
+Actions:
+- Add a header comment when creating a new file. 
+- Update the comments when responsibilities change — a stale comment is worse than none. 
+- Update CLAUDE.md when necessary to identify new conventions or workflows. 
 
 ## HTML & Security
 

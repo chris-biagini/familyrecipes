@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+# Generates PWA icon PNGs from the source favicon.svg using rsvg-convert.
+# Output goes to public/icons/ (gitignored). Required at build time or after
+# SVG changes — the Dockerfile runs this in its builder stage.
 namespace :pwa do
   desc 'Generate PWA icons from favicon.svg using rsvg-convert'
   task icons: :environment do

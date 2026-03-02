@@ -1,5 +1,9 @@
 # frozen_string_literal: true
 
+# XSS defense audit. Scans app/ and lib/ for .html_safe and raw() calls, then
+# checks each against config/html_safe_allowlist.yml. Unapproved calls fail the
+# task. The allowlist uses file:line_number keys, so line shifts from edits
+# require updating the allowlist.
 namespace :lint do
   desc 'Audit .html_safe and raw() calls for XSS risk'
   task html_safe: :environment do

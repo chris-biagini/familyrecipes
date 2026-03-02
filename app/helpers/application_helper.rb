@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
-# Shared view helpers available across all controllers and views.
+# Numeric display helper used by recipe and nutrition views. Strips trailing
+# ".0" from whole-number floats so quantities display as clean integers.
+# Consumed by RecipesHelper, IngredientsHelper, and recipe partials.
 module ApplicationHelper
   def format_numeric(value)
     value == value.to_i ? value.to_i.to_s : value.to_s
