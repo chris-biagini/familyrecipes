@@ -6,12 +6,16 @@ American cheese:
 Apples:
   aisle: Produce
 Artichokes (jarred):
+  aliases:
+  - Jarred artichokes
   aisle: Pantry
 Asian snacks:
   aisle: International
 Asparagus:
   aisle: Produce
 Baby spinach:
+  aliases:
+  - Spinach
   aisle: Produce
 Baking powder:
   aisle: Baking
@@ -68,8 +72,13 @@ Basil:
 Bath soap:
   aisle: Personal
 Beans (any canned):
+  aliases:
+  - Canned beans
   aisle: International
 Beans (any dry):
+  aliases:
+  - Dry beans
+  - Dried beans
   aisle: International
   nutrients:
     basis_grams: 100.0
@@ -98,6 +107,8 @@ Beer:
 Berries:
   aisle: Produce
 Black beans (canned):
+  aliases:
+  - Canned black beans
   aisle: International
 Black pepper:
   aisle: Spices
@@ -173,6 +184,8 @@ Broccoli:
 Brussels sprouts:
   aisle: Produce
 Butter:
+  aliases:
+  - Unsalted butter
   aisle: Refrigerated
   nutrients:
     basis_grams: 100.0
@@ -313,6 +326,8 @@ Cheddar:
 Cherries:
   aisle: Produce
 Chickpeas (canned):
+  aliases:
+  - Canned chickpeas
   aisle: International
 Chik'n nuggets:
   aisle: Frozen
@@ -353,6 +368,8 @@ Clementines:
 Coffee:
   aisle: Pantry
 Coffee (decaf):
+  aliases:
+  - Decaf coffee
   aisle: Pantry
 Cookies:
   aisle: Snacks
@@ -434,6 +451,9 @@ Farro:
 Fiori di Sicilia:
   aisle: Specialty
 Flour (00):
+  aliases:
+  - 00 flour
+  - Doppio zero flour
   aisle: Baking
   nutrients:
     basis_grams: 100.0
@@ -458,6 +478,11 @@ Flour (00):
     fdc_id: 168936
     description: Wheat flour, white, all-purpose, enriched, unbleached
 Flour (all-purpose):
+  aliases:
+  - AP flour
+  - All-purpose flour
+  - Plain flour
+  - Flour
   aisle: Baking
   nutrients:
     basis_grams: 30.0
@@ -480,6 +505,8 @@ Flour (all-purpose):
   - type: label
     product: King Arthur Flour All-Purpose
 Flour (bread):
+  aliases:
+  - Bread flour
   aisle: Baking
   nutrients:
     basis_grams: 100.0
@@ -500,8 +527,13 @@ Flour (bread):
     fdc_id: 168913
     description: Wheat flours, bread, unenriched
 Flour (rye):
+  aliases:
+  - Rye flour
   aisle: Baking
 Flour (semolina):
+  aliases:
+  - Semolina flour
+  - Semolina
   aisle: Baking
   nutrients:
     basis_grams: 100.0
@@ -526,6 +558,8 @@ Flour (semolina):
     fdc_id: 168933
     description: Semolina, unenriched
 Flour (whole wheat):
+  aliases:
+  - Whole wheat flour
   aisle: Baking
 Frank's Red Hot:
   aisle: Condiments
@@ -536,6 +570,8 @@ Fro-yo bars:
 Frozen potatoes:
   aisle: Frozen
 Frozen spinach:
+  aliases:
+  - Spinach (frozen)
   aisle: Frozen
 Fruit:
   aisle: Produce
@@ -588,6 +624,9 @@ Gruyère:
 Hamburger buns:
   aisle: Bread
 Heavy cream:
+  aliases:
+  - Whipping cream
+  - Heavy whipping cream
   aisle: Refrigerated
 Hershey's Kisses:
   aisle: Snacks
@@ -624,6 +663,8 @@ Ice:
 Ice cream:
   aisle: Frozen
 Ice cream (vanilla):
+  aliases:
+  - Vanilla ice cream
   aisle: Frozen
 Impossible burgers:
   aisle: Frozen
@@ -798,8 +839,12 @@ Milk:
 Monterey jack cheese:
   aisle: Refrigerated
 Mozzarella (fresh):
+  aliases:
+  - Fresh mozzarella
   aisle: Gourmet
 Mozzarella (low-moisture):
+  aliases:
+  - Low-moisture mozzarella
   aisle: Refrigerated
   nutrients:
     basis_grams: 100.0
@@ -820,6 +865,8 @@ Mozzarella (low-moisture):
     fdc_id: 170845
     description: Cheese, mozzarella, whole milk
 Mozzarella (shredded):
+  aliases:
+  - Shredded mozzarella
   aisle: Refrigerated
 MSG:
   aisle: Spices
@@ -830,6 +877,9 @@ Muesli:
 Napkins:
   aisle: Household
 Olive oil:
+  aliases:
+  - Extra virgin olive oil
+  - EVOO
   aisle: Pantry
   nutrients:
     basis_grams: 100.0
@@ -854,6 +904,9 @@ Olive oil:
     fdc_id: 171413
     description: Oil, olive, salad or cooking
 Olive oil (mild):
+  aliases:
+  - Mild olive oil
+  - Light olive oil
   aisle: Pantry
   nutrients:
     basis_grams: 100.0
@@ -955,6 +1008,8 @@ Parsley:
 Pasta:
   aisle: Pantry
 Pasta sauce (jarred):
+  aliases:
+  - Jarred pasta sauce
   aisle: Pantry
 Peanut butter:
   aisle: Pantry
@@ -963,12 +1018,16 @@ Peanut butter pretzels:
 Peanut M&Ms:
   aisle: Snacks
 Peas and carrots (frozen):
+  aliases:
+  - Frozen peas and carrots
   aisle: Frozen
 Pecans:
   aisle: Pantry
 Pecorino:
   aisle: Gourmet
 Pickled jalapeños:
+  aliases:
+  - Jalapeños (pickled)
   aisle: International
 Pickles:
   aisle: Pantry
@@ -987,6 +1046,9 @@ Queso Quesadilla:
 Raisins:
   aisle: Pantry
 Red beans (dry):
+  aliases:
+  - Dry red beans
+  - Dried red beans
   aisle: International
 Red bell peppers:
   aisle: Produce
@@ -1028,6 +1090,8 @@ Ricotta:
 Ritz crackers:
   aisle: Snacks
 Roasted peppers (jarred):
+  aliases:
+  - Jarred roasted peppers
   aisle: Pantry
 Rolled oats:
   aisle: Cereal
@@ -1096,6 +1160,8 @@ Strawberries:
 String cheese:
   aisle: Refrigerated
 Sugar (brown):
+  aliases:
+  - Brown sugar
   aisle: Baking
   nutrients:
     basis_grams: 100.0
@@ -1116,6 +1182,10 @@ Sugar (brown):
     fdc_id: 168833
     description: Sugars, brown
 Sugar (white):
+  aliases:
+  - Sugar
+  - Granulated sugar
+  - White sugar
   aisle: Baking
   nutrients:
     basis_grams: 8.0
@@ -1197,18 +1267,30 @@ Tomato paste:
 Tomato salsa:
   aisle: International
 Tomatoes (canned):
+  aliases:
+  - Canned tomatoes
   aisle: Pantry
 Tomatoes (fresh):
+  aliases:
+  - Fresh tomatoes
+  - Tomatoes
   aisle: Produce
 Tortilla chips:
   aisle: Snacks
 Tortillas (corn):
+  aliases:
+  - Corn tortillas
   aisle: International
 Tortillas (large flour):
+  aliases:
+  - Flour tortillas
+  - Large flour tortillas
   aisle: International
 Triscuits:
   aisle: Snacks
 Vanilla extract:
+  aliases:
+  - Vanilla
   aisle: Baking
   nutrients:
     basis_grams: 100.0
@@ -1237,12 +1319,21 @@ Vegan milk:
 Veganaise:
   aisle: Condiments
 Vegetarian bouillon:
+  aliases:
+  - Vegetable bouillon
+  - Veggie bouillon
   aisle: Baking
 Vinegar (balsamic):
+  aliases:
+  - Balsamic vinegar
   aisle: Pantry
 Vinegar (sherry):
+  aliases:
+  - Sherry vinegar
   aisle: Pantry
 Vinegar (white):
+  aliases:
+  - White vinegar
   aisle: Pantry
 Walnuts:
   aisle: Pantry
