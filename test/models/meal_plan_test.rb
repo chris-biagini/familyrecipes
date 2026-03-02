@@ -253,5 +253,4 @@ class MealPlanTest < ActiveSupport::TestCase
 
     assert_operator list.lock_version, :>, version_before
   end
-
 end

@@ -4,7 +4,7 @@
 # bites. Aggregates ingredient quantities (via IngredientAggregator), canonicalizes
 # names through IngredientCatalog, organizes items by grocery aisle, appends custom
 # items, and sorts aisles by the kitchen's user-defined order. Consumed by
-# GroceriesController#state and MealPlan#prune_checked_off.
+# GroceriesController#state and MealPlanActions#build_visible_names.
 class ShoppingListBuilder
   def initialize(kitchen:, meal_plan:)
     @kitchen = kitchen

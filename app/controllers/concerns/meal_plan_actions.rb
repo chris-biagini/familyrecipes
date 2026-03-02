@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
 # Shared meal-plan mutation helpers for controllers that modify MealPlan state.
-# Provides optimistic-locking retry with version broadcasting and a common
-# StaleObjectError handler. Used by MenuController, GroceriesController, and
+# Provides optimistic-locking retry with version broadcasting, a common
+# StaleObjectError handler, and visible-name injection for pruning stale
+# checked-off items. Used by MenuController, GroceriesController, and
 # RecipesController.
 module MealPlanActions
   extend ActiveSupport::Concern
