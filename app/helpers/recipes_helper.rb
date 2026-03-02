@@ -51,23 +51,9 @@ module RecipesHelper
     "#{format_numeric(recipe.makes_quantity)} #{recipe.makes_unit_noun}"
   end
 
-  def nutrition_columns(nutrition) # rubocop:disable Metrics/PerceivedComplexity
-    has_per_unit = nutrition['per_unit'] && nutrition['makes_quantity']&.to_f&.positive?
-    has_per_serving = nutrition['per_serving'] && nutrition['serving_count']
-
-    columns = []
-
-    if has_per_unit
-      columns << ["Per #{nutrition['makes_unit_singular']&.capitalize}", nutrition['per_unit'], false]
-      if has_per_serving && nutrition['units_per_serving']
-        columns << [per_serving_label(nutrition), nutrition['per_serving'], false]
-      end
-    elsif has_per_serving
-      columns << ['Per Serving', nutrition['per_serving'], false]
-    end
-
-    columns << ['Total', nutrition['totals'], true]
-  end # rubocop:enable Metrics/PerceivedComplexity
+  def nutrition_columns(nutrition)
+    [per_unit_column(nutrition), per_serving_column(nutrition), total_column(nutrition)].compact
+  end
 
   def nutrition_missing_ingredients(nutrition)
     ((nutrition['missing_ingredients'] || []) + (nutrition['partial_ingredients'] || [])).uniq
@@ -116,6 +102,28 @@ module RecipesHelper
 
     attrs[:'data-name-singular'] = singular
     attrs[:'data-name-plural'] = plural
+  end
+
+  def per_unit?(nutrition)
+    nutrition['per_unit'] && nutrition['makes_quantity']&.to_f&.positive?
+  end
+
+  def per_unit_column(nutrition)
+    return unless per_unit?(nutrition)
+
+    ["Per #{nutrition['makes_unit_singular']&.capitalize}", nutrition['per_unit'], false]
+  end
+
+  def per_serving_column(nutrition)
+    return unless nutrition['per_serving'] && nutrition['serving_count']
+    return ['Per Serving', nutrition['per_serving'], false] unless per_unit?(nutrition)
+    return unless nutrition['units_per_serving']
+
+    [per_serving_label(nutrition), nutrition['per_serving'], false]
+  end
+
+  def total_column(nutrition)
+    ['Total', nutrition['totals'], true]
   end
 
   def per_serving_label(nutrition)
