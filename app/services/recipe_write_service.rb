@@ -75,7 +75,7 @@ class RecipeWriteService
 
     RecipeBroadcaster.broadcast_rename(
       old_recipe, new_title: new_recipe.title,
-      redirect_path: Rails.application.routes.url_helpers.recipe_path(new_recipe)
+                  redirect_path: Rails.application.routes.url_helpers.recipe_path(new_recipe)
     )
     old_recipe.destroy!
   end
