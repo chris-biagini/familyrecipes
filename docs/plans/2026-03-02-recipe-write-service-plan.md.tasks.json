@@ -1,0 +1,15 @@
+{
+  "planPath": "docs/plans/2026-03-02-recipe-write-service-plan.md",
+  "tasks": [
+    {"id": 1, "subject": "Task 1: Add MealPlan.prune_stale_items with tests", "status": "pending"},
+    {"id": 2, "subject": "Task 2: Create RecipeWriteService with create action", "status": "pending", "blockedBy": [1]},
+    {"id": 3, "subject": "Task 3: Add update action to RecipeWriteService", "status": "pending", "blockedBy": [2]},
+    {"id": 4, "subject": "Task 4: Add destroy action to RecipeWriteService", "status": "pending", "blockedBy": [2]},
+    {"id": 5, "subject": "Task 5: Rewire RecipesController to use RecipeWriteService", "status": "pending", "blockedBy": [3, 4]},
+    {"id": 6, "subject": "Task 6: Simplify MealPlanActions and MenuController", "status": "pending", "blockedBy": [1]},
+    {"id": 7, "subject": "Task 7: Update header comments and CLAUDE.md", "status": "pending", "blockedBy": [5, 6]},
+    {"id": 8, "subject": "Task 8: Run full test suite and lint", "status": "pending", "blockedBy": [5, 6, 7]},
+    {"id": 9, "subject": "Task 9: Final review", "status": "pending", "blockedBy": [8]}
+  ],
+  "lastUpdated": "2026-03-02T00:00:00Z"
+}
