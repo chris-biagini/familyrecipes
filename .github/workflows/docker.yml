@@ -69,6 +69,7 @@ jobs:
 
   build:
     needs: test
+    if: ${{ !cancelled() && needs.test.result == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
