@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { formatVulgar, isVulgarSingular } from "utilities/vulgar_fractions"
+import ListenerManager from "utilities/listener_manager"
 
 /**
  * Recipe page progressive enhancement: ingredient scaling, cross-off (click to
@@ -26,7 +27,7 @@ export default class extends Controller {
       this.element.querySelectorAll('section :is(h2, h3)')
     ).filter(node => node.closest('[data-controller*="recipe-state"]') === this.element)
 
-    this.boundHandlers = new Map()
+    this.listeners = new ListenerManager()
     this.setupEventListeners()
     this.loadRecipeState()
     this.setupScaleButton()
@@ -34,18 +35,7 @@ export default class extends Controller {
   }
 
   disconnect() {
-    for (const [node, handlers] of this.boundHandlers) {
-      for (const [event, handler] of handlers) {
-        node.removeEventListener(event, handler)
-      }
-    }
-    this.boundHandlers.clear()
-  }
-
-  addListener(node, event, handler) {
-    node.addEventListener(event, handler)
-    if (!this.boundHandlers.has(node)) this.boundHandlers.set(node, [])
-    this.boundHandlers.get(node).push([event, handler])
+    this.listeners.teardown()
   }
 
   saveRecipeState() {
@@ -119,8 +109,8 @@ export default class extends Controller {
         }
       }
 
-      this.addListener(node, 'click', clickHandler)
-      this.addListener(node, 'keydown', keyHandler)
+      this.listeners.add(node, 'click', clickHandler)
+      this.listeners.add(node, 'keydown', keyHandler)
     })
 
     this.sectionTogglerNodes.forEach(h2 => {
@@ -136,7 +126,7 @@ export default class extends Controller {
         this.saveRecipeState()
       }
 
-      this.addListener(h2, 'click', handler)
+      this.listeners.add(h2, 'click', handler)
     })
   }
 
@@ -165,7 +155,7 @@ export default class extends Controller {
       this.saveRecipeState()
     }
 
-    this.addListener(btn, 'click', handler)
+    this.listeners.add(btn, 'click', handler)
   }
 
   applyScale(rawInput) {

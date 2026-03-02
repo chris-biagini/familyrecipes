@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import ListenerManager from "utilities/listener_manager"
 
 /**
  * Groceries page rendering and interaction. Builds the shopping list DOM from
@@ -26,25 +27,14 @@ export default class extends Controller {
   connect() {
     this.element.classList.remove("hidden-until-js")
     this.aisleCollapseKey = `grocery-aisles-${this.element.dataset.kitchenSlug}`
-    this.boundHandlers = new Map()
+    this.listeners = new ListenerManager()
 
     this.bindCustomItemInput()
     this.bindShoppingListEvents()
   }
 
   disconnect() {
-    for (const [node, handlers] of this.boundHandlers) {
-      for (const [event, handler] of handlers) {
-        node.removeEventListener(event, handler)
-      }
-    }
-    this.boundHandlers.clear()
-  }
-
-  addListener(node, event, handler) {
-    node.addEventListener(event, handler)
-    if (!this.boundHandlers.has(node)) this.boundHandlers.set(node, [])
-    this.boundHandlers.get(node).push([event, handler])
+    this.listeners.teardown()
   }
 
   get syncController() {
@@ -141,7 +131,7 @@ export default class extends Controller {
       container.appendChild(details)
 
       const toggleHandler = () => this.saveAisleCollapse()
-      this.addListener(details, "toggle", toggleHandler)
+      this.listeners.add(details, "toggle", toggleHandler)
     }
   }
 
@@ -269,16 +259,16 @@ export default class extends Controller {
       input.focus()
     }
 
-    this.addListener(addBtn, "click", addItem)
+    this.listeners.add(addBtn, "click", addItem)
 
-    this.addListener(input, "keydown", (e) => {
+    this.listeners.add(input, "keydown", (e) => {
       if (e.key === "Enter") {
         e.preventDefault()
         addItem()
       }
     })
 
-    this.addListener(customList, "click", (e) => {
+    this.listeners.add(customList, "click", (e) => {
       const btn = e.target.closest(".custom-item-remove")
       if (!btn) return
 
@@ -292,7 +282,7 @@ export default class extends Controller {
   bindShoppingListEvents() {
     const shoppingList = document.getElementById("shopping-list")
 
-    this.addListener(shoppingList, "change", (e) => {
+    this.listeners.add(shoppingList, "change", (e) => {
       const cb = e.target
       if (!cb.matches('.check-off input[type="checkbox"]')) return
 
