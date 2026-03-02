@@ -156,42 +156,62 @@ def format_source(source)
   end
 end
 
-def display_sources(sources)
-  if sources.size == 1
-    puts "  Source: #{format_source(sources.first)}"
-  else
-    puts '  Sources:'
-    sources.each { |s| puts "    - #{format_source(s)}" }
-  end
+def display_entry(name, entry)
+  puts "\n"
+  puts PASTEL.bold("--- #{name} ---")
+  display_nutrients_table(entry)
+  display_density(entry)
+  display_portions(entry)
+  display_aliases(entry)
+  display_sources(entry['sources']) if entry['sources']&.any?
 end
 
-def display_entry(name, entry)
-  puts "\n--- #{name} ---"
-
+def display_nutrients_table(entry)
   basis = entry.dig('nutrients', 'basis_grams') || '?'
-  puts "  Nutrients (per #{basis}g):"
-  NUTRIENTS.each do |n|
+  puts PASTEL.dim("  Nutrients (per #{basis}g):")
+
+  rows = NUTRIENTS.map do |n|
     indent = '  ' * n[:indent]
     value = entry.dig('nutrients', n[:key]) || 0
     unit_str = n[:unit].empty? ? '' : " #{n[:unit]}"
-    puts "    #{indent}#{n[:label]}: #{value}#{unit_str}"
+    ["  #{indent}#{n[:label]}", "#{value}#{unit_str}"]
   end
 
+  table = TTY::Table.new(rows: rows)
+  puts table.render(:basic, padding: [0, 1, 0, 2])
+end
+
+def display_density(entry)
   density = entry['density']
   if density
-    puts "  Density: #{density['grams']}g per #{density['volume']} #{density['unit']}"
+    puts "#{PASTEL.dim('  Density:')} #{density['grams']}g per #{density['volume']} #{density['unit']}"
   else
-    puts '  Density: none'
+    puts "#{PASTEL.dim('  Density:')} #{PASTEL.yellow('none')}"
   end
+end
 
+def display_portions(entry)
   portions = entry['portions'] || {}
   if portions.any?
-    puts "  Portions: #{portions.map { |k, v| "#{k}=#{v}g" }.join(', ')}"
+    summary = portions.map { |k, v| "#{k}=#{v}g" }.join(', ')
+    puts "#{PASTEL.dim('  Portions:')} #{summary}"
   else
-    puts '  Portions: none'
+    puts "#{PASTEL.dim('  Portions:')} #{PASTEL.yellow('none')}"
   end
+end
 
-  display_sources(entry['sources']) if entry['sources']&.any?
+def display_aliases(entry)
+  aliases = entry['aliases'] || []
+  if aliases.any?
+    puts "#{PASTEL.dim('  Aliases:')} #{aliases.join(', ')}"
+  else
+    puts "#{PASTEL.dim('  Aliases:')} none"
+  end
+end
+
+def display_sources(sources)
+  label = sources.size == 1 ? 'Source' : 'Sources'
+  puts "#{PASTEL.dim("  #{label}:")} #{sources.map { |s| format_source(s) }.join('; ')}"
 end
 
 def display_unit_coverage(name, entry, needed_units)
@@ -201,11 +221,11 @@ def display_unit_coverage(name, entry, needed_units)
   entry_data = calculator.nutrition_data[name]
   return unless entry_data
 
-  puts "\n  Unit coverage for recipes:"
+  puts PASTEL.dim("\n  Unit coverage for recipes:")
   needed_units.each do |unit|
     label = unit || '(bare count)'
     resolved = calculator.resolvable?(1, unit, entry_data)
-    status = resolved ? 'OK' : 'MISSING'
+    status = resolved ? PASTEL.green('OK') : PASTEL.red('MISSING')
     puts "    #{label}: #{status}"
   end
 end
