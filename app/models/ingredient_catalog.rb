@@ -87,7 +87,7 @@ class IngredientCatalog < ApplicationRecord
 
   # "AP flour" → ["AP flour", "ap flour", "AP Flour"]
   def self.alias_case_variants(name)
-    capped = name.gsub(/\b(\w)/) { $1.upcase }
+    capped = name.gsub(/\b(\w)/) { ::Regexp.last_match(1).upcase }
     [name, name.downcase, capped].uniq
   end
   private_class_method :add_ingredient_variants, :add_alias_keys, :alias_case_variants

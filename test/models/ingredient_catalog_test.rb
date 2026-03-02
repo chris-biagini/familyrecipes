@@ -557,6 +557,6 @@ class IngredientCatalogTest < ActiveSupport::TestCase
   test 'aliases default to empty array' do
     entry = IngredientCatalog.create!(ingredient_name: 'Butter', basis_grams: 100)
 
-    assert_equal [], entry.aliases
+    assert_empty entry.aliases
   end
 end

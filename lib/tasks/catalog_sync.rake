@@ -10,7 +10,7 @@ def sync_catalog_entry(name, entry)
   :unchanged
 end
 
-def catalog_attrs(entry) # rubocop:disable Metrics/MethodLength
+def catalog_attrs(entry) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
   attrs = { aisle: entry['aisle'] }
 
   if (nutrients = entry['nutrients'])
