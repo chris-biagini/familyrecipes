@@ -510,57 +510,61 @@ def find_missing_ingredients(nutrition_data, ctx)
   { missing: missing, ingredients_to_recipes: ingredients_to_recipes, unresolvable: unresolvable }
 end
 
+def display_missing_report(missing, recipes_map)
+  return if missing.empty?
+
+  puts PASTEL.bold("\nMissing nutrition data (#{missing.size}):")
+  missing.each do |name|
+    recipes = recipes_map[name].uniq.sort
+    count_label = recipes.size == 1 ? '1 recipe' : "#{recipes.size} recipes"
+    puts "  #{PASTEL.red('●')} #{name} (#{count_label}: #{recipes.join(', ')})"
+  end
+end
+
+def display_unresolvable_report(unresolvable)
+  return if unresolvable.empty?
+
+  puts PASTEL.bold("\nMissing unit conversions (#{unresolvable.size}):")
+  unresolvable.sort_by { |name, info| [-info[:recipes].size, name] }.each do |name, info|
+    units = info[:units].to_a.sort.join(', ')
+    count_label = info[:recipes].size == 1 ? '1 recipe' : "#{info[:recipes].size} recipes"
+    puts "  #{PASTEL.yellow('●')} #{name}: '#{units}' (#{count_label})"
+  end
+end
+
+def iterate_missing(missing, nutrition_data, ctx, client:)
+  missing.each do |name|
+    puts "\n#{PASTEL.bold("=== #{name} ===")}"
+    handle_ingredient(name, nutrition_data, ctx, client: client)
+  end
+end
+
+def iterate_unresolvable(unresolvable, nutrition_data, ctx, client:)
+  unresolvable.sort_by { |_, info| -info[:recipes].size }.each do |name, _info|
+    puts "\n#{PASTEL.bold("=== #{name} (fix unit conversions) ===")}"
+    handle_ingredient(name, nutrition_data, ctx, client: client)
+  end
+end
+
 def run_missing_mode(nutrition_data, ctx, client:)
   result = find_missing_ingredients(nutrition_data, ctx)
   missing = result[:missing]
   recipes_map = result[:ingredients_to_recipes]
   unresolvable = result[:unresolvable]
 
-  # Phase 1: Report
-  if missing.any?
-    puts "Missing nutrition data (#{missing.size}):"
-    missing.each do |name|
-      recipes = recipes_map[name].uniq.sort
-      count_label = recipes.size == 1 ? '1 recipe' : "#{recipes.size} recipes"
-      puts "  - #{name} (#{count_label}: #{recipes.join(', ')})"
-    end
-    puts ''
-  end
-
-  if unresolvable.any?
-    puts "Missing unit conversions (#{unresolvable.size}):"
-    unresolvable.sort_by { |name, info| [-info[:recipes].size, name] }.each do |name, info|
-      recipes = info[:recipes].sort
-      units = info[:units].to_a.sort.join(', ')
-      count_label = recipes.size == 1 ? '1 recipe' : "#{recipes.size} recipes"
-      puts "  - #{name}: '#{units}' (#{count_label}: #{recipes.join(', ')})"
-    end
-    puts ''
-  end
+  display_missing_report(missing, recipes_map)
+  display_unresolvable_report(unresolvable)
 
   if missing.empty? && unresolvable.empty?
-    puts 'All ingredients have nutrition data and resolvable units!'
+    puts PASTEL.green('All ingredients have nutrition data and resolvable units!')
     return
   end
 
-  puts "#{missing.size} missing data, #{unresolvable.size} missing conversions.\n\n"
+  puts "\n#{PASTEL.bold("#{missing.size} missing")}, #{PASTEL.bold("#{unresolvable.size} unresolvable")}.\n"
+  return unless PROMPT.yes?('Enter data now?')
 
-  # Phase 2: Batch iterate
-  print 'Enter data? (y/n): '
-  input = $stdin.gets&.strip
-  return unless input&.downcase == 'y'
-
-  missing.each do |name|
-    puts "\n=== #{name} ==="
-    handle_ingredient(name, nutrition_data, ctx, client: client)
-    puts ''
-  end
-
-  unresolvable.sort_by { |_, info| -info[:recipes].size }.each do |name, _info|
-    puts "\n=== #{name} (fix unit conversions) ==="
-    handle_ingredient(name, nutrition_data, ctx, client: client)
-    puts ''
-  end
+  iterate_missing(missing, nutrition_data, ctx, client: client)
+  iterate_unresolvable(unresolvable, nutrition_data, ctx, client: client)
 end
 
 # --- Coverage mode ---
@@ -597,19 +601,10 @@ def format_pct(count, total)
   "#{(100.0 * count / total).round(0)}%"
 end
 
-def print_coverage_summary(total:, found:, resolvable:, missing:, omitted:)
-  puts 'Ingredient Coverage Report'
-  puts "  Total unique ingredients: #{total}"
-  puts "  Catalog entries found: #{found} (#{format_pct(found, total)})"
-  puts "  Fully resolvable: #{resolvable} (#{format_pct(resolvable, total)})"
-  puts "  Missing entirely: #{missing} (#{format_pct(missing, total)})"
-  puts "  Omitted: #{omitted}"
-end
-
 def print_top_missing(missing_names, recipes_map, limit: 15)
   return if missing_names.empty?
 
-  puts "\nTop missing (by recipe count):"
+  puts PASTEL.bold("\nTop missing (by recipe count):")
   missing_names.first(limit).each do |name|
     puts "  #{name} (#{recipes_map[name].uniq.size} recipes)"
   end
@@ -631,8 +626,19 @@ def run_coverage_mode
   resolvable_map = count_resolvable(nutrition_data, ctx)
   resolvable = resolvable_map.count { |_, v| v }
 
-  print_coverage_summary(total: total, found: found, resolvable: resolvable,
-                         missing: missing_count, omitted: omitted)
+  puts PASTEL.bold("\nIngredient Coverage Report")
+
+  rows = [
+    ['Total unique ingredients', total.to_s],
+    ['Catalog entries found', "#{found} (#{format_pct(found, total)})"],
+    ['Fully resolvable', "#{resolvable} (#{format_pct(resolvable, total)})"],
+    ['Missing entirely', "#{missing_count} (#{format_pct(missing_count, total)})"],
+    ['Omitted', omitted.to_s]
+  ]
+
+  table = TTY::Table.new(rows: rows)
+  puts table.render(:basic, padding: [0, 2, 0, 2])
+
   print_top_missing(missing, recipes_map)
 end
 
@@ -671,11 +677,7 @@ if ARGV.include?('--missing')
   run_missing_mode(nutrition_data, ctx, client: client)
 else
   ingredient_name = ARGV.reject { |a| a.start_with?('-') }.first
-
-  unless ingredient_name
-    print 'Ingredient name: '
-    ingredient_name = $stdin.gets&.strip
-  end
+  ingredient_name ||= PROMPT.ask('Ingredient name:')
 
   if ingredient_name.blank?
     warn 'No ingredient name provided.'
