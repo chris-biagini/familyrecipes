@@ -142,10 +142,7 @@ class IngredientCatalog < ApplicationRecord # rubocop:disable Metrics/ClassLengt
   end
 
   def normalize_portion_keys
-    return if portions.blank?
-
-    unitless_value = portions.delete('each') || portions.delete('Each')
-    portions['~unitless'] = unitless_value if unitless_value
+    self.portions = normalize_portions_hash(portions)
   end
 
   def nutrients_require_basis_grams
