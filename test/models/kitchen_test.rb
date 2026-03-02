@@ -92,6 +92,9 @@ class KitchenTest < ActiveSupport::TestCase
     IngredientCatalog.create!(kitchen: nil, ingredient_name: 'Flour', aisle: 'Baking', basis_grams: 30)
     IngredientCatalog.create!(kitchen: kitchen, ingredient_name: 'Flour', aisle: 'Pantry', basis_grams: 30)
 
-    assert_includes kitchen.all_aisles, 'Pantry'
+    aisles = kitchen.all_aisles
+
+    assert_includes aisles, 'Pantry'
+    assert_not_includes aisles, 'Baking'
   end
 end

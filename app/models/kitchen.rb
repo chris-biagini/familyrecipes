@@ -46,12 +46,12 @@ class Kitchen < ApplicationRecord
 
   def all_aisles
     saved = parsed_aisle_order
-    catalog_aisles = IngredientCatalog.lookup_for(self)
-                                      .values
-                                      .filter_map(&:aisle)
-                                      .uniq
-                                      .reject { |a| a == 'omit' }
-                                      .sort
+    overridden = IngredientCatalog.where(kitchen_id: id).select(:ingredient_name)
+    catalog_aisles = IngredientCatalog
+                     .where(kitchen_id: id)
+                     .or(IngredientCatalog.where(kitchen_id: nil).where.not(ingredient_name: overridden))
+                     .where.not(aisle: [nil, '', 'omit'])
+                     .distinct.pluck(:aisle).sort
 
     saved + (catalog_aisles - saved)
   end
