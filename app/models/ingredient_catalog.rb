@@ -65,14 +65,32 @@ class IngredientCatalog < ApplicationRecord
   end
 
   def self.add_ingredient_variants(lookup)
-    variants = lookup.each_value.with_object({}) do |entry, acc|
+    extras = lookup.each_value.with_object({}) do |entry, acc|
       FamilyRecipes::Inflector.ingredient_variants(entry.ingredient_name).each do |variant|
         acc[variant] = entry unless lookup.key?(variant)
       end
+      add_alias_keys(acc, entry, lookup)
     end
-    lookup.merge(variants)
+    lookup.merge(extras)
   end
-  private_class_method :add_ingredient_variants
+
+  def self.add_alias_keys(extras, entry, lookup)
+    return if entry.aliases.blank?
+
+    entry.aliases.each do |alias_name|
+      lowered = alias_name.downcase
+      next if lookup.key?(alias_name) || lookup.key?(lowered)
+
+      alias_case_variants(alias_name).each { |v| extras[v] ||= entry }
+    end
+  end
+
+  # "AP flour" → ["AP flour", "ap flour", "AP Flour"]
+  def self.alias_case_variants(name)
+    capped = name.gsub(/\b(\w)/) { $1.upcase }
+    [name, name.downcase, capped].uniq
+  end
+  private_class_method :add_ingredient_variants, :add_alias_keys, :alias_case_variants
 
   private
 

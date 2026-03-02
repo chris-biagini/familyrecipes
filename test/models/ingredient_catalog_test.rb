@@ -485,4 +485,78 @@ class IngredientCatalogTest < ActiveSupport::TestCase
 
     assert_equal [{ 'type' => 'web', 'note' => 'test' }], entry.sources
   end
+
+  # --- aliases ---
+
+  test 'lookup_for resolves aliases to canonical entry' do
+    IngredientCatalog.create!(
+      ingredient_name: 'Flour (all-purpose)',
+      basis_grams: 30,
+      aliases: ['AP flour', 'All-purpose flour', 'Plain flour']
+    )
+
+    result = IngredientCatalog.lookup_for(@kitchen)
+
+    assert result.key?('Flour (all-purpose)')
+    assert_equal result['Flour (all-purpose)'], result['AP flour']
+    assert_equal result['Flour (all-purpose)'], result['All-purpose flour']
+    assert_equal result['Flour (all-purpose)'], result['Plain flour']
+  end
+
+  test 'lookup_for alias matching is case-insensitive' do
+    IngredientCatalog.create!(
+      ingredient_name: 'Flour (all-purpose)',
+      basis_grams: 30,
+      aliases: ['AP flour']
+    )
+
+    result = IngredientCatalog.lookup_for(@kitchen)
+
+    assert_equal result['Flour (all-purpose)'], result['ap flour']
+    assert_equal result['Flour (all-purpose)'], result['AP Flour']
+  end
+
+  test 'kitchen override inherits and can extend global aliases' do
+    IngredientCatalog.create!(
+      ingredient_name: 'Flour (all-purpose)',
+      basis_grams: 30,
+      calories: 110,
+      aliases: ['AP flour']
+    )
+    IngredientCatalog.create!(
+      kitchen: @kitchen,
+      ingredient_name: 'Flour (all-purpose)',
+      basis_grams: 30,
+      calories: 100,
+      aliases: ['AP flour', 'White flour']
+    )
+
+    result = IngredientCatalog.lookup_for(@kitchen)
+
+    assert_predicate result['Flour (all-purpose)'], :custom?
+    assert_equal result['Flour (all-purpose)'], result['AP flour']
+    assert_equal result['Flour (all-purpose)'], result['White flour']
+  end
+
+  test 'canonical name takes precedence over alias from another entry' do
+    IngredientCatalog.create!(
+      ingredient_name: 'Flour (all-purpose)',
+      basis_grams: 30,
+      aliases: ['Flour']
+    )
+    IngredientCatalog.create!(
+      ingredient_name: 'Flour',
+      aisle: 'Baking'
+    )
+
+    result = IngredientCatalog.lookup_for(@kitchen)
+
+    assert_equal 'Flour', result['Flour'].ingredient_name
+  end
+
+  test 'aliases default to empty array' do
+    entry = IngredientCatalog.create!(ingredient_name: 'Butter', basis_grams: 100)
+
+    assert_equal [], entry.aliases
+  end
 end
