@@ -10,6 +10,7 @@ module NutritionTui
     #
     # Collaborators:
     # - NutritionTui::Editors::TextInput (custom aisle entry)
+    # - FamilyRecipes::NutritionConstraints (aisle name length validation)
     # - NutritionTui::Screens::Ingredient (creates and processes results)
     class AisleEditor
       Widgets = RatatuiRuby::Widgets

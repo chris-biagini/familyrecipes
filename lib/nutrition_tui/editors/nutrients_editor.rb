@@ -13,6 +13,7 @@ module NutritionTui
     # - NutritionTui::Data (NUTRIENTS constant for labels and keys)
     # - NutritionTui::Editors::TextInput (inline value editing)
     # - NutritionTui::Screens::Ingredient (creates and processes results)
+    # - FamilyRecipes::NutritionConstraints (basis_grams + nutrient range validation)
     class NutrientsEditor # rubocop:disable Metrics/ClassLength
       Layout = RatatuiRuby::Layout
       Widgets = RatatuiRuby::Widgets

@@ -12,6 +12,7 @@ module NutritionTui
     # Collaborators:
     # - NutritionTui::Editors::TextInput (inline value editing)
     # - NutritionTui::Screens::Ingredient (creates and processes results)
+    # - FamilyRecipes::NutritionConstraints (density completeness validation)
     class DensityEditor # rubocop:disable Metrics/ClassLength
       Layout = RatatuiRuby::Layout
       Widgets = RatatuiRuby::Widgets

@@ -7,7 +7,8 @@
 # density (for volume-to-gram conversion), named portions, aisle assignments,
 # and provenance sources.
 #
-# - NutritionConstraints (shared nutrient/portion/aisle validation rules)
+# Collaborators:
+# - FamilyRecipes::NutritionConstraints (shared validation rules)
 # - NutritionCalculator and ShoppingListBuilder consume this.
 class IngredientCatalog < ApplicationRecord # rubocop:disable Metrics/ClassLength
   self.table_name = 'ingredient_catalog'

@@ -12,6 +12,7 @@ module NutritionTui
     # Collaborators:
     # - NutritionTui::Editors::TextInput (name/grams entry)
     # - NutritionTui::Screens::Ingredient (creates and processes results)
+    # - FamilyRecipes::NutritionConstraints (portion value positivity)
     class PortionsEditor # rubocop:disable Metrics/ClassLength
       Widgets = RatatuiRuby::Widgets
       Style = RatatuiRuby::Style
