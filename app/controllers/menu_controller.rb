@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 # Meal planning page -- member-only. Displays a recipe selector (recipes + quick
-# bites) with checkboxes. Mutations return inline Turbo Stream morph responses
-# and broadcast via MealPlanBroadcaster for cross-device sync. Quick bites
-# content is web-editable; changes broadcast to all connected clients.
+# bites) with checkboxes. Mutations return 204 No Content and broadcast via
+# MealPlanBroadcaster for cross-device sync (including the originating client).
+# Quick bites content is web-editable; changes broadcast to all connected clients.
 class MenuController < ApplicationController
   include MealPlanActions
 
@@ -23,19 +23,19 @@ class MenuController < ApplicationController
   def select
     apply_plan('select', type: params[:type], slug: params[:slug], selected: params[:selected])
     MealPlanBroadcaster.broadcast_all(current_kitchen)
-    render_menu_morph
+    head :no_content
   end
 
   def select_all
     mutate_plan { |plan| plan.select_all!(all_recipe_slugs, all_quick_bite_slugs) }
     MealPlanBroadcaster.broadcast_all(current_kitchen)
-    render_menu_morph
+    head :no_content
   end
 
   def clear
     mutate_plan(&:clear_selections!)
     MealPlanBroadcaster.broadcast_all(current_kitchen)
-    render_menu_morph
+    head :no_content
   end
 
   def quick_bites_content
@@ -53,24 +53,6 @@ class MenuController < ApplicationController
   end
 
   private
-
-  def render_menu_morph
-    plan = MealPlan.for_kitchen(current_kitchen)
-    checked_off = plan.state.fetch('checked_off', [])
-    availability = RecipeAvailabilityCalculator.new(kitchen: current_kitchen, checked_off:).call
-
-    render turbo_stream: turbo_stream.action(
-      :replace, 'recipe-selector', method: :morph,
-      partial: 'menu/recipe_selector',
-      locals: {
-        categories: recipe_selector_categories,
-        quick_bites_by_subsection: current_kitchen.quick_bites_by_subsection,
-        selected_recipes: plan.selected_recipes_set,
-        selected_quick_bites: plan.selected_quick_bites_set,
-        availability:
-      }
-    )
-  end
 
   def recipe_selector_categories
     current_kitchen.categories.ordered.includes(:recipes)

@@ -89,36 +89,38 @@ export default class extends Controller {
     }
   }
 
-  // --- Custom items ---
+  // --- Custom items (delegated from controller root to survive morphs) ---
 
   bindCustomItemInput() {
-    const input = document.getElementById("custom-input")
-    const addBtn = document.getElementById("custom-add")
-    const customList = document.getElementById("custom-items-list")
     const url = this.element.dataset.customItemsUrl
 
-    const addItem = () => {
-      const text = input.value.trim()
-      if (!text) return
-
-      sendAction(url, { item: text, action_type: "add" })
-      input.value = ""
-      input.focus()
-    }
-
-    this.listeners.add(addBtn, "click", addItem)
-    this.listeners.add(input, "keydown", (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault()
-        addItem()
+    this.listeners.add(this.element, "click", (e) => {
+      if (e.target.closest("#custom-add")) {
+        this.addCustomItem(url)
+      } else {
+        const btn = e.target.closest(".custom-item-remove")
+        if (btn) sendAction(url, { item: btn.dataset.item, action_type: "remove" })
       }
     })
 
-    this.listeners.add(customList, "click", (e) => {
-      const btn = e.target.closest(".custom-item-remove")
-      if (!btn) return
-      sendAction(url, { item: btn.dataset.item, action_type: "remove" })
+    this.listeners.add(this.element, "keydown", (e) => {
+      if (e.target.id === "custom-input" && e.key === "Enter") {
+        e.preventDefault()
+        this.addCustomItem(url)
+      }
     })
+  }
+
+  addCustomItem(url) {
+    const input = document.getElementById("custom-input")
+    if (!input) return
+
+    const text = input.value.trim()
+    if (!text) return
+
+    sendAction(url, { item: text, action_type: "add" })
+    input.value = ""
+    input.focus()
   }
 
   // --- Aisle collapse ---

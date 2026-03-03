@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 # Shopping list page -- member-only. Server-renders the full shopping list on
-# page load via ShoppingListBuilder. Mutations return inline Turbo Stream morph
-# responses and broadcast via MealPlanBroadcaster for cross-device sync.
-# Manages check-off state, custom items, and aisle ordering.
+# page load via ShoppingListBuilder. Mutations return 204 No Content and
+# broadcast via MealPlanBroadcaster for cross-device sync (including the
+# originating client). Manages check-off state, custom items, and aisle ordering.
 class GroceriesController < ApplicationController
   include MealPlanActions
 
@@ -20,7 +20,7 @@ class GroceriesController < ApplicationController
   def check
     apply_plan('check', item: params[:item], checked: params[:checked])
     MealPlanBroadcaster.broadcast_all(current_kitchen)
-    render_grocery_morph
+    head :no_content
   end
 
   def update_custom_items
@@ -33,7 +33,7 @@ class GroceriesController < ApplicationController
 
     apply_plan('custom_items', item: item, action: params[:action_type])
     MealPlanBroadcaster.broadcast_grocery_morph(current_kitchen)
-    render_grocery_morph
+    head :no_content
   end
 
   def update_aisle_order
@@ -53,20 +53,6 @@ class GroceriesController < ApplicationController
   end
 
   private
-
-  def render_grocery_morph
-    plan = MealPlan.for_kitchen(current_kitchen)
-    shopping_list = ShoppingListBuilder.new(kitchen: current_kitchen, meal_plan: plan).build
-
-    render turbo_stream: [
-      turbo_stream.action(:update, 'shopping-list', method: :morph,
-                          partial: 'groceries/shopping_list',
-                          locals: { shopping_list:, checked_off: plan.checked_off_set }),
-      turbo_stream.action(:replace, 'custom-items-section', method: :morph,
-                          partial: 'groceries/custom_items',
-                          locals: { custom_items: plan.custom_items_list })
-    ]
-  end
 
   def validate_aisle_order
     lines = current_kitchen.parsed_aisle_order

@@ -1,8 +1,8 @@
 /**
- * Shared fetch-with-retry for Turbo Stream mutations. Sends a request with the
- * Turbo Stream accept header, processes the morph response via
- * Turbo.renderStreamMessage, and retries on network failure with exponential
- * backoff (1s, 2s, 4s). Used by grocery_ui_controller and menu_controller.
+ * Shared fetch-with-retry for Turbo Stream mutations. Sends JSON requests and
+ * handles 204 No Content (broadcast-only) or Turbo Stream HTML responses.
+ * Retries on network failure with exponential backoff (1s, 2s, 4s).
+ * Used by grocery_ui_controller and menu_controller.
  */
 import { getCsrfToken } from "utilities/editor_utils"
 
@@ -18,10 +18,10 @@ export function sendAction(url, params, { method = "PATCH", retries = 3 } = {}) 
   })
     .then(response => {
       if (!response.ok) throw new Error("server error")
-      return response.text()
-    })
-    .then(html => {
-      if (html.includes("<turbo-stream")) Turbo.renderStreamMessage(html)
+      if (response.status === 204) return
+      return response.text().then(html => {
+        if (html.includes("<turbo-stream")) Turbo.renderStreamMessage(html)
+      })
     })
     .catch(error => {
       if (error.message === "server error" || retries <= 0) return
