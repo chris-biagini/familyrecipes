@@ -4,13 +4,15 @@ require 'ratatui_ruby'
 
 module NutritionTui
   module Screens
-    # Detail screen for a single ingredient — three-panel layout showing
+    # Detail screen for a single ingredient -- three-panel layout showing
     # nutrients (left), density + portions (right top), and recipe unit
     # resolution status (right bottom). Users can trigger edits, USDA
     # import, and save modified entries back to ingredient-catalog.yaml.
+    # Manages an `@active_editor` overlay that captures events when present.
     #
     # Collaborators:
     # - NutritionTui::Data (NUTRIENTS constant, find_needed_units, save)
+    # - NutritionTui::Editors::* (modal overlays for editing sections)
     # - FamilyRecipes::NutritionCalculator (resolvable? for unit checks)
     # - NutritionTui::App (delegates render + handle_event here)
     class Ingredient # rubocop:disable Metrics/ClassLength
@@ -28,21 +30,81 @@ module NutritionTui
         @ctx = ctx
         @dirty = false
         @needed_units = Data.find_needed_units(name, ctx)
+        @active_editor = nil
       end
 
       def render(frame)
         main_chunks = vertical_split(frame.area, [Layout::Constraint.min(10), Layout::Constraint.length(1)])
         render_content(frame, main_chunks[0])
         render_keybind_bar(frame, main_chunks[1])
+        render_overlay(frame) if @active_editor
       end
 
       def handle_event(event)
         return unless event
+        return delegate_to_editor(event) if @active_editor
 
         dispatch_key(event)
       end
 
       private
+
+      # --- Editor overlay ---
+
+      def delegate_to_editor(event)
+        result = @active_editor.handle_event(event)
+        return nil unless result&.dig(:done)
+
+        process_editor_result(result)
+      end
+
+      def process_editor_result(result)
+        if result[:choice]
+          open_sub_editor(result[:choice])
+        elsif result[:entry]
+          @entry = result[:entry]
+          @dirty = true
+          @active_editor = nil
+        elsif result[:value]
+          apply_value_result(result)
+        else
+          @active_editor = nil
+        end
+        nil
+      end
+
+      def apply_value_result(result)
+        @entry['aisle'] = result[:value]
+        @dirty = true
+        @active_editor = nil
+      end
+
+      def open_sub_editor(choice)
+        @active_editor = case choice
+                         when :nutrients then Editors::NutrientsEditor.new(entry: @entry)
+                         when :density   then Editors::DensityEditor.new(entry: @entry)
+                         when :portions  then Editors::PortionsEditor.new(entry: @entry)
+                         end
+      end
+
+      def render_overlay(frame)
+        area = overlay_area(frame.area)
+        frame.render_widget(Widgets::Clear.new, area)
+        @active_editor.render(frame, area)
+      end
+
+      def overlay_area(screen)
+        w = [screen.width * 3 / 5, 40].max
+        h = [screen.height * 3 / 5, 10].max
+        Layout::Rect.new(
+          x: screen.x + ((screen.width - w) / 2),
+          y: screen.y + ((screen.height - h) / 2),
+          width: w,
+          height: h
+        )
+      end
+
+      # --- Content panels ---
 
       def render_content(frame, area)
         content_chunks = horizontal_split(area, [Layout::Constraint.percentage(45), Layout::Constraint.percentage(55)])
@@ -55,8 +117,6 @@ module NutritionTui
         render_density_portions_panel(frame, right_chunks[0])
         render_recipe_units_panel(frame, right_chunks[1])
       end
-
-      # --- Nutrients panel ---
 
       def render_nutrients_panel(frame, area)
         paragraph = Widgets::Paragraph.new(
@@ -84,8 +144,6 @@ module NutritionTui
       def basis_grams
         @entry.dig('nutrients', 'basis_grams') || 100
       end
-
-      # --- Density & Portions panel ---
 
       def render_density_portions_panel(frame, area)
         paragraph = Widgets::Paragraph.new(
@@ -115,8 +173,6 @@ module NutritionTui
 
         portions.map { |name, grams| "  #{name.ljust(16)}#{format_number(grams)}g" }
       end
-
-      # --- Recipe Units panel ---
 
       def render_recipe_units_panel(frame, area)
         paragraph = Widgets::Paragraph.new(
@@ -187,20 +243,43 @@ module NutritionTui
         in { type: :key, code: 'Escape' }
           { action: :back }
         in { type: :key, code: 'e' }
-          { action: :edit_menu }
+          open_edit_menu
         in { type: :key, code: 'u' }
           { action: :usda_import, name: @name }
         in { type: :key, code: 'a' }
-          { action: :edit_aisle }
+          open_aisle_editor
         in { type: :key, code: 'l' }
-          { action: :edit_aliases }
+          open_aliases_editor
         in { type: :key, code: 'r' }
-          { action: :edit_sources }
+          open_sources_editor
         in { type: :key, code: 'w' }
           save_entry
         else
           nil
         end
+      end
+
+      def open_edit_menu
+        @active_editor = Editors::EditMenu.new
+        nil
+      end
+
+      def open_aisle_editor
+        @active_editor = Editors::AisleEditor.new(
+          nutrition_data: @nutrition_data,
+          current_aisle: @entry['aisle']
+        )
+        nil
+      end
+
+      def open_aliases_editor
+        @active_editor = Editors::AliasesEditor.new(entry: @entry)
+        nil
+      end
+
+      def open_sources_editor
+        @active_editor = Editors::SourcesEditor.new(entry: @entry)
+        nil
       end
 
       # --- Save ---
