@@ -18,12 +18,9 @@ module NutritionTui
       Widgets = RatatuiRuby::Widgets
       Style = RatatuiRuby::Style
 
-      SORT_CYCLE = %i[recps_desc recps_asc alpha].freeze
-      SORT_LABELS = {
-        recps_desc: "recps \u2193",
-        recps_asc: "recps \u2191",
-        alpha: "A\u2013Z"
-      }.freeze
+      SORT_CYCLE = %i[recps_desc recps_asc alpha_asc alpha_desc].freeze
+      SORT_ARROWS = { recps_desc: "\u2193", recps_asc: "\u2191", alpha_asc: "\u2191", alpha_desc: "\u2193" }.freeze
+      SORT_ON_NAME = %i[alpha_asc alpha_desc].freeze
 
       def initialize(nutrition_data:, ctx:)
         @nutrition_data = nutrition_data
@@ -88,7 +85,7 @@ module NutritionTui
 
       def render_ingredient_table(frame, area)
         table = Widgets::Table.new(
-          header: %w[Name Aisle Aliases Recps Nutr Dens Unres Prtns],
+          header: sort_decorated_header,
           rows: table_rows,
           widths: column_widths,
           selected_row: @selected,
@@ -96,6 +93,13 @@ module NutritionTui
           block: Widgets::Block.new(title: 'Ingredients', borders: [:all])
         )
         frame.render_widget(table, area)
+      end
+
+      def sort_decorated_header
+        arrow = SORT_ARROWS[@sort_mode]
+        name_hdr = SORT_ON_NAME.include?(@sort_mode) ? "Name#{arrow}" : 'Name'
+        recps_hdr = SORT_ON_NAME.include?(@sort_mode) ? 'Recps' : "Recps#{arrow}"
+        [name_hdr, 'Aisle', 'Aliases', recps_hdr, 'Nutr', 'Dens', 'Unres', 'Prtns']
       end
 
       def table_rows
@@ -149,7 +153,7 @@ module NutritionTui
 
       def normal_bar_text
         hide_label = @hide_complete ? 'show all' : 'hide done'
-        " / filter  c #{hide_label}  t sort:#{SORT_LABELS[@sort_mode]}  Enter select  n new  s search  q quit"
+        " / filter  c #{hide_label}  t sort  Enter select  n new  s search  q quit"
       end
 
       def filter_bar_text
@@ -294,7 +298,8 @@ module NutritionTui
         case @sort_mode
         when :recps_desc then @all_rows.sort_by { |i| [-i[:recipe_count], i[:name].downcase] }
         when :recps_asc  then @all_rows.sort_by { |i| [i[:recipe_count], i[:name].downcase] }
-        when :alpha      then @all_rows.sort_by { |i| i[:name].downcase }
+        when :alpha_asc  then @all_rows.sort_by { |i| i[:name].downcase }
+        when :alpha_desc then @all_rows.sort_by { |i| i[:name].downcase }.reverse
         end
       end
 
