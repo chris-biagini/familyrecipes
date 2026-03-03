@@ -14,11 +14,13 @@ module NutritionTui
   # - NutritionTui::Data (nutrition catalog and recipe context loading)
   # - NutritionTui::Screens::Dashboard (main screen)
   # - NutritionTui::Screens::Ingredient (ingredient detail screen)
+  # - NutritionTui::Screens::UsdaSearch (USDA FoodData Central search)
   class App
     def initialize
       @running = true
       @nutrition_data = Data.load_nutrition_data
       @ctx = Data.load_context
+      @api_key = FamilyRecipes::UsdaClient.load_api_key(project_root: NutritionTui::Data::PROJECT_ROOT)
       @current_screen = Screens::Dashboard.new(nutrition_data: @nutrition_data, ctx: @ctx)
     end
 
@@ -40,14 +42,20 @@ module NutritionTui
       handle_action(result)
     end
 
-    def handle_action(result)
+    def handle_action(result) # rubocop:disable Metrics/MethodLength
       case result
       in { action: :quit }
         @running = false
       in { action: :open_ingredient, name: }
         open_ingredient(name)
+      in { action: :usda_search }
+        open_usda_search
+      in { action: :usda_import, name: }
+        open_usda_search(default_query: name)
+      in { action: :import_complete, detail: }
+        apply_import(detail)
       in { action: :back }
-        @current_screen = Screens::Dashboard.new(nutrition_data: @nutrition_data, ctx: @ctx)
+        switch_to_dashboard
       else
         nil
       end
@@ -55,10 +63,33 @@ module NutritionTui
 
     def open_ingredient(name)
       entry = @nutrition_data[name]
+      @previous_screen = @current_screen
       @current_screen = Screens::Ingredient.new(
         name: name, entry: entry,
         nutrition_data: @nutrition_data, ctx: @ctx
       )
+    end
+
+    def open_usda_search(default_query: '')
+      return unless @api_key
+
+      @previous_screen = @current_screen
+      @current_screen = Screens::UsdaSearch.new(api_key: @api_key, default_query: default_query)
+    end
+
+    # Task 8 will use detail to apply nutrients to the ingredient entry
+    def apply_import(_detail)
+      @previous_screen.is_a?(Screens::Ingredient) ? restore_previous_screen : switch_to_dashboard
+    end
+
+    def restore_previous_screen
+      @current_screen = @previous_screen
+      @previous_screen = nil
+    end
+
+    def switch_to_dashboard
+      @previous_screen = nil
+      @current_screen = Screens::Dashboard.new(nutrition_data: @nutrition_data, ctx: @ctx)
     end
   end
 end
