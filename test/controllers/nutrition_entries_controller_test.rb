@@ -248,6 +248,84 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
     assert_equal 100, entry.portions[boundary_key]
   end
 
+  # --- upsert with aliases ---
+
+  test 'upsert saves aliases to kitchen-scoped entry' do
+    post nutrition_entry_upsert_path('Flour (all-purpose)', kitchen_slug: kitchen_slug),
+         params: { nutrients: VALID_NUTRIENTS, density: nil, portions: {},
+                   aisle: 'Baking', aliases: ['AP flour', 'All-purpose flour'] },
+         as: :json
+
+    assert_response :success
+    entry = IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'Flour (all-purpose)')
+
+    assert_equal ['AP flour', 'All-purpose flour'], entry.aliases
+  end
+
+  test 'upsert updates aliases on existing entry' do
+    IngredientCatalog.create!(
+      kitchen: @kitchen, ingredient_name: 'Flour (all-purpose)',
+      basis_grams: 30, aliases: ['AP flour']
+    )
+
+    post nutrition_entry_upsert_path('Flour (all-purpose)', kitchen_slug: kitchen_slug),
+         params: { nutrients: VALID_NUTRIENTS, density: nil, portions: {},
+                   aisle: nil, aliases: ['AP flour', 'Plain flour'] },
+         as: :json
+
+    assert_response :success
+    entry = IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'Flour (all-purpose)')
+
+    assert_equal ['AP flour', 'Plain flour'], entry.aliases
+  end
+
+  test 'upsert with empty aliases clears existing aliases' do
+    IngredientCatalog.create!(
+      kitchen: @kitchen, ingredient_name: 'Flour (all-purpose)',
+      basis_grams: 30, aliases: ['AP flour']
+    )
+
+    post nutrition_entry_upsert_path('Flour (all-purpose)', kitchen_slug: kitchen_slug),
+         params: { nutrients: VALID_NUTRIENTS, density: nil, portions: {},
+                   aisle: nil, aliases: [] },
+         as: :json
+
+    assert_response :success
+    entry = IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'Flour (all-purpose)')
+
+    assert_empty entry.aliases
+  end
+
+  test 'upsert without aliases key preserves existing aliases' do
+    IngredientCatalog.create!(
+      kitchen: @kitchen, ingredient_name: 'Flour (all-purpose)',
+      basis_grams: 30, aliases: ['AP flour']
+    )
+
+    post nutrition_entry_upsert_path('Flour (all-purpose)', kitchen_slug: kitchen_slug),
+         params: { nutrients: VALID_NUTRIENTS, density: nil, portions: {}, aisle: nil },
+         as: :json
+
+    assert_response :success
+    entry = IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'Flour (all-purpose)')
+
+    assert_equal ['AP flour'], entry.aliases
+  end
+
+  test 'upsert sanitizes aliases — strips blanks, deduplicates, limits count' do
+    aliases = ['AP flour', '', '  ', 'AP flour', 'Plain flour']
+
+    post nutrition_entry_upsert_path('Flour (all-purpose)', kitchen_slug: kitchen_slug),
+         params: { nutrients: VALID_NUTRIENTS, density: nil, portions: {},
+                   aisle: nil, aliases: aliases },
+         as: :json
+
+    assert_response :success
+    entry = IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'Flour (all-purpose)')
+
+    assert_equal ['AP flour', 'Plain flour'], entry.aliases
+  end
+
   test 'upsert validates basis_grams > 0 when nutrients present' do
     post nutrition_entry_upsert_path('flour', kitchen_slug: kitchen_slug),
          params: { nutrients: { basis_grams: 0, calories: 110 }, density: nil, portions: {}, aisle: nil },

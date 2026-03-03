@@ -38,7 +38,8 @@ class NutritionEntriesController < ApplicationController
 
   def catalog_params
     { nutrients: permitted_nutrients, density: permitted_density,
-      portions: permitted_portions, aisle: params[:aisle]&.strip.presence }
+      portions: permitted_portions, aisle: params[:aisle]&.strip.presence,
+      aliases: permitted_aliases }
   end
 
   def permitted_nutrients
@@ -57,6 +58,12 @@ class NutritionEntriesController < ApplicationController
     return {} unless params[:portions]
 
     params[:portions].permit!.to_h.select { |k, v| k.size <= 50 && v.to_s.match?(/\A[\d.]+\z/) }
+  end
+
+  def permitted_aliases
+    return unless params.key?(:aliases)
+
+    Array(params[:aliases]).map { |a| a.to_s.strip }.compact_blank.uniq.first(20)
   end
 
   def render_errors(entry)
