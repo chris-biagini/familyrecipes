@@ -336,11 +336,14 @@ Carrots:
     total_sugars: 4.74
     protein: 0.93
     added_sugars: 0.0
+  density:
+    grams: 128.0
+    volume: 1.0
+    unit: cup
   portions:
     small: 50.0
     medium: 61.0
     large: 72.0
-    cup chopped: 128.0
     "~unitless": 72.0
   sources:
   - type: usda
@@ -1288,25 +1291,32 @@ Onions:
 Oranges:
   aisle: Produce
 Oregano:
-  aisle: Spices
   nutrients:
     basis_grams: 100.0
-    calories: 265.0
-    fat: 4.28
-    saturated_fat: 1.551
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 25.0
-    carbs: 68.92
-    fiber: 42.5
-    total_sugars: 4.09
-    protein: 9.0
+    calories: 717.0
+    fat: 81.11
+    saturated_fat: 51.368
+    trans_fat: 3.278
+    cholesterol: 215.0
+    sodium: 643.0
+    carbs: 0.06
+    fiber: 0.0
+    total_sugars: 0.06
+    protein: 0.85
     added_sugars: 0.0
+  density:
+    grams: 227.0
+    volume: 1.0
+    unit: cup
+  portions:
+    pat: 5.0
+    stick: 113.0
   sources:
   - type: usda
     dataset: SR Legacy
-    fdc_id: 171328
-    description: Spices, oregano, dried
+    fdc_id: 173410
+    description: Butter, salted
+  aliases: []
 Paper towels:
   aisle: Household
 Paprika:
