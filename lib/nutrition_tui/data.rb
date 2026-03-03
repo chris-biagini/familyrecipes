@@ -123,10 +123,11 @@ module NutritionTui
     # --- USDA modifier classification ---
 
     def classify_usda_modifiers(modifiers)
-      result = { density_candidates: [], portion_candidates: [], filtered: [] }
-
-      modifiers.each { |mod| classify_single_modifier(mod, result) }
-      result
+      modifiers.each_with_object(density_candidates: [], portion_candidates: [], filtered: []) do |mod, result|
+        entry = mod.merge(each: per_unit_grams(mod))
+        bucket, extra = modifier_bucket(mod[:modifier])
+        result[bucket] << entry.merge(extra)
+      end
     end
 
     def pick_best_density(density_candidates)
@@ -146,7 +147,7 @@ module NutritionTui
     end
 
     def regulatory_modifier?(modifier)
-      modifier.to_s.downcase.match?(/\bnlea\b|serving\s+packet|individual\s+packet/)
+      modifier.to_s.downcase.match?(/\bnlea\b|\bserving\b|\bpacket\b/)
     end
 
     def normalize_volume_unit(modifier)
@@ -255,12 +256,6 @@ module NutritionTui
       end
     end
 
-    def classify_single_modifier(mod, result)
-      entry = mod.merge(each: per_unit_grams(mod))
-      bucket, extra = modifier_bucket(mod[:modifier])
-      result[bucket] << entry.merge(extra)
-    end
-
     def per_unit_grams(mod)
       (mod[:grams] / mod[:amount].to_f).round(2)
     end
@@ -289,7 +284,7 @@ module NutritionTui
 
     private_class_method :register_name, :register_variants, :register_aliases,
                          :build_omit_set, :check_recipe_resolvability,
-                         :check_recipe_units, :classify_single_modifier,
+                         :check_recipe_units,
                          :per_unit_grams, :modifier_bucket, :canonicalize_volume
   end # rubocop:enable Metrics/ModuleLength
 end
