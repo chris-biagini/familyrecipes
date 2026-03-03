@@ -58,8 +58,6 @@ export default class extends Controller {
   }
 
   syncCheckboxes(state) {
-    this.element.classList.remove("hidden-until-js")
-
     const selectedRecipes = state.selected_recipes || []
     const selectedQuickBites = state.selected_quick_bites || []
 

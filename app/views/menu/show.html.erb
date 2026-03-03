@@ -20,11 +20,7 @@
   <p>Pick recipes and quick bites that you want to have available.</p>
 </header>
 
-<noscript>
-  <p><em>This page requires JavaScript to manage your menu selections.</em></p>
-</noscript>
-
-<div id="menu-app" class="hidden-until-js"
+<div id="menu-app"
      data-controller="menu"
      data-kitchen-slug="<%= current_kitchen.slug %>"
      data-select-url="<%= menu_select_path %>"
