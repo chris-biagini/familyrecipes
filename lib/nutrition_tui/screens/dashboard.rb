@@ -25,6 +25,8 @@ module NutritionTui
         @selected = 0
         @filter = nil
         @filter_input = false
+        @hide_complete = false
+        @sort_alpha = false
         @visible_ingredients = @ingredients
       end
 
@@ -137,7 +139,9 @@ module NutritionTui
       end
 
       def normal_bar_text
-        ' / filter  Enter select  n new  s search  q quit'
+        hide_label = @hide_complete ? 'show complete' : 'hide complete'
+        sort_label = @sort_alpha ? 'sort by recps' : 'sort A-Z'
+        " / filter  c #{hide_label}  t #{sort_label}  Enter select  n new  s search  q quit"
       end
 
       def filter_bar_text
@@ -158,6 +162,10 @@ module NutritionTui
           select_current
         in { type: :key, code: '/' }
           enter_filter_mode
+        in { type: :key, code: 'c' }
+          toggle_hide_complete
+        in { type: :key, code: 't' }
+          toggle_sort
         in { type: :key, code: 'n' }
           { action: :new_ingredient }
         in { type: :key, code: 's' }
@@ -209,7 +217,7 @@ module NutritionTui
       def clear_filter
         @filter_input = false
         @filter = nil
-        @visible_ingredients = @ingredients
+        recompute_visible
         @selected = 0
         nil
       end
@@ -233,14 +241,32 @@ module NutritionTui
         nil
       end
 
-      def apply_filter
+      def toggle_hide_complete
+        @hide_complete = !@hide_complete
+        recompute_visible
+        nil
+      end
+
+      def toggle_sort
+        @sort_alpha = !@sort_alpha
+        @ingredients = sorted_ingredients
+        recompute_visible
+        nil
+      end
+
+      def recompute_visible
+        list = @hide_complete ? @ingredients.reject { |i| complete?(i) } : @ingredients
         @visible_ingredients = if @filter.to_s.empty?
-                                 @ingredients
+                                 list
                                else
                                  downcased = @filter.downcase
-                                 @ingredients.select { |i| i[:name].downcase.include?(downcased) }
+                                 list.select { |i| i[:name].downcase.include?(downcased) }
                                end
         @selected = @selected.clamp(0, [0, @visible_ingredients.size - 1].max)
+      end
+
+      def apply_filter
+        recompute_visible
       end
 
       # --- Data building ---
@@ -250,10 +276,18 @@ module NutritionTui
         unresolvable = missing_result[:unresolvable]
         recipes_map = missing_result[:ingredients_to_recipes]
 
-        rows = @nutrition_data.map do |name, entry|
+        @all_rows = @nutrition_data.map do |name, entry|
           build_ingredient_row(name, entry, unresolvable, recipes_map)
         end
-        rows.sort_by { |i| [complete?(i) ? 1 : 0, -i[:recipe_count], i[:name].downcase] }
+        sorted_ingredients
+      end
+
+      def sorted_ingredients
+        if @sort_alpha
+          @all_rows.sort_by { |i| i[:name].downcase }
+        else
+          @all_rows.sort_by { |i| [complete?(i) ? 1 : 0, -i[:recipe_count], i[:name].downcase] }
+        end
       end
 
       def build_ingredient_row(name, entry, unresolvable, recipes_map)
