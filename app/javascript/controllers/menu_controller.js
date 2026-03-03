@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { sendAction } from "utilities/turbo_fetch"
+import ListenerManager from "utilities/listener_manager"
 
 /**
  * Menu page recipe/quick-bite selection. Handles optimistic checkbox toggle,
@@ -8,7 +9,9 @@ import { sendAction } from "utilities/turbo_fetch"
  */
 export default class extends Controller {
   connect() {
-    this.element.addEventListener("change", (e) => {
+    this.listeners = new ListenerManager()
+
+    this.listeners.add(this.element, "change", (e) => {
       const cb = e.target.closest('#recipe-selector input[type="checkbox"]')
       if (!cb) return
 
@@ -18,6 +21,10 @@ export default class extends Controller {
 
       sendAction(this.element.dataset.selectUrl, { type, slug, selected: cb.checked })
     })
+  }
+
+  disconnect() {
+    this.listeners.teardown()
   }
 
   selectAll() {
