@@ -12,7 +12,7 @@ module NutritionTui
     # Collaborators:
     # - NutritionTui::Editors::TextInput (inline value editing)
     # - NutritionTui::Screens::Ingredient (creates and processes results)
-    class DensityEditor
+    class DensityEditor # rubocop:disable Metrics/ClassLength
       Layout = RatatuiRuby::Layout
       Widgets = RatatuiRuby::Widgets
       Style = RatatuiRuby::Style
@@ -30,6 +30,7 @@ module NutritionTui
         @entry = entry
         @selected = 0
         @text_input = nil
+        @error = nil
       end
 
       def handle_event(event)
@@ -45,14 +46,20 @@ module NutritionTui
         )
         frame.render_widget(list, area)
         render_text_input(frame, area) if @text_input
+        render_error(frame, area) if @error
       end
 
       private
 
-      def handle_selecting(event)
+      def handle_selecting(event) # rubocop:disable Metrics/MethodLength
+        if @error
+          @error = nil
+          return nil
+        end
+
         case event
         in { type: :key, code: 'esc' }
-          { done: true, entry: @entry }
+          validate_and_close
         in { type: :key, code: 'up' | 'k' }
           @selected = (@selected - 1).clamp(0, ITEM_COUNT - 1)
           nil
@@ -62,6 +69,17 @@ module NutritionTui
         in { type: :key, code: 'enter' }
           activate_selected
         else
+          nil
+        end
+      end
+
+      def validate_and_close
+        valid, msg = FamilyRecipes::NutritionConstraints.density_complete?(@entry['density'])
+        if valid
+          @error = nil
+          { done: true, entry: @entry }
+        else
+          @error = msg
           nil
         end
       end
@@ -132,6 +150,19 @@ module NutritionTui
         return value.to_i.to_s if value == value.to_i
 
         value.round(2).to_s
+      end
+
+      def render_error(frame, area)
+        error_area = Layout::Rect.new(
+          x: area.x + 1,
+          y: area.bottom - 2,
+          width: area.width - 2,
+          height: 1
+        )
+        text = RatatuiRuby::Text::Line.new(
+          spans: [RatatuiRuby::Text::Span.styled(@error, Style::Style.new(fg: :red))]
+        )
+        frame.render_widget(Widgets::Paragraph.new(text: text), error_area)
       end
 
       def render_text_input(frame, area)
