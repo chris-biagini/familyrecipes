@@ -59,7 +59,7 @@ class GroceriesController < ApplicationController
     shopping_list = ShoppingListBuilder.new(kitchen: current_kitchen, meal_plan: plan).build
 
     render turbo_stream: [
-      turbo_stream.action(:replace, 'shopping-list', method: :morph,
+      turbo_stream.action(:update, 'shopping-list', method: :morph,
                           partial: 'groceries/shopping_list',
                           locals: { shopping_list:, checked_off: plan.checked_off_set }),
       turbo_stream.action(:replace, 'custom-items-section', method: :morph,

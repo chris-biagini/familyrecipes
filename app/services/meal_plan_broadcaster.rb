@@ -54,7 +54,7 @@ class MealPlanBroadcaster
 
     Turbo::StreamsChannel.broadcast_action_to(
       kitchen, 'groceries',
-      action: :replace, attributes: { method: :morph },
+      action: :update, attributes: { method: :morph },
       target: 'shopping-list',
       partial: 'groceries/shopping_list',
       locals: { shopping_list:, checked_off: plan.checked_off_set }
