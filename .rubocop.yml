@@ -30,6 +30,15 @@ Naming/RescuedExceptionsVariableName:
 Layout/LineLength:
   Max: 120
 
+# Methods return [valid, message] tuples — ? suffix is intentional for the API
+Naming/PredicateMethod:
+  AllowedMethods:
+    - valid_basis_grams?
+    - valid_nutrient?
+    - density_complete?
+    - valid_portion_value?
+    - valid_aisle?
+
 # --- Aspirational metrics ---
 # bin/ scripts and tests are exempt — they're inherently procedural.
 
