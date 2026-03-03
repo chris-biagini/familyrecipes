@@ -23,6 +23,7 @@ module NutritionTui
         @selected = 0
         @text_input = nil
         @pending_name = nil
+        @error = nil
       end
 
       def handle_event(event)
@@ -95,6 +96,7 @@ module NutritionTui
       end
 
       def handle_text_input(event)
+        @error = nil
         result = @text_input.handle_event(event)
         return nil unless result&.dig(:done)
 
@@ -122,7 +124,16 @@ module NutritionTui
 
       def apply_grams(value)
         parsed = Float(value, exception: false)
-        @entry['portions'][@pending_name] = parsed if parsed
+        return reset_to_list unless parsed
+
+        valid, msg = FamilyRecipes::NutritionConstraints.valid_portion_value?(parsed)
+        unless valid
+          @text_input = TextInput.new(label: "#{@pending_name} (grams)")
+          @error = msg
+          return nil
+        end
+
+        @entry['portions'][@pending_name] = parsed
         reset_to_list
       end
 
@@ -130,6 +141,7 @@ module NutritionTui
         @state = :list
         @text_input = nil
         @pending_name = nil
+        @error = nil
         nil
       end
 
@@ -157,6 +169,20 @@ module NutritionTui
       def render_text_input(frame, area)
         frame.render_widget(Widgets::Clear.new, area)
         @text_input.render(frame, area)
+        render_error(frame, area) if @error
+      end
+
+      def render_error(frame, area)
+        error_area = RatatuiRuby::Layout::Rect.new(
+          x: area.x + 1,
+          y: area.bottom - 2,
+          width: area.width - 2,
+          height: 1
+        )
+        text = RatatuiRuby::Text::Line.new(
+          spans: [RatatuiRuby::Text::Span.styled(@error, Style::Style.new(fg: :red))]
+        )
+        frame.render_widget(Widgets::Paragraph.new(text: text), error_area)
       end
 
       def format_number(value)
