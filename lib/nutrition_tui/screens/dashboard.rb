@@ -18,6 +18,13 @@ module NutritionTui
       Widgets = RatatuiRuby::Widgets
       Style = RatatuiRuby::Style
 
+      SORT_CYCLE = %i[recps_desc recps_asc alpha].freeze
+      SORT_LABELS = {
+        recps_desc: "recps \u2193",
+        recps_asc: "recps \u2191",
+        alpha: "A\u2013Z"
+      }.freeze
+
       def initialize(nutrition_data:, ctx:)
         @nutrition_data = nutrition_data
         @ctx = ctx
@@ -26,7 +33,7 @@ module NutritionTui
         @filter = nil
         @filter_input = false
         @hide_complete = false
-        @sort_alpha = false
+        @sort_mode = :recps_desc
         @visible_ingredients = @ingredients
       end
 
@@ -81,7 +88,7 @@ module NutritionTui
 
       def render_ingredient_table(frame, area)
         table = Widgets::Table.new(
-          header: %w[Name Aliases Recps Nutr Dens Unres Prtns],
+          header: %w[Name Aisle Aliases Recps Nutr Dens Unres Prtns],
           rows: table_rows,
           widths: column_widths,
           selected_row: @selected,
@@ -95,6 +102,7 @@ module NutritionTui
         @visible_ingredients.map do |ing|
           [
             ing[:name],
+            ing[:aisle],
             ing[:aliases],
             ing[:recipe_count].positive? ? ing[:recipe_count].to_s : "\u2014",
             check_or_dash(ing[:has_nutrients]),
@@ -107,13 +115,14 @@ module NutritionTui
 
       def column_widths
         [
-          Layout::Constraint.min(18),
+          Layout::Constraint.min(24),
           Layout::Constraint.min(14),
-          Layout::Constraint.length(5),
-          Layout::Constraint.length(4),
-          Layout::Constraint.length(4),
-          Layout::Constraint.min(10),
-          Layout::Constraint.min(10)
+          Layout::Constraint.min(18),
+          Layout::Constraint.length(6),
+          Layout::Constraint.length(6),
+          Layout::Constraint.length(6),
+          Layout::Constraint.min(14),
+          Layout::Constraint.min(14)
         ]
       end
 
@@ -139,9 +148,8 @@ module NutritionTui
       end
 
       def normal_bar_text
-        hide_label = @hide_complete ? 'show complete' : 'hide complete'
-        sort_label = @sort_alpha ? 'sort by recps' : 'sort A-Z'
-        " / filter  c #{hide_label}  t #{sort_label}  Enter select  n new  s search  q quit"
+        hide_label = @hide_complete ? 'show all' : 'hide done'
+        " / filter  c #{hide_label}  t sort:#{SORT_LABELS[@sort_mode]}  Enter select  n new  s search  q quit"
       end
 
       def filter_bar_text
@@ -248,7 +256,7 @@ module NutritionTui
       end
 
       def toggle_sort
-        @sort_alpha = !@sort_alpha
+        @sort_mode = SORT_CYCLE[(SORT_CYCLE.index(@sort_mode) + 1) % SORT_CYCLE.size]
         @ingredients = sorted_ingredients
         recompute_visible
         nil
@@ -283,10 +291,10 @@ module NutritionTui
       end
 
       def sorted_ingredients
-        if @sort_alpha
-          @all_rows.sort_by { |i| i[:name].downcase }
-        else
-          @all_rows.sort_by { |i| [complete?(i) ? 1 : 0, -i[:recipe_count], i[:name].downcase] }
+        case @sort_mode
+        when :recps_desc then @all_rows.sort_by { |i| [-i[:recipe_count], i[:name].downcase] }
+        when :recps_asc  then @all_rows.sort_by { |i| [i[:recipe_count], i[:name].downcase] }
+        when :alpha      then @all_rows.sort_by { |i| i[:name].downcase }
         end
       end
 
@@ -294,9 +302,11 @@ module NutritionTui
         unres = unresolvable.key?(name) ? unresolvable[name][:units] : Set.new
         {
           name: name,
+          aisle: entry['aisle'] || '',
           aliases: format_aliases(entry['aliases']),
           has_nutrients: entry['nutrients'].is_a?(Hash),
           has_density: entry['density'].is_a?(Hash),
+          has_aisle: entry['aisle'].present?,
           portions: (entry['portions'] || {}).keys.reject { |k| k.start_with?('~') },
           unresolvable: unres,
           recipe_count: (recipes_map[name] || []).uniq.size
@@ -310,7 +320,7 @@ module NutritionTui
       end
 
       def complete?(ing)
-        ing[:has_nutrients] && ing[:unresolvable].empty?
+        ing[:has_aisle] && ing[:has_nutrients] && ing[:has_density]
       end
     end
   end # rubocop:enable Metrics/ClassLength
