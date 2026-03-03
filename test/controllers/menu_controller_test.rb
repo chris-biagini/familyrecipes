@@ -80,26 +80,25 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
 
   # --- Select ---
 
-  test 'select adds recipe and returns version' do
+  test 'select adds recipe' do
     log_in
     patch menu_select_path(kitchen_slug: kitchen_slug),
           params: { type: 'recipe', slug: 'focaccia', selected: true },
-          as: :json
+          as: :turbo_stream
 
     assert_response :success
-    json = response.parsed_body
 
-    assert_operator json['version'], :>, 0
+    plan = MealPlan.for_kitchen(@kitchen)
+
+    assert_includes plan.state['selected_recipes'], 'focaccia'
   end
 
-  test 'select broadcasts version via MealPlanChannel' do
+  test 'select broadcasts to menu stream' do
     log_in
-    stream = MealPlanChannel.broadcasting_for(@kitchen)
-
-    assert_broadcasts(stream, 1) do
+    assert_turbo_stream_broadcasts [@kitchen, 'menu'] do
       patch menu_select_path(kitchen_slug: kitchen_slug),
             params: { type: 'recipe', slug: 'focaccia', selected: true },
-            as: :json
+            as: :turbo_stream
     end
   end
 
@@ -107,11 +106,11 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     log_in
     patch menu_select_path(kitchen_slug: kitchen_slug),
           params: { type: 'recipe', slug: 'focaccia', selected: true },
-          as: :json
+          as: :turbo_stream
 
     patch menu_select_path(kitchen_slug: kitchen_slug),
           params: { type: 'recipe', slug: 'focaccia', selected: false },
-          as: :json
+          as: :turbo_stream
 
     plan = MealPlan.for_kitchen(@kitchen)
 
@@ -125,7 +124,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     MealPlan.stub(:for_kitchen, stale_plan) do
       patch menu_select_path(kitchen_slug: kitchen_slug),
             params: { type: 'recipe', slug: 'focaccia', selected: true },
-            as: :json
+            as: :turbo_stream
     end
 
     assert_response :conflict
@@ -146,7 +145,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     log_in
     @kitchen.update!(quick_bites_content: "## Snacks\n  - Goldfish: Goldfish crackers")
 
-    patch menu_select_all_path(kitchen_slug: kitchen_slug), as: :json
+    patch menu_select_all_path(kitchen_slug: kitchen_slug), as: :turbo_stream
 
     assert_response :success
 
@@ -163,7 +162,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     plan.apply_action('custom_items', item: 'birthday candles', action: 'add')
     plan.apply_action('check', item: 'flour', checked: true)
 
-    patch menu_select_all_path(kitchen_slug: kitchen_slug), as: :json
+    patch menu_select_all_path(kitchen_slug: kitchen_slug), as: :turbo_stream
 
     plan.reload
 
@@ -171,12 +170,10 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     assert_includes plan.state['checked_off'], 'flour'
   end
 
-  test 'select_all broadcasts version' do
+  test 'select_all broadcasts to menu stream' do
     log_in
-    stream = MealPlanChannel.broadcasting_for(@kitchen)
-
-    assert_broadcasts(stream, 1) do
-      patch menu_select_all_path(kitchen_slug: kitchen_slug), as: :json
+    assert_turbo_stream_broadcasts [@kitchen, 'menu'] do
+      patch menu_select_all_path(kitchen_slug: kitchen_slug), as: :turbo_stream
     end
   end
 
@@ -189,12 +186,9 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     plan.apply_action('custom_items', item: 'birthday candles', action: 'add')
     plan.apply_action('check', item: 'flour', checked: true)
 
-    delete menu_clear_path(kitchen_slug: kitchen_slug), as: :json
+    delete menu_clear_path(kitchen_slug: kitchen_slug), as: :turbo_stream
 
     assert_response :success
-    json = response.parsed_body
-
-    assert json.key?('version')
 
     plan.reload
 
@@ -204,12 +198,10 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     assert_empty plan.state['checked_off']
   end
 
-  test 'clear broadcasts version' do
+  test 'clear broadcasts to menu stream' do
     log_in
-    stream = MealPlanChannel.broadcasting_for(@kitchen)
-
-    assert_broadcasts(stream, 1) do
-      delete menu_clear_path(kitchen_slug: kitchen_slug), as: :json
+    assert_turbo_stream_broadcasts [@kitchen, 'menu'] do
+      delete menu_clear_path(kitchen_slug: kitchen_slug), as: :turbo_stream
     end
   end
 
@@ -218,7 +210,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     stale_plan = build_stale_plan(:clear_selections!)
 
     MealPlan.stub(:for_kitchen, stale_plan) do
-      delete menu_clear_path(kitchen_slug: kitchen_slug), as: :json
+      delete menu_clear_path(kitchen_slug: kitchen_slug), as: :turbo_stream
     end
 
     assert_response :conflict
@@ -269,85 +261,15 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
   end
 
-  test 'update_quick_bites broadcasts Turbo Stream to menu_content' do
+  test 'update_quick_bites broadcasts to groceries and menu streams' do
     log_in
-
-    assert_turbo_stream_broadcasts [@kitchen, 'menu_content'] do
-      patch menu_quick_bites_path(kitchen_slug: kitchen_slug),
-            params: { content: "## Snacks\n  - Goldfish" },
-            as: :json
+    assert_turbo_stream_broadcasts [@kitchen, 'groceries'] do
+      assert_turbo_stream_broadcasts [@kitchen, 'menu'] do
+        patch menu_quick_bites_path(kitchen_slug: kitchen_slug),
+              params: { content: "## Snacks\n  - Goldfish" },
+              as: :json
+      end
     end
-  end
-
-  # --- State endpoint ---
-
-  test 'state requires membership' do
-    get menu_state_path(kitchen_slug: kitchen_slug), as: :json
-
-    assert_response :forbidden
-  end
-
-  test 'state returns version and selections' do
-    log_in
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
-
-    get menu_state_path(kitchen_slug: kitchen_slug), as: :json
-
-    assert_response :success
-    json = response.parsed_body
-
-    assert json.key?('version')
-    assert_includes json['selected_recipes'], 'focaccia'
-    assert json.key?('selected_quick_bites')
-  end
-
-  test 'state includes availability map' do
-    log_in
-    get menu_state_path(kitchen_slug: kitchen_slug), as: :json
-
-    json = response.parsed_body
-
-    assert json.key?('availability')
-  end
-
-  test 'state availability reflects checked_off items' do
-    Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
-      # Focaccia
-
-      Category: Bread
-
-      ## Mix (combine)
-
-      - Flour, 3 cups
-      - Salt, 1 tsp
-
-      Mix well.
-    MD
-
-    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Flour') do |p|
-      p.basis_grams = 30
-      p.aisle = 'Baking'
-    end
-    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Salt') do |p|
-      p.basis_grams = 6
-      p.aisle = 'Spices'
-    end
-
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('check', item: 'Flour', checked: true)
-
-    log_in
-    get menu_state_path(kitchen_slug: kitchen_slug), as: :json
-
-    json = response.parsed_body
-    focaccia = json['availability']['focaccia']
-
-    assert_equal 1, focaccia['missing']
-    assert_includes focaccia['missing_names'], 'Salt'
-    assert_includes focaccia['ingredients'], 'Flour'
-    assert_includes focaccia['ingredients'], 'Salt'
   end
 
   private

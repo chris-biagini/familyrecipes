@@ -1,10 +1,9 @@
 # frozen_string_literal: true
 
-# Shopping list page — member-only. Server-renders the full shopping list on
-# page load via ShoppingListBuilder, so content is visible on first paint.
-# JS hydrates on connect and takes over DOM ownership for real-time updates.
-# Manages check-off state, custom items, and aisle ordering. All state mutations
-# broadcast version updates via MealPlanChannel for cross-device sync.
+# Shopping list page -- member-only. Server-renders the full shopping list on
+# page load via ShoppingListBuilder. Mutations return inline Turbo Stream morph
+# responses and broadcast via MealPlanBroadcaster for cross-device sync.
+# Manages check-off state, custom items, and aisle ordering.
 class GroceriesController < ApplicationController
   include MealPlanActions
 
@@ -14,25 +13,14 @@ class GroceriesController < ApplicationController
   def show
     plan = MealPlan.for_kitchen(current_kitchen)
     @shopping_list = ShoppingListBuilder.new(kitchen: current_kitchen, meal_plan: plan).build
-    @checked_off = plan.state.fetch('checked_off', []).to_set
-    @custom_items = plan.state.fetch('custom_items', [])
-  end
-
-  def state
-    list = MealPlan.for_kitchen(current_kitchen)
-    shopping_list = ShoppingListBuilder.new(kitchen: current_kitchen, meal_plan: list).build
-
-    render json: {
-      version: list.lock_version,
-      **list.state.slice(*MealPlan::STATE_KEYS),
-      shopping_list: shopping_list
-    }
+    @checked_off = plan.checked_off_set
+    @custom_items = plan.custom_items_list
   end
 
   def check
-    apply_and_respond('check',
-                      item: params[:item],
-                      checked: params[:checked])
+    apply_plan('check', item: params[:item], checked: params[:checked])
+    MealPlanBroadcaster.broadcast_all(current_kitchen)
+    render_grocery_morph
   end
 
   def update_custom_items
@@ -43,7 +31,9 @@ class GroceriesController < ApplicationController
                     status: :unprocessable_content
     end
 
-    apply_and_respond('custom_items', item: item, action: params[:action_type])
+    apply_plan('custom_items', item: item, action: params[:action_type])
+    MealPlanBroadcaster.broadcast_grocery_morph(current_kitchen)
+    render_grocery_morph
   end
 
   def update_aisle_order
@@ -54,10 +44,7 @@ class GroceriesController < ApplicationController
     return render json: { errors: }, status: :unprocessable_content if errors.any?
 
     current_kitchen.save!
-
-    list = MealPlan.for_kitchen(current_kitchen)
-    list.update!(updated_at: Time.current)
-    MealPlanChannel.broadcast_version(current_kitchen, list.lock_version)
+    MealPlanBroadcaster.broadcast_grocery_morph(current_kitchen)
     render json: { status: 'ok' }
   end
 
@@ -66,6 +53,20 @@ class GroceriesController < ApplicationController
   end
 
   private
+
+  def render_grocery_morph
+    plan = MealPlan.for_kitchen(current_kitchen)
+    shopping_list = ShoppingListBuilder.new(kitchen: current_kitchen, meal_plan: plan).build
+
+    render turbo_stream: [
+      turbo_stream.action(:morph, 'shopping-list',
+                          partial: 'groceries/shopping_list',
+                          locals: { shopping_list:, checked_off: plan.checked_off_set }),
+      turbo_stream.action(:morph, 'custom-items-section',
+                          partial: 'groceries/custom_items',
+                          locals: { custom_items: plan.custom_items_list })
+    ]
+  end
 
   def validate_aisle_order
     lines = current_kitchen.parsed_aisle_order

@@ -9,7 +9,7 @@
 # Use home_path (not kitchen_root_path) for homepage links — it picks the right root.
 # LandingController handles the root URL: renders the sole kitchen's homepage
 # directly, or a kitchen-list page when multiple exist.
-Rails.application.routes.draw do # rubocop:disable Metrics/BlockLength
+Rails.application.routes.draw do
   get 'up', to: 'rails/health#show', as: :rails_health_check
   get 'manifest.json', to: 'pwa#manifest', as: :pwa_manifest
   get 'service-worker.js', to: 'pwa#service_worker', as: :pwa_service_worker
@@ -28,9 +28,7 @@ Rails.application.routes.draw do # rubocop:disable Metrics/BlockLength
     delete 'menu/clear', to: 'menu#clear', as: :menu_clear
     patch 'menu/quick_bites', to: 'menu#update_quick_bites', as: :menu_quick_bites
     get 'menu/quick_bites_content', to: 'menu#quick_bites_content', as: :menu_quick_bites_content
-    get 'menu/state', to: 'menu#state', as: :menu_state
     get 'groceries', to: 'groceries#show', as: :groceries
-    get 'groceries/state', to: 'groceries#state', as: :groceries_state
     patch 'groceries/check', to: 'groceries#check', as: :groceries_check
     patch 'groceries/custom_items', to: 'groceries#update_custom_items', as: :groceries_custom_items
     patch 'groceries/aisle_order', to: 'groceries#update_aisle_order', as: :groceries_aisle_order

@@ -1,4 +1,4 @@
-<%# locals: (categories:, quick_bites_by_subsection:, selected_recipes: Set.new, selected_quick_bites: Set.new) %>
+<%# locals: (categories:, quick_bites_by_subsection:, selected_recipes: Set.new, selected_quick_bites: Set.new, availability: {}) %>
 <div id="recipe-selector" data-type="recipe">
   <%- categories.each do |category| -%>
   <%- next if category.recipes.empty? -%>

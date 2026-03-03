@@ -1,10 +1,9 @@
 # frozen_string_literal: true
 
-# Meal planning page — member-only. Displays a recipe selector (recipes + quick
-# bites) with checkboxes. Manages MealPlan state (select/select_all/clear) and
-# broadcasts version updates via MealPlanChannel for cross-device sync. Quick
-# bites content is web-editable; changes broadcast Turbo Stream replacements
-# to update all connected clients.
+# Meal planning page -- member-only. Displays a recipe selector (recipes + quick
+# bites) with checkboxes. Mutations return inline Turbo Stream morph responses
+# and broadcast via MealPlanBroadcaster for cross-device sync. Quick bites
+# content is web-editable; changes broadcast to all connected clients.
 class MenuController < ApplicationController
   include MealPlanActions
 
@@ -12,42 +11,35 @@ class MenuController < ApplicationController
   before_action :prevent_html_caching, only: :show
 
   def show
+    plan = MealPlan.for_kitchen(current_kitchen)
     @categories = recipe_selector_categories
     @quick_bites_by_subsection = current_kitchen.quick_bites_by_subsection
-    plan = MealPlan.for_kitchen(current_kitchen)
-    @selected_recipes = plan.state.fetch('selected_recipes', []).to_set
-    @selected_quick_bites = plan.state.fetch('selected_quick_bites', []).to_set
+    @selected_recipes = plan.selected_recipes_set
+    @selected_quick_bites = plan.selected_quick_bites_set
+    checked_off = plan.state.fetch('checked_off', [])
+    @availability = RecipeAvailabilityCalculator.new(kitchen: current_kitchen, checked_off:).call
   end
 
   def select
-    apply_and_respond('select',
-                      type: params[:type],
-                      slug: params[:slug],
-                      selected: params[:selected])
+    apply_plan('select', type: params[:type], slug: params[:slug], selected: params[:selected])
+    MealPlanBroadcaster.broadcast_all(current_kitchen)
+    render_menu_morph
   end
 
   def select_all
-    mutate_and_respond { |plan| plan.select_all!(all_recipe_slugs, all_quick_bite_slugs) }
+    mutate_plan { |plan| plan.select_all!(all_recipe_slugs, all_quick_bite_slugs) }
+    MealPlanBroadcaster.broadcast_all(current_kitchen)
+    render_menu_morph
   end
 
   def clear
-    mutate_and_respond(&:clear_selections!)
+    mutate_plan(&:clear_selections!)
+    MealPlanBroadcaster.broadcast_all(current_kitchen)
+    render_menu_morph
   end
 
   def quick_bites_content
     render json: { content: current_kitchen.quick_bites_content || '' }
-  end
-
-  def state
-    plan = MealPlan.for_kitchen(current_kitchen)
-    checked_off = plan.state.fetch('checked_off', [])
-    availability = RecipeAvailabilityCalculator.new(kitchen: current_kitchen, checked_off: checked_off).call
-
-    render json: {
-      version: plan.lock_version,
-      **plan.state.slice('selected_recipes', 'selected_quick_bites'),
-      availability: availability
-    }
   end
 
   def update_quick_bites
@@ -56,13 +48,29 @@ class MenuController < ApplicationController
 
     current_kitchen.update!(quick_bites_content: content)
     MealPlan.prune_stale_items(kitchen: current_kitchen)
-
-    RecipeBroadcaster.broadcast_recipe_selector(kitchen: current_kitchen, stream: 'menu_content')
-    MealPlanChannel.broadcast_content_changed(current_kitchen)
+    MealPlanBroadcaster.broadcast_all(current_kitchen)
     render json: { status: 'ok' }
   end
 
   private
+
+  def render_menu_morph
+    plan = MealPlan.for_kitchen(current_kitchen)
+    checked_off = plan.state.fetch('checked_off', [])
+    availability = RecipeAvailabilityCalculator.new(kitchen: current_kitchen, checked_off:).call
+
+    render turbo_stream: turbo_stream.action(
+      :morph, 'recipe-selector',
+      partial: 'menu/recipe_selector',
+      locals: {
+        categories: recipe_selector_categories,
+        quick_bites_by_subsection: current_kitchen.quick_bites_by_subsection,
+        selected_recipes: plan.selected_recipes_set,
+        selected_quick_bites: plan.selected_quick_bites_set,
+        availability:
+      }
+    )
+  end
 
   def recipe_selector_categories
     current_kitchen.categories.ordered.includes(:recipes)

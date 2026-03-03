@@ -25,8 +25,7 @@
      data-kitchen-slug="<%= current_kitchen.slug %>"
      data-select-url="<%= menu_select_path %>"
      data-select-all-url="<%= menu_select_all_path %>"
-     data-clear-url="<%= menu_clear_path %>"
-     data-state-url="<%= menu_state_path %>">
+     data-clear-url="<%= menu_clear_path %>">
 
   <%= render 'menu/recipe_selector', categories: @categories, quick_bites_by_subsection: @quick_bites_by_subsection, selected_recipes: @selected_recipes, selected_quick_bites: @selected_quick_bites %>
 
