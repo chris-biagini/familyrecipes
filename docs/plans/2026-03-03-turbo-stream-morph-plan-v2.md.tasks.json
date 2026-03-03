@@ -1,0 +1,17 @@
+{
+  "planPath": "docs/plans/2026-03-03-turbo-stream-morph-plan-v2.md",
+  "tasks": [
+    {"id": 1, "subject": "Task 1: Create MealPlanBroadcaster service", "status": "pending"},
+    {"id": 2, "subject": "Task 2: Rewrite MealPlanActions concern and controllers", "status": "pending", "blockedBy": [1]},
+    {"id": 3, "subject": "Task 3: Update controller tests", "status": "pending", "blockedBy": [2]},
+    {"id": 4, "subject": "Task 4: Update views for Turbo Stream subscriptions", "status": "pending", "blockedBy": [3]},
+    {"id": 5, "subject": "Task 5: Update RecipeBroadcaster and tests", "status": "pending", "blockedBy": [3]},
+    {"id": 6, "subject": "Task 6: Create turbo_fetch.js utility", "status": "pending", "blockedBy": [1]},
+    {"id": 7, "subject": "Task 7: Rewrite grocery_ui_controller.js", "status": "pending", "blockedBy": [6]},
+    {"id": 8, "subject": "Task 8: Rewrite menu_controller.js", "status": "pending", "blockedBy": [6]},
+    {"id": 9, "subject": "Task 9: Delete MealPlanChannel, MealPlanSync, grocery_sync_controller", "status": "pending", "blockedBy": [7, 8]},
+    {"id": 10, "subject": "Task 10: Remove popover CSS and update service worker", "status": "pending", "blockedBy": [9]},
+    {"id": 11, "subject": "Task 11: Final verification sweep", "status": "pending", "blockedBy": [9, 10]}
+  ],
+  "lastUpdated": "2026-03-03T00:00:00Z"
+}
