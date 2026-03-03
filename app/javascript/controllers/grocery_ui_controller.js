@@ -2,11 +2,13 @@ import { Controller } from "@hotwired/stimulus"
 import ListenerManager from "utilities/listener_manager"
 
 /**
- * Groceries page rendering and interaction. Builds the shopping list DOM from
- * state provided by grocery_sync_controller: aisle sections with collapsible
- * <details>, check-off checkboxes, item counts, and custom items. Persists
- * aisle collapse state in localStorage. Delegates all server communication to
- * the co-located grocery_sync_controller.
+ * Groceries page rendering and interaction. The page arrives server-rendered
+ * with the full shopping list; this controller hydrates on connect, binding
+ * event listeners and taking over DOM ownership. On state updates from
+ * grocery_sync_controller, rebuilds the shopping list DOM: aisle sections with
+ * collapsible <details>, check-off checkboxes, item counts, and custom items.
+ * Persists aisle collapse state in localStorage. Delegates all server
+ * communication to the co-located grocery_sync_controller.
  */
 function formatNumber(val) {
   const num = typeof val === "string" ? parseFloat(val) : val

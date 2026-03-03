@@ -354,7 +354,17 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
 
   def create_focaccia_recipe
     Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
-    MarkdownImporter.import("# Focaccia\n\nCategory: Bread\n\n## Mix\n\n- Flour, 3 cups\n\nMix well.", kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Focaccia
+
+      Category: Bread
+
+      ## Mix
+
+      - Flour, 3 cups
+
+      Mix well.
+    MD
   end
 
   def build_stale_plan(method_to_stub)

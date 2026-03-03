@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
-# Shopping list page — member-only. Renders the grocery list built by
-# ShoppingListBuilder from the MealPlan's selections. Manages check-off state,
-# custom items, and aisle ordering. All state mutations broadcast version updates
-# via MealPlanChannel for cross-device sync.
+# Shopping list page — member-only. Server-renders the full shopping list on
+# page load via ShoppingListBuilder, so content is visible on first paint.
+# JS hydrates on connect and takes over DOM ownership for real-time updates.
+# Manages check-off state, custom items, and aisle ordering. All state mutations
+# broadcast version updates via MealPlanChannel for cross-device sync.
 class GroceriesController < ApplicationController
   include MealPlanActions
 

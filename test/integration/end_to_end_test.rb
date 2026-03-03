@@ -259,11 +259,11 @@ class EndToEndTest < ActionDispatch::IntegrationTest
     assert_select '#recipe-selector', count: 0
   end
 
-  test 'groceries page includes noscript fallback' do
+  test 'groceries page does not include noscript fallback' do
     log_in
     get groceries_path(kitchen_slug: kitchen_slug)
 
-    assert_select 'noscript', /JavaScript/
+    assert_select 'noscript', count: 0
   end
 
   # -- Navigation between pages --
