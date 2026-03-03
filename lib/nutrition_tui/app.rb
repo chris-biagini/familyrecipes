@@ -13,6 +13,7 @@ module NutritionTui
   # - RatatuiRuby (terminal init/restore, draw, poll_event)
   # - NutritionTui::Data (nutrition catalog and recipe context loading)
   # - NutritionTui::Screens::Dashboard (main screen)
+  # - NutritionTui::Screens::Ingredient (ingredient detail screen)
   class App
     def initialize
       @running = true
@@ -43,9 +44,21 @@ module NutritionTui
       case result
       in { action: :quit }
         @running = false
+      in { action: :open_ingredient, name: }
+        open_ingredient(name)
+      in { action: :back }
+        @current_screen = Screens::Dashboard.new(nutrition_data: @nutrition_data, ctx: @ctx)
       else
         nil
       end
+    end
+
+    def open_ingredient(name)
+      entry = @nutrition_data[name]
+      @current_screen = Screens::Ingredient.new(
+        name: name, entry: entry,
+        nutrition_data: @nutrition_data, ctx: @ctx
+      )
     end
   end
 end
