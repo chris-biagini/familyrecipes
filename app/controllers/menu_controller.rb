@@ -28,7 +28,7 @@ class MenuController < ApplicationController
   end
 
   def clear
-    mutate_and_respond { |plan| plan.clear_selections! }
+    mutate_and_respond(&:clear_selections!)
   end
 
   def quick_bites_content
