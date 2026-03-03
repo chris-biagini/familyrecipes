@@ -25,7 +25,6 @@ function formatAmounts(amounts) {
 
 export default class extends Controller {
   connect() {
-    this.element.classList.remove("hidden-until-js")
     this.aisleCollapseKey = `grocery-aisles-${this.element.dataset.kitchenSlug}`
     this.listeners = new ListenerManager()
 
