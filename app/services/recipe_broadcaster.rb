@@ -80,7 +80,7 @@ class RecipeBroadcaster
   end
 
   def broadcast_recipe_selector(categories)
-    quick_bites = parse_quick_bites
+    quick_bites = kitchen.quick_bites_by_subsection
     Turbo::StreamsChannel.broadcast_replace_to(
       kitchen, 'recipes',
       target: 'recipe-selector',
@@ -151,10 +151,5 @@ class RecipeBroadcaster
     Turbo::StreamsChannel.broadcast_append_to(
       *stream, target: 'notifications', partial: 'shared/toast', locals: { message: }
     )
-  end
-
-  def parse_quick_bites
-    kitchen.parsed_quick_bites
-           .group_by { |qb| qb.category.delete_prefix('Quick Bites: ') }
   end
 end

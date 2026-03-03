@@ -33,6 +33,10 @@ class Kitchen < ApplicationRecord
     FamilyRecipes.parse_quick_bites_content(quick_bites_content)
   end
 
+  def quick_bites_by_subsection
+    parsed_quick_bites.group_by { |qb| qb.category.delete_prefix('Quick Bites: ') }
+  end
+
   def parsed_aisle_order
     return [] unless aisle_order
 

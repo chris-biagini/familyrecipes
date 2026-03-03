@@ -13,7 +13,7 @@ class MenuController < ApplicationController
 
   def show
     @categories = recipe_selector_categories
-    @quick_bites_by_subsection = load_quick_bites_by_subsection
+    @quick_bites_by_subsection = current_kitchen.quick_bites_by_subsection
   end
 
   def select
@@ -67,11 +67,6 @@ class MenuController < ApplicationController
 
   private
 
-  def load_quick_bites_by_subsection
-    current_kitchen.parsed_quick_bites
-                   .group_by { |qb| qb.category.delete_prefix('Quick Bites: ') }
-  end
-
   def recipe_selector_categories
     current_kitchen.categories.ordered.includes(:recipes)
   end
@@ -91,7 +86,7 @@ class MenuController < ApplicationController
       partial: 'menu/recipe_selector',
       locals: {
         categories: recipe_selector_categories,
-        quick_bites_by_subsection: load_quick_bites_by_subsection
+        quick_bites_by_subsection: current_kitchen.quick_bites_by_subsection
       }
     )
   end

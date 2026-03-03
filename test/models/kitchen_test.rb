@@ -87,6 +87,25 @@ class KitchenTest < ActiveSupport::TestCase
     assert_equal ['Baking'], kitchen.all_aisles
   end
 
+  test 'quick_bites_by_subsection groups parsed quick bites by stripped category' do
+    kitchen = Kitchen.create!(name: 'Test', slug: 'test-qb',
+                              quick_bites_content: "## Snacks\n- Chips\n- Pretzels\n\n## Drinks\n- Juice\n")
+
+    result = kitchen.quick_bites_by_subsection
+
+    assert_kind_of Hash, result
+    assert_includes result.keys, 'Snacks'
+    assert_includes result.keys, 'Drinks'
+    assert_equal 2, result['Snacks'].size
+    assert_equal 1, result['Drinks'].size
+  end
+
+  test 'quick_bites_by_subsection returns empty hash when no content' do
+    kitchen = Kitchen.create!(name: 'Test', slug: 'test-qb-empty')
+
+    assert_empty kitchen.quick_bites_by_subsection
+  end
+
   test 'all_aisles prefers kitchen catalog entries over global' do
     kitchen = Kitchen.create!(name: 'Test', slug: 'test-overlay')
     IngredientCatalog.create!(kitchen: nil, ingredient_name: 'Flour', aisle: 'Baking', basis_grams: 30)
