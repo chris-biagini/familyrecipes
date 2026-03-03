@@ -15,114 +15,14 @@ require 'tty-prompt'
 require 'tty-table'
 require 'tty-spinner'
 require 'pastel'
-require_relative '../lib/familyrecipes'
+require_relative '../lib/nutrition_tui'
 
-PROJECT_ROOT = File.expand_path('..', __dir__)
-NUTRITION_PATH = File.join(PROJECT_ROOT, 'db/seeds/resources/ingredient-catalog.yaml')
-RECIPES_DIR = File.join(PROJECT_ROOT, 'db/seeds/recipes')
-
-NUTRIENTS = [
-  { key: 'calories',      label: 'Calories', unit: '', indent: 0 },
-  { key: 'fat',           label: 'Total fat',       unit: 'g',  indent: 0 },
-  { key: 'saturated_fat', label: 'Saturated fat',   unit: 'g',  indent: 1 },
-  { key: 'trans_fat',     label: 'Trans fat',       unit: 'g',  indent: 1 },
-  { key: 'cholesterol',   label: 'Cholesterol',     unit: 'mg', indent: 0 },
-  { key: 'sodium',        label: 'Sodium',          unit: 'mg', indent: 0 },
-  { key: 'carbs',         label: 'Total carbs',     unit: 'g',  indent: 0 },
-  { key: 'fiber',         label: 'Fiber',           unit: 'g',  indent: 1 },
-  { key: 'total_sugars',  label: 'Total sugars',    unit: 'g',  indent: 1 },
-  { key: 'added_sugars',  label: 'Added sugars',    unit: 'g',  indent: 2 },
-  { key: 'protein',       label: 'Protein',         unit: 'g',  indent: 0 }
-].freeze
+include NutritionTui::Data # rubocop:disable Style/MixinUsage
 
 PROMPT = TTY::Prompt.new
 PASTEL = Pastel.new
 
-# --- Data I/O ---
-
-def load_nutrition_data
-  return {} unless File.exist?(NUTRITION_PATH)
-
-  YAML.safe_load_file(NUTRITION_PATH, permitted_classes: [], permitted_symbols: [], aliases: false) || {}
-end
-
-def save_nutrition_data(data)
-  sorted = data.sort_by { |k, _| k.downcase }.to_h
-  sorted.each_value { |entry| round_entry_values(entry) }
-
-  File.write(NUTRITION_PATH, YAML.dump(sorted))
-  puts "Saved to #{NUTRITION_PATH}"
-end
-
-def round_entry_values(entry)
-  entry['nutrients'].transform_values! { |v| v.is_a?(Float) ? v.round(4) : v } if entry['nutrients'].is_a?(Hash)
-  entry['portions'].transform_values! { |v| v.is_a?(Float) ? v.round(2) : v } if entry['portions'].is_a?(Hash)
-  round_density(entry['density']) if entry['density'].is_a?(Hash)
-end
-
-def round_density(density)
-  density['grams'] = density['grams'].round(2) if density['grams'].is_a?(Float)
-  density['volume'] = density['volume'].round(4) if density['volume'].is_a?(Float)
-end
-
-# --- Variant-aware lookup (mirrors IngredientCatalog.lookup_for) ---
-
-def build_lookup(nutrition_data)
-  nutrition_data.each_with_object({}) do |(name, entry), lookup|
-    lookup[name] = name
-    lookup[name.downcase] = name
-
-    FamilyRecipes::Inflector.ingredient_variants(name).each do |variant|
-      lookup[variant] ||= name
-      lookup[variant.downcase] ||= name
-    end
-
-    (entry['aliases'] || []).each do |alias_name|
-      next if nutrition_data.key?(alias_name)
-
-      lookup[alias_name] ||= name
-      lookup[alias_name.downcase] ||= name
-    end
-  end
-end
-
-def resolve_to_canonical(name, lookup)
-  lookup[name] || lookup[name.downcase]
-end
-
-# --- Context loading and name resolution ---
-
-def load_context
-  recipes = FamilyRecipes.parse_recipes(RECIPES_DIR)
-  recipe_map = recipes.index_by(&:id)
-
-  catalog = load_nutrition_data
-  omit_set = catalog.each_with_object(Set.new) do |(name, entry), set|
-    set << name.downcase if entry['aisle'] == 'omit'
-  end
-
-  { recipes: recipes, recipe_map: recipe_map, omit_set: omit_set }
-end
-
-def find_needed_units(name, ctx)
-  ctx[:recipes].flat_map do |recipe|
-    recipe.all_ingredients_with_quantities(ctx[:recipe_map])
-          .select { |ing_name, _| ing_name == name }
-          .flat_map { |_, amounts| amounts.compact.map(&:unit) }
-  end.uniq
-end
-
 # --- Portion helpers ---
-
-def normalize_volume_unit(modifier)
-  clean = modifier.to_s.downcase.sub(/\s*\(.*\)/, '').strip
-  case clean
-  when 'cups' then 'cup'
-  when 'tablespoon', 'tablespoons' then 'tbsp'
-  when 'teaspoon', 'teaspoons' then 'tsp'
-  else clean
-  end
-end
 
 def pick_density(volume_portions)
   return nil if volume_portions.empty?
@@ -580,58 +480,6 @@ end
 
 # --- Missing mode ---
 
-def find_missing_ingredients(nutrition_data, ctx)
-  lookup = build_lookup(nutrition_data)
-  recipes_map = build_ingredients_to_recipes(ctx)
-
-  missing = recipes_map.keys.reject { |name| resolve_to_canonical(name, lookup) }
-  missing.sort_by! { |name| [-recipes_map[name].uniq.size, name] }
-
-  unresolvable = find_unresolvable_units(nutrition_data, ctx, lookup)
-
-  { missing: missing, ingredients_to_recipes: recipes_map, unresolvable: unresolvable }
-end
-
-def build_ingredients_to_recipes(ctx)
-  ctx[:recipes].each_with_object(Hash.new { |h, k| h[k] = [] }) do |recipe, map|
-    recipe.all_ingredient_names.each do |name|
-      map[name] << recipe.title unless ctx[:omit_set].include?(name.downcase)
-    end
-  end
-end
-
-def find_unresolvable_units(nutrition_data, ctx, lookup)
-  calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data, omit_set: ctx[:omit_set])
-
-  ctx[:recipes].each_with_object(Hash.new { |h, k| h[k] = { units: Set.new, recipes: [] } }) do |recipe, result|
-    recipe.all_ingredients_with_quantities(ctx[:recipe_map]).each do |name, amounts|
-      next if ctx[:omit_set].include?(name.downcase)
-
-      calc_entry = resolve_calc_entry(name, lookup, calculator)
-      next unless calc_entry
-
-      collect_bad_units(amounts, calc_entry, calculator).each do |unit|
-        result[name][:units] << unit
-        result[name][:recipes] |= [recipe.title]
-      end
-    end
-  end
-end
-
-def resolve_calc_entry(name, lookup, calculator)
-  canonical = resolve_to_canonical(name, lookup)
-  canonical && calculator.nutrition_data[canonical]
-end
-
-def collect_bad_units(amounts, calc_entry, calculator)
-  amounts.filter_map do |amount|
-    next if amount.nil? || amount.value.nil?
-    next if calculator.resolvable?(amount.value, amount.unit, calc_entry)
-
-    amount.unit || '(bare count)'
-  end
-end
-
 def display_missing_report(missing, recipes_map)
   return if missing.empty?
 
@@ -690,29 +538,6 @@ def run_missing_mode(nutrition_data, ctx, client:)
 end
 
 # --- Coverage mode ---
-
-def count_resolvable(nutrition_data, ctx)
-  lookup = build_lookup(nutrition_data)
-  calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data, omit_set: ctx[:omit_set])
-
-  ctx[:recipes].each_with_object(Hash.new { |h, k| h[k] = true }) do |recipe, fully|
-    recipe.all_ingredients_with_quantities(ctx[:recipe_map]).each do |name, amounts|
-      next if ctx[:omit_set].include?(name.downcase)
-
-      calc_entry = resolve_calc_entry(name, lookup, calculator)
-      next unless calc_entry
-
-      fully[name] = false if collect_bad_units(amounts, calc_entry, calculator).any?
-      fully[name] = true unless fully.key?(name)
-    end
-  end
-end
-
-def format_pct(count, total)
-  return '0%' if total.zero?
-
-  "#{(100.0 * count / total).round(0)}%"
-end
 
 def print_top_missing(missing_names, recipes_map, limit: 15)
   return if missing_names.empty?
