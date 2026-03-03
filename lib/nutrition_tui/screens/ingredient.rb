@@ -275,7 +275,7 @@ module NutritionTui
 
       # --- Event handling ---
 
-      def dispatch_key(event) # rubocop:disable Metrics/MethodLength
+      def dispatch_key(event)
         case event
         in { type: :key, code: 'esc' }   then handle_escape
         in { type: :key, code: 'n' }     then open_nutrients_editor
