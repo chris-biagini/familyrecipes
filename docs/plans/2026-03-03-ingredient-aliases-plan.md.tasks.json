@@ -1,0 +1,16 @@
+{
+  "planPath": "docs/plans/2026-03-03-ingredient-aliases-plan.md",
+  "tasks": [
+    {"id": 1, "subject": "Task 1: Inflector variants for aliases — test", "status": "pending"},
+    {"id": 2, "subject": "Task 2: Inflector variants for aliases — implementation", "status": "pending", "blockedBy": [1]},
+    {"id": 3, "subject": "Task 3: Accept aliases in assign_from_params — test", "status": "pending"},
+    {"id": 4, "subject": "Task 4: Accept aliases in assign_from_params — implementation", "status": "pending", "blockedBy": [3]},
+    {"id": 5, "subject": "Task 5: Aliases fieldset in editor form — view", "status": "pending", "blockedBy": [4]},
+    {"id": 6, "subject": "Task 6: Aliases chip CSS", "status": "pending", "blockedBy": [4]},
+    {"id": 7, "subject": "Task 7: Stimulus controller — alias methods", "status": "pending", "blockedBy": [5, 6]},
+    {"id": 8, "subject": "Task 8: Integration test — aliases round-trip", "status": "pending", "blockedBy": [7]},
+    {"id": 9, "subject": "Task 9: Full test suite and lint", "status": "pending", "blockedBy": [8]},
+    {"id": 10, "subject": "Task 10: Manual verification", "status": "pending", "blockedBy": [9]}
+  ],
+  "lastUpdated": "2026-03-03T00:00:00Z"
+}
