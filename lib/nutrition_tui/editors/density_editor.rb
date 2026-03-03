@@ -5,74 +5,86 @@ require 'ratatui_ruby'
 module NutritionTui
   module Editors
     # Modal editor for ingredient density (grams-per-volume conversion).
-    # State machine: :menu (Enter custom / Remove / Cancel), then a sequence
-    # of TextInputs for grams, volume, and unit. Returns modified entry on
-    # completion or cancellation.
+    # Shows all three density fields (grams, volume, unit) plus a "Remove
+    # density" action as a navigable list. Enter opens an inline TextInput
+    # for the selected field. Escape returns the modified entry.
     #
     # Collaborators:
-    # - NutritionTui::Editors::TextInput (grams/volume/unit entry)
+    # - NutritionTui::Editors::TextInput (inline value editing)
     # - NutritionTui::Screens::Ingredient (creates and processes results)
     class DensityEditor
+      Layout = RatatuiRuby::Layout
       Widgets = RatatuiRuby::Widgets
       Style = RatatuiRuby::Style
 
-      MENU_OPTIONS = ['Enter custom', 'Remove density', 'Cancel'].freeze
+      FIELDS = [
+        { key: 'grams', label: 'Grams' },
+        { key: 'volume', label: 'Volume' },
+        { key: 'unit', label: 'Unit' }
+      ].freeze
+
+      REMOVE_INDEX = FIELDS.size
+      ITEM_COUNT = FIELDS.size + 1
 
       def initialize(entry:)
         @entry = entry
-        @state = :menu
         @selected = 0
         @text_input = nil
-        @grams = nil
-        @volume = nil
       end
 
       def handle_event(event)
-        case @state
-        when :menu then handle_menu(event)
-        when :entering_grams, :entering_volume, :entering_unit
-          handle_text_input(event)
-        end
+        @text_input ? handle_editing(event) : handle_selecting(event)
       end
 
       def render(frame, area)
-        case @state
-        when :menu then render_menu(frame, area)
-        else render_text_input(frame, area)
-        end
+        list = Widgets::List.new(
+          items: display_lines,
+          selected_index: @text_input ? nil : @selected,
+          highlight_style: Style::Style.new(fg: :cyan, modifiers: [:bold]),
+          block: Widgets::Block.new(title: 'Edit Density', borders: [:all])
+        )
+        frame.render_widget(list, area)
+        render_text_input(frame, area) if @text_input
       end
 
       private
 
-      def handle_menu(event)
+      def handle_selecting(event)
         case event
-        in { type: :key, code: 'up' | 'k' }
-          @selected = (@selected - 1).clamp(0, MENU_OPTIONS.size - 1)
-          nil
-        in { type: :key, code: 'down' | 'j' }
-          @selected = (@selected + 1).clamp(0, MENU_OPTIONS.size - 1)
-          nil
-        in { type: :key, code: 'enter' }
-          dispatch_menu_choice
         in { type: :key, code: 'esc' }
           { done: true, entry: @entry }
+        in { type: :key, code: 'up' | 'k' }
+          @selected = (@selected - 1).clamp(0, ITEM_COUNT - 1)
+          nil
+        in { type: :key, code: 'down' | 'j' }
+          @selected = (@selected + 1).clamp(0, ITEM_COUNT - 1)
+          nil
+        in { type: :key, code: 'enter' }
+          activate_selected
         else
           nil
         end
       end
 
-      def dispatch_menu_choice
-        case @selected
-        when 0 then start_grams_entry
-        when 1 then remove_density
-        else cancel
-        end
+      def handle_editing(event)
+        result = @text_input.handle_event(event)
+        return nil unless result&.dig(:done)
+
+        apply_edit(result) unless result[:cancelled]
+        @text_input = nil
+        nil
       end
 
-      def start_grams_entry
-        current = @entry.dig('density', 'grams')
-        @text_input = TextInput.new(label: 'Grams', default: current || '')
-        @state = :entering_grams
+      def activate_selected
+        return remove_density if @selected == REMOVE_INDEX
+
+        open_text_input
+      end
+
+      def open_text_input
+        field = FIELDS[@selected]
+        current = @entry.dig('density', field[:key])
+        @text_input = TextInput.new(label: field[:label], default: current || '')
         nil
       end
 
@@ -81,55 +93,56 @@ module NutritionTui
         { done: true, entry: @entry }
       end
 
-      def cancel
-        { done: true, entry: @entry }
-      end
+      def apply_edit(result)
+        field = FIELDS[@selected]
+        @entry['density'] ||= {}
 
-      def handle_text_input(event)
-        result = @text_input.handle_event(event)
-        return nil unless result&.dig(:done)
-        return cancel if result[:cancelled]
-
-        advance_state(result[:value])
-      end
-
-      def advance_state(value) # rubocop:disable Metrics/MethodLength
-        case @state
-        when :entering_grams
-          @grams = Float(value, exception: false)
-          return cancel unless @grams
-
-          current = @entry.dig('density', 'volume')
-          @text_input = TextInput.new(label: 'Volume', default: current || '')
-          @state = :entering_volume
-          nil
-        when :entering_volume
-          @volume = Float(value, exception: false)
-          return cancel unless @volume
-
-          current = @entry.dig('density', 'unit')
-          @text_input = TextInput.new(label: 'Unit', default: current || 'cup')
-          @state = :entering_unit
-          nil
-        when :entering_unit
-          @entry['density'] = { 'grams' => @grams, 'volume' => @volume, 'unit' => value.strip }
-          { done: true, entry: @entry }
+        if field[:key] == 'unit'
+          apply_unit_edit(result[:value])
+        else
+          apply_numeric_edit(field[:key], result[:value])
         end
       end
 
-      def render_menu(frame, area)
-        list = Widgets::List.new(
-          items: MENU_OPTIONS,
-          selected_index: @selected,
-          highlight_style: Style::Style.new(fg: :cyan, modifiers: [:bold]),
-          block: Widgets::Block.new(title: 'Density', borders: [:all])
-        )
-        frame.render_widget(list, area)
+      def apply_unit_edit(value)
+        stripped = value.strip
+        return if stripped.empty?
+
+        @entry['density']['unit'] = stripped
+      end
+
+      def apply_numeric_edit(key, value)
+        parsed = Float(value, exception: false)
+        return unless parsed
+
+        @entry['density'][key] = parsed
+      end
+
+      def display_lines
+        field_lines = FIELDS.map do |f|
+          value = @entry.dig('density', f[:key])
+          formatted = value ? format_value(value) : "\u2014"
+          "#{f[:label].ljust(20)}#{formatted}"
+        end
+        field_lines + ['Remove density']
+      end
+
+      def format_value(value)
+        return value.to_s unless value.is_a?(Numeric)
+        return value.to_i.to_s if value == value.to_i
+
+        value.round(2).to_s
       end
 
       def render_text_input(frame, area)
-        frame.render_widget(Widgets::Clear.new, area)
-        @text_input.render(frame, area)
+        input_area = Layout::Rect.new(
+          x: area.x + 2,
+          y: area.bottom - 3,
+          width: [area.width - 4, 30].max,
+          height: 3
+        )
+        frame.render_widget(Widgets::Clear.new, input_area)
+        @text_input.render(frame, input_area)
       end
     end
   end
