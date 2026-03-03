@@ -30,4 +30,31 @@ class GroceriesHelperTest < ActionView::TestCase
   test 'format_amounts returns empty string for nil' do
     assert_equal '', format_amounts(nil)
   end
+
+  test 'aisle_count_tag shows remaining count when some unchecked' do
+    items = [{ name: 'Milk' }, { name: 'Eggs' }]
+    result = aisle_count_tag(items, Set.new(%w[Milk]))
+
+    assert_equal '<span class="aisle-count">(1)</span>', result
+  end
+
+  test 'aisle_count_tag shows checkmark when all checked off' do
+    items = [{ name: 'Milk' }, { name: 'Eggs' }]
+    result = aisle_count_tag(items, Set.new(%w[Milk Eggs]))
+
+    assert_equal "<span class=\"aisle-count aisle-done\">\u2713</span>", result
+  end
+
+  test 'aisle_count_tag shows total when none checked' do
+    items = [{ name: 'Milk' }, { name: 'Eggs' }]
+    result = aisle_count_tag(items, Set.new)
+
+    assert_equal '<span class="aisle-count">(2)</span>', result
+  end
+
+  test 'aisle_count_tag shows zero for empty aisle' do
+    result = aisle_count_tag([], Set.new)
+
+    assert_equal '<span class="aisle-count">(0)</span>', result
+  end
 end

@@ -9,7 +9,7 @@
 <% else %>
   <% shopping_list.each do |aisle, items| %>
     <details class="aisle" data-aisle="<%= aisle %>" open>
-      <summary><%= aisle %> <span class="aisle-count">(<%= items.size %>)</span></summary>
+      <summary><%= aisle %> <%= aisle_count_tag(items, checked_off) %></summary>
       <ul>
         <% items.each do |item| %>
           <li data-item="<%= item[:name] %>"<%= " title=\"Needed for: #{h item[:sources].join(', ')}\"".html_safe if item[:sources].present? %>>

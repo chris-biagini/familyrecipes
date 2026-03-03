@@ -15,6 +15,16 @@ module GroceriesHelper
     "(#{parts.join(' + ')})"
   end
 
+  def aisle_count_tag(items, checked_off)
+    remaining = items.count { |i| checked_off.exclude?(i[:name]) }
+
+    if remaining.zero? && items.any?
+      tag.span("\u2713", class: 'aisle-count aisle-done')
+    else
+      tag.span("(#{remaining})", class: 'aisle-count')
+    end
+  end
+
   def shopping_list_count_text(shopping_list, checked_off)
     total = shopping_list.each_value.sum(&:size)
     return '' if total.zero?
