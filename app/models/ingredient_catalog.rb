@@ -104,6 +104,7 @@ class IngredientCatalog < ApplicationRecord # rubocop:disable Metrics/ClassLengt
       next if lookup.key?(alias_name) || lookup.key?(lowered)
 
       alias_case_variants(alias_name).each { |v| extras[v] ||= entry }
+      FamilyRecipes::Inflector.ingredient_variants(alias_name).each { |v| extras[v] ||= entry }
     end
   end
 

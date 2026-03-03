@@ -560,6 +560,37 @@ class IngredientCatalogTest < ActiveSupport::TestCase
     assert_empty entry.aliases
   end
 
+  test 'lookup_for generates inflector variants for aliases' do
+    IngredientCatalog.create!(
+      ingredient_name: 'Baby spinach',
+      aisle: 'Produce',
+      aliases: ['Spinach']
+    )
+
+    result = IngredientCatalog.lookup_for(@kitchen)
+
+    assert_equal result['Baby spinach'], result['Spinach']
+    assert_equal result['Baby spinach'], result['Spinaches'],
+                 'Expected plural variant of alias to resolve'
+  end
+
+  test 'lookup_for inflector alias variants do not clobber canonical names' do
+    IngredientCatalog.create!(
+      ingredient_name: 'Egg',
+      basis_grams: 50,
+      aliases: ['Hen egg']
+    )
+    IngredientCatalog.create!(
+      ingredient_name: 'Eggs',
+      aisle: 'Dairy'
+    )
+
+    result = IngredientCatalog.lookup_for(@kitchen)
+
+    assert_equal 'Eggs', result['Eggs'].ingredient_name,
+                 'Canonical "Eggs" must not be overwritten by inflected alias of "Egg"'
+  end
+
   # --- attrs_from_yaml ---
 
   test 'attrs_from_yaml extracts all fields from a complete entry' do
