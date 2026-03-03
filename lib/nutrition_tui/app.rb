@@ -38,7 +38,7 @@ module NutritionTui
 
     # X10 (1000), button-event (1002), any-event (1003), SGR extended (1006)
     def disable_mouse_reporting
-      $stdout.write("\e[?1000l\e[?1002l\e[?1003l\e[?1006l")
+      $stdout.write("\e[?1000l\e[?1002l\e[?1003l\e[?1006l") # rubocop:disable Rails/Output
       $stdout.flush
     end
 

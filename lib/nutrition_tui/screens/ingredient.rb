@@ -163,8 +163,12 @@ module NutritionTui
         nutrients = @entry['nutrients']
         return [nutrients_empty_line] unless nutrients.is_a?(Hash)
 
-        header = styled_line(span('[n]', fg: :cyan), span(' Nutrients ', modifiers: [:bold]), span("(per #{basis_grams}g)", fg: :dark_gray))
-        [header] + Data::NUTRIENTS.map { |n| format_nutrient_line(nutrients, n) }
+        [nutrients_header] + Data::NUTRIENTS.map { |n| format_nutrient_line(nutrients, n) }
+      end
+
+      def nutrients_header
+        basis = span("(per #{basis_grams}g)", fg: :dark_gray)
+        styled_line(span('[n]', fg: :cyan), span(' Nutrients ', modifiers: [:bold]), basis)
       end
 
       def nutrients_empty_line
@@ -209,10 +213,14 @@ module NutritionTui
       def aliases_section_lines
         aliases = @entry['aliases']
         return [aliases_empty_line] unless aliases.is_a?(Array) && aliases.any?
-        return [styled_line(span('[l]', fg: :cyan), span(' Aliases: ', modifiers: [:bold]), plain(aliases.join(', ')))] if aliases.size < 4
+        return [aliases_inline_line(aliases)] if aliases.size < 4
 
         header = styled_line(span('[l]', fg: :cyan), span(' Aliases', modifiers: [:bold]))
         [header] + aliases.map { |a| Text::Line.from_string("    #{a}") }
+      end
+
+      def aliases_inline_line(aliases)
+        styled_line(span('[l]', fg: :cyan), span(' Aliases: ', modifiers: [:bold]), plain(aliases.join(', ')))
       end
 
       def aliases_empty_line
@@ -298,10 +306,10 @@ module NutritionTui
       end
 
       def keybind_bar_lines
-        [keybind_line_1, keybind_line_2]
+        [keybind_top_line, keybind_bottom_line]
       end
 
-      def keybind_line_1
+      def keybind_top_line
         styled_line(
           plain(' '), span('n', fg: :cyan), span(' nutrients  ', fg: :dark_gray),
           span('d', fg: :cyan), span(' density  ', fg: :dark_gray),
@@ -312,7 +320,7 @@ module NutritionTui
         )
       end
 
-      def keybind_line_2
+      def keybind_bottom_line
         parts = [
           plain(' '), span('u', fg: :cyan), span(' USDA  ', fg: :dark_gray),
           span('w', fg: :cyan), span(' save  ', fg: :dark_gray),
@@ -490,8 +498,8 @@ module NutritionTui
 
       # --- Helpers ---
 
-      def span(text, **opts)
-        Text::Span.styled(text.to_s, Style::Style.new(**opts))
+      def span(text, **)
+        Text::Span.styled(text.to_s, Style::Style.new(**))
       end
 
       def plain(text)
