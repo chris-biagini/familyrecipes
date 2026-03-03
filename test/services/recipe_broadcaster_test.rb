@@ -124,6 +124,55 @@ class RecipeBroadcasterTest < ActiveSupport::TestCase
     assert_equal 'recipes', selector_call[:args][1]
   end
 
+  test 'broadcast_destroy notifies recipe page, updates parents, and fires CRUD broadcast' do
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Pizza Dough
+
+      Category: Bread
+
+      ## Mix.
+      - Flour, 3 cups
+    MD
+
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # White Pizza
+
+      Category: Bread
+
+      ## Make dough.
+      >>> @[Pizza Dough]
+    MD
+
+    target_recipe = @kitchen.recipes.find_by!(slug: 'pizza-dough')
+    parent_ids = target_recipe.referencing_recipes.pluck(:id)
+
+    calls = []
+    capture = ->(*args, **kw) { calls << { args:, kw: } }
+    append_calls = []
+    append_capture = ->(*args, **kw) { append_calls << { args:, kw: } }
+
+    target_recipe.destroy!
+
+    Turbo::StreamsChannel.stub :broadcast_replace_to, capture do
+      Turbo::StreamsChannel.stub :broadcast_append_to, append_capture do
+        RecipeBroadcaster.broadcast_destroy(
+          kitchen: @kitchen, recipe: target_recipe,
+          recipe_title: 'Pizza Dough', parent_ids: parent_ids
+        )
+      end
+    end
+
+    deleted_call = calls.find { |c| c[:kw][:partial] == 'recipes/deleted' }
+    parent_call = calls.find { |c| c[:kw][:partial] == 'recipes/recipe_content' && c[:args][0].is_a?(Recipe) }
+    listings_call = calls.find { |c| c[:kw][:target] == 'recipe-listings' }
+    toast_call = append_calls.find { |c| c[:kw][:partial] == 'shared/toast' }
+
+    assert deleted_call, 'Expected a broadcast with recipes/deleted partial'
+    assert parent_call, 'Expected a broadcast updating a parent recipe page'
+    assert listings_call, 'Expected a broadcast updating recipe-listings'
+    assert toast_call, 'Expected a toast notification'
+  end
+
   test 'broadcast_rename broadcasts redirect to old recipe stream' do
     recipe = @kitchen.recipes.find_by!(slug: 'focaccia')
 

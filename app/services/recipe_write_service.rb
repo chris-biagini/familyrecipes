@@ -1,10 +1,14 @@
 # frozen_string_literal: true
 
 # Orchestrates recipe create/update/destroy. Owns the full post-write pipeline:
-# import via MarkdownImporter, handle renames (CrossReferenceUpdater), broadcast
-# real-time updates (RecipeBroadcaster), clean up orphan categories, and prune
-# stale meal plan entries. Controllers validate input and render responses;
-# this service owns domain orchestration.
+# import via MarkdownImporter, handle renames (CrossReferenceUpdater), clean up
+# orphan categories, and prune stale meal plan entries. All Turbo broadcasting
+# is delegated to RecipeBroadcaster. Controllers validate input and render
+# responses; this service owns domain orchestration.
+#
+# - MarkdownImporter: parses markdown into AR records
+# - RecipeBroadcaster: all real-time Turbo Stream updates
+# - CrossReferenceUpdater: renames cross-references on title change
 class RecipeWriteService
   Result = Data.define(:recipe, :updated_references)
 
@@ -44,10 +48,8 @@ class RecipeWriteService
   def destroy(slug:)
     recipe = kitchen.recipes.find_by!(slug:)
     parent_ids = recipe.referencing_recipes.pluck(:id)
-    RecipeBroadcaster.notify_recipe_deleted(recipe, recipe_title: recipe.title)
     recipe.destroy!
-    broadcast_to_referencing_recipes(parent_ids)
-    RecipeBroadcaster.broadcast(kitchen:, action: :deleted, recipe_title: recipe.title)
+    RecipeBroadcaster.broadcast_destroy(kitchen:, recipe:, recipe_title: recipe.title, parent_ids:)
     post_write_cleanup
     Result.new(recipe:, updated_references: [])
   end
@@ -78,19 +80,6 @@ class RecipeWriteService
                   redirect_path: Rails.application.routes.url_helpers.recipe_path(new_recipe)
     )
     old_recipe.destroy!
-  end
-
-  def broadcast_to_referencing_recipes(parent_ids)
-    return if parent_ids.empty?
-
-    kitchen.recipes.where(id: parent_ids).includes(RecipeBroadcaster::SHOW_INCLUDES).find_each do |parent|
-      Turbo::StreamsChannel.broadcast_replace_to(
-        parent, 'content',
-        target: 'recipe-content',
-        partial: 'recipes/recipe_content',
-        locals: { recipe: parent, nutrition: parent.nutrition_data }
-      )
-    end
   end
 
   def post_write_cleanup

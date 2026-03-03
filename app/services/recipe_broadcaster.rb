@@ -1,13 +1,15 @@
 # frozen_string_literal: true
 
-# Bridges recipe CRUD events to real-time Turbo Stream updates. On create/update/
-# destroy, broadcasts HTML replacements to every page that shows recipe data:
-# homepage (recipe listings), menu (recipe selector), ingredients (table + summary
-# bar), and the recipe page itself. When a recipe is updated, also cascades a
-# content replacement to every recipe that embeds it via cross-reference (one
-# level only). Also fires toast notifications and triggers
-# MealPlanChannel.broadcast_content_changed to refresh grocery/menu state.
-class RecipeBroadcaster
+# Owns ALL recipe-related Turbo Stream broadcasting. Public class-method entry
+# points: `broadcast` (create/update), `broadcast_destroy`, `broadcast_rename`,
+# `broadcast_recipe_selector`, `notify_recipe_deleted`. Broadcasts HTML replacements
+# to every page showing recipe data (listings, selector, ingredients, recipe page)
+# and cascades updates to cross-referencing parent recipes.
+#
+# - RecipeWriteService: sole caller for CRUD broadcasts
+# - MealPlanChannel: notified on every broadcast to refresh grocery/menu state
+# - Turbo::StreamsChannel: transport layer for all stream pushes
+class RecipeBroadcaster # rubocop:disable Metrics/ClassLength
   include IngredientRows
 
   SHOW_INCLUDES = [
@@ -21,6 +23,13 @@ class RecipeBroadcaster
 
   def self.broadcast_recipe_selector(kitchen:, stream: 'recipes')
     new(kitchen).broadcast_recipe_selector(stream:)
+  end
+
+  def self.broadcast_destroy(kitchen:, recipe:, recipe_title:, parent_ids:)
+    notify_recipe_deleted(recipe, recipe_title:)
+    broadcaster = new(kitchen)
+    broadcaster.send(:update_referencing_recipes, parent_ids)
+    broadcaster.broadcast(action: :deleted, recipe_title:)
   end
 
   def self.notify_recipe_deleted(recipe, recipe_title:)
@@ -129,6 +138,14 @@ class RecipeBroadcaster
 
   def broadcast_referencing_recipes(recipe)
     recipe.referencing_recipes.includes(SHOW_INCLUDES).find_each do |parent|
+      replace_recipe_content(parent)
+    end
+  end
+
+  def update_referencing_recipes(parent_ids)
+    return if parent_ids.empty?
+
+    kitchen.recipes.where(id: parent_ids).includes(SHOW_INCLUDES).find_each do |parent|
       replace_recipe_content(parent)
     end
   end
