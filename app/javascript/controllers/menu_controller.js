@@ -9,6 +9,8 @@ import MealPlanSync from "utilities/meal_plan_sync"
  * on click.
  */
 export default class extends Controller {
+  static targets = ["popover"]
+
   connect() {
     const slug = this.element.dataset.kitchenSlug
 
@@ -36,15 +38,22 @@ export default class extends Controller {
       if (dot) {
         e.preventDefault()
         e.stopPropagation()
-        this.showPopover(dot)
+        this.showIngredientPopover(dot)
       }
+    })
+
+    this.popoverTarget.addEventListener('toggle', (e) => {
+      if (e.newState !== 'closed' || !this.activePopoverDot) return
+      if (this.popoverTarget.matches(':popover-open')) return
+
+      this.activePopoverDot.removeAttribute('aria-expanded')
+      this.activePopoverDot.removeAttribute('aria-describedby')
+      this.activePopoverDot = null
     })
   }
 
   disconnect() {
-    this.hidePopover()
-    const popover = document.getElementById('ingredient-popover')
-    if (popover) popover.remove()
+    if (this.popoverTarget.matches(':popover-open')) this.popoverTarget.hidePopover()
     if (this.sync) this.sync.disconnect()
   }
 
@@ -105,42 +114,52 @@ export default class extends Controller {
     })
   }
 
-  showPopover(dot) {
-    const slug = dot.dataset.slug
-    const state = this.sync.state
-    const info = (state.availability || {})[slug]
-    if (!info) return
+  showIngredientPopover(dot) {
+    const popover = this.popoverTarget
 
-    let popover = document.getElementById('ingredient-popover')
-    if (!popover) {
-      popover = document.createElement('div')
-      popover.id = 'ingredient-popover'
-      popover.setAttribute('role', 'tooltip')
-      document.body.appendChild(popover)
+    if (this.activePopoverDot) {
+      this.activePopoverDot.removeAttribute('aria-expanded')
+      this.activePopoverDot.removeAttribute('aria-describedby')
     }
 
-    if (this.activePopoverDot === dot) {
-      this.hidePopover()
+    if (this.activePopoverDot === dot && popover.matches(':popover-open')) {
+      popover.hidePopover()
+      this.activePopoverDot = null
       return
     }
 
-    popover.textContent = ''
+    const info = (this.sync.state.availability || {})[dot.dataset.slug]
+    if (!info) return
 
-    const ingredientsList = document.createElement('p')
-    ingredientsList.className = 'popover-ingredients'
-    ingredientsList.textContent = info.ingredients.join(', ')
-    popover.appendChild(ingredientsList)
+    this.populatePopover(info)
 
+    if (popover.matches(':popover-open')) popover.hidePopover()
+
+    this.activePopoverDot = dot
+    dot.setAttribute('aria-expanded', 'true')
+    dot.setAttribute('aria-describedby', 'ingredient-popover')
+
+    popover.showPopover()
+    this.positionPopover(dot)
+  }
+
+  populatePopover(info) {
+    const popover = this.popoverTarget
+    popover.querySelector('.popover-ingredients').textContent = info.ingredients.join(', ')
+
+    const missingEl = popover.querySelector('.popover-missing')
     if (info.missing_names.length > 0) {
-      const missingEl = document.createElement('p')
-      missingEl.className = 'popover-missing'
       missingEl.textContent = `Missing: ${info.missing_names.join(', ')}`
-      popover.appendChild(missingEl)
+      missingEl.hidden = false
+    } else {
+      missingEl.hidden = true
     }
+  }
 
-    popover.classList.add('visible')
-
+  positionPopover(dot) {
+    const popover = this.popoverTarget
     const rect = dot.getBoundingClientRect()
+
     popover.style.top = ''
     popover.style.left = ''
 
@@ -148,56 +167,12 @@ export default class extends Controller {
     let top = rect.bottom + 6
     let left = rect.left
 
-    if (top + popoverRect.height > window.innerHeight) {
-      top = rect.top - popoverRect.height - 6
-    }
-    if (left + popoverRect.width > window.innerWidth) {
-      left = window.innerWidth - popoverRect.width - 8
-    }
+    if (top + popoverRect.height > window.innerHeight) top = rect.top - popoverRect.height - 6
+    if (left + popoverRect.width > window.innerWidth) left = window.innerWidth - popoverRect.width - 8
     if (left < 8) left = 8
 
-    popover.style.top = (top + window.scrollY) + 'px'
-    popover.style.left = (left + window.scrollX) + 'px'
-
-    this.activePopoverDot = dot
-    dot.setAttribute('aria-expanded', 'true')
-    dot.setAttribute('aria-describedby', 'ingredient-popover')
-
-    setTimeout(() => {
-      this.boundHideOnClickOutside = (e) => {
-        if (!popover.contains(e.target) && e.target !== dot) {
-          this.hidePopover()
-        }
-      }
-      this.boundHideOnEscape = (e) => {
-        if (e.key === 'Escape') {
-          this.hidePopover()
-          dot.focus()
-        }
-      }
-      document.addEventListener('click', this.boundHideOnClickOutside)
-      document.addEventListener('keydown', this.boundHideOnEscape)
-    }, 0)
-  }
-
-  hidePopover() {
-    const popover = document.getElementById('ingredient-popover')
-    if (popover) popover.classList.remove('visible')
-
-    if (this.activePopoverDot) {
-      this.activePopoverDot.setAttribute('aria-expanded', 'false')
-      this.activePopoverDot.removeAttribute('aria-describedby')
-      this.activePopoverDot = null
-    }
-
-    if (this.boundHideOnClickOutside) {
-      document.removeEventListener('click', this.boundHideOnClickOutside)
-      this.boundHideOnClickOutside = null
-    }
-    if (this.boundHideOnEscape) {
-      document.removeEventListener('keydown', this.boundHideOnEscape)
-      this.boundHideOnEscape = null
-    }
+    popover.style.top = top + 'px'
+    popover.style.left = left + 'px'
   }
 
   bindRecipeCheckboxes() {

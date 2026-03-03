@@ -39,6 +39,11 @@
     <button type="button" class="btn btn-clear" data-action="menu#clear">Clear All</button>
   </div>
 
+  <div id="ingredient-popover" popover="auto" data-menu-target="popover">
+    <p class="popover-ingredients"></p>
+    <p class="popover-missing" hidden></p>
+  </div>
+
 </div>
 
 <% if current_kitchen.member?(current_user) %>
