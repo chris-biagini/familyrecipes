@@ -23,6 +23,8 @@ module NutritionTui
       WEIGHT_UNITS = FamilyRecipes::NutritionCalculator::WEIGHT_CONVERSIONS.keys.freeze
       VOLUME_UNITS = FamilyRecipes::NutritionCalculator::VOLUME_TO_ML.keys.freeze
 
+      CONFIRM_OPTIONS = ['Save and go back', 'Discard and go back', 'Cancel'].freeze
+
       def initialize(name:, entry:, nutrition_data:, ctx:)
         @name = name
         @entry = entry&.dup || {}
@@ -31,6 +33,8 @@ module NutritionTui
         @dirty = false
         @needed_units = Data.find_needed_units(name, ctx)
         @active_editor = nil
+        @confirm_exit = false
+        @confirm_selected = 0
         @show_usda_reference = false
         @usda_classified = nil
         @auto_density_source = nil
@@ -49,10 +53,12 @@ module NutritionTui
         render_content(frame, main_chunks[0])
         render_keybind_bar(frame, main_chunks[1])
         render_overlay(frame) if @active_editor
+        render_confirm_exit(frame) if @confirm_exit
       end
 
       def handle_event(event)
         return unless event
+        return dispatch_confirm_key(event) if @confirm_exit
         return delegate_to_editor(event) if @active_editor
 
         dispatch_key(event)
@@ -312,7 +318,7 @@ module NutritionTui
       def dispatch_key(event) # rubocop:disable Metrics/MethodLength
         case event
         in { type: :key, code: 'Escape' }
-          { action: :back }
+          handle_escape
         in { type: :key, code: 'e' }
           open_edit_menu
         in { type: :key, code: 'u' }
@@ -399,6 +405,78 @@ module NutritionTui
         Data.save_nutrition_data(@nutrition_data)
         @dirty = false
         nil
+      end
+
+      # --- Unsaved-changes confirmation ---
+
+      def handle_escape
+        return { action: :back } unless @dirty
+
+        @confirm_exit = true
+        @confirm_selected = 0
+        nil
+      end
+
+      def dispatch_confirm_key(event)
+        case event
+        in { type: :key, code: 'Escape' }
+          dismiss_confirm
+        in { type: :key, code: 'Up' | 'k' }
+          @confirm_selected = (@confirm_selected - 1) % CONFIRM_OPTIONS.size
+          nil
+        in { type: :key, code: 'Down' | 'j' }
+          @confirm_selected = (@confirm_selected + 1) % CONFIRM_OPTIONS.size
+          nil
+        in { type: :key, code: 'Enter' }
+          execute_confirm_choice
+        else
+          nil
+        end
+      end
+
+      def dismiss_confirm
+        @confirm_exit = false
+        nil
+      end
+
+      def execute_confirm_choice
+        @confirm_exit = false
+        case @confirm_selected
+        when 0 then save_and_back
+        when 1 then { action: :back }
+        when 2 then nil
+        end
+      end
+
+      def save_and_back
+        save_entry
+        { action: :back }
+      end
+
+      def render_confirm_exit(frame)
+        area = confirm_area(frame.area)
+        frame.render_widget(Widgets::Clear.new, area)
+        frame.render_widget(confirm_list_widget, area)
+      end
+
+      def confirm_list_widget
+        Widgets::List.new(
+          items: CONFIRM_OPTIONS,
+          selected_index: @confirm_selected,
+          highlight_style: Style::Style.new(fg: :cyan, modifiers: [:bold]),
+          block: Widgets::Block.new(title: 'Unsaved changes', borders: [:all])
+        )
+      end
+
+      def confirm_area(screen)
+        w = [screen.width / 3, 30].max
+        h = 5
+        Layout::Rect.new(
+          x: screen.x + ((screen.width - w) / 2),
+          y: screen.y + ((screen.height - h) / 2),
+          width: w,
+          height: h
+        )
       end
 
       # --- Helpers ---

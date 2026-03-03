@@ -16,12 +16,12 @@ module NutritionTui
   # - NutritionTui::Screens::Ingredient (ingredient detail screen)
   # - NutritionTui::Screens::UsdaSearch (USDA FoodData Central search)
   class App
-    def initialize
+    def initialize(jump_to: nil)
       @running = true
       @nutrition_data = Data.load_nutrition_data
       @ctx = Data.load_context
       @api_key = FamilyRecipes::UsdaClient.load_api_key(project_root: NutritionTui::Data::PROJECT_ROOT)
-      @current_screen = Screens::Dashboard.new(nutrition_data: @nutrition_data, ctx: @ctx)
+      @current_screen = initial_screen(jump_to)
     end
 
     def run
@@ -59,6 +59,15 @@ module NutritionTui
       else
         nil
       end
+    end
+
+    def initial_screen(jump_to)
+      return Screens::Dashboard.new(nutrition_data: @nutrition_data, ctx: @ctx) unless jump_to
+
+      Screens::Ingredient.new(
+        name: jump_to, entry: @nutrition_data[jump_to],
+        nutrition_data: @nutrition_data, ctx: @ctx
+      )
     end
 
     def open_ingredient(name)
