@@ -177,11 +177,11 @@ export default class extends Controller {
         window.location.reload()
       } else {
         btn.disabled = false
-        alert("Failed to reset. Please try again.")
+        showErrors(this.errorsTarget, ["Failed to reset. Please try again."])
       }
     } catch {
       btn.disabled = false
-      alert("Network error. Please try again.")
+      showErrors(this.errorsTarget, ["Network error. Please check your connection and try again."])
     }
   }
 

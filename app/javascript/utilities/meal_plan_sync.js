@@ -66,7 +66,9 @@ export default class MealPlanSync {
         this.fetchState()
       })
       .catch(err => {
-        if (!err.status) {
+        if (err.status) {
+          notifyShow("Something went wrong. Please try again.")
+        } else {
           this.pending.push({ url, params, method })
           this.savePending()
         }
