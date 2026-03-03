@@ -53,7 +53,6 @@ module NutritionTui
       sorted.each_value { |entry| round_entry_values(entry) }
 
       File.write(NUTRITION_PATH, YAML.dump(sorted))
-      puts "Saved to #{NUTRITION_PATH}"
     end
 
     # --- Variant-aware lookup (mirrors IngredientCatalog.lookup_for) ---
