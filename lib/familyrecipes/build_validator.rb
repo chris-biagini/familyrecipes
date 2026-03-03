@@ -91,9 +91,11 @@ module FamilyRecipes
     end
 
     def build_ingredient_recipe_index
-      Hash.new { |h, k| h[k] = [] }.tap do |index|
-        @recipes.each { |r| r.all_ingredients.each { |i| index[i.name] << r.title } }
-        @quick_bites.each { |qb| qb.ingredients.each { |name| index[name] << qb.title } }
+      index = @recipes.each_with_object(Hash.new { |h, k| h[k] = [] }) do |recipe, idx|
+        recipe.all_ingredients.each { |i| idx[i.name] << recipe.title }
+      end
+      @quick_bites.each_with_object(index) do |qb, idx|
+        qb.ingredients.each { |name| idx[name] << qb.title }
       end
     end
 

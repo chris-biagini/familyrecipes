@@ -59,18 +59,15 @@ Comments that narrate code are the #1 tell of LLM-generated Ruby. This is a hard
 - If code needs a comment explaining *what*, extract a method with a descriptive name instead.
 
 ```ruby
-# WRONG — every one of these restates the obvious
-# RecipeBuilder class
-class RecipeBuilder
-  # Get current token without advancing
-  def peek
-  # Parse the title
-  def parse_title
+# WRONG — restates what the code does
+# Build a recipe from parsed tokens
+def build_recipe
+# Check if the ingredient is valid
+def valid_ingredient?(name)
 
-# RIGHT — no comment needed, the names say it all
-class RecipeBuilder
-  def peek
-  def parse_title
+# RIGHT — the names are clear; no comment needed
+def build_recipe
+def valid_ingredient?(name)
 
 # RIGHT — explains WHY, not WHAT
 # Miscellaneous defaults to last unless explicitly ordered
