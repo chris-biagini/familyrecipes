@@ -44,7 +44,6 @@ module GroceriesHelper
   end
 
   def format_number(value)
-    num = value.is_a?(String) ? Float(value) : value
-    num.round(2).to_s.delete_suffix('.0')
+    value.to_f.round(2).to_s.delete_suffix('.0')
   end
 end
