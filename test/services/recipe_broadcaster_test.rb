@@ -93,18 +93,6 @@ class RecipeBroadcasterTest < ActiveSupport::TestCase
     end
   end
 
-  test 'broadcast_recipe_selector broadcasts to menu stream' do
-    assert_turbo_stream_broadcasts [@kitchen, 'menu'] do
-      RecipeBroadcaster.broadcast_recipe_selector(kitchen: @kitchen, stream: 'menu_content')
-    end
-  end
-
-  test 'broadcast_recipe_selector defaults to menu stream' do
-    assert_turbo_stream_broadcasts [@kitchen, 'menu'] do
-      RecipeBroadcaster.broadcast_recipe_selector(kitchen: @kitchen)
-    end
-  end
-
   test 'broadcast_destroy notifies recipe page, updates parents, and fires CRUD broadcast' do
     MarkdownImporter.import(<<~MD, kitchen: @kitchen)
       # Pizza Dough

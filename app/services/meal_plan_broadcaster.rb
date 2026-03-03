@@ -6,6 +6,7 @@
 # RecipeBroadcaster lack controller tenant context.
 #
 # - ShoppingListBuilder: produces the grocery shopping list
+# - RecipeAvailabilityCalculator: computes ingredient availability dots
 # - Turbo::StreamsChannel: transport layer for stream pushes
 class MealPlanBroadcaster
   def self.broadcast_grocery_morph(kitchen)
@@ -71,6 +72,9 @@ class MealPlanBroadcaster
   end
 
   def broadcast_recipe_selector(plan)
+    checked_off = plan.state.fetch('checked_off', [])
+    availability = RecipeAvailabilityCalculator.new(kitchen:, checked_off:).call
+
     Turbo::StreamsChannel.broadcast_action_to(
       kitchen, 'menu',
       action: :morph,
@@ -80,7 +84,8 @@ class MealPlanBroadcaster
         categories: kitchen.categories.ordered.includes(:recipes),
         quick_bites_by_subsection: kitchen.quick_bites_by_subsection,
         selected_recipes: plan.selected_recipes_set,
-        selected_quick_bites: plan.selected_quick_bites_set
+        selected_quick_bites: plan.selected_quick_bites_set,
+        availability:
       }
     )
   end
