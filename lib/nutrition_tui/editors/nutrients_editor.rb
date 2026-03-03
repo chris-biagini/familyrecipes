@@ -13,7 +13,7 @@ module NutritionTui
     # - NutritionTui::Data (NUTRIENTS constant for labels and keys)
     # - NutritionTui::Editors::TextInput (inline value editing)
     # - NutritionTui::Screens::Ingredient (creates and processes results)
-    class NutrientsEditor
+    class NutrientsEditor # rubocop:disable Metrics/ClassLength
       Layout = RatatuiRuby::Layout
       Widgets = RatatuiRuby::Widgets
       Style = RatatuiRuby::Style
@@ -25,6 +25,7 @@ module NutritionTui
         @entry['nutrients'] ||= {}
         @selected = 0
         @text_input = nil
+        @error = nil
       end
 
       def handle_event(event)
@@ -40,6 +41,7 @@ module NutritionTui
         )
         frame.render_widget(list, area)
         render_text_input(frame, area) if @text_input
+        render_error(frame, area) if @error
       end
 
       private
@@ -53,9 +55,20 @@ module NutritionTui
       end
 
       def handle_selecting(event)
+        return dismiss_error if @error
+
+        dispatch_selection(event)
+      end
+
+      def dismiss_error
+        @error = nil
+        nil
+      end
+
+      def dispatch_selection(event)
         case event
         in { type: :key, code: 'esc' }
-          { done: true, entry: @entry }
+          validate_and_close
         in { type: :key, code: 'up' | 'k' }
           @selected = (@selected - 1).clamp(0, item_count - 1)
           nil
@@ -75,6 +88,41 @@ module NutritionTui
 
         apply_edit(result) unless result[:cancelled]
         @text_input = nil
+        nil
+      end
+
+      def validate_and_close
+        error = find_validation_error
+        if error
+          @error = error
+          nil
+        else
+          { done: true, entry: @entry }
+        end
+      end
+
+      def find_validation_error
+        nutrients = @entry['nutrients']
+        has_values = Data::NUTRIENTS.any? { |n| nutrients[n[:key]] }
+
+        if has_values && nutrients['basis_grams']
+          valid, msg = FamilyRecipes::NutritionConstraints.valid_basis_grams?(nutrients['basis_grams'])
+          return msg unless valid
+        elsif has_values
+          return 'Basis grams is required when nutrients are present'
+        end
+
+        find_nutrient_range_error(nutrients)
+      end
+
+      def find_nutrient_range_error(nutrients)
+        Data::NUTRIENTS.each do |n|
+          value = nutrients[n[:key]]
+          next unless value
+
+          valid, msg = FamilyRecipes::NutritionConstraints.valid_nutrient?(n[:key], value)
+          return msg unless valid
+        end
         nil
       end
 
@@ -123,6 +171,19 @@ module NutritionTui
         @text_input.render(frame, input_area)
       end
 
+      def render_error(frame, area)
+        error_area = Layout::Rect.new(
+          x: area.x + 1,
+          y: area.bottom - 2,
+          width: area.width - 2,
+          height: 1
+        )
+        text = RatatuiRuby::Text::Line.new(
+          spans: [RatatuiRuby::Text::Span.styled(@error, Style::Style.new(fg: :red))]
+        )
+        frame.render_widget(Widgets::Paragraph.new(text: text), error_area)
+      end
+
       def format_number(value)
         return "\u2014" unless value.is_a?(Numeric)
         return value.to_i.to_s if value == value.to_i
@@ -130,5 +191,5 @@ module NutritionTui
         value.round(1).to_s
       end
     end
-  end
+  end # rubocop:enable Metrics/ClassLength
 end
