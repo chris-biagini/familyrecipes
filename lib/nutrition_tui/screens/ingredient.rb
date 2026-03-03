@@ -50,7 +50,7 @@ module NutritionTui
       end
 
       def render(frame)
-        main_chunks = vertical_split(frame.area, [Layout::Constraint.min(10), Layout::Constraint.length(2)])
+        main_chunks = vertical_split(frame.area, [Layout::Constraint.min(10), Layout::Constraint.length(1)])
         render_content(frame, main_chunks[0])
         render_keybind_bar(frame, main_chunks[1])
         render_overlay(frame) if @active_editor
@@ -125,10 +125,10 @@ module NutritionTui
         paragraph = Widgets::Paragraph.new(
           text: left_column_lines(inner_width),
           block: Widgets::Block.new(
-            title: @name,
+            title: @dirty ? "#{@name} *" : @name,
             borders: [:all],
             border_type: :rounded,
-            title_style: Style::Style.new(modifiers: [:bold])
+            title_style: Style::Style.new(fg: @dirty ? :yellow : nil, modifiers: [:bold])
           )
         )
         frame.render_widget(paragraph, area)
@@ -152,7 +152,7 @@ module NutritionTui
             title: 'Reference',
             borders: [:all],
             border_type: :rounded,
-            title_style: Style::Style.new(fg: :dark_gray, modifiers: [:dim])
+            title_style: Style::Style.new(modifiers: [:bold])
           )
         )
         frame.render_widget(paragraph, area)
@@ -170,7 +170,7 @@ module NutritionTui
 
         basis = "(per #{basis_grams}g)"
         [section_header('Nutrients', 'n', width, suffix: basis, suffix_style: { fg: :dark_gray })] +
-          Data::NUTRIENTS.map { |n| format_nutrient_line(nutrients, n) }
+          Data::NUTRIENTS.map { |n| format_nutrient_line(nutrients, n, width) }
       end
 
       def density_section_lines(width)
@@ -278,28 +278,13 @@ module NutritionTui
       end
 
       def keybind_bar_lines
-        [keybind_top_line, keybind_bottom_line]
-      end
-
-      def keybind_top_line
-        styled_line(
-          plain(' '), span('n', fg: :cyan), span(' nutrients  ', fg: :dark_gray),
-          span('d', fg: :cyan), span(' density  ', fg: :dark_gray),
-          span('p', fg: :cyan), span(' portions  ', fg: :dark_gray),
-          span('a', fg: :cyan), span(' aisle  ', fg: :dark_gray),
-          span('l', fg: :cyan), span(' aliases  ', fg: :dark_gray),
-          span('r', fg: :cyan), span(' sources', fg: :dark_gray)
-        )
-      end
-
-      def keybind_bottom_line
         parts = [
           plain(' '), span('u', fg: :cyan), span(' USDA  ', fg: :dark_gray),
           span('w', fg: :cyan), span(' save  ', fg: :dark_gray),
           span('Esc', fg: :cyan), span(' back', fg: :dark_gray)
         ]
-        parts << span('  [modified]', fg: :yellow) if @dirty
-        Text::Line.new(spans: parts)
+        parts << span('  [unsaved]', fg: :yellow, modifiers: [:bold]) if @dirty
+        [Text::Line.new(spans: parts)]
       end
 
       # --- Event handling ---
@@ -507,12 +492,17 @@ module NutritionTui
         [section_header(name, key, width, suffix: "\u2014", suffix_style: { fg: :dark_gray })]
       end
 
-      def format_nutrient_line(nutrients, nutrient)
-        indent = '  ' * nutrient[:indent]
-        value = nutrients[nutrient[:key]]
-        formatted = value ? format_number(value) : "\u2014"
-        suffix = nutrient[:unit].empty? ? '' : " #{nutrient[:unit]}"
-        Text::Line.from_string("#{indent}#{nutrient[:label].ljust(20 - (nutrient[:indent] * 2))}#{formatted}#{suffix}")
+      def format_nutrient_line(nutrients, nutrient, width)
+        label = "#{'  ' * nutrient[:indent]}#{nutrient[:label]}"
+        value_str = nutrient_value_str(nutrients, nutrient)
+        padding = [width - label.size - value_str.size, 1].max
+        Text::Line.from_string("#{label}#{' ' * padding}#{value_str}")
+      end
+
+      def nutrient_value_str(nutrients, nutrient)
+        formatted = nutrients[nutrient[:key]] ? format_number(nutrients[nutrient[:key]]) : "\u2014"
+        unit_suffix = nutrient[:unit].empty? ? '' : " #{nutrient[:unit]}"
+        "#{formatted}#{unit_suffix}"
       end
 
       def format_unit_line(unit, calculator, calc_entry)
