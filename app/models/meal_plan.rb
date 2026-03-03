@@ -35,6 +35,22 @@ class MealPlan < ApplicationRecord
     [true, 'true'].include?(value)
   end
 
+  def checked_off_set
+    state.fetch('checked_off', []).to_set
+  end
+
+  def custom_items_list
+    state.fetch('custom_items', [])
+  end
+
+  def selected_recipes_set
+    state.fetch('selected_recipes', []).to_set
+  end
+
+  def selected_quick_bites_set
+    state.fetch('selected_quick_bites', []).to_set
+  end
+
   def apply_action(action_type, **params)
     ensure_state_keys
 
