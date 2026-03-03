@@ -95,6 +95,35 @@ class RecipeBroadcasterTest < ActiveSupport::TestCase
     end
   end
 
+  test 'broadcast_recipe_selector broadcasts to specified stream' do
+    calls = []
+    capture = ->(*args, **kw) { calls << { args:, kw: } }
+
+    Turbo::StreamsChannel.stub :broadcast_replace_to, capture do
+      RecipeBroadcaster.broadcast_recipe_selector(kitchen: @kitchen, stream: 'menu_content')
+    end
+
+    selector_call = calls.find { |c| c[:kw][:target] == 'recipe-selector' }
+
+    assert selector_call, 'Expected a broadcast targeting recipe-selector'
+    assert_equal @kitchen, selector_call[:args][0]
+    assert_equal 'menu_content', selector_call[:args][1]
+  end
+
+  test 'broadcast_recipe_selector defaults to recipes stream' do
+    calls = []
+    capture = ->(*args, **kw) { calls << { args:, kw: } }
+
+    Turbo::StreamsChannel.stub :broadcast_replace_to, capture do
+      RecipeBroadcaster.broadcast_recipe_selector(kitchen: @kitchen)
+    end
+
+    selector_call = calls.find { |c| c[:kw][:target] == 'recipe-selector' }
+
+    assert selector_call, 'Expected a broadcast targeting recipe-selector'
+    assert_equal 'recipes', selector_call[:args][1]
+  end
+
   test 'broadcast_rename broadcasts redirect to old recipe stream' do
     recipe = @kitchen.recipes.find_by!(slug: 'focaccia')
 

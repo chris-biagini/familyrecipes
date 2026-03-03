@@ -54,7 +54,7 @@ class MenuController < ApplicationController
     current_kitchen.update!(quick_bites_content: content)
     MealPlan.prune_stale_items(kitchen: current_kitchen)
 
-    broadcast_recipe_selector_update
+    RecipeBroadcaster.broadcast_recipe_selector(kitchen: current_kitchen, stream: 'menu_content')
     MealPlanChannel.broadcast_content_changed(current_kitchen)
     render json: { status: 'ok' }
   end
@@ -71,17 +71,5 @@ class MenuController < ApplicationController
 
   def all_quick_bite_slugs
     current_kitchen.parsed_quick_bites.map(&:id)
-  end
-
-  def broadcast_recipe_selector_update
-    Turbo::StreamsChannel.broadcast_replace_to(
-      current_kitchen, 'menu_content',
-      target: 'recipe-selector',
-      partial: 'menu/recipe_selector',
-      locals: {
-        categories: recipe_selector_categories,
-        quick_bites_by_subsection: current_kitchen.quick_bites_by_subsection
-      }
-    )
   end
 end

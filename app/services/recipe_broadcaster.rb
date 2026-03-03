@@ -19,6 +19,10 @@ class RecipeBroadcaster
     new(kitchen).broadcast(action:, recipe_title:, recipe:)
   end
 
+  def self.broadcast_recipe_selector(kitchen:, stream: 'recipes')
+    new(kitchen).broadcast_recipe_selector(stream:)
+  end
+
   def self.notify_recipe_deleted(recipe, recipe_title:)
     Turbo::StreamsChannel.broadcast_replace_to(
       recipe, 'content',
@@ -53,11 +57,21 @@ class RecipeBroadcaster
     categories = preload_categories
 
     broadcast_recipe_listings(categories)
-    broadcast_recipe_selector(categories)
+    broadcast_recipe_selector(categories:)
     broadcast_ingredients(categories.flat_map(&:recipes))
     broadcast_recipe_page(recipe, action:, recipe_title:)
     broadcast_toast(action:, recipe_title:)
     MealPlanChannel.broadcast_content_changed(kitchen)
+  end
+
+  def broadcast_recipe_selector(categories: nil, stream: 'recipes')
+    categories ||= kitchen.categories.ordered.includes(:recipes)
+    Turbo::StreamsChannel.broadcast_replace_to(
+      kitchen, stream,
+      target: 'recipe-selector',
+      partial: 'menu/recipe_selector',
+      locals: { categories:, quick_bites_by_subsection: kitchen.quick_bites_by_subsection }
+    )
   end
 
   private
@@ -76,16 +90,6 @@ class RecipeBroadcaster
       target: 'recipe-listings',
       partial: 'homepage/recipe_listings',
       locals: { categories: categories.reject { |c| c.recipes.empty? } }
-    )
-  end
-
-  def broadcast_recipe_selector(categories)
-    quick_bites = kitchen.quick_bites_by_subsection
-    Turbo::StreamsChannel.broadcast_replace_to(
-      kitchen, 'recipes',
-      target: 'recipe-selector',
-      partial: 'menu/recipe_selector',
-      locals: { categories:, quick_bites_by_subsection: quick_bites }
     )
   end
 
