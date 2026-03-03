@@ -1,10 +1,8 @@
 # frozen_string_literal: true
 
-# Owns ALL recipe-related Turbo Stream broadcasting. Public class-method entry
-# points: `broadcast` (create/update), `broadcast_destroy`, `broadcast_rename`,
-# `notify_recipe_deleted`. Broadcasts HTML replacements
-# to every page showing recipe data (listings, selector, ingredients, recipe page)
-# and cascades updates to cross-referencing parent recipes.
+# Owns all recipe-related Turbo Stream broadcasting: listings, ingredient tables,
+# recipe pages, and cascading updates to cross-referencing parents. Wraps queries
+# in ActsAsTenant.with_tenant since callers may lack controller tenant context.
 #
 # - RecipeWriteService: sole caller for CRUD broadcasts
 # - MealPlanBroadcaster: morphs grocery/menu pages after recipe changes
@@ -23,9 +21,7 @@ class RecipeBroadcaster
 
   def self.broadcast_destroy(kitchen:, recipe:, recipe_title:, parent_ids:)
     notify_recipe_deleted(recipe, recipe_title:)
-    broadcaster = new(kitchen)
-    broadcaster.send(:update_referencing_recipes, parent_ids)
-    broadcaster.broadcast(action: :deleted, recipe_title:)
+    new(kitchen).broadcast_destroy(parent_ids:, recipe_title:)
   end
 
   def self.notify_recipe_deleted(recipe, recipe_title:)
@@ -59,13 +55,22 @@ class RecipeBroadcaster
   end
 
   def broadcast(action:, recipe_title:, recipe: nil)
-    categories = preload_categories
+    ActsAsTenant.with_tenant(kitchen) do
+      categories = preload_categories
 
-    broadcast_recipe_listings(categories)
-    broadcast_ingredients(categories.flat_map(&:recipes))
-    broadcast_recipe_page(recipe, action:, recipe_title:)
-    broadcast_toast(action:, recipe_title:)
-    MealPlanBroadcaster.broadcast_all(kitchen)
+      broadcast_recipe_listings(categories)
+      broadcast_ingredients(categories.flat_map(&:recipes))
+      broadcast_recipe_page(recipe, action:, recipe_title:)
+      append_toast([kitchen, 'recipes'], "#{recipe_title} was #{action}")
+      MealPlanBroadcaster.broadcast_all(kitchen)
+    end
+  end
+
+  def broadcast_destroy(parent_ids:, recipe_title:)
+    ActsAsTenant.with_tenant(kitchen) do
+      update_referencing_recipes(parent_ids)
+      broadcast(action: :deleted, recipe_title:)
+    end
   end
 
   private
@@ -107,11 +112,9 @@ class RecipeBroadcaster
   def broadcast_recipe_page(recipe, action:, recipe_title:)
     return unless recipe
 
-    broadcast_recipe_updated(recipe)
-    broadcast_recipe_toast(recipe, action:, recipe_title:)
-  end
+    message = "#{recipe_title} was #{action}"
+    append_toast([recipe, 'content'], message)
 
-  def broadcast_recipe_updated(recipe)
     fresh = kitchen.recipes.includes(SHOW_INCLUDES).find_by(slug: recipe.slug)
     return unless fresh
 
@@ -140,15 +143,6 @@ class RecipeBroadcaster
       partial: 'recipes/recipe_content',
       locals: { recipe:, nutrition: recipe.nutrition_data }
     )
-  end
-
-  def broadcast_toast(action:, recipe_title:)
-    message = "#{recipe_title} was #{action}"
-    append_toast([kitchen, 'recipes'], message)
-  end
-
-  def broadcast_recipe_toast(recipe, action:, recipe_title:)
-    append_toast([recipe, 'content'], "#{recipe_title} was #{action}")
   end
 
   def append_toast(stream, message)
