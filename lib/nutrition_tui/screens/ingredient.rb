@@ -33,7 +33,7 @@ module NutritionTui
         @nutrition_data = nutrition_data
         @ctx = ctx
         @dirty = false
-        @needed_units = Data.find_needed_units(name, ctx)
+        @needed_units = Data.find_needed_units(name, ctx, nutrition_data)
         @active_editor = nil
         @confirm_exit = false
         @confirm_selected = 0
@@ -45,7 +45,7 @@ module NutritionTui
         import_nutrients(detail)
         import_source(detail)
         classify_and_apply_density(detail)
-        @needed_units = Data.find_needed_units(@name, @ctx)
+        @needed_units = Data.find_needed_units(@name, @ctx, @nutrition_data)
         @dirty = true
       end
 
@@ -121,8 +121,9 @@ module NutritionTui
       end
 
       def render_left_column(frame, area)
+        inner_width = area.width - 2
         paragraph = Widgets::Paragraph.new(
-          text: left_column_lines,
+          text: left_column_lines(inner_width),
           block: Widgets::Block.new(
             title: @name,
             borders: [:all],
@@ -133,11 +134,15 @@ module NutritionTui
         frame.render_widget(paragraph, area)
       end
 
-      def left_column_lines
-        group1 = nutrients_section_lines
-        group2 = density_section_lines + [blank_line] + portions_section_lines
-        group3 = aisle_section_lines + [blank_line] + aliases_section_lines + [blank_line] + sources_section_lines
-        [group1, group2, group3].flat_map { |g| g + [blank_line] }
+      def left_column_lines(width)
+        [
+          nutrients_section_lines(width),
+          density_section_lines(width),
+          portions_section_lines(width),
+          aisle_section_lines(width),
+          aliases_section_lines(width),
+          sources_section_lines(width)
+        ].flat_map { |s| s + [blank_line] }
       end
 
       def render_right_column(frame, area)
@@ -159,84 +164,51 @@ module NutritionTui
 
       # --- Left column sections ---
 
-      def nutrients_section_lines
+      def nutrients_section_lines(width)
         nutrients = @entry['nutrients']
-        return [nutrients_empty_line] unless nutrients.is_a?(Hash)
+        return empty_section_header('Nutrients', 'n', width) unless nutrients.is_a?(Hash)
 
-        [nutrients_header] + Data::NUTRIENTS.map { |n| format_nutrient_line(nutrients, n) }
+        basis = "(per #{basis_grams}g)"
+        [section_header('Nutrients', 'n', width, suffix: basis, suffix_style: { fg: :dark_gray })] +
+          Data::NUTRIENTS.map { |n| format_nutrient_line(nutrients, n) }
       end
 
-      def nutrients_header
-        basis = span("(per #{basis_grams}g)", fg: :dark_gray)
-        styled_line(span('[n]', fg: :cyan), span(' Nutrients ', modifiers: [:bold]), basis)
-      end
-
-      def nutrients_empty_line
-        styled_line(span('[n]', fg: :cyan), span(' Nutrients: ', modifiers: [:bold]), span("\u2014", fg: :dark_gray))
-      end
-
-      def density_section_lines
+      def density_section_lines(width)
         density = @entry['density']
-        return [density_empty_line] unless density.is_a?(Hash)
+        return empty_section_header('Density', 'd', width) unless density.is_a?(Hash)
 
         value = "#{format_number(density['grams'])}g per #{format_number(density['volume'])} #{density['unit']}"
-        [styled_line(span('[d]', fg: :cyan), span(' Density: ', modifiers: [:bold]), plain(value))]
+        [section_header('Density', 'd', width, suffix: value)]
       end
 
-      def density_empty_line
-        styled_line(span('[d]', fg: :cyan), span(' Density: ', modifiers: [:bold]), span("\u2014", fg: :dark_gray))
-      end
-
-      def portions_section_lines
+      def portions_section_lines(width)
         portions = @entry['portions']
-        return [portions_empty_line] unless portions.is_a?(Hash) && portions.any?
+        return empty_section_header('Portions', 'p', width) unless portions.is_a?(Hash) && portions.any?
 
-        header = styled_line(span('[p]', fg: :cyan), span(' Portions', modifiers: [:bold]))
-        [header] + portions.map { |name, grams| Text::Line.from_string("    #{name.ljust(16)}#{format_number(grams)}g") }
+        [section_header('Portions', 'p', width)] +
+          portions.map { |name, grams| Text::Line.from_string("    #{name.ljust(16)}#{format_number(grams)}g") }
       end
 
-      def portions_empty_line
-        styled_line(span('[p]', fg: :cyan), span(' Portions: ', modifiers: [:bold]), span("\u2014", fg: :dark_gray))
-      end
-
-      def aisle_section_lines
+      def aisle_section_lines(width)
         aisle = @entry['aisle']
-        return [aisle_empty_line] unless aisle
+        return empty_section_header('Aisle', 'a', width) unless aisle
 
-        [styled_line(span('[a]', fg: :cyan), span(' Aisle: ', modifiers: [:bold]), plain(aisle))]
+        [section_header('Aisle', 'a', width, suffix: aisle)]
       end
 
-      def aisle_empty_line
-        styled_line(span('[a]', fg: :cyan), span(' Aisle: ', modifiers: [:bold]), span("\u2014", fg: :dark_gray))
-      end
-
-      def aliases_section_lines
+      def aliases_section_lines(width)
         aliases = @entry['aliases']
-        return [aliases_empty_line] unless aliases.is_a?(Array) && aliases.any?
-        return [aliases_inline_line(aliases)] if aliases.size < 4
+        return empty_section_header('Aliases', 'l', width) unless aliases.is_a?(Array) && aliases.any?
+        return [section_header('Aliases', 'l', width, suffix: aliases.join(', '))] if aliases.size < 4
 
-        header = styled_line(span('[l]', fg: :cyan), span(' Aliases', modifiers: [:bold]))
-        [header] + aliases.map { |a| Text::Line.from_string("    #{a}") }
+        [section_header('Aliases', 'l', width)] + aliases.map { |a| Text::Line.from_string("    #{a}") }
       end
 
-      def aliases_inline_line(aliases)
-        styled_line(span('[l]', fg: :cyan), span(' Aliases: ', modifiers: [:bold]), plain(aliases.join(', ')))
-      end
-
-      def aliases_empty_line
-        styled_line(span('[l]', fg: :cyan), span(' Aliases: ', modifiers: [:bold]), span("\u2014", fg: :dark_gray))
-      end
-
-      def sources_section_lines
+      def sources_section_lines(width)
         sources = @entry['sources']
-        return [sources_empty_line] unless sources.is_a?(Array) && sources.any?
+        return empty_section_header('Sources', 'r', width) unless sources.is_a?(Array) && sources.any?
 
-        header = styled_line(span('[r]', fg: :cyan), span(' Sources', modifiers: [:bold]))
-        [header] + sources.flat_map { |s| format_source_lines(s) }
-      end
-
-      def sources_empty_line
-        styled_line(span('[r]', fg: :cyan), span(' Sources: ', modifiers: [:bold]), span("\u2014", fg: :dark_gray))
+        [section_header('Sources', 'r', width)] + sources.flat_map { |s| format_source_lines(s) }
       end
 
       def format_source_lines(source)
@@ -512,6 +484,27 @@ module NutritionTui
 
       def blank_line
         Text::Line.from_string('')
+      end
+
+      def section_header(name, key, width, suffix: nil, suffix_style: nil)
+        prefix_len = name.size + key.size + 5
+        suffix_len = suffix ? suffix.size + 1 : 0
+        fill_len = [width - prefix_len - suffix_len, 4].max
+        parts = [
+          span(name, modifiers: [:bold]),
+          span(" [#{key}]", fg: :cyan),
+          span(" #{'─' * fill_len}", fg: :dark_gray)
+        ]
+        parts << styled_suffix(suffix, suffix_style) if suffix
+        styled_line(*parts)
+      end
+
+      def styled_suffix(text, style)
+        style ? span(" #{text}", **style) : plain(" #{text}")
+      end
+
+      def empty_section_header(name, key, width)
+        [section_header(name, key, width, suffix: "\u2014", suffix_style: { fg: :dark_gray })]
       end
 
       def format_nutrient_line(nutrients, nutrient)
