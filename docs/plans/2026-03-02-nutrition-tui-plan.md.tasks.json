@@ -1,0 +1,17 @@
+{
+  "planPath": "docs/plans/2026-03-02-nutrition-tui-plan.md",
+  "tasks": [
+    {"id": 7, "subject": "Task 1: Add ratatui_ruby gem and verify installation", "status": "pending"},
+    {"id": 8, "subject": "Task 2: Extract data layer from bin/nutrition", "status": "pending", "blockedBy": [7]},
+    {"id": 9, "subject": "Task 3: Create TUI app skeleton", "status": "pending", "blockedBy": [7, 8]},
+    {"id": 10, "subject": "Task 4: Build dashboard screen with ingredient list", "status": "pending", "blockedBy": [9]},
+    {"id": 11, "subject": "Task 5: Build ingredient detail screen", "status": "pending", "blockedBy": [10]},
+    {"id": 12, "subject": "Task 6: Build inline editors for detail screen", "status": "pending", "blockedBy": [11]},
+    {"id": 13, "subject": "Task 7: Build USDA search screen", "status": "pending", "blockedBy": [12]},
+    {"id": 14, "subject": "Task 8: Nutrient import and USDA reference panel", "status": "pending", "blockedBy": [13]},
+    {"id": 15, "subject": "Task 9: Fix NutritionCalculator warning for aisle-only entries", "status": "pending"},
+    {"id": 16, "subject": "Task 10: Clean up bogus cup chopped portions in catalog", "status": "pending"},
+    {"id": 17, "subject": "Task 11: Navigation polish and CLI entry points", "status": "pending", "blockedBy": [14]}
+  ],
+  "lastUpdated": "2026-03-02T00:00:00Z"
+}
