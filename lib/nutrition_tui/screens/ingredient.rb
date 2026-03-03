@@ -20,6 +20,7 @@ module NutritionTui
       Layout = RatatuiRuby::Layout
       Widgets = RatatuiRuby::Widgets
       Style = RatatuiRuby::Style
+      Text = RatatuiRuby::Text
 
       WEIGHT_UNITS = FamilyRecipes::NutritionCalculator::WEIGHT_CONVERSIONS.keys.freeze
       VOLUME_UNITS = FamilyRecipes::NutritionCalculator::VOLUME_TO_ML.keys.freeze
@@ -120,28 +121,32 @@ module NutritionTui
       end
 
       def render_left_column(frame, area)
-        lines = left_column_lines
         paragraph = Widgets::Paragraph.new(
-          text: lines.join("\n"),
-          block: Widgets::Block.new(title: @name, borders: [:all])
+          text: left_column_lines,
+          block: Widgets::Block.new(
+            title: @name,
+            borders: [:all],
+            border_type: :rounded,
+            title_style: Style::Style.new(modifiers: [:bold])
+          )
         )
         frame.render_widget(paragraph, area)
       end
 
       def left_column_lines
         group1 = nutrients_section_lines
-        group2 = density_section_lines + [''] + portions_section_lines
-        group3 = aisle_section_lines + [''] + aliases_section_lines + [''] + sources_section_lines
-        [group1, group2, group3].flat_map { |g| g + [''] }
+        group2 = density_section_lines + [blank_line] + portions_section_lines
+        group3 = aisle_section_lines + [blank_line] + aliases_section_lines + [blank_line] + sources_section_lines
+        [group1, group2, group3].flat_map { |g| g + [blank_line] }
       end
 
       def render_right_column(frame, area)
-        lines = right_column_lines
         paragraph = Widgets::Paragraph.new(
-          text: lines.join("\n"),
+          text: right_column_lines,
           block: Widgets::Block.new(
             title: 'Reference',
             borders: [:all],
+            border_type: :rounded,
             title_style: Style::Style.new(fg: :dark_gray, modifiers: [:dim])
           )
         )
@@ -149,60 +154,88 @@ module NutritionTui
       end
 
       def right_column_lines
-        recipe_units_section_lines + [''] + usda_reference_section_lines
+        recipe_units_section_lines + [blank_line] + usda_reference_section_lines
       end
 
       # --- Left column sections ---
 
       def nutrients_section_lines
         nutrients = @entry['nutrients']
-        return ['[n] Nutrients: —'] unless nutrients.is_a?(Hash)
+        return [nutrients_empty_line] unless nutrients.is_a?(Hash)
 
-        ["[n] Nutrients (per #{basis_grams}g)"] +
-          Data::NUTRIENTS.map { |n| format_nutrient_line(nutrients, n) }
+        header = styled_line(span('[n]', fg: :cyan), span(' Nutrients ', modifiers: [:bold]), span("(per #{basis_grams}g)", fg: :dark_gray))
+        [header] + Data::NUTRIENTS.map { |n| format_nutrient_line(nutrients, n) }
+      end
+
+      def nutrients_empty_line
+        styled_line(span('[n]', fg: :cyan), span(' Nutrients: ', modifiers: [:bold]), span("\u2014", fg: :dark_gray))
       end
 
       def density_section_lines
         density = @entry['density']
-        return ['[d] Density: —'] unless density.is_a?(Hash)
+        return [density_empty_line] unless density.is_a?(Hash)
 
-        ["[d] Density: #{format_number(density['grams'])}g per #{format_number(density['volume'])} #{density['unit']}"]
+        value = "#{format_number(density['grams'])}g per #{format_number(density['volume'])} #{density['unit']}"
+        [styled_line(span('[d]', fg: :cyan), span(' Density: ', modifiers: [:bold]), plain(value))]
+      end
+
+      def density_empty_line
+        styled_line(span('[d]', fg: :cyan), span(' Density: ', modifiers: [:bold]), span("\u2014", fg: :dark_gray))
       end
 
       def portions_section_lines
         portions = @entry['portions']
-        return ['[p] Portions: —'] unless portions.is_a?(Hash) && portions.any?
+        return [portions_empty_line] unless portions.is_a?(Hash) && portions.any?
 
-        ['[p] Portions'] + portions.map { |name, grams| "    #{name.ljust(16)}#{format_number(grams)}g" }
+        header = styled_line(span('[p]', fg: :cyan), span(' Portions', modifiers: [:bold]))
+        [header] + portions.map { |name, grams| Text::Line.from_string("    #{name.ljust(16)}#{format_number(grams)}g") }
+      end
+
+      def portions_empty_line
+        styled_line(span('[p]', fg: :cyan), span(' Portions: ', modifiers: [:bold]), span("\u2014", fg: :dark_gray))
       end
 
       def aisle_section_lines
         aisle = @entry['aisle']
-        return ['[a] Aisle: —'] unless aisle
+        return [aisle_empty_line] unless aisle
 
-        ["[a] Aisle: #{aisle}"]
+        [styled_line(span('[a]', fg: :cyan), span(' Aisle: ', modifiers: [:bold]), plain(aisle))]
+      end
+
+      def aisle_empty_line
+        styled_line(span('[a]', fg: :cyan), span(' Aisle: ', modifiers: [:bold]), span("\u2014", fg: :dark_gray))
       end
 
       def aliases_section_lines
         aliases = @entry['aliases']
-        return ['[l] Aliases: —'] unless aliases.is_a?(Array) && aliases.any?
-        return ["[l] Aliases: #{aliases.join(', ')}"] if aliases.size < 4
+        return [aliases_empty_line] unless aliases.is_a?(Array) && aliases.any?
+        return [styled_line(span('[l]', fg: :cyan), span(' Aliases: ', modifiers: [:bold]), plain(aliases.join(', ')))] if aliases.size < 4
 
-        ['[l] Aliases'] + aliases.map { |a| "    #{a}" }
+        header = styled_line(span('[l]', fg: :cyan), span(' Aliases', modifiers: [:bold]))
+        [header] + aliases.map { |a| Text::Line.from_string("    #{a}") }
+      end
+
+      def aliases_empty_line
+        styled_line(span('[l]', fg: :cyan), span(' Aliases: ', modifiers: [:bold]), span("\u2014", fg: :dark_gray))
       end
 
       def sources_section_lines
         sources = @entry['sources']
-        return ['[r] Sources: —'] unless sources.is_a?(Array) && sources.any?
+        return [sources_empty_line] unless sources.is_a?(Array) && sources.any?
 
-        ['[r] Sources'] + sources.flat_map { |s| format_source_lines(s) }
+        header = styled_line(span('[r]', fg: :cyan), span(' Sources', modifiers: [:bold]))
+        [header] + sources.flat_map { |s| format_source_lines(s) }
+      end
+
+      def sources_empty_line
+        styled_line(span('[r]', fg: :cyan), span(' Sources: ', modifiers: [:bold]), span("\u2014", fg: :dark_gray))
       end
 
       def format_source_lines(source)
-        header = "    #{source['type']}#{source_detail(source)}"
+        header = Text::Line.from_string("    #{source['type']}#{source_detail(source)}")
         return [header] unless source['description']
 
-        [header, "      \"#{source['description']}\""]
+        [header, Text::Line.from_string("      \"#{source['description']}\"")]
       end
 
       def source_detail(source)
@@ -219,16 +252,17 @@ module NutritionTui
       # --- Right column sections ---
 
       def recipe_units_section_lines
-        return ['No recipe usage found'] if @needed_units.empty?
+        return [styled_line(span('No recipe usage found', fg: :dark_gray))] if @needed_units.empty?
 
         calculator, calc_entry = build_calculator
-        ['Recipe Units'] + @needed_units.map { |unit| format_unit_line(unit, calculator, calc_entry) }
+        [styled_line(span('Recipe Units', modifiers: [:bold]))] +
+          @needed_units.map { |unit| format_unit_line(unit, calculator, calc_entry) }
       end
 
       def usda_reference_section_lines
-        return ["No USDA data \u2014 press u to search"] unless @usda_classified
+        return [styled_line(span("No USDA data \u2014 press u to search", fg: :dark_gray))] unless @usda_classified
 
-        ['USDA Reference'] + usda_candidate_lines
+        [styled_line(span('USDA Reference', modifiers: [:bold]))] + usda_candidate_lines
       end
 
       def usda_candidate_lines
@@ -238,10 +272,10 @@ module NutritionTui
       end
 
       def format_usda_candidate(candidate)
-        star = candidate[:modifier] == @auto_density_source ? "\u2605 " : '  '
+        star = candidate[:modifier] == @auto_density_source ? span("\u2605 ", fg: :yellow) : plain('  ')
         label = usda_candidate_label(candidate)
         grams = usda_candidate_grams(candidate)
-        "#{star}#{label.ljust(25)}#{grams}"
+        styled_line(star, plain(label.ljust(25)), plain(grams))
       end
 
       def usda_candidate_label(candidate)
@@ -259,18 +293,33 @@ module NutritionTui
       # --- Keybind bar ---
 
       def render_keybind_bar(frame, area)
-        paragraph = Widgets::Paragraph.new(
-          text: keybind_bar_text(area.width),
-          style: Style::Style.new(fg: :dark_gray, modifiers: [:dim])
-        )
+        paragraph = Widgets::Paragraph.new(text: keybind_bar_lines)
         frame.render_widget(paragraph, area)
       end
 
-      def keybind_bar_text(width)
-        suffix = @dirty ? '[modified]' : ''
-        line1 = ' n nutrients  d density  p portions  a aisle  l aliases  r sources'
-        line2 = " u USDA  w save  Esc back#{suffix.rjust([width - 27, suffix.size].max)}"
-        "#{line1}\n#{line2}"
+      def keybind_bar_lines
+        [keybind_line_1, keybind_line_2]
+      end
+
+      def keybind_line_1
+        styled_line(
+          plain(' '), span('n', fg: :cyan), span(' nutrients  ', fg: :dark_gray),
+          span('d', fg: :cyan), span(' density  ', fg: :dark_gray),
+          span('p', fg: :cyan), span(' portions  ', fg: :dark_gray),
+          span('a', fg: :cyan), span(' aisle  ', fg: :dark_gray),
+          span('l', fg: :cyan), span(' aliases  ', fg: :dark_gray),
+          span('r', fg: :cyan), span(' sources', fg: :dark_gray)
+        )
+      end
+
+      def keybind_line_2
+        parts = [
+          plain(' '), span('u', fg: :cyan), span(' USDA  ', fg: :dark_gray),
+          span('w', fg: :cyan), span(' save  ', fg: :dark_gray),
+          span('Esc', fg: :cyan), span(' back', fg: :dark_gray)
+        ]
+        parts << span('  [modified]', fg: :yellow) if @dirty
+        Text::Line.new(spans: parts)
       end
 
       # --- Event handling ---
@@ -441,12 +490,36 @@ module NutritionTui
 
       # --- Helpers ---
 
+      def span(text, **opts)
+        Text::Span.styled(text.to_s, Style::Style.new(**opts))
+      end
+
+      def plain(text)
+        Text::Span.raw(text.to_s)
+      end
+
+      def styled_line(*spans)
+        Text::Line.new(spans: spans)
+      end
+
+      def blank_line
+        Text::Line.from_string('')
+      end
+
       def format_nutrient_line(nutrients, nutrient)
         indent = '  ' * nutrient[:indent]
         value = nutrients[nutrient[:key]]
         formatted = value ? format_number(value) : "\u2014"
         suffix = nutrient[:unit].empty? ? '' : " #{nutrient[:unit]}"
-        "#{indent}#{nutrient[:label].ljust(20 - (nutrient[:indent] * 2))}#{formatted}#{suffix}"
+        Text::Line.from_string("#{indent}#{nutrient[:label].ljust(20 - (nutrient[:indent] * 2))}#{formatted}#{suffix}")
+      end
+
+      def format_unit_line(unit, calculator, calc_entry)
+        display = unit.nil? ? '(bare count)' : unit
+        resolved = calc_entry && calculator.resolvable?(1, unit, calc_entry)
+        status_span = resolved ? span("\u2713", fg: :green) : span("\u2717", fg: :red)
+        method = resolution_method(unit, resolved)
+        styled_line(plain("  #{display.to_s.ljust(16)}"), status_span, span("  #{method}", fg: :dark_gray))
       end
 
       def basis_grams
@@ -457,14 +530,6 @@ module NutritionTui
         calculator = FamilyRecipes::NutritionCalculator.new({ @name => @entry })
         calc_entry = calculator.nutrition_data[@name]
         [calculator, calc_entry]
-      end
-
-      def format_unit_line(unit, calculator, calc_entry)
-        display = unit.nil? ? '(bare count)' : unit
-        resolved = calc_entry && calculator.resolvable?(1, unit, calc_entry)
-        status = resolved ? "\u2713" : "\u2717"
-        method = resolution_method(unit, resolved)
-        "  #{display.to_s.ljust(16)}#{status}  #{method}"
       end
 
       def resolution_method(unit, resolved)
@@ -501,10 +566,6 @@ module NutritionTui
         return value.to_i.to_s if value == value.to_i
 
         value.round(1).to_s
-      end
-
-      def dim_text(text)
-        text
       end
     end
   end # rubocop:enable Metrics/ClassLength
