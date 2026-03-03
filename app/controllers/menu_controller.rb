@@ -24,17 +24,11 @@ class MenuController < ApplicationController
   end
 
   def select_all
-    plan = MealPlan.for_kitchen(current_kitchen)
-    plan.with_optimistic_retry { plan.select_all!(all_recipe_slugs, all_quick_bite_slugs) }
-    MealPlanChannel.broadcast_version(current_kitchen, plan.lock_version)
-    render json: { version: plan.lock_version }
+    mutate_and_respond { |plan| plan.select_all!(all_recipe_slugs, all_quick_bite_slugs) }
   end
 
   def clear
-    plan = MealPlan.for_kitchen(current_kitchen)
-    plan.with_optimistic_retry { plan.clear_selections! }
-    MealPlanChannel.broadcast_version(current_kitchen, plan.lock_version)
-    render json: { version: plan.lock_version }
+    mutate_and_respond { |plan| plan.clear_selections! }
   end
 
   def quick_bites_content

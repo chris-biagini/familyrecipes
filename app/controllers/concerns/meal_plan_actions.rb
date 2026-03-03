@@ -13,11 +13,15 @@ module MealPlanActions
   private
 
   def apply_and_respond(action_type, **action_params)
-    plan = MealPlan.for_kitchen(current_kitchen)
-    plan.with_optimistic_retry do
+    mutate_and_respond do |plan|
       plan.apply_action(action_type, **action_params)
       prune_if_deselect(action_type, action_params)
     end
+  end
+
+  def mutate_and_respond
+    plan = MealPlan.for_kitchen(current_kitchen)
+    plan.with_optimistic_retry { yield plan }
     MealPlanChannel.broadcast_version(current_kitchen, plan.lock_version)
     render json: { version: plan.lock_version }
   end
