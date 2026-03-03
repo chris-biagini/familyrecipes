@@ -473,7 +473,7 @@ module NutritionTui
           items: CONFIRM_OPTIONS,
           selected_index: @confirm_selected,
           highlight_style: Style::Style.new(fg: :cyan, modifiers: [:bold]),
-          block: Widgets::Block.new(title: 'Unsaved changes', borders: [:all])
+          block: Widgets::Block.new(title: 'Unsaved changes', borders: [:all], border_type: :double)
         )
       end
 

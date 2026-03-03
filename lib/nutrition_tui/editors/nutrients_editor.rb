@@ -36,7 +36,7 @@ module NutritionTui
           items: display_lines,
           selected_index: @text_input ? nil : @selected,
           highlight_style: Style::Style.new(fg: :cyan, modifiers: [:bold]),
-          block: Widgets::Block.new(title: 'Edit Nutrients', borders: [:all])
+          block: Widgets::Block.new(title: 'Edit Nutrients', borders: [:all], border_type: :rounded)
         )
         frame.render_widget(list, area)
         render_text_input(frame, area) if @text_input

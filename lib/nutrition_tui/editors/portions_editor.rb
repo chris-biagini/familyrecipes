@@ -145,7 +145,7 @@ module NutritionTui
           items: items,
           selected_index: portion_names.empty? ? nil : @selected,
           highlight_style: Style::Style.new(fg: :cyan, modifiers: [:bold]),
-          block: Widgets::Block.new(title: "Portions#{title_suffix}", borders: [:all])
+          block: Widgets::Block.new(title: "Portions#{title_suffix}", borders: [:all], border_type: :rounded)
         )
         frame.render_widget(list, area)
       end

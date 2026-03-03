@@ -99,7 +99,7 @@ module NutritionTui
           items: items,
           selected_index: aliases.empty? ? nil : @selected,
           highlight_style: Style::Style.new(fg: :cyan, modifiers: [:bold]),
-          block: Widgets::Block.new(title: "Aliases#{title_suffix}", borders: [:all])
+          block: Widgets::Block.new(title: "Aliases#{title_suffix}", borders: [:all], border_type: :rounded)
         )
         frame.render_widget(list, area)
       end

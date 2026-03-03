@@ -51,7 +51,7 @@ module NutritionTui
         display = "#{@label}: #{display_value}"
         paragraph = Widgets::Paragraph.new(
           text: display,
-          block: Widgets::Block.new(borders: [:all]),
+          block: Widgets::Block.new(borders: [:all], border_type: :rounded),
           style: Style::Style.new(fg: :white)
         )
         frame.render_widget(paragraph, area)

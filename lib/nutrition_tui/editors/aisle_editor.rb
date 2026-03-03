@@ -86,7 +86,7 @@ module NutritionTui
           items: @aisles,
           selected_index: @selected,
           highlight_style: Style::Style.new(fg: :cyan, modifiers: [:bold]),
-          block: Widgets::Block.new(title: 'Aisle', borders: [:all])
+          block: Widgets::Block.new(title: 'Aisle', borders: [:all], border_type: :rounded)
         )
         frame.render_widget(list, area)
       end
