@@ -1,0 +1,13 @@
+{
+  "planPath": "docs/plans/2026-03-03-broadcaster-consolidation-plan.md",
+  "tasks": [
+    {"id": 0, "subject": "Task 0: Verify baseline", "status": "pending"},
+    {"id": 1, "subject": "Task 1: Kitchen#quick_bites_by_subsection", "status": "pending", "blockedBy": [0]},
+    {"id": 2, "subject": "Task 2: Promote MealPlan.truthy? to class method", "status": "pending", "blockedBy": [0]},
+    {"id": 3, "subject": "Task 3: Extract MealPlanActions#mutate_and_respond", "status": "pending", "blockedBy": [2]},
+    {"id": 4, "subject": "Task 4: RecipeBroadcaster.broadcast_recipe_selector", "status": "pending", "blockedBy": [1]},
+    {"id": 5, "subject": "Task 5: RecipeBroadcaster.broadcast_destroy", "status": "pending", "blockedBy": [4]},
+    {"id": 6, "subject": "Task 6: Final verification and cleanup", "status": "pending", "blockedBy": [3, 5]}
+  ],
+  "lastUpdated": "2026-03-03T00:00:00Z"
+}
