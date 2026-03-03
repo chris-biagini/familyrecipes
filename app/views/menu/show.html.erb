@@ -14,6 +14,7 @@
 
 <%= turbo_stream_from current_kitchen, "menu_content" %>
 <%= turbo_stream_from current_kitchen, "recipes" %>
+<%= turbo_stream_from current_kitchen, "menu" %>
 
 <header id="menu-header">
   <h1>Menu</h1>
@@ -32,11 +33,6 @@
   <div id="menu-actions">
     <button type="button" class="btn" data-action="menu#selectAll">Select All</button>
     <button type="button" class="btn btn-clear" data-action="menu#clear">Clear All</button>
-  </div>
-
-  <div id="ingredient-popover" popover="auto" data-menu-target="popover">
-    <p class="popover-ingredients"></p>
-    <p class="popover-missing" hidden></p>
   </div>
 
 </div>

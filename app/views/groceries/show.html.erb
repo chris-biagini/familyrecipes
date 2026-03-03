@@ -12,6 +12,8 @@
 <% end %>
 <% end %>
 
+<%= turbo_stream_from current_kitchen, "groceries" %>
+
 <header id="groceries-header">
   <h1>Groceries</h1>
   <p class="subtitle">Your shopping list, built from the <%= link_to 'menu', menu_path %>.</p>
