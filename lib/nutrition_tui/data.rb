@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 require 'yaml'
+require 'active_support/core_ext/enumerable'
+require 'active_support/core_ext/object/blank'
 require_relative '../familyrecipes'
 
 module NutritionTui
