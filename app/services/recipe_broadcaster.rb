@@ -2,14 +2,14 @@
 
 # Owns ALL recipe-related Turbo Stream broadcasting. Public class-method entry
 # points: `broadcast` (create/update), `broadcast_destroy`, `broadcast_rename`,
-# `broadcast_recipe_selector`, `notify_recipe_deleted`. Broadcasts HTML replacements
+# `notify_recipe_deleted`. Broadcasts HTML replacements
 # to every page showing recipe data (listings, selector, ingredients, recipe page)
 # and cascades updates to cross-referencing parent recipes.
 #
 # - RecipeWriteService: sole caller for CRUD broadcasts
-# - MealPlanChannel: notified on every broadcast to refresh grocery/menu state
+# - MealPlanBroadcaster: morphs grocery/menu pages after recipe changes
 # - Turbo::StreamsChannel: transport layer for all stream pushes
-class RecipeBroadcaster # rubocop:disable Metrics/ClassLength
+class RecipeBroadcaster
   include IngredientRows
 
   SHOW_INCLUDES = [
@@ -19,10 +19,6 @@ class RecipeBroadcaster # rubocop:disable Metrics/ClassLength
 
   def self.broadcast(kitchen:, action:, recipe_title:, recipe: nil)
     new(kitchen).broadcast(action:, recipe_title:, recipe:)
-  end
-
-  def self.broadcast_recipe_selector(kitchen:, stream: 'recipes')
-    new(kitchen).broadcast_recipe_selector(stream:)
   end
 
   def self.broadcast_destroy(kitchen:, recipe:, recipe_title:, parent_ids:)
@@ -66,28 +62,15 @@ class RecipeBroadcaster # rubocop:disable Metrics/ClassLength
     categories = preload_categories
 
     broadcast_recipe_listings(categories)
-    broadcast_recipe_selector(categories:)
     broadcast_ingredients(categories.flat_map(&:recipes))
     broadcast_recipe_page(recipe, action:, recipe_title:)
     broadcast_toast(action:, recipe_title:)
-    MealPlanChannel.broadcast_content_changed(kitchen)
-  end
-
-  def broadcast_recipe_selector(categories: nil, stream: 'recipes')
-    categories ||= kitchen.categories.ordered.includes(:recipes)
-    Turbo::StreamsChannel.broadcast_replace_to(
-      kitchen, stream,
-      target: 'recipe-selector',
-      partial: 'menu/recipe_selector',
-      locals: { categories:, quick_bites_by_subsection: kitchen.quick_bites_by_subsection }
-    )
+    MealPlanBroadcaster.broadcast_all(kitchen)
   end
 
   private
 
   attr_reader :kitchen
-
-  def current_kitchen = kitchen
 
   def preload_categories
     kitchen.categories.ordered.includes(recipes: { steps: :ingredients })

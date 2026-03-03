@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-# Abstract base for WebSocket channels. MealPlanChannel is the sole channel;
-# see its header comment for the ActsAsTenant gotcha.
+# Abstract base for WebSocket channels. Turbo::StreamsChannel (from turbo-rails)
+# is the primary channel; MealPlanBroadcaster pushes morphs through it.
 module ApplicationCable
   class Channel < ActionCable::Channel::Base
   end

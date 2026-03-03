@@ -118,7 +118,7 @@ Every class has an architectural header comment — read them first. This sectio
 
 **Hotwire stack.** Turbo Drive + Turbo Streams, Stimulus controllers, importmap-rails for ES modules. New JS modules must be pinned in `config/importmap.rb`; new Stimulus controllers auto-register via `pin_all_from`. CSP requires nonces for importmap's inline `<script>` — the nonce generator uses `request.session.id` (see `content_security_policy.rb`). Turbo's progress bar is disabled (`Turbo.config.drive.progressBarDelay = Infinity`) because CSP blocks its inline styles.
 
-**ActionCable.** `MealPlanChannel` syncs menu/groceries state via Solid Cable. Channel methods don't inherit controller tenant context — always wrap queries in `ActsAsTenant.with_tenant(kitchen)`. Two broadcast types: `broadcast_version` (state changes — clients poll for fresh data when stale) and `broadcast_content_changed` (recipe/Quick Bites/aisle changes — clients show a reload prompt).
+**ActionCable.** Turbo Streams over Solid Cable, using `turbo_stream_from` tags in views. `MealPlanBroadcaster` pushes morph updates to groceries/menu pages; `RecipeBroadcaster` handles recipe CRUD streams. Broadcaster service objects wrap queries in `ActsAsTenant.with_tenant(kitchen)` since they lack controller tenant context.
 
 **Write path.** `RecipeWriteService` orchestrates all recipe mutations — import, cross-reference cascades, broadcasting, category cleanup, meal plan pruning. Don't call `MarkdownImporter` directly for web operations.
 

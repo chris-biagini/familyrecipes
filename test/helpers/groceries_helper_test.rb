@@ -57,4 +57,32 @@ class GroceriesHelperTest < ActionView::TestCase
 
     assert_equal '<span class="aisle-count">(0)</span>', result
   end
+
+  test 'shopping_list_count_text with no items returns empty string' do
+    assert_equal '', shopping_list_count_text({}, Set.new)
+  end
+
+  test 'shopping_list_count_text with no checked items shows total' do
+    shopping_list = { 'Dairy' => [{ name: 'Milk' }, { name: 'Eggs' }] }
+
+    assert_equal '2 items', shopping_list_count_text(shopping_list, Set.new)
+  end
+
+  test 'shopping_list_count_text with some checked shows remaining of total' do
+    shopping_list = { 'Dairy' => [{ name: 'Milk' }, { name: 'Eggs' }] }
+
+    assert_equal '1 of 2 items needed', shopping_list_count_text(shopping_list, Set.new(%w[Milk]))
+  end
+
+  test 'shopping_list_count_text with all checked shows done' do
+    shopping_list = { 'Dairy' => [{ name: 'Milk' }] }
+
+    assert_equal "\u2713 All done!", shopping_list_count_text(shopping_list, Set.new(%w[Milk]))
+  end
+
+  test 'shopping_list_count_text with single item uses singular' do
+    shopping_list = { 'Dairy' => [{ name: 'Milk' }] }
+
+    assert_equal '1 item', shopping_list_count_text(shopping_list, Set.new)
+  end
 end

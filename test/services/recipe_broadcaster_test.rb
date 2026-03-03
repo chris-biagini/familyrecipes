@@ -31,10 +31,8 @@ class RecipeBroadcasterTest < ActiveSupport::TestCase
     end
   end
 
-  test 'broadcasts content_changed via MealPlanChannel' do
-    stream = MealPlanChannel.broadcasting_for(@kitchen)
-
-    assert_broadcasts(stream, 1) do
+  test 'broadcasts grocery morph via MealPlanBroadcaster' do
+    assert_turbo_stream_broadcasts [@kitchen, 'groceries'] do
       RecipeBroadcaster.broadcast(kitchen: @kitchen, action: :updated, recipe_title: 'Focaccia')
     end
   end
@@ -93,35 +91,6 @@ class RecipeBroadcasterTest < ActiveSupport::TestCase
     assert_turbo_stream_broadcasts [recipe, 'content'] do
       RecipeBroadcaster.notify_recipe_deleted(recipe, recipe_title: 'Focaccia')
     end
-  end
-
-  test 'broadcast_recipe_selector broadcasts to specified stream' do
-    calls = []
-    capture = ->(*args, **kw) { calls << { args:, kw: } }
-
-    Turbo::StreamsChannel.stub :broadcast_replace_to, capture do
-      RecipeBroadcaster.broadcast_recipe_selector(kitchen: @kitchen, stream: 'menu_content')
-    end
-
-    selector_call = calls.find { |c| c[:kw][:target] == 'recipe-selector' }
-
-    assert selector_call, 'Expected a broadcast targeting recipe-selector'
-    assert_equal @kitchen, selector_call[:args][0]
-    assert_equal 'menu_content', selector_call[:args][1]
-  end
-
-  test 'broadcast_recipe_selector defaults to recipes stream' do
-    calls = []
-    capture = ->(*args, **kw) { calls << { args:, kw: } }
-
-    Turbo::StreamsChannel.stub :broadcast_replace_to, capture do
-      RecipeBroadcaster.broadcast_recipe_selector(kitchen: @kitchen)
-    end
-
-    selector_call = calls.find { |c| c[:kw][:target] == 'recipe-selector' }
-
-    assert selector_call, 'Expected a broadcast targeting recipe-selector'
-    assert_equal 'recipes', selector_call[:args][1]
   end
 
   test 'broadcast_destroy notifies recipe page, updates parents, and fires CRUD broadcast' do

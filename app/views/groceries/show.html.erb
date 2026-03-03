@@ -12,15 +12,16 @@
 <% end %>
 <% end %>
 
+<%= turbo_stream_from current_kitchen, "groceries" %>
+
 <header id="groceries-header">
   <h1>Groceries</h1>
   <p class="subtitle">Your shopping list, built from the <%= link_to 'menu', menu_path %>.</p>
 </header>
 
 <div id="groceries-app"
-     data-controller="wake-lock grocery-ui grocery-sync"
+     data-controller="wake-lock grocery-ui"
      data-kitchen-slug="<%= current_kitchen.slug %>"
-     data-state-url="<%= groceries_state_path %>"
      data-check-url="<%= groceries_check_path %>"
      data-custom-items-url="<%= groceries_custom_items_path %>">
 

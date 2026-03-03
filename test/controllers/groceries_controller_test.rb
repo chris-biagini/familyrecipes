@@ -1,8 +1,11 @@
 # frozen_string_literal: true
 
 require 'test_helper'
+require 'turbo/broadcastable/test_helper'
 
 class GroceriesControllerTest < ActionDispatch::IntegrationTest
+  include Turbo::Broadcastable::TestHelper
+
   setup do
     create_kitchen_and_user
   end
@@ -11,12 +14,6 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
 
   test 'show requires membership' do
     get groceries_path(kitchen_slug: kitchen_slug)
-
-    assert_response :forbidden
-  end
-
-  test 'state requires membership' do
-    get groceries_state_path(kitchen_slug: kitchen_slug), as: :json
 
     assert_response :forbidden
   end
@@ -50,7 +47,6 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     get groceries_path(kitchen_slug: kitchen_slug)
 
     assert_select 'link[href*="groceries"]'
-    assert_select '[data-controller~="grocery-sync"]'
     assert_select '[data-controller~="grocery-ui"]'
   end
 
@@ -70,7 +66,6 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select '#shopping-list'
     assert_select '#groceries-app[data-kitchen-slug]'
-    assert_select '#groceries-app[data-state-url]'
     assert_select '#groceries-app[data-check-url]'
     assert_select '#groceries-app[data-custom-items-url]'
   end
@@ -175,80 +170,13 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     assert_select 'dialog[data-editor-open-selector-value="#edit-aisle-order-button"]'
   end
 
-  # --- API endpoint tests ---
-
-  test 'state returns version and empty state for new list' do
-    log_in
-    get groceries_state_path(kitchen_slug: kitchen_slug), as: :json
-
-    assert_response :success
-    json = response.parsed_body
-
-    assert_equal 0, json['version']
-    assert_empty(json['shopping_list'])
-  end
-
-  test 'state includes shopping_list when recipes selected' do
-    Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
-      # Focaccia
-
-      Category: Bread
-
-      ## Mix (combine)
-
-      - Flour, 3 cups
-
-      Mix well.
-    MD
-
-    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Flour') do |p|
-      p.basis_grams = 30
-      p.aisle = 'Baking'
-    end
-
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
-
-    log_in
-    get groceries_state_path(kitchen_slug: kitchen_slug), as: :json
-    json = response.parsed_body
-
-    assert json['shopping_list'].key?('Baking')
-  end
-
-  test 'state includes selected_recipes in response' do
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
-
-    log_in
-    get groceries_state_path(kitchen_slug: kitchen_slug), as: :json
-    json = response.parsed_body
-
-    assert_includes json['selected_recipes'], 'focaccia'
-  end
-
-  test 'state includes all state keys' do
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
-
-    log_in
-    get groceries_state_path(kitchen_slug: kitchen_slug), as: :json
-    json = response.parsed_body
-
-    assert json.key?('version')
-    assert json.key?('selected_recipes')
-    assert json.key?('selected_quick_bites')
-    assert json.key?('checked_off')
-    assert json.key?('custom_items')
-    assert json.key?('shopping_list')
-  end
+  # --- Mutation tests ---
 
   test 'check marks item as checked' do
     log_in
     patch groceries_check_path(kitchen_slug: kitchen_slug),
           params: { item: 'flour', checked: true },
-          as: :json
+          as: :turbo_stream
 
     assert_response :success
   end
@@ -257,7 +185,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     log_in
     patch groceries_custom_items_path(kitchen_slug: kitchen_slug),
           params: { item: 'birthday candles', action_type: 'add' },
-          as: :json
+          as: :turbo_stream
 
     assert_response :success
   end
@@ -266,16 +194,15 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     log_in
     patch groceries_custom_items_path(kitchen_slug: kitchen_slug),
           params: { item: 'birthday candles', action_type: 'add' },
-          as: :json
+          as: :turbo_stream
 
     patch groceries_custom_items_path(kitchen_slug: kitchen_slug),
           params: { item: 'birthday candles', action_type: 'remove' },
-          as: :json
+          as: :turbo_stream
 
-    get groceries_state_path(kitchen_slug: kitchen_slug), as: :json
-    json = response.parsed_body
+    plan = MealPlan.for_kitchen(@kitchen)
 
-    assert_not_includes json.fetch('custom_items', []), 'birthday candles'
+    assert_not_includes plan.custom_items_list, 'birthday candles'
   end
 
   # --- Aisle order ---
@@ -369,7 +296,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     log_in
     patch groceries_custom_items_path(kitchen_slug: kitchen_slug),
           params: { item: 'a' * 100, action_type: 'add' },
-          as: :json
+          as: :turbo_stream
 
     assert_response :success
   end
@@ -421,7 +348,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     MealPlan.stub(:for_kitchen, stale_list) do
       patch groceries_check_path(kitchen_slug: kitchen_slug),
             params: { item: 'flour', checked: true },
-            as: :json
+            as: :turbo_stream
     end
 
     assert_response :conflict
@@ -429,33 +356,27 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
 
   # --- Broadcast assertions ---
 
-  test 'check broadcasts version' do
+  test 'check broadcasts to groceries stream' do
     log_in
-    stream = MealPlanChannel.broadcasting_for(@kitchen)
-
-    assert_broadcasts(stream, 1) do
+    assert_turbo_stream_broadcasts [@kitchen, 'groceries'] do
       patch groceries_check_path(kitchen_slug: kitchen_slug),
             params: { item: 'flour', checked: true },
-            as: :json
+            as: :turbo_stream
     end
   end
 
-  test 'update_custom_items broadcasts version' do
+  test 'update_custom_items broadcasts to groceries stream' do
     log_in
-    stream = MealPlanChannel.broadcasting_for(@kitchen)
-
-    assert_broadcasts(stream, 1) do
+    assert_turbo_stream_broadcasts [@kitchen, 'groceries'] do
       patch groceries_custom_items_path(kitchen_slug: kitchen_slug),
             params: { item: 'birthday candles', action_type: 'add' },
-            as: :json
+            as: :turbo_stream
     end
   end
 
-  test 'update_aisle_order broadcasts version' do
+  test 'update_aisle_order broadcasts to groceries stream' do
     log_in
-    stream = MealPlanChannel.broadcasting_for(@kitchen)
-
-    assert_broadcasts(stream, 1) do
+    assert_turbo_stream_broadcasts [@kitchen, 'groceries'] do
       patch groceries_aisle_order_path(kitchen_slug: kitchen_slug),
             params: { aisle_order: "Produce\nBaking" },
             as: :json

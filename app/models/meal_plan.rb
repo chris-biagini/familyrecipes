@@ -2,11 +2,11 @@
 
 # Singleton-per-kitchen record that stores shared meal planning state as a JSON
 # blob: selected recipes, selected quick bites, custom grocery items, and
-# checked-off items. Synced across devices via MealPlanChannel (ActionCable)
-# with optimistic locking (lock_version). Both the menu and groceries pages
-# read and write this model. MealPlan.prune_stale_items encapsulates the full
-# prune operation (building the shopping list + retry) so callers need not
-# depend on ShoppingListBuilder directly.
+# checked-off items. Synced across devices via MealPlanBroadcaster (Turbo
+# Stream morphs) with optimistic locking (lock_version). Both the menu and
+# groceries pages read and write this model. MealPlan.prune_stale_items
+# encapsulates the full prune operation (building the shopping list + retry)
+# so callers need not depend on ShoppingListBuilder directly.
 class MealPlan < ApplicationRecord
   acts_as_tenant :kitchen
 
@@ -33,6 +33,22 @@ class MealPlan < ApplicationRecord
   # Controller params arrive as strings; handle both "true"/true
   def self.truthy?(value)
     [true, 'true'].include?(value)
+  end
+
+  def checked_off_set
+    state.fetch('checked_off', []).to_set
+  end
+
+  def custom_items_list
+    state.fetch('custom_items', [])
+  end
+
+  def selected_recipes_set
+    state.fetch('selected_recipes', []).to_set
+  end
+
+  def selected_quick_bites_set
+    state.fetch('selected_quick_bites', []).to_set
   end
 
   def apply_action(action_type, **params)

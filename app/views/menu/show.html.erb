@@ -14,6 +14,7 @@
 
 <%= turbo_stream_from current_kitchen, "menu_content" %>
 <%= turbo_stream_from current_kitchen, "recipes" %>
+<%= turbo_stream_from current_kitchen, "menu" %>
 
 <header id="menu-header">
   <h1>Menu</h1>
@@ -25,19 +26,13 @@
      data-kitchen-slug="<%= current_kitchen.slug %>"
      data-select-url="<%= menu_select_path %>"
      data-select-all-url="<%= menu_select_all_path %>"
-     data-clear-url="<%= menu_clear_path %>"
-     data-state-url="<%= menu_state_path %>">
+     data-clear-url="<%= menu_clear_path %>">
 
-  <%= render 'menu/recipe_selector', categories: @categories, quick_bites_by_subsection: @quick_bites_by_subsection, selected_recipes: @selected_recipes, selected_quick_bites: @selected_quick_bites %>
+  <%= render 'menu/recipe_selector', categories: @categories, quick_bites_by_subsection: @quick_bites_by_subsection, selected_recipes: @selected_recipes, selected_quick_bites: @selected_quick_bites, availability: @availability %>
 
   <div id="menu-actions">
     <button type="button" class="btn" data-action="menu#selectAll">Select All</button>
     <button type="button" class="btn btn-clear" data-action="menu#clear">Clear All</button>
-  </div>
-
-  <div id="ingredient-popover" popover="auto" data-menu-target="popover">
-    <p class="popover-ingredients"></p>
-    <p class="popover-missing" hidden></p>
   </div>
 
 </div>

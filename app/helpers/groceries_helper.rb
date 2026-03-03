@@ -1,11 +1,10 @@
 # frozen_string_literal: true
 
-# Formatting helpers for the groceries page. Mirrors the JS formatAmounts
-# function in grocery_ui_controller so server-rendered shopping list
-# HTML matches what JS rebuilds on state updates.
+# Formatting helpers for the groceries page. Server-renders shopping list
+# amounts and item counts for Turbo Stream morphs.
 #
 # Collaborators:
-# - grocery_ui_controller.js — JS counterpart that formats on client rebuild
+# - _shopping_list.html.erb — partial that calls these helpers
 # - ShoppingListBuilder — produces the amount arrays this helper formats
 module GroceriesHelper
   def format_amounts(amounts)

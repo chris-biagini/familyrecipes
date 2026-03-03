@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 # Shared meal-plan mutation helpers for controllers that modify MealPlan state.
-# Provides optimistic-locking retry with version broadcasting and a common
-# StaleObjectError handler. Used by MenuController and GroceriesController.
+# Provides optimistic-locking retry and a common StaleObjectError handler.
+# Used by MenuController and GroceriesController.
 module MealPlanActions
   extend ActiveSupport::Concern
 
@@ -12,18 +12,17 @@ module MealPlanActions
 
   private
 
-  def apply_and_respond(action_type, **action_params)
-    mutate_and_respond do |plan|
+  def mutate_plan
+    plan = MealPlan.for_kitchen(current_kitchen)
+    plan.with_optimistic_retry { yield plan }
+    plan
+  end
+
+  def apply_plan(action_type, **action_params)
+    mutate_plan do |plan|
       plan.apply_action(action_type, **action_params)
       prune_if_deselect(action_type, action_params)
     end
-  end
-
-  def mutate_and_respond
-    plan = MealPlan.for_kitchen(current_kitchen)
-    plan.with_optimistic_retry { yield plan }
-    MealPlanChannel.broadcast_version(current_kitchen, plan.lock_version)
-    render json: { version: plan.lock_version }
   end
 
   def prune_if_deselect(action_type, action_params)
