@@ -82,10 +82,11 @@ module NutritionTui
       }
     end
 
-    def find_needed_units(name, ctx)
+    def find_needed_units(name, ctx, nutrition_data)
+      lookup = build_lookup(nutrition_data)
       ctx[:recipes].flat_map do |recipe|
         recipe.all_ingredients_with_quantities(ctx[:recipe_map])
-              .select { |ing_name, _| ing_name == name }
+              .select { |ing_name, _| resolve_to_canonical(ing_name, lookup) == name }
               .flat_map { |_, amounts| amounts.compact.map(&:unit) }
       end.uniq
     end
@@ -247,13 +248,23 @@ module NutritionTui
       recipe.all_ingredients_with_quantities(ctx[:recipe_map]).each do |name, amounts|
         next if ctx[:omit_set].include?(name.downcase)
 
-        calc_entry = resolve_calc_entry(name, lookup, calculator)
-        next unless calc_entry
+        canonical = resolve_to_canonical(name, lookup)
+        next unless canonical
 
-        collect_bad_units(amounts, calc_entry, calculator).each do |unit|
-          result[name][:units] << unit
-          result[name][:recipes] |= [recipe.title]
+        calc_entry = calculator.nutrition_data[canonical]
+        bad = calc_entry ? collect_bad_units(amounts, calc_entry, calculator) : collect_all_units(amounts)
+        bad.each do |unit|
+          result[canonical][:units] << unit
+          result[canonical][:recipes] |= [recipe.title]
         end
+      end
+    end
+
+    def collect_all_units(amounts)
+      amounts.filter_map do |amount|
+        next if amount.nil? || amount.value.nil?
+
+        amount.unit || '(bare count)'
       end
     end
 
@@ -285,7 +296,7 @@ module NutritionTui
 
     private_class_method :register_name, :register_variants, :register_aliases,
                          :build_omit_set, :check_recipe_resolvability,
-                         :check_recipe_units,
+                         :check_recipe_units, :collect_all_units,
                          :per_unit_grams, :modifier_bucket, :canonicalize_volume
   end # rubocop:enable Metrics/ModuleLength
 end
