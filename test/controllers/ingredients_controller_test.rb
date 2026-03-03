@@ -381,6 +381,32 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'a', text: 'Focaccia', count: 1
   end
 
+  test 'edit displays existing aliases in editor form' do
+    IngredientCatalog.create!(
+      kitchen: @kitchen, ingredient_name: 'Flour (all-purpose)',
+      basis_grams: 30, aliases: ['AP flour', 'Plain flour']
+    )
+    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Test
+
+      Category: Bread
+
+      ## Mix (combine)
+
+      - Flour (all-purpose), 2 cups
+
+      Mix.
+    MD
+
+    log_in
+    get ingredient_edit_path('Flour (all-purpose)', kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select '.alias-chip-text', text: 'AP flour'
+    assert_select '.alias-chip-text', text: 'Plain flour'
+  end
+
   test 'edit requires membership' do
     get ingredient_edit_path('Flour', kitchen_slug: kitchen_slug)
 
