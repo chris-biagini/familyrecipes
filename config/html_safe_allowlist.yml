@@ -26,3 +26,6 @@
 # _nutrition_table.html.erb — hardcoded literals, no user content
 - "app/views/recipes/_nutrition_table.html.erb:15" # indent class: hardcoded integer
 - "app/views/recipes/_nutrition_table.html.erb:18" # nutrient data attrs: hardcoded key + numeric value
+
+# nutrition_tui — terminal UI, not web HTML; Text::Span.raw is safe
+- "lib/nutrition_tui/screens/ingredient.rb:464"
