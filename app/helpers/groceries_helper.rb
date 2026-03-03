@@ -15,6 +15,18 @@ module GroceriesHelper
     "(#{parts.join(' + ')})"
   end
 
+  def shopping_list_count_text(shopping_list, checked_off)
+    total = shopping_list.each_value.sum(&:size)
+    return '' if total.zero?
+
+    checked = shopping_list.each_value.sum { |items| items.count { |i| checked_off.include?(i[:name]) } }
+    remaining = total - checked
+
+    return "\u2713 All done!" if remaining.zero?
+
+    checked.positive? ? "#{remaining} of #{total} items needed" : "#{total} #{'item'.pluralize(total)}"
+  end
+
   private
 
   def format_amount_part(value, unit)

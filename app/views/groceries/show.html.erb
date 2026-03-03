@@ -17,20 +17,18 @@
   <p class="subtitle">Your shopping list, built from the <%= link_to 'menu', menu_path %>.</p>
 </header>
 
-<noscript>
-  <p><em>This page requires JavaScript to build your shopping list.</em></p>
-</noscript>
-
-<div id="groceries-app" class="hidden-until-js"
+<div id="groceries-app"
      data-controller="wake-lock grocery-ui grocery-sync"
      data-kitchen-slug="<%= current_kitchen.slug %>"
      data-state-url="<%= groceries_state_path %>"
      data-check-url="<%= groceries_check_path %>"
      data-custom-items-url="<%= groceries_custom_items_path %>">
 
-  <div id="shopping-list"></div>
+  <div id="shopping-list">
+    <%= render 'groceries/shopping_list', shopping_list: @shopping_list, checked_off: @checked_off %>
+  </div>
 
-  <%= render 'groceries/custom_items' %>
+  <%= render 'groceries/custom_items', custom_items: @custom_items %>
 
 </div>
 

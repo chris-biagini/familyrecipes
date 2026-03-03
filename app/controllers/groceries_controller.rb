@@ -10,7 +10,12 @@ class GroceriesController < ApplicationController
   before_action :require_membership
   before_action :prevent_html_caching, only: :show
 
-  def show; end
+  def show
+    plan = MealPlan.for_kitchen(current_kitchen)
+    @shopping_list = ShoppingListBuilder.new(kitchen: current_kitchen, meal_plan: plan).build
+    @checked_off = plan.state.fetch('checked_off', []).to_set
+    @custom_items = plan.state.fetch('custom_items', [])
+  end
 
   def state
     list = MealPlan.for_kitchen(current_kitchen)

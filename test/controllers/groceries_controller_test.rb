@@ -75,11 +75,95 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     assert_select '#groceries-app[data-custom-items-url]'
   end
 
-  test 'renders noscript fallback' do
+  test 'does not render noscript fallback' do
     log_in
     get groceries_path(kitchen_slug: kitchen_slug)
 
-    assert_select 'noscript', /JavaScript/
+    assert_select 'noscript', count: 0
+  end
+
+  test 'show renders shopping list header' do
+    log_in
+    get groceries_path(kitchen_slug: kitchen_slug)
+
+    assert_select '.shopping-list-header h2', 'Shopping List'
+  end
+
+  test 'show renders empty message when no recipes selected' do
+    log_in
+    get groceries_path(kitchen_slug: kitchen_slug)
+
+    assert_select '#grocery-preview-empty', 'No items yet.'
+  end
+
+  test 'show renders aisle sections when recipes selected' do
+    Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Focaccia
+
+      Category: Bread
+
+      ## Mix (combine)
+
+      - Flour, 3 cups
+
+      Mix well.
+    MD
+
+    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Flour') do |p|
+      p.basis_grams = 30
+      p.aisle = 'Baking'
+    end
+
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+
+    log_in
+    get groceries_path(kitchen_slug: kitchen_slug)
+
+    assert_select 'details.aisle[data-aisle="Baking"]'
+    assert_select 'li[data-item="Flour"]'
+    assert_select 'input[type="checkbox"][data-item="Flour"]'
+  end
+
+  test 'show pre-checks checked-off items' do
+    Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Focaccia
+
+      Category: Bread
+
+      ## Mix (combine)
+
+      - Flour, 3 cups
+
+      Mix well.
+    MD
+
+    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Flour') do |p|
+      p.basis_grams = 30
+      p.aisle = 'Baking'
+    end
+
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+    plan.apply_action('check', item: 'Flour', checked: true)
+
+    log_in
+    get groceries_path(kitchen_slug: kitchen_slug)
+
+    assert_select 'input[type="checkbox"][data-item="Flour"][checked]'
+  end
+
+  test 'show renders custom items' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('custom_items', item: 'Birthday candles', action: 'add')
+
+    log_in
+    get groceries_path(kitchen_slug: kitchen_slug)
+
+    assert_select '#custom-items-list li span', 'Birthday candles'
+    assert_select '#custom-items-list button.custom-item-remove[data-item="Birthday candles"]'
   end
 
   test 'renders aisle order editor dialog for members' do
