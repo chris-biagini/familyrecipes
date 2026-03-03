@@ -170,7 +170,7 @@ module NutritionTui
 
         basis = "(per #{basis_grams}g)"
         [section_header('Nutrients', 'n', width, suffix: basis, suffix_style: { fg: :dark_gray })] +
-          Data::NUTRIENTS.map { |n| format_nutrient_line(nutrients, n, width) }
+          Data::NUTRIENTS.map { |n| format_nutrient_line(nutrients, n) }
       end
 
       def density_section_lines(width)
@@ -178,7 +178,8 @@ module NutritionTui
         return empty_section_header('Density', 'd', width) unless density.is_a?(Hash)
 
         value = "#{format_number(density['grams'])}g per #{format_number(density['volume'])} #{density['unit']}"
-        [section_header('Density', 'd', width, suffix: value)]
+        [section_header('Density', 'd', width),
+         Text::Line.from_string("    #{value}")]
       end
 
       def portions_section_lines(width)
@@ -193,13 +194,13 @@ module NutritionTui
         aisle = @entry['aisle']
         return empty_section_header('Aisle', 'a', width) unless aisle
 
-        [section_header('Aisle', 'a', width, suffix: aisle)]
+        [section_header('Aisle', 'a', width),
+         Text::Line.from_string("    #{aisle}")]
       end
 
       def aliases_section_lines(width)
         aliases = @entry['aliases']
         return empty_section_header('Aliases', 'l', width) unless aliases.is_a?(Array) && aliases.any?
-        return [section_header('Aliases', 'l', width, suffix: aliases.join(', '))] if aliases.size < 4
 
         [section_header('Aliases', 'l', width)] + aliases.map { |a| Text::Line.from_string("    #{a}") }
       end
@@ -492,11 +493,10 @@ module NutritionTui
         [section_header(name, key, width, suffix: "\u2014", suffix_style: { fg: :dark_gray })]
       end
 
-      def format_nutrient_line(nutrients, nutrient, width)
+      def format_nutrient_line(nutrients, nutrient)
         label = "#{'  ' * nutrient[:indent]}#{nutrient[:label]}"
         value_str = nutrient_value_str(nutrients, nutrient)
-        padding = [width - label.size - value_str.size, 1].max
-        Text::Line.from_string("#{label}#{' ' * padding}#{value_str}")
+        Text::Line.from_string("    #{label.ljust(18)}#{value_str}")
       end
 
       def nutrient_value_str(nutrients, nutrient)
