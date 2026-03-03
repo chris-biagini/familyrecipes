@@ -68,18 +68,18 @@ module NutritionTui
       def summary_text
         total = @ingredients.size
         with_nutrition = @ingredients.count { |i| i[:has_nutrients] }
-        fully_resolvable = @ingredients.count { |i| i[:has_nutrients] && i[:issues].empty? }
+        complete_count = @ingredients.count { |i| complete?(i) }
         missing = total - with_nutrition
 
         "#{total} ingredients │ #{with_nutrition} with nutrition │ " \
-          "#{fully_resolvable} fully resolvable │ #{missing} missing"
+          "#{complete_count} fully resolvable │ #{missing} missing"
       end
 
       # --- Ingredient table ---
 
       def render_ingredient_table(frame, area)
         table = Widgets::Table.new(
-          header: %w[Name Aisle Nutr Dens Port Issues],
+          header: %w[Name Aliases Recps Nutr Dens Unres Prtns],
           rows: table_rows,
           widths: column_widths,
           selected_row: @selected,
@@ -93,28 +93,36 @@ module NutritionTui
         @visible_ingredients.map do |ing|
           [
             ing[:name],
-            ing[:aisle],
+            ing[:aliases],
+            ing[:recipe_count].positive? ? ing[:recipe_count].to_s : "\u2014",
             check_or_dash(ing[:has_nutrients]),
             check_or_dash(ing[:has_density]),
-            ing[:portion_count].positive? ? ing[:portion_count].to_s : "\u2014",
-            ing[:issues].empty? ? "\u2014" : ing[:issues].join(', ')
+            ing[:unresolvable].empty? ? "\u2014" : ing[:unresolvable].to_a.join(', '),
+            truncate_portions(ing[:portions])
           ]
         end
       end
 
       def column_widths
         [
-          Layout::Constraint.min(20),
+          Layout::Constraint.min(18),
           Layout::Constraint.min(14),
-          Layout::Constraint.length(6),
-          Layout::Constraint.length(6),
-          Layout::Constraint.length(6),
-          Layout::Constraint.min(16)
+          Layout::Constraint.length(5),
+          Layout::Constraint.length(4),
+          Layout::Constraint.length(4),
+          Layout::Constraint.min(10),
+          Layout::Constraint.min(10)
         ]
       end
 
       def check_or_dash(value)
         value ? "\u2713" : "\u2014"
+      end
+
+      def truncate_portions(portions)
+        return "\u2014" if portions.empty?
+
+        portions.size <= 2 ? portions.join(', ') : "#{portions.first(2).join(', ')}\u2026"
       end
 
       # --- Keybind bar ---
@@ -245,26 +253,30 @@ module NutritionTui
         rows = @nutrition_data.map do |name, entry|
           build_ingredient_row(name, entry, unresolvable, recipes_map)
         end
-        rows.sort_by { |i| [-i[:issues].size, -i[:recipe_count], i[:name].downcase] }
+        rows.sort_by { |i| [complete?(i) ? 1 : 0, -i[:recipe_count], i[:name].downcase] }
       end
 
       def build_ingredient_row(name, entry, unresolvable, recipes_map)
+        unres = unresolvable.key?(name) ? unresolvable[name][:units] : Set.new
         {
           name: name,
-          aisle: entry['aisle'] || '',
+          aliases: format_aliases(entry['aliases']),
           has_nutrients: entry['nutrients'].is_a?(Hash),
           has_density: entry['density'].is_a?(Hash),
-          portion_count: (entry['portions'] || {}).size,
-          issues: compute_issues(name, entry, unresolvable),
+          portions: (entry['portions'] || {}).keys.reject { |k| k.start_with?('~') },
+          unresolvable: unres,
           recipe_count: (recipes_map[name] || []).uniq.size
         }
       end
 
-      def compute_issues(name, entry, unresolvable)
-        issues = []
-        issues << 'missing nutrition' unless entry['nutrients'].is_a?(Hash)
-        unresolvable[name][:units].each { |unit| issues << "#{unit} unresolvable" } if unresolvable.key?(name)
-        issues
+      def format_aliases(aliases)
+        return '' unless aliases.is_a?(Array) && aliases.any?
+
+        aliases.size <= 2 ? aliases.join(', ') : "#{aliases.first(2).join(', ')}\u2026"
+      end
+
+      def complete?(ing)
+        ing[:has_nutrients] && ing[:unresolvable].empty?
       end
     end
   end # rubocop:enable Metrics/ClassLength
