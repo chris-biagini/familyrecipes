@@ -1,284 +1,30 @@
 import { Controller } from "@hotwired/stimulus"
+import { sendAction } from "utilities/turbo_fetch"
 import ListenerManager from "utilities/listener_manager"
 
 /**
- * Groceries page rendering and interaction. The page arrives server-rendered
- * with the full shopping list; this controller hydrates on connect, binding
- * event listeners and taking over DOM ownership. On state updates from
- * grocery_sync_controller, rebuilds the shopping list DOM: aisle sections with
- * collapsible <details>, check-off checkboxes, item counts, and custom items.
- * Persists aisle collapse state in localStorage. Delegates all server
- * communication to the co-located grocery_sync_controller.
+ * Groceries page interaction — optimistic checkbox toggle, custom item input,
+ * aisle collapse persistence. All rendering is server-side via Turbo Stream
+ * morphs; this controller only handles user interactions and preserves local
+ * state (aisle collapse) across morphs.
  */
-function formatNumber(val) {
-  const num = typeof val === "string" ? parseFloat(val) : val
-  return parseFloat(num.toFixed(2)).toString()
-}
-
-function formatAmounts(amounts) {
-  if (!amounts || amounts.length === 0) return ""
-
-  const parts = amounts.map(([value, unit]) => {
-    const formatted = formatNumber(value)
-    return unit ? `${formatted}\u00a0${unit}` : formatted
-  })
-  return `(${parts.join(" + ")})`
-}
-
 export default class extends Controller {
   connect() {
     this.aisleCollapseKey = `grocery-aisles-${this.element.dataset.kitchenSlug}`
     this.listeners = new ListenerManager()
 
-    this.bindCustomItemInput()
     this.bindShoppingListEvents()
+    this.bindCustomItemInput()
+    this.restoreAisleCollapse()
+
+    this.listeners.add(document, "turbo:before-stream-render", (e) => this.preserveAisleState(e))
   }
 
   disconnect() {
     this.listeners.teardown()
   }
 
-  get syncController() {
-    return this.application.getControllerForElementAndIdentifier(this.element, "grocery-sync")
-  }
-
-  applyState(state) {
-    this.renderShoppingList(state.shopping_list || {})
-    this.renderCustomItems(state.custom_items || [])
-    this.syncCheckedOff(state.checked_off || [])
-    this.renderItemCount()
-  }
-
-  renderShoppingList(shoppingList) {
-    const container = document.getElementById("shopping-list")
-    const aisles = Object.keys(shoppingList)
-    const collapsed = this.loadAisleCollapse()
-
-    container.textContent = ""
-
-    const header = document.createElement("div")
-    header.className = "shopping-list-header"
-    const h2 = document.createElement("h2")
-    h2.textContent = "Shopping List"
-    const countEl = document.createElement("span")
-    countEl.id = "item-count"
-    header.appendChild(h2)
-    header.appendChild(countEl)
-    container.appendChild(header)
-
-    if (aisles.length === 0) {
-      const emptyMsg = document.createElement("p")
-      emptyMsg.id = "grocery-preview-empty"
-      emptyMsg.textContent = "No items yet."
-      container.appendChild(emptyMsg)
-      return
-    }
-
-    for (const aisle of aisles) {
-      const items = shoppingList[aisle]
-      const isCollapsed = collapsed.indexOf(aisle) !== -1
-
-      const details = document.createElement("details")
-      details.className = "aisle"
-      details.dataset.aisle = aisle
-      if (!isCollapsed) details.open = true
-
-      const summary = document.createElement("summary")
-      summary.appendChild(document.createTextNode(`${aisle} `))
-      const aisleCount = document.createElement("span")
-      aisleCount.className = "aisle-count"
-      summary.appendChild(aisleCount)
-      details.appendChild(summary)
-
-      const ul = document.createElement("ul")
-
-      for (const item of items) {
-        const amountStr = formatAmounts(item.amounts)
-
-        const li = document.createElement("li")
-        li.dataset.item = item.name
-
-        const label = document.createElement("label")
-        label.className = "check-off"
-
-        const checkbox = document.createElement("input")
-        checkbox.type = "checkbox"
-        checkbox.dataset.item = item.name
-
-        const textSpan = document.createElement("span")
-        textSpan.className = "item-text"
-        textSpan.textContent = amountStr ? `${item.name} ` : item.name
-
-        if (amountStr) {
-          const amountNode = document.createElement("span")
-          amountNode.className = "item-amount"
-          amountNode.textContent = amountStr
-          textSpan.appendChild(amountNode)
-        }
-
-        label.appendChild(checkbox)
-        label.appendChild(textSpan)
-
-        li.appendChild(label)
-
-        if (item.sources && item.sources.length > 0) {
-          li.title = `Needed for: ${item.sources.join(', ')}`
-        }
-
-        ul.appendChild(li)
-      }
-
-      details.appendChild(ul)
-      container.appendChild(details)
-
-      const toggleHandler = () => this.saveAisleCollapse()
-      this.listeners.add(details, "toggle", toggleHandler)
-    }
-  }
-
-  renderCustomItems(items) {
-    const container = document.getElementById("custom-items-list")
-    container.textContent = ""
-
-    for (const name of items) {
-      const li = document.createElement("li")
-
-      const span = document.createElement("span")
-      span.textContent = name
-
-      const btn = document.createElement("button")
-      btn.className = "custom-item-remove"
-      btn.type = "button"
-      btn.textContent = "\u00d7"
-      btn.setAttribute("aria-label", `Remove ${name}`)
-      btn.dataset.item = name
-
-      li.appendChild(span)
-      li.appendChild(btn)
-      container.appendChild(li)
-    }
-  }
-
-  syncCheckedOff(checkedOff) {
-    document.querySelectorAll('#shopping-list input[type="checkbox"][data-item]').forEach(cb => {
-      cb.checked = checkedOff.indexOf(cb.dataset.item) !== -1
-    })
-  }
-
-  renderItemCount() {
-    this.updateAisleCounts()
-
-    const countEl = document.getElementById("item-count")
-    if (!countEl) return
-
-    let total = 0
-    let checked = 0
-
-    document.querySelectorAll("#shopping-list li[data-item]").forEach(li => {
-      total++
-      const cb = li.querySelector('input[type="checkbox"]')
-      if (cb && cb.checked) checked++
-    })
-
-    const remaining = total - checked
-
-    if (total === 0) {
-      countEl.textContent = ""
-    } else if (remaining === 0) {
-      countEl.textContent = "\u2713 All done!"
-      countEl.classList.add("all-done")
-    } else {
-      countEl.classList.remove("all-done")
-      if (checked > 0) {
-        countEl.textContent = `${remaining} of ${total} items needed`
-      } else {
-        countEl.textContent = `${total} ${total === 1 ? "item" : "items"}`
-      }
-    }
-  }
-
-  updateAisleCounts() {
-    document.querySelectorAll("#shopping-list details.aisle").forEach(details => {
-      let total = 0
-      let checked = 0
-
-      details.querySelectorAll("li[data-item]").forEach(li => {
-        total++
-        const cb = li.querySelector('input[type="checkbox"]')
-        if (cb && cb.checked) checked++
-      })
-
-      const countSpan = details.querySelector(".aisle-count")
-      if (!countSpan) return
-
-      const remaining = total - checked
-      if (remaining === 0 && total > 0) {
-        countSpan.textContent = "\u2713"
-        countSpan.classList.add("aisle-done")
-      } else {
-        countSpan.textContent = `(${remaining})`
-        countSpan.classList.remove("aisle-done")
-      }
-    })
-  }
-
-  saveAisleCollapse() {
-    const collapsed = []
-    document.querySelectorAll("#shopping-list details.aisle").forEach(details => {
-      if (!details.open) collapsed.push(details.dataset.aisle)
-    })
-
-    try {
-      localStorage.setItem(this.aisleCollapseKey, JSON.stringify(collapsed))
-    } catch { /* localStorage full or unavailable */ }
-  }
-
-  loadAisleCollapse() {
-    try {
-      const raw = localStorage.getItem(this.aisleCollapseKey)
-      return raw ? JSON.parse(raw) : []
-    } catch {
-      return []
-    }
-  }
-
-  bindCustomItemInput() {
-    const input = document.getElementById("custom-input")
-    const addBtn = document.getElementById("custom-add")
-    const customList = document.getElementById("custom-items-list")
-
-    const addItem = () => {
-      const text = input.value.trim()
-      if (!text) return
-
-      this.syncController.sendAction(this.syncController.urls.customItems, {
-        item: text,
-        action_type: "add"
-      })
-
-      input.value = ""
-      input.focus()
-    }
-
-    this.listeners.add(addBtn, "click", addItem)
-
-    this.listeners.add(input, "keydown", (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault()
-        addItem()
-      }
-    })
-
-    this.listeners.add(customList, "click", (e) => {
-      const btn = e.target.closest(".custom-item-remove")
-      if (!btn) return
-
-      this.syncController.sendAction(this.syncController.urls.customItems, {
-        item: btn.dataset.item,
-        action_type: "remove"
-      })
-    })
-  }
+  // --- Shopping list ---
 
   bindShoppingListEvents() {
     const shoppingList = document.getElementById("shopping-list")
@@ -290,12 +36,127 @@ export default class extends Controller {
       const name = cb.dataset.item
       if (!name) return
 
-      this.syncController.sendAction(this.syncController.urls.check, {
-        item: name,
-        checked: cb.checked
-      })
+      this.updateAisleCount(cb.closest("details.aisle"))
+      this.updateItemCount()
 
-      this.renderItemCount()
+      sendAction(this.element.dataset.checkUrl, { item: name, checked: cb.checked })
     })
+
+    this.listeners.add(shoppingList, "toggle", (e) => {
+      if (e.target.matches("details.aisle")) this.saveAisleCollapse()
+    }, true)
+  }
+
+  updateAisleCount(details) {
+    if (!details) return
+    const checkboxes = details.querySelectorAll('li[data-item] input[type="checkbox"]')
+    const total = checkboxes.length
+    const checked = Array.from(checkboxes).filter(cb => cb.checked).length
+    const remaining = total - checked
+
+    const countSpan = details.querySelector(".aisle-count")
+    if (!countSpan) return
+
+    if (remaining === 0 && total > 0) {
+      countSpan.textContent = "\u2713"
+      countSpan.classList.add("aisle-done")
+    } else {
+      countSpan.textContent = `(${remaining})`
+      countSpan.classList.remove("aisle-done")
+    }
+  }
+
+  updateItemCount() {
+    const countEl = document.getElementById("item-count")
+    if (!countEl) return
+
+    const items = document.querySelectorAll("#shopping-list li[data-item]")
+    const total = items.length
+    const checked = Array.from(items).filter(li => {
+      const cb = li.querySelector('input[type="checkbox"]')
+      return cb && cb.checked
+    }).length
+    const remaining = total - checked
+
+    if (total === 0) {
+      countEl.textContent = ""
+    } else if (remaining === 0) {
+      countEl.textContent = "\u2713 All done!"
+    } else if (checked > 0) {
+      countEl.textContent = `${remaining} of ${total} items needed`
+    } else {
+      countEl.textContent = `${total} ${total === 1 ? "item" : "items"}`
+    }
+  }
+
+  // --- Custom items ---
+
+  bindCustomItemInput() {
+    const input = document.getElementById("custom-input")
+    const addBtn = document.getElementById("custom-add")
+    const customList = document.getElementById("custom-items-list")
+    const url = this.element.dataset.customItemsUrl
+
+    const addItem = () => {
+      const text = input.value.trim()
+      if (!text) return
+
+      sendAction(url, { item: text, action_type: "add" })
+      input.value = ""
+      input.focus()
+    }
+
+    this.listeners.add(addBtn, "click", addItem)
+    this.listeners.add(input, "keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault()
+        addItem()
+      }
+    })
+
+    this.listeners.add(customList, "click", (e) => {
+      const btn = e.target.closest(".custom-item-remove")
+      if (!btn) return
+      sendAction(url, { item: btn.dataset.item, action_type: "remove" })
+    })
+  }
+
+  // --- Aisle collapse ---
+
+  saveAisleCollapse() {
+    const collapsed = Array.from(document.querySelectorAll("#shopping-list details.aisle"))
+      .filter(d => !d.open)
+      .map(d => d.dataset.aisle)
+
+    try {
+      localStorage.setItem(this.aisleCollapseKey, JSON.stringify(collapsed))
+    } catch { /* localStorage full */ }
+  }
+
+  restoreAisleCollapse() {
+    const collapsed = this.loadCollapsedAisles()
+    collapsed.forEach(aisle => {
+      const details = document.querySelector(`#shopping-list details.aisle[data-aisle="${CSS.escape(aisle)}"]`)
+      if (details) details.open = false
+    })
+  }
+
+  loadCollapsedAisles() {
+    try {
+      const raw = localStorage.getItem(this.aisleCollapseKey)
+      return raw ? JSON.parse(raw) : []
+    } catch {
+      return []
+    }
+  }
+
+  preserveAisleState(event) {
+    const collapsed = this.loadCollapsedAisles()
+    const originalRender = event.detail.render
+
+    event.detail.render = async (streamElement) => {
+      await originalRender(streamElement)
+      this.restoreAisleCollapse()
+    }
   }
 }
