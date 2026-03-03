@@ -15,7 +15,7 @@ class Kitchen < ApplicationRecord
   has_many :ingredient_catalog, dependent: :destroy, class_name: 'IngredientCatalog'
   has_one :meal_plan, dependent: :destroy
 
-  MAX_AISLE_NAME_LENGTH = 50
+  MAX_AISLE_NAME_LENGTH = FamilyRecipes::NutritionConstraints::AISLE_MAX_LENGTH
   MAX_AISLES = 50
 
   validates :name, presence: true
