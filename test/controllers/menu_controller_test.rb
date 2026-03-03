@@ -86,7 +86,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
           params: { type: 'recipe', slug: 'focaccia', selected: true },
           as: :turbo_stream
 
-    assert_response :success
+    assert_response :no_content
 
     plan = MealPlan.for_kitchen(@kitchen)
 
@@ -147,7 +147,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
 
     patch menu_select_all_path(kitchen_slug: kitchen_slug), as: :turbo_stream
 
-    assert_response :success
+    assert_response :no_content
 
     plan = MealPlan.for_kitchen(@kitchen)
     recipe_slugs = @kitchen.recipes.pluck(:slug)
@@ -188,7 +188,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
 
     delete menu_clear_path(kitchen_slug: kitchen_slug), as: :turbo_stream
 
-    assert_response :success
+    assert_response :no_content
 
     plan.reload
 

@@ -178,7 +178,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
           params: { item: 'flour', checked: true },
           as: :turbo_stream
 
-    assert_response :success
+    assert_response :no_content
   end
 
   test 'custom_items adds item' do
@@ -187,7 +187,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
           params: { item: 'birthday candles', action_type: 'add' },
           as: :turbo_stream
 
-    assert_response :success
+    assert_response :no_content
   end
 
   test 'custom_items removes item' do
@@ -298,7 +298,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
           params: { item: 'a' * 100, action_type: 'add' },
           as: :turbo_stream
 
-    assert_response :success
+    assert_response :no_content
   end
 
   test 'update_aisle_order rejects aisle name over 50 characters' do
