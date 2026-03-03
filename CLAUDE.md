@@ -123,90 +123,17 @@ Every class has an architectural header comment — read them first. This sectio
 
 **ActionCable.** `MealPlanChannel` syncs menu/groceries state via Solid Cable. Channel methods don't inherit controller tenant context — always wrap queries in `ActsAsTenant.with_tenant(kitchen)`. Two broadcast types: `broadcast_version` (state changes — clients poll for fresh data when stale) and `broadcast_content_changed` (recipe/Quick Bites/aisle changes — clients show a reload prompt).
 
-**Services.** Beyond `MarkdownImporter`, `app/services/` has: `RecipeWriteService` (create/update/destroy orchestration — import, cross-reference cascades, broadcasting, category cleanup, meal plan pruning), `ShoppingListBuilder` (grocery aggregation + aisle sorting), `RecipeBroadcaster` (Turbo Stream broadcasts on recipe CRUD, cascading through cross-references), `CrossReferenceUpdater` (rewrites `@[Title]` references in Markdown on rename/delete), `RecipeAvailabilityCalculator` (menu page ingredient-availability dots), `MarkdownValidator` (quick parse check without DB writes).
+**Write path.** `RecipeWriteService` orchestrates all recipe mutations — import, cross-reference cascades, broadcasting, category cleanup, meal plan pruning. Don't call `MarkdownImporter` directly for web operations.
 
-**Controllers.** `LandingController` (root splash), `HomepageController` (kitchen home), `RecipesController`, `MenuController`, `GroceriesController`, `IngredientsController` (catalog admin), `NutritionEntriesController`, `PwaController`, `DevSessionsController` (test/dev login).
-
-**Concerns.** `Authentication` (session management, agnostic to auth entry point), `MealPlanActions` (optimistic-locking retry + version broadcasting for concurrent edits; used by MenuController and GroceriesController), `IngredientRows` (shared ingredient table data for index, Turbo Streams, and broadcasts).
-
-**Helpers.** `RecipesHelper` (Markdown rendering via Redcarpet, scalable quantities, nutrition labels — all `.html_safe` calls allowlisted), `IngredientsHelper` (catalog table formatting), `ApplicationHelper` (numeric display).
-
-**JS utilities.** `meal_plan_sync` (ActionCable subscription, version polling, offline queue, localStorage cache), `editor_utils` (CSRF, fetch, error handling for editor dialogs), `notify` (toast notifications), `vulgar_fractions` (Unicode fraction formatting for scaled ingredients).
-
-**Nutrition pipeline.** `IngredientCatalog` is an overlay model — global seed entries plus per-kitchen overrides, merged by `lookup_for` with `Inflector` variant matching and a JSON `aliases` column for explicit alternate names (e.g., "all-purpose flour" → "Flour (all-purpose)"). `RecipeNutritionJob` recomputes a recipe's nutrition JSON from catalog data; `CascadeNutritionJob` fans out to cross-referencing recipes. `FamilyRecipes::NutritionConstraints` is the single source of truth for validation rules (nutrient ranges, density completeness, portion positivity, aisle length) — used by both `IngredientCatalog` and the TUI editors. `bin/nutrition` is a standalone TUI (TTY gems) for managing `ingredient-catalog.yaml` — USDA search, density/portions/nutrients editing. Modes: interactive, `--missing`, `--coverage`. Not loaded by Rails; `rake catalog:sync` pushes YAML changes into the database.
+**Nutrition pipeline.** `IngredientCatalog` is an overlay model — global seed entries plus per-kitchen overrides, merged by `lookup_for` with `Inflector` variant matching and a JSON `aliases` column for alternate names. `RecipeNutritionJob` recomputes nutrition; `CascadeNutritionJob` fans out to cross-referencing recipes. `NutritionConstraints` is the single source of truth for validation rules. `bin/nutrition` is a standalone TUI (not loaded by Rails); `rake catalog:sync` pushes YAML changes into the database.
 
 ## Recipe & Data Formats
 
-Recipe source files are Markdown with some custom syntax:
+Recipe source is Markdown with custom syntax — the parser pipeline is the authoritative spec. Read the header comments on `LineClassifier` (token types), `RecipeBuilder` (assembly), `IngredientParser` (ingredient bullets), and `CrossReferenceParser` (`>>> @[Title]` syntax). Seed files in `db/seeds/recipes/` are working examples.
 
-```
-# Recipe Title
+**Quick Bites** are grocery bundles, not recipes. See `FamilyRecipes::QuickBite` header comment for format. Stored in `Kitchen#quick_bites_content`, web-editable on the menu page.
 
-Optional description line.
-
-Category: Bread
-Makes: 12 rolls
-Serves: 4
-
-## Step Name (short summary)
-
-- Ingredient name, quantity: prep note
-- Another ingredient
-
-Instructions for this step as prose.
-
-## Cross-Reference Step
-
->>> @[Different Recipe], 2: optional prep note
-
-## Another Step
-
-- More ingredients
-
-More instructions.
-
----
-
-Optional footer content (notes, source, etc.)
-```
-
-**Ingredient syntax**: `- Name, Quantity: Prep note` (quantity and prep note optional). Examples: `- Eggs, 4: Lightly scrambled.` / `- Salt` / `- Garlic, 4 cloves`
-
-**Front matter** (between description and first step):
-- **Category** (required) — must match the recipe's subdirectory name under `db/seeds/recipes/`.
-- **Makes** (optional) — `Makes: <number> <unit noun>`. Countable output (e.g., `Makes: 30 gougères`).
-- **Serves** (optional) — `Serves: <number>`. People count only, no unit noun.
-- A recipe can have both, just one, or neither (Category is always required).
-
-**Quick Bites** are grocery bundles (not recipes) living on the menu page. Source format in `db/seeds/recipes/Quick Bites.md`:
-```
-## Category Name
-  - Recipe Name: Ingredient1, Ingredient2
-```
-Stored in `Kitchen#quick_bites_content`, web-editable via a dialog on the menu page.
-
-**Nutrition data** uses a density-first model in `db/seeds/resources/ingredient-catalog.yaml`:
-```yaml
-Flour (all-purpose):
-  nutrients:
-    basis_grams: 30.0
-    calories: 110.0
-    fat: 0.0
-    # ... (saturated_fat, trans_fat, cholesterol, sodium, carbs, fiber,
-    #       total_sugars, added_sugars, protein)
-  density:                    # optional — enables volume unit resolution
-    grams: 30.0
-    volume: 0.25
-    unit: cup
-  portions:                   # optional — non-volume named portions only
-    stick: 113.0
-    ~unitless: 50             # bare count (e.g., "Eggs, 3")
-  sources:
-    - type: usda              # usda | label | other
-      dataset: SR Legacy
-      fdc_id: 168913
-      description: "Wheat flour, white, all-purpose, enriched, unbleached"
-```
+**Nutrition catalog** lives in `db/seeds/resources/ingredient-catalog.yaml`. See `NutritionConstraints` for validation rules, `IngredientCatalog` for the overlay model.
 
 ## Commands
 
