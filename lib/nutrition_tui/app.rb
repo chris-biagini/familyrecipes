@@ -26,6 +26,7 @@ module NutritionTui
 
     def run
       RatatuiRuby.run do |tui|
+        disable_mouse_reporting
         while @running
           tui.draw { |frame| @current_screen.render(frame) }
           dispatch(tui.poll_event(timeout: 0.05))
@@ -34,6 +35,12 @@ module NutritionTui
     end
 
     private
+
+    # X10 (1000), button-event (1002), any-event (1003), SGR extended (1006)
+    def disable_mouse_reporting
+      $stdout.write("\e[?1000l\e[?1002l\e[?1003l\e[?1006l")
+      $stdout.flush
+    end
 
     def dispatch(event)
       result = @current_screen.handle_event(event)
