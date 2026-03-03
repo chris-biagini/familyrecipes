@@ -16,10 +16,9 @@ module Familyrecipes
   class Application < Rails::Application
     config.load_defaults 8.1
 
-    # Don't autoload lib/familyrecipes — it uses its own require system
-    # and the module name (FamilyRecipes) doesn't match Zeitwerk's expectation
-    # (Familyrecipes) from the directory name.
-    config.autoload_lib(ignore: %w[assets tasks familyrecipes])
+    # Don't autoload lib/familyrecipes or lib/nutrition_tui — they use their
+    # own require systems and depend on dev-only gems (ratatui_ruby, etc.)
+    config.autoload_lib(ignore: %w[assets tasks familyrecipes nutrition_tui])
 
     config.generators.system_tests = nil
   end
