@@ -291,6 +291,70 @@ class MealPlanTest < ActiveSupport::TestCase
     assert_includes plan.state['checked_off'], 'birthday candles'
   end
 
+  # --- Case-insensitive custom items (issue #156) ---
+
+  test 'adding custom item ignores case-insensitive duplicate' do
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('custom_items', item: 'Butter', action: 'add')
+    list.apply_action('custom_items', item: 'butter', action: 'add')
+
+    assert_equal ['Butter'], list.state['custom_items']
+  end
+
+  test 'removing custom item is case-insensitive' do
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('custom_items', item: 'Butter', action: 'add')
+    list.apply_action('custom_items', item: 'butter', action: 'remove')
+
+    assert_empty list.state['custom_items']
+  end
+
+  test 'checking off item is case-insensitive' do
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('check', item: 'Milk', checked: true)
+    list.apply_action('check', item: 'milk', checked: true)
+
+    assert_equal ['Milk'], list.state['checked_off']
+  end
+
+  test 'unchecking item is case-insensitive' do
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('check', item: 'Milk', checked: true)
+    list.apply_action('check', item: 'milk', checked: false)
+
+    assert_empty list.state['checked_off']
+  end
+
+  test 'removing custom item cleans up checked-off entry' do
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('custom_items', item: 'Birthday Candles', action: 'add')
+    list.apply_action('check', item: 'Birthday Candles', checked: true)
+    list.apply_action('custom_items', item: 'Birthday Candles', action: 'remove')
+
+    assert_empty list.state['custom_items']
+    assert_empty list.state['checked_off']
+  end
+
+  test 'removing custom item cleans up case-mismatched checked-off entry' do
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('custom_items', item: 'Test', action: 'add')
+    list.apply_action('check', item: 'Test', checked: true)
+    list.apply_action('custom_items', item: 'test', action: 'remove')
+
+    assert_empty list.state['custom_items']
+    assert_empty list.state['checked_off']
+  end
+
+  test 'prune_checked_off preserves custom items case-insensitively' do
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('custom_items', item: 'Birthday Candles', action: 'add')
+    list.apply_action('check', item: 'birthday candles', checked: true)
+
+    list.prune_checked_off(visible_names: Set.new)
+
+    assert_includes list.state['checked_off'], 'birthday candles'
+  end
+
   test 'prune_stale_items is no-op when nothing to prune' do
     plan = MealPlan.for_kitchen(@kitchen)
     version_before = plan.lock_version
