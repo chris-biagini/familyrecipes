@@ -142,12 +142,6 @@
   transition: color 0.3s ease;
 }
 
-#item-count.all-done {
-  color: var(--checked-color);
-  font-style: normal;
-  font-weight: 600;
-}
-
 #grocery-preview-empty {
   text-align: center;
   font-style: italic;
