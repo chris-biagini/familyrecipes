@@ -695,6 +695,13 @@ class NutritionCalculatorTest < Minitest::Test
 
   # --- Schema validation (#11) ---
 
+  def test_silently_skips_entries_without_nutrients
+    data = { 'Celery' => { 'aisle' => 'Produce' } }
+    assert_silent do
+      FamilyRecipes::NutritionCalculator.new(data)
+    end
+  end
+
   def test_malformed_entry_missing_basis_grams
     nutrition_data = {
       'Good' => {
@@ -705,14 +712,10 @@ class NutritionCalculatorTest < Minitest::Test
       }
     }
 
-    _out, err = capture_io do
-      calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data)
+    calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data)
 
-      assert calculator.nutrition_data.key?('Good')
-      refute calculator.nutrition_data.key?('Bad')
-    end
-
-    assert_match(/Bad/, err)
+    assert calculator.nutrition_data.key?('Good')
+    refute calculator.nutrition_data.key?('Bad')
   end
 
   def test_malformed_entry_invalid_nutrients
@@ -722,13 +725,9 @@ class NutritionCalculatorTest < Minitest::Test
       }
     }
 
-    _out, err = capture_io do
-      calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data)
+    calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data)
 
-      refute calculator.nutrition_data.key?('Bad2')
-    end
-
-    assert_match(/Bad2/, err)
+    refute calculator.nutrition_data.key?('Bad2')
   end
 
   def test_zero_basis_grams_skipped
@@ -738,13 +737,9 @@ class NutritionCalculatorTest < Minitest::Test
       }
     }
 
-    _out, err = capture_io do
-      calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data)
+    calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data)
 
-      refute calculator.nutrition_data.key?('ZeroGrams')
-    end
-
-    assert_match(/ZeroGrams/, err)
+    refute calculator.nutrition_data.key?('ZeroGrams')
   end
 
   # --- Per-unit nutrition ---

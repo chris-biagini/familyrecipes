@@ -7,7 +7,7 @@ module FamilyRecipes
   # with totals, per-serving, and per-unit breakdowns, plus lists of missing and
   # partially resolvable ingredients. RecipeNutritionJob calls this at save time;
   # the Result is stored as JSON on the AR Recipe.
-  class NutritionCalculator # rubocop:disable Metrics/ClassLength
+  class NutritionCalculator
     NUTRIENTS = %i[calories fat saturated_fat trans_fat cholesterol sodium
                    carbs fiber total_sugars added_sugars protein].freeze
 
@@ -35,16 +35,12 @@ module FamilyRecipes
     def initialize(nutrition_data, omit_set: Set.new)
       @omit_set = omit_set
 
-      @nutrition_data = nutrition_data.select do |name, entry|
-        unless entry['nutrients'].is_a?(Hash)
-          warn "WARNING: Nutrition entry '#{name}' has invalid nutrients (#{entry['nutrients'].inspect}), skipping."
-          next false
-        end
+      @nutrition_data = nutrition_data.select do |_name, entry|
+        next false unless entry['nutrients'].is_a?(Hash)
+
         basis_grams = entry.dig('nutrients', 'basis_grams')
-        unless basis_grams.is_a?(Numeric) && basis_grams.positive?
-          warn "WARNING: Nutrition entry '#{name}' has invalid basis_grams (#{basis_grams.inspect}), skipping."
-          next false
-        end
+        next false unless basis_grams.is_a?(Numeric) && basis_grams.positive?
+
         true
       end.to_h
     end
@@ -173,5 +169,5 @@ module FamilyRecipes
         recipe.makes_quantity&.to_i
       end
     end
-  end # rubocop:enable Metrics/ClassLength
+  end
 end
