@@ -54,7 +54,7 @@ class MealPlanBroadcaster
 
     Turbo::StreamsChannel.broadcast_action_to(
       kitchen, 'groceries',
-      action: :morph,
+      action: :replace, attributes: { method: :morph },
       target: 'shopping-list',
       partial: 'groceries/shopping_list',
       locals: { shopping_list:, checked_off: plan.checked_off_set }
@@ -64,7 +64,7 @@ class MealPlanBroadcaster
   def broadcast_custom_items(plan)
     Turbo::StreamsChannel.broadcast_action_to(
       kitchen, 'groceries',
-      action: :morph,
+      action: :replace, attributes: { method: :morph },
       target: 'custom-items-section',
       partial: 'groceries/custom_items',
       locals: { custom_items: plan.custom_items_list }
@@ -77,7 +77,7 @@ class MealPlanBroadcaster
 
     Turbo::StreamsChannel.broadcast_action_to(
       kitchen, 'menu',
-      action: :morph,
+      action: :replace, attributes: { method: :morph },
       target: 'recipe-selector',
       partial: 'menu/recipe_selector',
       locals: {

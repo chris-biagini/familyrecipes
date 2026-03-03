@@ -60,7 +60,7 @@ class MenuController < ApplicationController
     availability = RecipeAvailabilityCalculator.new(kitchen: current_kitchen, checked_off:).call
 
     render turbo_stream: turbo_stream.action(
-      :morph, 'recipe-selector',
+      :replace, 'recipe-selector', method: :morph,
       partial: 'menu/recipe_selector',
       locals: {
         categories: recipe_selector_categories,
