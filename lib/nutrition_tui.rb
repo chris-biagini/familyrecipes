@@ -8,3 +8,4 @@ module NutritionTui
 end
 
 require_relative 'nutrition_tui/data'
+require_relative 'nutrition_tui/app'
