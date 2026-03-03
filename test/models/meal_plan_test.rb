@@ -354,6 +354,14 @@ class MealPlanTest < ActiveSupport::TestCase
     assert_includes list.state['checked_off'], 'birthday candles'
   end
 
+  test 'truthy? class method recognizes true and string true' do
+    assert MealPlan.truthy?(true)
+    assert MealPlan.truthy?('true')
+    assert_not MealPlan.truthy?(false)
+    assert_not MealPlan.truthy?('false')
+    assert_not MealPlan.truthy?(nil)
+  end
+
   test 'prune_stale_items is no-op when nothing to prune' do
     plan = MealPlan.for_kitchen(@kitchen)
     version_before = plan.lock_version

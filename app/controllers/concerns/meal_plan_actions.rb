@@ -24,7 +24,7 @@ module MealPlanActions
 
   def prune_if_deselect(action_type, action_params)
     return unless action_type == 'select'
-    return if [true, 'true'].include?(action_params[:selected])
+    return if MealPlan.truthy?(action_params[:selected])
 
     MealPlan.prune_stale_items(kitchen: current_kitchen)
   end

@@ -30,6 +30,11 @@ class MealPlan < ApplicationRecord
     plan.with_optimistic_retry { plan.prune_checked_off(visible_names: visible) }
   end
 
+  # Controller params arrive as strings; handle both "true"/true
+  def self.truthy?(value)
+    [true, 'true'].include?(value)
+  end
+
   def apply_action(action_type, **params)
     ensure_state_keys
 
@@ -128,8 +133,7 @@ class MealPlan < ApplicationRecord
     CASE_INSENSITIVE_KEYS.include?(key) ? list.reject! { |v| v.casecmp?(value) } : list.delete(value)
   end
 
-  # Controller params arrive as strings; handle both "true"/true
   def truthy?(value)
-    [true, 'true'].include?(value)
+    self.class.truthy?(value)
   end
 end
