@@ -28,12 +28,12 @@ module NutritionTui
       def initialize(nutrition_data:, ctx:)
         @nutrition_data = nutrition_data
         @ctx = ctx
-        @ingredients = build_ingredient_list
-        @selected = 0
+        @sort_mode = :recps_desc
+        @hide_complete = false
         @filter = nil
         @filter_input = false
-        @hide_complete = false
-        @sort_mode = :recps_desc
+        @selected = 0
+        @ingredients = build_ingredient_list
         @visible_ingredients = @ingredients
       end
 
