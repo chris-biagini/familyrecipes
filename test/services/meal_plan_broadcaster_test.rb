@@ -29,4 +29,37 @@ class MealPlanBroadcasterTest < ActiveSupport::TestCase
       end
     end
   end
+
+  test 'grocery broadcast targets shopping-list and custom-items-section' do
+    streams = capture_turbo_stream_broadcasts([@kitchen, 'groceries']) do
+      MealPlanBroadcaster.broadcast_grocery_morph(@kitchen)
+    end
+
+    targets = streams.pluck('target')
+
+    assert_includes targets, 'shopping-list'
+    assert_includes targets, 'custom-items-section'
+  end
+
+  test 'menu broadcast targets recipe-selector' do
+    streams = capture_turbo_stream_broadcasts([@kitchen, 'menu']) do
+      MealPlanBroadcaster.broadcast_menu_morph(@kitchen)
+    end
+
+    targets = streams.pluck('target')
+
+    assert_includes targets, 'recipe-selector'
+  end
+
+  test 'broadcasts succeed without tenant context' do
+    ActsAsTenant.current_tenant = nil
+
+    assert_turbo_stream_broadcasts [@kitchen, 'groceries'] do
+      assert_turbo_stream_broadcasts [@kitchen, 'menu'] do
+        MealPlanBroadcaster.broadcast_all(@kitchen)
+      end
+    end
+  ensure
+    ActsAsTenant.current_tenant = @kitchen
+  end
 end
