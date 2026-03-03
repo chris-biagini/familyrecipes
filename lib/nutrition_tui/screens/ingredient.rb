@@ -317,7 +317,7 @@ module NutritionTui
 
       def dispatch_key(event) # rubocop:disable Metrics/MethodLength
         case event
-        in { type: :key, code: 'Escape' }
+        in { type: :key, code: 'esc' }
           handle_escape
         in { type: :key, code: 'e' }
           open_edit_menu
@@ -419,15 +419,15 @@ module NutritionTui
 
       def dispatch_confirm_key(event)
         case event
-        in { type: :key, code: 'Escape' }
+        in { type: :key, code: 'esc' }
           dismiss_confirm
-        in { type: :key, code: 'Up' | 'k' }
+        in { type: :key, code: 'up' | 'k' }
           @confirm_selected = (@confirm_selected - 1) % CONFIRM_OPTIONS.size
           nil
-        in { type: :key, code: 'Down' | 'j' }
+        in { type: :key, code: 'down' | 'j' }
           @confirm_selected = (@confirm_selected + 1) % CONFIRM_OPTIONS.size
           nil
-        in { type: :key, code: 'Enter' }
+        in { type: :key, code: 'enter' }
           execute_confirm_choice
         else
           nil

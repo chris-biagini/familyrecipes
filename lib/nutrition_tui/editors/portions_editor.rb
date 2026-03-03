@@ -44,15 +44,15 @@ module NutritionTui
 
       def handle_list(event) # rubocop:disable Metrics/MethodLength
         case event
-        in { type: :key, code: 'Escape' }
+        in { type: :key, code: 'esc' }
           { done: true, entry: @entry }
-        in { type: :key, code: 'Up' | 'k' }
+        in { type: :key, code: 'up' | 'k' }
           move_selection(-1)
-        in { type: :key, code: 'Down' | 'j' }
+        in { type: :key, code: 'down' | 'j' }
           move_selection(1)
         in { type: :key, code: 'a' }
           start_add
-        in { type: :key, code: 'e' | 'Enter' }
+        in { type: :key, code: 'e' | 'enter' }
           start_edit
         in { type: :key, code: 'd' }
           remove_selected

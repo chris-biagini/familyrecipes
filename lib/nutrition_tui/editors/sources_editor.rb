@@ -46,11 +46,11 @@ module NutritionTui
 
       def handle_list(event)
         case event
-        in { type: :key, code: 'Escape' }
+        in { type: :key, code: 'esc' }
           { done: true, entry: @entry }
-        in { type: :key, code: 'Up' | 'k' }
+        in { type: :key, code: 'up' | 'k' }
           move_selection(-1)
-        in { type: :key, code: 'Down' | 'j' }
+        in { type: :key, code: 'down' | 'j' }
           move_selection(1)
         in { type: :key, code: 'a' }
           start_add

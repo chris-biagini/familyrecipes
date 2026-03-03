@@ -22,15 +22,15 @@ module NutritionTui
 
       def handle_event(event)
         case event
-        in { type: :key, code: 'Up' | 'k' }
+        in { type: :key, code: 'up' | 'k' }
           @selected = (@selected - 1).clamp(0, OPTIONS.size - 1)
           nil
-        in { type: :key, code: 'Down' | 'j' }
+        in { type: :key, code: 'down' | 'j' }
           @selected = (@selected + 1).clamp(0, OPTIONS.size - 1)
           nil
-        in { type: :key, code: 'Enter' }
+        in { type: :key, code: 'enter' }
           { done: true, choice: OPTIONS[@selected].downcase.to_sym }
-        in { type: :key, code: 'Escape' }
+        in { type: :key, code: 'esc' }
           { done: true, cancelled: true }
         else
           nil

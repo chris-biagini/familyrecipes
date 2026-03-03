@@ -30,15 +30,15 @@ module NutritionTui
 
       def handle_event(event) # rubocop:disable Metrics/MethodLength
         case event
-        in { type: :key, code: 'Enter' }
+        in { type: :key, code: 'enter' }
           { done: true, value: @value }
-        in { type: :key, code: 'Escape' }
+        in { type: :key, code: 'esc' }
           { done: true, cancelled: true }
-        in { type: :key, code: 'Backspace' }
+        in { type: :key, code: 'backspace' }
           delete_char
-        in { type: :key, code: 'Left' }
+        in { type: :key, code: 'left' }
           move_cursor(-1)
-        in { type: :key, code: 'Right' }
+        in { type: :key, code: 'right' }
           move_cursor(1)
         in { type: :key, code: /\A.\z/ => char }
           insert_char(char)

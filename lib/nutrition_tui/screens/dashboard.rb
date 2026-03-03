@@ -142,11 +142,11 @@ module NutritionTui
         case event
         in { type: :key, code: 'q' }
           { action: :quit }
-        in { type: :key, code: 'Down' | 'j' }
+        in { type: :key, code: 'down' | 'j' }
           move_selection(1)
-        in { type: :key, code: 'Up' | 'k' }
+        in { type: :key, code: 'up' | 'k' }
           move_selection(-1)
-        in { type: :key, code: 'Enter' }
+        in { type: :key, code: 'enter' }
           select_current
         in { type: :key, code: '/' }
           enter_filter_mode
@@ -161,11 +161,11 @@ module NutritionTui
 
       def handle_filter_event(event)
         case event
-        in { type: :key, code: 'Escape' }
+        in { type: :key, code: 'esc' }
           clear_filter
-        in { type: :key, code: 'Enter' }
+        in { type: :key, code: 'enter' }
           lock_filter
-        in { type: :key, code: 'Backspace' }
+        in { type: :key, code: 'backspace' }
           delete_filter_char
         in { type: :key, code: /\A.\z/ => char }
           append_filter_char(char)

@@ -142,17 +142,17 @@ module NutritionTui
 
       def handle_results(event) # rubocop:disable Metrics/MethodLength
         case event
-        in { type: :key, code: 'Escape' }
+        in { type: :key, code: 'esc' }
           return_to_input
-        in { type: :key, code: 'Down' | 'j' }
+        in { type: :key, code: 'down' | 'j' }
           move_selection(1)
-        in { type: :key, code: 'Up' | 'k' }
+        in { type: :key, code: 'up' | 'k' }
           move_selection(-1)
         in { type: :key, code: '[' }
           previous_page
         in { type: :key, code: ']' }
           next_page
-        in { type: :key, code: 'Enter' }
+        in { type: :key, code: 'enter' }
           fetch_selected
         else
           nil

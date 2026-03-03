@@ -46,15 +46,15 @@ module NutritionTui
 
       def handle_menu(event)
         case event
-        in { type: :key, code: 'Up' | 'k' }
+        in { type: :key, code: 'up' | 'k' }
           @selected = (@selected - 1).clamp(0, MENU_OPTIONS.size - 1)
           nil
-        in { type: :key, code: 'Down' | 'j' }
+        in { type: :key, code: 'down' | 'j' }
           @selected = (@selected + 1).clamp(0, MENU_OPTIONS.size - 1)
           nil
-        in { type: :key, code: 'Enter' }
+        in { type: :key, code: 'enter' }
           dispatch_menu_choice
-        in { type: :key, code: 'Escape' }
+        in { type: :key, code: 'esc' }
           { done: true, entry: @entry }
         else
           nil
