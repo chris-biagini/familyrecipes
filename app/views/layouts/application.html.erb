@@ -6,6 +6,7 @@
   <meta name="theme-color" content="rgb(205, 71, 84)">
   <title><%= content_for?(:title) ? content_for(:title) : Rails.configuration.site.site_title %></title>
   <%= csrf_meta_tags %>
+  <%= action_cable_meta_tag %>
   <%= stylesheet_link_tag 'style', "data-turbo-track": "reload" %>
   <link rel="icon" type="image/svg+xml" href="<%= asset_path('favicon.svg') %>">
   <link rel="icon" type="image/png" sizes="32x32" href="<%= versioned_icon_path('favicon-32.png') %>">
