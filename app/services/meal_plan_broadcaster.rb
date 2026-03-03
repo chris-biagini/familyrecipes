@@ -26,28 +26,38 @@ class MealPlanBroadcaster
   end
 
   def broadcast_grocery_morph
-    ActsAsTenant.with_tenant(kitchen) do
-      plan = MealPlan.for_kitchen(kitchen)
-      broadcast_shopping_list(plan)
-      broadcast_custom_items(plan)
-    end
+    with_plan { |plan| broadcast_grocery_streams(plan) }
   end
 
   def broadcast_menu_morph
-    ActsAsTenant.with_tenant(kitchen) do
-      plan = MealPlan.for_kitchen(kitchen)
-      broadcast_recipe_selector(plan)
-    end
+    with_plan { |plan| broadcast_menu_streams(plan) }
   end
 
   def broadcast_all
-    broadcast_grocery_morph
-    broadcast_menu_morph
+    with_plan do |plan|
+      broadcast_grocery_streams(plan)
+      broadcast_menu_streams(plan)
+    end
   end
 
   private
 
   attr_reader :kitchen
+
+  def with_plan
+    ActsAsTenant.with_tenant(kitchen) do
+      yield MealPlan.for_kitchen(kitchen)
+    end
+  end
+
+  def broadcast_grocery_streams(plan)
+    broadcast_shopping_list(plan)
+    broadcast_custom_items(plan)
+  end
+
+  def broadcast_menu_streams(plan)
+    broadcast_recipe_selector(plan)
+  end
 
   def broadcast_shopping_list(plan)
     shopping_list = ShoppingListBuilder.new(kitchen:, meal_plan: plan).build
