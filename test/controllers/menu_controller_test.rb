@@ -58,6 +58,26 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     assert_select '#recipe-selector'
   end
 
+  test 'show pre-checks selected recipes' do
+    log_in
+    create_focaccia_recipe
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+
+    get menu_path(kitchen_slug: kitchen_slug)
+
+    assert_select '#recipe-selector input[data-slug="focaccia"][checked]'
+  end
+
+  test 'show does not check unselected recipes' do
+    log_in
+    create_focaccia_recipe
+
+    get menu_path(kitchen_slug: kitchen_slug)
+
+    assert_select '#recipe-selector input[checked]', count: 0
+  end
+
   # --- Select ---
 
   test 'select adds recipe and returns version' do
@@ -331,6 +351,11 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
   end
 
   private
+
+  def create_focaccia_recipe
+    Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import("# Focaccia\n\nCategory: Bread\n\n## Mix\n\n- Flour, 3 cups\n\nMix well.", kitchen: @kitchen)
+  end
 
   def build_stale_plan(method_to_stub)
     plan = MealPlan.for_kitchen(@kitchen)

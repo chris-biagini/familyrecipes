@@ -14,6 +14,9 @@ class MenuController < ApplicationController
   def show
     @categories = recipe_selector_categories
     @quick_bites_by_subsection = current_kitchen.quick_bites_by_subsection
+    plan = MealPlan.for_kitchen(current_kitchen)
+    @selected_recipes = plan.state.fetch('selected_recipes', []).to_set
+    @selected_quick_bites = plan.state.fetch('selected_quick_bites', []).to_set
   end
 
   def select

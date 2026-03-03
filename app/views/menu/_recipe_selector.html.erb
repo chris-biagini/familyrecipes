@@ -1,4 +1,4 @@
-<%# locals: (categories:, quick_bites_by_subsection:) %>
+<%# locals: (categories:, quick_bites_by_subsection:, selected_recipes: Set.new, selected_quick_bites: Set.new) %>
 <div id="recipe-selector" data-type="recipe">
   <%- categories.each do |category| -%>
   <%- next if category.recipes.empty? -%>
@@ -7,7 +7,7 @@
     <ul>
     <%- category.recipes.sort_by(&:title).each do |recipe| -%>
       <li>
-        <input type="checkbox" id="<%= recipe.slug %>-checkbox" data-slug="<%= recipe.slug %>" data-title="<%= h recipe.title %>">
+        <input type="checkbox" id="<%= recipe.slug %>-checkbox" data-slug="<%= recipe.slug %>" data-title="<%= h recipe.title %>" <%= 'checked' if selected_recipes.include?(recipe.slug) %>>
         <label for="<%= recipe.slug %>-checkbox"><%= recipe.title %></label>
         <%= link_to "\u2192", recipe_path(recipe.slug), class: 'recipe-link', title: "Open #{recipe.title} in new tab", target: '_blank' %>
       </li>
@@ -25,7 +25,7 @@
         <ul>
         <%- items.each do |item| -%>
           <li>
-            <input type="checkbox" id="<%= item.id %>-checkbox" data-slug="<%= item.id %>" data-title="<%= h item.title %>">
+            <input type="checkbox" id="<%= item.id %>-checkbox" data-slug="<%= item.id %>" data-title="<%= h item.title %>" <%= 'checked' if selected_quick_bites.include?(item.id) %>>
             <label for="<%= item.id %>-checkbox"><%= item.title %></label>
           </li>
         <%- end -%>

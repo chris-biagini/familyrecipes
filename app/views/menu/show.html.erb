@@ -32,7 +32,7 @@
      data-clear-url="<%= menu_clear_path %>"
      data-state-url="<%= menu_state_path %>">
 
-  <%= render 'menu/recipe_selector', categories: @categories, quick_bites_by_subsection: @quick_bites_by_subsection %>
+  <%= render 'menu/recipe_selector', categories: @categories, quick_bites_by_subsection: @quick_bites_by_subsection, selected_recipes: @selected_recipes, selected_quick_bites: @selected_quick_bites %>
 
   <div id="menu-actions">
     <button type="button" class="btn" data-action="menu#selectAll">Select All</button>
