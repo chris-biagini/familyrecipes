@@ -1563,6 +1563,29 @@ Rice:
     description: Rice, white, long-grain, regular, raw, enriched
 Ricotta:
   aisle: Refrigerated
+  nutrients:
+    basis_grams: 100.0
+    calories: 150.0
+    fat: 10.18
+    saturated_fat: 6.42
+    trans_fat: 0.333
+    cholesterol: 49.0
+    sodium: 110.0
+    carbs: 7.27
+    fiber: 0.0
+    total_sugars: 0.27
+    protein: 7.54
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 170851
+    description: Cheese, ricotta, whole milk
+  density:
+    grams: 246.0
+    volume: 1.0
+    unit: cup
+  aliases: []
 Ritz crackers:
   aisle: Snacks
 Roasted peppers (jarred):
