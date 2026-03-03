@@ -4,10 +4,11 @@ require 'ratatui_ruby'
 
 module NutritionTui
   module Screens
-    # Detail screen for a single ingredient -- three-panel layout showing
-    # nutrients (left), density + portions (right top), and recipe unit
-    # resolution status (right bottom). Users can trigger edits, USDA
-    # import, and save modified entries back to ingredient-catalog.yaml.
+    # Detail screen for a single ingredient — two-column layout. Left column
+    # shows the full catalog entry (nutrients, density, portions, aisle,
+    # aliases, sources). Right column shows computed reference data (recipe
+    # unit resolution status, USDA portion candidates when available).
+    # Direct one-key shortcuts (n/d/p/a/l/r/u/w) replace the old edit menu.
     # Manages an `@active_editor` overlay that captures events when present.
     #
     # Collaborators:
@@ -35,7 +36,6 @@ module NutritionTui
         @active_editor = nil
         @confirm_exit = false
         @confirm_selected = 0
-        @show_usda_reference = false
         @usda_classified = nil
         @auto_density_source = nil
       end
@@ -49,7 +49,7 @@ module NutritionTui
       end
 
       def render(frame)
-        main_chunks = vertical_split(frame.area, [Layout::Constraint.min(10), Layout::Constraint.length(1)])
+        main_chunks = vertical_split(frame.area, [Layout::Constraint.min(10), Layout::Constraint.length(2)])
         render_content(frame, main_chunks[0])
         render_keybind_bar(frame, main_chunks[1])
         render_overlay(frame) if @active_editor
@@ -76,9 +76,7 @@ module NutritionTui
       end
 
       def process_editor_result(result)
-        if result[:choice]
-          open_sub_editor(result[:choice])
-        elsif result[:entry]
+        if result[:entry]
           @entry = result[:entry]
           @dirty = true
           @active_editor = nil
@@ -94,14 +92,6 @@ module NutritionTui
         @entry['aisle'] = result[:value]
         @dirty = true
         @active_editor = nil
-      end
-
-      def open_sub_editor(choice)
-        @active_editor = case choice
-                         when :nutrients then Editors::NutrientsEditor.new(entry: @entry)
-                         when :density   then Editors::DensityEditor.new(entry: @entry)
-                         when :portions  then Editors::PortionsEditor.new(entry: @entry)
-                         end
       end
 
       def render_overlay(frame)
@@ -121,181 +111,146 @@ module NutritionTui
         )
       end
 
-      # --- Content panels ---
+      # --- Two-column layout ---
 
       def render_content(frame, area)
-        content_chunks = horizontal_split(area, [Layout::Constraint.percentage(45), Layout::Constraint.percentage(55)])
-        render_nutrients_panel(frame, content_chunks[0])
-        render_right_panels(frame, content_chunks[1])
+        chunks = horizontal_split(area, [Layout::Constraint.percentage(60), Layout::Constraint.percentage(40)])
+        render_left_column(frame, chunks[0])
+        render_right_column(frame, chunks[1])
       end
 
-      def render_right_panels(frame, area)
-        if @show_usda_reference
-          render_right_panels_with_usda(frame, area)
-        else
-          render_right_panels_default(frame, area)
-        end
-      end
-
-      def render_right_panels_default(frame, area)
-        chunks = vertical_split(area, [Layout::Constraint.percentage(55), Layout::Constraint.percentage(45)])
-        render_density_portions_panel(frame, chunks[0])
-        render_recipe_units_panel(frame, chunks[1])
-      end
-
-      def render_right_panels_with_usda(frame, area)
-        constraints = [Layout::Constraint.percentage(35), Layout::Constraint.percentage(30), Layout::Constraint.percentage(35)]
-        chunks = vertical_split(area, constraints)
-        render_density_portions_panel(frame, chunks[0])
-        render_recipe_units_panel(frame, chunks[1])
-        render_usda_reference_panel(frame, chunks[2])
-      end
-
-      def render_nutrients_panel(frame, area)
+      def render_left_column(frame, area)
+        lines = left_column_lines
         paragraph = Widgets::Paragraph.new(
-          text: nutrients_text,
-          block: Widgets::Block.new(title: "Nutrients (per #{basis_grams}g)", borders: [:all])
+          text: lines.join("\n"),
+          block: Widgets::Block.new(title: @name, borders: [:all])
         )
         frame.render_widget(paragraph, area)
       end
 
-      def nutrients_text
+      def left_column_lines
+        group1 = nutrients_section_lines
+        group2 = density_section_lines + [''] + portions_section_lines
+        group3 = aisle_section_lines + [''] + aliases_section_lines + [''] + sources_section_lines
+        [group1, group2, group3].flat_map { |g| g + [''] }
+      end
+
+      def render_right_column(frame, area)
+        lines = right_column_lines
+        paragraph = Widgets::Paragraph.new(
+          text: lines.join("\n"),
+          block: Widgets::Block.new(
+            title: 'Reference',
+            borders: [:all],
+            title_style: Style::Style.new(fg: :dark_gray, modifiers: [:dim])
+          )
+        )
+        frame.render_widget(paragraph, area)
+      end
+
+      def right_column_lines
+        recipe_units_section_lines + [''] + usda_reference_section_lines
+      end
+
+      # --- Left column sections ---
+
+      def nutrients_section_lines
         nutrients = @entry['nutrients']
-        return dim_text('No nutrition data') unless nutrients.is_a?(Hash)
+        return ['[n] Nutrients: —'] unless nutrients.is_a?(Hash)
 
-        Data::NUTRIENTS.map { |n| format_nutrient_line(nutrients, n) }.join("\n")
+        ["[n] Nutrients (per #{basis_grams}g)"] +
+          Data::NUTRIENTS.map { |n| format_nutrient_line(nutrients, n) }
       end
 
-      def format_nutrient_line(nutrients, nutrient)
-        indent = '  ' * nutrient[:indent]
-        value = nutrients[nutrient[:key]]
-        formatted = value ? format_number(value) : "\u2014"
-        suffix = nutrient[:unit].empty? ? '' : " #{nutrient[:unit]}"
-        "#{indent}#{nutrient[:label].ljust(20 - (nutrient[:indent] * 2))}#{formatted}#{suffix}"
-      end
-
-      def basis_grams
-        @entry.dig('nutrients', 'basis_grams') || 100
-      end
-
-      def render_density_portions_panel(frame, area)
-        paragraph = Widgets::Paragraph.new(
-          text: density_portions_text,
-          block: Widgets::Block.new(title: 'Density & Portions', borders: [:all])
-        )
-        frame.render_widget(paragraph, area)
-      end
-
-      def density_portions_text
-        lines = [density_line, '']
-        lines << 'Portions:'
-        lines.concat(portion_lines)
-        lines.join("\n")
-      end
-
-      def density_line
+      def density_section_lines
         density = @entry['density']
-        return dim_text('Density: none') unless density.is_a?(Hash)
+        return ['[d] Density: —'] unless density.is_a?(Hash)
 
-        "Density: #{format_number(density['grams'])}g per #{format_number(density['volume'])} #{density['unit']}"
+        ["[d] Density: #{format_number(density['grams'])}g per #{format_number(density['volume'])} #{density['unit']}"]
       end
 
-      def portion_lines
+      def portions_section_lines
         portions = @entry['portions']
-        return [dim_text('  No portions')] unless portions.is_a?(Hash) && portions.any?
+        return ['[p] Portions: —'] unless portions.is_a?(Hash) && portions.any?
 
-        portions.map { |name, grams| "  #{name.ljust(16)}#{format_number(grams)}g" }
+        ['[p] Portions'] + portions.map { |name, grams| "    #{name.ljust(16)}#{format_number(grams)}g" }
       end
 
-      def render_recipe_units_panel(frame, area)
-        paragraph = Widgets::Paragraph.new(
-          text: recipe_units_text,
-          block: Widgets::Block.new(title: 'Recipe Units', borders: [:all])
-        )
-        frame.render_widget(paragraph, area)
+      def aisle_section_lines
+        aisle = @entry['aisle']
+        return ['[a] Aisle: —'] unless aisle
+
+        ["[a] Aisle: #{aisle}"]
       end
 
-      def recipe_units_text
-        return dim_text('No recipe usage found') if @needed_units.empty?
+      def aliases_section_lines
+        aliases = @entry['aliases']
+        return ['[l] Aliases: —'] unless aliases.is_a?(Array) && aliases.any?
+        return ["[l] Aliases: #{aliases.join(', ')}"] if aliases.size < 4
+
+        ['[l] Aliases'] + aliases.map { |a| "    #{a}" }
+      end
+
+      def sources_section_lines
+        sources = @entry['sources']
+        return ['[r] Sources: —'] unless sources.is_a?(Array) && sources.any?
+
+        ['[r] Sources'] + sources.flat_map { |s| format_source_lines(s) }
+      end
+
+      def format_source_lines(source)
+        header = "    #{source['type']}#{source_detail(source)}"
+        return [header] unless source['description']
+
+        [header, "      \"#{source['description']}\""]
+      end
+
+      def source_detail(source)
+        label = source_detail_label(source['dataset'], source['fdc_id'])
+        label ? " \u2013 #{label}" : ''
+      end
+
+      def source_detail_label(dataset, fdc_id)
+        return "#{dataset} (#{fdc_id})" if dataset && fdc_id
+
+        dataset || fdc_id&.to_s
+      end
+
+      # --- Right column sections ---
+
+      def recipe_units_section_lines
+        return ['No recipe usage found'] if @needed_units.empty?
 
         calculator, calc_entry = build_calculator
-        @needed_units.map { |unit| format_unit_line(unit, calculator, calc_entry) }.join("\n")
+        ['Recipe Units'] + @needed_units.map { |unit| format_unit_line(unit, calculator, calc_entry) }
       end
 
-      def build_calculator
-        calculator = FamilyRecipes::NutritionCalculator.new({ @name => @entry })
-        calc_entry = calculator.nutrition_data[@name]
-        [calculator, calc_entry]
+      def usda_reference_section_lines
+        return ["No USDA data \u2014 press u to search"] unless @usda_classified
+
+        ['USDA Reference'] + usda_candidate_lines
       end
 
-      def format_unit_line(unit, calculator, calc_entry)
-        display = unit.nil? ? '(bare count)' : unit
-        resolved = calc_entry && calculator.resolvable?(1, unit, calc_entry)
-        status = resolved ? "\u2713" : "\u2717"
-        method = resolution_method(unit, resolved)
-        "  #{display.to_s.ljust(16)}#{status}  #{method}"
+      def usda_candidate_lines
+        density_lines = @usda_classified[:density_candidates].map { |c| format_usda_candidate(c) }
+        portion_lines = @usda_classified[:portion_candidates].map { |c| format_usda_candidate(c) }
+        density_lines + portion_lines
       end
 
-      def resolution_method(unit, resolved)
-        return 'no nutrition data' unless @entry['nutrients'].is_a?(Hash)
-
-        if unit.nil?
-          resolved ? 'via ~unitless' : 'no ~unitless portion'
-        elsif WEIGHT_UNITS.include?(unit.downcase)
-          'weight'
-        elsif matching_portion(unit)
-          "via #{matching_portion(unit)}"
-        elsif VOLUME_UNITS.include?(unit.downcase)
-          resolved ? 'via density' : 'no density'
-        else
-          resolved ? "via #{unit}" : 'no portion'
-        end
-      end
-
-      def matching_portion(unit)
-        portions = @entry['portions'] || {}
-        portions.keys.find { |k| k.downcase == unit.downcase }
-      end
-
-      # --- USDA reference panel ---
-
-      def render_usda_reference_panel(frame, area)
-        paragraph = Widgets::Paragraph.new(
-          text: usda_reference_text,
-          block: Widgets::Block.new(title: 'USDA Reference', borders: [:all])
-        )
-        frame.render_widget(paragraph, area)
-      end
-
-      def usda_reference_text
-        return dim_text('No USDA data') unless @usda_classified
-
-        lines = usda_density_lines + usda_portion_lines
-        lines.empty? ? dim_text('No portions from USDA') : lines.join("\n")
-      end
-
-      def usda_density_lines
-        @usda_classified[:density_candidates].map { |c| format_usda_line(c) }
-      end
-
-      def usda_portion_lines
-        @usda_classified[:portion_candidates].map { |c| format_usda_line(c) }
-      end
-
-      def format_usda_line(candidate)
+      def format_usda_candidate(candidate)
         star = candidate[:modifier] == @auto_density_source ? "\u2605 " : '  '
-        label = format_usda_modifier(candidate)
-        grams = format_usda_grams(candidate)
+        label = usda_candidate_label(candidate)
+        grams = usda_candidate_grams(candidate)
         "#{star}#{label.ljust(25)}#{grams}"
       end
 
-      def format_usda_modifier(candidate)
+      def usda_candidate_label(candidate)
         return "#{candidate[:modifier]} (\u00d7#{candidate[:amount].to_i})" if candidate[:amount] > 1
 
         candidate[:modifier]
       end
 
-      def format_usda_grams(candidate)
+      def usda_candidate_grams(candidate)
         return "#{format_number(candidate[:each])}g each" if candidate[:amount] > 1
 
         "#{format_number(candidate[:grams])}g"
@@ -304,49 +259,55 @@ module NutritionTui
       # --- Keybind bar ---
 
       def render_keybind_bar(frame, area)
-        prefix = @dirty ? '[modified] ' : ''
-        text = "#{prefix} e edit  u USDA  a aisle  l aliases  r sources  w save  Esc back"
         paragraph = Widgets::Paragraph.new(
-          text: " #{text}",
+          text: keybind_bar_text(area.width),
           style: Style::Style.new(fg: :dark_gray, modifiers: [:dim])
         )
         frame.render_widget(paragraph, area)
+      end
+
+      def keybind_bar_text(width)
+        suffix = @dirty ? '[modified]' : ''
+        line1 = ' n nutrients  d density  p portions  a aisle  l aliases  r sources'
+        line2 = " u USDA  w save  Esc back#{suffix.rjust([width - 27, suffix.size].max)}"
+        "#{line1}\n#{line2}"
       end
 
       # --- Event handling ---
 
       def dispatch_key(event) # rubocop:disable Metrics/MethodLength
         case event
-        in { type: :key, code: 'esc' }
-          handle_escape
-        in { type: :key, code: 'e' }
-          open_edit_menu
-        in { type: :key, code: 'u' }
-          handle_usda_key
-        in { type: :key, code: 'a' }
-          open_aisle_editor
-        in { type: :key, code: 'l' }
-          open_aliases_editor
-        in { type: :key, code: 'r' }
-          open_sources_editor
-        in { type: :key, code: 'w' }
-          save_entry
-        else
-          nil
+        in { type: :key, code: 'esc' }   then handle_escape
+        in { type: :key, code: 'n' }     then open_nutrients_editor
+        in { type: :key, code: 'd' }     then open_density_editor
+        in { type: :key, code: 'p' }     then open_portions_editor
+        in { type: :key, code: 'a' }     then open_aisle_editor
+        in { type: :key, code: 'l' }     then open_aliases_editor
+        in { type: :key, code: 'r' }     then open_sources_editor
+        in { type: :key, code: 'u' }     then handle_usda_key
+        in { type: :key, code: 'w' }     then save_entry
+        else nil
         end
       end
 
       def handle_usda_key
-        if @usda_classified
-          @show_usda_reference = !@show_usda_reference
-          nil
-        else
-          { action: :usda_import, name: @name }
-        end
+        return nil if @usda_classified
+
+        { action: :usda_import, name: @name }
       end
 
-      def open_edit_menu
-        @active_editor = Editors::EditMenu.new
+      def open_nutrients_editor
+        @active_editor = Editors::NutrientsEditor.new(entry: @entry)
+        nil
+      end
+
+      def open_density_editor
+        @active_editor = Editors::DensityEditor.new(entry: @entry)
+        nil
+      end
+
+      def open_portions_editor
+        @active_editor = Editors::PortionsEditor.new(entry: @entry)
         nil
       end
 
@@ -389,7 +350,6 @@ module NutritionTui
         @usda_classified = Data.classify_usda_modifiers(all_modifiers)
         best = Data.pick_best_density(@usda_classified[:density_candidates])
         apply_density(best) if best
-        @show_usda_reference = true
       end
 
       def apply_density(best)
@@ -480,6 +440,53 @@ module NutritionTui
       end
 
       # --- Helpers ---
+
+      def format_nutrient_line(nutrients, nutrient)
+        indent = '  ' * nutrient[:indent]
+        value = nutrients[nutrient[:key]]
+        formatted = value ? format_number(value) : "\u2014"
+        suffix = nutrient[:unit].empty? ? '' : " #{nutrient[:unit]}"
+        "#{indent}#{nutrient[:label].ljust(20 - (nutrient[:indent] * 2))}#{formatted}#{suffix}"
+      end
+
+      def basis_grams
+        @entry.dig('nutrients', 'basis_grams') || 100
+      end
+
+      def build_calculator
+        calculator = FamilyRecipes::NutritionCalculator.new({ @name => @entry })
+        calc_entry = calculator.nutrition_data[@name]
+        [calculator, calc_entry]
+      end
+
+      def format_unit_line(unit, calculator, calc_entry)
+        display = unit.nil? ? '(bare count)' : unit
+        resolved = calc_entry && calculator.resolvable?(1, unit, calc_entry)
+        status = resolved ? "\u2713" : "\u2717"
+        method = resolution_method(unit, resolved)
+        "  #{display.to_s.ljust(16)}#{status}  #{method}"
+      end
+
+      def resolution_method(unit, resolved)
+        return 'no nutrition data' unless @entry['nutrients'].is_a?(Hash)
+
+        if unit.nil?
+          resolved ? 'via ~unitless' : 'no ~unitless portion'
+        elsif WEIGHT_UNITS.include?(unit.downcase)
+          'weight'
+        elsif matching_portion(unit)
+          "via #{matching_portion(unit)}"
+        elsif VOLUME_UNITS.include?(unit.downcase)
+          resolved ? 'via density' : 'no density'
+        else
+          resolved ? "via #{unit}" : 'no portion'
+        end
+      end
+
+      def matching_portion(unit)
+        portions = @entry['portions'] || {}
+        portions.keys.find { |k| k.downcase == unit.downcase }
+      end
 
       def vertical_split(area, constraints)
         Layout::Layout.split(area, direction: :vertical, constraints: constraints)
