@@ -1,0 +1,11 @@
+{
+  "planPath": "docs/plans/2026-03-03-ingredient-editor-ux-plan.md",
+  "tasks": [
+    {"id": 3, "subject": "Task 1: Add section_header helper and pass width through rendering", "status": "pending"},
+    {"id": 4, "subject": "Task 2: Convert all section headers to ruled format", "status": "pending", "blockedBy": [3]},
+    {"id": 5, "subject": "Task 3: Reference header white, dirty title indicator, slim keybind bar", "status": "pending", "blockedBy": [4]},
+    {"id": 6, "subject": "Task 4: Right-align nutrient values", "status": "pending", "blockedBy": [4]},
+    {"id": 7, "subject": "Task 5: RuboCop and manual verification", "status": "pending", "blockedBy": [5, 6]}
+  ],
+  "lastUpdated": "2026-03-03T00:00:00Z"
+}
