@@ -30,6 +30,30 @@ Almonds:
     description: Nuts, almonds
 American cheese:
   aisle: Refrigerated
+  nutrients:
+    basis_grams: 100.0
+    calories: 239.0
+    fat: 14.0
+    saturated_fat: 8.79
+    trans_fat: 0.0
+    cholesterol: 36.0
+    sodium: 1345.0
+    carbs: 11.6
+    fiber: 0.0
+    total_sugars: 7.74
+    protein: 16.7
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 169901
+    description: Cheese, american cheddar, imitation
+  density:
+    grams: 224.0
+    volume: 1.0
+    unit: cup
+  portions:
+    slice: 28.0
 Apples:
   aisle: Produce
 Artichokes (jarred):
