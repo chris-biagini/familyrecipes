@@ -17,6 +17,7 @@ module NutritionTui
       Layout = RatatuiRuby::Layout
       Widgets = RatatuiRuby::Widgets
       Style = RatatuiRuby::Style
+      Text = RatatuiRuby::Text
 
       SORT_CYCLE = %i[recps_desc recps_asc alpha_asc alpha_desc].freeze
       SORT_ARROWS = { recps_desc: "\u2193", recps_asc: "\u2191", alpha_asc: "\u2191", alpha_desc: "\u2193" }.freeze
@@ -65,20 +66,27 @@ module NutritionTui
 
       def render_summary_bar(frame, area)
         paragraph = Widgets::Paragraph.new(
-          text: summary_text,
-          block: Widgets::Block.new(title: 'Coverage', borders: [:all])
+          text: summary_spans,
+          block: Widgets::Block.new(
+            title: 'Coverage', borders: [:all], border_type: :rounded,
+            title_style: Style::Style.new(modifiers: [:bold])
+          )
         )
         frame.render_widget(paragraph, area)
       end
 
-      def summary_text
+      def summary_spans
         total = @ingredients.size
         with_nutrition = @ingredients.count { |i| i[:has_nutrients] }
         complete_count = @ingredients.count { |i| complete?(i) }
         missing = total - with_nutrition
 
-        "#{total} ingredients │ #{with_nutrition} with nutrition │ " \
-          "#{complete_count} fully resolvable │ #{missing} missing"
+        [styled_line(
+          span(total, modifiers: [:bold]), dim(" ingredients \u2502 "),
+          span(with_nutrition, fg: :green), dim(" with nutrition \u2502 "),
+          span(complete_count, fg: :green), dim(" fully resolvable \u2502 "),
+          span(missing, fg: missing.positive? ? :yellow : :green), dim(' missing')
+        )]
       end
 
       # --- Ingredient table ---
@@ -89,8 +97,11 @@ module NutritionTui
           rows: table_rows,
           widths: column_widths,
           selected_row: @selected,
-          row_highlight_style: Style::Style.new(modifiers: [:bold]),
-          block: Widgets::Block.new(title: 'Ingredients', borders: [:all])
+          row_highlight_style: Style::Style.new(fg: :cyan, modifiers: [:bold]),
+          block: Widgets::Block.new(
+            title: 'Ingredients', borders: [:all], border_type: :rounded,
+            title_style: Style::Style.new(modifiers: [:bold])
+          )
         )
         frame.render_widget(table, area)
       end
@@ -103,18 +114,20 @@ module NutritionTui
       end
 
       def table_rows
-        @visible_ingredients.map do |ing|
-          [
-            ing[:name],
-            ing[:aisle],
-            ing[:aliases],
-            ing[:recipe_count].positive? ? ing[:recipe_count].to_s : "\u2014",
-            check_or_dash(ing[:has_nutrients]),
-            check_or_dash(ing[:has_density]),
-            ing[:unresolvable].empty? ? "\u2014" : ing[:unresolvable].to_a.join(', '),
-            truncate_portions(ing[:portions])
-          ]
-        end
+        @visible_ingredients.map { |ing| build_table_row(ing) }
+      end
+
+      def build_table_row(ing)
+        [
+          ing[:name],
+          ing[:aisle],
+          cell(ing[:aliases], :dark_gray),
+          ing[:recipe_count].positive? ? ing[:recipe_count].to_s : cell("\u2014", :dark_gray),
+          check_or_dash(ing[:has_nutrients]),
+          check_or_dash(ing[:has_density]),
+          unresolvable_cell(ing[:unresolvable]),
+          cell(truncate_portions(ing[:portions]), :dark_gray)
+        ]
       end
 
       def column_widths
@@ -131,7 +144,17 @@ module NutritionTui
       end
 
       def check_or_dash(value)
-        value ? "\u2713" : "\u2014"
+        value ? cell("\u2713", :green) : cell("\u2014", :dark_gray)
+      end
+
+      def unresolvable_cell(unres)
+        return cell("\u2014", :dark_gray) if unres.empty?
+
+        cell(unres.to_a.join(', '), :red)
+      end
+
+      def cell(text, color)
+        Widgets::Paragraph.new(text: text.to_s, style: Style::Style.new(fg: color))
       end
 
       def truncate_portions(portions)
@@ -143,21 +166,25 @@ module NutritionTui
       # --- Keybind bar ---
 
       def render_keybind_bar(frame, area)
-        text = @filter_input ? filter_bar_text : normal_bar_text
-        paragraph = Widgets::Paragraph.new(
-          text: text,
-          style: Style::Style.new(fg: :dark_gray, modifiers: [:dim])
-        )
+        paragraph = Widgets::Paragraph.new(text: @filter_input ? filter_bar_spans : keybind_bar_spans)
         frame.render_widget(paragraph, area)
       end
 
-      def normal_bar_text
+      def keybind_bar_spans
         hide_label = @hide_complete ? 'show all' : 'hide done'
-        " / filter  c #{hide_label}  t sort  Enter select  n new  s search  q quit"
+        [styled_line(
+          dim(' '), key('/'), dim(' filter  '),
+          key('c'), dim(" #{hide_label}  "),
+          key('t'), dim(' sort  '),
+          key('Enter'), dim(' select  '),
+          key('n'), dim(' new  '),
+          key('s'), dim(' search  '),
+          key('q'), dim(' quit')
+        )]
       end
 
-      def filter_bar_text
-        " Filter: #{@filter || ''}  Esc clear"
+      def filter_bar_spans
+        [styled_line(dim(' Filter: '), span(@filter || '', modifiers: [:bold]), dim('  Esc clear'))]
       end
 
       # --- Event handling ---
@@ -326,6 +353,24 @@ module NutritionTui
 
       def complete?(ing)
         ing[:has_aisle] && ing[:has_nutrients] && ing[:has_density]
+      end
+
+      # --- Styled text helpers ---
+
+      def span(text, **)
+        Text::Span.styled(text.to_s, Style::Style.new(**))
+      end
+
+      def dim(text)
+        Text::Span.styled(text, Style::Style.new(fg: :dark_gray))
+      end
+
+      def key(text)
+        Text::Span.styled(text, Style::Style.new(fg: :cyan))
+      end
+
+      def styled_line(*spans)
+        Text::Line.new(spans: spans)
       end
     end
   end # rubocop:enable Metrics/ClassLength
