@@ -168,8 +168,8 @@ module NutritionTui
         nutrients = @entry['nutrients']
         return empty_section_header('Nutrients', 'n', width) unless nutrients.is_a?(Hash)
 
-        basis = "(per #{basis_grams}g)"
-        [section_header('Nutrients', 'n', width, suffix: basis, suffix_style: { fg: :dark_gray })] +
+        [section_header('Nutrients', 'n', width),
+         Text::Line.from_string("    Per #{basis_grams}g")] +
           Data::NUTRIENTS.map { |n| format_nutrient_line(nutrients, n) }
       end
 
@@ -472,25 +472,19 @@ module NutritionTui
         Text::Line.from_string('')
       end
 
-      def section_header(name, key, width, suffix: nil, suffix_style: nil)
+      def section_header(name, key, width)
         prefix_len = name.size + key.size + 5
-        suffix_len = suffix ? suffix.size + 1 : 0
-        fill_len = [width - prefix_len - suffix_len, 4].max
-        parts = [
+        fill_len = [width - prefix_len, 4].max
+        styled_line(
           span(name, modifiers: [:bold]),
           span(" [#{key}]", fg: :cyan),
           span(" #{'─' * fill_len}", fg: :dark_gray)
-        ]
-        parts << styled_suffix(suffix, suffix_style) if suffix
-        styled_line(*parts)
-      end
-
-      def styled_suffix(text, style)
-        style ? span(" #{text}", **style) : plain(" #{text}")
+        )
       end
 
       def empty_section_header(name, key, width)
-        [section_header(name, key, width, suffix: "\u2014", suffix_style: { fg: :dark_gray })]
+        [section_header(name, key, width),
+         Text::Line.from_string("    \u2014")]
       end
 
       def format_nutrient_line(nutrients, nutrient)
