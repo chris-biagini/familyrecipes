@@ -31,6 +31,17 @@ module NutritionTui
         @dirty = false
         @needed_units = Data.find_needed_units(name, ctx)
         @active_editor = nil
+        @show_usda_reference = false
+        @usda_classified = nil
+        @auto_density_source = nil
+      end
+
+      def apply_usda_import(detail)
+        import_nutrients(detail)
+        import_source(detail)
+        classify_and_apply_density(detail)
+        @needed_units = Data.find_needed_units(@name, @ctx)
+        @dirty = true
       end
 
       def render(frame)
@@ -113,9 +124,25 @@ module NutritionTui
       end
 
       def render_right_panels(frame, area)
-        right_chunks = vertical_split(area, [Layout::Constraint.percentage(55), Layout::Constraint.percentage(45)])
-        render_density_portions_panel(frame, right_chunks[0])
-        render_recipe_units_panel(frame, right_chunks[1])
+        if @show_usda_reference
+          render_right_panels_with_usda(frame, area)
+        else
+          render_right_panels_default(frame, area)
+        end
+      end
+
+      def render_right_panels_default(frame, area)
+        chunks = vertical_split(area, [Layout::Constraint.percentage(55), Layout::Constraint.percentage(45)])
+        render_density_portions_panel(frame, chunks[0])
+        render_recipe_units_panel(frame, chunks[1])
+      end
+
+      def render_right_panels_with_usda(frame, area)
+        constraints = [Layout::Constraint.percentage(35), Layout::Constraint.percentage(30), Layout::Constraint.percentage(35)]
+        chunks = vertical_split(area, constraints)
+        render_density_portions_panel(frame, chunks[0])
+        render_recipe_units_panel(frame, chunks[1])
+        render_usda_reference_panel(frame, chunks[2])
       end
 
       def render_nutrients_panel(frame, area)
@@ -224,6 +251,50 @@ module NutritionTui
         portions.keys.find { |k| k.downcase == unit.downcase }
       end
 
+      # --- USDA reference panel ---
+
+      def render_usda_reference_panel(frame, area)
+        paragraph = Widgets::Paragraph.new(
+          text: usda_reference_text,
+          block: Widgets::Block.new(title: 'USDA Reference', borders: [:all])
+        )
+        frame.render_widget(paragraph, area)
+      end
+
+      def usda_reference_text
+        return dim_text('No USDA data') unless @usda_classified
+
+        lines = usda_density_lines + usda_portion_lines
+        lines.empty? ? dim_text('No portions from USDA') : lines.join("\n")
+      end
+
+      def usda_density_lines
+        @usda_classified[:density_candidates].map { |c| format_usda_line(c) }
+      end
+
+      def usda_portion_lines
+        @usda_classified[:portion_candidates].map { |c| format_usda_line(c) }
+      end
+
+      def format_usda_line(candidate)
+        star = candidate[:modifier] == @auto_density_source ? "\u2605 " : '  '
+        label = format_usda_modifier(candidate)
+        grams = format_usda_grams(candidate)
+        "#{star}#{label.ljust(25)}#{grams}"
+      end
+
+      def format_usda_modifier(candidate)
+        return "#{candidate[:modifier]} (\u00d7#{candidate[:amount].to_i})" if candidate[:amount] > 1
+
+        candidate[:modifier]
+      end
+
+      def format_usda_grams(candidate)
+        return "#{format_number(candidate[:each])}g each" if candidate[:amount] > 1
+
+        "#{format_number(candidate[:grams])}g"
+      end
+
       # --- Keybind bar ---
 
       def render_keybind_bar(frame, area)
@@ -245,7 +316,7 @@ module NutritionTui
         in { type: :key, code: 'e' }
           open_edit_menu
         in { type: :key, code: 'u' }
-          { action: :usda_import, name: @name }
+          handle_usda_key
         in { type: :key, code: 'a' }
           open_aisle_editor
         in { type: :key, code: 'l' }
@@ -256,6 +327,15 @@ module NutritionTui
           save_entry
         else
           nil
+        end
+      end
+
+      def handle_usda_key
+        if @usda_classified
+          @show_usda_reference = !@show_usda_reference
+          nil
+        else
+          { action: :usda_import, name: @name }
         end
       end
 
@@ -280,6 +360,36 @@ module NutritionTui
       def open_sources_editor
         @active_editor = Editors::SourcesEditor.new(entry: @entry)
         nil
+      end
+
+      # --- USDA import ---
+
+      def import_nutrients(detail)
+        @entry['nutrients'] = detail[:nutrients]
+      end
+
+      def import_source(detail)
+        @entry['sources'] ||= []
+        @entry['sources'] << usda_source_hash(detail)
+      end
+
+      def usda_source_hash(detail)
+        { 'type' => 'usda', 'dataset' => detail[:data_type],
+          'fdc_id' => detail[:fdc_id], 'description' => detail[:description] }
+      end
+
+      def classify_and_apply_density(detail)
+        all_modifiers = detail[:portions][:volume] + detail[:portions][:non_volume]
+        @usda_classified = Data.classify_usda_modifiers(all_modifiers)
+        best = Data.pick_best_density(@usda_classified[:density_candidates])
+        apply_density(best) if best
+        @show_usda_reference = true
+      end
+
+      def apply_density(best)
+        unit = Data.normalize_volume_unit(best[:modifier])
+        @entry['density'] = { 'grams' => best[:each].round(2), 'volume' => 1.0, 'unit' => unit }
+        @auto_density_source = best[:modifier]
       end
 
       # --- Save ---

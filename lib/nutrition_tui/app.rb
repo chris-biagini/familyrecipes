@@ -77,9 +77,13 @@ module NutritionTui
       @current_screen = Screens::UsdaSearch.new(api_key: @api_key, default_query: default_query)
     end
 
-    # Task 8 will use detail to apply nutrients to the ingredient entry
-    def apply_import(_detail)
-      @previous_screen.is_a?(Screens::Ingredient) ? restore_previous_screen : switch_to_dashboard
+    def apply_import(detail)
+      if @previous_screen.is_a?(Screens::Ingredient)
+        restore_previous_screen
+        @current_screen.apply_usda_import(detail)
+      else
+        switch_to_dashboard
+      end
     end
 
     def restore_previous_screen
