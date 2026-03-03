@@ -1,6 +1,8 @@
 # CLAUDE.md
 
-Rails 8 app backed by SQLite with multi-tenant "Kitchen" support and trusted-header authentication. Two-database architecture: primary (app data), cable (Solid Cable pub/sub). Docker image for homelab installs.
+Rails 8 app backed by SQLite with multi-tenant "Kitchen" support and trusted-header authentication. 
+Two-database architecture: primary (app data), cable (Solid Cable pub/sub). 
+Docker image for homelab installs during development, eventual move to hosted model with many users.
 
 ## Design Philosophy
 
