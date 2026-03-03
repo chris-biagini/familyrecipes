@@ -3,7 +3,7 @@
 require 'test_helper'
 
 class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
-  include ActionCable::TestHelper
+  include Turbo::Broadcastable::TestHelper
 
   VALID_NUTRIENTS = { basis_grams: 30, calories: 110, fat: 0.5, saturated_fat: 0,
                       trans_fat: 0, cholesterol: 0, sodium: 5, carbs: 23,
@@ -156,8 +156,8 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Produce\nBaking", @kitchen.reload.aisle_order
   end
 
-  test 'upsert broadcasts content changed when aisle is saved' do
-    assert_broadcast_on(MealPlanChannel.broadcasting_for(@kitchen), type: 'content_changed') do
+  test 'upsert broadcasts turbo stream morph when aisle is saved' do
+    assert_turbo_stream_broadcasts [@kitchen, 'groceries'] do
       post nutrition_entry_upsert_path('flour', kitchen_slug: kitchen_slug),
            params: { nutrients: { basis_grams: nil }, density: nil, portions: {}, aisle: 'Deli' },
            as: :json
@@ -453,10 +453,10 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
     assert_response :forbidden
   end
 
-  test 'destroy broadcasts content changed' do
+  test 'destroy broadcasts turbo stream morph' do
     IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'flour', basis_grams: 30, calories: 110)
 
-    assert_broadcast_on(MealPlanChannel.broadcasting_for(@kitchen), type: 'content_changed') do
+    assert_turbo_stream_broadcasts [@kitchen, 'groceries'] do
       delete nutrition_entry_destroy_path('flour', kitchen_slug: kitchen_slug), as: :json
     end
   end
