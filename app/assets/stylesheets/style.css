@@ -478,7 +478,7 @@ section h2 {
 }
 
 /* Ingredient table */
-.ingredients-table { width: 100%; border-collapse: collapse; }
+.ingredients-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
 .ingredients-table thead th {
   text-align: left;
   font-family: 'Futura', 'Trebuchet MS', Arial, sans-serif;
@@ -504,7 +504,7 @@ section h2 {
 
 .col-name { font-weight: 500; word-break: break-word; }
 .col-nutrition, .col-density { width: 3rem; text-align: center; }
-.col-aisle { color: var(--muted-text); font-size: 0.9rem; }
+.col-aisle { color: var(--muted-text); font-size: 0.9rem; width: 6rem; }
 .status-icon { font-size: 0.85rem; }
 .status-yes { color: #16a34a; }
 .status-no { color: #dc2626; }

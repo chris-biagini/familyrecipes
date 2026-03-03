@@ -50,8 +50,14 @@ export default class extends Controller {
       }
     }
 
+    this.boundPrefetch = (event) => {
+      const row = event.target.closest("[data-open-editor]")
+      if (row) this.prefetch(row.dataset.ingredientName)
+    }
+
     document.addEventListener("click", this.boundEditClick)
     document.addEventListener("click", this.boundResetClick)
+    document.addEventListener("pointerenter", this.boundPrefetch, true)
 
     this.dialogTarget.addEventListener("cancel", this.boundCancel)
     this.turboFrame.addEventListener("turbo:frame-load", this.boundFrameLoad)
@@ -60,6 +66,7 @@ export default class extends Controller {
   disconnect() {
     document.removeEventListener("click", this.boundEditClick)
     document.removeEventListener("click", this.boundResetClick)
+    document.removeEventListener("pointerenter", this.boundPrefetch, true)
     this.dialogTarget.removeEventListener("cancel", this.boundCancel)
     this.turboFrame.removeEventListener("turbo:frame-load", this.boundFrameLoad)
   }
@@ -74,6 +81,13 @@ export default class extends Controller {
 
     this.turboFrame.src = this.editUrlFor(name)
     this.dialogTarget.showModal()
+  }
+
+  prefetch(name) {
+    if (this.prefetchedName === name) return
+
+    this.prefetchedName = name
+    fetch(this.editUrlFor(name), { headers: { Accept: "text/html" } })
   }
 
   close() {
