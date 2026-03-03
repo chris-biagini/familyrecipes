@@ -4,9 +4,9 @@ require 'ratatui_ruby'
 
 module NutritionTui
   module Editors
-    # Modal editor for all nutrient values on an ingredient. Shows the full
-    # nutrient list with Up/Down navigation; Enter opens a TextInput to edit
-    # the selected nutrient's value. Escape from selection mode returns the
+    # Modal editor for all nutrient values on an ingredient. Shows basis_grams
+    # as the first field, then the 11 nutrient fields with Up/Down navigation.
+    # Enter opens a TextInput to edit the selected value. Escape returns the
     # modified entry.
     #
     # Collaborators:
@@ -17,6 +17,8 @@ module NutritionTui
       Layout = RatatuiRuby::Layout
       Widgets = RatatuiRuby::Widgets
       Style = RatatuiRuby::Style
+
+      BASIS_FIELD = { key: 'basis_grams', label: 'Per (grams)', unit: '', indent: 0 }.freeze
 
       def initialize(entry:)
         @entry = entry
@@ -30,9 +32,8 @@ module NutritionTui
       end
 
       def render(frame, area)
-        items = nutrient_display_lines
         list = Widgets::List.new(
-          items: items,
+          items: display_lines,
           selected_index: @text_input ? nil : @selected,
           highlight_style: Style::Style.new(fg: :cyan, modifiers: [:bold]),
           block: Widgets::Block.new(title: 'Edit Nutrients', borders: [:all])
@@ -43,15 +44,23 @@ module NutritionTui
 
       private
 
+      def item_count
+        Data::NUTRIENTS.size + 1
+      end
+
+      def selected_field
+        @selected.zero? ? BASIS_FIELD : Data::NUTRIENTS[@selected - 1]
+      end
+
       def handle_selecting(event)
         case event
         in { type: :key, code: 'esc' }
           { done: true, entry: @entry }
         in { type: :key, code: 'up' | 'k' }
-          @selected = (@selected - 1).clamp(0, Data::NUTRIENTS.size - 1)
+          @selected = (@selected - 1).clamp(0, item_count - 1)
           nil
         in { type: :key, code: 'down' | 'j' }
-          @selected = (@selected + 1).clamp(0, Data::NUTRIENTS.size - 1)
+          @selected = (@selected + 1).clamp(0, item_count - 1)
           nil
         in { type: :key, code: 'enter' }
           open_text_input
@@ -70,30 +79,37 @@ module NutritionTui
       end
 
       def open_text_input
-        nutrient = Data::NUTRIENTS[@selected]
-        current = @entry['nutrients'][nutrient[:key]]
-        @text_input = TextInput.new(label: nutrient[:label], default: current || '')
+        field = selected_field
+        current = @entry['nutrients'][field[:key]]
+        @text_input = TextInput.new(label: field[:label], default: current || '')
         nil
       end
 
       def apply_edit(result)
-        nutrient = Data::NUTRIENTS[@selected]
+        field = selected_field
         parsed = Float(result[:value], exception: false)
         if parsed
-          @entry['nutrients'][nutrient[:key]] = parsed
+          @entry['nutrients'][field[:key]] = parsed
         elsif result[:value].strip.empty?
-          @entry['nutrients'].delete(nutrient[:key])
+          @entry['nutrients'].delete(field[:key])
         end
       end
 
-      def nutrient_display_lines
-        Data::NUTRIENTS.map do |n|
-          indent = '  ' * n[:indent]
-          value = @entry['nutrients'][n[:key]]
-          formatted = value ? format_number(value) : "\u2014"
-          suffix = n[:unit].empty? ? '' : " #{n[:unit]}"
-          "#{indent}#{n[:label].ljust(20 - (n[:indent] * 2))}#{formatted}#{suffix}"
-        end
+      def display_lines
+        [format_basis_line, ''] + Data::NUTRIENTS.map { |n| format_nutrient_line(n) }
+      end
+
+      def format_basis_line
+        value = @entry['nutrients']['basis_grams'] || 100
+        "#{BASIS_FIELD[:label].ljust(20)}#{format_number(value)}g"
+      end
+
+      def format_nutrient_line(nutrient)
+        indent = '  ' * nutrient[:indent]
+        value = @entry['nutrients'][nutrient[:key]]
+        formatted = value ? format_number(value) : "\u2014"
+        suffix = nutrient[:unit].empty? ? '' : " #{nutrient[:unit]}"
+        "#{indent}#{nutrient[:label].ljust(20 - (nutrient[:indent] * 2))}#{formatted}#{suffix}"
       end
 
       def render_text_input(frame, area)
