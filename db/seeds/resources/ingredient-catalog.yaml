@@ -503,7 +503,8 @@ Coconut milk (canned):
   - type: usda
     dataset: SR Legacy
     fdc_id: 170173
-    description: Nuts, coconut milk, canned (liquid expressed from grated meat and water)
+    description: Nuts, coconut milk, canned (liquid expressed from grated meat and
+      water)
 Coconut oil:
   aisle: Pantry
   nutrients:
@@ -601,6 +602,31 @@ Distilled water:
   aisle: Pantry
 Dried fruit:
   aisle: Snacks
+Egg yolks:
+  aliases:
+  - Egg yolk
+  aisle: Refrigerated
+  nutrients:
+    basis_grams: 100.0
+    calories: 322.0
+    fat: 26.54
+    saturated_fat: 9.55
+    trans_fat: 0.0
+    cholesterol: 1085.0
+    sodium: 48.0
+    carbs: 3.59
+    fiber: 0.0
+    total_sugars: 0.56
+    protein: 15.86
+    added_sugars: 0.0
+  portions:
+    large: 17.0
+    "~unitless": 17.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 172184
+    description: Egg, yolk, raw, fresh
 Eggs:
   aisle: Refrigerated
   nutrients:
@@ -632,31 +658,6 @@ Eggs:
     dataset: SR Legacy
     fdc_id: 171287
     description: Egg, whole, raw, fresh
-Egg yolks:
-  aliases:
-  - Egg yolk
-  aisle: Refrigerated
-  nutrients:
-    basis_grams: 100.0
-    calories: 322.0
-    fat: 26.54
-    saturated_fat: 9.55
-    trans_fat: 0.0
-    cholesterol: 1085.0
-    sodium: 48.0
-    carbs: 3.59
-    fiber: 0.0
-    total_sugars: 0.56
-    protein: 15.86
-    added_sugars: 0.0
-  portions:
-    large: 17.0
-    "~unitless": 17.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 172184
-    description: Egg, yolk, raw, fresh
 Everclear 151:
   aisle: Specialty
 Farro:
@@ -1437,8 +1438,8 @@ Pork chops:
   - type: usda
     dataset: SR Legacy
     fdc_id: 168238
-    description: Pork, fresh, loin, center loin (chops), bone-in, separable lean
-      and fat, raw
+    description: Pork, fresh, loin, center loin (chops), bone-in, separable lean and
+      fat, raw
 Potatoes:
   aliases:
   - Potato
@@ -1589,11 +1590,14 @@ Salt:
     unit: cup
   portions:
     dash: 0.4
+    spoonful: 5.0
   sources:
   - type: usda
     dataset: SR Legacy
     fdc_id: 173468
     description: Salt, table
+  aliases:
+  - Table salt
 Sandwich bread:
   aliases:
   - White bread
@@ -1649,7 +1653,7 @@ Small pasta:
   aisle: Pantry
 Smoked paprika:
   aliases:
-  - "Pimentón"
+  - Pimentón
   aisle: Spices
   nutrients:
     basis_grams: 100.0
@@ -1789,8 +1793,6 @@ Tater tots:
   aisle: Frozen
 Thyme:
   aisle: Spices
-Toilet paper:
-  aisle: Household
 Tofu:
   aliases:
   - Firm tofu
@@ -1820,6 +1822,8 @@ Tofu:
     dataset: SR Legacy
     fdc_id: 172475
     description: Tofu, raw, firm, prepared with calcium sulfate
+Toilet paper:
+  aisle: Household
 Tomato passata:
   aisle: Pantry
   nutrients:
