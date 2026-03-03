@@ -19,6 +19,7 @@ module NutritionTui
         @aisles = build_aisle_list(nutrition_data)
         @selected = @aisles.index(current_aisle) || 0
         @text_input = nil
+        @error = nil
       end
 
       def handle_event(event)
@@ -29,6 +30,7 @@ module NutritionTui
         if @text_input
           frame.render_widget(Widgets::Clear.new, area)
           @text_input.render(frame, area)
+          render_error(frame, area) if @error
         else
           render_list(frame, area)
         end
@@ -75,9 +77,20 @@ module NutritionTui
 
         if result[:cancelled]
           @text_input = nil
+          @error = nil
           nil
         else
-          { done: true, value: result[:value].strip }
+          validate_and_return(result[:value].strip)
+        end
+      end
+
+      def validate_and_return(value)
+        valid, msg = FamilyRecipes::NutritionConstraints.valid_aisle?(value)
+        if valid
+          { done: true, value: value }
+        else
+          @error = msg
+          nil
         end
       end
 
@@ -89,6 +102,17 @@ module NutritionTui
           block: Widgets::Block.new(title: 'Aisle', borders: [:all], border_type: :rounded)
         )
         frame.render_widget(list, area)
+      end
+
+      def render_error(frame, area)
+        error_area = RatatuiRuby::Layout::Rect.new(
+          x: area.x + 1, y: area.bottom - 2,
+          width: area.width - 2, height: 1
+        )
+        text = RatatuiRuby::Text::Line.new(
+          spans: [RatatuiRuby::Text::Span.styled(@error, Style::Style.new(fg: :red))]
+        )
+        frame.render_widget(Widgets::Paragraph.new(text: text), error_area)
       end
     end
   end
