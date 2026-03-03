@@ -1,0 +1,12 @@
+{
+  "planPath": "docs/plans/2026-03-03-server-render-performance-plan.md",
+  "tasks": [
+    {"id": 3, "subject": "Task 1: Menu — Server-Render Pre-Checked Checkboxes", "status": "pending"},
+    {"id": 4, "subject": "Task 2: Menu — Remove hidden-until-js", "status": "pending", "blockedBy": [3]},
+    {"id": 5, "subject": "Task 3: Groceries — Add Formatting Helper", "status": "pending"},
+    {"id": 6, "subject": "Task 4: Groceries — Server-Render Shopping List", "status": "pending", "blockedBy": [5]},
+    {"id": 7, "subject": "Task 5: Groceries — Remove hidden-until-js CSS and JS", "status": "pending", "blockedBy": [6]},
+    {"id": 8, "subject": "Task 6: Run Full Suite and Update Header Comments", "status": "pending", "blockedBy": [4, 7]}
+  ],
+  "lastUpdated": "2026-03-03T00:00:00Z"
+}
