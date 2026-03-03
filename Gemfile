@@ -25,6 +25,7 @@ group :development do
   gem 'rubocop-rails', require: false
 
   gem 'pastel'
+  gem 'ratatui_ruby'
   gem 'tty-prompt'
   gem 'tty-spinner'
   gem 'tty-table'
