@@ -4,8 +4,7 @@ require 'test_helper'
 
 class HeaderAuthTest < ActionDispatch::IntegrationTest
   setup do
-    @kitchen = Kitchen.create!(name: 'Test Kitchen', slug: 'test-kitchen')
-    ActsAsTenant.current_tenant = @kitchen
+    setup_test_kitchen
   end
 
   test 'creates user and session from trusted headers' do

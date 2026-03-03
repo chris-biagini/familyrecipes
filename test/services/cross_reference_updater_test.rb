@@ -4,13 +4,8 @@ require 'test_helper'
 
 class CrossReferenceUpdaterTest < ActiveSupport::TestCase
   setup do
-    @kitchen = Kitchen.find_or_create_by!(name: 'Test Kitchen', slug: 'test-kitchen')
-    ActsAsTenant.current_tenant = @kitchen
-
-    Category.find_or_create_by!(slug: 'bread', kitchen: @kitchen) do |cat|
-      cat.name = 'Bread'
-      cat.position = 0
-    end
+    setup_test_kitchen
+    setup_test_category(name: 'Bread')
 
     @dough = MarkdownImporter.import(<<~MD, kitchen: @kitchen)
       # Pizza Dough

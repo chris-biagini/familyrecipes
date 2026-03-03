@@ -7,10 +7,7 @@ class RecipeBroadcasterTest < ActiveSupport::TestCase
   include Turbo::Broadcastable::TestHelper
 
   setup do
-    @kitchen = Kitchen.find_or_create_by!(name: 'Test Kitchen', slug: 'test-kitchen')
-    ActsAsTenant.current_tenant = @kitchen
-    @user = User.find_or_create_by!(email: 'test@example.com') { |u| u.name = 'Test' }
-    Membership.find_or_create_by!(kitchen: @kitchen, user: @user)
+    create_kitchen_and_user
 
     MarkdownImporter.import(<<~MD, kitchen: @kitchen)
       # Focaccia

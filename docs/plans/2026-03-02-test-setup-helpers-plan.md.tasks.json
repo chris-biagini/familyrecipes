@@ -1,0 +1,11 @@
+{
+  "planPath": "docs/plans/2026-03-02-test-setup-helpers-plan.md",
+  "tasks": [
+    {"id": 2, "subject": "Task 1: Add shared helpers to test_helper.rb", "status": "pending"},
+    {"id": 3, "subject": "Task 2: Update model tests to use shared helpers", "status": "pending", "blockedBy": [2]},
+    {"id": 4, "subject": "Task 3: Update service tests to use shared helpers", "status": "pending", "blockedBy": [2]},
+    {"id": 5, "subject": "Task 4: Update helper, job, channel, and controller tests", "status": "pending", "blockedBy": [2]},
+    {"id": 6, "subject": "Task 5: Final verification, commit, and push", "status": "pending", "blockedBy": [3, 4, 5]}
+  ],
+  "lastUpdated": "2026-03-02T00:00:00Z"
+}

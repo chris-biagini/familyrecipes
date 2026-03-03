@@ -6,9 +6,8 @@ class StepModelTest < ActiveSupport::TestCase
   BASIC_MD = "# Test\n\nCategory: Test\n\n## Step\n\n- Flour\n\nMix."
 
   setup do
-    @kitchen = Kitchen.find_or_create_by!(name: 'Test Kitchen', slug: 'test-kitchen')
-    ActsAsTenant.current_tenant = @kitchen
-    @category = Category.find_or_create_by!(name: 'Test', slug: 'test')
+    setup_test_kitchen
+    setup_test_category
     @recipe = Recipe.find_or_create_by!(
       title: 'Test Recipe', slug: 'step-test-recipe',
       category: @category, markdown_source: BASIC_MD

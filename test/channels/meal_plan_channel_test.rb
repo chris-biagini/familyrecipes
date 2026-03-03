@@ -4,11 +4,9 @@ require 'test_helper'
 
 class MealPlanChannelTest < ActionCable::Channel::TestCase
   setup do
-    @kitchen = Kitchen.create!(name: 'Test Kitchen', slug: 'test-kitchen')
+    setup_test_kitchen
     @user = User.create!(name: 'Member', email: 'member@example.com')
-    ActsAsTenant.with_tenant(@kitchen) do
-      Membership.create!(kitchen: @kitchen, user: @user)
-    end
+    Membership.create!(kitchen: @kitchen, user: @user)
   end
 
   test 'subscribes when user is kitchen member' do

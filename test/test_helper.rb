@@ -10,8 +10,9 @@
 #    etc.) inherit Minitest::Test directly and do NOT have ActiveSupport extensions.
 #    RuboCop's Rails/RefuteMethods cop is excluded for these files.
 #
-# Helpers below: create_kitchen_and_user (sets @kitchen, @user, tenant),
-# log_in (logs in @user via dev login), kitchen_slug (returns @kitchen.slug).
+# ActiveSupport::TestCase helpers: setup_test_kitchen, setup_test_category,
+#   create_catalog_entry, create_kitchen_and_user.
+# ActionDispatch::IntegrationTest helpers: log_in, kitchen_slug.
 
 ENV['RAILS_ENV'] ||= 'test'
 
@@ -21,16 +22,39 @@ require 'action_cable/test_helper'
 require 'action_cable/channel/test_case'
 require 'minitest/autorun'
 
+module ActiveSupport
+  class TestCase
+    private
+
+    def setup_test_kitchen
+      @kitchen = Kitchen.find_or_create_by!(name: 'Test Kitchen', slug: 'test-kitchen')
+      ActsAsTenant.current_tenant = @kitchen
+    end
+
+    def setup_test_category(name: 'Test', slug: nil)
+      slug ||= FamilyRecipes.slugify(name)
+      @category = Category.find_or_create_by!(name:, slug:)
+    end
+
+    def create_catalog_entry(name, aisle: nil, basis_grams: nil, **nutrient_attrs)
+      IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: name) do |e|
+        e.aisle = aisle
+        e.basis_grams = basis_grams
+        nutrient_attrs.each { |attr, val| e.public_send(:"#{attr}=", val) }
+      end
+    end
+
+    def create_kitchen_and_user
+      setup_test_kitchen
+      @user = User.create!(name: 'Test User', email: 'test@example.com')
+      Membership.create!(kitchen: @kitchen, user: @user)
+    end
+  end
+end
+
 module ActionDispatch
   class IntegrationTest
     private
-
-    def create_kitchen_and_user
-      @kitchen = Kitchen.create!(name: 'Test Kitchen', slug: 'test-kitchen')
-      @user = User.create!(name: 'Test User', email: 'test@example.com')
-      ActsAsTenant.current_tenant = @kitchen
-      Membership.create!(kitchen: @kitchen, user: @user)
-    end
 
     def log_in
       get dev_login_path(id: @user.id)

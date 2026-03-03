@@ -4,19 +4,12 @@ require 'test_helper'
 
 class RecipeNutritionJobTest < ActiveSupport::TestCase
   setup do
-    @kitchen = Kitchen.find_or_create_by!(name: 'Test Kitchen', slug: 'test-kitchen')
-    ActsAsTenant.current_tenant = @kitchen
+    setup_test_kitchen
     Recipe.destroy_all
     Category.destroy_all
     IngredientCatalog.destroy_all
 
-    IngredientCatalog.create!(
-      ingredient_name: 'Flour',
-      basis_grams: 30.0,
-      calories: 110.0,
-      fat: 0.5,
-      protein: 3.0
-    )
+    create_catalog_entry('Flour', basis_grams: 30.0, calories: 110.0, fat: 0.5, protein: 3.0)
   end
 
   test 'computes and stores nutrition_data on recipe' do

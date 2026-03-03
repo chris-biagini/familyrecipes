@@ -4,9 +4,8 @@ require 'test_helper'
 
 class ShoppingListBuilderTest < ActiveSupport::TestCase
   setup do
-    @kitchen = Kitchen.find_or_create_by!(name: 'Test Kitchen', slug: 'test-kitchen')
-    ActsAsTenant.current_tenant = @kitchen
-    Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    setup_test_kitchen
+    setup_test_category(name: 'Bread')
 
     MarkdownImporter.import(<<~MD, kitchen: @kitchen)
       # Focaccia
@@ -21,14 +20,8 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
       Mix well.
     MD
 
-    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Flour') do |p|
-      p.basis_grams = 30
-      p.aisle = 'Baking'
-    end
-    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Salt') do |p|
-      p.basis_grams = 6
-      p.aisle = 'Spices'
-    end
+    create_catalog_entry('Flour', basis_grams: 30, aisle: 'Baking')
+    create_catalog_entry('Salt', basis_grams: 6, aisle: 'Spices')
   end
 
   test 'builds shopping list organized by aisle' do
@@ -126,10 +119,7 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
   end
 
   test 'unordered aisles appear after ordered aisles alphabetically' do
-    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Eggs') do |p|
-      p.basis_grams = 50
-      p.aisle = 'Refrigerated'
-    end
+    create_catalog_entry('Eggs', basis_grams: 50, aisle: 'Refrigerated')
 
     MarkdownImporter.import(<<~MD, kitchen: @kitchen)
       # Scramble
@@ -236,10 +226,7 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
       Make dough.
     MD
 
-    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Water') do |p|
-      p.basis_grams = 240
-      p.aisle = 'Miscellaneous'
-    end
+    create_catalog_entry('Water', basis_grams: 240, aisle: 'Miscellaneous')
 
     list = MealPlan.for_kitchen(@kitchen)
     list.apply_action('select', type: 'recipe', slug: 'pizza', selected: true)
@@ -303,10 +290,7 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
   end
 
   test 'consolidates singular and plural ingredient names into canonical form' do
-    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Eggs') do |p|
-      p.basis_grams = 50
-      p.aisle = 'Refrigerated'
-    end
+    create_catalog_entry('Eggs', basis_grams: 50, aisle: 'Refrigerated')
 
     MarkdownImporter.import(<<~MD, kitchen: @kitchen)
       # Omelet

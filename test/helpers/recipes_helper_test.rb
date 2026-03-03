@@ -6,8 +6,7 @@ class RecipesHelperTest < ActionView::TestCase
   include ApplicationHelper
 
   setup do
-    @kitchen = Kitchen.create!(name: 'Test Kitchen', slug: 'test-kitchen')
-    ActsAsTenant.current_tenant = @kitchen
+    setup_test_kitchen
   end
 
   test 'format_makes returns formatted string with whole quantity' do

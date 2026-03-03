@@ -4,9 +4,8 @@ require 'test_helper'
 
 class IngredientModelTest < ActiveSupport::TestCase
   setup do
-    @kitchen = Kitchen.find_or_create_by!(name: 'Test Kitchen', slug: 'test-kitchen')
-    ActsAsTenant.current_tenant = @kitchen
-    @category = Category.find_or_create_by!(name: 'Test', slug: 'test')
+    setup_test_kitchen
+    setup_test_category
     @recipe = Recipe.find_or_create_by!(
       title: 'Test Recipe', slug: 'test-recipe',
       category: @category, markdown_source: "# Test\n\nCategory: Test\n\n## Step\n\n- Flour\n\nMix."

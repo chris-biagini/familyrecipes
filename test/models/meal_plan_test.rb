@@ -4,8 +4,7 @@ require 'test_helper'
 
 class MealPlanTest < ActiveSupport::TestCase
   setup do
-    @kitchen = Kitchen.find_or_create_by!(name: 'Test Kitchen', slug: 'test-kitchen')
-    ActsAsTenant.current_tenant = @kitchen
+    setup_test_kitchen
     MealPlan.where(kitchen: @kitchen).delete_all
   end
 

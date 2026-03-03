@@ -4,8 +4,7 @@ require 'test_helper'
 
 class RecipeWriteServiceTest < ActiveSupport::TestCase
   setup do
-    @kitchen = Kitchen.find_or_create_by!(name: 'Test Kitchen', slug: 'test-kitchen')
-    ActsAsTenant.current_tenant = @kitchen
+    setup_test_kitchen
     Recipe.destroy_all
     Category.destroy_all
   end

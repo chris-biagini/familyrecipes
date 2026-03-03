@@ -7,10 +7,8 @@ class CrossReferenceModelTest < ActiveSupport::TestCase
   POOLISH_MD = "# Poolish\n\nCategory: Bread\n\n## Mix\n\n- Flour, 1 cup\n\nMix it."
 
   setup do
-    @kitchen = Kitchen.find_or_create_by!(name: 'Test Kitchen', slug: 'test-kitchen')
-    ActsAsTenant.current_tenant = @kitchen
-
-    @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread')
+    setup_test_kitchen
+    setup_test_category(name: 'Bread')
     @recipe = Recipe.find_or_create_by!(
       title: 'Pizza Dough', slug: 'pizza-dough',
       category: @category, markdown_source: DOUGH_MD
@@ -221,10 +219,8 @@ class StepIngredientListItemsTest < ActiveSupport::TestCase
   POOLISH_MD = "# Poolish\n\nCategory: Bread\n\n## Mix\n\n- Flour, 1 cup\n\nMix it."
 
   setup do
-    @kitchen = Kitchen.find_or_create_by!(name: 'Test Kitchen', slug: 'test-kitchen')
-    ActsAsTenant.current_tenant = @kitchen
-
-    @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread')
+    setup_test_kitchen
+    setup_test_category(name: 'Bread')
     @recipe = Recipe.find_or_create_by!(
       title: 'Focaccia', slug: 'focaccia',
       category: @category, markdown_source: FOCACCIA_MD
@@ -282,10 +278,8 @@ end
 
 class StepCrossReferenceQueryTest < ActiveSupport::TestCase
   setup do
-    @kitchen = Kitchen.find_or_create_by!(name: 'Test Kitchen', slug: 'test-kitchen')
-    ActsAsTenant.current_tenant = @kitchen
-
-    @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread')
+    setup_test_kitchen
+    setup_test_category(name: 'Bread')
     @target = Recipe.find_or_create_by!(
       title: 'Poolish', slug: 'poolish',
       category: @category, markdown_source: "# Poolish\n\nCategory: Bread\n\n## Mix\n\n- Flour, 1 cup\n\nMix."
@@ -332,10 +326,8 @@ end
 
 class CrossReferenceExpandedIngredientsTest < ActiveSupport::TestCase
   setup do
-    @kitchen = Kitchen.find_or_create_by!(name: 'Test Kitchen', slug: 'test-kitchen')
-    ActsAsTenant.current_tenant = @kitchen
-
-    @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread')
+    setup_test_kitchen
+    setup_test_category(name: 'Bread')
 
     # Target recipe: Poolish with "Flour, 2 cups" and "Water, 1 cup"
     @target = Recipe.find_or_create_by!(

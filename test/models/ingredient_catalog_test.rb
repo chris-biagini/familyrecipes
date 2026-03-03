@@ -4,7 +4,7 @@ require 'test_helper'
 
 class IngredientCatalogTest < ActiveSupport::TestCase
   setup do
-    @kitchen = Kitchen.find_or_create_by!(name: 'Test Kitchen', slug: 'test-kitchen')
+    setup_test_kitchen
     IngredientCatalog.where(kitchen_id: [@kitchen.id, nil]).delete_all
   end
 

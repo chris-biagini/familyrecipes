@@ -4,9 +4,8 @@ require 'test_helper'
 
 class RecipeAvailabilityCalculatorTest < ActiveSupport::TestCase
   setup do
-    @kitchen = Kitchen.find_or_create_by!(name: 'Test Kitchen', slug: 'test-kitchen')
-    ActsAsTenant.current_tenant = @kitchen
-    Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    setup_test_kitchen
+    setup_test_category(name: 'Bread')
 
     MarkdownImporter.import(<<~MD, kitchen: @kitchen)
       # Focaccia
@@ -36,22 +35,10 @@ class RecipeAvailabilityCalculatorTest < ActiveSupport::TestCase
       Mix well.
     MD
 
-    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Flour') do |p|
-      p.basis_grams = 30
-      p.aisle = 'Baking'
-    end
-    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Salt') do |p|
-      p.basis_grams = 6
-      p.aisle = 'Spices'
-    end
-    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Water') do |p|
-      p.basis_grams = 240
-      p.aisle = 'omit'
-    end
-    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Yeast') do |p|
-      p.basis_grams = 3
-      p.aisle = 'Baking'
-    end
+    create_catalog_entry('Flour', basis_grams: 30, aisle: 'Baking')
+    create_catalog_entry('Salt', basis_grams: 6, aisle: 'Spices')
+    create_catalog_entry('Water', basis_grams: 240, aisle: 'omit')
+    create_catalog_entry('Yeast', basis_grams: 3, aisle: 'Baking')
   end
 
   test 'returns availability for all recipes' do
@@ -106,10 +93,7 @@ class RecipeAvailabilityCalculatorTest < ActiveSupport::TestCase
   end
 
   test 'treats singular and plural ingredient names as equivalent' do
-    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Eggs') do |p|
-      p.basis_grams = 50
-      p.aisle = 'Refrigerated'
-    end
+    create_catalog_entry('Eggs', basis_grams: 50, aisle: 'Refrigerated')
 
     MarkdownImporter.import(<<~MD, kitchen: @kitchen)
       # Custard

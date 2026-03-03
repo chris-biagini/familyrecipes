@@ -4,7 +4,7 @@ require 'test_helper'
 
 class KitchenAisleOrderTest < ActiveSupport::TestCase
   setup do
-    @kitchen = Kitchen.find_or_create_by!(name: 'Test', slug: 'test')
+    setup_test_kitchen
   end
 
   test 'parsed_aisle_order returns empty array when nil' do
