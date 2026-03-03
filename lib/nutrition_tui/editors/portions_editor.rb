@@ -140,7 +140,7 @@ module NutritionTui
       def render_list(frame, area)
         items = portion_display_lines
         items = ['(no portions)'] if items.empty?
-        title_suffix = items == ['(no portions)'] ? '' : '  a add  e edit  d delete'
+        title_suffix = items == ['(no portions)'] ? '  a add' : '  a add  e edit  d delete'
         list = Widgets::List.new(
           items: items,
           selected_index: portion_names.empty? ? nil : @selected,
