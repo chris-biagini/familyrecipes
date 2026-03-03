@@ -101,6 +101,31 @@
       </div>
     </fieldset>
 
+    <fieldset class="editor-section">
+      <legend class="editor-section-title">Aliases</legend>
+      <p class="editor-help">
+        Alternate names for this ingredient. Recipes using any alias will map
+        to this entry for nutrition and grocery grouping.
+      </p>
+      <div class="alias-chip-list" data-nutrition-editor-target="aliasList">
+        <% (entry&.aliases || []).each do |alias_name| %>
+          <span class="alias-chip" data-nutrition-editor-target="aliasChip">
+            <span class="alias-chip-text"><%= alias_name %></span>
+            <button type="button" class="alias-chip-remove" aria-label="Remove alias"
+                    data-action="click->nutrition-editor#removeAlias">&times;</button>
+          </span>
+        <% end %>
+      </div>
+      <div class="alias-add-row">
+        <input type="text" class="alias-input" placeholder="e.g. AP flour"
+               data-nutrition-editor-target="aliasInput"
+               data-action="keydown->nutrition-editor#aliasInputKeydown"
+               aria-label="New alias name">
+        <button type="button" class="btn add-alias"
+                data-action="click->nutrition-editor#addAlias">Add</button>
+      </div>
+    </fieldset>
+
     <% if recipes.any? %>
       <div class="editor-recipes">
         <span class="editor-recipes-label">Used in</span>

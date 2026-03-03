@@ -17,7 +17,8 @@ export default class extends Controller {
     "basisGrams", "nutrientField",
     "densityVolume", "densityUnit", "densityGrams",
     "portionList", "portionRow", "portionName", "portionGrams",
-    "aisleSelect", "aisleInput"
+    "aisleSelect", "aisleInput",
+    "aliasList", "aliasInput", "aliasChip"
   ]
 
   static values = {
@@ -141,6 +142,48 @@ export default class extends Controller {
     event.currentTarget.closest(".portion-row").remove()
   }
 
+  addAlias() {
+    const name = this.aliasInputTarget.value.trim()
+    if (!name) return
+
+    if (this.collectAliases().includes(name)) {
+      this.aliasInputTarget.value = ""
+      return
+    }
+
+    const chip = document.createElement("span")
+    chip.className = "alias-chip"
+    chip.setAttribute("data-nutrition-editor-target", "aliasChip")
+
+    const text = document.createElement("span")
+    text.className = "alias-chip-text"
+    text.textContent = name
+
+    const removeBtn = document.createElement("button")
+    removeBtn.type = "button"
+    removeBtn.className = "alias-chip-remove"
+    removeBtn.setAttribute("aria-label", "Remove alias")
+    removeBtn.setAttribute("data-action", "click->nutrition-editor#removeAlias")
+    removeBtn.textContent = "\u00d7"
+
+    chip.appendChild(text)
+    chip.appendChild(removeBtn)
+    this.aliasListTarget.appendChild(chip)
+    this.aliasInputTarget.value = ""
+    this.aliasInputTarget.focus()
+  }
+
+  removeAlias(event) {
+    event.currentTarget.closest(".alias-chip").remove()
+  }
+
+  aliasInputKeydown(event) {
+    if (event.key === "Enter") {
+      event.preventDefault()
+      this.addAlias()
+    }
+  }
+
   aisleChanged() {
     if (this.aisleSelectTarget.value === "__other__") {
       this.aisleInputTarget.hidden = false
@@ -192,7 +235,8 @@ export default class extends Controller {
       nutrients: this.collectNutrients(),
       density: this.collectDensity(),
       portions: this.collectPortions(),
-      aisle: this.currentAisle()
+      aisle: this.currentAisle(),
+      aliases: this.collectAliases()
     }
   }
 
@@ -388,6 +432,12 @@ export default class extends Controller {
     })
 
     return portions
+  }
+
+  collectAliases() {
+    return this.aliasChipTargets.map(chip =>
+      chip.querySelector(".alias-chip-text").textContent.trim()
+    )
   }
 
   currentAisle() {

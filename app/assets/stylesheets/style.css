@@ -1199,6 +1199,59 @@ footer small {
   margin-top: 0.25rem;
 }
 
+/* Alias chips */
+.alias-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-bottom: 0.4rem;
+  min-height: 1.5rem;
+}
+
+.alias-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.15rem 0.4rem;
+  border-radius: 3px;
+  background: var(--faint-bg);
+  border: 1px solid var(--border-color);
+  font-size: 0.85rem;
+  line-height: 1.3;
+}
+
+.alias-chip-remove {
+  appearance: none;
+  -webkit-appearance: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted-text);
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0 0.1rem;
+}
+
+.alias-chip-remove:hover {
+  color: var(--danger-color);
+}
+
+.alias-add-row {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.alias-input {
+  flex: 1;
+  font-size: 0.85rem;
+  padding: 0.25rem 0.4rem;
+}
+
+.add-alias {
+  font-size: 0.85rem;
+}
+
 .aisle-section .form-row {
   gap: 0.5rem;
   flex-wrap: nowrap;
