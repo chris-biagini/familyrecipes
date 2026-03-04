@@ -59,8 +59,7 @@ class RecipeAvailabilityCalculator
   end
 
   def loaded_recipes
-    xref_includes = { cross_references: { target_recipe: { steps: :ingredients } } }
-    @kitchen.recipes.includes(steps: [:ingredients, xref_includes])
+    @kitchen.recipes.with_full_tree
   end
 
   def quick_bites
