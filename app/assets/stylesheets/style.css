@@ -97,6 +97,21 @@ html {
     linear-gradient(var(--gingham-base), var(--gingham-base));
 }
 
+/* Turbo Drive progress bar — base styles defined here because Turbo's
+   dynamic <style> injection is blocked by our strict CSP. The JS-driven
+   width/opacity changes via CSSOM are not blocked. */
+.turbo-progress-bar {
+  position: fixed;
+  display: block;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: var(--text-color);
+  z-index: 2147483647;
+  transition: width 300ms ease-out, opacity 150ms 150ms ease-in;
+  transform: translate3d(0, 0, 0);
+}
+
 body,
 html {
   margin: 0;
