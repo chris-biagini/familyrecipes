@@ -56,11 +56,11 @@ class RecipeBroadcaster
 
   def broadcast(action:, recipe_title:, recipe: nil)
     ActsAsTenant.with_tenant(kitchen) do
-      catalog_lookup = IngredientCatalog.lookup_for(kitchen)
+      resolver = IngredientCatalog.resolver_for(kitchen)
       categories = preload_categories
 
       broadcast_recipe_listings(categories)
-      broadcast_ingredients(categories.flat_map(&:recipes), catalog_lookup:)
+      broadcast_ingredients(categories.flat_map(&:recipes), resolver:)
       broadcast_recipe_page(recipe, action:, recipe_title:)
       append_toast([kitchen, 'recipes'], "#{recipe_title} was #{action}")
       Turbo::StreamsChannel.broadcast_refresh_to(kitchen, :meal_plan_updates)
@@ -91,8 +91,8 @@ class RecipeBroadcaster
     )
   end
 
-  def broadcast_ingredients(recipes, catalog_lookup:)
-    builder = IngredientRowBuilder.new(kitchen:, recipes:, lookup: catalog_lookup)
+  def broadcast_ingredients(recipes, resolver:)
+    builder = IngredientRowBuilder.new(kitchen:, recipes:, resolver:)
 
     Turbo::StreamsChannel.broadcast_replace_to(
       kitchen, 'recipes',

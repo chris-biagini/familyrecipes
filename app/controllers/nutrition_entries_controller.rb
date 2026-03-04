@@ -82,7 +82,11 @@ class NutritionEntriesController < ApplicationController
     render :upsert
   end
 
+  def resolver
+    @resolver ||= IngredientCatalog.resolver_for(current_kitchen)
+  end
+
   def row_builder
-    @row_builder ||= IngredientRowBuilder.new(kitchen: current_kitchen)
+    @row_builder ||= IngredientRowBuilder.new(kitchen: current_kitchen, resolver:)
   end
 end

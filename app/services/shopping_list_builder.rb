@@ -2,18 +2,21 @@
 
 # Produces the grocery shopping list from a MealPlan's selected recipes and quick
 # bites. Aggregates ingredient quantities (via IngredientAggregator), canonicalizes
-# names through IngredientCatalog, organizes items by grocery aisle, appends custom
+# names through IngredientResolver, organizes items by grocery aisle, appends custom
 # items, and sorts aisles by the kitchen's user-defined order. Consumed by
 # GroceriesController#show and MealPlan.prune_stale_items.
+#
+# Collaborators:
+# - IngredientResolver — name canonicalization and catalog lookups
+# - IngredientAggregator — quantity merging
+# - IngredientCatalog.resolver_for — factory for resolver
 class ShoppingListBuilder
   AISLE_SORT_PRIORITY = { ordered: 0, unordered: 1, miscellaneous: 2 }.freeze
 
-  def initialize(kitchen:, meal_plan:, catalog_lookup: nil)
+  def initialize(kitchen:, meal_plan:, resolver: nil)
     @kitchen = kitchen
     @meal_plan = meal_plan
-    @profiles = catalog_lookup || IngredientCatalog.lookup_for(kitchen)
-    @profiles_ci = @profiles.transform_keys(&:downcase)
-    @uncataloged_names = {}
+    @resolver = resolver || IngredientCatalog.resolver_for(kitchen)
   end
 
   def build
@@ -79,21 +82,20 @@ class ShoppingListBuilder
   end
 
   def canonical_name(name)
-    profile = @profiles[name] || @profiles_ci[name.downcase]
-    return profile.ingredient_name if profile
-
-    # For uncataloged ingredients, keep first-seen capitalization
-    @uncataloged_names[name.downcase] ||= name
+    @resolver.resolve(name)
   end
 
   def organize_by_aisle(ingredients)
-    visible = ingredients.reject { |name, _| @profiles[name]&.aisle == 'omit' }
+    visible = ingredients.reject { |name, _| aisle_for(name) == 'omit' }
     grouped = visible.each_with_object(Hash.new { |h, k| h[k] = [] }) do |(name, entry), result|
-      target_aisle = @profiles[name]&.aisle || 'Miscellaneous'
-      result[target_aisle] << { name: name, amounts: serialize_amounts(entry[:amounts]), sources: entry[:sources] }
+      result[aisle_for(name)] << { name: name, amounts: serialize_amounts(entry[:amounts]), sources: entry[:sources] }
     end
 
     sort_aisles(grouped)
+  end
+
+  def aisle_for(name)
+    @resolver.catalog_entry(name)&.aisle || 'Miscellaneous'
   end
 
   def sort_aisles(aisles_hash)
