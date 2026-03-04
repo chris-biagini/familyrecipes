@@ -1,0 +1,18 @@
+{
+  "planPath": "docs/plans/2026-03-04-ingredient-resolver-plan.md",
+  "tasks": [
+    {"id": 0, "subject": "Task 0: Create feature branch", "status": "pending"},
+    {"id": 1, "subject": "Task 1: Write failing tests for IngredientResolver", "status": "pending", "blockedBy": [0]},
+    {"id": 2, "subject": "Task 2: Implement IngredientResolver", "status": "pending", "blockedBy": [1]},
+    {"id": 3, "subject": "Task 3: Add IngredientCatalog.resolver_for factory", "status": "pending", "blockedBy": [2]},
+    {"id": 4, "subject": "Task 4: Migrate ShoppingListBuilder", "status": "pending", "blockedBy": [3]},
+    {"id": 5, "subject": "Task 5: Migrate RecipeAvailabilityCalculator", "status": "pending", "blockedBy": [3]},
+    {"id": 6, "subject": "Task 6: Migrate IngredientRowBuilder", "status": "pending", "blockedBy": [3]},
+    {"id": 7, "subject": "Task 7: Migrate IngredientsController", "status": "pending", "blockedBy": [6]},
+    {"id": 8, "subject": "Task 8: Migrate NutritionEntriesController", "status": "pending", "blockedBy": [6]},
+    {"id": 9, "subject": "Task 9: Migrate RecipeBroadcaster", "status": "pending", "blockedBy": [6]},
+    {"id": 10, "subject": "Task 10: Add regression tests and update header comments", "status": "pending", "blockedBy": [4, 5, 6, 7, 8, 9]},
+    {"id": 11, "subject": "Task 11: Update CLAUDE.md and final verification", "status": "pending", "blockedBy": [10]}
+  ],
+  "lastUpdated": "2026-03-04T00:00:00Z"
+}
