@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'test_helper'
+require 'turbo/broadcastable/test_helper'
 
 class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
   include Turbo::Broadcastable::TestHelper

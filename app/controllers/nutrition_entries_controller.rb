@@ -1,30 +1,26 @@
 # frozen_string_literal: true
 
-# JSON/Turbo Stream API for creating, updating, and deleting kitchen-scoped
-# IngredientCatalog entries from the web nutrition editor. On save, syncs new
-# aisles to the kitchen's aisle_order, broadcasts a page-refresh signal for
-# cross-device sync, and recalculates nutrition for all affected recipes.
-# Responds with Turbo Stream updates to refresh the ingredients table in-place.
+# Thin adapter for the web nutrition editor — param parsing, delegation to
+# CatalogWriteService for persistence and side effects, and response rendering
+# via IngredientRowBuilder. No orchestration logic lives here.
+#
+# - CatalogWriteService: upsert/destroy with aisle sync, nutrition recalc, broadcasts
+# - IngredientRowBuilder: computes table rows, summary, and next-needing-attention
 class NutritionEntriesController < ApplicationController
-  include IngredientRows
-
   before_action :require_membership
 
-  WEB_SOURCE = [{ 'type' => 'web', 'note' => 'Entered via ingredients page' }].freeze
-
   def upsert
-    entry = IngredientCatalog.find_or_initialize_by(kitchen: current_kitchen, ingredient_name:)
-    entry.assign_from_params(**catalog_params, sources: WEB_SOURCE)
-    return render_errors(entry) unless entry.save
+    result = CatalogWriteService.upsert(kitchen: current_kitchen, ingredient_name:, params: catalog_params) # rubocop:disable Rails/SkipsModelValidations
+    return render_errors(result.entry) unless result.persisted
 
-    after_save(entry)
+    respond_to do |format|
+      format.turbo_stream { render_turbo_stream_update }
+      format.json { render_json_response }
+    end
   end
 
   def destroy
-    entry = IngredientCatalog.find_by!(kitchen: current_kitchen, ingredient_name:)
-    entry.destroy!
-    recalculate_affected_recipes
-    Turbo::StreamsChannel.broadcast_refresh_to(current_kitchen, :meal_plan_updates)
+    CatalogWriteService.destroy(kitchen: current_kitchen, ingredient_name:)
     render json: { status: 'ok' }
   rescue ActiveRecord::RecordNotFound
     head :not_found
@@ -70,57 +66,23 @@ class NutritionEntriesController < ApplicationController
     render json: { errors: entry.errors.full_messages }, status: :unprocessable_content
   end
 
-  def after_save(entry)
-    aisle = entry.aisle
-    has_nutrition = entry.basis_grams.present?
-
-    sync_aisle_to_kitchen(aisle) if aisle
-    broadcast_aisle_change if aisle
-    recalculate_affected_recipes if has_nutrition
-
-    respond_to do |format|
-      format.turbo_stream { render_turbo_stream_update }
-      format.json { render_json_response }
-    end
-  end
-
   def render_json_response
     response_body = { status: 'ok' }
     if params[:save_and_next]
-      lookup = IngredientCatalog.lookup_for(current_kitchen)
-      response_body[:next_ingredient] = next_needing_attention(after: ingredient_name, lookup:)
+      response_body[:next_ingredient] = row_builder.next_needing_attention(after: ingredient_name)
     end
     render json: response_body
   end
 
   def render_turbo_stream_update
-    lookup = IngredientCatalog.lookup_for(current_kitchen)
-    all_rows = build_ingredient_rows(lookup)
-    @updated_row = all_rows.find { |r| r[:name].casecmp(ingredient_name).zero? }
-    @summary = build_summary(all_rows)
-    @next_ingredient = next_needing_attention(after: ingredient_name, lookup:) if params[:save_and_next]
+    @updated_row = row_builder.rows.find { |r| r[:name].casecmp(ingredient_name).zero? }
+    @summary = row_builder.summary
+    @next_ingredient = row_builder.next_needing_attention(after: ingredient_name) if params[:save_and_next]
 
     render :upsert
   end
 
-  def sync_aisle_to_kitchen(aisle)
-    return if aisle == 'omit'
-    return if current_kitchen.parsed_aisle_order.include?(aisle)
-
-    existing = current_kitchen.aisle_order.to_s
-    current_kitchen.update!(aisle_order: [existing, aisle].reject(&:empty?).join("\n"))
-  end
-
-  def broadcast_aisle_change
-    Turbo::StreamsChannel.broadcast_refresh_to(current_kitchen, :meal_plan_updates)
-  end
-
-  def recalculate_affected_recipes
-    canonical = ingredient_name.downcase
-    current_kitchen.recipes
-                   .joins(steps: :ingredients)
-                   .where('LOWER(ingredients.name) = ?', canonical)
-                   .distinct
-                   .find_each { |recipe| RecipeNutritionJob.perform_now(recipe) }
+  def row_builder
+    @row_builder ||= IngredientRowBuilder.new(kitchen: current_kitchen)
   end
 end
