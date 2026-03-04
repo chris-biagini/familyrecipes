@@ -5,7 +5,7 @@ import ListenerManager from "utilities/listener_manager"
 /**
  * Menu page recipe/quick-bite selection. Handles optimistic checkbox toggle,
  * select-all, and clear-all actions. All rendering (checkboxes, availability
- * dots) is server-side via Turbo Stream morphs.
+ * badges) is server-side via Turbo Stream morphs.
  */
 export default class extends Controller {
   connect() {

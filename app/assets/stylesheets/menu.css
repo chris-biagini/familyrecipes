@@ -65,6 +65,7 @@
 
 #recipe-selector .category li {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   padding: 0.35rem 0;
   cursor: pointer;
@@ -97,27 +98,49 @@
   color: var(--accent-color);
 }
 
-.availability-dot {
-  width: 0.6rem;
-  height: 0.6rem;
-  border-radius: 50%;
+/* Availability badges */
+.availability-ready {
   flex-shrink: 0;
-  margin-right: 0.4rem;
+  margin-left: auto;
+  padding: 0 0.4rem;
+  font-size: 0.85rem;
+  color: var(--checked-color);
+}
+
+.availability-detail {
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.availability-detail summary {
+  list-style: none;
+  font-size: 0.8rem;
+  color: var(--muted-text);
   cursor: pointer;
-  background: var(--border-muted);
-  transition: background-color 0.2s ease;
+  padding: 0 0.4rem;
+  white-space: nowrap;
 }
 
-.availability-dot[data-missing="0"] {
-  background: #4caf50;
+.availability-detail summary::-webkit-details-marker {
+  display: none;
 }
 
-.availability-dot[data-missing="1"] {
-  background: #ffc107;
+.availability-detail summary:hover {
+  text-decoration: underline;
 }
 
-.availability-dot[data-missing="2"] {
-  background: #ff9800;
+.availability-missing {
+  display: none;
+  font-size: 0.75rem;
+  color: var(--muted-text);
+  padding: 0.15rem 0 0.15rem 0;
+  font-style: italic;
+  flex-basis: 100%;
+  padding-left: 1.6rem;
+}
+
+.availability-detail[open] ~ .availability-missing {
+  display: block;
 }
 
 /* Quick Bites */
@@ -169,6 +192,7 @@
 
 #recipe-selector .quick-bites .subsection li {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   padding: 0.25rem 0;
   font-size: 0.95rem;
@@ -295,7 +319,8 @@
     break-inside: avoid;
   }
 
-  .availability-dot {
+  .availability-detail,
+  .availability-ready {
     display: none;
   }
 }

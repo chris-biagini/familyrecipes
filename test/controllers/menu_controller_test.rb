@@ -78,6 +78,39 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     assert_select '#recipe-selector input[checked]', count: 0
   end
 
+  test 'show renders need-N badge for recipe with missing ingredients' do
+    log_in
+    create_focaccia_recipe
+    create_catalog_entry('Flour', basis_grams: 30, aisle: 'Baking')
+
+    get menu_path(kitchen_slug: kitchen_slug)
+
+    assert_select 'details.availability-detail summary', text: /need\s+1/
+  end
+
+  test 'show renders ready checkmark when all ingredients checked off' do
+    log_in
+    create_focaccia_recipe
+    create_catalog_entry('Flour', basis_grams: 30, aisle: 'Baking')
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('check', item: 'Flour', checked: true)
+
+    get menu_path(kitchen_slug: kitchen_slug)
+
+    assert_select 'span.availability-ready', text: "\u2713"
+    assert_select 'details.availability-detail', count: 0
+  end
+
+  test 'show renders missing ingredient names in expanded detail' do
+    log_in
+    create_focaccia_recipe
+    create_catalog_entry('Flour', basis_grams: 30, aisle: 'Baking')
+
+    get menu_path(kitchen_slug: kitchen_slug)
+
+    assert_select '.availability-missing', text: 'Flour'
+  end
+
   # --- Select ---
 
   test 'select adds recipe' do

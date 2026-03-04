@@ -9,10 +9,18 @@
       <li>
         <input type="checkbox" id="<%= recipe.slug %>-checkbox" data-slug="<%= recipe.slug %>" data-title="<%= h recipe.title %>" <%= 'checked' if selected_recipes.include?(recipe.slug) %>>
         <label for="<%= recipe.slug %>-checkbox"><%= recipe.title %></label>
-        <% if (info = availability[recipe.slug]) %>
-          <span class="availability-dot" data-slug="<%= recipe.slug %>" data-missing="<%= info[:missing] > 2 ? '3+' : info[:missing] %>" aria-label="<%= info[:missing].zero? ? 'All ingredients on hand' : "Missing #{info[:missing]}: #{info[:missing_names].join(', ')}" %>"></span>
+        <% info = availability[recipe.slug] %>
+        <% if info && info[:missing].zero? %>
+          <span class="availability-ready" aria-label="All ingredients on hand">&#10003;</span>
+        <% elsif info %>
+          <details class="availability-detail">
+            <summary aria-label="Missing <%= info[:missing] %>: <%= info[:missing_names].join(', ') %>">need <%= info[:missing] %></summary>
+          </details>
         <% end %>
         <%= link_to "\u2192", recipe_path(recipe.slug), class: 'recipe-link', title: "Open #{recipe.title} in new tab", target: '_blank' %>
+        <% if info && info[:missing] > 0 %>
+          <span class="availability-missing"><%= info[:missing_names].join(', ') %></span>
+        <% end %>
       </li>
     <%- end -%>
     </ul>
@@ -30,8 +38,16 @@
           <li>
             <input type="checkbox" id="<%= item.id %>-checkbox" data-slug="<%= item.id %>" data-title="<%= h item.title %>" <%= 'checked' if selected_quick_bites.include?(item.id) %>>
             <label for="<%= item.id %>-checkbox"><%= item.title %></label>
-            <% if (info = availability[item.id]) %>
-              <span class="availability-dot" data-slug="<%= item.id %>" data-missing="<%= info[:missing].zero? ? '0' : '3+' %>" aria-label="<%= info[:missing].zero? ? 'All ingredients on hand' : "Missing #{info[:missing]}: #{info[:missing_names].join(', ')}" %>"></span>
+            <% info = availability[item.id] %>
+            <% if info && info[:missing].zero? %>
+              <span class="availability-ready" aria-label="All ingredients on hand">&#10003;</span>
+            <% elsif info %>
+              <details class="availability-detail">
+                <summary aria-label="Missing <%= info[:missing] %>: <%= info[:missing_names].join(', ') %>">need <%= info[:missing] %></summary>
+              </details>
+            <% end %>
+            <% if info && info[:missing] > 0 %>
+              <span class="availability-missing"><%= info[:missing_names].join(', ') %></span>
             <% end %>
           </li>
         <%- end -%>

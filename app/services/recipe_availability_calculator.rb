@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 # Computes per-recipe and per-quick-bite ingredient availability for the menu
-# page's "availability dots." For each recipe/quick bite, reports how many
+# page's availability badges. For each recipe/quick bite, reports how many
 # ingredients are still needed (not yet checked off on the grocery list). Used
-# by MenuController for availability dot rendering.
+# by MenuController for badge rendering.
 #
 # Collaborators:
 # - IngredientResolver — name resolution (case-insensitive, variant collapsing)
