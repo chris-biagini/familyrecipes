@@ -11,8 +11,9 @@
 # or instructions). The step-level :cross_reference key drives this branching.
 #
 # Kitchen-scoped (requires kitchen: keyword) and idempotent — db:seed calls
-# this repeatedly. After import, resolves pending cross-references and triggers
-# nutrition calculation via RecipeNutritionJob and CascadeNutritionJob.
+# this repeatedly. After import, resolves pending cross-references, computes
+# nutrition synchronously (RecipeNutritionJob), and enqueues CascadeNutritionJob
+# async so parent recipes update without blocking the saving user.
 class MarkdownImporter
   def self.import(markdown_source, kitchen:)
     new(markdown_source, kitchen: kitchen).import
@@ -47,7 +48,7 @@ class MarkdownImporter
 
   def compute_nutrition(recipe)
     RecipeNutritionJob.perform_now(recipe)
-    CascadeNutritionJob.perform_now(recipe)
+    CascadeNutritionJob.perform_later(recipe)
   end
 
   def parse_markdown

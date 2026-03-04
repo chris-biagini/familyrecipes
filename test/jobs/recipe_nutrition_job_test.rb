@@ -3,6 +3,8 @@
 require 'test_helper'
 
 class RecipeNutritionJobTest < ActiveSupport::TestCase
+  include ActiveJob::TestHelper
+
   setup do
     setup_test_kitchen
     Recipe.destroy_all
@@ -99,6 +101,22 @@ class RecipeNutritionJobTest < ActiveSupport::TestCase
 
     assert_predicate pizza.nutrition_data, :present?
     assert_predicate pizza.nutrition_data['totals']['calories'], :positive?
+  end
+
+  test 'MarkdownImporter enqueues CascadeNutritionJob' do
+    assert_enqueued_with(job: CascadeNutritionJob) do
+      MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+        # Cascade Test
+
+        Category: Test
+
+        ## Step (do it)
+
+        - Flour, 1 cup
+
+        Mix.
+      MD
+    end
   end
 
   private

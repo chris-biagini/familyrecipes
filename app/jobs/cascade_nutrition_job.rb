@@ -2,7 +2,9 @@
 
 # After a recipe's nutrition changes, recalculates nutrition for all recipes
 # that reference it via cross-references. Prevents stale per-serving numbers
-# when a sub-recipe's ingredients change.
+# when a sub-recipe's ingredients change. Enqueued async (perform_later) by
+# MarkdownImporter so the saving user isn't blocked waiting for parent recipes
+# to recompute.
 class CascadeNutritionJob < ApplicationJob
   def perform(recipe)
     ActsAsTenant.with_tenant(recipe.kitchen) do
