@@ -43,7 +43,12 @@ class GroceriesController < ApplicationController
     errors = validate_aisle_order
     return render json: { errors: }, status: :unprocessable_content if errors.any?
 
-    current_kitchen.save!
+    ActiveRecord::Base.transaction do
+      cascade_aisle_renames
+      cascade_aisle_deletes
+      current_kitchen.save!
+    end
+
     broadcast_meal_plan_refresh
     render json: { status: 'ok' }
   end
@@ -64,6 +69,22 @@ class GroceriesController < ApplicationController
     end
 
     too_many + too_long
+  end
+
+  def cascade_aisle_renames
+    renames = params[:renames]
+    return unless renames.is_a?(ActionController::Parameters)
+
+    renames.each_pair do |old_name, new_name|
+      IngredientCatalog.where(kitchen: current_kitchen, aisle: old_name).update_all(aisle: new_name) # rubocop:disable Rails/SkipsModelValidations
+    end
+  end
+
+  def cascade_aisle_deletes
+    deletes = params[:deletes]
+    return unless deletes.is_a?(Array)
+
+    IngredientCatalog.where(kitchen: current_kitchen, aisle: deletes).update_all(aisle: nil) # rubocop:disable Rails/SkipsModelValidations
   end
 
   def build_aisle_order_text

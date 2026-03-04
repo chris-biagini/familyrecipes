@@ -383,6 +383,71 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  # --- Aisle rename/delete cascading ---
+
+  test 'update_aisle_order cascades renames to catalog entries' do
+    IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Apples', aisle: 'Produce')
+    IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Bananas', aisle: 'Produce')
+    IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Milk', aisle: 'Dairy')
+
+    log_in
+    patch groceries_aisle_order_path(kitchen_slug: kitchen_slug),
+          params: { aisle_order: "Fruits & Vegetables\nDairy",
+                    renames: { 'Produce' => 'Fruits & Vegetables' } },
+          as: :json
+
+    assert_response :success
+    assert_equal 'Fruits & Vegetables', IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'Apples').aisle
+    assert_equal 'Fruits & Vegetables', IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'Bananas').aisle
+    assert_equal 'Dairy', IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'Milk').aisle
+  end
+
+  test 'update_aisle_order clears aisle from catalog entries on delete' do
+    IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Apples', aisle: 'Produce')
+    IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Milk', aisle: 'Dairy')
+
+    log_in
+    patch groceries_aisle_order_path(kitchen_slug: kitchen_slug),
+          params: { aisle_order: 'Dairy',
+                    deletes: ['Produce'] },
+          as: :json
+
+    assert_response :success
+    assert_nil IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'Apples').aisle
+    assert_equal 'Dairy', IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'Milk').aisle
+  end
+
+  test 'update_aisle_order handles renames and deletes together' do
+    IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Apples', aisle: 'Produce')
+    IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Bread', aisle: 'Bakery')
+
+    log_in
+    patch groceries_aisle_order_path(kitchen_slug: kitchen_slug),
+          params: { aisle_order: 'Fruits & Vegetables',
+                    renames: { 'Produce' => 'Fruits & Vegetables' },
+                    deletes: ['Bakery'] },
+          as: :json
+
+    assert_response :success
+    assert_equal 'Fruits & Vegetables', IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'Apples').aisle
+    assert_nil IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'Bread').aisle
+  end
+
+  test 'update_aisle_order rename does not affect other kitchens' do
+    other_kitchen = Kitchen.create!(name: 'Other', slug: 'other')
+    IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Apples', aisle: 'Produce')
+    IngredientCatalog.create!(kitchen: other_kitchen, ingredient_name: 'Apples', aisle: 'Produce')
+
+    log_in
+    patch groceries_aisle_order_path(kitchen_slug: kitchen_slug),
+          params: { aisle_order: 'Fruits',
+                    renames: { 'Produce' => 'Fruits' } },
+          as: :json
+
+    assert_response :success
+    assert_equal 'Produce', IngredientCatalog.find_by(kitchen: other_kitchen, ingredient_name: 'Apples').aisle
+  end
+
   private
 
   def build_stale_list(method_to_stub)
