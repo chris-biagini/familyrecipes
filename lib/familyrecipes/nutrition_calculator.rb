@@ -20,6 +20,10 @@ module FamilyRecipes
       'gal' => 3785.41, 'ml' => 1, 'l' => 1000
     }.freeze
 
+    # Subset of VOLUME_TO_ML for the density editor dropdown — excludes bulk
+    # units (pt, qt, gal) that don't make sense for expressing ingredient density.
+    DENSITY_UNITS = ['cup', 'tbsp', 'tsp', 'fl oz', 'ml', 'l'].freeze
+
     Result = Data.define(
       :totals, :serving_count, :per_serving, :per_unit,
       :makes_quantity, :makes_unit_singular, :makes_unit_plural,

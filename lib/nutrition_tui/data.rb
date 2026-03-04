@@ -24,6 +24,30 @@ module NutritionTui
       { key: d.key.to_s, label: d.label, unit: d.unit, indent: d.indent }
     end.freeze
 
+    # Derived once from frozen calculator constants + Inflector tables.
+    # Used by volume_modifier? / weight_modifier? for USDA modifier classification.
+    VOLUME_PREFIXES = begin
+      prefixes = FamilyRecipes::NutritionCalculator::VOLUME_TO_ML.keys.to_set
+      FamilyRecipes::Inflector::ABBREVIATIONS.each do |long_form, short_form|
+        prefixes << long_form if FamilyRecipes::NutritionCalculator::VOLUME_TO_ML.key?(short_form)
+      end
+      FamilyRecipes::Inflector::KNOWN_PLURALS.each do |singular, plural|
+        prefixes << plural if prefixes.include?(singular)
+      end
+      prefixes.freeze
+    end
+
+    WEIGHT_PREFIXES = begin
+      prefixes = FamilyRecipes::NutritionCalculator::WEIGHT_CONVERSIONS.keys.to_set
+      FamilyRecipes::Inflector::ABBREVIATIONS.each do |long_form, short_form|
+        prefixes << long_form if FamilyRecipes::NutritionCalculator::WEIGHT_CONVERSIONS.key?(short_form)
+      end
+      FamilyRecipes::Inflector::KNOWN_PLURALS.each do |singular, plural|
+        prefixes << plural if prefixes.include?(singular)
+      end
+      prefixes.freeze
+    end
+
     module_function
 
     # --- Data I/O ---
@@ -127,42 +151,19 @@ module NutritionTui
     end
 
     def volume_modifier?(modifier)
-      unit_prefix_match?(modifier, volume_prefixes)
+      unit_prefix_match?(modifier, VOLUME_PREFIXES)
     end
 
     def weight_modifier?(modifier)
-      unit_prefix_match?(modifier, weight_prefixes)
-    end
-
-    def volume_prefixes
-      build_unit_prefixes(FamilyRecipes::NutritionCalculator::VOLUME_TO_ML)
-    end
-
-    def weight_prefixes
-      build_unit_prefixes(FamilyRecipes::NutritionCalculator::WEIGHT_CONVERSIONS)
-    end
-
-    def build_unit_prefixes(canonical_map)
-      prefixes = canonical_map.keys.to_set
-      FamilyRecipes::Inflector::ABBREVIATIONS.each do |long_form, short_form|
-        prefixes << long_form if canonical_map.key?(short_form)
-      end
-      expand_with_known_plurals(prefixes)
-    end
-
-    def expand_with_known_plurals(prefixes)
-      FamilyRecipes::Inflector::KNOWN_PLURALS.each do |singular, plural|
-        prefixes << plural if prefixes.include?(singular)
-      end
-      prefixes
+      unit_prefix_match?(modifier, WEIGHT_PREFIXES)
     end
 
     # Matches when modifier starts with a unit and the next char is
-    # a word boundary (space, comma, end-of-string). Prevents 'l'
-    # matching 'large' or 'g' matching 'garlic'.
+    # a word boundary (space, comma, paren, or end-of-string). Prevents
+    # 'l' matching 'large' or 'g' matching 'garlic'.
     def unit_prefix_match?(modifier, prefixes)
       downcased = modifier.to_s.downcase
-      prefixes.any? { |u| downcased.start_with?(u) && (downcased.size == u.size || downcased[u.size] =~ /[\s,]/) }
+      prefixes.any? { |u| downcased.start_with?(u) && (downcased.size == u.size || downcased[u.size] =~ /[\s,(]/) }
     end
 
     def regulatory_modifier?(modifier)
@@ -317,8 +318,6 @@ module NutritionTui
                          :build_omit_set, :check_recipe_resolvability,
                          :check_recipe_units, :collect_all_units,
                          :per_unit_grams, :modifier_bucket, :canonicalize_volume,
-                         :volume_prefixes, :weight_prefixes,
-                         :build_unit_prefixes, :expand_with_known_plurals,
                          :unit_prefix_match?
   end # rubocop:enable Metrics/ModuleLength
 end

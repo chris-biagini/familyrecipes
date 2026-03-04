@@ -158,6 +158,40 @@ class UsdaClientTest < Minitest::Test
     end
   end
 
+  # -- volume_unit? --
+
+  def test_volume_unit_cup
+    assert @client.send(:volume_unit?, 'cup')
+  end
+
+  def test_volume_unit_cups_plural
+    assert @client.send(:volume_unit?, 'cups')
+  end
+
+  def test_volume_unit_tablespoon
+    assert @client.send(:volume_unit?, 'tablespoon')
+  end
+
+  def test_volume_unit_tsp
+    assert @client.send(:volume_unit?, 'tsp')
+  end
+
+  def test_volume_unit_fl_oz
+    assert @client.send(:volume_unit?, 'fl oz')
+  end
+
+  def test_volume_unit_strips_parenthetical
+    assert @client.send(:volume_unit?, 'cup (8 fl oz)')
+  end
+
+  def test_volume_unit_rejects_large
+    refute @client.send(:volume_unit?, 'large')
+  end
+
+  def test_volume_unit_rejects_piece
+    refute @client.send(:volume_unit?, 'piece')
+  end
+
   # -- load_api_key --
 
   def test_load_api_key_from_env

@@ -47,7 +47,7 @@
                 data-nutrition-editor-target="densityUnit"
                 aria-label="Volume unit">
           <option value="">unit</option>
-          <% FamilyRecipes::NutritionCalculator::VOLUME_TO_ML.each_key do |u| %>
+          <% FamilyRecipes::NutritionCalculator::DENSITY_UNITS.each do |u| %>
             <option value="<%= u %>" <%= 'selected' if has_density && entry.density_unit == u %>><%= u %></option>
           <% end %>
         </select>

@@ -139,6 +139,35 @@ class NutritionTuiDataTest < Minitest::Test
     assert NutritionTui::Data.volume_modifier?('cups')
   end
 
+  def test_volume_modifier_liter_exact
+    assert NutritionTui::Data.volume_modifier?('l')
+  end
+
+  def test_volume_modifier_rejects_large
+    refute NutritionTui::Data.volume_modifier?('large')
+  end
+
+  def test_volume_modifier_fluid_ounce
+    assert NutritionTui::Data.volume_modifier?('fluid ounce')
+  end
+
+  def test_volume_modifier_case_insensitive
+    assert NutritionTui::Data.volume_modifier?('Cup')
+    assert NutritionTui::Data.volume_modifier?('TBSP')
+  end
+
+  def test_volume_modifier_with_parenthetical
+    assert NutritionTui::Data.volume_modifier?('cup(s)')
+  end
+
+  def test_volume_modifier_nil_input
+    refute NutritionTui::Data.volume_modifier?(nil)
+  end
+
+  def test_volume_modifier_empty_string
+    refute NutritionTui::Data.volume_modifier?('')
+  end
+
   def test_volume_modifier_rejects_clove
     refute NutritionTui::Data.volume_modifier?('clove')
   end
@@ -155,6 +184,23 @@ class NutritionTuiDataTest < Minitest::Test
 
   def test_weight_modifier_kg
     assert NutritionTui::Data.weight_modifier?('kg')
+  end
+
+  def test_weight_modifier_g_exact
+    assert NutritionTui::Data.weight_modifier?('g')
+  end
+
+  def test_weight_modifier_rejects_garlic
+    refute NutritionTui::Data.weight_modifier?('garlic')
+  end
+
+  def test_weight_modifier_lbs
+    assert NutritionTui::Data.weight_modifier?('lbs')
+  end
+
+  def test_weight_modifier_ounce_is_weight_not_volume
+    assert NutritionTui::Data.weight_modifier?('ounce')
+    refute NutritionTui::Data.volume_modifier?('ounce')
   end
 
   def test_weight_modifier_rejects_cup
