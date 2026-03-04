@@ -3,17 +3,17 @@
 # Ingredients management page — member-only. Displays a searchable, filterable
 # table of all ingredients across recipes with their nutrition/density status
 # and aisle assignments. The edit action renders the nutrition editor form as a
-# partial for the dialog. Uses the shared IngredientRows concern for row-building
-# logic shared with NutritionEntriesController and RecipeBroadcaster.
+# partial for the dialog. Delegates row-building to IngredientRowBuilder.
+#
+# - IngredientRowBuilder: builds ingredient rows and summary from kitchen recipes
+# - IngredientCatalog: lookup overlay for name resolution and status
 class IngredientsController < ApplicationController
-  include IngredientRows
-
   before_action :require_membership
   before_action :prevent_html_caching, only: :index
 
   def index
-    @ingredient_rows = build_ingredient_rows(catalog_lookup)
-    @summary = build_summary(@ingredient_rows)
+    @ingredient_rows = row_builder.rows
+    @summary = row_builder.summary
     @available_aisles = current_kitchen.all_aisles
     @next_needing_attention = first_needing_attention
   end
@@ -25,11 +25,15 @@ class IngredientsController < ApplicationController
 
     render partial: 'ingredients/editor_form',
            locals: { ingredient_name:, entry:, available_aisles: aisles,
-                     next_name: next_needing_attention(after: ingredient_name, lookup: catalog_lookup),
+                     next_name: row_builder.next_needing_attention(after: ingredient_name),
                      recipes: }
   end
 
   private
+
+  def row_builder
+    @row_builder ||= IngredientRowBuilder.new(kitchen: current_kitchen, lookup: catalog_lookup)
+  end
 
   def first_needing_attention
     row = @ingredient_rows.find { |r| r[:status] != 'complete' }

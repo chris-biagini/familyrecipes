@@ -7,10 +7,9 @@
 #
 # - RecipeBroadcastJob: async caller for create/update/destroy broadcasts
 # - RecipeWriteService: synchronous caller for rename redirects (broadcast_rename)
+# - IngredientRowBuilder: builds ingredient rows and summary for broadcast
 # - Turbo::StreamsChannel: transport layer for all stream pushes
 class RecipeBroadcaster
-  include IngredientRows
-
   SHOW_INCLUDES = [
     :category,
     { steps: [:ingredients, { cross_references: { target_recipe: { steps: %i[ingredients cross_references] } } }] }
@@ -93,20 +92,19 @@ class RecipeBroadcaster
   end
 
   def broadcast_ingredients(recipes, catalog_lookup:)
-    rows = build_ingredient_rows(catalog_lookup, recipes:)
-    summary = build_summary(rows)
+    builder = IngredientRowBuilder.new(kitchen:, recipes:, lookup: catalog_lookup)
 
     Turbo::StreamsChannel.broadcast_replace_to(
       kitchen, 'recipes',
       target: 'ingredients-summary',
       partial: 'ingredients/summary_bar',
-      locals: { summary: }
+      locals: { summary: builder.summary }
     )
     Turbo::StreamsChannel.broadcast_replace_to(
       kitchen, 'recipes',
       target: 'ingredients-table',
       partial: 'ingredients/table',
-      locals: { ingredient_rows: rows }
+      locals: { ingredient_rows: builder.rows }
     )
   end
 
