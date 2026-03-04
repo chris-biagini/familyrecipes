@@ -31,7 +31,7 @@ class RecipeBroadcastJobTest < ActiveSupport::TestCase
       assert_equal @kitchen, kitchen
       assert_equal :updated, action
       assert_equal 'Focaccia', recipe_title
-      assert_equal recipe.id, recipe&.id
+      assert_equal 'focaccia', recipe&.slug
     } do
       RecipeBroadcastJob.perform_now(
         kitchen_id: @kitchen.id, action: 'updated',
