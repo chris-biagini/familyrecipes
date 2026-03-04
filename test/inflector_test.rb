@@ -235,6 +235,34 @@ class InflectorTest < Minitest::Test
     assert_equal 'item', FamilyRecipes::Inflector.normalize_unit('items')
   end
 
+  def test_normalize_unit_fl_oz_passthrough
+    assert_equal 'fl oz', FamilyRecipes::Inflector.normalize_unit('fl oz')
+  end
+
+  def test_normalize_unit_fluid_ounce_to_fl_oz
+    assert_equal 'fl oz', FamilyRecipes::Inflector.normalize_unit('fluid ounce')
+  end
+
+  def test_normalize_unit_fluid_ounces_to_fl_oz
+    assert_equal 'fl oz', FamilyRecipes::Inflector.normalize_unit('fluid ounces')
+  end
+
+  def test_normalize_unit_pint_to_pt
+    assert_equal 'pt', FamilyRecipes::Inflector.normalize_unit('pint')
+  end
+
+  def test_normalize_unit_quart_to_qt
+    assert_equal 'qt', FamilyRecipes::Inflector.normalize_unit('quart')
+  end
+
+  def test_normalize_unit_gallon_to_gal
+    assert_equal 'gal', FamilyRecipes::Inflector.normalize_unit('gallon')
+  end
+
+  def test_normalize_unit_gallons_to_gal
+    assert_equal 'gal', FamilyRecipes::Inflector.normalize_unit('gallons')
+  end
+
   # --- unit_display ---
 
   def test_unit_display_abbreviated_never_pluralizes

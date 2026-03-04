@@ -40,6 +40,7 @@ module FamilyRecipes
       'lb' => 'lb', 'lbs' => 'lb', 'pound' => 'lb', 'pounds' => 'lb',
       'l' => 'l', 'liter' => 'l', 'liters' => 'l',
       'ml' => 'ml',
+      'fl oz' => 'fl oz', 'fluid ounce' => 'fl oz', 'fluid ounces' => 'fl oz',
       'pt' => 'pt', 'pint' => 'pt', 'pints' => 'pt',
       'qt' => 'qt', 'quart' => 'qt', 'quarts' => 'qt',
       'gal' => 'gal', 'gallon' => 'gal', 'gallons' => 'gal'
