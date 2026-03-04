@@ -120,8 +120,12 @@ class MealPlan < ApplicationRecord
   end
 
   def apply_custom_items(item:, action:, **)
-    toggle_array('custom_items', item, action == 'add')
-    prune_checked_off_for(item) unless action == 'add'
+    adding = action == 'add'
+    toggle_array('custom_items', item, adding, save: adding)
+    return if adding
+
+    prune_checked_off_for(item)
+    save!
   end
 
   def prune_checked_off_for(item)

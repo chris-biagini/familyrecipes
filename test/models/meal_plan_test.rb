@@ -330,6 +330,8 @@ class MealPlanTest < ActiveSupport::TestCase
     list.apply_action('check', item: 'Birthday Candles', checked: true)
     list.apply_action('custom_items', item: 'Birthday Candles', action: 'remove')
 
+    list.reload
+
     assert_empty list.state['custom_items']
     assert_empty list.state['checked_off']
   end
@@ -339,6 +341,8 @@ class MealPlanTest < ActiveSupport::TestCase
     list.apply_action('custom_items', item: 'Test', action: 'add')
     list.apply_action('check', item: 'Test', checked: true)
     list.apply_action('custom_items', item: 'test', action: 'remove')
+
+    list.reload
 
     assert_empty list.state['custom_items']
     assert_empty list.state['checked_off']
