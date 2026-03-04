@@ -10,6 +10,24 @@ module FamilyRecipes
   # - IngredientCatalog (delegates custom validators here)
   # - NutritionTui::Editors::* (calls predicates on close/commit)
   module NutritionConstraints
+    NutrientDef = Data.define(:key, :label, :unit, :indent)
+
+    NUTRIENT_DEFS = [
+      NutrientDef.new(key: :calories,      label: 'Calories',     unit: '',   indent: 0),
+      NutrientDef.new(key: :fat,           label: 'Total Fat',    unit: 'g',  indent: 0),
+      NutrientDef.new(key: :saturated_fat, label: 'Saturated Fat', unit: 'g', indent: 1),
+      NutrientDef.new(key: :trans_fat,     label: 'Trans Fat',    unit: 'g',  indent: 1),
+      NutrientDef.new(key: :cholesterol,   label: 'Cholesterol',  unit: 'mg', indent: 0),
+      NutrientDef.new(key: :sodium,        label: 'Sodium',       unit: 'mg', indent: 0),
+      NutrientDef.new(key: :carbs,         label: 'Total Carbs',  unit: 'g',  indent: 0),
+      NutrientDef.new(key: :fiber,         label: 'Fiber',        unit: 'g',  indent: 1),
+      NutrientDef.new(key: :total_sugars,  label: 'Total Sugars', unit: 'g',  indent: 1),
+      NutrientDef.new(key: :added_sugars,  label: 'Added Sugars', unit: 'g',  indent: 2),
+      NutrientDef.new(key: :protein,       label: 'Protein',      unit: 'g',  indent: 0)
+    ].freeze
+
+    NUTRIENT_KEYS = NUTRIENT_DEFS.map(&:key).freeze
+
     NUTRIENT_MAX = Hash.new(10_000).merge('sodium' => 50_000).freeze
     AISLE_MAX_LENGTH = 50
 

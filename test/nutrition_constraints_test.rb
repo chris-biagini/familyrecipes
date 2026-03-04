@@ -164,6 +164,32 @@ class NutritionConstraintsTest < ActiveSupport::TestCase
     assert_not valid
   end
 
+  # --- NutrientDef ---
+
+  test 'NUTRIENT_DEFS has eleven entries' do
+    assert_equal 11, NC::NUTRIENT_DEFS.size
+  end
+
+  test 'NUTRIENT_KEYS matches NUTRIENT_DEFS order' do
+    expected = NC::NUTRIENT_DEFS.map(&:key)
+
+    assert_equal expected, NC::NUTRIENT_KEYS
+  end
+
+  test 'NutrientDef exposes key, label, unit, indent' do
+    first = NC::NUTRIENT_DEFS.first
+
+    assert_equal :calories, first.key
+    assert_equal 'Calories', first.label
+    assert_equal '', first.unit
+    assert_equal 0, first.indent
+  end
+
+  test 'NUTRIENT_KEYS starts with calories and ends with protein' do
+    assert_equal :calories, NC::NUTRIENT_KEYS.first
+    assert_equal :protein, NC::NUTRIENT_KEYS.last
+  end
+
   # --- valid_aisle? ---
 
   test 'valid_aisle? accepts string within limit' do
