@@ -10,11 +10,6 @@
 # - IngredientRowBuilder: builds ingredient rows and summary for broadcast
 # - Turbo::StreamsChannel: transport layer for all stream pushes
 class RecipeBroadcaster
-  SHOW_INCLUDES = [
-    :category,
-    { steps: [:ingredients, { cross_references: { target_recipe: { steps: %i[ingredients cross_references] } } }] }
-  ].freeze
-
   def self.broadcast(kitchen:, action:, recipe_title:, recipe: nil)
     new(kitchen).broadcast(action:, recipe_title:, recipe:)
   end
@@ -114,7 +109,7 @@ class RecipeBroadcaster
     message = "#{recipe_title} was #{action}"
     append_toast([recipe, 'content'], message)
 
-    fresh = kitchen.recipes.includes(SHOW_INCLUDES).find_by(slug: recipe.slug)
+    fresh = kitchen.recipes.with_full_tree.find_by(slug: recipe.slug)
     return unless fresh
 
     replace_recipe_content(fresh)
@@ -122,7 +117,7 @@ class RecipeBroadcaster
   end
 
   def broadcast_referencing_recipes(recipe)
-    recipe.referencing_recipes.includes(SHOW_INCLUDES).find_each do |parent|
+    recipe.referencing_recipes.with_full_tree.find_each do |parent|
       replace_recipe_content(parent)
     end
   end
@@ -130,7 +125,7 @@ class RecipeBroadcaster
   def update_referencing_recipes(parent_ids)
     return if parent_ids.empty?
 
-    kitchen.recipes.where(id: parent_ids).includes(SHOW_INCLUDES).find_each do |parent|
+    kitchen.recipes.where(id: parent_ids).with_full_tree.find_each do |parent|
       replace_recipe_content(parent)
     end
   end
