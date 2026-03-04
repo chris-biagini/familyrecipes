@@ -3,6 +3,8 @@
 require 'test_helper'
 
 class RecipeWriteServiceTest < ActiveSupport::TestCase
+  include ActiveJob::TestHelper
+
   setup do
     setup_test_kitchen
     Recipe.destroy_all
@@ -199,5 +201,27 @@ class RecipeWriteServiceTest < ActiveSupport::TestCase
     RecipeWriteService.destroy(slug: 'focaccia', kitchen: @kitchen)
 
     assert_nil xref.reload.target_recipe_id
+  end
+
+  test 'create enqueues RecipeBroadcastJob' do
+    assert_enqueued_with(job: RecipeBroadcastJob) do
+      RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen)
+    end
+  end
+
+  test 'update enqueues RecipeBroadcastJob' do
+    RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen)
+
+    assert_enqueued_with(job: RecipeBroadcastJob) do
+      RecipeWriteService.update(slug: 'focaccia', markdown: BASIC_MARKDOWN, kitchen: @kitchen)
+    end
+  end
+
+  test 'destroy enqueues RecipeBroadcastJob with parent_ids' do
+    RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen)
+
+    assert_enqueued_with(job: RecipeBroadcastJob) do
+      RecipeWriteService.destroy(slug: 'focaccia', kitchen: @kitchen)
+    end
   end
 end

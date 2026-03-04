@@ -2,12 +2,13 @@
 
 # Orchestrates recipe create/update/destroy. Owns the full post-write pipeline:
 # import via MarkdownImporter, handle renames (CrossReferenceUpdater), clean up
-# orphan categories, and prune stale meal plan entries. All Turbo broadcasting
-# is delegated to RecipeBroadcaster. Controllers validate input and render
-# responses; this service owns domain orchestration.
+# orphan categories, and prune stale meal plan entries. Broadcasting is async
+# via RecipeBroadcastJob, except rename/delete notifications which must complete
+# before the HTTP response reaches the saving user's browser.
 #
 # - MarkdownImporter: parses markdown into AR records
-# - RecipeBroadcaster: all real-time Turbo Stream updates
+# - RecipeBroadcastJob: async Turbo Stream broadcasts for create/update/destroy
+# - RecipeBroadcaster: synchronous rename redirects and delete notifications
 # - CrossReferenceUpdater: renames cross-references on title change
 class RecipeWriteService
   Result = Data.define(:recipe, :updated_references)
@@ -30,7 +31,7 @@ class RecipeWriteService
 
   def create(markdown:)
     recipe = import_and_timestamp(markdown)
-    RecipeBroadcaster.broadcast(kitchen:, action: :created, recipe_title: recipe.title, recipe:)
+    enqueue_broadcast(action: :created, recipe_title: recipe.title, recipe:)
     post_write_cleanup
     Result.new(recipe:, updated_references: [])
   end
@@ -40,7 +41,7 @@ class RecipeWriteService
     recipe = import_and_timestamp(markdown)
     updated_references = rename_cross_references(old_recipe, recipe)
     handle_slug_change(old_recipe, recipe)
-    RecipeBroadcaster.broadcast(kitchen:, action: :updated, recipe_title: recipe.title, recipe:)
+    enqueue_broadcast(action: :updated, recipe_title: recipe.title, recipe:)
     post_write_cleanup
     Result.new(recipe:, updated_references:)
   end
@@ -49,7 +50,10 @@ class RecipeWriteService
     recipe = kitchen.recipes.find_by!(slug:)
     parent_ids = recipe.referencing_recipes.pluck(:id)
     recipe.destroy!
-    RecipeBroadcaster.broadcast_destroy(kitchen:, recipe:, recipe_title: recipe.title, parent_ids:)
+    RecipeBroadcastJob.perform_later(
+      kitchen_id: kitchen.id, action: 'destroy',
+      recipe_title: recipe.title, recipe_id: recipe.id, parent_ids:
+    )
     post_write_cleanup
     Result.new(recipe:, updated_references: [])
   end
@@ -57,6 +61,13 @@ class RecipeWriteService
   private
 
   attr_reader :kitchen
+
+  def enqueue_broadcast(action:, recipe_title:, recipe:)
+    RecipeBroadcastJob.perform_later(
+      kitchen_id: kitchen.id, action: action.to_s,
+      recipe_title:, recipe_id: recipe.id
+    )
+  end
 
   def import_and_timestamp(markdown)
     recipe = MarkdownImporter.import(markdown, kitchen:)
