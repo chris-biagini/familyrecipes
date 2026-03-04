@@ -120,13 +120,8 @@ class IngredientCatalog < ApplicationRecord
   end
 
   def assign_density(density)
-    if density.blank? || density.values.all?(&:blank?)
-      assign_attributes(density_volume: nil, density_unit: nil, density_grams: nil)
-    else
-      assign_attributes(density_volume: density[:volume],
-                        density_unit: density[:unit],
-                        density_grams: density[:grams])
-    end
+    vals = density.present? && density.values.any?(&:present?) ? density : {}
+    assign_attributes(density_volume: vals[:volume], density_unit: vals[:unit], density_grams: vals[:grams])
   end
 
   def normalize_portions_hash(raw)

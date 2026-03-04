@@ -88,7 +88,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
 
     get menu_path(kitchen_slug: kitchen_slug)
 
-    assert_select 'details.availability-detail summary', text: /1\/2/
+    assert_select 'details.availability-detail summary', text: %r{1/2}
   end
 
   test 'show renders x for single-ingredient recipe when not on hand' do
@@ -125,7 +125,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     get menu_path(kitchen_slug: kitchen_slug)
 
     assert_select 'details.availability-detail.all-on-hand summary', text: /\u2713/
-    assert_select 'details.availability-detail.all-on-hand summary', text: /\d+\/\d+/, count: 0
+    assert_select 'details.availability-detail.all-on-hand summary', text: %r{\d+/\d+}, count: 0
   end
 
   test 'show renders have and missing ingredient lists in detail' do
