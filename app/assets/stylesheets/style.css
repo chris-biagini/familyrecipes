@@ -864,6 +864,7 @@ footer small {
 }
 
 .aisle-row {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -871,6 +872,7 @@ footer small {
   background: var(--surface-alt);
   border: 1px solid #e0e0e0;
   border-radius: 6px;
+  transition: background 200ms ease, border-color 200ms ease, opacity 200ms ease;
 }
 
 .aisle-row--renamed {
@@ -885,6 +887,7 @@ footer small {
 
 .aisle-row--deleted .aisle-name {
   text-decoration: line-through;
+  cursor: default;
 }
 
 .aisle-row--new {
@@ -913,35 +916,24 @@ footer small {
   width: 100%;
 }
 
-.aisle-row--deleted .aisle-name {
-  cursor: default;
-}
-
 button.aisle-name:hover {
   color: var(--accent-color);
 }
 
-.aisle-was {
-  display: block;
-  font-size: 0.7rem;
-  color: var(--muted-text);
-  font-style: italic;
-  margin-top: 0.15rem;
-}
-
 .aisle-rename-input {
-  font-family: "Futura", sans-serif;
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  border: none;
-  border-bottom: 2px solid var(--accent-color);
-  background: transparent;
-  padding: 0;
+  box-sizing: border-box;
+  font-size: 0.85rem;
+  padding: 0.25rem 0.4rem;
+  border: 1px solid var(--border-light);
+  border-radius: 3px;
+  background: var(--content-background-color);
+  color: var(--text-color);
   outline: none;
   width: 100%;
-  color: var(--text-color);
+}
+
+.aisle-rename-input:focus {
+  border-color: var(--border-muted);
 }
 
 .aisle-controls {
@@ -964,8 +956,10 @@ button.aisle-name:hover {
   border: 1px solid var(--border-light);
   border-radius: 50%;
   cursor: pointer;
-  font-size: 1rem;
-  line-height: 1;
+}
+
+.aisle-btn svg {
+  display: block;
 }
 
 .aisle-btn:hover:not(:disabled) {
@@ -976,6 +970,7 @@ button.aisle-name:hover {
 .aisle-btn:disabled {
   opacity: 0.3;
   cursor: default;
+  transition: opacity 150ms ease;
 }
 
 .aisle-btn--delete:hover:not(:disabled) {
@@ -983,24 +978,14 @@ button.aisle-name:hover {
   border-color: var(--danger-color);
 }
 
-.aisle-btn--undo {
-  font-size: 0.85rem;
+.aisle-btn--undo:hover:not(:disabled) {
+  color: var(--checked-color);
+  border-color: var(--checked-color);
 }
 
 .aisle-btn--add {
-  appearance: none;
-  -webkit-appearance: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   width: 2.25rem;
   height: 2.25rem;
-  padding: 0;
-  background: none;
-  color: var(--border-muted);
-  border: 1px solid var(--border-light);
-  border-radius: 50%;
-  cursor: pointer;
   flex-shrink: 0;
 }
 
@@ -1013,15 +998,17 @@ button.aisle-name:hover {
   display: flex;
   gap: 0.5rem;
   margin-top: 0.75rem;
+  align-items: center;
 }
 
 .aisle-add-input {
   flex: 1;
-  padding: 0.5rem 0.75rem;
-  font-family: inherit;
-  font-size: 16px;
+  font-size: 0.85rem;
+  padding: 0.25rem 0.4rem;
   border: 1px solid var(--border-light);
-  border-radius: 4px;
+  border-radius: 3px;
+  background: var(--content-background-color);
+  color: var(--text-color);
 }
 
 .aisle-add-input:focus {
