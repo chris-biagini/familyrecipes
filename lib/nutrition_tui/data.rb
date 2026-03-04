@@ -172,8 +172,11 @@ module NutritionTui
 
     def normalize_volume_unit(modifier)
       clean = modifier.to_s.downcase.sub(/\s*\(.*\)/, '').strip
-      word = clean.split(/[\s,]+/).first
-      canonicalize_volume(word)
+      words = clean.split(/[\s,]+/)
+      two_word = FamilyRecipes::Inflector.normalize_unit(words.first(2).join(' '))
+      return two_word if FamilyRecipes::NutritionCalculator::VOLUME_TO_ML.key?(two_word)
+
+      FamilyRecipes::Inflector.normalize_unit(words.first)
     end
 
     # --- Private helpers ---
@@ -304,20 +307,10 @@ module NutritionTui
       end
     end
 
-    def canonicalize_volume(word)
-      case word
-      when 'cups', 'cup' then 'cup'
-      when 'tablespoon', 'tablespoons', 'tbsp' then 'tbsp'
-      when 'teaspoon', 'teaspoons', 'tsp' then 'tsp'
-      when 'fl' then 'fl oz'
-      else word
-      end
-    end
-
     private_class_method :register_name, :register_variants, :register_aliases,
                          :build_omit_set, :check_recipe_resolvability,
                          :check_recipe_units, :collect_all_units,
-                         :per_unit_grams, :modifier_bucket, :canonicalize_volume,
+                         :per_unit_grams, :modifier_bucket,
                          :unit_prefix_match?
   end # rubocop:enable Metrics/ModuleLength
 end

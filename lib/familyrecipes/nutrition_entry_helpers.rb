@@ -7,11 +7,16 @@ module FamilyRecipes
   # density and portion data feeds into IngredientCatalog entries that
   # NutritionCalculator uses for unit resolution at nutrition-calculation time.
   module NutritionEntryHelpers
-    KNOWN_VOLUME_UNITS = %w[cup cups tbsp tablespoon tablespoons tsp teaspoon teaspoons ml l liter liters].freeze
+    KNOWN_VOLUME_UNITS = begin
+      units = NutritionCalculator::VOLUME_TO_ML.keys.to_set
+      Inflector::ABBREVIATIONS.each { |long, short| units << long if NutritionCalculator::VOLUME_TO_ML.key?(short) }
+      Inflector::KNOWN_PLURALS.each { |sing, pl| units << pl if units.include?(sing) }
+      units.freeze
+    end
 
     NUTRITION_UNIT_OVERRIDES = { 'eggs' => '~unitless' }.freeze
 
-    def self.parse_serving_size(input) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+    def self.parse_serving_size(input) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/PerceivedComplexity
       # Extract gram weight: "30g", "(30g)", "(3.3g)", "30 grams", "30 gram"
       grams_match = input.match(/(\d+(?:\.\d+)?)\s*(?:grams?|g)\b/)
       return nil unless grams_match
@@ -45,16 +50,8 @@ module FamilyRecipes
 
       # Classify: volume unit or discrete portion?
       if KNOWN_VOLUME_UNITS.include?(unit_down)
-        # Normalize to canonical volume unit
-        canonical = case unit_down
-                    when 'cups' then 'cup'
-                    when 'tablespoon', 'tablespoons' then 'tbsp'
-                    when 'teaspoon', 'teaspoons' then 'tsp'
-                    when 'liter', 'liters' then 'l'
-                    else unit_down
-                    end
         result[:volume_amount] = amount
-        result[:volume_unit] = canonical
+        result[:volume_unit] = Inflector.normalize_unit(unit_down)
       else
         # Discrete unit -> create auto-portion
         singular = NUTRITION_UNIT_OVERRIDES[unit_down] || Inflector.normalize_unit(unit_down)
