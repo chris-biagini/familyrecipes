@@ -850,6 +850,185 @@ footer small {
   flex: 1;
 }
 
+/* Aisle Order Editor */
+.aisle-order-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.75rem 1.5rem;
+}
+
+.aisle-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.aisle-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--surface-alt);
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+}
+
+.aisle-row--renamed {
+  background: #fff8e1;
+  border-color: #ffe082;
+}
+
+.aisle-row--deleted {
+  opacity: 0.4;
+  background: var(--surface-alt);
+}
+
+.aisle-row--deleted .aisle-name {
+  text-decoration: line-through;
+}
+
+.aisle-row--new {
+  background: #e8f5e9;
+  border-color: #a5d6a7;
+}
+
+.aisle-name-area {
+  flex: 1;
+  min-width: 0;
+}
+
+.aisle-name {
+  display: block;
+  font-family: "Futura", sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  color: var(--text-color);
+  width: 100%;
+}
+
+.aisle-row--deleted .aisle-name {
+  cursor: default;
+}
+
+button.aisle-name:hover {
+  color: var(--accent-color);
+}
+
+.aisle-was {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--muted-text);
+  font-style: italic;
+  margin-top: 0.15rem;
+}
+
+.aisle-rename-input {
+  font-family: "Futura", sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border: none;
+  border-bottom: 2px solid var(--accent-color);
+  background: transparent;
+  padding: 0;
+  outline: none;
+  width: 100%;
+  color: var(--text-color);
+}
+
+.aisle-controls {
+  display: flex;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.aisle-btn {
+  appearance: none;
+  -webkit-appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  background: none;
+  color: var(--border-muted);
+  border: 1px solid var(--border-light);
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.aisle-btn:hover:not(:disabled) {
+  color: var(--muted-text);
+  border-color: var(--border-muted);
+}
+
+.aisle-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.aisle-btn--delete:hover:not(:disabled) {
+  color: var(--danger-color);
+  border-color: var(--danger-color);
+}
+
+.aisle-btn--undo {
+  font-size: 0.85rem;
+}
+
+.aisle-btn--add {
+  appearance: none;
+  -webkit-appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  background: none;
+  color: var(--border-muted);
+  border: 1px solid var(--border-light);
+  border-radius: 50%;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.aisle-btn--add:hover {
+  color: var(--muted-text);
+  border-color: var(--border-muted);
+}
+
+.aisle-add-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.aisle-add-input {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  font-family: inherit;
+  font-size: 16px;
+  border: 1px solid var(--border-light);
+  border-radius: 4px;
+}
+
+.aisle-add-input:focus {
+  outline: none;
+  border-color: var(--border-muted);
+}
+
 .aisle-select,
 .aisle-input {
   font-size: 0.85rem;
