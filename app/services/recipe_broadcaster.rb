@@ -63,7 +63,7 @@ class RecipeBroadcaster
       broadcast_ingredients(categories.flat_map(&:recipes), resolver:)
       broadcast_recipe_page(recipe, action:, recipe_title:)
       append_toast([kitchen, 'recipes'], "#{recipe_title} was #{action}")
-      Turbo::StreamsChannel.broadcast_refresh_to(kitchen, :meal_plan_updates)
+      MealPlan.broadcast_refresh(kitchen)
     end
   end
 

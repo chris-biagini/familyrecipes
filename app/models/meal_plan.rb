@@ -23,6 +23,10 @@ class MealPlan < ApplicationRecord
     find_by!(kitchen: kitchen)
   end
 
+  def self.broadcast_refresh(kitchen)
+    Turbo::StreamsChannel.broadcast_refresh_to(kitchen, :meal_plan_updates)
+  end
+
   def self.prune_stale_items(kitchen:)
     plan = for_kitchen(kitchen)
     shopping_list = ShoppingListBuilder.new(kitchen:, meal_plan: plan).build

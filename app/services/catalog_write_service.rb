@@ -69,6 +69,6 @@ class CatalogWriteService
   end
 
   def broadcast_meal_plan_refresh
-    Turbo::StreamsChannel.broadcast_refresh_to(kitchen, :meal_plan_updates)
+    MealPlan.broadcast_refresh(kitchen)
   end
 end

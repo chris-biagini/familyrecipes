@@ -39,6 +39,6 @@ module MealPlanActions
   end
 
   def broadcast_meal_plan_refresh
-    Turbo::StreamsChannel.broadcast_refresh_to(current_kitchen, :meal_plan_updates)
+    MealPlan.broadcast_refresh(current_kitchen)
   end
 end
