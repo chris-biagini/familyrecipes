@@ -22,15 +22,21 @@ module MealPlanActions
   def apply_plan(action_type, **action_params)
     mutate_plan do |plan|
       plan.apply_action(action_type, **action_params)
-      prune_if_deselect(action_type, action_params)
+      prune_if_deselect(plan, action_type, action_params)
     end
   end
 
-  def prune_if_deselect(action_type, action_params)
+  def prune_if_deselect(plan, action_type, action_params)
     return unless action_type == 'select'
     return if MealPlan.truthy?(action_params[:selected])
 
-    MealPlan.prune_stale_items(kitchen: current_kitchen)
+    visible = shopping_list_visible_names(plan)
+    plan.prune_checked_off(visible_names: visible)
+  end
+
+  def shopping_list_visible_names(plan)
+    shopping_list = ShoppingListBuilder.new(kitchen: current_kitchen, meal_plan: plan).build
+    shopping_list.each_value.flat_map { |items| items.map { |i| i[:name] } }.to_set
   end
 
   def handle_stale_record

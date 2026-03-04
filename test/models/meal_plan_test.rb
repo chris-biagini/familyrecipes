@@ -250,7 +250,7 @@ class MealPlanTest < ActiveSupport::TestCase
     assert_operator list.lock_version, :>, version_before
   end
 
-  test 'prune_stale_items removes checked items not on shopping list' do
+  test 'pruning removes checked items not on shopping list' do
     Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
     MarkdownImporter.import(<<~MD, kitchen: @kitchen)
       # Focaccia
@@ -270,7 +270,9 @@ class MealPlanTest < ActiveSupport::TestCase
     plan.apply_action('check', item: 'Flour', checked: true)
     plan.apply_action('check', item: 'Phantom Item', checked: true)
 
-    MealPlan.prune_stale_items(kitchen: @kitchen)
+    shopping_list = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: plan).build
+    visible = shopping_list.each_value.flat_map { |items| items.map { |i| i[:name] } }.to_set
+    plan.with_optimistic_retry { plan.prune_checked_off(visible_names: visible) }
 
     plan.reload
 
@@ -278,12 +280,14 @@ class MealPlanTest < ActiveSupport::TestCase
     assert_not_includes plan.state['checked_off'], 'Phantom Item'
   end
 
-  test 'prune_stale_items preserves custom items' do
+  test 'pruning preserves custom items' do
     plan = MealPlan.for_kitchen(@kitchen)
     plan.apply_action('custom_items', item: 'birthday candles', action: 'add')
     plan.apply_action('check', item: 'birthday candles', checked: true)
 
-    MealPlan.prune_stale_items(kitchen: @kitchen)
+    shopping_list = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: plan).build
+    visible = shopping_list.each_value.flat_map { |items| items.map { |i| i[:name] } }.to_set
+    plan.with_optimistic_retry { plan.prune_checked_off(visible_names: visible) }
 
     plan.reload
 
@@ -366,11 +370,13 @@ class MealPlanTest < ActiveSupport::TestCase
     assert_not MealPlan.truthy?(nil)
   end
 
-  test 'prune_stale_items is no-op when nothing to prune' do
+  test 'pruning is no-op when nothing to prune' do
     plan = MealPlan.for_kitchen(@kitchen)
     version_before = plan.lock_version
 
-    MealPlan.prune_stale_items(kitchen: @kitchen)
+    shopping_list = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: plan).build
+    visible = shopping_list.each_value.flat_map { |items| items.map { |i| i[:name] } }.to_set
+    plan.with_optimistic_retry { plan.prune_checked_off(visible_names: visible) }
 
     assert_equal version_before, plan.reload.lock_version
   end

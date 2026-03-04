@@ -4,7 +4,7 @@
 # bites. Aggregates ingredient quantities (via IngredientAggregator), canonicalizes
 # names through IngredientResolver, organizes items by grocery aisle, appends custom
 # items, and sorts aisles by the kitchen's user-defined order. Consumed by
-# GroceriesController#show and MealPlan.prune_stale_items.
+# GroceriesController#show, MealPlanActions, and RecipeWriteService.
 #
 # Collaborators:
 # - IngredientResolver — name canonicalization and catalog lookups

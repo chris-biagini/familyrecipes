@@ -95,6 +95,13 @@ class RecipeWriteService
 
   def post_write_cleanup
     Category.cleanup_orphans(kitchen)
-    MealPlan.prune_stale_items(kitchen:)
+    prune_stale_meal_plan_items
+  end
+
+  def prune_stale_meal_plan_items
+    plan = MealPlan.for_kitchen(kitchen)
+    shopping_list = ShoppingListBuilder.new(kitchen:, meal_plan: plan).build
+    visible = shopping_list.each_value.flat_map { |items| items.map { |i| i[:name] } }.to_set
+    plan.with_optimistic_retry { plan.prune_checked_off(visible_names: visible) }
   end
 end
