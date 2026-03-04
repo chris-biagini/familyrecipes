@@ -8,8 +8,7 @@ module FamilyRecipes
   # partially resolvable ingredients. RecipeNutritionJob calls this at save time;
   # the Result is stored as JSON on the AR Recipe.
   class NutritionCalculator
-    NUTRIENTS = %i[calories fat saturated_fat trans_fat cholesterol sodium
-                   carbs fiber total_sugars added_sugars protein].freeze
+    NUTRIENTS = NutritionConstraints::NUTRIENT_KEYS
 
     WEIGHT_CONVERSIONS = {
       'g' => 1, 'oz' => 28.3495, 'lb' => 453.592, 'kg' => 1000
