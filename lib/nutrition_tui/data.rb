@@ -20,9 +20,9 @@ module NutritionTui
     NUTRITION_PATH = File.join(PROJECT_ROOT, 'db/seeds/resources/ingredient-catalog.yaml')
     RECIPES_DIR = File.join(PROJECT_ROOT, 'db/seeds/recipes')
 
-    NUTRIENTS = FamilyRecipes::NutritionConstraints::NUTRIENT_DEFS.map { |d|
+    NUTRIENTS = FamilyRecipes::NutritionConstraints::NUTRIENT_DEFS.map do |d|
       { key: d.key.to_s, label: d.label, unit: d.unit, indent: d.indent }
-    }.freeze
+    end.freeze
 
     module_function
 

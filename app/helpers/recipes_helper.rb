@@ -6,9 +6,9 @@
 # client-side scaling controller. All .html_safe calls are audited by
 # rake lint:html_safe and allowlisted.
 module RecipesHelper
-  NUTRITION_ROWS = FamilyRecipes::NutritionConstraints::NUTRIENT_DEFS.map { |d|
+  NUTRITION_ROWS = FamilyRecipes::NutritionConstraints::NUTRIENT_DEFS.map do |d|
     [d.label, d.key.to_s, d.unit, d.indent]
-  }.freeze
+  end.freeze
 
   def render_markdown(text)
     return '' if text.blank?

@@ -10,17 +10,17 @@
 # Collaborators:
 # - FamilyRecipes::NutritionConstraints (shared validation rules)
 # - NutritionCalculator and ShoppingListBuilder consume this.
-class IngredientCatalog < ApplicationRecord # rubocop:disable Metrics/ClassLength
+class IngredientCatalog < ApplicationRecord
   self.table_name = 'ingredient_catalog'
 
   belongs_to :kitchen, optional: true
 
   NUTRIENT_COLUMNS = FamilyRecipes::NutritionConstraints::NUTRIENT_KEYS
 
-  NUTRIENT_DISPLAY = FamilyRecipes::NutritionConstraints::NUTRIENT_DEFS.map { |d|
+  NUTRIENT_DISPLAY = FamilyRecipes::NutritionConstraints::NUTRIENT_DEFS.map do |d|
     label = d.indent.positive? ? "#{'  ' * d.indent}#{d.label}" : d.label
     [label, d.key, d.unit]
-  }.freeze
+  end.freeze
 
   DENSITY_FIELDS = %i[density_grams density_volume density_unit].freeze
   private_constant :DENSITY_FIELDS
