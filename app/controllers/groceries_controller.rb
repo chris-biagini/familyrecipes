@@ -76,7 +76,7 @@ class GroceriesController < ApplicationController
     return unless renames.is_a?(ActionController::Parameters)
 
     renames.each_pair do |old_name, new_name|
-      IngredientCatalog.where(kitchen: current_kitchen, aisle: old_name).update_all(aisle: new_name) # rubocop:disable Rails/SkipsModelValidations
+      current_kitchen.ingredient_catalog.where(aisle: old_name).update_all(aisle: new_name) # rubocop:disable Rails/SkipsModelValidations
     end
   end
 
@@ -84,7 +84,7 @@ class GroceriesController < ApplicationController
     deletes = params[:deletes]
     return unless deletes.is_a?(Array)
 
-    IngredientCatalog.where(kitchen: current_kitchen, aisle: deletes).update_all(aisle: nil) # rubocop:disable Rails/SkipsModelValidations
+    current_kitchen.ingredient_catalog.where(aisle: deletes).update_all(aisle: nil) # rubocop:disable Rails/SkipsModelValidations
   end
 
   def build_aisle_order_text
