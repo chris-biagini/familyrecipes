@@ -22,8 +22,7 @@ class RecipeNutritionJob < ApplicationJob
   private
 
   def eager_load_recipe(recipe)
-    Recipe.includes(steps: [:ingredients, { cross_references: { target_recipe: { steps: :ingredients } } }])
-          .find(recipe.id)
+    Recipe.with_full_tree.find(recipe.id)
   end
 
   def build_nutrition_data(catalog)
