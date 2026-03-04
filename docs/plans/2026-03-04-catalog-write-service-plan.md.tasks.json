@@ -1,0 +1,15 @@
+{
+  "planPath": "docs/plans/2026-03-04-catalog-write-service-plan.md",
+  "tasks": [
+    {"id": 7, "subject": "Task 1: IngredientRowBuilder — failing tests", "status": "pending"},
+    {"id": 8, "subject": "Task 2: IngredientRowBuilder — implementation", "status": "pending", "blockedBy": [7]},
+    {"id": 9, "subject": "Task 3: Migrate IngredientsController to IngredientRowBuilder", "status": "pending", "blockedBy": [8]},
+    {"id": 10, "subject": "Task 4: Migrate RecipeBroadcaster to IngredientRowBuilder", "status": "pending", "blockedBy": [8]},
+    {"id": 11, "subject": "Task 5: CatalogWriteService — failing tests", "status": "pending"},
+    {"id": 12, "subject": "Task 6: CatalogWriteService — implementation", "status": "pending", "blockedBy": [11]},
+    {"id": 13, "subject": "Task 7: Slim NutritionEntriesController", "status": "pending", "blockedBy": [12]},
+    {"id": 14, "subject": "Task 8: Delete IngredientRows concern", "status": "pending", "blockedBy": [9, 10, 13]},
+    {"id": 15, "subject": "Task 9: Update header comments and html_safe allowlist", "status": "pending", "blockedBy": [14]}
+  ],
+  "lastUpdated": "2026-03-04T00:00:00Z"
+}
