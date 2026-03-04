@@ -2,7 +2,7 @@
 
 require 'minitest/autorun'
 require 'active_support/core_ext/object/blank'
-require_relative '../../lib/nutrition_tui'
+require_relative '../../lib/nutrition_tui/data'
 
 class NutritionTuiDataTest < Minitest::Test
   # --- classify_usda_modifiers ---

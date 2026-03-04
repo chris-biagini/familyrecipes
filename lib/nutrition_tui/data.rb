@@ -24,10 +24,6 @@ module NutritionTui
       { key: d.key.to_s, label: d.label, unit: d.unit, indent: d.indent }
     }.freeze
 
-    VOLUME_UNITS = ['cup', 'cups', 'tbsp', 'tsp', 'tablespoon', 'tablespoons',
-                    'teaspoon', 'teaspoons', 'fl oz'].freeze
-    WEIGHT_UNITS = %w[oz ounce ounces lb lbs pound pounds kg g gram grams].freeze
-
     module_function
 
     # --- Data I/O ---
@@ -131,11 +127,35 @@ module NutritionTui
     end
 
     def volume_modifier?(modifier)
-      VOLUME_UNITS.any? { |u| modifier.to_s.downcase.start_with?(u) }
+      unit_prefix_match?(modifier, volume_prefixes)
     end
 
     def weight_modifier?(modifier)
-      WEIGHT_UNITS.any? { |u| modifier.to_s.downcase.start_with?(u) }
+      unit_prefix_match?(modifier, weight_prefixes)
+    end
+
+    def volume_prefixes
+      build_unit_prefixes(FamilyRecipes::NutritionCalculator::VOLUME_TO_ML)
+    end
+
+    def weight_prefixes
+      build_unit_prefixes(FamilyRecipes::NutritionCalculator::WEIGHT_CONVERSIONS)
+    end
+
+    def build_unit_prefixes(canonical_map)
+      prefixes = canonical_map.keys.to_set
+      FamilyRecipes::Inflector::ABBREVIATIONS.each do |long_form, short_form|
+        prefixes << long_form if canonical_map.key?(short_form)
+      end
+      prefixes
+    end
+
+    # Matches when modifier starts with a unit and the next char is
+    # a word boundary (space, comma, end-of-string). Prevents 'l'
+    # matching 'large' or 'g' matching 'garlic'.
+    def unit_prefix_match?(modifier, prefixes)
+      downcased = modifier.to_s.downcase
+      prefixes.any? { |u| downcased.start_with?(u) && (downcased.size == u.size || downcased[u.size] =~ /[\s,]/) }
     end
 
     def regulatory_modifier?(modifier)
@@ -287,6 +307,8 @@ module NutritionTui
     private_class_method :register_name, :register_variants, :register_aliases,
                          :build_omit_set, :check_recipe_resolvability,
                          :check_recipe_units, :collect_all_units,
-                         :per_unit_grams, :modifier_bucket, :canonicalize_volume
+                         :per_unit_grams, :modifier_bucket, :canonicalize_volume,
+                         :volume_prefixes, :weight_prefixes,
+                         :build_unit_prefixes, :unit_prefix_match?
   end # rubocop:enable Metrics/ModuleLength
 end
