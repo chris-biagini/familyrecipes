@@ -4,6 +4,7 @@ require 'test_helper'
 require 'turbo/broadcastable/test_helper'
 
 class RecipesControllerTest < ActionDispatch::IntegrationTest
+  include ActiveJob::TestHelper
   include Turbo::Broadcastable::TestHelper
 
   setup do
@@ -492,7 +493,9 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     Turbo::StreamsChannel.stub :broadcast_replace_to, ->(*args, **kwargs) { streams << [args, kwargs] } do
       Turbo::StreamsChannel.stub :broadcast_append_to, ->(*args, **kwargs) {} do
         log_in
-        delete recipe_path('pizza-dough')
+        perform_enqueued_jobs do
+          delete recipe_path('pizza-dough')
+        end
       end
     end
 
@@ -508,7 +511,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
-  test 'create broadcasts Turbo Streams to recipes stream' do
+  test 'create enqueues broadcast job' do
     log_in
     markdown = <<~MD
       # New Bread
@@ -522,28 +525,27 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
       Mix.
     MD
 
-    assert_turbo_stream_broadcasts [@kitchen, 'recipes'] do
+    assert_enqueued_with(job: RecipeBroadcastJob) do
       post recipes_path(kitchen_slug: kitchen_slug),
            params: { markdown_source: markdown },
            as: :json
     end
   end
 
-  test 'update broadcasts Turbo Streams to recipes stream' do
+  test 'update enqueues broadcast job' do
     log_in
-    recipe = @kitchen.recipes.find_by!(slug: 'focaccia')
 
-    assert_turbo_stream_broadcasts [@kitchen, 'recipes'] do
+    assert_enqueued_with(job: RecipeBroadcastJob) do
       patch recipe_path('focaccia', kitchen_slug: kitchen_slug),
-            params: { markdown_source: recipe.markdown_source },
+            params: { markdown_source: @kitchen.recipes.find_by!(slug: 'focaccia').markdown_source },
             as: :json
     end
   end
 
-  test 'destroy broadcasts Turbo Streams to recipes stream' do
+  test 'destroy enqueues broadcast job' do
     log_in
 
-    assert_turbo_stream_broadcasts [@kitchen, 'recipes'] do
+    assert_enqueued_with(job: RecipeBroadcastJob) do
       delete recipe_path('focaccia', kitchen_slug: kitchen_slug), as: :json
     end
   end
