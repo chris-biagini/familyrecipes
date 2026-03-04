@@ -21,8 +21,8 @@
         <% if info && info[:ingredients].size > 1 %>
           <div class="availability-ingredients">
             <% have = info[:ingredients] - info[:missing_names] %>
-            <% if have.any? %><div class="availability-have">Have: <%= have.join(', ') %></div><% end %>
-            <% if info[:missing_names].any? %><div class="availability-need">Missing: <%= info[:missing_names].join(', ') %></div><% end %>
+            <% if have.any? %><div class="availability-have"><strong>Have</strong> <%= have.join(', ') %></div><% end %>
+            <% if info[:missing_names].any? %><div class="availability-need"><strong>Missing</strong> <%= info[:missing_names].join(', ') %></div><% end %>
           </div>
         <% end %>
       </li>
@@ -53,8 +53,8 @@
             <% if info && info[:ingredients].size > 1 %>
               <% have = info[:ingredients] - info[:missing_names] %>
               <div class="availability-ingredients">
-                <% if have.any? %><div class="availability-have">Have: <%= have.join(', ') %></div><% end %>
-                <% if info[:missing_names].any? %><div class="availability-need">Missing: <%= info[:missing_names].join(', ') %></div><% end %>
+                <% if have.any? %><div class="availability-have"><strong>Have</strong> <%= have.join(', ') %></div><% end %>
+                <% if info[:missing_names].any? %><div class="availability-need"><strong>Missing</strong> <%= info[:missing_names].join(', ') %></div><% end %>
               </div>
             <% end %>
           </li>

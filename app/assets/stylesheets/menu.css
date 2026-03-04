@@ -109,11 +109,11 @@
 }
 
 .availability-single.on-hand {
-  color: var(--checked-color);
+  color: var(--on-hand-color);
 }
 
 .availability-single.not-on-hand {
-  color: var(--border-muted);
+  color: var(--missing-color);
 }
 
 .availability-detail {
@@ -126,20 +126,21 @@
   align-items: center;
   gap: 0.3rem;
   list-style: none;
+  font-family: "Futura", sans-serif;
   font-size: 0.75rem;
   font-weight: 400;
-  color: var(--border-muted);
+  color: var(--missing-color);
   cursor: pointer;
   padding: 0.15rem 0.5rem;
   white-space: nowrap;
   background: var(--surface-alt);
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--missing-color);
   border-radius: 6px;
 }
 
 .availability-detail.all-on-hand summary {
-  color: var(--checked-color);
-  border-color: var(--checked-color);
+  color: var(--on-hand-color);
+  border-color: var(--on-hand-color);
 }
 
 .availability-detail summary::-webkit-details-marker {
@@ -153,12 +154,12 @@
   height: 0;
   border-style: solid;
   border-width: 0.25rem 0 0.25rem 0.35rem;
-  border-color: transparent transparent transparent var(--border-muted);
+  border-color: transparent transparent transparent var(--missing-color);
   transition: transform 0.15s ease;
 }
 
 .availability-detail.all-on-hand summary::before {
-  border-color: transparent transparent transparent var(--checked-color);
+  border-color: transparent transparent transparent var(--on-hand-color);
 }
 
 .availability-detail[open] summary::before {
@@ -166,19 +167,20 @@
 }
 
 .availability-detail summary:hover {
-  border-color: var(--border-muted);
+  border-color: var(--missing-color);
 }
 
 .availability-detail.all-on-hand summary:hover {
-  border-color: var(--checked-color);
+  border-color: var(--on-hand-color);
 }
 
 .availability-ingredients {
   display: none;
-  font-size: 0.75rem;
-  color: var(--muted-text);
-  padding: 0.15rem 0;
-  font-style: italic;
+  font-family: "Futura", sans-serif;
+  font-size: 0.8rem;
+  font-style: normal;
+  color: var(--missing-color);
+  padding: 0.4rem 0;
   flex-basis: 100%;
   padding-left: 1.6rem;
 }
@@ -188,11 +190,20 @@
 }
 
 .availability-have {
-  color: var(--checked-color);
+  color: var(--on-hand-color);
 }
 
 .availability-need {
-  color: var(--muted-text);
+  color: var(--missing-color);
+}
+
+.availability-have strong,
+.availability-need strong {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-right: 0.3rem;
 }
 
 /* Quick Bites */
