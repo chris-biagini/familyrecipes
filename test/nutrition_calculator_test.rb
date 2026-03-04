@@ -825,6 +825,56 @@ class NutritionCalculatorTest < Minitest::Test
     assert_nil result.units_per_serving
   end
 
+  # --- Volume conversions for new units ---
+
+  def test_fl_oz_volume_conversion
+    recipe = make_recipe(<<~MD)
+      # Test
+
+      Category: Test
+
+      ## Mix (combine)
+
+      - Olive oil, 2 fl oz
+
+      Mix.
+    MD
+
+    result = @calculator.calculate(recipe, @recipe_map)
+
+    # 2 fl oz = 2 * 29.5735ml; density: 14g / 14.787ml = 0.9468 g/ml
+    # grams = 2 * 29.5735 * (14.0 / 14.787) = 55.97g
+    # cal = (123.76 / 14) * 55.97 = 494.7
+    expected_grams = 2 * 29.5735 * (14.0 / 14.787)
+    expected_cal = (123.76 / 14.0) * expected_grams
+
+    assert_in_delta expected_cal, result.totals[:calories], 2
+    assert_empty result.partial_ingredients
+  end
+
+  def test_pint_volume_conversion
+    recipe = make_recipe(<<~MD)
+      # Test
+
+      Category: Test
+
+      ## Mix (combine)
+
+      - Olive oil, 1 pt
+
+      Mix.
+    MD
+
+    result = @calculator.calculate(recipe, @recipe_map)
+
+    # 1 pt = 473.176ml; density = 14g / 14.787ml
+    expected_grams = 473.176 * (14.0 / 14.787)
+    expected_cal = (123.76 / 14.0) * expected_grams
+
+    assert_in_delta expected_cal, result.totals[:calories], 2
+    assert_empty result.partial_ingredients
+  end
+
   def test_per_unit_with_irregular_plural
     recipe = make_recipe(<<~MD)
       # Test

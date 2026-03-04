@@ -15,7 +15,9 @@ module FamilyRecipes
     }.freeze
 
     VOLUME_TO_ML = {
-      'cup' => 236.588, 'tbsp' => 14.787, 'tsp' => 4.929, 'ml' => 1, 'l' => 1000
+      'tsp' => 4.929, 'tbsp' => 14.787, 'fl oz' => 29.5735,
+      'cup' => 236.588, 'pt' => 473.176, 'qt' => 946.353,
+      'gal' => 3785.41, 'ml' => 1, 'l' => 1000
     }.freeze
 
     Result = Data.define(
