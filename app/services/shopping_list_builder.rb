@@ -46,10 +46,7 @@ class ShoppingListBuilder
 
   def selected_recipes
     slugs = @meal_plan.state.fetch('selected_recipes', [])
-    xref_includes = { cross_references: { target_recipe: { steps: :ingredients } } }
-    @kitchen.recipes
-            .includes(:category, steps: [:ingredients, xref_includes])
-            .where(slug: slugs)
+    @kitchen.recipes.with_full_tree.where(slug: slugs)
   end
 
   def selected_quick_bites
