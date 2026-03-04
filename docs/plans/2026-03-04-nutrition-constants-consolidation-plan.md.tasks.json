@@ -1,0 +1,18 @@
+{
+  "planPath": "docs/plans/2026-03-04-nutrition-constants-consolidation-plan.md",
+  "tasks": [
+    {"id": 0, "subject": "Task 0: Add NutrientDef to NutritionConstraints", "status": "pending"},
+    {"id": 1, "subject": "Task 1: Derive NutritionCalculator::NUTRIENTS from NutrientDef", "status": "pending", "blockedBy": [0]},
+    {"id": 2, "subject": "Task 2: Derive IngredientCatalog nutrient constants from NutrientDef", "status": "pending", "blockedBy": [0]},
+    {"id": 3, "subject": "Task 3: Derive RecipesHelper::NUTRITION_ROWS from NutrientDef", "status": "pending", "blockedBy": [0]},
+    {"id": 4, "subject": "Task 4: Derive NutritionTui::Data::NUTRIENTS from NutrientDef", "status": "pending", "blockedBy": [0]},
+    {"id": 5, "subject": "Task 5: Add fl oz and volume unit aliases to Inflector", "status": "pending"},
+    {"id": 6, "subject": "Task 6: Expand VOLUME_TO_ML with fl oz, pt, qt, gal", "status": "pending", "blockedBy": [5]},
+    {"id": 7, "subject": "Task 7: Derive TUI volume/weight constants from calculator", "status": "pending", "blockedBy": [6]},
+    {"id": 8, "subject": "Task 8: Simplify UsdaClient.volume_unit?", "status": "pending", "blockedBy": [6]},
+    {"id": 9, "subject": "Task 9: Update editor form dropdown to derive from VOLUME_TO_ML", "status": "pending", "blockedBy": [6]},
+    {"id": 10, "subject": "Task 10: Add documentation comments for omit-set duplication", "status": "pending"},
+    {"id": 11, "subject": "Task 11: Full test suite + lint", "status": "pending", "blockedBy": [1, 2, 3, 4, 7, 8, 9, 10]}
+  ],
+  "lastUpdated": "2026-03-04T00:00:00Z"
+}
