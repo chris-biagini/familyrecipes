@@ -35,6 +35,8 @@ class RecipeNutritionJob < ApplicationJob
     end
   end
 
+  # Mirrors NutritionTui::Data.build_omit_set — same business rule, different
+  # input types (AR objects vs YAML hash). Update both if the omit rule changes.
   def extract_omit_set(catalog)
     catalog.each_value
            .select { |entry| entry.aisle == 'omit' }

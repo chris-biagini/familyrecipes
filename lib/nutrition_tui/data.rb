@@ -243,6 +243,8 @@ module NutritionTui
       end
     end
 
+    # Mirrors RecipeNutritionJob#extract_omit_set — same business rule, different
+    # input types (YAML hash vs AR objects). Update both if the omit rule changes.
     def build_omit_set(catalog)
       catalog.each_with_object(Set.new) do |(name, entry), set|
         set << name.downcase if entry['aisle'] == 'omit'
