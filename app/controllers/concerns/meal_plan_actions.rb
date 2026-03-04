@@ -35,8 +35,7 @@ module MealPlanActions
   end
 
   def shopping_list_visible_names(plan)
-    shopping_list = ShoppingListBuilder.new(kitchen: current_kitchen, meal_plan: plan).build
-    shopping_list.each_value.flat_map { |items| items.map { |i| i[:name] } }.to_set
+    ShoppingListBuilder.new(kitchen: current_kitchen, meal_plan: plan).visible_names
   end
 
   def handle_stale_record

@@ -100,8 +100,7 @@ class RecipeWriteService
 
   def prune_stale_meal_plan_items
     plan = MealPlan.for_kitchen(kitchen)
-    shopping_list = ShoppingListBuilder.new(kitchen:, meal_plan: plan).build
-    visible = shopping_list.each_value.flat_map { |items| items.map { |i| i[:name] } }.to_set
+    visible = ShoppingListBuilder.new(kitchen:, meal_plan: plan).visible_names
     plan.with_optimistic_retry { plan.prune_checked_off(visible_names: visible) }
   end
 end
