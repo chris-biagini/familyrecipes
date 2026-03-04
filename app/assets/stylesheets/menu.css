@@ -72,10 +72,11 @@
 }
 
 #recipe-selector .category li:hover {
-  background-color: var(--surface-alt);
+  background-color: var(--hover-bg);
   margin: 0 -0.5rem;
-  padding-left: 0.5rem;
+  padding-left: calc(0.5rem - 2px);
   padding-right: 0.5rem;
+  border-left: 2px solid var(--accent-color);
 }
 
 #recipe-selector .category input[type="checkbox"] {
@@ -251,10 +252,11 @@
 }
 
 #recipe-selector .quick-bites .subsection li:hover {
-  background-color: var(--surface-alt);
+  background-color: var(--hover-bg);
   margin: 0 -0.5rem;
-  padding-left: 0.5rem;
+  padding-left: calc(0.5rem - 2px);
   padding-right: 0.5rem;
+  border-left: 2px solid var(--accent-color);
 }
 
 #recipe-selector .quick-bites .subsection input[type="checkbox"] {
