@@ -5,7 +5,8 @@ import ListenerManager from "utilities/listener_manager"
 /**
  * Menu page recipe/quick-bite selection. Handles optimistic checkbox toggle,
  * select-all, and clear-all actions. All rendering (checkboxes, availability
- * badges) is server-side via Turbo Stream morphs.
+ * badges) is server-side via Turbo Stream morphs. Preserves expanded
+ * availability details across morph refreshes.
  */
 export default class extends Controller {
   connect() {
@@ -21,10 +22,30 @@ export default class extends Controller {
 
       sendAction(this.element.dataset.selectUrl, { type, slug, selected: cb.checked })
     })
+
+    this.listeners.add(document, "turbo:before-render", (e) => this.preserveOpenDetails(e))
   }
 
   disconnect() {
     this.listeners.teardown()
+  }
+
+  preserveOpenDetails(event) {
+    if (!event.detail.render) return
+
+    const openSummaries = Array.from(this.element.querySelectorAll("details.availability-detail[open] summary"))
+      .map(s => s.getAttribute("aria-label"))
+
+    if (!openSummaries.length) return
+
+    const originalRender = event.detail.render
+    event.detail.render = async (...args) => {
+      await originalRender(...args)
+      openSummaries.forEach(label => {
+        const summary = this.element.querySelector(`details.availability-detail summary[aria-label="${CSS.escape(label)}"]`)
+        if (summary) summary.closest("details").open = true
+      })
+    }
   }
 
   selectAll() {
