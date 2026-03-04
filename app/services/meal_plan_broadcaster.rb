@@ -9,20 +9,21 @@
 # - RecipeAvailabilityCalculator: computes ingredient availability dots
 # - Turbo::StreamsChannel: transport layer for stream pushes
 class MealPlanBroadcaster
-  def self.broadcast_grocery_morph(kitchen)
-    new(kitchen).broadcast_grocery_morph
+  def self.broadcast_grocery_morph(kitchen, catalog_lookup: nil)
+    new(kitchen, catalog_lookup:).broadcast_grocery_morph
   end
 
-  def self.broadcast_menu_morph(kitchen)
-    new(kitchen).broadcast_menu_morph
+  def self.broadcast_menu_morph(kitchen, catalog_lookup: nil)
+    new(kitchen, catalog_lookup:).broadcast_menu_morph
   end
 
-  def self.broadcast_all(kitchen)
-    new(kitchen).broadcast_all
+  def self.broadcast_all(kitchen, catalog_lookup: nil)
+    new(kitchen, catalog_lookup:).broadcast_all
   end
 
-  def initialize(kitchen)
+  def initialize(kitchen, catalog_lookup: nil)
     @kitchen = kitchen
+    @catalog_lookup = catalog_lookup
   end
 
   def broadcast_grocery_morph
@@ -44,6 +45,10 @@ class MealPlanBroadcaster
 
   attr_reader :kitchen
 
+  def catalog_lookup
+    @catalog_lookup ||= IngredientCatalog.lookup_for(kitchen)
+  end
+
   def with_plan
     ActsAsTenant.with_tenant(kitchen) do
       yield MealPlan.for_kitchen(kitchen)
@@ -60,7 +65,7 @@ class MealPlanBroadcaster
   end
 
   def broadcast_shopping_list(plan)
-    shopping_list = ShoppingListBuilder.new(kitchen:, meal_plan: plan).build
+    shopping_list = ShoppingListBuilder.new(kitchen:, meal_plan: plan, catalog_lookup:).build
 
     Turbo::StreamsChannel.broadcast_action_to(
       kitchen, 'groceries',
@@ -83,7 +88,7 @@ class MealPlanBroadcaster
 
   def broadcast_recipe_selector(plan)
     checked_off = plan.state.fetch('checked_off', [])
-    availability = RecipeAvailabilityCalculator.new(kitchen:, checked_off:).call
+    availability = RecipeAvailabilityCalculator.new(kitchen:, checked_off:, catalog_lookup:).call
 
     Turbo::StreamsChannel.broadcast_action_to(
       kitchen, 'menu',

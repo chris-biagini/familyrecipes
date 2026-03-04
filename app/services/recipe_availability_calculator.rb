@@ -5,9 +5,9 @@
 # ingredients are still needed (not yet checked off on the grocery list). Used
 # by MenuController and MealPlanBroadcaster for availability dot rendering.
 class RecipeAvailabilityCalculator
-  def initialize(kitchen:, checked_off:)
+  def initialize(kitchen:, checked_off:, catalog_lookup: nil)
     @kitchen = kitchen
-    @profiles = IngredientCatalog.lookup_for(kitchen)
+    @profiles = catalog_lookup || IngredientCatalog.lookup_for(kitchen)
     @checked_off = Set.new(checked_off.map { |name| canonical_name(name) })
     @omitted = build_omit_set
   end

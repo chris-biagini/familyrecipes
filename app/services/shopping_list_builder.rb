@@ -8,10 +8,10 @@
 class ShoppingListBuilder
   AISLE_SORT_PRIORITY = { ordered: 0, unordered: 1, miscellaneous: 2 }.freeze
 
-  def initialize(kitchen:, meal_plan:)
+  def initialize(kitchen:, meal_plan:, catalog_lookup: nil)
     @kitchen = kitchen
     @meal_plan = meal_plan
-    @profiles = IngredientCatalog.lookup_for(kitchen)
+    @profiles = catalog_lookup || IngredientCatalog.lookup_for(kitchen)
     @profiles_ci = @profiles.transform_keys(&:downcase)
     @uncataloged_names = {}
   end
