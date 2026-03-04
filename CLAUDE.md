@@ -84,17 +84,7 @@ Every Ruby class/module and every JavaScript controller/utility gets a header co
 
 This file need only contain a concise map of conventions and workflows. CLAUDE.md is the map; the comments are the territory. 
 
-Goals:
-- All modules should be easily discoverable by starting in CLAUDE.md and reading comments.
-- All modules should have header comments that follow the guidelines above.
-- CLAUDE.md should be minimal enough to avoid flooding the context window
-  with irrelevant information, but comprehensive enough to make all
-  modules discoverable.
-
-Actions:
-- Add a header comment when creating a new file. 
-- Update the comments when responsibilities change — a stale comment is worse than none. 
-- Update CLAUDE.md when necessary to identify new conventions or workflows. 
+Add a header comment when creating a new file. Update comments when responsibilities change — a stale comment is worse than none. Update CLAUDE.md when adding new conventions or workflows.
 
 ## HTML & Security
 
@@ -122,7 +112,7 @@ Every class has an architectural header comment — read them first. This sectio
 
 **ActionCable.** Turbo Streams over Solid Cable, using `turbo_stream_from` tags in views. Meal plan changes broadcast a page-refresh signal (`broadcast_refresh_to`) — each client re-fetches its own page and Turbo morphs the result. `RecipeBroadcaster` handles recipe CRUD streams with targeted broadcasts, plus triggers a meal-plan refresh. `RecipeBroadcastJob` runs broadcasts off the request thread via `perform_later` (`:async` adapter — in-process thread pool, no Solid Queue yet). Only rename redirects stay synchronous since they must reach the saving user's browser before the HTTP response.
 
-**Write path.** `RecipeWriteService` orchestrates all recipe mutations — import, cross-reference cascades, category cleanup, meal plan pruning. Broadcasting is enqueued async via `RecipeBroadcastJob`; `CascadeNutritionJob` also runs async. Don't call `MarkdownImporter` directly for web operations.
+**Write path.** `RecipeWriteService` orchestrates all recipe mutations — import, cross-reference cascades, category cleanup, meal plan pruning. Broadcasting is enqueued async via `RecipeBroadcastJob`; `CascadeNutritionJob` also runs async. Don't call `MarkdownImporter` directly for web operations. `MealPlanActions` concern provides optimistic-locking retry and `StaleObjectError` handling for any controller that mutates `MealPlan`.
 
 **Nutrition pipeline.** `IngredientCatalog` is an overlay model — global seed entries plus per-kitchen overrides, merged by `lookup_for` with `Inflector` variant matching and a JSON `aliases` column for alternate names. `RecipeNutritionJob` recomputes nutrition; `CascadeNutritionJob` fans out to cross-referencing recipes. `NutritionConstraints` is the single source of truth for nutrient definitions (NutrientDef) and validation rules — all downstream nutrient constants derive from it. `bin/nutrition` is a standalone TUI (not loaded by Rails); `rake catalog:sync` pushes YAML changes into the database.
 
