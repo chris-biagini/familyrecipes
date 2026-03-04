@@ -1,6 +1,15 @@
 # frozen_string_literal: true
 
-# Create kitchen and user
+# Populates a fresh database with a default kitchen, user, recipes, Quick Bites,
+# and aisle ordering from seed files under db/seeds/. Skips web-edited recipes
+# so re-running seeds won't clobber user changes. Also resolves any deferred
+# cross-references after all recipes are imported.
+#
+# Collaborators:
+# - MarkdownImporter — parses and persists each recipe Markdown file
+# - CrossReference.resolve_pending — links deferred @[Title] references
+# - db/seeds/recipes/ — source Markdown files including Quick Bites.md
+# - db/seeds/resources/ — aisle-order.txt for grocery aisle display order
 kitchen = Kitchen.find_or_create_by!(slug: 'our-kitchen') do |k|
   k.name = 'Our Kitchen'
 end

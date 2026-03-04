@@ -1,4 +1,9 @@
 #!/bin/bash
+#
+# Docker container entry point. Runs database migrations (db:prepare), syncs
+# the ingredient catalog from YAML seeds, loads sample data, then execs the
+# CMD (typically Puma). Runs on every container start — db:prepare and
+# catalog:sync are idempotent.
 set -e
 
 echo "Preparing database..."
