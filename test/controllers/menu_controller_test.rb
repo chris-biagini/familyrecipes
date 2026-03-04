@@ -98,7 +98,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
 
     get menu_path(kitchen_slug: kitchen_slug)
 
-    assert_select 'span.availability-single.not-on-hand', text: "\u2717"
+    assert_select 'span.availability-single.not-on-hand svg'
   end
 
   test 'show renders checkmark for single-ingredient recipe when on hand' do
@@ -110,7 +110,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
 
     get menu_path(kitchen_slug: kitchen_slug)
 
-    assert_select 'span.availability-single.on-hand', text: "\u2713"
+    assert_select 'span.availability-single.on-hand svg'
   end
 
   test 'show renders checkmark-only pill when multi-ingredient recipe all on hand' do
@@ -124,7 +124,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
 
     get menu_path(kitchen_slug: kitchen_slug)
 
-    assert_select 'details.availability-detail.all-on-hand summary', text: /\u2713/
+    assert_select 'details.availability-detail.all-on-hand summary svg'
     assert_select 'details.availability-detail.all-on-hand summary', text: %r{\d+/\d+}, count: 0
   end
 
