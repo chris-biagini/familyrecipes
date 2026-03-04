@@ -8,12 +8,7 @@ class RecipesController < ApplicationController
   before_action :require_membership, only: %i[create update destroy]
 
   def show
-    embedded_steps = { steps: %i[ingredients cross_references] }
-    @recipe = current_kitchen.recipes
-                             .includes(:category,
-                                       steps: [:ingredients,
-                                               { cross_references: { target_recipe: embedded_steps } }])
-                             .find_by!(slug: params[:slug])
+    @recipe = current_kitchen.recipes.with_full_tree.find_by!(slug: params[:slug])
     @nutrition = @recipe.nutrition_data
   end
 
