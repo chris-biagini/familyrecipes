@@ -48,8 +48,7 @@ class MenuController < ApplicationController
 
     current_kitchen.update!(quick_bites_content: content)
     plan = MealPlan.for_kitchen(current_kitchen)
-    visible = shopping_list_visible_names(plan)
-    plan.with_optimistic_retry { plan.prune_checked_off(visible_names: visible) }
+    plan.with_optimistic_retry { plan.prune_checked_off(visible_names: shopping_list_visible_names(plan)) }
     broadcast_meal_plan_refresh
     render json: { status: 'ok' }
   end
