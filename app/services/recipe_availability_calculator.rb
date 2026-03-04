@@ -4,10 +4,15 @@
 # page's "availability dots." For each recipe/quick bite, reports how many
 # ingredients are still needed (not yet checked off on the grocery list). Used
 # by MenuController for availability dot rendering.
+#
+# Collaborators:
+# - IngredientResolver — name resolution (case-insensitive, variant collapsing)
+# - IngredientCatalog.resolver_for — default resolver factory
+# - MenuController — sole caller
 class RecipeAvailabilityCalculator
-  def initialize(kitchen:, checked_off:, catalog_lookup: nil)
+  def initialize(kitchen:, checked_off:, resolver: nil)
     @kitchen = kitchen
-    @profiles = catalog_lookup || IngredientCatalog.lookup_for(kitchen)
+    @resolver = resolver || IngredientCatalog.resolver_for(kitchen)
     @checked_off = Set.new(checked_off.map { |name| canonical_name(name) })
     @omitted = build_omit_set
   end
@@ -21,7 +26,7 @@ class RecipeAvailabilityCalculator
   private
 
   def build_omit_set
-    Set.new(@profiles.each_value.select { |p| p.aisle == 'omit' }.map(&:ingredient_name))
+    Set.new(@resolver.lookup.each_value.select { |p| p.aisle == 'omit' }.map(&:ingredient_name))
   end
 
   def recipe_availability
@@ -50,7 +55,7 @@ class RecipeAvailabilityCalculator
   end
 
   def canonical_name(name)
-    @profiles[name]&.ingredient_name || name
+    @resolver.resolve(name)
   end
 
   def loaded_recipes

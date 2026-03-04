@@ -133,6 +133,16 @@ class RecipeAvailabilityCalculatorTest < ActiveSupport::TestCase
     assert_equal ['Tortilla chips'], result['nachos'][:missing_names]
   end
 
+  test 'resolves checked-off names case-insensitively' do
+    result = RecipeAvailabilityCalculator.new(
+      kitchen: @kitchen,
+      checked_off: %w[flour salt]
+    ).call
+
+    assert_equal 0, result['focaccia'][:missing],
+                 'Checking off "flour" (lowercase) should satisfy "Flour" (capitalized)'
+  end
+
   test 'handles cross-referenced recipe ingredients' do
     MarkdownImporter.import(<<~MD, kitchen: @kitchen)
       # Poolish
