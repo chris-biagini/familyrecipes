@@ -2,8 +2,8 @@
 
 # Singleton-per-kitchen record that stores shared meal planning state as a JSON
 # blob: selected recipes, selected quick bites, custom grocery items, and
-# checked-off items. Synced across devices via MealPlanBroadcaster (Turbo
-# Stream morphs) with optimistic locking (lock_version). Both the menu and
+# checked-off items. Synced across devices via Turbo page-refresh broadcasts
+# with optimistic locking (lock_version). Both the menu and
 # groceries pages read and write this model. MealPlan.prune_stale_items
 # encapsulates the full prune operation (building the shopping list + retry)
 # so callers need not depend on ShoppingListBuilder directly.

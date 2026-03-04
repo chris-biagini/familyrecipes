@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 # Meal planning page -- member-only. Displays a recipe selector (recipes + quick
-# bites) with checkboxes. Mutations return 204 No Content and broadcast via
-# MealPlanBroadcaster for cross-device sync (including the originating client).
-# Quick bites content is web-editable; changes broadcast to all connected clients.
+# bites) with checkboxes. Mutations return 204 No Content and broadcast a
+# page-refresh signal for cross-device sync. Quick bites content is web-editable;
+# changes broadcast to all connected clients.
 class MenuController < ApplicationController
   include MealPlanActions
 
@@ -22,19 +22,19 @@ class MenuController < ApplicationController
 
   def select
     apply_plan('select', type: params[:type], slug: params[:slug], selected: params[:selected])
-    MealPlanBroadcaster.broadcast_all(current_kitchen)
+    broadcast_meal_plan_refresh
     head :no_content
   end
 
   def select_all
     mutate_plan { |plan| plan.select_all!(all_recipe_slugs, all_quick_bite_slugs) }
-    MealPlanBroadcaster.broadcast_all(current_kitchen)
+    broadcast_meal_plan_refresh
     head :no_content
   end
 
   def clear
     mutate_plan(&:clear_selections!)
-    MealPlanBroadcaster.broadcast_all(current_kitchen)
+    broadcast_meal_plan_refresh
     head :no_content
   end
 
@@ -48,7 +48,7 @@ class MenuController < ApplicationController
 
     current_kitchen.update!(quick_bites_content: content)
     MealPlan.prune_stale_items(kitchen: current_kitchen)
-    MealPlanBroadcaster.broadcast_all(current_kitchen)
+    broadcast_meal_plan_refresh
     render json: { status: 'ok' }
   end
 

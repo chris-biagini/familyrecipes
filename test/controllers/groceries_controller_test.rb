@@ -356,27 +356,27 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
 
   # --- Broadcast assertions ---
 
-  test 'check broadcasts to groceries stream' do
+  test 'check broadcasts meal plan refresh' do
     log_in
-    assert_turbo_stream_broadcasts [@kitchen, 'groceries'] do
+    assert_turbo_stream_broadcasts [@kitchen, :meal_plan_updates] do
       patch groceries_check_path(kitchen_slug: kitchen_slug),
             params: { item: 'flour', checked: true },
             as: :turbo_stream
     end
   end
 
-  test 'update_custom_items broadcasts to groceries stream' do
+  test 'update_custom_items broadcasts meal plan refresh' do
     log_in
-    assert_turbo_stream_broadcasts [@kitchen, 'groceries'] do
+    assert_turbo_stream_broadcasts [@kitchen, :meal_plan_updates] do
       patch groceries_custom_items_path(kitchen_slug: kitchen_slug),
             params: { item: 'birthday candles', action_type: 'add' },
             as: :turbo_stream
     end
   end
 
-  test 'update_aisle_order broadcasts to groceries stream' do
+  test 'update_aisle_order broadcasts meal plan refresh' do
     log_in
-    assert_turbo_stream_broadcasts [@kitchen, 'groceries'] do
+    assert_turbo_stream_broadcasts [@kitchen, :meal_plan_updates] do
       patch groceries_aisle_order_path(kitchen_slug: kitchen_slug),
             params: { aisle_order: "Produce\nBaking" },
             as: :json

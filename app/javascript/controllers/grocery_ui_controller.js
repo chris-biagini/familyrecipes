@@ -4,7 +4,7 @@ import ListenerManager from "utilities/listener_manager"
 
 /**
  * Groceries page interaction — optimistic checkbox toggle, custom item input,
- * aisle collapse persistence. All rendering is server-side via Turbo Stream
+ * aisle collapse persistence. All rendering is server-side via Turbo page-refresh
  * morphs; this controller only handles user interactions and preserves local
  * state (aisle collapse) across morphs.
  */
@@ -17,7 +17,7 @@ export default class extends Controller {
     this.bindCustomItemInput()
     this.restoreAisleCollapse()
 
-    this.listeners.add(document, "turbo:before-stream-render", (e) => this.preserveAisleState(e))
+    this.listeners.add(document, "turbo:before-render", (e) => this.preserveAisleStateOnRefresh(e))
   }
 
   disconnect() {
@@ -152,12 +152,12 @@ export default class extends Controller {
     }
   }
 
-  preserveAisleState(event) {
-    const collapsed = this.loadCollapsedAisles()
+  preserveAisleStateOnRefresh(event) {
+    if (!event.detail.render) return
+    this.saveAisleCollapse()
     const originalRender = event.detail.render
-
-    event.detail.render = async (streamElement) => {
-      await originalRender(streamElement)
+    event.detail.render = async (...args) => {
+      await originalRender(...args)
       this.restoreAisleCollapse()
     }
   }

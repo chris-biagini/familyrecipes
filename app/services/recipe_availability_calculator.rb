@@ -3,7 +3,7 @@
 # Computes per-recipe and per-quick-bite ingredient availability for the menu
 # page's "availability dots." For each recipe/quick bite, reports how many
 # ingredients are still needed (not yet checked off on the grocery list). Used
-# by MenuController and MealPlanBroadcaster for availability dot rendering.
+# by MenuController for availability dot rendering.
 class RecipeAvailabilityCalculator
   def initialize(kitchen:, checked_off:, catalog_lookup: nil)
     @kitchen = kitchen

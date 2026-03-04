@@ -118,9 +118,9 @@ Every class has an architectural header comment — read them first. This sectio
 
 **Editor dialogs.** Use `render layout: 'shared/editor_dialog'` with Stimulus data attributes — no JS needed. For custom content, add a controller listening to editor lifecycle events.
 
-**Hotwire stack.** Turbo Drive + Turbo Streams (morph is the primary action for meal plan pages), Stimulus controllers, importmap-rails for ES modules. New JS modules must be pinned in `config/importmap.rb`; new Stimulus controllers auto-register via `pin_all_from`. CSP requires nonces for importmap's inline `<script>` — the nonce generator uses `request.session.id` (see `content_security_policy.rb`). Turbo's progress bar is disabled (`Turbo.config.drive.progressBarDelay = Infinity`) because CSP blocks its inline styles.
+**Hotwire stack.** Turbo Drive + Turbo Streams, Stimulus controllers, importmap-rails for ES modules. New JS modules must be pinned in `config/importmap.rb`; new Stimulus controllers auto-register via `pin_all_from`. CSP requires nonces for importmap's inline `<script>` — the nonce generator uses `request.session.id` (see `content_security_policy.rb`). Turbo's progress bar is disabled (`Turbo.config.drive.progressBarDelay = Infinity`) because CSP blocks its inline styles.
 
-**ActionCable.** Turbo Streams over Solid Cable, using `turbo_stream_from` tags in views. `MealPlanBroadcaster` pushes morph updates to groceries/menu pages; `RecipeBroadcaster` handles recipe CRUD streams. Broadcaster service objects wrap queries in `ActsAsTenant.with_tenant(kitchen)` since they lack controller tenant context.
+**ActionCable.** Turbo Streams over Solid Cable, using `turbo_stream_from` tags in views. Meal plan changes broadcast a page-refresh signal (`broadcast_refresh_to`) — each client re-fetches its own page and Turbo morphs the result. `RecipeBroadcaster` handles recipe CRUD streams with targeted broadcasts, plus triggers a meal-plan refresh. `RecipeBroadcaster` wraps queries in `ActsAsTenant.with_tenant(kitchen)` since it lacks controller tenant context.
 
 **Write path.** `RecipeWriteService` orchestrates all recipe mutations — import, cross-reference cascades, broadcasting, category cleanup, meal plan pruning. Don't call `MarkdownImporter` directly for web operations.
 

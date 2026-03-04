@@ -4,7 +4,7 @@
 # bites. Aggregates ingredient quantities (via IngredientAggregator), canonicalizes
 # names through IngredientCatalog, organizes items by grocery aisle, appends custom
 # items, and sorts aisles by the kitchen's user-defined order. Consumed by
-# GroceriesController#show, MealPlanBroadcaster, and MealPlan.prune_stale_items.
+# GroceriesController#show and MealPlan.prune_stale_items.
 class ShoppingListBuilder
   AISLE_SORT_PRIORITY = { ordered: 0, unordered: 1, miscellaneous: 2 }.freeze
 

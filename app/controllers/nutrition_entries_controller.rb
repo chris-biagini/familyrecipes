@@ -2,10 +2,9 @@
 
 # JSON/Turbo Stream API for creating, updating, and deleting kitchen-scoped
 # IngredientCatalog entries from the web nutrition editor. On save, syncs new
-# aisles to the kitchen's aisle_order, broadcasts aisle changes via
-# MealPlanBroadcaster (Turbo Stream morphs), and recalculates nutrition for
-# all affected recipes. Responds with Turbo Stream updates to refresh the
-# ingredients table in-place.
+# aisles to the kitchen's aisle_order, broadcasts a page-refresh signal for
+# cross-device sync, and recalculates nutrition for all affected recipes.
+# Responds with Turbo Stream updates to refresh the ingredients table in-place.
 class NutritionEntriesController < ApplicationController
   include IngredientRows
 
@@ -25,7 +24,7 @@ class NutritionEntriesController < ApplicationController
     entry = IngredientCatalog.find_by!(kitchen: current_kitchen, ingredient_name:)
     entry.destroy!
     recalculate_affected_recipes
-    MealPlanBroadcaster.broadcast_all(current_kitchen)
+    Turbo::StreamsChannel.broadcast_refresh_to(current_kitchen, :meal_plan_updates)
     render json: { status: 'ok' }
   rescue ActiveRecord::RecordNotFound
     head :not_found
@@ -113,7 +112,7 @@ class NutritionEntriesController < ApplicationController
   end
 
   def broadcast_aisle_change
-    MealPlanBroadcaster.broadcast_all(current_kitchen)
+    Turbo::StreamsChannel.broadcast_refresh_to(current_kitchen, :meal_plan_updates)
   end
 
   def recalculate_affected_recipes

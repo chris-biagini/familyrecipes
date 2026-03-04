@@ -31,8 +31,8 @@ class RecipeBroadcasterTest < ActiveSupport::TestCase
     end
   end
 
-  test 'broadcasts grocery morph via MealPlanBroadcaster' do
-    assert_turbo_stream_broadcasts [@kitchen, 'groceries'] do
+  test 'broadcasts meal plan refresh after recipe CRUD' do
+    assert_turbo_stream_broadcasts [@kitchen, :meal_plan_updates] do
       RecipeBroadcaster.broadcast(kitchen: @kitchen, action: :updated, recipe_title: 'Focaccia')
     end
   end

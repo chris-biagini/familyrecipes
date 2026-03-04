@@ -2,8 +2,8 @@
 
 # Shopping list page -- member-only. Server-renders the full shopping list on
 # page load via ShoppingListBuilder. Mutations return 204 No Content and
-# broadcast via MealPlanBroadcaster for cross-device sync (including the
-# originating client). Manages check-off state, custom items, and aisle ordering.
+# broadcast a page-refresh signal for cross-device sync. Manages check-off
+# state, custom items, and aisle ordering.
 class GroceriesController < ApplicationController
   include MealPlanActions
 
@@ -19,7 +19,7 @@ class GroceriesController < ApplicationController
 
   def check
     apply_plan('check', item: params[:item], checked: params[:checked])
-    MealPlanBroadcaster.broadcast_all(current_kitchen)
+    broadcast_meal_plan_refresh
     head :no_content
   end
 
@@ -32,7 +32,7 @@ class GroceriesController < ApplicationController
     end
 
     apply_plan('custom_items', item: item, action: params[:action_type])
-    MealPlanBroadcaster.broadcast_grocery_morph(current_kitchen)
+    broadcast_meal_plan_refresh
     head :no_content
   end
 
@@ -44,7 +44,7 @@ class GroceriesController < ApplicationController
     return render json: { errors: }, status: :unprocessable_content if errors.any?
 
     current_kitchen.save!
-    MealPlanBroadcaster.broadcast_grocery_morph(current_kitchen)
+    broadcast_meal_plan_refresh
     render json: { status: 'ok' }
   end
 

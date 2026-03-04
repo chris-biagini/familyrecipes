@@ -3,9 +3,9 @@
 # Owns all recipe-related Turbo Stream broadcasting: listings, ingredient tables,
 # recipe pages, and cascading updates to cross-referencing parents. Wraps queries
 # in ActsAsTenant.with_tenant since callers may lack controller tenant context.
+# Also triggers a meal-plan page-refresh so groceries/menu pages stay in sync.
 #
 # - RecipeWriteService: sole caller for CRUD broadcasts
-# - MealPlanBroadcaster: morphs grocery/menu pages after recipe changes
 # - Turbo::StreamsChannel: transport layer for all stream pushes
 class RecipeBroadcaster
   include IngredientRows
@@ -63,7 +63,7 @@ class RecipeBroadcaster
       broadcast_ingredients(categories.flat_map(&:recipes), catalog_lookup:)
       broadcast_recipe_page(recipe, action:, recipe_title:)
       append_toast([kitchen, 'recipes'], "#{recipe_title} was #{action}")
-      MealPlanBroadcaster.broadcast_all(kitchen, catalog_lookup:)
+      Turbo::StreamsChannel.broadcast_refresh_to(kitchen, :meal_plan_updates)
     end
   end
 

@@ -93,9 +93,9 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     assert_includes plan.state['selected_recipes'], 'focaccia'
   end
 
-  test 'select broadcasts to menu stream' do
+  test 'select broadcasts meal plan refresh' do
     log_in
-    assert_turbo_stream_broadcasts [@kitchen, 'menu'] do
+    assert_turbo_stream_broadcasts [@kitchen, :meal_plan_updates] do
       patch menu_select_path(kitchen_slug: kitchen_slug),
             params: { type: 'recipe', slug: 'focaccia', selected: true },
             as: :turbo_stream
@@ -170,9 +170,9 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     assert_includes plan.state['checked_off'], 'flour'
   end
 
-  test 'select_all broadcasts to menu stream' do
+  test 'select_all broadcasts meal plan refresh' do
     log_in
-    assert_turbo_stream_broadcasts [@kitchen, 'menu'] do
+    assert_turbo_stream_broadcasts [@kitchen, :meal_plan_updates] do
       patch menu_select_all_path(kitchen_slug: kitchen_slug), as: :turbo_stream
     end
   end
@@ -198,9 +198,9 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     assert_empty plan.state['checked_off']
   end
 
-  test 'clear broadcasts to menu stream' do
+  test 'clear broadcasts meal plan refresh' do
     log_in
-    assert_turbo_stream_broadcasts [@kitchen, 'menu'] do
+    assert_turbo_stream_broadcasts [@kitchen, :meal_plan_updates] do
       delete menu_clear_path(kitchen_slug: kitchen_slug), as: :turbo_stream
     end
   end
@@ -261,14 +261,12 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
   end
 
-  test 'update_quick_bites broadcasts to groceries and menu streams' do
+  test 'update_quick_bites broadcasts meal plan refresh' do
     log_in
-    assert_turbo_stream_broadcasts [@kitchen, 'groceries'] do
-      assert_turbo_stream_broadcasts [@kitchen, 'menu'] do
-        patch menu_quick_bites_path(kitchen_slug: kitchen_slug),
-              params: { content: "## Snacks\n  - Goldfish" },
-              as: :json
-      end
+    assert_turbo_stream_broadcasts [@kitchen, :meal_plan_updates] do
+      patch menu_quick_bites_path(kitchen_slug: kitchen_slug),
+            params: { content: "## Snacks\n  - Goldfish" },
+            as: :json
     end
   end
 

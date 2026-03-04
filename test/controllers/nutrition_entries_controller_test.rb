@@ -156,8 +156,8 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Produce\nBaking", @kitchen.reload.aisle_order
   end
 
-  test 'upsert broadcasts turbo stream morph when aisle is saved' do
-    assert_turbo_stream_broadcasts [@kitchen, 'groceries'] do
+  test 'upsert broadcasts meal plan refresh when aisle is saved' do
+    assert_turbo_stream_broadcasts [@kitchen, :meal_plan_updates] do
       post nutrition_entry_upsert_path('flour', kitchen_slug: kitchen_slug),
            params: { nutrients: { basis_grams: nil }, density: nil, portions: {}, aisle: 'Deli' },
            as: :json
@@ -453,10 +453,10 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
     assert_response :forbidden
   end
 
-  test 'destroy broadcasts turbo stream morph' do
+  test 'destroy broadcasts meal plan refresh' do
     IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'flour', basis_grams: 30, calories: 110)
 
-    assert_turbo_stream_broadcasts [@kitchen, 'groceries'] do
+    assert_turbo_stream_broadcasts [@kitchen, :meal_plan_updates] do
       delete nutrition_entry_destroy_path('flour', kitchen_slug: kitchen_slug), as: :json
     end
   end
