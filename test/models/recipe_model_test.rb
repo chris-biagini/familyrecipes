@@ -147,4 +147,26 @@ class RecipeModelTest < ActiveSupport::TestCase
       recipe.destroy
     end
   end
+
+  # --- with_full_tree scope ---
+
+  test 'with_full_tree eager loads steps, ingredients, and cross references' do
+    recipe = MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Poolish
+
+      Category: Test
+
+      ## Mix (combine)
+
+      - Flour, 1 cup
+
+      Mix.
+    MD
+
+    loaded = Recipe.with_full_tree.find(recipe.id)
+
+    assert_predicate loaded.association(:steps), :loaded?
+    assert_predicate loaded.steps.first.association(:ingredients), :loaded?
+    assert_predicate loaded.steps.first.association(:cross_references), :loaded?
+  end
 end

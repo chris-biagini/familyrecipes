@@ -26,6 +26,11 @@ class Recipe < ApplicationRecord
   validates :markdown_source, presence: true
 
   scope :alphabetical, -> { order(:title) }
+  scope :with_full_tree, -> {
+    includes(:category,
+             steps: [:ingredients,
+                     { cross_references: { target_recipe: { steps: %i[ingredients cross_references] } } }])
+  }
 
   before_validation :generate_slug, if: -> { slug.blank? && title.present? }
 
