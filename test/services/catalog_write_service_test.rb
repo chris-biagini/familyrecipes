@@ -104,6 +104,29 @@ class CatalogWriteServiceTest < ActiveSupport::TestCase
     assert_not_nil recipe.reload.nutrition_data
   end
 
+  test 'upsert recalculates recipes using inflector variants of ingredient name' do
+    create_catalog_entry('Eggs', basis_grams: 50, calories: 78, aisle: 'Dairy')
+
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Omelette
+
+      Category: Breakfast
+
+      ## Cook (combine)
+
+      - Egg, 3
+
+      Cook gently.
+    MD
+
+    recipe = @kitchen.recipes.find_by!(slug: 'omelette')
+    recipe.update_column(:nutrition_data, nil) # rubocop:disable Rails/SkipsModelValidations
+
+    upsert_entry('Eggs', nutrients: VALID_NUTRIENTS, aisle: 'Dairy')
+
+    assert_not_nil recipe.reload.nutrition_data
+  end
+
   # --- upsert broadcasting ---
 
   test 'upsert broadcasts meal plan refresh when aisle present' do

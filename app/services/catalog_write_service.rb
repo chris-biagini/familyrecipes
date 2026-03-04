@@ -7,8 +7,9 @@
 # post-save logic.
 #
 # - IngredientCatalog: overlay model for ingredient metadata
+# - IngredientResolver: variant-aware name resolution for affected-recipe queries
 # - RecipeNutritionJob: recalculates recipe nutrition_data
-# - Turbo::StreamsChannel: broadcasts meal plan refresh signals
+# - MealPlan: broadcasts meal plan refresh signals
 class CatalogWriteService
   Result = Data.define(:entry, :persisted)
 
@@ -60,10 +61,11 @@ class CatalogWriteService
   end
 
   def recalculate_affected_recipes
-    canonical = ingredient_name.downcase
+    resolver = IngredientCatalog.resolver_for(kitchen)
+    raw_names = resolver.all_keys_for(ingredient_name)
     kitchen.recipes
            .joins(steps: :ingredients)
-           .where('LOWER(ingredients.name) = ?', canonical)
+           .where(ingredients: { name: raw_names })
            .distinct
            .find_each { |recipe| RecipeNutritionJob.perform_now(recipe) }
   end
