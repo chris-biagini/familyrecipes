@@ -5,7 +5,8 @@
 # in ActsAsTenant.with_tenant since callers may lack controller tenant context.
 # Also triggers a meal-plan page-refresh so groceries/menu pages stay in sync.
 #
-# - RecipeWriteService: sole caller for CRUD broadcasts
+# - RecipeBroadcastJob: async caller for create/update/destroy broadcasts
+# - RecipeWriteService: synchronous caller for rename redirects (broadcast_rename)
 # - Turbo::StreamsChannel: transport layer for all stream pushes
 class RecipeBroadcaster
   include IngredientRows

@@ -1,13 +1,16 @@
 # frozen_string_literal: true
 
 module FamilyRecipes
-  # Shared validation constraints for ingredient catalog data. Single source of
-  # truth for rules enforced by both the IngredientCatalog Rails model and the
-  # bin/nutrition TUI editors. Predicate methods return [valid, error_message]
-  # tuples — callers check the first element and use the second for display.
+  # Canonical nutrient definitions and shared validation for ingredient catalog
+  # data. NUTRIENT_DEFS is the single source of truth for which nutrients exist,
+  # their display labels, units, and indent levels — all downstream constants
+  # derive from it. Predicate methods return [valid, error_message] tuples.
   #
   # Collaborators:
-  # - IngredientCatalog (delegates custom validators here)
+  # - IngredientCatalog (NUTRIENT_COLUMNS, NUTRIENT_DISPLAY, validation)
+  # - NutritionCalculator (NUTRIENTS key list)
+  # - RecipesHelper (NUTRITION_ROWS for label rendering)
+  # - NutritionTui::Data (NUTRIENTS for TUI display)
   # - NutritionTui::Editors::* (calls predicates on close/commit)
   module NutritionConstraints
     NutrientDef = Data.define(:key, :label, :unit, :indent)

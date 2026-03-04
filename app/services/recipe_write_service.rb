@@ -2,13 +2,13 @@
 
 # Orchestrates recipe create/update/destroy. Owns the full post-write pipeline:
 # import via MarkdownImporter, handle renames (CrossReferenceUpdater), clean up
-# orphan categories, and prune stale meal plan entries. Broadcasting is async
-# via RecipeBroadcastJob, except rename/delete notifications which must complete
-# before the HTTP response reaches the saving user's browser.
+# orphan categories, and prune stale meal plan entries. All broadcasting is async
+# via RecipeBroadcastJob, except rename redirects which must reach the saving
+# user's browser before the HTTP response completes.
 #
 # - MarkdownImporter: parses markdown into AR records
 # - RecipeBroadcastJob: async Turbo Stream broadcasts for create/update/destroy
-# - RecipeBroadcaster: synchronous rename redirects and delete notifications
+# - RecipeBroadcaster: synchronous rename redirects (broadcast_rename)
 # - CrossReferenceUpdater: renames cross-references on title change
 class RecipeWriteService
   Result = Data.define(:recipe, :updated_references)
