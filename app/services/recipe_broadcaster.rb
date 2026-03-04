@@ -10,7 +10,6 @@
 # - IngredientRowBuilder: builds ingredient rows and summary for broadcast
 # - Turbo::StreamsChannel: transport layer for all stream pushes
 class RecipeBroadcaster
-
   SHOW_INCLUDES = [
     :category,
     { steps: [:ingredients, { cross_references: { target_recipe: { steps: %i[ingredients cross_references] } } }] }

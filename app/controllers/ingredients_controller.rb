@@ -8,7 +8,6 @@
 # - IngredientRowBuilder: builds ingredient rows and summary from kitchen recipes
 # - IngredientCatalog: lookup overlay for name resolution and status
 class IngredientsController < ApplicationController
-
   before_action :require_membership
   before_action :prevent_html_caching, only: :index
 
