@@ -20,19 +20,9 @@ module NutritionTui
     NUTRITION_PATH = File.join(PROJECT_ROOT, 'db/seeds/resources/ingredient-catalog.yaml')
     RECIPES_DIR = File.join(PROJECT_ROOT, 'db/seeds/recipes')
 
-    NUTRIENTS = [
-      { key: 'calories', label: 'Calories', unit: '', indent: 0 },
-      { key: 'fat', label: 'Total fat', unit: 'g', indent: 0 },
-      { key: 'saturated_fat', label: 'Saturated fat', unit: 'g', indent: 1 },
-      { key: 'trans_fat', label: 'Trans fat', unit: 'g', indent: 1 },
-      { key: 'cholesterol', label: 'Cholesterol', unit: 'mg', indent: 0 },
-      { key: 'sodium', label: 'Sodium', unit: 'mg', indent: 0 },
-      { key: 'carbs', label: 'Total carbs', unit: 'g', indent: 0 },
-      { key: 'fiber', label: 'Fiber', unit: 'g', indent: 1 },
-      { key: 'total_sugars', label: 'Total sugars', unit: 'g', indent: 1 },
-      { key: 'added_sugars', label: 'Added sugars', unit: 'g', indent: 2 },
-      { key: 'protein', label: 'Protein', unit: 'g', indent: 0 }
-    ].freeze
+    NUTRIENTS = FamilyRecipes::NutritionConstraints::NUTRIENT_DEFS.map { |d|
+      { key: d.key.to_s, label: d.label, unit: d.unit, indent: d.indent }
+    }.freeze
 
     VOLUME_UNITS = ['cup', 'cups', 'tbsp', 'tsp', 'tablespoon', 'tablespoons',
                     'teaspoon', 'teaspoons', 'fl oz'].freeze
