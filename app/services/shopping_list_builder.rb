@@ -26,6 +26,10 @@ class ShoppingListBuilder
     organized
   end
 
+  def visible_names
+    build.each_value.flat_map { |items| items.map { |i| i[:name] } }.to_set
+  end
+
   private
 
   def merge_all_ingredients

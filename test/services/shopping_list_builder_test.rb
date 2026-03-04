@@ -468,4 +468,42 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
 
     assert salt_amount, 'Abbreviated units should not pluralize'
   end
+
+  test 'visible_names returns set of all ingredient names in shopping list' do
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+
+    names = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).visible_names
+
+    assert_instance_of Set, names
+    assert_includes names, 'Flour'
+    assert_includes names, 'Salt'
+  end
+
+  test 'visible_names includes custom items' do
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('custom_items', item: 'birthday candles', action: 'add')
+
+    names = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).visible_names
+
+    assert_includes names, 'birthday candles'
+  end
+
+  test 'visible_names excludes omitted ingredients' do
+    IngredientCatalog.find_by(ingredient_name: 'Salt', kitchen_id: nil)&.update!(aisle: 'omit')
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+
+    names = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).visible_names
+
+    assert_not_includes names, 'Salt'
+    assert_includes names, 'Flour'
+  end
+
+  test 'visible_names returns empty set when nothing selected' do
+    list = MealPlan.for_kitchen(@kitchen)
+    names = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).visible_names
+
+    assert_empty names
+  end
 end
