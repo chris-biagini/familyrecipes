@@ -15,22 +15,12 @@ class IngredientCatalog < ApplicationRecord # rubocop:disable Metrics/ClassLengt
 
   belongs_to :kitchen, optional: true
 
-  NUTRIENT_COLUMNS = %i[calories fat saturated_fat trans_fat cholesterol
-                        sodium carbs fiber total_sugars added_sugars protein].freeze
+  NUTRIENT_COLUMNS = FamilyRecipes::NutritionConstraints::NUTRIENT_KEYS
 
-  NUTRIENT_DISPLAY = [
-    ['Calories',         :calories,      ''],
-    ['Total Fat',        :fat,           'g'],
-    ['  Saturated Fat',  :saturated_fat, 'g'],
-    ['  Trans Fat',      :trans_fat,     'g'],
-    ['Cholesterol',      :cholesterol,   'mg'],
-    ['Sodium',           :sodium,        'mg'],
-    ['Total Carbs',      :carbs,         'g'],
-    ['  Dietary Fiber',  :fiber,         'g'],
-    ['  Total Sugars',   :total_sugars,  'g'],
-    ['    Added Sugars', :added_sugars,  'g'],
-    ['Protein',          :protein,       'g']
-  ].freeze
+  NUTRIENT_DISPLAY = FamilyRecipes::NutritionConstraints::NUTRIENT_DEFS.map { |d|
+    label = d.indent.positive? ? "#{'  ' * d.indent}#{d.label}" : d.label
+    [label, d.key, d.unit]
+  }.freeze
 
   DENSITY_FIELDS = %i[density_grams density_volume density_unit].freeze
   private_constant :DENSITY_FIELDS
