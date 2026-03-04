@@ -1,0 +1,11 @@
+{
+  "planPath": "docs/plans/2026-03-04-menu-visual-refresh-plan.md",
+  "tasks": [
+    {"id": 1, "subject": "Task 1: Update color variables in style.css", "status": "pending"},
+    {"id": 2, "subject": "Task 2: Update hover states in menu.css", "status": "pending", "blockedBy": [1]},
+    {"id": 3, "subject": "Task 3: Replace Unicode glyphs with SVGs", "status": "pending", "blockedBy": [1]},
+    {"id": 4, "subject": "Task 4: Restyle availability badges and expanded detail", "status": "pending", "blockedBy": [1, 2, 3]},
+    {"id": 5, "subject": "Task 5: Run full test suite, lint, and visual verification", "status": "pending", "blockedBy": [1, 2, 3, 4]}
+  ],
+  "lastUpdated": "2026-03-04T00:00:00Z"
+}
