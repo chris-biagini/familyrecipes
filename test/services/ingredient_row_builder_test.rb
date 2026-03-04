@@ -207,13 +207,13 @@ class IngredientRowBuilderTest < ActiveSupport::TestCase
     assert_nil next_name
   end
 
-  # --- precomputed lookup ---
+  # --- precomputed resolver ---
 
-  test 'accepts precomputed lookup to avoid redundant query' do
+  test 'accepts precomputed resolver to avoid redundant query' do
     create_catalog_entry('Flour', basis_grams: 30, aisle: 'Baking')
-    lookup = IngredientCatalog.lookup_for(@kitchen)
+    resolver = IngredientCatalog.resolver_for(@kitchen)
 
-    builder = IngredientRowBuilder.new(kitchen: @kitchen, lookup:)
+    builder = IngredientRowBuilder.new(kitchen: @kitchen, resolver:)
     rows = builder.rows
 
     flour = rows.find { |r| r[:name] == 'Flour' }

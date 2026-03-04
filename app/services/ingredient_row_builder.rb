@@ -1,22 +1,19 @@
 # frozen_string_literal: true
 
 # Builds ingredient table row data for the ingredients index page, Turbo Stream
-# updates, and real-time broadcasts. Canonicalizes ingredient names through
-# IngredientCatalog and Inflector variants, then computes nutrition/density
-# status for each unique ingredient across all recipes.
-#
-# Replaces the IngredientRows concern with explicit dependencies instead of
-# relying on controller context (current_kitchen).
+# updates, and real-time broadcasts. Delegates name resolution to an
+# IngredientResolver, then computes nutrition/density status for each unique
+# ingredient across all recipes.
 #
 # Collaborators:
-# - IngredientCatalog (lookup overlay for name resolution and status)
-# - FamilyRecipes::Inflector (singular/plural variant matching)
+# - IngredientResolver (name resolution, catalog entry access)
+# - IngredientCatalog.resolver_for (default resolver factory)
 # - IngredientsController, NutritionEntriesController, RecipeBroadcaster
 class IngredientRowBuilder
-  def initialize(kitchen:, recipes: nil, lookup: nil)
+  def initialize(kitchen:, recipes: nil, resolver: nil)
     @kitchen = kitchen
     @recipes = recipes || kitchen.recipes.includes(steps: :ingredients)
-    @lookup = lookup || IngredientCatalog.lookup_for(kitchen)
+    @resolver = resolver || IngredientCatalog.resolver_for(kitchen)
   end
 
   def rows
@@ -32,12 +29,16 @@ class IngredientRowBuilder
     idx = sorted.index { |name| name.casecmp(after).zero? }
     return unless idx
 
-    sorted[(idx + 1)..].find { |name| row_status(lookup[name]) != 'complete' }
+    sorted[(idx + 1)..].find { |name| row_status(@resolver.catalog_entry(name)) != 'complete' }
   end
 
   private
 
-  attr_reader :kitchen, :recipes, :lookup
+  attr_reader :kitchen, :recipes
+
+  def lookup
+    @resolver.lookup
+  end
 
   def build_rows
     recipes_by_ingredient
@@ -53,7 +54,7 @@ class IngredientRowBuilder
   end
 
   def ingredient_row(name, recs)
-    entry = lookup[name]
+    entry = @resolver.catalog_entry(name)
     { name:, entry:, recipe_count: recs.size, recipes: recs,
       has_nutrition: entry&.basis_grams.present?,
       has_density: entry&.density_grams.present?,
@@ -84,16 +85,13 @@ class IngredientRowBuilder
 
     recipes.each_with_object(Hash.new { |h, k| h[k] = [] }) do |recipe, index|
       recipe.ingredients.each do |ingredient|
-        name = canonical_ingredient_name(ingredient.name, index)
+        name = canonical_ingredient_name(ingredient.name)
         index[name] << recipe if seen[name].add?(recipe.id)
       end
     end
   end
 
-  def canonical_ingredient_name(name, index)
-    entry = lookup[name]
-    return entry.ingredient_name if entry
-
-    FamilyRecipes::Inflector.ingredient_variants(name).find { |v| index.key?(v) } || name
+  def canonical_ingredient_name(name)
+    @resolver.resolve(name)
   end
 end
