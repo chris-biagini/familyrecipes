@@ -189,6 +189,12 @@
   display: block;
 }
 
+.availability-have,
+.availability-need {
+  display: flex;
+  gap: 0.4rem;
+}
+
 .availability-have {
   color: var(--on-hand-color);
 }
@@ -199,11 +205,13 @@
 
 .availability-have strong,
 .availability-need strong {
+  flex-shrink: 0;
+  width: 3.5rem;
   font-size: 0.65rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  margin-right: 0.3rem;
+  padding-top: 0.1rem;
 }
 
 /* Quick Bites */

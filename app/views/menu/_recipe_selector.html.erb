@@ -14,15 +14,15 @@
           <span class="availability-single<%= info[:missing].zero? ? ' on-hand' : ' not-on-hand' %>"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><% if info[:missing].zero? %><circle cx="5" cy="5" r="4.5" fill="currentColor"/><% else %><circle cx="5" cy="5" r="3.5" fill="none" stroke="currentColor" stroke-width="1.5"/><% end %></svg></span>
         <% elsif info %>
           <details class="availability-detail<%= ' all-on-hand' if info[:missing].zero? %>">
-            <summary aria-label="<%= info[:missing] %> of <%= info[:ingredients].size %> missing: <%= info[:missing_names].join(', ') %>"><% if info[:missing].zero? %><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="4.5" fill="currentColor"/></svg><% else %><%= info[:missing] %>/<%= info[:ingredients].size %><% end %></summary>
+            <summary aria-label="<%= info[:missing] %> of <%= info[:ingredients].size %> missing: <%= info[:missing_names].join(', ') %>"><%= info[:missing] %>/<%= info[:ingredients].size %></summary>
           </details>
         <% end %>
         <%= link_to "\u2192", recipe_path(recipe.slug), class: 'recipe-link', title: "Open #{recipe.title} in new tab", target: '_blank' %>
         <% if info && info[:ingredients].size > 1 %>
           <div class="availability-ingredients">
             <% have = info[:ingredients] - info[:missing_names] %>
-            <% if have.any? %><div class="availability-have"><strong>Have</strong> <%= have.join(', ') %></div><% end %>
-            <% if info[:missing_names].any? %><div class="availability-need"><strong>Missing</strong> <%= info[:missing_names].join(', ') %></div><% end %>
+            <% if have.any? %><div class="availability-have"><strong>Have</strong><span><%= have.join(', ') %></span></div><% end %>
+            <% if info[:missing_names].any? %><div class="availability-need"><strong>Missing</strong><span><%= info[:missing_names].join(', ') %></span></div><% end %>
           </div>
         <% end %>
       </li>
@@ -47,14 +47,14 @@
               <span class="availability-single<%= info[:missing].zero? ? ' on-hand' : ' not-on-hand' %>"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><% if info[:missing].zero? %><circle cx="5" cy="5" r="4.5" fill="currentColor"/><% else %><circle cx="5" cy="5" r="3.5" fill="none" stroke="currentColor" stroke-width="1.5"/><% end %></svg></span>
             <% elsif info %>
               <details class="availability-detail<%= ' all-on-hand' if info[:missing].zero? %>">
-                <summary aria-label="<%= info[:missing] %> of <%= info[:ingredients].size %> missing: <%= info[:missing_names].join(', ') %>"><% if info[:missing].zero? %><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="4.5" fill="currentColor"/></svg><% else %><%= info[:missing] %>/<%= info[:ingredients].size %><% end %></summary>
+                <summary aria-label="<%= info[:missing] %> of <%= info[:ingredients].size %> missing: <%= info[:missing_names].join(', ') %>"><%= info[:missing] %>/<%= info[:ingredients].size %></summary>
               </details>
             <% end %>
             <% if info && info[:ingredients].size > 1 %>
               <% have = info[:ingredients] - info[:missing_names] %>
               <div class="availability-ingredients">
-                <% if have.any? %><div class="availability-have"><strong>Have</strong> <%= have.join(', ') %></div><% end %>
-                <% if info[:missing_names].any? %><div class="availability-need"><strong>Missing</strong> <%= info[:missing_names].join(', ') %></div><% end %>
+                <% if have.any? %><div class="availability-have"><strong>Have</strong><span><%= have.join(', ') %></span></div><% end %>
+                <% if info[:missing_names].any? %><div class="availability-need"><strong>Missing</strong><span><%= info[:missing_names].join(', ') %></span></div><% end %>
               </div>
             <% end %>
           </li>
