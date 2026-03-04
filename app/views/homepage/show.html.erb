@@ -1,6 +1,6 @@
 <% content_for(:title) { @site_config.site_title } %>
 
-<% if current_kitchen.member?(current_user) %>
+<% if current_member? %>
 <% content_for(:extra_nav) do %>
     <div>
       <button type="button" id="new-recipe-button" class="btn">+ New</button>
@@ -8,7 +8,7 @@
 <% end %>
 <% end %>
 
-<% if current_user && current_kitchen.member?(current_user) %>
+<% if current_member? %>
   <%= turbo_stream_from current_kitchen, "recipes" %>
 <% end %>
 
@@ -25,7 +25,7 @@
   </footer>
 </article>
 
-<% if current_kitchen.member?(current_user) %>
+<% if current_member? %>
 <%= render layout: 'shared/editor_dialog',
     locals: { title: 'New Recipe',
               id: 'recipe-editor',

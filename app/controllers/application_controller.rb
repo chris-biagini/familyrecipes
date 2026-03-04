@@ -21,7 +21,7 @@ class ApplicationController < ActionController::Base
   before_action :set_kitchen_from_path
   before_action :prevent_api_caching
 
-  helper_method :current_kitchen, :logged_in?, :home_path, :versioned_icon_path
+  helper_method :current_kitchen, :current_member?, :logged_in?, :home_path, :versioned_icon_path
 
   private
 
@@ -99,10 +99,16 @@ class ApplicationController < ActionController::Base
     end
   end
 
+  def current_member?
+    return @current_member if defined?(@current_member)
+
+    @current_member = current_kitchen&.member?(current_user)
+  end
+
   def require_membership
     return head(:forbidden) unless logged_in?
 
-    head(:forbidden) unless current_kitchen&.member?(current_user)
+    head(:forbidden) unless current_member?
   end
 
   def default_url_options

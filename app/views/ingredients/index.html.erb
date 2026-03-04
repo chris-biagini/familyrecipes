@@ -21,7 +21,7 @@
 
   <%= render 'ingredients/table', ingredient_rows: @ingredient_rows %>
 
-  <% if current_kitchen.member?(current_user) %>
+  <% if current_member? %>
     <dialog class="nutrition-editor-dialog"
             data-controller="nutrition-editor"
             data-nutrition-editor-base-url-value="<%= nutrition_entry_upsert_path(ingredient_name: '__NAME__') %>"

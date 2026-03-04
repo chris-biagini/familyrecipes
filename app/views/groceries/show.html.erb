@@ -4,7 +4,7 @@
   <%= stylesheet_link_tag 'groceries', "data-turbo-track": "reload" %>
 <% end %>
 
-<% if current_kitchen.member?(current_user) %>
+<% if current_member? %>
 <% content_for(:extra_nav) do %>
   <div>
     <button type="button" id="edit-aisle-order-button" class="btn">Edit Aisle Order</button>
@@ -33,7 +33,7 @@
 
 </div>
 
-<% if current_kitchen.member?(current_user) %>
+<% if current_member? %>
 <%= render layout: 'shared/editor_dialog',
     locals: { title: 'Aisle Order',
               dialog_data: { editor_open: '#edit-aisle-order-button',

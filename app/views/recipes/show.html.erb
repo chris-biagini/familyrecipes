@@ -6,20 +6,20 @@
 
 <% content_for(:extra_nav) do %>
     <div>
-      <% if current_kitchen.member?(current_user) %>
+      <% if current_member? %>
       <button type="button" id="edit-button" class="btn">Edit</button>
       <% end %>
       <button type="button" id="scale-button" class="btn">Scale</button>
     </div>
 <% end %>
 
-<% if current_user && current_kitchen.member?(current_user) %>
+<% if current_member? %>
   <%= turbo_stream_from @recipe, "content" %>
 <% end %>
 
 <%= render 'recipes/recipe_content', recipe: @recipe, nutrition: @nutrition %>
 
-<% if current_kitchen.member?(current_user) %>
+<% if current_member? %>
 <%= render layout: 'shared/editor_dialog',
     locals: { title: "Editing: #{@recipe.title}",
               id: 'recipe-editor',
