@@ -10,16 +10,20 @@
         <input type="checkbox" id="<%= recipe.slug %>-checkbox" data-slug="<%= recipe.slug %>" data-title="<%= h recipe.title %>" <%= 'checked' if selected_recipes.include?(recipe.slug) %>>
         <label for="<%= recipe.slug %>-checkbox"><%= recipe.title %></label>
         <% info = availability[recipe.slug] %>
-        <% if info && info[:missing].zero? %>
-          <span class="availability-ready" aria-label="All ingredients on hand">&#10003;</span>
+        <% if info && info[:ingredients].size == 1 %>
+          <span class="availability-single<%= info[:missing].zero? ? ' on-hand' : ' not-on-hand' %>"><%= info[:missing].zero? ? "\u2713" : "\u2717" %></span>
         <% elsif info %>
-          <details class="availability-detail">
-            <summary aria-label="Missing <%= info[:missing] %>: <%= info[:missing_names].join(', ') %>">need <%= info[:missing] %></summary>
+          <details class="availability-detail<%= ' all-on-hand' if info[:missing].zero? %>">
+            <summary aria-label="<%= info[:missing] %> of <%= info[:ingredients].size %> missing: <%= info[:missing_names].join(', ') %>"><% if info[:missing].zero? %>&#10003;<% else %><%= info[:missing] %>/<%= info[:ingredients].size %><% end %></summary>
           </details>
         <% end %>
         <%= link_to "\u2192", recipe_path(recipe.slug), class: 'recipe-link', title: "Open #{recipe.title} in new tab", target: '_blank' %>
-        <% if info && info[:missing] > 0 %>
-          <span class="availability-missing"><%= info[:missing_names].join(', ') %></span>
+        <% if info && info[:ingredients].size > 1 %>
+          <div class="availability-ingredients">
+            <% have = info[:ingredients] - info[:missing_names] %>
+            <% if have.any? %><div class="availability-have">Have: <%= have.join(', ') %></div><% end %>
+            <% if info[:missing_names].any? %><div class="availability-need">Missing: <%= info[:missing_names].join(', ') %></div><% end %>
+          </div>
         <% end %>
       </li>
     <%- end -%>
@@ -39,15 +43,19 @@
             <input type="checkbox" id="<%= item.id %>-checkbox" data-slug="<%= item.id %>" data-title="<%= h item.title %>" <%= 'checked' if selected_quick_bites.include?(item.id) %>>
             <label for="<%= item.id %>-checkbox"><%= item.title %></label>
             <% info = availability[item.id] %>
-            <% if info && info[:missing].zero? %>
-              <span class="availability-ready" aria-label="All ingredients on hand">&#10003;</span>
+            <% if info && info[:ingredients].size == 1 %>
+              <span class="availability-single<%= info[:missing].zero? ? ' on-hand' : ' not-on-hand' %>"><%= info[:missing].zero? ? "\u2713" : "\u2717" %></span>
             <% elsif info %>
-              <details class="availability-detail">
-                <summary aria-label="Missing <%= info[:missing] %>: <%= info[:missing_names].join(', ') %>">need <%= info[:missing] %></summary>
+              <details class="availability-detail<%= ' all-on-hand' if info[:missing].zero? %>">
+                <summary aria-label="<%= info[:missing] %> of <%= info[:ingredients].size %> missing: <%= info[:missing_names].join(', ') %>"><% if info[:missing].zero? %>&#10003;<% else %><%= info[:missing] %>/<%= info[:ingredients].size %><% end %></summary>
               </details>
             <% end %>
-            <% if info && info[:missing] > 0 %>
-              <span class="availability-missing"><%= info[:missing_names].join(', ') %></span>
+            <% if info && info[:ingredients].size > 1 %>
+              <% have = info[:ingredients] - info[:missing_names] %>
+              <div class="availability-ingredients">
+                <% if have.any? %><div class="availability-have">Have: <%= have.join(', ') %></div><% end %>
+                <% if info[:missing_names].any? %><div class="availability-need">Missing: <%= info[:missing_names].join(', ') %></div><% end %>
+              </div>
             <% end %>
           </li>
         <%- end -%>

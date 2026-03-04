@@ -78,17 +78,30 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     assert_select '#recipe-selector input[checked]', count: 0
   end
 
-  test 'show renders need-N badge for recipe with missing ingredients' do
+  test 'show renders M/N badge when partially available' do
+    log_in
+    create_two_ingredient_recipe
+    create_catalog_entry('Flour', basis_grams: 30, aisle: 'Baking')
+    create_catalog_entry('Salt', basis_grams: 5, aisle: 'Baking')
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('check', item: 'Salt', checked: true)
+
+    get menu_path(kitchen_slug: kitchen_slug)
+
+    assert_select 'details.availability-detail summary', text: /1\/2/
+  end
+
+  test 'show renders x for single-ingredient recipe when not on hand' do
     log_in
     create_focaccia_recipe
     create_catalog_entry('Flour', basis_grams: 30, aisle: 'Baking')
 
     get menu_path(kitchen_slug: kitchen_slug)
 
-    assert_select 'details.availability-detail summary', text: /need\s+1/
+    assert_select 'span.availability-single.not-on-hand', text: "\u2717"
   end
 
-  test 'show renders ready checkmark when all ingredients checked off' do
+  test 'show renders checkmark for single-ingredient recipe when on hand' do
     log_in
     create_focaccia_recipe
     create_catalog_entry('Flour', basis_grams: 30, aisle: 'Baking')
@@ -97,18 +110,36 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
 
     get menu_path(kitchen_slug: kitchen_slug)
 
-    assert_select 'span.availability-ready', text: "\u2713"
-    assert_select 'details.availability-detail', count: 0
+    assert_select 'span.availability-single.on-hand', text: "\u2713"
   end
 
-  test 'show renders missing ingredient names in expanded detail' do
+  test 'show renders checkmark-only pill when multi-ingredient recipe all on hand' do
     log_in
-    create_focaccia_recipe
+    create_two_ingredient_recipe
     create_catalog_entry('Flour', basis_grams: 30, aisle: 'Baking')
+    create_catalog_entry('Salt', basis_grams: 5, aisle: 'Baking')
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('check', item: 'Flour', checked: true)
+    plan.apply_action('check', item: 'Salt', checked: true)
 
     get menu_path(kitchen_slug: kitchen_slug)
 
-    assert_select '.availability-missing', text: 'Flour'
+    assert_select 'details.availability-detail.all-on-hand summary', text: /\u2713/
+    assert_select 'details.availability-detail.all-on-hand summary', text: /\d+\/\d+/, count: 0
+  end
+
+  test 'show renders have and missing ingredient lists in detail' do
+    log_in
+    create_two_ingredient_recipe
+    create_catalog_entry('Flour', basis_grams: 30, aisle: 'Baking')
+    create_catalog_entry('Salt', basis_grams: 5, aisle: 'Baking')
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('check', item: 'Salt', checked: true)
+
+    get menu_path(kitchen_slug: kitchen_slug)
+
+    assert_select '.availability-have', text: /Salt/
+    assert_select '.availability-need', text: /Flour/
   end
 
   # --- Select ---
@@ -304,6 +335,22 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
   end
 
   private
+
+  def create_two_ingredient_recipe
+    Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Focaccia
+
+      Category: Bread
+
+      ## Mix
+
+      - Flour, 3 cups
+      - Salt, 1 tsp
+
+      Mix well.
+    MD
+  end
 
   def create_focaccia_recipe
     Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)

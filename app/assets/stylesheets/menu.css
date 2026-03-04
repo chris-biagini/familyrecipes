@@ -96,15 +96,23 @@
 
 #recipe-selector .category .recipe-link:hover {
   color: var(--accent-color);
+  text-decoration: underline;
 }
 
 /* Availability badges */
-.availability-ready {
+.availability-single {
   flex-shrink: 0;
   margin-left: auto;
   padding: 0 0.4rem;
   font-size: 0.85rem;
+}
+
+.availability-single.on-hand {
   color: var(--checked-color);
+}
+
+.availability-single.not-on-hand {
+  color: var(--border-muted);
 }
 
 .availability-detail {
@@ -113,34 +121,77 @@
 }
 
 .availability-detail summary {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
   list-style: none;
-  font-size: 0.8rem;
-  color: var(--muted-text);
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--border-muted);
   cursor: pointer;
-  padding: 0 0.4rem;
+  padding: 0.15rem 0.5rem;
   white-space: nowrap;
+  background: var(--surface-alt);
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+}
+
+.availability-detail.all-on-hand summary {
+  color: var(--checked-color);
+  border-color: var(--checked-color);
 }
 
 .availability-detail summary::-webkit-details-marker {
   display: none;
 }
 
-.availability-detail summary:hover {
-  text-decoration: underline;
+.availability-detail summary::before {
+  content: '';
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0.25rem 0 0.25rem 0.35rem;
+  border-color: transparent transparent transparent var(--border-muted);
+  transition: transform 0.15s ease;
 }
 
-.availability-missing {
+.availability-detail.all-on-hand summary::before {
+  border-color: transparent transparent transparent var(--checked-color);
+}
+
+.availability-detail[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.availability-detail summary:hover {
+  border-color: var(--border-muted);
+}
+
+.availability-detail.all-on-hand summary:hover {
+  border-color: var(--checked-color);
+}
+
+.availability-ingredients {
   display: none;
   font-size: 0.75rem;
   color: var(--muted-text);
-  padding: 0.15rem 0 0.15rem 0;
+  padding: 0.15rem 0;
   font-style: italic;
   flex-basis: 100%;
   padding-left: 1.6rem;
 }
 
-.availability-detail[open] ~ .availability-missing {
+.availability-detail[open] ~ .availability-ingredients {
   display: block;
+}
+
+.availability-have {
+  color: var(--checked-color);
+}
+
+.availability-need {
+  color: var(--muted-text);
 }
 
 /* Quick Bites */
@@ -319,8 +370,9 @@
     break-inside: avoid;
   }
 
+  .availability-single,
   .availability-detail,
-  .availability-ready {
+  .availability-ingredients {
     display: none;
   }
 }
