@@ -56,6 +56,10 @@ class IngredientCatalog < ApplicationRecord
     add_ingredient_variants(base)
   end
 
+  def self.resolver_for(kitchen)
+    IngredientResolver.new(lookup_for(kitchen))
+  end
+
   def self.attrs_from_yaml(entry)
     attrs = { aisle: entry['aisle'] }
 

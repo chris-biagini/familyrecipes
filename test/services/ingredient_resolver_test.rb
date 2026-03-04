@@ -140,4 +140,14 @@ class IngredientResolverTest < ActiveSupport::TestCase
 
     assert_equal ['Seltzer'], keys
   end
+
+  # --- factory ---
+
+  test 'IngredientCatalog.resolver_for returns an IngredientResolver' do
+    setup_test_kitchen
+    resolver = IngredientCatalog.resolver_for(@kitchen)
+
+    assert_instance_of IngredientResolver, resolver
+    assert_kind_of Hash, resolver.lookup
+  end
 end
