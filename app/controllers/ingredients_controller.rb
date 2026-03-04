@@ -5,8 +5,8 @@
 # and aisle assignments. The edit action renders the nutrition editor form as a
 # partial for the dialog. Delegates row-building to IngredientRowBuilder.
 #
+# - IngredientResolver: canonical name resolution and catalog entry lookup
 # - IngredientRowBuilder: builds ingredient rows and summary from kitchen recipes
-# - IngredientCatalog: lookup overlay for name resolution and status
 class IngredientsController < ApplicationController
   before_action :require_membership
   before_action :prevent_html_caching, only: :index
@@ -32,7 +32,11 @@ class IngredientsController < ApplicationController
   private
 
   def row_builder
-    @row_builder ||= IngredientRowBuilder.new(kitchen: current_kitchen, lookup: catalog_lookup)
+    @row_builder ||= IngredientRowBuilder.new(kitchen: current_kitchen, resolver:)
+  end
+
+  def resolver
+    @resolver ||= IngredientCatalog.resolver_for(current_kitchen)
   end
 
   def first_needing_attention
@@ -41,26 +45,15 @@ class IngredientsController < ApplicationController
   end
 
   def recipes_for_ingredient(name)
-    raw_names = matching_raw_names(name)
     current_kitchen.recipes
                    .joins(steps: :ingredients)
-                   .where(ingredients: { name: raw_names })
+                   .where(ingredients: { name: resolver.all_keys_for(name) })
                    .distinct
-  end
-
-  def matching_raw_names(canonical_name)
-    catalog_lookup.filter_map { |raw, entry| raw if entry.ingredient_name == canonical_name }
-                  .push(canonical_name)
-                  .uniq
   end
 
   def load_ingredient_data
     name = decoded_ingredient_name
-    [name, catalog_lookup[name]]
-  end
-
-  def catalog_lookup
-    @catalog_lookup ||= IngredientCatalog.lookup_for(current_kitchen)
+    [name, resolver.catalog_entry(name)]
   end
 
   def decoded_ingredient_name
