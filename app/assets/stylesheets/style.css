@@ -22,7 +22,7 @@
   --weave-stripe-width: 1.5px;
 
   /* Shared UI colors */
-  --checked-color: #2a5a3a;
+  --checked-color: rgb(155, 10, 25);
   --muted-text: #666;
   --muted-text-light: #888;
   --border-light: #ccc;
@@ -31,6 +31,11 @@
   --surface-alt: #fafafa;
   --danger-color: #c00;
   --accent-color: rgb(155, 10, 25);
+
+  /* Availability indicators */
+  --on-hand-color: #b8860b;
+  --missing-color: #996;
+  --hover-bg: #f5efe8;
 }
 
 html {
