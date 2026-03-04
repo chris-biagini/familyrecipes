@@ -135,6 +135,10 @@ class NutritionTuiDataTest < Minitest::Test
     assert NutritionTui::Data.volume_modifier?('fl oz')
   end
 
+  def test_volume_modifier_cups_plural
+    assert NutritionTui::Data.volume_modifier?('cups')
+  end
+
   def test_volume_modifier_rejects_clove
     refute NutritionTui::Data.volume_modifier?('clove')
   end

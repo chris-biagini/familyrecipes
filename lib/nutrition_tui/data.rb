@@ -147,6 +147,13 @@ module NutritionTui
       FamilyRecipes::Inflector::ABBREVIATIONS.each do |long_form, short_form|
         prefixes << long_form if canonical_map.key?(short_form)
       end
+      expand_with_known_plurals(prefixes)
+    end
+
+    def expand_with_known_plurals(prefixes)
+      FamilyRecipes::Inflector::KNOWN_PLURALS.each do |singular, plural|
+        prefixes << plural if prefixes.include?(singular)
+      end
       prefixes
     end
 
@@ -309,6 +316,7 @@ module NutritionTui
                          :check_recipe_units, :collect_all_units,
                          :per_unit_grams, :modifier_bucket, :canonicalize_volume,
                          :volume_prefixes, :weight_prefixes,
-                         :build_unit_prefixes, :unit_prefix_match?
+                         :build_unit_prefixes, :expand_with_known_plurals,
+                         :unit_prefix_match?
   end # rubocop:enable Metrics/ModuleLength
 end
