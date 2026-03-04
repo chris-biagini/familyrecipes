@@ -29,8 +29,6 @@ module FamilyRecipes
       '203' => 'protein'
     }.freeze
 
-    VOLUME_UNITS = %w[cup cups tbsp tablespoon tablespoons tsp teaspoon teaspoons].freeze
-
     SEARCH_PREVIEW_NUTRIENTS = {
       '208' => 'cal', '204' => 'fat', '205' => 'carbs', '203' => 'protein'
     }.freeze
@@ -170,7 +168,9 @@ module FamilyRecipes
     end
 
     def volume_unit?(modifier)
-      VOLUME_UNITS.include?(modifier.to_s.downcase.sub(/\s*\(.*\)/, '').strip)
+      clean = modifier.to_s.downcase.sub(/\s*\(.*\)/, '').strip
+      normalized = FamilyRecipes::Inflector.normalize_unit(clean)
+      FamilyRecipes::NutritionCalculator::VOLUME_TO_ML.key?(normalized)
     end
   end
 end
