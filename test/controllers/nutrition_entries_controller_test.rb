@@ -335,6 +335,17 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
   end
 
+  test 'upsert accepts sodium up to 50,000' do
+    post nutrition_entry_upsert_path('salt', kitchen_slug: kitchen_slug),
+         params: { nutrients: VALID_NUTRIENTS.merge(sodium: 38_758), density: nil, portions: {}, aisle: nil },
+         as: :json
+
+    assert_response :success
+    entry = IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'salt')
+
+    assert_in_delta 38_758.0, entry.sodium
+  end
+
   # --- destroy ---
 
   test 'destroy deletes kitchen override' do
