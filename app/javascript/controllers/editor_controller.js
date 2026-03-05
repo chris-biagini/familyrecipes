@@ -32,11 +32,10 @@ export default class extends Controller {
     this.originalContent = ""
 
     if (this.hasOpenSelectorValue) {
-      this.openButton = document.querySelector(this.openSelectorValue)
-      if (this.openButton) {
-        this.boundOpen = this.open.bind(this)
-        this.openButton.addEventListener("click", this.boundOpen)
+      this.boundOpen = (event) => {
+        if (event.target.closest(this.openSelectorValue)) this.open()
       }
+      document.addEventListener("click", this.boundOpen)
     }
 
     this.guard = guardBeforeUnload(this.element, () => this.isModified())
@@ -48,9 +47,7 @@ export default class extends Controller {
   }
 
   disconnect() {
-    if (this.openButton && this.boundOpen) {
-      this.openButton.removeEventListener("click", this.boundOpen)
-    }
+    if (this.boundOpen) document.removeEventListener("click", this.boundOpen)
     if (this.guard) this.guard.remove()
     this.element.removeEventListener("cancel", this.boundCancel)
   }
