@@ -14,19 +14,29 @@ export default class extends Controller {
   static targets = ["textarea"]
 
   connect() {
-    if (!this.hasTextareaTarget) return
+    this.cursorInitialized = false
+  }
 
-    this.textarea = this.textareaTarget
+  disconnect() {
+    this.teardownTextarea()
+  }
+
+  textareaTargetConnected(element) {
+    this.teardownTextarea()
+    this.textarea = element
     this.buildOverlay()
     this.setPlaceholder()
     this.highlight()
 
-    this.cursorInitialized = false
+    this.boundHighlight = () => this.highlight()
+    this.boundSync = () => this.syncScroll()
+    this.boundKeydown = (e) => this.handleKeydown(e)
+    this.boundFocus = () => this.handleFocus()
 
-    this.textarea.addEventListener("input", this.boundHighlight = () => this.highlight())
-    this.textarea.addEventListener("scroll", this.boundSync = () => this.syncScroll())
-    this.textarea.addEventListener("keydown", this.boundKeydown = (e) => this.handleKeydown(e))
-    this.textarea.addEventListener("focus", this.boundFocus = () => this.handleFocus())
+    this.textarea.addEventListener("input", this.boundHighlight)
+    this.textarea.addEventListener("scroll", this.boundSync)
+    this.textarea.addEventListener("keydown", this.boundKeydown)
+    this.textarea.addEventListener("focus", this.boundFocus)
 
     // Reset cursor flag when editor starts loading new content
     this.observer = new MutationObserver(() => {
@@ -35,13 +45,35 @@ export default class extends Controller {
     this.observer.observe(this.textarea, { attributes: true, attributeFilter: ["disabled"] })
   }
 
-  disconnect() {
+  textareaTargetDisconnected() {
+    this.teardownTextarea()
+  }
+
+  teardownTextarea() {
+    if (!this.textarea) return
+
     if (this.boundHighlight) this.textarea.removeEventListener("input", this.boundHighlight)
     if (this.boundSync) this.textarea.removeEventListener("scroll", this.boundSync)
     if (this.boundKeydown) this.textarea.removeEventListener("keydown", this.boundKeydown)
     if (this.boundFocus) this.textarea.removeEventListener("focus", this.boundFocus)
     this.observer?.disconnect()
-    this.overlay?.remove()
+
+    // Unwrap textarea from the highlight wrapper before it's removed
+    const wrapper = this.textarea.closest(".qb-highlight-wrap")
+    if (wrapper?.parentNode) {
+      this.textarea.classList.remove("qb-highlight-input")
+      wrapper.parentNode.insertBefore(this.textarea, wrapper)
+      wrapper.remove()
+    } else {
+      this.overlay?.remove()
+    }
+
+    this.textarea = null
+    this.overlay = null
+    this.boundHighlight = null
+    this.boundSync = null
+    this.boundKeydown = null
+    this.boundFocus = null
   }
 
   buildOverlay() {
