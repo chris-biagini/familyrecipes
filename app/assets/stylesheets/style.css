@@ -211,16 +211,25 @@ nav > div:first-child {
 
 @container (max-width: 570px) {
   nav a {
-    padding: 0.5rem 0.6rem;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.45rem 0.5rem 0.3rem;
+    text-align: center;
+    flex: 1;
   }
 
-  nav a span {
+  nav a::after {
     display: none;
   }
 
+  nav a span {
+    font-size: 0.55rem;
+    letter-spacing: 0.08em;
+  }
+
   .nav-icon {
-    width: 1.25rem;
-    height: 1.25rem;
+    width: 1.35rem;
+    height: 1.35rem;
   }
 }
 
@@ -310,8 +319,8 @@ nav a:focus-visible {
 }
 
 .nav-icon {
-  width: 1rem;
-  height: 1rem;
+  width: 1.15rem;
+  height: 1.15rem;
   flex-shrink: 0;
 }
 
