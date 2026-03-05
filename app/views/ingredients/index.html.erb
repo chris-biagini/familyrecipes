@@ -22,30 +22,20 @@
   <%= render 'ingredients/table', ingredient_rows: @ingredient_rows %>
 
   <% if current_member? %>
-    <dialog class="nutrition-editor-dialog"
-            data-controller="nutrition-editor"
-            data-nutrition-editor-base-url-value="<%= nutrition_entry_upsert_path(ingredient_name: '__NAME__') %>"
-            data-nutrition-editor-edit-url-value="<%= ingredient_edit_path(ingredient_name: '__NAME__') %>"
-            data-nutrition-editor-target="dialog">
-      <div class="editor-header">
-        <h2 data-nutrition-editor-target="title">Edit Nutrition</h2>
-        <button type="button" class="btn editor-close"
-                data-action="click->nutrition-editor#close"
-                aria-label="Close">&times;</button>
-      </div>
-      <div class="editor-errors" data-nutrition-editor-target="errors" hidden></div>
+    <%= render layout: 'shared/editor_dialog',
+        locals: { title: 'Edit Nutrition',
+                  id: 'nutrition-editor',
+                  dialog_data: { extra_controllers: 'nutrition-editor',
+                                 editor_on_success: 'close' },
+                  extra_data: {
+                    'nutrition-editor-base-url-value' => nutrition_entry_upsert_path(ingredient_name: '__NAME__'),
+                    'nutrition-editor-edit-url-value' => ingredient_edit_path(ingredient_name: '__NAME__')
+                  } } do %>
       <div class="editor-body">
         <turbo-frame id="nutrition-editor-form">
           <p class="loading-placeholder">Loading&hellip;</p>
         </turbo-frame>
       </div>
-      <div class="editor-footer">
-        <button type="button" class="btn editor-cancel"
-                data-action="click->nutrition-editor#close">Cancel</button>
-        <button type="button" class="btn btn-primary editor-save"
-                data-nutrition-editor-target="saveButton"
-                data-action="click->nutrition-editor#save">Save</button>
-      </div>
-    </dialog>
+    <% end %>
   <% end %>
 </article>
