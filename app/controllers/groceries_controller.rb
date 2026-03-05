@@ -19,7 +19,7 @@ class GroceriesController < ApplicationController
 
   def check
     apply_plan('check', item: params[:item], checked: params[:checked])
-    broadcast_meal_plan_refresh
+    current_kitchen.broadcast_update
     head :no_content
   end
 
@@ -32,7 +32,7 @@ class GroceriesController < ApplicationController
     end
 
     apply_plan('custom_items', item: item, action: params[:action_type])
-    broadcast_meal_plan_refresh
+    current_kitchen.broadcast_update
     head :no_content
   end
 
@@ -49,7 +49,7 @@ class GroceriesController < ApplicationController
       current_kitchen.save!
     end
 
-    broadcast_meal_plan_refresh
+    current_kitchen.broadcast_update
     render json: { status: 'ok' }
   end
 

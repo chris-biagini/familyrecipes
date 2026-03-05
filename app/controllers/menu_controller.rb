@@ -22,19 +22,19 @@ class MenuController < ApplicationController
 
   def select
     apply_plan('select', type: params[:type], slug: params[:slug], selected: params[:selected])
-    broadcast_meal_plan_refresh
+    current_kitchen.broadcast_update
     head :no_content
   end
 
   def select_all
     mutate_plan { |plan| plan.select_all!(all_recipe_slugs, all_quick_bite_slugs) }
-    broadcast_meal_plan_refresh
+    current_kitchen.broadcast_update
     head :no_content
   end
 
   def clear
     mutate_plan(&:clear_selections!)
-    broadcast_meal_plan_refresh
+    current_kitchen.broadcast_update
     head :no_content
   end
 
@@ -49,7 +49,7 @@ class MenuController < ApplicationController
     current_kitchen.update!(quick_bites_content: content)
     plan = MealPlan.for_kitchen(current_kitchen)
     plan.with_optimistic_retry { plan.prune_checked_off(visible_names: shopping_list_visible_names(plan)) }
-    broadcast_meal_plan_refresh
+    current_kitchen.broadcast_update
     render json: { status: 'ok' }
   end
 

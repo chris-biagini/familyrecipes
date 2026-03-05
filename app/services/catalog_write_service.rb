@@ -35,7 +35,7 @@ class CatalogWriteService
 
     sync_aisle_to_kitchen(entry.aisle) if entry.aisle
     recalculate_affected_recipes if entry.basis_grams.present?
-    broadcast_meal_plan_refresh if entry.aisle
+    kitchen.broadcast_update
 
     Result.new(entry:, persisted: true)
   end
@@ -44,7 +44,7 @@ class CatalogWriteService
     entry = IngredientCatalog.find_by!(kitchen:, ingredient_name:)
     entry.destroy!
     recalculate_affected_recipes
-    broadcast_meal_plan_refresh
+    kitchen.broadcast_update
     Result.new(entry:, persisted: true)
   end
 
@@ -68,9 +68,5 @@ class CatalogWriteService
            .where(ingredients: { name: raw_names })
            .distinct
            .find_each { |recipe| RecipeNutritionJob.perform_now(recipe) }
-  end
-
-  def broadcast_meal_plan_refresh
-    kitchen.broadcast_update
   end
 end

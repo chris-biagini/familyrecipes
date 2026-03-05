@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 # Shared meal-plan mutation helpers for controllers that modify MealPlan state.
-# Provides optimistic-locking retry, a common StaleObjectError handler, and a
-# page-refresh broadcast for cross-device sync via Turbo.
+# Provides optimistic-locking retry, a common StaleObjectError handler, and
+# pruning of stale checked-off items on deselect.
 # Used by MenuController and GroceriesController.
 module MealPlanActions
   extend ActiveSupport::Concern
@@ -41,9 +41,5 @@ module MealPlanActions
   def handle_stale_record
     render json: { error: 'Meal plan was modified by another request. Please refresh.' },
            status: :conflict
-  end
-
-  def broadcast_meal_plan_refresh
-    current_kitchen.broadcast_update
   end
 end
