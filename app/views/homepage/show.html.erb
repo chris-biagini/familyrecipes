@@ -21,11 +21,8 @@
   <%= render 'homepage/recipe_listings', categories: @categories %>
 
   <% if current_member? %>
-  <div id="export-actions">
-    <button type="button" class="btn"
-            onclick="if (confirm('Export all recipes, Quick Bites, and custom ingredients?')) window.location = '<%= export_path %>'">
-      Export All Data
-    </button>
+  <div id="export-actions" data-controller="export" data-export-url-value="<%= export_path %>">
+    <button type="button" class="btn" data-action="export#download">Export All Data</button>
   </div>
   <% end %>
 
