@@ -33,7 +33,8 @@
                              editor_url: recipes_path,
                              editor_method: 'POST',
                              editor_on_success: 'redirect',
-                             editor_body_key: 'markdown_source' } } do %>
-  <textarea class="editor-textarea" data-editor-target="textarea" spellcheck="false"><%= "# Recipe Title\n\nOptional description.\n\nCategory: \nMakes: \nServes: \n\n## Step Name (short summary)\n\n- Ingredient, quantity: prep note\n\nInstructions here.\n\n---\n\nOptional notes or source." %></textarea>
+                             editor_body_key: 'markdown_source',
+                             extra_controllers: 'recipe-editor' } } do %>
+  <textarea class="editor-textarea" data-editor-target="textarea" data-recipe-editor-target="textarea" spellcheck="false"><%= "# Recipe Title\n\nOptional description.\n\nCategory: \nMakes: \nServes: \n\n## Step Name (short summary)\n\n- Ingredient, quantity: prep note\n\nInstructions here.\n\n---\n\nOptional notes or source." %></textarea>
 <% end %>
 <% end %>
