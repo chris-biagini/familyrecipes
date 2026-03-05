@@ -46,11 +46,15 @@ class MenuController < ApplicationController
     content = params[:content].to_s
     return render json: { errors: ['Content cannot be blank.'] }, status: :unprocessable_content if content.blank?
 
+    result = FamilyRecipes.parse_quick_bites_content(content)
     current_kitchen.update!(quick_bites_content: content)
     plan = MealPlan.for_kitchen(current_kitchen)
     plan.with_optimistic_retry { plan.prune_checked_off(visible_names: shopping_list_visible_names(plan)) }
     current_kitchen.broadcast_update
-    render json: { status: 'ok' }
+
+    body = { status: 'ok' }
+    body[:warnings] = result.warnings if result.warnings.any?
+    render json: body
   end
 
   private

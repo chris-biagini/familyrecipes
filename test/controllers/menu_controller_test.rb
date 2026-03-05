@@ -324,6 +324,33 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
   end
 
+  test 'update_quick_bites returns warnings for unrecognized lines' do
+    log_in
+    patch menu_quick_bites_path(kitchen_slug: kitchen_slug),
+          params: { content: "Snacks:\n- Goldfish\ngarbage line\n- Dried fruit" },
+          as: :json
+
+    assert_response :success
+    json = response.parsed_body
+
+    assert_equal 'ok', json['status']
+    assert_equal 1, json['warnings'].size
+    assert_match(/line 3/i, json['warnings'].first)
+  end
+
+  test 'update_quick_bites returns no warnings for clean content' do
+    log_in
+    patch menu_quick_bites_path(kitchen_slug: kitchen_slug),
+          params: { content: "Snacks:\n- Goldfish\n" },
+          as: :json
+
+    assert_response :success
+    json = response.parsed_body
+
+    assert_equal 'ok', json['status']
+    assert_nil json['warnings']
+  end
+
   test 'update_quick_bites broadcasts meal plan refresh' do
     log_in
     assert_turbo_stream_broadcasts [@kitchen, :updates] do
