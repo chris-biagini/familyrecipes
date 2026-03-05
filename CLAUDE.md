@@ -10,7 +10,6 @@ Docker image for homelab installs during development, eventual move to hosted mo
 - Challenge assumptions, misconceptions, and poor design decisions.
 - Suggest quality-of-life, performance, and feature improvements.
 - Let's walk before we run. Don't solve scale problems I don't have.
-- Always use the superpowers skill when getting ready to write code.
 
 ## Ruby Style
 
@@ -104,17 +103,38 @@ Every class has an architectural header comment — read them first. This sectio
 
 **Two namespaces.** Rails app module: `Familyrecipes` (lowercase r). Domain parser module: `FamilyRecipes` (uppercase R). Different constants, no collision. Parser pipeline: `LineClassifier` → `RecipeBuilder` → `FamilyRecipes::Recipe`; `MarkdownImporter` is the sole write-path entry point.
 
-**Routing.** Routes use an optional `(/kitchens/:kitchen_slug)` scope. When exactly one Kitchen exists, URLs are root-level (`/recipes/bagels`); when multiple exist, URLs include the prefix (`/kitchens/ours/recipes/bagels`). `default_url_options` auto-injects `kitchen_slug` — always use `_path` helpers, never hard-code URL strings. Use `home_path` (not `kitchen_root_path`) for homepage links. `MealPlan` (one row per kitchen) backs both the menu and groceries pages.
+**Routing.** Routes use an optional `(/kitchens/:kitchen_slug)` scope.
+When exactly one Kitchen exists, URLs are root-level (`/recipes/bagels`); when multiple exist, URLs include the prefix (`/kitchens/ours/recipes/bagels`).
+`default_url_options` auto-injects `kitchen_slug` — always use `_path` helpers, never hard-code URL strings.
+Use `home_path` (not `kitchen_root_path`) for homepage links.
+`MealPlan` (one row per kitchen) backs both the menu and groceries pages.
 
 **Editor dialogs.** Use `render layout: 'shared/editor_dialog'` with Stimulus data attributes — no JS needed. For custom content, add a controller listening to editor lifecycle events.
 
-**Hotwire stack.** Turbo Drive + Turbo Streams, Stimulus controllers, importmap-rails for ES modules. New JS modules must be pinned in `config/importmap.rb`; new Stimulus controllers auto-register via `pin_all_from`. CSP requires nonces for importmap's inline `<script>` — the nonce generator uses `request.session.id` (see `content_security_policy.rb`). Turbo's progress bar styles live in `style.css` (not Turbo's dynamic `<style>` injection) to satisfy strict CSP — the harmless console error from Turbo's blocked injection is expected.
+**Hotwire stack.** Turbo Drive + Turbo Streams, Stimulus controllers, importmap-rails for ES modules.
+New JS modules must be pinned in `config/importmap.rb`; new Stimulus controllers auto-register via `pin_all_from`.
+CSP requires nonces for importmap's inline `<script>` — the nonce generator uses `request.session.id` (see `content_security_policy.rb`).
+Turbo's progress bar styles live in `style.css` (not Turbo's dynamic `<style>` injection) to satisfy strict CSP — the harmless console error from Turbo's blocked injection is expected.
 
-**ActionCable.** Turbo Streams over Solid Cable, using `turbo_stream_from` tags in views. A single kitchen-wide stream `[kitchen, :updates]` powers all page-refresh morphs via `Kitchen#broadcast_update` — each client re-fetches its own page and Turbo morphs the result. `RecipeBroadcaster` is retained only for delete/rename targeted notifications on per-recipe `[recipe, "content"]` streams (recipe deleted or URL changed). No async job needed — `broadcast_refresh_to` is cheap enough to run inline.
+**ActionCable.** Turbo Streams over Solid Cable, using `turbo_stream_from` tags in views.
+A single kitchen-wide stream `[kitchen, :updates]` powers all page-refresh morphs via `Kitchen#broadcast_update` — each client re-fetches its own page and Turbo morphs the result.
+`RecipeBroadcaster` is retained only for delete/rename targeted notifications on per-recipe `[recipe, "content"]` streams (recipe deleted or URL changed).
+No async job needed — `broadcast_refresh_to` is cheap enough to run inline.
 
-**Write path.** `RecipeWriteService` orchestrates all recipe mutations — import, cross-reference cascades, category cleanup, meal plan pruning, and `Kitchen#broadcast_update`. `CatalogWriteService` orchestrates all `IngredientCatalog` mutations — aisle sync, nutrition recalculation, and `Kitchen#broadcast_update`. Controllers are thin adapters: param parsing → service call → response rendering. Don't call `MarkdownImporter` directly for web operations. `MealPlanActions` concern provides optimistic-locking retry and `StaleObjectError` handling for any controller that mutates `MealPlan`.
+**Write path.** `RecipeWriteService` orchestrates all recipe mutations — import, cross-reference cascades, category cleanup, meal plan pruning, and `Kitchen#broadcast_update`.
+`CatalogWriteService` orchestrates all `IngredientCatalog` mutations — aisle sync, nutrition recalculation, and `Kitchen#broadcast_update`.
+Controllers are thin adapters: param parsing → service call → response rendering.
+Don't call `MarkdownImporter` directly for web operations.
+`MealPlanActions` concern provides optimistic-locking retry and `StaleObjectError` handling for any controller that mutates `MealPlan`.
 
-**Nutrition pipeline.** `IngredientCatalog` is an overlay model — global seed entries plus per-kitchen overrides, merged by `lookup_for` with `Inflector` variant matching and a JSON `aliases` column for alternate names. `IngredientResolver` is the single resolution point for ingredient names — wraps `IngredientCatalog.lookup_for` with case-insensitive fallback and uncataloged variant collapsing. Constructed via `IngredientCatalog.resolver_for(kitchen)`, shared across services within a request. `RecipeNutritionJob` recomputes nutrition; `CascadeNutritionJob` fans out to cross-referencing recipes. `IngredientRowBuilder` computes ingredient table rows, summaries, and next-needing-attention — shared by `IngredientsController` and `NutritionEntriesController`. `NutritionConstraints` is the single source of truth for nutrient definitions (NutrientDef) and validation rules — all downstream nutrient constants derive from it. `RecipeAvailabilityCalculator` checks catalog coverage per recipe for availability badges on the menu page — uses `IngredientResolver` and refreshes automatically via Turbo morph when catalog entries change. `bin/nutrition` is a standalone TUI (not loaded by Rails); `rake catalog:sync` pushes YAML changes into the database.
+**Nutrition pipeline.** `IngredientCatalog` is an overlay model — global seed entries plus per-kitchen overrides, merged by `lookup_for` with `Inflector` variant matching and a JSON `aliases` column for alternate names.
+`IngredientResolver` is the single resolution point for ingredient names — wraps `IngredientCatalog.lookup_for` with case-insensitive fallback and uncataloged variant collapsing.
+Constructed via `IngredientCatalog.resolver_for(kitchen)`, shared across services within a request.
+`RecipeNutritionJob` recomputes nutrition; `CascadeNutritionJob` fans out to cross-referencing recipes.
+`IngredientRowBuilder` computes ingredient table rows, summaries, and next-needing-attention — shared by `IngredientsController` and `NutritionEntriesController`.
+`NutritionConstraints` is the single source of truth for nutrient definitions (NutrientDef) and validation rules — all downstream nutrient constants derive from it.
+`RecipeAvailabilityCalculator` checks catalog coverage per recipe for availability badges on the menu page — uses `IngredientResolver` and refreshes automatically via Turbo morph when catalog entries change.
+`bin/nutrition` is a standalone TUI (not loaded by Rails); `rake catalog:sync` pushes YAML changes into the database.
 
 ## Recipe & Data Formats
 
@@ -131,6 +151,7 @@ bundle install && rails db:setup   # first-time setup (needs sqlite3-dev headers
 rake lint          # RuboCop — always use `bundle exec rubocop`, not bare `rubocop`
 rake lint:html_safe # audit .html_safe / raw() calls against allowlist
 rake test          # all tests via Minitest
+rake catalog:sync  # push ingredient-catalog.yaml changes into the database
 ruby -Itest test/controllers/recipes_controller_test.rb              # single file
 ruby -Itest test/models/recipe_test.rb -n test_requires_title        # single test
 bin/dev            # Puma on port 3030
@@ -153,5 +174,7 @@ bin/worktree-remove <name>
 **Server restart.** Adding gems, new concerns, or modifying `lib/familyrecipes/` requires restarting Puma (`pkill -f puma; rm -f tmp/pids/server.pid` then `bin/dev`). Domain classes in `lib/` are loaded once at boot — they do not hot-reload.
 
 **PWA.** `rake pwa:icons` generates PNGs from `app/assets/images/favicon.svg` (requires `rsvg-convert`/`librsvg2-bin`). Service worker is ERB-rendered (`app/views/pwa/service_worker.js.erb`) — update the `API_PATTERN` regex when adding new API routes.
+
+**Skills.** Always use the superpowers skill when getting ready to write code.
 
 **Commit timestamps.** A post-commit hook rewrites timestamps for privacy.
