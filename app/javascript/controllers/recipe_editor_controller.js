@@ -95,6 +95,7 @@ export default class extends Controller {
     }
 
     const fragment = document.createDocumentFragment()
+    this.inFooter = false
 
     text.split("\n").forEach((line, i) => {
       if (i > 0) fragment.appendChild(document.createTextNode("\n"))
@@ -116,8 +117,11 @@ export default class extends Controller {
     } else if (/^>>>\s+.+$/.test(line)) {
       this.appendSpan(fragment, line, "hl-cross-ref")
     } else if (/^---\s*$/.test(line)) {
+      this.inFooter = true
       this.appendSpan(fragment, line, "hl-divider")
     } else if (/^(Category|Makes|Serves):\s+.+$/.test(line)) {
+      this.appendSpan(fragment, line, "hl-front-matter")
+    } else if (this.inFooter) {
       this.appendSpan(fragment, line, "hl-front-matter")
     } else {
       fragment.appendChild(document.createTextNode(line))
