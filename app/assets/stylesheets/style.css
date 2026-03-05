@@ -869,6 +869,53 @@ footer small {
   background: var(--content-background-color);
 }
 
+/* QuickBites syntax-highlighting overlay */
+
+.qb-highlight-wrap {
+  position: relative;
+  flex: 1;
+  display: flex;
+  min-height: 60vh;
+}
+
+.qb-highlight-overlay {
+  position: absolute;
+  inset: 0;
+  padding: 1.5rem;
+  margin: 0;
+  font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  overflow: hidden;
+  pointer-events: none;
+  color: var(--text-color);
+  background: transparent;
+  border: none;
+}
+
+.qb-highlight-input {
+  color: transparent !important;
+  caret-color: var(--text-color);
+  background: transparent !important;
+  position: relative;
+  z-index: 1;
+}
+
+.qb-hl-category {
+  font-weight: 700;
+  color: var(--accent-color);
+}
+
+.qb-hl-item {
+  color: var(--text-color);
+}
+
+.qb-hl-ingredients {
+  color: var(--muted-text);
+}
+
 .editor-footer {
   display: flex;
   justify-content: flex-end;
