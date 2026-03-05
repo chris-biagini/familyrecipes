@@ -1,499 +1,353 @@
-# QuickBites Editor Simplification — Implementation Plan
+# QuickBites Editor Enhancement — Implementation Plan
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers-extended-cc:executing-plans to implement this plan task-by-task.
 
-**Goal:** Simplify the Quick Bites format from Markdown headers (`## Category`) to plain `Category:` lines, strip boilerplate, and surface parse warnings in the editor.
+**Goal:** Add syntax highlighting, auto-dash on Enter, and placeholder example to the QuickBites textarea editor.
 
-**Architecture:** Parser returns a result struct with both quick_bites and warnings. Controller passes warnings through in the save response. Editor JS inspects the response and stays open when warnings are present.
+**Architecture:** A new `quickbites-editor` Stimulus controller creates a `<pre>` overlay behind the textarea with colored spans for categories, item names, and ingredients. The textarea becomes transparent (text invisible, caret visible) so users type into the real textarea but see the highlighted overlay. Auto-dash intercepts Enter keydown. Placeholder is set as a standard textarea attribute.
 
-**Tech Stack:** Ruby (parser), Rails controller, Stimulus JS (editor_controller), CSS (warning style), Minitest
-
----
-
-### Task 1: Update parser to new format with warnings
-
-**Files:**
-- Modify: `lib/familyrecipes.rb:44-56`
-
-**Step 1: Write failing tests for new format**
-
-Add tests to `test/familyrecipes_test.rb`. Replace the existing `test_parse_quick_bites_content` test and add new ones:
-
-```ruby
-def test_parse_quick_bites_content_new_format
-  content = <<~TXT
-    Snacks:
-    - Peanut Butter on Bread: Peanut butter, Bread
-    - Goldfish
-
-    Breakfast:
-    - Cereal with Milk: Cereal, Milk
-  TXT
-
-  result = FamilyRecipes.parse_quick_bites_content(content)
-
-  assert_equal 3, result.quick_bites.size
-  assert_equal 'Peanut Butter on Bread', result.quick_bites[0].title
-  assert_equal ['Peanut butter', 'Bread'], result.quick_bites[0].ingredients
-  assert_equal 'Quick Bites: Snacks', result.quick_bites[0].category
-  assert_equal 'Goldfish', result.quick_bites[1].title
-  assert_equal ['Goldfish'], result.quick_bites[1].ingredients
-  assert_equal 'Quick Bites: Breakfast', result.quick_bites[2].category
-  assert_empty result.warnings
-end
-
-def test_parse_quick_bites_warns_on_unrecognized_lines
-  content = <<~TXT
-    Snacks:
-    - Goldfish
-    this line is garbage
-    - Dried fruit
-  TXT
-
-  result = FamilyRecipes.parse_quick_bites_content(content)
-
-  assert_equal 2, result.quick_bites.size
-  assert_equal 1, result.warnings.size
-  assert_match(/line 3/i, result.warnings.first)
-end
-
-def test_parse_quick_bites_ignores_blank_lines
-  content = <<~TXT
-    Snacks:
-
-    - Goldfish
-
-  TXT
-
-  result = FamilyRecipes.parse_quick_bites_content(content)
-
-  assert_equal 1, result.quick_bites.size
-  assert_empty result.warnings
-end
-
-def test_parse_quick_bites_handles_empty_content
-  result = FamilyRecipes.parse_quick_bites_content('')
-  assert_empty result.quick_bites
-  assert_empty result.warnings
-end
-
-def test_parse_quick_bites_category_with_apostrophe
-  content = "Kids' Lunches:\n- RXBARs\n"
-  result = FamilyRecipes.parse_quick_bites_content(content)
-
-  assert_equal "Quick Bites: Kids' Lunches", result.quick_bites.first.category
-end
-```
-
-**Step 2: Run tests to verify they fail**
-
-Run: `ruby -Itest test/familyrecipes_test.rb`
-Expected: FAIL — `parse_quick_bites_content` returns an array, not a result struct
-
-**Step 3: Define result struct and update parser**
-
-Replace the `parse_quick_bites_content` method in `lib/familyrecipes.rb:44-56`:
-
-```ruby
-QuickBitesResult = Data.define(:quick_bites, :warnings)
-
-def self.parse_quick_bites_content(content)
-  current_subcat = nil
-  quick_bites = []
-  warnings = []
-
-  content.each_line.with_index(1) do |line, line_number|
-    stripped = line.strip
-    next if stripped.empty?
-
-    case line
-    when /^\s*-\s+(.*)/
-      category = [CONFIG[:quick_bites_category], current_subcat].compact.join(': ')
-      quick_bites << QuickBite.new(text_source: ::Regexp.last_match(1).strip, category: category)
-    when /^([^-].+):\s*$/
-      current_subcat = ::Regexp.last_match(1).strip
-    else
-      warnings << "Line #{line_number} not recognized"
-    end
-  end
-
-  QuickBitesResult.new(quick_bites:, warnings:)
-end
-```
-
-Note: item lines (`- `) are matched first so that `- Coffee: Coffee, Distilled water` doesn't match as a category. The category regex requires: starts with a non-dash character, ends with `:` and optional whitespace, nothing else after.
-
-**Step 4: Run tests to verify they pass**
-
-Run: `ruby -Itest test/familyrecipes_test.rb`
-Expected: PASS
-
-**Step 5: Commit**
-
-```bash
-git add lib/familyrecipes.rb test/familyrecipes_test.rb
-git commit -m "feat: new Quick Bites format with parse warnings"
-```
+**Tech Stack:** Stimulus controller, CSS overlay positioning, existing editor dialog infrastructure
 
 ---
 
-### Task 2: Update callers to use new result struct
+### Task 1: Create the quickbites-editor Stimulus controller with highlighting
 
 **Files:**
-- Modify: `app/models/kitchen.rb:34-38`
-- Modify: `app/controllers/menu_controller.rb:45-53`
-- Modify: `lib/familyrecipes.rb:58-61` (the `parse_quick_bites` file-based method)
+- Create: `app/javascript/controllers/quickbites_editor_controller.js`
 
-**Step 1: Write failing test for Kitchen#parsed_quick_bites**
-
-Add to `test/models/kitchen_test.rb`:
-
-```ruby
-test 'parsed_quick_bites returns quick bites from new format' do
-  @kitchen.update!(quick_bites_content: "Snacks:\n- Goldfish\n- Dried fruit\n")
-  qbs = @kitchen.parsed_quick_bites
-
-  assert_equal 2, qbs.size
-  assert_equal 'Goldfish', qbs.first.title
-end
-```
-
-**Step 2: Run test to verify it fails**
-
-Run: `ruby -Itest test/models/kitchen_test.rb -n test_parsed_quick_bites_returns_quick_bites_from_new_format`
-Expected: FAIL — `parsed_quick_bites` returns a result struct, not an array
-
-**Step 3: Update Kitchen#parsed_quick_bites to unwrap result**
-
-In `app/models/kitchen.rb:34-38`:
-
-```ruby
-def parsed_quick_bites
-  return [] unless quick_bites_content
-
-  FamilyRecipes.parse_quick_bites_content(quick_bites_content).quick_bites
-end
-```
-
-**Step 4: Update parse_quick_bites file method**
-
-In `lib/familyrecipes.rb:58-61`, update to also unwrap (this is only used by seeds, which don't need warnings):
-
-```ruby
-def self.parse_quick_bites(recipes_dir)
-  file_path = File.join(recipes_dir, CONFIG[:quick_bites_filename])
-  parse_quick_bites_content(File.read(file_path)).quick_bites
-end
-```
-
-**Step 5: Run all tests**
-
-Run: `rake test`
-Expected: Some tests may still fail due to old `## ` format in test fixtures — that's addressed in Task 4.
-
-**Step 6: Commit**
-
-```bash
-git add app/models/kitchen.rb lib/familyrecipes.rb test/models/kitchen_test.rb
-git commit -m "refactor: update callers to unwrap QuickBitesResult"
-```
-
----
-
-### Task 3: Surface warnings in save endpoint and editor JS
-
-**Files:**
-- Modify: `app/controllers/menu_controller.rb:45-53`
-- Modify: `app/javascript/controllers/editor_controller.js:85-106`
-- Modify: `app/javascript/utilities/editor_utils.js:61-86`
-- Modify: `app/assets/stylesheets/style.css:841-852`
-
-**Step 1: Write failing controller test for warnings**
-
-Add to `test/controllers/menu_controller_test.rb`:
-
-```ruby
-test 'update_quick_bites returns warnings for unrecognized lines' do
-  log_in
-  patch menu_quick_bites_path(kitchen_slug: kitchen_slug),
-        params: { content: "Snacks:\n- Goldfish\ngarbage line\n- Dried fruit" },
-        as: :json
-
-  assert_response :success
-  json = response.parsed_body
-  assert_equal 'ok', json['status']
-  assert_equal 1, json['warnings'].size
-  assert_match(/line 3/i, json['warnings'].first)
-end
-
-test 'update_quick_bites returns no warnings for clean content' do
-  log_in
-  patch menu_quick_bites_path(kitchen_slug: kitchen_slug),
-        params: { content: "Snacks:\n- Goldfish\n" },
-        as: :json
-
-  assert_response :success
-  json = response.parsed_body
-  assert_equal 'ok', json['status']
-  assert_nil json['warnings']
-end
-```
-
-**Step 2: Run tests to verify they fail**
-
-Run: `ruby -Itest test/controllers/menu_controller_test.rb -n /returns_warnings/`
-Expected: FAIL — `warnings` key not in response
-
-**Step 3: Update controller to parse and return warnings**
-
-In `app/controllers/menu_controller.rb`, replace `update_quick_bites`:
-
-```ruby
-def update_quick_bites
-  content = params[:content].to_s
-  return render json: { errors: ['Content cannot be blank.'] }, status: :unprocessable_content if content.blank?
-
-  result = FamilyRecipes.parse_quick_bites_content(content)
-  current_kitchen.update!(quick_bites_content: content)
-  plan = MealPlan.for_kitchen(current_kitchen)
-  plan.with_optimistic_retry { plan.prune_checked_off(visible_names: shopping_list_visible_names(plan)) }
-  current_kitchen.broadcast_update
-
-  response = { status: 'ok' }
-  response[:warnings] = result.warnings if result.warnings.any?
-  render json: response
-end
-```
-
-**Step 4: Run controller tests**
-
-Run: `ruby -Itest test/controllers/menu_controller_test.rb`
-Expected: PASS
-
-**Step 5: Update editor JS to handle warnings**
-
-The `handleSave` function in `editor_utils.js:61-86` calls `onSuccess(responseData)` on 200. The `onSuccess` callback in `editor_controller.js:85-106` currently always closes/redirects. We need to check for warnings before closing.
-
-In `editor_controller.js`, update the `save()` method's `onSuccess` callback (lines 85-106). Replace the body of the `handleSave` call:
+**Step 1: Create the controller with overlay setup and highlight logic**
 
 ```javascript
-handleSave(this.saveButtonTarget, this.errorsTarget, saveFn, (responseData) => {
-  if (responseData.warnings?.length > 0) {
-    this.showWarnings(responseData.warnings)
-    this.originalContent = this.hasTextareaTarget ? this.textareaTarget.value : ""
-    return
+import { Controller } from "@hotwired/stimulus"
+
+/**
+ * Syntax-highlighting overlay and auto-dash for the QuickBites textarea.
+ * Layers a <pre> behind the transparent textarea so users see colored text
+ * (categories bold/accent, ingredients muted) while typing into a real textarea.
+ * Auto-dash: pressing Enter on a `- ` line continues the list; Enter on an
+ * empty `- ` line removes the dash.
+ *
+ * - editor_controller: owns the dialog lifecycle; this controller is additive
+ * - style.css (.qb-highlight-*): overlay positioning and highlight colors
+ */
+export default class extends Controller {
+  static targets = ["textarea"]
+
+  connect() {
+    if (!this.hasTextareaTarget) return
+
+    this.textarea = this.textareaTarget
+    this.buildOverlay()
+    this.setPlaceholder()
+    this.highlight()
+
+    this.textarea.addEventListener("input", this.boundHighlight = () => this.highlight())
+    this.textarea.addEventListener("scroll", this.boundSync = () => this.syncScroll())
+    this.textarea.addEventListener("keydown", this.boundKeydown = (e) => this.handleKeydown(e))
   }
 
-  this.guard.markSaving()
+  disconnect() {
+    if (this.boundHighlight) this.textarea.removeEventListener("input", this.boundHighlight)
+    if (this.boundSync) this.textarea.removeEventListener("scroll", this.boundSync)
+    if (this.boundKeydown) this.textarea.removeEventListener("keydown", this.boundKeydown)
+    this.overlay?.remove()
+  }
 
-  if (this.onSuccessValue === "reload") {
-    window.location.reload()
-  } else if (this.onSuccessValue === "close") {
-    this.element.close()
-  } else {
-    let redirectUrl = responseData.redirect_url
-    if (!redirectUrl || !redirectUrl.startsWith("/")) {
-      window.location.reload()
+  buildOverlay() {
+    const wrapper = document.createElement("div")
+    wrapper.classList.add("qb-highlight-wrap")
+
+    this.overlay = document.createElement("pre")
+    this.overlay.classList.add("qb-highlight-overlay")
+    this.overlay.setAttribute("aria-hidden", "true")
+
+    this.textarea.parentNode.insertBefore(wrapper, this.textarea)
+    wrapper.appendChild(this.overlay)
+    wrapper.appendChild(this.textarea)
+    this.textarea.classList.add("qb-highlight-input")
+  }
+
+  highlight() {
+    const text = this.textarea.value
+    if (!text) {
+      this.overlay.replaceChildren()
       return
     }
-    if (responseData.updated_references?.length > 0) {
-      const param = encodeURIComponent(responseData.updated_references.join(", "))
-      const separator = redirectUrl.includes("?") ? "&" : "?"
-      redirectUrl += `${separator}refs_updated=${param}`
-    }
-    window.location = redirectUrl
-  }
-})
-```
 
-Add the `showWarnings` method to the controller:
+    const fragment = document.createDocumentFragment()
 
-```javascript
-showWarnings(warnings) {
-  let messages
-  if (warnings.length <= 3) {
-    messages = warnings
-  } else {
-    const lines = warnings.map(w => {
-      const match = w.match(/\d+/)
-      return match ? match[0] : "?"
+    text.split("\n").forEach((line, i, arr) => {
+      if (i > 0) fragment.appendChild(document.createTextNode("\n"))
+
+      if (/^[^-].+:\s*$/.test(line)) {
+        const span = document.createElement("span")
+        span.classList.add("qb-hl-category")
+        span.textContent = line
+        fragment.appendChild(span)
+      } else if (/^\s*-\s+/.test(line)) {
+        const colonIdx = line.indexOf(":", line.indexOf("-") + 2)
+        if (colonIdx !== -1) {
+          const nameSpan = document.createElement("span")
+          nameSpan.classList.add("qb-hl-item")
+          nameSpan.textContent = line.slice(0, colonIdx)
+          fragment.appendChild(nameSpan)
+
+          const ingSpan = document.createElement("span")
+          ingSpan.classList.add("qb-hl-ingredients")
+          ingSpan.textContent = line.slice(colonIdx)
+          fragment.appendChild(ingSpan)
+        } else {
+          const span = document.createElement("span")
+          span.classList.add("qb-hl-item")
+          span.textContent = line
+          fragment.appendChild(span)
+        }
+      } else {
+        fragment.appendChild(document.createTextNode(line))
+      }
     })
-    messages = [`${warnings.length} lines were not recognized (lines ${lines.join(", ")})`]
+
+    // Trailing newline: textarea with a final \n needs an extra line in the
+    // overlay so the pre height matches the textarea scroll height
+    if (text.endsWith("\n")) fragment.appendChild(document.createTextNode("\n"))
+
+    this.overlay.replaceChildren(fragment)
   }
-  showErrors(this.errorsTarget, messages)
-  this.errorsTarget.classList.add("editor-warnings")
-}
-```
 
-Also update `clearErrorDisplay` to remove the warning class:
+  syncScroll() {
+    this.overlay.scrollTop = this.textarea.scrollTop
+    this.overlay.scrollLeft = this.textarea.scrollLeft
+  }
 
-```javascript
-clearErrorDisplay() {
-  if (this.hasErrorsTarget) {
-    clearErrors(this.errorsTarget)
-    this.errorsTarget.classList.remove("editor-warnings")
+  handleKeydown(e) {
+    if (e.key !== "Enter") return
+
+    const { selectionStart } = this.textarea
+    const text = this.textarea.value
+    const lineStart = text.lastIndexOf("\n", selectionStart - 1) + 1
+    const currentLine = text.slice(lineStart, selectionStart)
+
+    if (/^- $/.test(currentLine.trimStart())) {
+      // Empty list item — remove the dash and leave a blank line
+      e.preventDefault()
+      this.textarea.setRangeText("\n", lineStart, selectionStart, "end")
+      this.textarea.dispatchEvent(new Event("input", { bubbles: true }))
+      return
+    }
+
+    if (/^- .+/.test(currentLine.trimStart())) {
+      // Continue the list
+      e.preventDefault()
+      this.textarea.setRangeText("\n- ", selectionStart, selectionStart, "end")
+      this.textarea.dispatchEvent(new Event("input", { bubbles: true }))
+    }
+  }
+
+  setPlaceholder() {
+    if (!this.textarea.getAttribute("data-placeholder-set")) {
+      this.textarea.placeholder = "Snacks:\n- Hummus with Pretzels: Hummus, Pretzels\n- String cheese\n\nBreakfast:\n- Cereal with Milk: Cereal, Milk"
+      this.textarea.setAttribute("data-placeholder-set", "true")
+    }
   }
 }
 ```
 
-Note: after a warning save, `originalContent` is updated to match the textarea so the user isn't prompted about unsaved changes when closing.
+**Step 2: Verify the controller auto-registers**
 
-**Step 6: Add warning CSS**
-
-Add to `app/assets/stylesheets/style.css` after the `.editor-errors ul` rule (after line 852):
-
-```css
-.editor-warnings {
-  color: var(--text-secondary-color);
-}
-```
-
-This overrides the `--danger-color` from `.editor-errors` with a softer tone. The warnings use the same layout (padding, border, `<ul>`) but aren't alarming.
-
-**Step 7: Commit**
-
-```bash
-git add app/controllers/menu_controller.rb app/javascript/controllers/editor_controller.js app/assets/stylesheets/style.css
-git commit -m "feat: surface Quick Bites parse warnings in editor"
-```
-
----
-
-### Task 4: Update seed file, test fixtures, and remaining tests
-
-**Files:**
-- Modify: `db/seeds/recipes/Quick Bites.md`
-- Modify: `test/familyrecipes_test.rb` (already done in Task 1, verify)
-- Modify: `test/controllers/menu_controller_test.rb` (update `## ` format references)
-- Modify: any other test files using old format
-
-**Step 1: Update seed file**
-
-Replace `db/seeds/recipes/Quick Bites.md` with new format:
-
-```
-Snacks:
-- Peanut Butter on Bread: Peanut butter, Bread
-- Apples and Peanut Butter: Apples, Peanut butter
-- Fruit: Bananas, Grapes, Clementines, Apples, Berries
-- Yogurt Shake: Yogurt shakes
-- Hummus with Pretzels: Hummus, Pretzels
-- Tortilla chips with Salsa: Tortilla chips, Salsa
-- Peanut butter pretzels
-- Dried fruit
-- String cheese
-- Goldfish
-- Triscuits
-- Protein shake: Protein shake mix
-
-Breakfast and Light Meals:
-- RXBARs
-- Fried eggs: Eggs, Olive oil, Bread
-- Breakfast Hash: Frozen potatoes, Onions, Red bell pepper, Eggs, Olive oil
-- Cereal with Milk: Cereal, Milk
-- Grilled cheese: Sandwich bread, American cheese, Butter
-
-Kids' Lunches:
-- Yogurt and Jelly: Greek yogurt, Fruit preserves, Oranges, Dried fruit, Asian snacks, Peanut M&Ms
-- Yogurt Cups: Yogurt cups, Oranges, Dried fruit, Asian snacks, Peanut M&Ms
-
-Mains:
-- Chik'n Nuggets and Fries: Chik'n nuggets, French fries, Ketchup
-- Impossible Burgers and Fries: Hamburger buns, Impossible burgers, French fries, Ketchup, American cheese
-
-Dessert:
-- Sorbet
-- Ice cream
-- Fro-yo bars
-
-Drinks:
-- Diet Coke
-- Root beer
-- Fruit juice
-- Chocolate milk
-- Coffee: Coffee, Distilled water
-- Wine
-```
-
-**Step 2: Update test fixtures to new format**
-
-In `test/controllers/menu_controller_test.rb`, search for `## ` in quick bites content and replace with new format. Key lines to update:
-
-- Line 209: `"## Snacks\n  - Goldfish: Goldfish crackers"` → `"Snacks:\n- Goldfish: Goldfish crackers"`
-- Line 285: `"## Snacks\n  - Goldfish"` → `"Snacks:\n- Goldfish"`
-- Line 293: expected value `"## Snacks\n  - Goldfish"` → `"Snacks:\n- Goldfish"`
-- Line 309: `"## Snacks\n  - Goldfish"` → `"Snacks:\n- Goldfish"`
-- Line 313: expected value `"## Snacks\n  - Goldfish"` → `"Snacks:\n- Goldfish"`
-- Line 331: `"## Snacks\n  - Goldfish"` → `"Snacks:\n- Goldfish"`
-
-Search all test files for `##.*Snacks` or `## ` patterns in quick bites context and update.
-
-**Step 3: Run full test suite**
-
-Run: `rake test`
-Expected: PASS
-
-**Step 4: Run linter**
-
-Run: `bundle exec rubocop`
-Expected: No new offenses
-
-**Step 5: Commit**
-
-```bash
-git add db/seeds/recipes/Quick\ Bites.md test/
-git commit -m "chore: migrate Quick Bites seed and tests to new format"
-```
-
----
-
-### Task 5: Update QuickBite header comment and CLAUDE.md
-
-**Files:**
-- Modify: `lib/familyrecipes/quick_bite.rb:4-7` (update header comment to mention new format)
-- Modify: `CLAUDE.md` (if any references to `## Category` syntax)
-
-**Step 1: Update QuickBite header comment**
-
-Update the format description in `lib/familyrecipes/quick_bite.rb:4-7`:
-
-```ruby
-# A "grocery bundle" — a simple name + ingredient list that isn't a full recipe.
-# Parsed from the Quick Bites format ("Category:\n- Name: Ing1, Ing2"). Lives on
-# the menu page, not the homepage. Responds to the same #ingredients_with_quantities
-# duck type as Recipe so ShoppingListBuilder can treat both uniformly.
-```
-
-**Step 2: Run full test suite and linter**
-
-Run: `rake`
-Expected: All green
+The `pin_all_from 'app/javascript/controllers'` in `config/importmap.rb` auto-registers all controllers. No changes needed.
 
 **Step 3: Commit**
 
 ```bash
-git add lib/familyrecipes/quick_bite.rb CLAUDE.md
-git commit -m "docs: update Quick Bites format references"
+git add app/javascript/controllers/quickbites_editor_controller.js
+git commit -m "feat: add quickbites-editor Stimulus controller with highlighting and auto-dash"
 ```
 
 ---
 
-### Task 6: Final verification
+### Task 2: Add CSS for the highlight overlay
 
-**Step 1: Run full suite**
+**Files:**
+- Modify: `app/assets/stylesheets/style.css` (after `.editor-textarea` block, ~line 870)
 
-Run: `rake`
-Expected: All tests pass, no RuboCop offenses
+**Step 1: Add overlay and highlight styles**
 
-**Step 2: Verify seed data loads**
+Insert after the `.editor-textarea` rule (after line 870):
 
-Run: `rails db:seed` (or `rails db:reset` if needed)
-Expected: "Quick Bites content loaded." with no errors
+```css
+/* QuickBites syntax-highlighting overlay */
 
-**Step 3: Manual smoke test (optional)**
+.qb-highlight-wrap {
+  position: relative;
+  flex: 1;
+  display: flex;
+  min-height: 60vh;
+}
 
-Start `bin/dev`, open the menu page, click Edit QuickBites. Verify:
-- Content loads in new format (no `##` headers, no `# Quick Bites` title)
-- Saving clean content closes the dialog
-- Adding a garbage line and saving keeps the dialog open with a warning
-- Fixing the line and re-saving closes the dialog
+.qb-highlight-overlay {
+  position: absolute;
+  inset: 0;
+  padding: 1.5rem;
+  margin: 0;
+  font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  overflow: hidden;
+  pointer-events: none;
+  color: var(--text-color);
+  background: transparent;
+  border: none;
+}
+
+.qb-highlight-input {
+  color: transparent !important;
+  caret-color: var(--text-color);
+  background: transparent !important;
+  position: relative;
+  z-index: 1;
+}
+
+.qb-hl-category {
+  font-weight: 700;
+  color: var(--accent-color);
+}
+
+.qb-hl-item {
+  color: var(--text-color);
+}
+
+.qb-hl-ingredients {
+  color: var(--muted-text);
+}
+```
+
+**Step 2: Verify `.editor-textarea` still provides correct base styles**
+
+The `.editor-textarea` rule at line 858 sets `flex: 1`, `min-height: 60vh`, `padding: 1.5rem`, font family/size/line-height. Once the wrapper takes over flex layout, the textarea itself keeps `flex: 1` from `.editor-textarea` to fill the wrapper. The padding, font, and line-height must match between textarea and overlay exactly (they do — both use the same values).
+
+The `min-height` moves from the textarea to the wrapper. Update `.editor-textarea` to remove `min-height` since the wrapper now controls it:
+
+Actually, keep `min-height: 60vh` on `.editor-textarea` — it's the flex child that determines the wrapper's size. Both can have it without conflict, but the wrapper needs it to establish minimum height when the textarea has little content.
+
+**Step 3: Commit**
+
+```bash
+git add app/assets/stylesheets/style.css
+git commit -m "feat: add QuickBites highlight overlay CSS"
+```
+
+---
+
+### Task 3: Wire the controller to the menu page
+
+**Files:**
+- Modify: `app/views/menu/show.html.erb:39-51`
+
+**Step 1: Add the quickbites-editor controller and target to the dialog content**
+
+The textarea is currently:
+```erb
+<textarea class="editor-textarea" data-editor-target="textarea" spellcheck="false" placeholder="Loading..."></textarea>
+```
+
+Wrap it with the quickbites-editor controller. The `editor_dialog` layout already wraps content in a `<dialog>` with the `editor` controller. We need to add `quickbites-editor` as an additional controller on the dialog, and mark the textarea as a target for both controllers.
+
+Update the `render layout:` call in `app/views/menu/show.html.erb` to add the extra controller:
+
+```erb
+<%= render layout: 'shared/editor_dialog',
+    locals: { title: 'Edit QuickBites',
+              dialog_data: { editor_open: '#edit-quick-bites-button',
+                             editor_url: menu_quick_bites_path,
+                             editor_method: 'PATCH',
+                             editor_on_success: 'close',
+                             editor_body_key: 'content',
+                             editor_load_url: menu_quick_bites_content_path,
+                             editor_load_key: 'content',
+                             extra_controllers: 'quickbites-editor' } } do %>
+  <textarea class="editor-textarea" data-editor-target="textarea" data-quickbites-editor-target="textarea" spellcheck="false" placeholder="Loading..."></textarea>
+<% end %>
+```
+
+Note: the `editor_dialog` partial already supports `extra_controllers` — it joins them with the `editor` controller in `data-controller`.
+
+**Step 2: Commit**
+
+```bash
+git add app/views/menu/show.html.erb
+git commit -m "feat: wire quickbites-editor controller to menu page"
+```
+
+---
+
+### Task 4: Handle editor load lifecycle (re-highlight after content loads)
+
+**Files:**
+- Modify: `app/javascript/controllers/quickbites_editor_controller.js`
+
+**Step 1: Listen for content load completion**
+
+The editor controller loads content asynchronously via `openWithRemoteContent()`. After loading, it sets the textarea value and dispatches focus. The quickbites-editor needs to re-highlight after content loads.
+
+The simplest approach: use a MutationObserver on the textarea's `disabled` attribute. The editor controller sets `disabled = true` during load and `disabled = false` when done. Alternatively, just listen for the textarea's `input` event and also observe the `value` property.
+
+Actually, the cleanest approach: the editor controller already sets `this.textareaTarget.value = data[...]` and then calls `.focus()`. We can listen for the `focus` event on the textarea to re-highlight after load:
+
+Add to the `connect()` method:
+
+```javascript
+this.textarea.addEventListener("focus", this.boundFocus = () => this.highlight())
+```
+
+And clean up in `disconnect()`:
+
+```javascript
+if (this.boundFocus) this.textarea.removeEventListener("focus", this.boundFocus)
+```
+
+This works because focus fires after the editor sets the loaded content and calls `.focus()`.
+
+**Step 2: Commit**
+
+```bash
+git add app/javascript/controllers/quickbites_editor_controller.js
+git commit -m "fix: re-highlight QuickBites overlay after async content load"
+```
+
+---
+
+### Task 5: Test manually and verify
+
+**Step 1: Run linter**
+
+```bash
+bundle exec rubocop
+rake lint:html_safe
+```
+
+Expected: no offenses. Check that the `html_safe_allowlist.yml` doesn't need updates (we didn't add any `.html_safe` calls — the overlay uses `textContent` and `createTextNode` only).
+
+**Step 2: Run test suite**
+
+```bash
+rake test
+```
+
+Expected: all tests pass. No Ruby changes were made (the controller and CSS are new JS/CSS files), so existing tests should be unaffected.
+
+**Step 3: Manual smoke test**
+
+Start `bin/dev`, open the menu page, click "Edit QuickBites":
+
+1. **Highlighting**: Category lines (`Snacks:`) appear bold and in accent color. Item names in normal color. Ingredients after `:` in muted color.
+2. **Scroll sync**: scroll the textarea — the overlay scrolls in lockstep.
+3. **Auto-dash**: type a line starting with `- Something`, press Enter — new line gets `- ` prefix. Press Enter again on empty `- ` — dash is removed, blank line remains.
+4. **Placeholder**: clear all content — placeholder example appears showing the format.
+5. **Save with warnings**: add a garbage line, save — warnings display, dialog stays open.
+6. **Clean save**: fix the line, save — dialog closes.
+
+**Step 4: Commit any fixes**
+
+If any issues found during testing, fix and commit.

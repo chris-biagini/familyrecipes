@@ -1,12 +1,11 @@
 {
   "planPath": "docs/plans/2026-03-05-quickbites-editor-plan.md",
   "tasks": [
-    {"id": 1, "subject": "Task 1: Update parser to new format with warnings", "status": "pending"},
-    {"id": 2, "subject": "Task 2: Update callers to use new result struct", "status": "pending", "blockedBy": [1]},
-    {"id": 3, "subject": "Task 3: Surface warnings in save endpoint and editor JS", "status": "pending", "blockedBy": [2]},
-    {"id": 4, "subject": "Task 4: Update seed file, test fixtures, and remaining tests", "status": "pending", "blockedBy": [2]},
-    {"id": 5, "subject": "Task 5: Update header comments and docs", "status": "pending", "blockedBy": [4]},
-    {"id": 6, "subject": "Task 6: Final verification", "status": "pending", "blockedBy": [3, 4, 5]}
+    {"id": 1, "subject": "Task 1: Create quickbites-editor Stimulus controller", "status": "pending"},
+    {"id": 2, "subject": "Task 2: Add CSS for highlight overlay", "status": "pending"},
+    {"id": 3, "subject": "Task 3: Wire controller to menu page", "status": "pending", "blockedBy": [1, 2]},
+    {"id": 4, "subject": "Task 4: Handle editor load lifecycle", "status": "pending", "blockedBy": [1]},
+    {"id": 5, "subject": "Task 5: Test and verify", "status": "pending", "blockedBy": [3, 4]}
   ],
-  "lastUpdated": "2026-03-05"
+  "lastUpdated": "2026-03-05T00:00:00Z"
 }
