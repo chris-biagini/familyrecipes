@@ -851,6 +851,10 @@ footer small {
   padding: 0 0 0 1.25rem;
 }
 
+.editor-warnings {
+  color: var(--text-secondary-color);
+}
+
 .editor-textarea {
   flex: 1;
   min-height: 60vh;

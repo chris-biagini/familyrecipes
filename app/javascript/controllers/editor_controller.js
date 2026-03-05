@@ -83,6 +83,12 @@ export default class extends Controller {
       : () => saveRequest(this.urlValue, this.methodValue, data)
 
     handleSave(this.saveButtonTarget, this.errorsTarget, saveFn, (responseData) => {
+      if (responseData.warnings?.length > 0) {
+        this.showWarnings(responseData.warnings)
+        this.originalContent = this.hasTextareaTarget ? this.textareaTarget.value : ""
+        return
+      }
+
       this.guard.markSaving()
 
       if (this.onSuccessValue === "reload") {
@@ -186,7 +192,25 @@ export default class extends Controller {
   }
 
   clearErrorDisplay() {
-    if (this.hasErrorsTarget) clearErrors(this.errorsTarget)
+    if (this.hasErrorsTarget) {
+      clearErrors(this.errorsTarget)
+      this.errorsTarget.classList.remove("editor-warnings")
+    }
+  }
+
+  showWarnings(warnings) {
+    let messages
+    if (warnings.length <= 3) {
+      messages = warnings
+    } else {
+      const lines = warnings.map(w => {
+        const match = w.match(/\d+/)
+        return match ? match[0] : "?"
+      })
+      messages = [`${warnings.length} lines were not recognized (lines ${lines.join(", ")})`]
+    }
+    showErrors(this.errorsTarget, messages)
+    this.errorsTarget.classList.add("editor-warnings")
   }
 
   openWithRemoteContent() {
