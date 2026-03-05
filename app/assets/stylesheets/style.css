@@ -36,6 +36,26 @@
   --on-hand-color: rgb(155, 10, 25);
   --missing-color: rgb(155, 10, 25);
   --hover-bg: #f5efe8;
+
+  --input-bg: white;
+  --accent-hover: rgb(135, 8, 20);
+  --overscroll-color: rgb(205, 71, 84);
+  --scaled-highlight: rgba(255, 243, 205, 0.6);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-nav: 0 2px 4px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-dialog: 0 4px 24px rgba(0, 0, 0, 0.15);
+  --dialog-backdrop: rgba(0, 0, 0, 0.5);
+  --source-badge-bg: #cce5ff;
+  --source-badge-text: #004085;
+  --aisle-renamed-bg: #fff8e1;
+  --aisle-renamed-border: #ffe082;
+  --aisle-new-bg: #e8f5e9;
+  --aisle-new-border: #a5d6a7;
+  --broken-reference-bg: #fdf6f0;
+  --aisle-row-border: #e0e0e0;
+  --danger-hover-bg: rgba(204, 0, 0, 0.08);
+  --custom-item-border: #eee;
+  --custom-item-remove: #bbb;
 }
 
 html {
@@ -61,7 +81,7 @@ html {
   /* Overscroll/edge color: the pink you get compositing one gingham
      stripe over the base.  Visible during iOS rubber-band bounce and
      in any sliver the gradient layers can't reach. */
-  background-color: rgb(205, 71, 84);
+  background-color: var(--overscroll-color);
   background-attachment: fixed;
   background-size:
     var(--gingham-tile-size) var(--gingham-tile-size),
@@ -162,9 +182,7 @@ nav {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 
-  box-shadow:
-    0 2px 4px rgba(0, 0, 0, 0.08),
-    0 1px 2px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow-nav);
 }
 
 nav a {
@@ -293,8 +311,8 @@ nav > div:last-child:not(:first-child) {
 }
 
 .btn-primary:hover {
-  background: rgb(135, 8, 20);
-  border-color: rgb(135, 8, 20);
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
 }
 
 .btn-danger {
@@ -354,9 +372,7 @@ main {
   background-color: var(--content-background-color);
   border-radius: 0.25rem;
 
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.08),
-    0 4px 12px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-sm);
 }
 
 header {
@@ -380,7 +396,7 @@ header .recipe-meta {
   font-style: normal;
   font-size: 1.1rem;
   margin-top: -0.5rem;
-  color: #666;
+  color: var(--muted-text);
 }
 
 header .recipe-meta a {
@@ -393,7 +409,7 @@ header .recipe-meta a:hover {
 }
 
 .scalable.scaled {
-  background-color: rgba(255, 243, 205, 0.6);
+  background-color: var(--scaled-highlight);
   border-radius: 2px;
   padding: 0 1px;
 }
@@ -486,7 +502,7 @@ section h2 {
   margin-bottom: 0.5rem;
 }
 .ingredients-search:focus {
-  outline: 2px solid var(--link-color, #2563eb);
+  outline: 2px solid var(--accent-color);
   outline-offset: -1px;
 }
 
@@ -554,7 +570,7 @@ section h2 {
   padding: 0.1em 0.4em;
   border-radius: 0.2em;
 }
-.source-custom { background: #cce5ff; color: #004085; }
+.source-custom { background: var(--source-badge-bg); color: var(--source-badge-text); }
 
 .btn-small {
   font-size: 0.8rem;
@@ -795,7 +811,7 @@ footer small {
   padding: 0;
   width: min(90vw, 50rem);
   max-height: 90vh;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-dialog);
 }
 
 .editor-dialog[open] {
@@ -804,7 +820,7 @@ footer small {
 }
 
 .editor-dialog::backdrop {
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--dialog-backdrop);
 }
 
 .editor-header {
@@ -958,14 +974,14 @@ footer small {
   gap: 0.5rem;
   padding: 0.5rem 0.75rem;
   background: var(--surface-alt);
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--aisle-row-border);
   border-radius: 6px;
   transition: background 200ms ease, border-color 200ms ease, opacity 200ms ease;
 }
 
 .aisle-row--renamed {
-  background: #fff8e1;
-  border-color: #ffe082;
+  background: var(--aisle-renamed-bg);
+  border-color: var(--aisle-renamed-border);
 }
 
 .aisle-row--deleted {
@@ -979,8 +995,8 @@ footer small {
 }
 
 .aisle-row--new {
-  background: #e8f5e9;
-  border-color: #a5d6a7;
+  background: var(--aisle-new-bg);
+  border-color: var(--aisle-new-border);
 }
 
 .aisle-name-area {
@@ -1206,7 +1222,7 @@ button.aisle-name:hover {
   font-size: 1rem;
   border: 1px solid var(--border-light);
   border-radius: 3px;
-  background: white;
+  background: var(--input-bg);
   color: var(--text-color);
   box-sizing: border-box;
 }
@@ -1336,7 +1352,7 @@ button.aisle-name:hover {
   border: 1px solid var(--border-light);
   border-radius: 3px;
   text-align: right;
-  background: white;
+  background: var(--input-bg);
   color: var(--text-color);
 }
 
@@ -1356,7 +1372,7 @@ button.aisle-name:hover {
   padding: 0.3rem 0.3rem;
   border: 1px solid var(--border-light);
   border-radius: 3px;
-  background: white;
+  background: var(--input-bg);
   color: var(--text-color);
 }
 
@@ -1382,7 +1398,7 @@ button.aisle-name:hover {
   padding: 0.3rem 0.4rem;
   border: 1px solid var(--border-light);
   border-radius: 3px;
-  background: white;
+  background: var(--input-bg);
   color: var(--text-color);
 }
 
@@ -1399,7 +1415,7 @@ button.aisle-name:hover {
   border: 1px solid var(--border-light);
   border-radius: 3px;
   text-align: right;
-  background: white;
+  background: var(--input-bg);
   color: var(--text-color);
 }
 
@@ -1423,7 +1439,7 @@ button.aisle-name:hover {
 
 .btn-icon:hover {
   color: var(--danger-color);
-  background: rgba(204, 0, 0, 0.08);
+  background: var(--danger-hover-bg);
 }
 
 .add-portion {
@@ -1446,7 +1462,7 @@ button.aisle-name:hover {
   gap: 0.2rem;
   padding: 0.15rem 0.4rem;
   border-radius: 3px;
-  background: var(--faint-bg);
+  background: var(--surface-alt);
   border: 1px solid var(--border-color);
   font-size: 0.85rem;
   line-height: 1.3;
@@ -1494,7 +1510,7 @@ button.aisle-name:hover {
   padding: 0.3rem 0.5rem;
   border: 1px solid var(--border-light);
   border-radius: 3px;
-  background: white;
+  background: var(--input-bg);
   color: var(--text-color);
   min-width: 0;
   flex: 1;
@@ -1504,7 +1520,7 @@ button.aisle-name:hover {
   padding: 0.3rem 0.5rem;
   border: 1px solid var(--border-light);
   border-radius: 3px;
-  background: white;
+  background: var(--input-bg);
   color: var(--text-color);
   min-width: 0;
   flex: 1;
@@ -1558,9 +1574,7 @@ button.aisle-name:hover {
   border: 1px solid var(--border-color);
   border-radius: 0.25rem;
   background-color: var(--content-background-color);
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.08),
-    0 4px 12px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-sm);
   padding: 1.5rem;
   margin-top: 0.5rem;
 }
@@ -1634,7 +1648,7 @@ button.aisle-name:hover {
 }
 
 .broken-reference {
-  background-color: #fdf6f0;
+  background-color: var(--broken-reference-bg);
   color: var(--muted-text);
 }
 
