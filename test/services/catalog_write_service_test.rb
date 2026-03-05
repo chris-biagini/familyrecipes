@@ -130,7 +130,7 @@ class CatalogWriteServiceTest < ActiveSupport::TestCase
   # --- upsert broadcasting ---
 
   test 'upsert broadcasts meal plan refresh when aisle present' do
-    assert_turbo_stream_broadcasts [@kitchen, :meal_plan_updates] do
+    assert_turbo_stream_broadcasts [@kitchen, :updates] do
       upsert_entry('flour', nutrients: {}, aisle: 'Baking')
     end
   end
@@ -182,7 +182,7 @@ class CatalogWriteServiceTest < ActiveSupport::TestCase
     IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'flour',
                               basis_grams: 100, calories: 364)
 
-    assert_turbo_stream_broadcasts [@kitchen, :meal_plan_updates] do
+    assert_turbo_stream_broadcasts [@kitchen, :updates] do
       CatalogWriteService.destroy(kitchen: @kitchen, ingredient_name: 'flour')
     end
   end

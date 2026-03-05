@@ -71,6 +71,6 @@ class CatalogWriteService
   end
 
   def broadcast_meal_plan_refresh
-    MealPlan.broadcast_refresh(kitchen)
+    kitchen.broadcast_update
   end
 end
