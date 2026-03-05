@@ -92,7 +92,7 @@ class KitchenTest < ActiveSupport::TestCase
 
   test 'quick_bites_by_subsection groups parsed quick bites by stripped category' do
     kitchen = Kitchen.create!(name: 'Test', slug: 'test-qb',
-                              quick_bites_content: "## Snacks\n- Chips\n- Pretzels\n\n## Drinks\n- Juice\n")
+                              quick_bites_content: "Snacks:\n- Chips\n- Pretzels\n\nDrinks:\n- Juice\n")
 
     result = kitchen.quick_bites_by_subsection
 

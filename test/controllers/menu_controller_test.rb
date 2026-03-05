@@ -34,7 +34,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
 
   test 'update_quick_bites requires membership' do
     patch menu_quick_bites_path(kitchen_slug: kitchen_slug),
-          params: { content: "## Snacks\n  - Goldfish" },
+          params: { content: "Snacks:\n- Goldfish" },
           as: :json
 
     assert_response :forbidden
@@ -206,7 +206,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
 
   test 'select_all selects all recipes and quick bites' do
     log_in
-    @kitchen.update!(quick_bites_content: "## Snacks\n  - Goldfish: Goldfish crackers")
+    @kitchen.update!(quick_bites_content: "Snacks:\n- Goldfish: Goldfish crackers")
 
     patch menu_select_all_path(kitchen_slug: kitchen_slug), as: :turbo_stream
 
@@ -282,7 +282,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
   # --- Quick Bites ---
 
   test 'quick_bites_content returns current content' do
-    @kitchen.update!(quick_bites_content: "## Snacks\n  - Goldfish")
+    @kitchen.update!(quick_bites_content: "Snacks:\n- Goldfish")
 
     log_in
     get menu_quick_bites_content_path(kitchen_slug: kitchen_slug), as: :json
@@ -290,7 +290,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     json = response.parsed_body
 
-    assert_equal "## Snacks\n  - Goldfish", json['content']
+    assert_equal "Snacks:\n- Goldfish", json['content']
   end
 
   test 'quick_bites_content returns empty string when no content' do
@@ -306,11 +306,11 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
   test 'update_quick_bites saves content' do
     log_in
     patch menu_quick_bites_path(kitchen_slug: kitchen_slug),
-          params: { content: "## Snacks\n  - Goldfish" },
+          params: { content: "Snacks:\n- Goldfish" },
           as: :json
 
     assert_response :success
-    assert_equal "## Snacks\n  - Goldfish", @kitchen.reload.quick_bites_content
+    assert_equal "Snacks:\n- Goldfish", @kitchen.reload.quick_bites_content
   end
 
   test 'update_quick_bites rejects blank content' do
@@ -328,7 +328,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     log_in
     assert_turbo_stream_broadcasts [@kitchen, :updates] do
       patch menu_quick_bites_path(kitchen_slug: kitchen_slug),
-            params: { content: "## Snacks\n  - Goldfish" },
+            params: { content: "Snacks:\n- Goldfish" },
             as: :json
     end
   end

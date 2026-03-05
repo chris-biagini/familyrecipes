@@ -1,45 +1,41 @@
-# Quick Bites
+Snacks:
+- Peanut Butter on Bread: Peanut butter, Bread
+- Apples and Peanut Butter: Apples, Peanut butter
+- Fruit: Bananas, Grapes, Clementines, Apples, Berries
+- Yogurt Shake: Yogurt shakes
+- Hummus with Pretzels: Hummus, Pretzels
+- Tortilla chips with Salsa: Tortilla chips, Salsa
+- Peanut butter pretzels
+- Dried fruit
+- String cheese
+- Goldfish
+- Triscuits
+- Protein shake: Protein shake mix
 
-Pantry staples and "fast food" that comes together with minimal fuss.
+Breakfast and Light Meals:
+- RXBARs
+- Fried eggs: Eggs, Olive oil, Bread
+- Breakfast Hash: Frozen potatoes, Onions, Red bell pepper, Eggs, Olive oil
+- Cereal with Milk: Cereal, Milk
+- Grilled cheese: Sandwich bread, American cheese, Butter
 
-## Snacks
-  - Peanut Butter on Bread: Peanut butter, Bread
-  - Apples and Peanut Butter: Apples, Peanut butter
-  - Fruit: Bananas, Grapes, Clementines, Apples, Berries
-  - Yogurt Shake: Yogurt shakes
-  - Hummus with Pretzels: Hummus, Pretzels
-  - Tortilla chips with Salsa: Tortilla chips, Salsa
-  - Peanut butter pretzels
-  - Dried fruit
-  - String cheese
-  - Goldfish
-  - Triscuits
-  - Protein shake: Protein shake mix
+Kids' Lunches:
+- Yogurt and Jelly: Greek yogurt, Fruit preserves, Oranges, Dried fruit, Asian snacks, Peanut M&Ms
+- Yogurt Cups: Yogurt cups, Oranges, Dried fruit, Asian snacks, Peanut M&Ms
 
-## Breakfast and Light Meals
-  - RXBARs
-  - Fried eggs: Eggs, Olive oil, Bread
-  - Breakfast Hash: Frozen potatoes, Onions, Red bell pepper, Eggs, Olive oil
-  - Cereal with Milk: Cereal, Milk
-  - Grilled cheese: Sandwich bread, American cheese, Butter
-  
-## Kids' Lunches
-  - Yogurt and Jelly: Greek yogurt, Fruit preserves, Oranges, Dried fruit, Asian snacks, Peanut M&Ms
-  - Yogurt Cups: Yogurt cups, Oranges, Dried fruit, Asian snacks, Peanut M&Ms
+Mains:
+- Chik'n Nuggets and Fries: Chik'n nuggets, French fries, Ketchup
+- Impossible Burgers and Fries: Hamburger buns, Impossible burgers, French fries, Ketchup, American cheese
 
-## Mains
-  - Chik'n Nuggets and Fries: Chik'n nuggets, French fries, Ketchup
-  - Impossible Burgers and Fries: Hamburger buns, Impossible burgers, French fries, Ketchup, American cheese
+Dessert:
+- Sorbet
+- Ice cream
+- Fro-yo bars
 
-## Dessert
-  - Sorbet
-  - Ice cream
-  - Fro-yo bars
-  
-## Drinks  
-  - Diet Coke
-  - Root beer
-  - Fruit juice
-  - Chocolate milk
-  - Coffee: Coffee, Distilled water
-  - Wine
+Drinks:
+- Diet Coke
+- Root beer
+- Fruit juice
+- Chocolate milk
+- Coffee: Coffee, Distilled water
+- Wine

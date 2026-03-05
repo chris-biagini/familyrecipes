@@ -42,7 +42,7 @@ class AuthTest < ActionDispatch::IntegrationTest
 
   test 'unauthenticated PATCH to quick_bites returns 403' do
     patch menu_quick_bites_path(kitchen_slug: kitchen_slug),
-          params: { content: '## Snacks' },
+          params: { content: 'Snacks:' },
           as: :json
 
     assert_response :forbidden

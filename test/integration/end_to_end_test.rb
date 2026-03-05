@@ -322,15 +322,15 @@ class EndToEndTest < ActionDispatch::IntegrationTest
   # -- Quick Bites / Aisles editing --
 
   test 'edit and save Quick Bites content' do
-    @kitchen.update!(quick_bites_content: "## Snacks\n  - Goldfish")
+    @kitchen.update!(quick_bites_content: "Snacks:\n- Goldfish")
 
     log_in
     patch menu_quick_bites_path(kitchen_slug: kitchen_slug),
-          params: { content: "## Snacks\n  - Goldfish\n  - Pretzels" },
+          params: { content: "Snacks:\n- Goldfish\n- Pretzels" },
           as: :json
 
     assert_response :success
-    assert_equal "## Snacks\n  - Goldfish\n  - Pretzels", @kitchen.reload.quick_bites_content
+    assert_equal "Snacks:\n- Goldfish\n- Pretzels", @kitchen.reload.quick_bites_content
   end
 
   test 'delete recipe removes it from homepage' do
