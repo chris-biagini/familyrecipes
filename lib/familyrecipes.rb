@@ -41,18 +41,29 @@ module FamilyRecipes
     end
   end
 
+  QuickBitesResult = Data.define(:quick_bites, :warnings)
+
   def self.parse_quick_bites_content(content)
     current_subcat = nil
+    quick_bites = []
+    warnings = []
 
-    content.each_line.with_object([]) do |line, quick_bites|
+    content.each_line.with_index(1) do |line, line_number|
+      stripped = line.strip
+      next if stripped.empty?
+
       case line
-      when /^##\s+(.*)/
-        current_subcat = ::Regexp.last_match(1).strip
       when /^\s*-\s+(.*)/
         category = [CONFIG[:quick_bites_category], current_subcat].compact.join(': ')
         quick_bites << QuickBite.new(text_source: ::Regexp.last_match(1).strip, category: category)
+      when /^([^-].+):\s*$/
+        current_subcat = ::Regexp.last_match(1).strip
+      else
+        warnings << "Line #{line_number} not recognized"
       end
     end
+
+    QuickBitesResult.new(quick_bites:, warnings:)
   end
 
   def self.parse_quick_bites(recipes_dir)

@@ -28,26 +28,67 @@ class FamilyRecipesTest < Minitest::Test
     assert_equal 'red-beans-and-rice', FamilyRecipes.slugify('Red  Beans   and   Rice')
   end
 
-  def test_parse_quick_bites_content
-    content = <<~MD
-      # Quick Bites
+  def test_parse_quick_bites_content_new_format
+    content = <<~TXT
+      Snacks:
+      - Peanut Butter on Bread: Peanut butter, Bread
+      - Goldfish
 
-      ## Snacks
-        - Peanut Butter on Bread: Peanut butter, Bread
-        - Goldfish
-
-      ## Breakfast
-        - Cereal with Milk: Cereal, Milk
-    MD
+      Breakfast:
+      - Cereal with Milk: Cereal, Milk
+    TXT
 
     result = FamilyRecipes.parse_quick_bites_content(content)
 
-    assert_equal 3, result.size
-    assert_equal 'Peanut Butter on Bread', result[0].title
-    assert_equal ['Peanut butter', 'Bread'], result[0].ingredients
-    assert_equal 'Quick Bites: Snacks', result[0].category
-    assert_equal 'Goldfish', result[1].title
-    assert_equal ['Goldfish'], result[1].ingredients
-    assert_equal 'Quick Bites: Breakfast', result[2].category
+    assert_equal 3, result.quick_bites.size
+    assert_equal 'Peanut Butter on Bread', result.quick_bites[0].title
+    assert_equal ['Peanut butter', 'Bread'], result.quick_bites[0].ingredients
+    assert_equal 'Quick Bites: Snacks', result.quick_bites[0].category
+    assert_equal 'Goldfish', result.quick_bites[1].title
+    assert_equal ['Goldfish'], result.quick_bites[1].ingredients
+    assert_equal 'Quick Bites: Breakfast', result.quick_bites[2].category
+    assert_empty result.warnings
+  end
+
+  def test_parse_quick_bites_warns_on_unrecognized_lines
+    content = <<~TXT
+      Snacks:
+      - Goldfish
+      this line is garbage
+      - Dried fruit
+    TXT
+
+    result = FamilyRecipes.parse_quick_bites_content(content)
+
+    assert_equal 2, result.quick_bites.size
+    assert_equal 1, result.warnings.size
+    assert_match(/line 3/i, result.warnings.first)
+  end
+
+  def test_parse_quick_bites_ignores_blank_lines
+    content = <<~TXT
+      Snacks:
+
+      - Goldfish
+
+    TXT
+
+    result = FamilyRecipes.parse_quick_bites_content(content)
+
+    assert_equal 1, result.quick_bites.size
+    assert_empty result.warnings
+  end
+
+  def test_parse_quick_bites_handles_empty_content
+    result = FamilyRecipes.parse_quick_bites_content('')
+    assert_empty result.quick_bites
+    assert_empty result.warnings
+  end
+
+  def test_parse_quick_bites_category_with_apostrophe
+    content = "Kids' Lunches:\n- RXBARs\n"
+    result = FamilyRecipes.parse_quick_bites_content(content)
+
+    assert_equal "Quick Bites: Kids' Lunches", result.quick_bites.first.category
   end
 end
