@@ -1,86 +1,65 @@
-# QuickBites Editor Simplification
+# QuickBites Editor Enhancement — Design
 
-## Problem
+## Goal
 
-The QuickBites editor exposes raw Markdown with a `# Quick Bites` header, description line, and `## Category` syntax. The header and description are boilerplate users should never edit. The `##` category syntax is heavier than necessary for what is essentially a categorized grocery list.
+Add creature comforts to the QuickBites textarea editor: syntax highlighting, auto-dash on Enter, and placeholder example text. Keep it simple — proactive polish, not a full rewrite.
 
-## Design
+## What changes
 
-### New Format
+### 1. Syntax-highlighted overlay
 
-Strip the `# Quick Bites` header and description. Replace `## Category` with `Category:`.
+Replace the plain textarea with a textarea + transparent overlay approach. The textarea remains the actual input, but a `<pre>` element behind it renders the same text with color-coded spans:
 
-Before:
-```
-# Quick Bites
+- **Category headers** (`Snacks:`) — bold, accent color
+- **Item names** (`- Peanut Butter on Bread`) — default text color
+- **Ingredients** (`: Peanut butter, Bread`) — muted/secondary color after the colon
+- **Unrecognized lines** — no special treatment (warnings on save handle it)
 
-Pantry staples and "fast food" that comes together with minimal fuss.
+Classic "transparent textarea over colored pre" technique. No contentEditable, no custom cursor management. The textarea is always the real input; the overlay is purely decorative.
 
-## Snacks
-  - Goldfish
-  - Fried eggs: Eggs, Olive oil, Bread
-```
+### 2. Auto-dash on Enter
 
-After:
+When the user presses Enter while the cursor is on a line that starts with `- `, the new line automatically gets `- ` prepended. If they press Enter on an empty `- ` line (just want to end the list), it removes the dash and leaves a blank line. Standard list-continuation UX (same as Notion/Obsidian).
+
+### 3. Placeholder example
+
+When content is empty, show a placeholder demonstrating the format:
+
 ```
 Snacks:
-- Goldfish
-- Fried eggs: Eggs, Olive oil, Bread
+- Hummus with Pretzels: Hummus, Pretzels
+- String cheese
+
+Breakfast:
+- Cereal with Milk: Cereal, Milk
 ```
 
-**Line types:**
-- **Category:** bare text ending with colon at start of line (no `- ` prefix). E.g., `Snacks:`, `Kids' Lunches:`
-- **Item:** line starting with `- ` (optional leading whitespace). Simple: `- Goldfish`. Composed: `- Fried eggs: Eggs, Olive oil, Bread`
-- **Blank lines:** ignored
-- **Anything else:** unrecognized — triggers a warning
+## What doesn't change
 
-### Parser Changes
+- Save/load flow (generic editor controller)
+- Parse warnings after save
+- No live error indicators
+- No auto-newline after category headers
 
-Update `FamilyRecipes.parse_quick_bites_content` to:
-- Match `SomeText:` as category lines (instead of `## SomeText`)
-- Distinguish categories from items by the `- ` prefix
-- Track unrecognized lines (non-blank, not a category, not an item)
-- Return both parsed QuickBites and warnings
+## Implementation approach
 
-The return type changes from a plain array to a struct or two-element return:
-```ruby
-Result = Data.define(:quick_bites, :warnings)
-```
+A new Stimulus controller (`quickbites-editor`) that attaches alongside the existing `editor` controller. It:
 
-Warnings are simple strings like `"Line 7 not recognized"`.
+- Creates the `<pre>` overlay behind the textarea on connect
+- Syncs overlay content on every `input` event via `highlightContent()`
+- Handles `keydown` for Enter (auto-dash logic)
+- Sets the placeholder attribute on the textarea
 
-### Save Endpoint
+The overlay uses the same font/size/padding as the textarea so text aligns perfectly. The textarea gets `color: transparent; caret-color: var(--text-color)` so the user sees the colored overlay text but types into the real textarea.
 
-`MenuController#update_quick_bites` calls the parser on submitted content. If warnings exist, they're included in the JSON response. The content is still saved (warnings are non-blocking).
+CSS lives in `style.css` alongside existing editor styles. Colors use CSS variables for dark/light theme support.
 
-Response with warnings:
-```json
-{ "status": "ok", "warnings": ["Line 7 not recognized", "Line 12 not recognized"] }
-```
+### Scroll sync
 
-### Editor Behavior on Warnings
+The overlay `<pre>` must scroll in lockstep with the textarea. On `scroll` event, copy `scrollTop` and `scrollLeft` from textarea to overlay.
 
-The editor dialog currently auto-closes on successful save (`editor_on_success: 'close'`). When warnings are present:
+### File changes
 
-- Dialog stays open
-- Warnings display in the existing `.editor-errors` area (styled as warnings, not errors)
-- If more than 3 warnings, summarize: "5 lines were not recognized (lines 3, 7, 9, 12, 14)"
-- Save succeeded — user can fix and re-save, or close manually
-
-This requires the editor controller to inspect the response body and distinguish "clean save" from "save with warnings."
-
-### Seed Data
-
-Update `db/seeds/recipes/Quick Bites.md` to the new format. Drop the `#` header and description.
-
-### Migration
-
-No database migration needed. The stored content is a text column. Update the seed file and any test fixtures to use the new format. Existing kitchen data (if any) is overwritten by re-seeding or manual editing.
-
-## Scope
-
-- Parser: new format, warnings
-- Editor controller JS: handle warnings in save response, stay open when warnings present
-- Menu controller: pass warnings through
-- Seed file: new format
-- Tests: parser, controller, warning behavior
+- `app/javascript/controllers/quickbites_editor_controller.js` — new Stimulus controller
+- `app/assets/stylesheets/style.css` — overlay positioning, highlight colors
+- `app/views/menu/show.html.erb` — add `data-controller="quickbites-editor"` and target to the textarea area
