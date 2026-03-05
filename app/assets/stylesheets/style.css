@@ -946,16 +946,16 @@ footer small {
   background: var(--content-background-color);
 }
 
-/* QuickBites syntax-highlighting overlay */
+/* Syntax-highlighting overlay (shared) */
 
-.qb-highlight-wrap {
+.hl-wrap {
   position: relative;
   flex: 1;
   display: flex;
   min-height: 60vh;
 }
 
-.qb-highlight-overlay {
+.hl-overlay {
   position: absolute;
   inset: 0;
   padding: 1.5rem;
@@ -972,7 +972,7 @@ footer small {
   border: none;
 }
 
-.qb-highlight-input {
+.hl-input {
   color: transparent !important;
   caret-color: var(--text-color);
   background: transparent !important;
@@ -980,22 +980,22 @@ footer small {
   z-index: 1;
 }
 
-.qb-highlight-input::placeholder {
+.hl-input::placeholder {
   color: var(--muted-text-light);
 }
 
-.qb-hl-category {
+.hl-category {
   font-weight: 700;
   color: var(--accent-color);
   text-decoration: underline;
 }
 
-.qb-hl-item {
+.hl-item {
   color: var(--text-color);
   font-weight: 600;
 }
 
-.qb-hl-ingredients {
+.hl-ingredients {
   color: var(--muted-text);
   font-style: italic;
 }

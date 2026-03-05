@@ -8,7 +8,7 @@ import { Controller } from "@hotwired/stimulus"
  * empty `- ` line removes the dash.
  *
  * - editor_controller: owns the dialog lifecycle; this controller is additive
- * - style.css (.qb-highlight-*): overlay positioning and highlight colors
+ * - style.css (.hl-*): overlay positioning and highlight colors
  */
 export default class extends Controller {
   static targets = ["textarea"]
@@ -59,9 +59,9 @@ export default class extends Controller {
     this.observer?.disconnect()
 
     // Unwrap textarea from the highlight wrapper before it's removed
-    const wrapper = this.textarea.closest(".qb-highlight-wrap")
+    const wrapper = this.textarea.closest(".hl-wrap")
     if (wrapper?.parentNode) {
-      this.textarea.classList.remove("qb-highlight-input")
+      this.textarea.classList.remove("hl-input")
       wrapper.parentNode.insertBefore(this.textarea, wrapper)
       wrapper.remove()
     } else {
@@ -78,16 +78,16 @@ export default class extends Controller {
 
   buildOverlay() {
     const wrapper = document.createElement("div")
-    wrapper.classList.add("qb-highlight-wrap")
+    wrapper.classList.add("hl-wrap")
 
     this.overlay = document.createElement("pre")
-    this.overlay.classList.add("qb-highlight-overlay")
+    this.overlay.classList.add("hl-overlay")
     this.overlay.setAttribute("aria-hidden", "true")
 
     this.textarea.parentNode.insertBefore(wrapper, this.textarea)
     wrapper.appendChild(this.overlay)
     wrapper.appendChild(this.textarea)
-    this.textarea.classList.add("qb-highlight-input")
+    this.textarea.classList.add("hl-input")
   }
 
   highlight() {
@@ -104,24 +104,24 @@ export default class extends Controller {
 
       if (/^[^-].+:\s*$/.test(line)) {
         const span = document.createElement("span")
-        span.classList.add("qb-hl-category")
+        span.classList.add("hl-category")
         span.textContent = line
         fragment.appendChild(span)
       } else if (/^\s*-\s+/.test(line)) {
         const colonIdx = line.indexOf(":", line.indexOf("-") + 2)
         if (colonIdx !== -1) {
           const nameSpan = document.createElement("span")
-          nameSpan.classList.add("qb-hl-item")
+          nameSpan.classList.add("hl-item")
           nameSpan.textContent = line.slice(0, colonIdx)
           fragment.appendChild(nameSpan)
 
           const ingSpan = document.createElement("span")
-          ingSpan.classList.add("qb-hl-ingredients")
+          ingSpan.classList.add("hl-ingredients")
           ingSpan.textContent = line.slice(colonIdx)
           fragment.appendChild(ingSpan)
         } else {
           const span = document.createElement("span")
-          span.classList.add("qb-hl-item")
+          span.classList.add("hl-item")
           span.textContent = line
           fragment.appendChild(span)
         }
