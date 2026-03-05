@@ -118,8 +118,16 @@ class ShoppingListBuilder
     custom = @meal_plan.state.fetch('custom_items', [])
     return if custom.empty?
 
+    existing = existing_canonical_names(organized)
+    novel = custom.reject { |item| existing.include?(canonical_name(item)) }
+    return if novel.empty?
+
     organized['Miscellaneous'] ||= []
-    organized['Miscellaneous'].concat(custom.map { |item| { name: item, amounts: [], sources: [] } })
+    organized['Miscellaneous'].concat(novel.map { |item| { name: item, amounts: [], sources: [] } })
+  end
+
+  def existing_canonical_names(organized)
+    organized.each_value.flat_map { |items| items.map { |i| i[:name] } }.to_set
   end
 
   def serialize_amounts(amounts)

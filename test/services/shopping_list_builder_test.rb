@@ -410,6 +410,66 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
     assert_includes seltzer[:sources], 'Sparkling Lemonade'
   end
 
+  test 'custom item that duplicates a recipe ingredient is merged not doubled' do
+    create_catalog_entry('Triscuits', basis_grams: 30, aisle: 'Snacks')
+
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Cheese Plate
+
+      Category: Bread
+
+      ## Assemble (plate)
+
+      - Triscuits, 1 box
+
+      Arrange.
+    MD
+
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'recipe', slug: 'cheese-plate', selected: true)
+    list.apply_action('custom_items', item: 'triscuits', action: 'add')
+
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
+    all_names = result.values.flatten.pluck(:name)
+
+    assert_equal 1, all_names.count { |n| n.casecmp('triscuits').zero? },
+                 'Expected one Triscuits entry, not separate recipe + custom entries'
+  end
+
+  test 'custom item that duplicates an uncataloged recipe ingredient is merged' do
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      # Snack Mix
+
+      Category: Bread
+
+      ## Assemble (mix)
+
+      - Goldfish crackers, 2 cups
+
+      Mix.
+    MD
+
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'recipe', slug: 'snack-mix', selected: true)
+    list.apply_action('custom_items', item: 'goldfish crackers', action: 'add')
+
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
+    all_names = result.values.flatten.pluck(:name)
+
+    assert_equal 1, all_names.count { |n| n.casecmp('goldfish crackers').zero? },
+                 'Expected one entry, not separate recipe + custom entries'
+  end
+
+  test 'custom item with no recipe match still appears' do
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('custom_items', item: 'paper towels', action: 'add')
+
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
+    all_names = result.values.flatten.pluck(:name)
+
+    assert_includes all_names, 'paper towels'
+  end
+
   test 'custom items have empty sources' do
     list = MealPlan.for_kitchen(@kitchen)
     list.apply_action('custom_items', item: 'birthday candles', action: 'add')
