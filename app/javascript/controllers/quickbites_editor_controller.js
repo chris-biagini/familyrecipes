@@ -21,10 +21,18 @@ export default class extends Controller {
     this.setPlaceholder()
     this.highlight()
 
+    this.cursorInitialized = false
+
     this.textarea.addEventListener("input", this.boundHighlight = () => this.highlight())
     this.textarea.addEventListener("scroll", this.boundSync = () => this.syncScroll())
     this.textarea.addEventListener("keydown", this.boundKeydown = (e) => this.handleKeydown(e))
-    this.textarea.addEventListener("focus", this.boundFocus = () => this.highlight())
+    this.textarea.addEventListener("focus", this.boundFocus = () => this.handleFocus())
+
+    // Reset cursor flag when editor starts loading new content
+    this.observer = new MutationObserver(() => {
+      if (this.textarea.disabled) this.cursorInitialized = false
+    })
+    this.observer.observe(this.textarea, { attributes: true, attributeFilter: ["disabled"] })
   }
 
   disconnect() {
@@ -32,6 +40,7 @@ export default class extends Controller {
     if (this.boundSync) this.textarea.removeEventListener("scroll", this.boundSync)
     if (this.boundKeydown) this.textarea.removeEventListener("keydown", this.boundKeydown)
     if (this.boundFocus) this.textarea.removeEventListener("focus", this.boundFocus)
+    this.observer?.disconnect()
     this.overlay?.remove()
   }
 
@@ -92,6 +101,17 @@ export default class extends Controller {
     if (text.endsWith("\n")) fragment.appendChild(document.createTextNode("\n"))
 
     this.overlay.replaceChildren(fragment)
+  }
+
+  handleFocus() {
+    this.highlight()
+    if (!this.cursorInitialized) {
+      this.cursorInitialized = true
+      this.textarea.selectionStart = 0
+      this.textarea.selectionEnd = 0
+      this.textarea.scrollTop = 0
+      this.overlay.scrollTop = 0
+    }
   }
 
   syncScroll() {
