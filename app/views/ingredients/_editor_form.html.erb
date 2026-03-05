@@ -18,13 +18,15 @@
 
       <% IngredientCatalog::NUTRIENT_DISPLAY.each do |label, key, unit| %>
         <% indent = label.size - label.lstrip.size %>
+        <% nutrient_max = FamilyRecipes::NutritionConstraints::NUTRIENT_MAX[key.to_s] %>
         <div class="nutrient-row indent-<%= indent / 2 %>">
           <label for="editor-<%= key %>"><%= label.strip %></label>
           <input type="number" id="editor-<%= key %>" class="field-narrow"
                  value="<%= format_nutrient_value(entry.public_send(key)) if entry&.public_send(key) %>"
-                 inputmode="decimal" step="any" min="0" max="10000"
+                 inputmode="decimal" step="any" min="0" max="<%= nutrient_max %>"
                  data-nutrition-editor-target="nutrientField"
-                 data-nutrient-key="<%= key %>">
+                 data-nutrient-key="<%= key %>"
+                 data-nutrient-max="<%= nutrient_max %>">
           <span class="field-unit"><%= unit %></span>
         </div>
       <% end %>
