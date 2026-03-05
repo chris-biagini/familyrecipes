@@ -1000,6 +1000,48 @@ footer small {
   font-style: italic;
 }
 
+/* Recipe token highlights */
+
+.hl-title {
+  font-weight: 700;
+  color: var(--accent-color);
+  text-decoration: underline;
+}
+
+.hl-step-header {
+  font-weight: 700;
+  color: var(--text-color);
+  text-decoration: underline;
+}
+
+.hl-ingredient-name {
+  color: var(--text-color);
+  font-weight: 600;
+}
+
+.hl-ingredient-qty {
+  color: var(--text-color);
+}
+
+.hl-ingredient-prep {
+  color: var(--muted-text);
+  font-style: italic;
+}
+
+.hl-cross-ref {
+  font-weight: 600;
+  color: var(--accent-color);
+  font-style: italic;
+}
+
+.hl-front-matter {
+  color: var(--muted-text);
+}
+
+.hl-divider {
+  color: var(--muted-text);
+}
+
 .editor-footer {
   display: flex;
   justify-content: flex-end;
