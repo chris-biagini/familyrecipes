@@ -8,7 +8,7 @@
 # Collaborators:
 # - IngredientResolver (name resolution, catalog entry access)
 # - IngredientCatalog.resolver_for (default resolver factory)
-# - IngredientsController, NutritionEntriesController, RecipeBroadcaster
+# - IngredientsController, NutritionEntriesController
 class IngredientRowBuilder
   def initialize(kitchen:, recipes: nil, resolver: nil)
     @kitchen = kitchen

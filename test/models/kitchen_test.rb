@@ -5,6 +5,7 @@ require 'turbo/broadcastable/test_helper'
 
 class KitchenTest < ActiveSupport::TestCase
   include Turbo::Broadcastable::TestHelper
+
   test 'requires name' do
     kitchen = Kitchen.new(slug: 'test')
 

@@ -2,14 +2,14 @@
 
 # Orchestrates IngredientCatalog create/update/destroy with post-write side
 # effects: syncing new aisles to the kitchen's aisle_order, recalculating
-# nutrition for affected recipes, and broadcasting meal plan refreshes.
+# nutrition for affected recipes, and broadcasting a page-refresh morph.
 # Mirrors RecipeWriteService — controllers call class methods, never inline
 # post-save logic.
 #
 # - IngredientCatalog: overlay model for ingredient metadata
 # - IngredientResolver: variant-aware name resolution for affected-recipe queries
 # - RecipeNutritionJob: recalculates recipe nutrition_data
-# - MealPlan: broadcasts meal plan refresh signals
+# - Kitchen#broadcast_update: page-refresh morph for all connected clients
 class CatalogWriteService
   Result = Data.define(:entry, :persisted)
 
