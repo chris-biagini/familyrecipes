@@ -11,7 +11,9 @@ import { show as notifyShow } from "utilities/notify"
  * beforeunload guards. Simple dialogs need zero custom JS — just Stimulus data
  * attributes on the <dialog>. Custom dialogs (nutrition editor) hook in via
  * lifecycle events: editor:collect, editor:save, editor:modified, editor:reset.
- * Also supports remote-loaded content via loadUrl for lazy-fetched dialogs.
+ *
+ * - editor_utils: CSRF tokens, error display, save requests, close-with-confirmation
+ * - notify: toast notifications for save success/failure feedback
  */
 export default class extends Controller {
   static targets = ["textarea", "saveButton", "deleteButton", "errors"]

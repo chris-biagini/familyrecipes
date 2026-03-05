@@ -4,6 +4,9 @@
 # so they can use ERB and get Cache-Control: no-cache headers. This prevents
 # Cloudflare from edge-caching them with the static file TTL. Skips
 # set_kitchen_from_path because these URLs are kitchen-agnostic.
+#
+# - Rails.configuration.site: site title for manifest name
+# - pwa/service_worker.js.erb: ERB template with cache-busted asset URLs
 class PwaController < ApplicationController
   skip_forgery_protection
   skip_before_action :set_kitchen_from_path

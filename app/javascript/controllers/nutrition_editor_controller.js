@@ -8,6 +8,10 @@ import { getCsrfToken, showErrors, clearErrors } from "utilities/editor_utils"
  * refreshing the ingredients table for all clients. Client-side validation
  * prevents invalid submissions. Also handles the "reset to built-in" action
  * that deletes a kitchen-scoped override.
+ *
+ * - editor_utils: CSRF tokens, error display, close-with-confirmation helpers
+ * - NutritionEntriesController: JSON save endpoint and Turbo Frame edit partial
+ * - CatalogWriteService (server): orchestrates upsert, aisle sync, and broadcast
  */
 export default class extends Controller {
   static targets = [

@@ -7,6 +7,8 @@ import { show as notifyShow, dismiss as notifyDismiss } from "utilities/notify"
  * timeout (default 10 minutes). Shows a "stay awake" warning before releasing.
  * Activity (scroll, pointer, input) resets the timer. Gracefully degrades to
  * no-op on browsers without Wake Lock support.
+ *
+ * - notify: toast notifications for the "stay awake" warning and dismissal
  */
 export default class extends Controller {
   static values = {

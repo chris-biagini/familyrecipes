@@ -7,6 +7,9 @@ import ListenerManager from "utilities/listener_manager"
  * aisle collapse persistence. All rendering is server-side via Turbo page-refresh
  * morphs; this controller only handles user interactions and preserves local
  * state (aisle collapse) across morphs.
+ *
+ * - turbo_fetch (sendAction): fire-and-forget mutations with retry and error toast
+ * - ListenerManager: tracks event listeners for clean teardown on disconnect
  */
 export default class extends Controller {
   connect() {

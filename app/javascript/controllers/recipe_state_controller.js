@@ -9,6 +9,9 @@ import ListenerManager from "utilities/listener_manager"
  * and version hash — stale or mismatched state is discarded. Scale factor
  * applies to quantities, scalable numbers in instructions, yield lines, and
  * nutrition facts. All of this is optional JS — the recipe renders fine without it.
+ *
+ * - vulgar_fractions: formats scaled quantities as Unicode fraction glyphs
+ * - ListenerManager: tracks event listeners for clean teardown on disconnect
  */
 const STORED_STATE_TTL = 48 * 60 * 60 * 1000
 
