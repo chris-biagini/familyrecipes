@@ -2,8 +2,8 @@ import { Controller } from "@hotwired/stimulus"
 
 /**
  * Ingredients page table: client-side search filtering, status filtering
- * (all/complete/missing nutrition/missing density), sortable columns (name,
- * nutrition, density, aisle), and keyboard navigation for row activation.
+ * (all/complete/no aisle/no nutrition/no density), sortable columns (name,
+ * aisle, data, recipes), and keyboard navigation for row activation.
  * Works entirely on DOM data attributes — no server calls.
  */
 export default class extends Controller {
@@ -69,13 +69,14 @@ export default class extends Controller {
   }
 
   matchesStatus(row) {
-    if (this.currentFilter === "all") return true
-    if (this.currentFilter === "complete") return row.dataset.status === "complete"
-    if (this.currentFilter === "missing_nutrition") return row.dataset.hasNutrition === "false"
-    if (this.currentFilter === "missing_density") {
-      return row.dataset.hasNutrition === "true" && row.dataset.hasDensity === "false"
+    switch (this.currentFilter) {
+      case "all": return true
+      case "complete": return row.dataset.status === "complete"
+      case "no_aisle": return !row.dataset.aisle
+      case "no_nutrition": return row.dataset.hasNutrition === "false"
+      case "no_density": return row.dataset.hasDensity === "false"
+      default: return true
     }
-    return true
   }
 
   updateSortIndicators() {
@@ -113,18 +114,24 @@ export default class extends Controller {
     return valA - valB
   }
 
+  dataScore(row) {
+    const n = row.dataset.hasNutrition === "true" ? 0 : 1
+    const d = row.dataset.hasDensity === "true" ? 0 : 1
+    return n + d
+  }
+
   sortValue(row) {
     switch (this.sortKey) {
       case "name":
         return (row.dataset.ingredientName || "").toLowerCase()
-      case "nutrition":
-        return row.dataset.hasNutrition === "true" ? 0 : 1
-      case "density":
-        return row.dataset.hasDensity === "true" ? 0 : 1
+      case "data":
+        return this.dataScore(row)
       case "aisle": {
         const aisle = (row.dataset.aisle || "").toLowerCase()
         return aisle || "\uffff"
       }
+      case "recipes":
+        return parseInt(row.dataset.recipeCount, 10) || 0
       default:
         return ""
     }

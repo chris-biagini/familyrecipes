@@ -165,7 +165,7 @@ class IngredientRowBuilderTest < ActiveSupport::TestCase
     assert_equal 3, summary[:total]
     assert_equal 1, summary[:complete]
     assert_equal 1, summary[:missing_nutrition]
-    assert_equal 1, summary[:missing_density]
+    assert_equal 2, summary[:missing_density]
   end
 
   # --- next_needing_attention ---

@@ -11,11 +11,16 @@
         aria-pressed="false">Complete (<%= summary[:complete] %>)</button>
 <button type="button" class="filter-pill"
         data-ingredient-table-target="filterButton"
-        data-filter="missing_nutrition"
+        data-filter="no_aisle"
         data-action="click->ingredient-table#filter"
-        aria-pressed="false">Missing Nutrition (<%= summary[:missing_nutrition] %>)</button>
+        aria-pressed="false">No Aisle (<%= summary[:missing_aisle] %>)</button>
 <button type="button" class="filter-pill"
         data-ingredient-table-target="filterButton"
-        data-filter="missing_density"
+        data-filter="no_nutrition"
         data-action="click->ingredient-table#filter"
-        aria-pressed="false">Missing Density (<%= summary[:missing_density] %>)</button>
+        aria-pressed="false">No Nutrition (<%= summary[:missing_nutrition] %>)</button>
+<button type="button" class="filter-pill"
+        data-ingredient-table-target="filterButton"
+        data-filter="no_density"
+        data-action="click->ingredient-table#filter"
+        aria-pressed="false">No Density (<%= summary[:missing_density] %>)</button>

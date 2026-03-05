@@ -49,8 +49,9 @@ class IngredientRowBuilder
   def build_summary
     { total: rows.size,
       complete: rows.count { |r| r[:status] == 'complete' },
+      missing_aisle: rows.count { |r| r[:aisle].blank? },
       missing_nutrition: rows.count { |r| !r[:has_nutrition] },
-      missing_density: rows.count { |r| r[:has_nutrition] && !r[:has_density] } }
+      missing_density: rows.count { |r| !r[:has_density] } }
   end
 
   def ingredient_row(name, recs)
