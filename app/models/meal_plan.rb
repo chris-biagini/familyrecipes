@@ -2,9 +2,8 @@
 
 # Singleton-per-kitchen record that stores shared meal planning state as a JSON
 # blob: selected recipes, selected quick bites, custom grocery items, and
-# checked-off items. Synced across devices via Turbo page-refresh broadcasts
-# with optimistic locking (lock_version). Both the menu and groceries pages
-# read and write this model.
+# checked-off items. Both the menu and groceries pages read and write this
+# model. Cross-device sync is handled by Kitchen#broadcast_update.
 class MealPlan < ApplicationRecord
   acts_as_tenant :kitchen
 
@@ -19,10 +18,6 @@ class MealPlan < ApplicationRecord
     find_or_create_by!(kitchen: kitchen)
   rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotUnique
     find_by!(kitchen: kitchen)
-  end
-
-  def self.broadcast_refresh(kitchen)
-    Turbo::StreamsChannel.broadcast_refresh_to(kitchen, :meal_plan_updates)
   end
 
   # Controller params arrive as strings; handle both "true"/true
