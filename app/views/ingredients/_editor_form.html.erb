@@ -139,11 +139,9 @@
     <% end %>
 
     <% if entry&.custom? %>
-      <div class="editor-reset">
-        <button type="button" class="btn btn-small btn-secondary"
-                data-reset-ingredient
-                data-ingredient-name="<%= ingredient_name %>">Reset to built-in</button>
-      </div>
+      <button type="button" class="btn btn-small btn-secondary editor-reset-btn" hidden
+              data-reset-ingredient
+              data-ingredient-name="<%= ingredient_name %>">Reset to built-in</button>
     <% end %>
 
   </div>

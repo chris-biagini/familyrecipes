@@ -336,8 +336,26 @@ export default class extends Controller {
   onFrameLoad() {
     this._originalAisle = this.currentAisle()
     this.originalSnapshot = JSON.stringify(this.collectFormData())
+    this.moveResetButtonToFooter()
 
     if (this.hasBasisGramsTarget) this.basisGramsTarget.focus()
+  }
+
+  moveResetButtonToFooter() {
+    const footer = this.element.querySelector(".editor-footer")
+    const oldBtn = footer.querySelector("[data-reset-ingredient]")
+    const oldSpacer = footer.querySelector(".editor-footer-spacer")
+    if (oldBtn) oldBtn.remove()
+    if (oldSpacer) oldSpacer.remove()
+
+    const resetBtn = this.element.querySelector("[data-reset-ingredient]")
+    if (!resetBtn) return
+
+    resetBtn.hidden = false
+    const spacer = document.createElement("span")
+    spacer.className = "editor-footer-spacer"
+    footer.prepend(spacer)
+    footer.prepend(resetBtn)
   }
 
   collectNutrients() {

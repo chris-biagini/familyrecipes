@@ -1227,8 +1227,9 @@ button.aisle-name:hover {
 }
 .editor-recipes a { white-space: nowrap; }
 
-.editor-reset { padding-top: 0.75rem; }
-.editor-recipes + .editor-reset { padding-top: 0.5rem; }
+.editor-reset-btn {
+  font-size: 0.8rem;
+}
 
 .form-row {
   display: flex;
