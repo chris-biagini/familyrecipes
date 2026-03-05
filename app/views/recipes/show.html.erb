@@ -14,6 +14,7 @@
 <% end %>
 
 <% if current_member? %>
+  <%= turbo_stream_from current_kitchen, :updates %>
   <%= turbo_stream_from @recipe, "content" %>
 <% end %>
 

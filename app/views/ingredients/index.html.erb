@@ -1,6 +1,6 @@
 <% content_for(:title) { "#{current_kitchen.name}: Ingredients" } %>
 
-<%= turbo_stream_from current_kitchen, "recipes" %>
+<%= turbo_stream_from current_kitchen, :updates %>
 
 <article class="ingredients-page" data-controller="ingredient-table">
   <header>

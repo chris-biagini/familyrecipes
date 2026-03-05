@@ -9,7 +9,7 @@
 <% end %>
 
 <% if current_member? %>
-  <%= turbo_stream_from current_kitchen, "recipes" %>
+  <%= turbo_stream_from current_kitchen, :updates %>
 <% end %>
 
 <article class="homepage">

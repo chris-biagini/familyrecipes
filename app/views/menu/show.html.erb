@@ -12,8 +12,7 @@
 <% end %>
 <% end %>
 
-<%= turbo_stream_from current_kitchen, "recipes" %>
-<%= turbo_stream_from current_kitchen, :meal_plan_updates %>
+<%= turbo_stream_from current_kitchen, :updates %>
 
 <header id="menu-header">
   <h1>Menu</h1>
