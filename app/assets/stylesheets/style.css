@@ -903,6 +903,10 @@ footer small {
   z-index: 1;
 }
 
+.qb-highlight-input::placeholder {
+  color: var(--muted-text-light);
+}
+
 .qb-hl-category {
   font-weight: 700;
   color: var(--accent-color);

@@ -43,11 +43,9 @@ class MenuController < ApplicationController
   end
 
   def update_quick_bites
-    content = params[:content].to_s
-    return render json: { errors: ['Content cannot be blank.'] }, status: :unprocessable_content if content.blank?
-
-    result = FamilyRecipes.parse_quick_bites_content(content)
-    current_kitchen.update!(quick_bites_content: content)
+    stored = params[:content].to_s.presence
+    result = parse_quick_bites(stored)
+    current_kitchen.update!(quick_bites_content: stored)
     plan = MealPlan.for_kitchen(current_kitchen)
     plan.with_optimistic_retry { plan.prune_checked_off(visible_names: shopping_list_visible_names(plan)) }
     current_kitchen.broadcast_update
@@ -58,6 +56,12 @@ class MenuController < ApplicationController
   end
 
   private
+
+  def parse_quick_bites(content)
+    return FamilyRecipes::QuickBitesResult.new(quick_bites: [], warnings: []) unless content
+
+    FamilyRecipes.parse_quick_bites_content(content)
+  end
 
   def recipe_selector_categories
     current_kitchen.categories.ordered.includes(:recipes)

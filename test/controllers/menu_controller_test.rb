@@ -313,7 +313,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Snacks:\n- Goldfish", @kitchen.reload.quick_bites_content
   end
 
-  test 'update_quick_bites rejects blank content' do
+  test 'update_quick_bites clears content when blank' do
     @kitchen.update!(quick_bites_content: 'old content')
 
     log_in
@@ -321,7 +321,8 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
           params: { content: '' },
           as: :json
 
-    assert_response :unprocessable_entity
+    assert_response :success
+    assert_nil @kitchen.reload.quick_bites_content
   end
 
   test 'update_quick_bites returns warnings for unrecognized lines' do
