@@ -56,9 +56,70 @@
   --danger-hover-bg: rgba(204, 0, 0, 0.08);
   --custom-item-border: #eee;
   --custom-item-remove: #bbb;
+
+  /* Notification bar — upward-facing nav shadow */
+  --shadow-nav-up: 0 -2px 4px rgba(0, 0, 0, 0.08), 0 -1px 2px rgba(0, 0, 0, 0.04);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --border-color: rgb(65, 60, 55);
+    --text-color: rgb(220, 215, 210);
+
+    --frosted-glass-bg: rgba(38, 35, 32, 0.8);
+    --content-background-color: rgb(38, 35, 32);
+
+    /* Gingham */
+    --gingham-base: rgb(24, 22, 20);
+    --gingham-stripe-color: rgba(140, 20, 30, 0.15);
+    --weave-color: rgba(100, 100, 100, 0.04);
+
+    /* Shared UI colors */
+    --checked-color: rgb(200, 55, 60);
+    --muted-text: rgb(140, 135, 130);
+    --muted-text-light: rgb(110, 106, 102);
+    --border-light: rgb(60, 56, 52);
+    --border-muted: rgb(85, 80, 75);
+    --separator-color: rgb(50, 47, 44);
+    --surface-alt: rgb(32, 30, 28);
+    --danger-color: rgb(220, 60, 50);
+    --accent-color: rgb(200, 55, 60);
+
+    /* Availability indicators */
+    --on-hand-color: rgb(200, 55, 60);
+    --missing-color: rgb(200, 55, 60);
+    --hover-bg: rgb(48, 44, 40);
+
+    /* Surfaces & inputs */
+    --input-bg: rgb(30, 28, 26);
+    --accent-hover: rgb(170, 45, 50);
+    --overscroll-color: rgb(30, 24, 22);
+    --scaled-highlight: rgba(180, 140, 60, 0.2);
+
+    /* Shadows — reduced opacity, dark bg makes shadows less effective */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.16), 0 4px 12px rgba(0, 0, 0, 0.12);
+    --shadow-nav: 0 2px 4px rgba(0, 0, 0, 0.16), 0 1px 2px rgba(0, 0, 0, 0.08);
+    --shadow-dialog: 0 4px 24px rgba(0, 0, 0, 0.3);
+    --dialog-backdrop: rgba(0, 0, 0, 0.65);
+    --shadow-nav-up: 0 -2px 4px rgba(0, 0, 0, 0.16), 0 -1px 2px rgba(0, 0, 0, 0.08);
+
+    /* Status indicators */
+    --source-badge-bg: rgba(50, 100, 160, 0.25);
+    --source-badge-text: rgb(130, 170, 220);
+    --aisle-renamed-bg: rgba(180, 140, 40, 0.15);
+    --aisle-renamed-border: rgba(180, 140, 40, 0.3);
+    --aisle-new-bg: rgba(60, 140, 70, 0.15);
+    --aisle-new-border: rgba(60, 140, 70, 0.3);
+    --broken-reference-bg: rgb(42, 36, 32);
+    --aisle-row-border: rgb(55, 52, 48);
+    --danger-hover-bg: rgba(220, 60, 50, 0.12);
+    --custom-item-border: rgb(50, 47, 44);
+    --custom-item-remove: rgb(110, 106, 102);
+  }
 }
 
 html {
+  color-scheme: light dark;
   font-size: 18px;
   touch-action: manipulation; /* Should prevent double-tap zoom, but maybe doesn't? */
 
@@ -1150,7 +1211,7 @@ button.aisle-name:hover {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-top: 1px solid var(--gingham-stripe-color);
-  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.08), 0 -1px 2px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow-nav-up);
   font-family: "Futura", sans-serif;
   font-size: 0.9rem;
   color: var(--text-color);
