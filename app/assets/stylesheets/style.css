@@ -980,6 +980,11 @@ footer small {
   z-index: 1;
 }
 
+.hl-input::selection {
+  background: rgba(128, 128, 128, 0.3);
+  color: transparent;
+}
+
 .hl-input::placeholder {
   color: var(--muted-text-light);
 }
