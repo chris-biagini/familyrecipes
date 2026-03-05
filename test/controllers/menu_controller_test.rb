@@ -158,7 +158,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
 
   test 'select broadcasts meal plan refresh' do
     log_in
-    assert_turbo_stream_broadcasts [@kitchen, :meal_plan_updates] do
+    assert_turbo_stream_broadcasts [@kitchen, :updates] do
       patch menu_select_path(kitchen_slug: kitchen_slug),
             params: { type: 'recipe', slug: 'focaccia', selected: true },
             as: :turbo_stream
@@ -235,7 +235,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
 
   test 'select_all broadcasts meal plan refresh' do
     log_in
-    assert_turbo_stream_broadcasts [@kitchen, :meal_plan_updates] do
+    assert_turbo_stream_broadcasts [@kitchen, :updates] do
       patch menu_select_all_path(kitchen_slug: kitchen_slug), as: :turbo_stream
     end
   end
@@ -263,7 +263,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
 
   test 'clear broadcasts meal plan refresh' do
     log_in
-    assert_turbo_stream_broadcasts [@kitchen, :meal_plan_updates] do
+    assert_turbo_stream_broadcasts [@kitchen, :updates] do
       delete menu_clear_path(kitchen_slug: kitchen_slug), as: :turbo_stream
     end
   end
@@ -326,7 +326,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
 
   test 'update_quick_bites broadcasts meal plan refresh' do
     log_in
-    assert_turbo_stream_broadcasts [@kitchen, :meal_plan_updates] do
+    assert_turbo_stream_broadcasts [@kitchen, :updates] do
       patch menu_quick_bites_path(kitchen_slug: kitchen_slug),
             params: { content: "## Snacks\n  - Goldfish" },
             as: :json

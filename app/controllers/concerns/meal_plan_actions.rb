@@ -44,6 +44,6 @@ module MealPlanActions
   end
 
   def broadcast_meal_plan_refresh
-    MealPlan.broadcast_refresh(current_kitchen)
+    current_kitchen.broadcast_update
   end
 end
