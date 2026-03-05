@@ -68,7 +68,7 @@ module FamilyRecipes
 
   def self.parse_quick_bites(recipes_dir)
     file_path = File.join(recipes_dir, CONFIG[:quick_bites_filename])
-    parse_quick_bites_content(File.read(file_path))
+    parse_quick_bites_content(File.read(file_path)).quick_bites
   end
 end
 

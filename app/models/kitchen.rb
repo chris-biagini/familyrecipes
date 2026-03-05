@@ -34,7 +34,7 @@ class Kitchen < ApplicationRecord
   def parsed_quick_bites
     return [] unless quick_bites_content
 
-    FamilyRecipes.parse_quick_bites_content(quick_bites_content)
+    FamilyRecipes.parse_quick_bites_content(quick_bites_content).quick_bites
   end
 
   def quick_bites_by_subsection

@@ -117,6 +117,15 @@ class KitchenTest < ActiveSupport::TestCase
     assert_empty kitchen.quick_bites_by_subsection
   end
 
+  test 'parsed_quick_bites returns quick bites from new format' do
+    kitchen = Kitchen.create!(name: 'Test', slug: 'test-parsed-qb',
+                              quick_bites_content: "Snacks:\n- Goldfish\n- Dried fruit\n")
+    qbs = kitchen.parsed_quick_bites
+
+    assert_equal 2, qbs.size
+    assert_equal 'Goldfish', qbs.first.title
+  end
+
   test 'all_aisles prefers kitchen catalog entries over global' do
     kitchen = Kitchen.create!(name: 'Test', slug: 'test-overlay')
     IngredientCatalog.create!(kitchen: nil, ingredient_name: 'Flour', aisle: 'Baking', basis_grams: 30)
