@@ -1,0 +1,16 @@
+{
+  "planPath": "docs/plans/2026-03-05-morph-everywhere-plan.md",
+  "tasks": [
+    {"id": 1, "subject": "Task 1: Add Kitchen#broadcast_update", "status": "pending"},
+    {"id": 2, "subject": "Task 2: Switch MealPlanActions to Kitchen#broadcast_update", "status": "pending", "blockedBy": [1]},
+    {"id": 3, "subject": "Task 3: Switch CatalogWriteService to Kitchen#broadcast_update", "status": "pending", "blockedBy": [1]},
+    {"id": 4, "subject": "Task 4: Gut RecipeBroadcaster and delete RecipeBroadcastJob", "status": "pending", "blockedBy": [1]},
+    {"id": 5, "subject": "Task 5: Simplify NutritionEntriesController to JSON-only", "status": "pending"},
+    {"id": 6, "subject": "Task 6: Unify view stream subscriptions", "status": "pending", "blockedBy": [4, 5]},
+    {"id": 7, "subject": "Task 7: Delete global turbo:before-stream-render hook", "status": "pending", "blockedBy": [4, 5, 6]},
+    {"id": 8, "subject": "Task 8: Delete MealPlan.broadcast_refresh class method", "status": "pending", "blockedBy": [2, 3]},
+    {"id": 9, "subject": "Task 9: Update CLAUDE.md and architectural comments", "status": "pending", "blockedBy": [6, 7, 8]},
+    {"id": 10, "subject": "Task 10: Final verification", "status": "pending", "blockedBy": [9]}
+  ],
+  "lastUpdated": "2026-03-05T00:00:00Z"
+}
