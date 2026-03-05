@@ -34,7 +34,11 @@ class PwaController < ApplicationController
       theme_color: '#cd4754',
       icons: [
         { src: versioned_icon_path('icon-192.png'), sizes: '192x192', type: 'image/png' },
-        { src: versioned_icon_path('icon-512.png'), sizes: '512x512', type: 'image/png' }
+        { src: versioned_icon_path('icon-512.png'), sizes: '512x512', type: 'image/png' },
+        { src: versioned_icon_path('icon-192-dark.png'), sizes: '192x192', type: 'image/png',
+          media: '(prefers-color-scheme: dark)' },
+        { src: versioned_icon_path('icon-512-dark.png'), sizes: '512x512', type: 'image/png',
+          media: '(prefers-color-scheme: dark)' }
       ],
       shortcuts: [
         { name: 'Grocery List', short_name: 'Groceries', url: '/groceries' }
