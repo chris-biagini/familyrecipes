@@ -69,6 +69,7 @@ Metrics/PerceivedComplexity:
 Metrics/BlockLength:
   Exclude:
     - bin/*
+    - config/routes.rb
     - test/**/*
 
 Metrics/ClassLength:

@@ -546,6 +546,13 @@ section h2 {
   padding-bottom: 0.4rem;
 }
 
+#export-actions {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--separator-color);
+  text-align: center;
+}
+
 /********************************/
 /* Ingredients page             */
 /********************************/
@@ -1798,7 +1805,8 @@ button.aisle-name:hover {
 
   nav,
   .notify-bar,
-  .editor-dialog {
+  .editor-dialog,
+  #export-actions {
     display: none;
   }
 
