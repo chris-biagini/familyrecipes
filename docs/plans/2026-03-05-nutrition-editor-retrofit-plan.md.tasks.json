@@ -1,0 +1,12 @@
+{
+  "planPath": "docs/plans/2026-03-05-nutrition-editor-retrofit-plan.md",
+  "tasks": [
+    {"id": 1, "subject": "Task 1: CSS consolidation", "status": "pending"},
+    {"id": 2, "subject": "Task 2: View — shared editor_dialog layout", "status": "pending", "blockedBy": [1]},
+    {"id": 3, "subject": "Task 3: Validation fix — dynamic nutrient max", "status": "pending"},
+    {"id": 4, "subject": "Task 4: JS — rewrite nutrition_editor_controller as companion", "status": "pending", "blockedBy": [2, 3]},
+    {"id": 5, "subject": "Task 5: Add server-side test for high sodium", "status": "pending", "blockedBy": [3]},
+    {"id": 6, "subject": "Task 6: Full verification", "status": "pending", "blockedBy": [4, 5]}
+  ],
+  "lastUpdated": "2026-03-05T00:00:00Z"
+}
