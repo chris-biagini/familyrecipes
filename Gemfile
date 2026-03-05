@@ -9,6 +9,7 @@ gem 'rails', '~> 8.0'
 gem 'minitest'
 gem 'rake'
 gem 'redcarpet'
+gem 'rubyzip', require: 'zip'
 gem 'sqlite3'
 
 gem 'acts_as_tenant'
