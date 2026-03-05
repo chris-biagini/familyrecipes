@@ -24,9 +24,7 @@ class IngredientsController < ApplicationController
     recipes = recipes_for_ingredient(ingredient_name)
 
     render partial: 'ingredients/editor_form',
-           locals: { ingredient_name:, entry:, available_aisles: aisles,
-                     next_name: row_builder.next_needing_attention(after: ingredient_name),
-                     recipes: }
+           locals: { ingredient_name:, entry:, available_aisles: aisles, recipes: }
   end
 
   private

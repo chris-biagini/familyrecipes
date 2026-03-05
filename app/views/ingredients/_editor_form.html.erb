@@ -1,4 +1,4 @@
-<%# locals: (ingredient_name:, entry:, available_aisles:, next_name: nil, recipes: []) %>
+<%# locals: (ingredient_name:, entry:, available_aisles:, recipes: []) %>
 <% has_density = entry&.density_grams.present? %>
 <turbo-frame id="nutrition-editor-form">
   <div class="editor-form" data-nutrition-editor-target="formContent">
@@ -144,8 +144,5 @@
       </div>
     <% end %>
 
-    <% if next_name %>
-      <input type="hidden" data-nutrition-editor-target="nextName" value="<%= next_name %>">
-    <% end %>
   </div>
 </turbo-frame>

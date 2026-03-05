@@ -13,10 +13,7 @@ class NutritionEntriesController < ApplicationController
     result = CatalogWriteService.upsert(kitchen: current_kitchen, ingredient_name:, params: catalog_params) # rubocop:disable Rails/SkipsModelValidations
     return render_errors(result.entry) unless result.persisted
 
-    respond_to do |format|
-      format.turbo_stream { render_turbo_stream_update }
-      format.json { render_json_response }
-    end
+    render json: { status: 'ok' }
   end
 
   def destroy
@@ -64,29 +61,5 @@ class NutritionEntriesController < ApplicationController
 
   def render_errors(entry)
     render json: { errors: entry.errors.full_messages }, status: :unprocessable_content
-  end
-
-  def render_json_response
-    response_body = { status: 'ok' }
-    if params[:save_and_next]
-      response_body[:next_ingredient] = row_builder.next_needing_attention(after: ingredient_name)
-    end
-    render json: response_body
-  end
-
-  def render_turbo_stream_update
-    @updated_row = row_builder.rows.find { |r| r[:name].casecmp(ingredient_name).zero? }
-    @summary = row_builder.summary
-    @next_ingredient = row_builder.next_needing_attention(after: ingredient_name) if params[:save_and_next]
-
-    render :upsert
-  end
-
-  def resolver
-    @resolver ||= IngredientCatalog.resolver_for(current_kitchen)
-  end
-
-  def row_builder
-    @row_builder ||= IngredientRowBuilder.new(kitchen: current_kitchen, resolver:)
   end
 end

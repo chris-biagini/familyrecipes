@@ -1,19 +1,18 @@
 import { Controller } from "@hotwired/stimulus"
-import { Turbo } from "@hotwired/turbo-rails"
 import { getCsrfToken, showErrors, clearErrors } from "utilities/editor_utils"
 
 /**
  * Multi-field nutrition editor dialog for the ingredients page. Manages the
  * structured form (nutrients, density, portions, aisle) loaded via Turbo Frame.
- * Supports save (Turbo Stream update to refresh the table row in-place) and
- * save-and-next (JSON response that advances to the next incomplete ingredient).
- * Client-side validation prevents invalid submissions. Also handles the "reset
- * to built-in" action that deletes a kitchen-scoped override.
+ * Saves via JSON; the broadcast morph from Kitchen#broadcast_update handles
+ * refreshing the ingredients table for all clients. Client-side validation
+ * prevents invalid submissions. Also handles the "reset to built-in" action
+ * that deletes a kitchen-scoped override.
  */
 export default class extends Controller {
   static targets = [
     "dialog", "title", "errors", "formContent",
-    "saveButton", "saveNextButton", "nextLabel", "nextName",
+    "saveButton",
     "basisGrams", "nutrientField",
     "densityVolume", "densityUnit", "densityGrams",
     "portionList", "portionRow", "portionName", "portionGrams",
@@ -99,11 +98,7 @@ export default class extends Controller {
   }
 
   async save() {
-    await this.performSave(false)
-  }
-
-  async saveAndNext() {
-    await this.performSave(true)
+    await this.performSave()
   }
 
   addPortion() {
@@ -309,24 +304,11 @@ export default class extends Controller {
   onFrameLoad() {
     this._originalAisle = this.currentAisle()
     this.originalSnapshot = JSON.stringify(this.collectFormData())
-    this.updateSaveNextVisibility()
 
     if (this.hasBasisGramsTarget) this.basisGramsTarget.focus()
   }
 
-  updateSaveNextVisibility() {
-    if (!this.hasSaveNextButtonTarget) return
-
-    if (this.hasNextNameTarget) {
-      const nextName = this.nextNameTarget.value
-      this.saveNextButtonTarget.hidden = false
-      this.nextLabelTarget.textContent = `: ${nextName}`
-    } else {
-      this.saveNextButtonTarget.hidden = true
-    }
-  }
-
-  async performSave(andNext) {
+  async performSave() {
     const data = this.collectFormData()
     const errors = this.validateForm(data)
 
@@ -335,47 +317,17 @@ export default class extends Controller {
       return
     }
 
-    const payload = andNext ? { ...data, save_and_next: true } : data
     this.disableSaveButtons("Saving\u2026")
     clearErrors(this.errorsTarget)
     this.saving = true
 
     try {
-      if (andNext) {
-        await this.saveWithJson(payload)
-      } else {
-        await this.saveWithTurboStream(payload)
-      }
+      await this.saveWithJson(data)
     } catch {
       showErrors(this.errorsTarget, ["Network error. Please check your connection and try again."])
     } finally {
       this.saving = false
       this.enableSaveButtons()
-    }
-  }
-
-  async saveWithTurboStream(payload) {
-    const response = await fetch(this.nutritionUrl(this.currentIngredient), {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "text/vnd.turbo-stream.html",
-        "X-CSRF-Token": getCsrfToken()
-      },
-      body: JSON.stringify(payload)
-    })
-
-    if (response.ok) {
-      const html = await response.text()
-      Turbo.renderStreamMessage(html)
-      this.dialogTarget.close()
-      this.currentIngredient = null
-      this.originalSnapshot = null
-    } else if (response.status === 422) {
-      const result = await response.json()
-      showErrors(this.errorsTarget, result.errors)
-    } else {
-      showErrors(this.errorsTarget, [`Server error (${response.status}). Please try again.`])
     }
   }
 
@@ -390,17 +342,9 @@ export default class extends Controller {
     })
 
     if (response.ok) {
-      const result = await response.json()
-
-      if (result.next_ingredient) {
-        this.currentIngredient = result.next_ingredient
-        this.titleTarget.textContent = `Edit ${result.next_ingredient}`
-        clearErrors(this.errorsTarget)
-        this.turboFrame.src = this.editUrlFor(result.next_ingredient)
-      } else {
-        this.dialogTarget.close()
-        window.location.reload()
-      }
+      this.dialogTarget.close()
+      this.currentIngredient = null
+      this.originalSnapshot = null
     } else if (response.status === 422) {
       const result = await response.json()
       showErrors(this.errorsTarget, result.errors)
@@ -473,13 +417,11 @@ export default class extends Controller {
   disableSaveButtons(text) {
     this.saveButtonTarget.disabled = true
     this.saveButtonTarget.textContent = text
-    if (this.hasSaveNextButtonTarget) this.saveNextButtonTarget.disabled = true
   }
 
   enableSaveButtons() {
     this.saveButtonTarget.disabled = false
     this.saveButtonTarget.textContent = "Save"
-    if (this.hasSaveNextButtonTarget) this.saveNextButtonTarget.disabled = false
   }
 
 }
