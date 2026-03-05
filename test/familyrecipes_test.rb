@@ -81,6 +81,7 @@ class FamilyRecipesTest < Minitest::Test
 
   def test_parse_quick_bites_handles_empty_content
     result = FamilyRecipes.parse_quick_bites_content('')
+
     assert_empty result.quick_bites
     assert_empty result.warnings
   end

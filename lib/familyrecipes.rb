@@ -43,7 +43,7 @@ module FamilyRecipes
 
   QuickBitesResult = Data.define(:quick_bites, :warnings)
 
-  def self.parse_quick_bites_content(content)
+  def self.parse_quick_bites_content(content) # rubocop:disable Metrics/MethodLength
     current_subcat = nil
     quick_bites = []
     warnings = []
