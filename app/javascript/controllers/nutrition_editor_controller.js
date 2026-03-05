@@ -1,22 +1,20 @@
 import { Controller } from "@hotwired/stimulus"
-import { getCsrfToken, showErrors, clearErrors } from "utilities/editor_utils"
+import { getCsrfToken } from "utilities/editor_utils"
 
 /**
- * Multi-field nutrition editor dialog for the ingredients page. Manages the
- * structured form (nutrients, density, portions, aisle) loaded via Turbo Frame.
- * Saves via JSON; the broadcast morph from Kitchen#broadcast_update handles
- * refreshing the ingredients table for all clients. Client-side validation
- * prevents invalid submissions. Also handles the "reset to built-in" action
- * that deletes a kitchen-scoped override.
+ * Companion controller for the nutrition editor dialog. Hooks into the shared
+ * editor controller's lifecycle events to provide custom data collection,
+ * validation, save logic, and dirty detection. Manages the structured form
+ * (nutrients, density, portions, aisle, aliases) loaded via Turbo Frame.
  *
- * - editor_utils: CSRF tokens, error display, close-with-confirmation helpers
+ * - editor_controller: dialog lifecycle (open/close, save button state, errors, beforeunload)
+ * - editor_utils: CSRF tokens
  * - NutritionEntriesController: JSON save endpoint and Turbo Frame edit partial
  * - CatalogWriteService (server): orchestrates upsert, aisle sync, and broadcast
  */
 export default class extends Controller {
   static targets = [
-    "dialog", "title", "errors", "formContent",
-    "saveButton",
+    "formContent",
     "basisGrams", "nutrientField",
     "densityVolume", "densityUnit", "densityGrams",
     "portionList", "portionRow", "portionName", "portionGrams",
@@ -32,7 +30,6 @@ export default class extends Controller {
   connect() {
     this.currentIngredient = null
     this.originalSnapshot = null
-    this.saving = false
 
     this.boundEditClick = (event) => {
       const btn = event.target.closest("[data-open-editor]")
@@ -44,46 +41,48 @@ export default class extends Controller {
       if (btn) this.resetIngredient(btn)
     }
 
-    this.boundFrameLoad = () => this.onFrameLoad()
-
-    this.boundCancel = (event) => {
-      if (this.isModified()) {
-        event.preventDefault()
-        this.close()
-      }
-    }
-
     this.boundPrefetch = (event) => {
       const row = event.target.closest("[data-open-editor]")
       if (row) this.prefetch(row.dataset.ingredientName)
     }
 
+    this.boundFrameLoad = () => this.onFrameLoad()
+    this.boundCollect = (e) => this.handleCollect(e)
+    this.boundSave = (e) => this.handleSave(e)
+    this.boundModified = (e) => this.handleModified(e)
+    this.boundReset = (e) => this.handleReset(e)
+
     document.addEventListener("click", this.boundEditClick)
     document.addEventListener("click", this.boundResetClick)
     document.addEventListener("pointerenter", this.boundPrefetch, true)
 
-    this.dialogTarget.addEventListener("cancel", this.boundCancel)
     this.turboFrame.addEventListener("turbo:frame-load", this.boundFrameLoad)
+    this.element.addEventListener("editor:collect", this.boundCollect)
+    this.element.addEventListener("editor:save", this.boundSave)
+    this.element.addEventListener("editor:modified", this.boundModified)
+    this.element.addEventListener("editor:reset", this.boundReset)
   }
 
   disconnect() {
     document.removeEventListener("click", this.boundEditClick)
     document.removeEventListener("click", this.boundResetClick)
     document.removeEventListener("pointerenter", this.boundPrefetch, true)
-    this.dialogTarget.removeEventListener("cancel", this.boundCancel)
     this.turboFrame.removeEventListener("turbo:frame-load", this.boundFrameLoad)
+    this.element.removeEventListener("editor:collect", this.boundCollect)
+    this.element.removeEventListener("editor:save", this.boundSave)
+    this.element.removeEventListener("editor:modified", this.boundModified)
+    this.element.removeEventListener("editor:reset", this.boundReset)
   }
 
-  // Actions
+  // Open flow
 
   openForIngredient(btn) {
     const name = btn.dataset.ingredientName
     this.currentIngredient = name
-    this.titleTarget.textContent = `Edit ${name}`
-    clearErrors(this.errorsTarget)
+    this.element.querySelector(".editor-header h2").textContent = `Edit ${name}`
 
     this.turboFrame.src = this.editUrlFor(name)
-    this.dialogTarget.showModal()
+    this.editorController.open()
   }
 
   prefetch(name) {
@@ -93,17 +92,48 @@ export default class extends Controller {
     fetch(this.editUrlFor(name), { headers: { Accept: "text/html" } })
   }
 
-  close() {
-    if (this.isModified() && !confirm("You have unsaved changes. Discard them?")) return
+  // Editor lifecycle event handlers
 
-    this.dialogTarget.close()
+  handleCollect(event) {
+    event.detail.handled = true
+    event.detail.data = this.collectFormData()
+  }
+
+  handleSave(event) {
+    const data = event.detail.data
+    event.detail.handled = true
+    event.detail.saveFn = async () => {
+      const errors = this.validateForm(data)
+      if (errors.length > 0) {
+        return new Response(JSON.stringify({ errors }), {
+          status: 422,
+          headers: { "Content-Type": "application/json" }
+        })
+      }
+      return fetch(this.nutritionUrl(this.currentIngredient), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": getCsrfToken()
+        },
+        body: JSON.stringify(data)
+      })
+    }
+  }
+
+  handleModified(event) {
+    event.detail.handled = true
+    event.detail.modified = this.originalSnapshot !== null &&
+      JSON.stringify(this.collectFormData()) !== this.originalSnapshot
+  }
+
+  handleReset(event) {
+    event.detail.handled = true
     this.currentIngredient = null
     this.originalSnapshot = null
   }
 
-  async save() {
-    await this.performSave()
-  }
+  // Form interactions
 
   addPortion() {
     const row = document.createElement("div")
@@ -233,11 +263,9 @@ export default class extends Controller {
         window.location.reload()
       } else {
         btn.disabled = false
-        showErrors(this.errorsTarget, ["Failed to reset. Please try again."])
       }
     } catch {
       btn.disabled = false
-      showErrors(this.errorsTarget, ["Network error. Please check your connection and try again."])
     }
   }
 
@@ -262,10 +290,12 @@ export default class extends Controller {
       errors.push("Per (basis grams) must be greater than 0 when nutrients are provided.")
     }
 
-    Object.entries(data.nutrients).forEach(([key, val]) => {
-      if (key === "basis_grams") return
-      if (val !== null && (val < 0 || val > 10000)) {
-        errors.push(`${key.replace(/_/g, " ")} must be between 0 and 10,000.`)
+    this.nutrientFieldTargets.forEach(input => {
+      const key = input.dataset.nutrientKey
+      const val = data.nutrients[key]
+      const max = parseInt(input.dataset.nutrientMax, 10) || 10000
+      if (val !== null && (val < 0 || val > max)) {
+        errors.push(`${key.replace(/_/g, " ")} must be between 0 and ${max.toLocaleString()}.`)
       }
     })
 
@@ -289,20 +319,18 @@ export default class extends Controller {
     return errors
   }
 
-  isModified() {
-    if (!this.originalSnapshot) return false
-
-    return JSON.stringify(this.collectFormData()) !== this.originalSnapshot
-  }
-
   // Private
 
   get turboFrame() {
-    return this.dialogTarget.querySelector("turbo-frame")
+    return this.element.querySelector("turbo-frame")
   }
 
   get originalAisle() {
     return this._originalAisle
+  }
+
+  get editorController() {
+    return this.application.getControllerForElementAndIdentifier(this.element, "editor")
   }
 
   onFrameLoad() {
@@ -310,51 +338,6 @@ export default class extends Controller {
     this.originalSnapshot = JSON.stringify(this.collectFormData())
 
     if (this.hasBasisGramsTarget) this.basisGramsTarget.focus()
-  }
-
-  async performSave() {
-    const data = this.collectFormData()
-    const errors = this.validateForm(data)
-
-    if (errors.length > 0) {
-      showErrors(this.errorsTarget, errors)
-      return
-    }
-
-    this.disableSaveButtons("Saving\u2026")
-    clearErrors(this.errorsTarget)
-    this.saving = true
-
-    try {
-      await this.saveWithJson(data)
-    } catch {
-      showErrors(this.errorsTarget, ["Network error. Please check your connection and try again."])
-    } finally {
-      this.saving = false
-      this.enableSaveButtons()
-    }
-  }
-
-  async saveWithJson(payload) {
-    const response = await fetch(this.nutritionUrl(this.currentIngredient), {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRF-Token": getCsrfToken()
-      },
-      body: JSON.stringify(payload)
-    })
-
-    if (response.ok) {
-      this.dialogTarget.close()
-      this.currentIngredient = null
-      this.originalSnapshot = null
-    } else if (response.status === 422) {
-      const result = await response.json()
-      showErrors(this.errorsTarget, result.errors)
-    } else {
-      showErrors(this.errorsTarget, [`Server error (${response.status}). Please try again.`])
-    }
   }
 
   collectNutrients() {
@@ -417,17 +400,6 @@ export default class extends Controller {
   editUrlFor(name) {
     return this.editUrlValue.replace("__NAME__", encodeURIComponent(name))
   }
-
-  disableSaveButtons(text) {
-    this.saveButtonTarget.disabled = true
-    this.saveButtonTarget.textContent = text
-  }
-
-  enableSaveButtons() {
-    this.saveButtonTarget.disabled = false
-    this.saveButtonTarget.textContent = "Save"
-  }
-
 }
 
 function parseFloatOrNull(value) {
@@ -436,4 +408,3 @@ function parseFloatOrNull(value) {
   const num = parseFloat(value)
   return Number.isNaN(num) ? null : num
 }
-
