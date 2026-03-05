@@ -94,11 +94,11 @@
   justify-content: space-between;
   padding: 0.5rem 0.75rem;
   font-size: 0.95rem;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--custom-item-border);
 }
 
 #custom-items-list li:first-child {
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--custom-item-border);
   margin-top: 0.75rem;
 }
 
@@ -108,7 +108,7 @@
   cursor: pointer;
   font-size: 1.25rem;
   line-height: 1;
-  color: #bbb;
+  color: var(--custom-item-remove);
   padding: 0.5rem;
   margin: -0.5rem -0.25rem -0.5rem 0;
 }
@@ -154,7 +154,7 @@
 #shopping-list .aisle-group {
   margin-bottom: 0.75rem;
   background: var(--surface-alt);
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--aisle-row-border);
   border-radius: 6px;
   overflow: hidden;
 }
