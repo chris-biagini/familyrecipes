@@ -1,8 +1,10 @@
 # frozen_string_literal: true
 
 require 'test_helper'
+require 'turbo/broadcastable/test_helper'
 
 class KitchenTest < ActiveSupport::TestCase
+  include Turbo::Broadcastable::TestHelper
   test 'requires name' do
     kitchen = Kitchen.new(slug: 'test')
 
@@ -98,6 +100,14 @@ class KitchenTest < ActiveSupport::TestCase
     assert_includes result.keys, 'Drinks'
     assert_equal 2, result['Snacks'].size
     assert_equal 1, result['Drinks'].size
+  end
+
+  test 'broadcast_update sends refresh to kitchen updates stream' do
+    kitchen = Kitchen.create!(name: 'Broadcast', slug: 'broadcast')
+
+    assert_turbo_stream_broadcasts [kitchen, :updates] do
+      kitchen.broadcast_update
+    end
   end
 
   test 'quick_bites_by_subsection returns empty hash when no content' do

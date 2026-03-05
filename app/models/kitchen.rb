@@ -21,6 +21,10 @@ class Kitchen < ApplicationRecord
   validates :name, presence: true
   validates :slug, presence: true, uniqueness: true
 
+  def broadcast_update
+    Turbo::StreamsChannel.broadcast_refresh_to(self, :updates)
+  end
+
   def member?(user)
     return false unless user
 
