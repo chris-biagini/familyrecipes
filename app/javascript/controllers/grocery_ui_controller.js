@@ -36,7 +36,7 @@ export default class extends Controller {
       const name = cb.dataset.item
       if (!name) return
 
-      this.updateAisleCount(cb.closest("details.aisle"))
+      this.updateAisleCount(cb.closest(".aisle-group"))
       this.updateItemCount()
 
       sendAction(this.element.dataset.checkUrl, { item: name, checked: cb.checked })

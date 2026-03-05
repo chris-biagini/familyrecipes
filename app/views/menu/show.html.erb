@@ -7,7 +7,7 @@
 <% if current_member? %>
 <% content_for(:extra_nav) do %>
   <div>
-    <button type="button" id="edit-quick-bites-button" class="btn">Edit Quick Bites</button>
+    <button type="button" id="edit-quick-bites-button" class="btn">Edit QuickBites</button>
   </div>
 <% end %>
 <% end %>
@@ -17,7 +17,8 @@
 
 <header id="menu-header">
   <h1>Menu</h1>
-  <p>Pick recipes and quick bites that you want to have available.</p>
+  <p>Select recipes and QuickBites for your kitchen to serve this week.</p>
+  <p class="subtitle-detail">Selected items will be tracked in <%= link_to 'Groceries', groceries_path %>.</p>
 </header>
 
 <div id="menu-app"
@@ -38,7 +39,7 @@
 
 <% if current_member? %>
 <%= render layout: 'shared/editor_dialog',
-    locals: { title: 'Edit Quick Bites',
+    locals: { title: 'Edit QuickBites',
               dialog_data: { editor_open: '#edit-quick-bites-button',
                              editor_url: menu_quick_bites_path,
                              editor_method: 'PATCH',

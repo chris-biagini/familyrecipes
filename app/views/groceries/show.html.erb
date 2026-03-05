@@ -7,7 +7,7 @@
 <% if current_member? %>
 <% content_for(:extra_nav) do %>
   <div>
-    <button type="button" id="edit-aisle-order-button" class="btn">Edit Aisle Order</button>
+    <button type="button" id="edit-aisle-order-button" class="btn">Edit Aisles</button>
   </div>
 <% end %>
 <% end %>
@@ -16,7 +16,7 @@
 
 <header id="groceries-header">
   <h1>Groceries</h1>
-  <p class="subtitle">Your shopping list, built from the <%= link_to 'menu', menu_path %>.</p>
+  <p class="subtitle">Your shopping list, built from the <%= link_to 'Menu', menu_path %>.</p>
 </header>
 
 <div id="groceries-app"
@@ -39,7 +39,7 @@
         data-aisle-order-editor-load-url-value="<%= groceries_aisle_order_content_path %>"
         data-aisle-order-editor-save-url-value="<%= groceries_aisle_order_path %>">
   <div class="editor-header">
-    <h2>Aisle Order</h2>
+    <h2>Aisles</h2>
     <button type="button" class="btn editor-close" data-action="click->aisle-order-editor#close" aria-label="Close">&times;</button>
   </div>
   <div class="editor-errors" data-aisle-order-editor-target="errors" hidden></div>

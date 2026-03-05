@@ -1,6 +1,8 @@
 .subtitle {
   text-align: center;
   font-size: 0.95rem;
+  color: var(--muted-text);
+  margin-top: -0.5rem;
   margin-bottom: 1.5rem;
 }
 
@@ -149,7 +151,7 @@
 }
 
 /* Collapsible Aisles */
-#shopping-list details.aisle {
+#shopping-list .aisle-group {
   margin-bottom: 0.75rem;
   background: var(--surface-alt);
   border: 1px solid #e0e0e0;
@@ -191,6 +193,29 @@
   transform: rotate(90deg);
 }
 
+/* Animated expand/collapse — content lives outside <details> as a sibling */
+#shopping-list .aisle-items {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.2s ease;
+}
+
+#shopping-list details.aisle[open] + .aisle-items {
+  grid-template-rows: 1fr;
+}
+
+#shopping-list .aisle-items > ul {
+  min-height: 0;
+  overflow: hidden;
+  padding-top: 0;
+  padding-bottom: 0;
+  transition: padding 0.2s ease;
+}
+
+#shopping-list details.aisle[open] + .aisle-items > ul {
+  padding-bottom: 0.5rem;
+}
+
 .aisle-count {
   font-weight: 400;
   color: var(--border-muted);
@@ -199,16 +224,16 @@
 }
 
 .aisle-count.aisle-done {
-  color: var(--checked-color);
+  color: var(--border-muted);
 }
 
-#shopping-list ul {
+#shopping-list .aisle-items ul {
   list-style: none;
   margin: 0;
-  padding: 0 0.75rem 0.5rem;
+  padding: 0 0.75rem;
 }
 
-#shopping-list ul li {
+#shopping-list .aisle-items li {
   padding: 0.3rem 0;
 }
 
@@ -264,7 +289,7 @@
   /* --- Page 2: Shopping List --- */
 
   /* Keep aisles from splitting across columns */
-  #shopping-list details.aisle {
+  #shopping-list .aisle-group {
     break-inside: avoid;
     background: none;
     border: none;
@@ -273,9 +298,9 @@
     overflow: visible;
   }
 
-  /* Force details open via CSS (override UA hiding of non-summary children) */
-  #shopping-list details.aisle > ul {
-    display: block !important;
+  /* Force aisle items visible in print */
+  #shopping-list .aisle-items {
+    grid-template-rows: 1fr !important;
   }
 
   /* Summary as simple bold header */
@@ -301,7 +326,7 @@
   }
 
   /* Hide aisles where all items are either hidden or checked off */
-  #shopping-list details.aisle:not(:has(li:not([hidden]) .check-off input:not(:checked))) {
+  #shopping-list .aisle-group:not(:has(li:not([hidden]) .check-off input:not(:checked))) {
     display: none;
   }
 
@@ -327,11 +352,11 @@
   }
 
   /* Tighten grocery item spacing for print */
-  #shopping-list ul {
+  #shopping-list .aisle-items ul {
     padding: 0 0 0.25rem 0.25rem;
   }
 
-  #shopping-list ul li {
+  #shopping-list .aisle-items li {
     padding: 0.15rem 0;
   }
 

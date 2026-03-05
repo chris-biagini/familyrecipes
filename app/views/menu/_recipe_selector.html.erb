@@ -10,19 +10,27 @@
         <input type="checkbox" id="<%= recipe.slug %>-checkbox" data-slug="<%= recipe.slug %>" data-title="<%= h recipe.title %>" <%= 'checked' if selected_recipes.include?(recipe.slug) %>>
         <label for="<%= recipe.slug %>-checkbox"><%= recipe.title %></label>
         <% info = availability[recipe.slug] %>
-        <% if info && info[:ingredients].size == 1 %>
-          <span class="availability-single<%= info[:missing].zero? ? ' on-hand' : ' not-on-hand' %>"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><% if info[:missing].zero? %><circle cx="5" cy="5" r="4.5" fill="currentColor"/><% else %><circle cx="5" cy="5" r="3.5" fill="none" stroke="currentColor" stroke-width="1.5"/><% end %></svg></span>
-        <% elsif info %>
-          <details class="availability-detail<%= ' all-on-hand' if info[:missing].zero? %>">
-            <summary aria-label="<%= info[:missing] %> of <%= info[:ingredients].size %> missing: <%= info[:missing_names].join(', ') %>"><%= info[:missing] %>/<%= info[:ingredients].size %></summary>
-          </details>
+        <% if info %>
+          <% have_count = info[:ingredients].size - info[:missing] %>
+          <% total = info[:ingredients].size %>
+          <% fraction = total.positive? ? have_count.to_f / total : 0 %>
+          <% opacity_step = (fraction <= 0.5 ? 0 : (fraction - 0.5) * 20).round %>
+          <% if total == 1 %>
+            <span class="availability-single<%= have_count == 1 ? ' on-hand' : ' not-on-hand' %> opacity-<%= opacity_step %>"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><% if have_count == 1 %><circle cx="5" cy="5" r="4.5" fill="currentColor"/><% else %><circle cx="5" cy="5" r="3.5" fill="none" stroke="currentColor" stroke-width="1.5"/><% end %></svg></span>
+          <% else %>
+            <details class="availability-detail<%= ' all-on-hand' if info[:missing].zero? %> opacity-<%= opacity_step %>">
+              <summary aria-label="Have <%= have_count %> of <%= total %><%= info[:missing_names].any? ? '; missing: ' + info[:missing_names].join(', ') : '' %>"><%= have_count %>/<%= total %></summary>
+            </details>
+          <% end %>
         <% end %>
         <%= link_to "\u2192", recipe_path(recipe.slug), class: 'recipe-link', title: "Open #{recipe.title} in new tab", target: '_blank' %>
         <% if info && info[:ingredients].size > 1 %>
           <div class="availability-ingredients">
-            <% have = info[:ingredients] - info[:missing_names] %>
-            <% if have.any? %><div class="availability-have"><strong>Have</strong><span><%= have.join(', ') %></span></div><% end %>
-            <% if info[:missing_names].any? %><div class="availability-need"><strong>Missing</strong><span><%= info[:missing_names].join(', ') %></span></div><% end %>
+            <div class="availability-ingredients-inner">
+              <% have = info[:ingredients] - info[:missing_names] %>
+              <% if have.any? %><div class="availability-have"><strong>Have</strong><span><%= have.join(', ') %></span></div><% end %>
+              <% if info[:missing_names].any? %><div class="availability-need"><strong>Missing</strong><span><%= info[:missing_names].join(', ') %></span></div><% end %>
+            </div>
           </div>
         <% end %>
       </li>
@@ -32,7 +40,7 @@
   <%- end -%>
   <%- if quick_bites_by_subsection.any? -%>
   <div class="quick-bites" data-type="quick_bite">
-    <h2>Quick Bites</h2>
+    <h2>QuickBites</h2>
     <div class="subsections">
       <%- quick_bites_by_subsection.each do |subsection, items| -%>
       <div class="subsection">
@@ -43,18 +51,26 @@
             <input type="checkbox" id="<%= item.id %>-checkbox" data-slug="<%= item.id %>" data-title="<%= h item.title %>" <%= 'checked' if selected_quick_bites.include?(item.id) %>>
             <label for="<%= item.id %>-checkbox"><%= item.title %></label>
             <% info = availability[item.id] %>
-            <% if info && info[:ingredients].size == 1 %>
-              <span class="availability-single<%= info[:missing].zero? ? ' on-hand' : ' not-on-hand' %>"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><% if info[:missing].zero? %><circle cx="5" cy="5" r="4.5" fill="currentColor"/><% else %><circle cx="5" cy="5" r="3.5" fill="none" stroke="currentColor" stroke-width="1.5"/><% end %></svg></span>
-            <% elsif info %>
-              <details class="availability-detail<%= ' all-on-hand' if info[:missing].zero? %>">
-                <summary aria-label="<%= info[:missing] %> of <%= info[:ingredients].size %> missing: <%= info[:missing_names].join(', ') %>"><%= info[:missing] %>/<%= info[:ingredients].size %></summary>
-              </details>
+            <% if info %>
+              <% have_count = info[:ingredients].size - info[:missing] %>
+              <% total = info[:ingredients].size %>
+              <% fraction = total.positive? ? have_count.to_f / total : 0 %>
+              <% opacity_step = (fraction <= 0.5 ? 0 : (fraction - 0.5) * 20).round %>
+              <% if total == 1 %>
+                <span class="availability-single<%= have_count == 1 ? ' on-hand' : ' not-on-hand' %> opacity-<%= opacity_step %>"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><% if have_count == 1 %><circle cx="5" cy="5" r="4.5" fill="currentColor"/><% else %><circle cx="5" cy="5" r="3.5" fill="none" stroke="currentColor" stroke-width="1.5"/><% end %></svg></span>
+              <% else %>
+                <details class="availability-detail<%= ' all-on-hand' if info[:missing].zero? %> opacity-<%= opacity_step %>">
+                  <summary aria-label="Have <%= have_count %> of <%= total %><%= info[:missing_names].any? ? '; missing: ' + info[:missing_names].join(', ') : '' %>"><%= have_count %>/<%= total %></summary>
+                </details>
+              <% end %>
             <% end %>
             <% if info && info[:ingredients].size > 1 %>
               <% have = info[:ingredients] - info[:missing_names] %>
               <div class="availability-ingredients">
-                <% if have.any? %><div class="availability-have"><strong>Have</strong><span><%= have.join(', ') %></span></div><% end %>
-                <% if info[:missing_names].any? %><div class="availability-need"><strong>Missing</strong><span><%= info[:missing_names].join(', ') %></span></div><% end %>
+                <div class="availability-ingredients-inner">
+                  <% if have.any? %><div class="availability-have"><strong>Have</strong><span><%= have.join(', ') %></span></div><% end %>
+                  <% if info[:missing_names].any? %><div class="availability-need"><strong>Missing</strong><span><%= info[:missing_names].join(', ') %></span></div><% end %>
+                </div>
               </div>
             <% end %>
           </li>

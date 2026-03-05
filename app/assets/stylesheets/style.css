@@ -33,8 +33,8 @@
   --accent-color: rgb(155, 10, 25);
 
   /* Availability indicators */
-  --on-hand-color: #b8860b;
-  --missing-color: #996;
+  --on-hand-color: rgb(155, 10, 25);
+  --missing-color: rgb(155, 10, 25);
   --hover-bg: #f5efe8;
 }
 
@@ -273,6 +273,7 @@ nav > div:last-child:not(:first-child) {
   color: var(--text-color);
   cursor: pointer;
   line-height: 1.5;
+  transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease, box-shadow 0.12s ease;
 }
 
 .btn:hover {

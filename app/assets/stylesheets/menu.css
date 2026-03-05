@@ -5,8 +5,14 @@
 
 #menu-header p {
   font-style: italic;
+  font-size: 0.95rem;
   color: var(--muted-text);
   margin-top: -0.5rem;
+}
+
+#menu-header .subtitle-detail {
+  font-size: 0.8rem;
+  margin-top: 0;
 }
 
 /* Checkbox styles */
@@ -20,6 +26,7 @@
   cursor: pointer;
   flex-shrink: 0;
   position: relative;
+  transition: background-color 0.12s ease, border-color 0.12s ease;
 }
 
 #recipe-selector input[type="checkbox"]:checked {
@@ -67,16 +74,16 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  padding: 0.35rem 0;
+  padding: 0.35rem 0.5rem;
+  margin: 0 -0.5rem;
   cursor: pointer;
+  transition: background-color 0.12s ease, border-color 0.12s ease;
+  border-left: 2px solid transparent;
 }
 
 #recipe-selector .category li:hover {
   background-color: var(--hover-bg);
-  margin: 0 -0.5rem;
-  padding-left: calc(0.5rem - 2px);
-  padding-right: 0.5rem;
-  border-left: 2px solid var(--accent-color);
+  border-left-color: var(--accent-color);
 }
 
 #recipe-selector .category input[type="checkbox"] {
@@ -93,6 +100,7 @@
   text-decoration: none;
   font-size: 0.9rem;
   padding-left: 0.5rem;
+  transition: color 0.12s ease;
 }
 
 #recipe-selector .category .recipe-link:hover {
@@ -104,12 +112,19 @@
 .availability-single {
   flex-shrink: 0;
   margin-left: auto;
-  padding: 0 0.4rem;
-  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  background: var(--surface-alt);
+  border: 1px solid var(--missing-color);
+  border-radius: 6px;
+  transition: opacity 0.15s ease;
 }
 
 .availability-single.on-hand {
   color: var(--on-hand-color);
+  border-color: var(--on-hand-color);
 }
 
 .availability-single.not-on-hand {
@@ -119,6 +134,7 @@
 .availability-detail {
   flex-shrink: 0;
   margin-left: auto;
+  transition: opacity 0.15s ease;
 }
 
 .availability-detail summary {
@@ -136,6 +152,7 @@
   background: var(--surface-alt);
   border: 1px solid var(--missing-color);
   border-radius: 6px;
+  transition: border-color 0.12s ease;
 }
 
 .availability-detail.all-on-hand summary {
@@ -174,19 +191,52 @@
   border-color: var(--on-hand-color);
 }
 
+/* Proportional opacity for availability pills (0/10 = invisible, 10/10 = full) */
+.opacity-0  { opacity: 0; }
+.opacity-1  { opacity: 0.1; }
+.opacity-2  { opacity: 0.2; }
+.opacity-3  { opacity: 0.3; }
+.opacity-4  { opacity: 0.4; }
+.opacity-5  { opacity: 0.5; }
+.opacity-6  { opacity: 0.6; }
+.opacity-7  { opacity: 0.7; }
+.opacity-8  { opacity: 0.8; }
+.opacity-9  { opacity: 0.9; }
+.opacity-10 { opacity: 1; }
+
+/* Snap availability pill opacity to full on row hover */
+#recipe-selector li:hover .availability-single,
+#recipe-selector li:hover .availability-detail {
+  opacity: 1 !important;
+}
+
 .availability-ingredients {
-  display: none;
-  font-family: "Futura", sans-serif;
-  font-size: 0.8rem;
-  font-style: normal;
-  color: var(--missing-color);
-  padding: 0.4rem 0;
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.2s ease;
   flex-basis: 100%;
-  padding-left: 1.6rem;
 }
 
 .availability-detail[open] ~ .availability-ingredients {
-  display: block;
+  grid-template-rows: 1fr;
+}
+
+.availability-ingredients > .availability-ingredients-inner {
+  min-height: 0;
+  overflow: hidden;
+  font-family: "Futura", sans-serif;
+  font-size: 0.8rem;
+  font-style: normal;
+  color: var(--text-color);
+  padding-left: calc(1.6rem + 4px);
+  padding-top: 0;
+  padding-bottom: 0;
+  transition: padding 0.2s ease;
+}
+
+.availability-detail[open] ~ .availability-ingredients > .availability-ingredients-inner {
+  padding-top: 0.4rem;
+  padding-bottom: 0.4rem;
 }
 
 .availability-have,
@@ -196,11 +246,11 @@
 }
 
 .availability-have {
-  color: var(--on-hand-color);
+  color: var(--text-color);
 }
 
 .availability-need {
-  color: var(--missing-color);
+  color: var(--text-color);
 }
 
 .availability-have strong,
@@ -265,17 +315,17 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  padding: 0.25rem 0;
+  padding: 0.25rem 0.5rem;
+  margin: 0 -0.5rem;
   font-size: 0.95rem;
   cursor: pointer;
+  transition: background-color 0.12s ease, border-color 0.12s ease;
+  border-left: 2px solid transparent;
 }
 
 #recipe-selector .quick-bites .subsection li:hover {
   background-color: var(--hover-bg);
-  margin: 0 -0.5rem;
-  padding-left: calc(0.5rem - 2px);
-  padding-right: 0.5rem;
-  border-left: 2px solid var(--accent-color);
+  border-left-color: var(--accent-color);
 }
 
 #recipe-selector .quick-bites .subsection input[type="checkbox"] {
@@ -375,6 +425,8 @@
   #recipe-selector .category li {
     cursor: default;
     padding: 0.2rem 0;
+    margin: 0;
+    border-left: none;
   }
 
   #recipe-selector .quick-bites {

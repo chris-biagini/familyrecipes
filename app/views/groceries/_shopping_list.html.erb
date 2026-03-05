@@ -8,18 +8,22 @@
   <p id="grocery-preview-empty">No items yet.</p>
 <% else %>
   <% shopping_list.each do |aisle, items| %>
-    <details class="aisle" data-aisle="<%= aisle %>" open>
-      <summary><%= aisle %> <%= aisle_count_tag(items, checked_off) %></summary>
-      <ul>
-        <% items.each do |item| %>
-          <li data-item="<%= item[:name] %>"<%= " title=\"Needed for: #{h item[:sources].join(', ')}\"".html_safe if item[:sources].present? %>>
-            <label class="check-off">
-              <input type="checkbox" data-item="<%= item[:name] %>"<%= ' checked' if checked_off.include?(item[:name]) %>>
-              <span class="item-text"><%= item[:name] %><% amount_str = format_amounts(item[:amounts]) %><% if amount_str.present? %> <span class="item-amount"><%= amount_str %></span><% end %></span>
-            </label>
-          </li>
-        <% end %>
-      </ul>
-    </details>
+    <div class="aisle-group" data-aisle="<%= aisle %>">
+      <details class="aisle" data-aisle="<%= aisle %>" open>
+        <summary><%= aisle %> <%= aisle_count_tag(items, checked_off) %></summary>
+      </details>
+      <div class="aisle-items">
+        <ul>
+          <% items.each do |item| %>
+            <li data-item="<%= item[:name] %>"<%= " title=\"Needed for: #{h item[:sources].join(', ')}\"".html_safe if item[:sources].present? %>>
+              <label class="check-off">
+                <input type="checkbox" data-item="<%= item[:name] %>"<%= ' checked' if checked_off.include?(item[:name]) %>>
+                <span class="item-text"><%= item[:name] %><% amount_str = format_amounts(item[:amounts]) %><% if amount_str.present? %> <span class="item-amount"><%= amount_str %></span><% end %></span>
+              </label>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
   <% end %>
 <% end %>
