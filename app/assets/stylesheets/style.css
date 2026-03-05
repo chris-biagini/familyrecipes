@@ -71,7 +71,7 @@
 
     /* Gingham */
     --gingham-base: rgb(24, 22, 20);
-    --gingham-stripe-color: rgba(140, 20, 30, 0.15);
+    --gingham-stripe-color: rgba(140, 20, 30, 0.05);
     --weave-color: rgba(100, 100, 100, 0.04);
 
     /* Shared UI colors */
