@@ -32,17 +32,25 @@ class PwaController < ApplicationController
       display: 'standalone',
       background_color: '#ffffff',
       theme_color: '#cd4754',
-      icons: [
-        { src: versioned_icon_path('icon-192.png'), sizes: '192x192', type: 'image/png' },
-        { src: versioned_icon_path('icon-512.png'), sizes: '512x512', type: 'image/png' },
-        { src: versioned_icon_path('icon-192-dark.png'), sizes: '192x192', type: 'image/png',
-          media: '(prefers-color-scheme: dark)' },
-        { src: versioned_icon_path('icon-512-dark.png'), sizes: '512x512', type: 'image/png',
-          media: '(prefers-color-scheme: dark)' }
-      ],
+      icons: manifest_icons,
       shortcuts: [
         { name: 'Grocery List', short_name: 'Groceries', url: '/groceries' }
       ]
     }
+  end
+
+  def manifest_icons
+    [
+      icon_entry('icon-192.png', '192x192'),
+      icon_entry('icon-512.png', '512x512'),
+      icon_entry('icon-192-dark.png', '192x192', media: '(prefers-color-scheme: dark)'),
+      icon_entry('icon-512-dark.png', '512x512', media: '(prefers-color-scheme: dark)')
+    ]
+  end
+
+  def icon_entry(filename, sizes, media: nil)
+    entry = { src: versioned_icon_path(filename), sizes: sizes, type: 'image/png' }
+    entry[:media] = media if media
+    entry
   end
 end

@@ -3,7 +3,7 @@
 require 'test_helper'
 
 class PwaControllerTest < ActionDispatch::IntegrationTest
-  test 'manifest returns JSON with versioned icon URLs' do
+  test 'manifest returns JSON with versioned icon URLs' do # rubocop:disable Minitest/MultipleAssertions
     get '/manifest.json'
 
     assert_response :success
@@ -36,6 +36,7 @@ class PwaControllerTest < ActionDispatch::IntegrationTest
     data = JSON.parse(response.body) # rubocop:disable Rails/ResponseParsedBody
 
     dark_icons = data['icons'].select { |i| i['media'] }
+
     assert_equal 2, dark_icons.size
 
     dark_icons.each do |icon|

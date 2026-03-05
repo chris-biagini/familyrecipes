@@ -22,8 +22,9 @@ class PwaIconsTaskTest < ActiveSupport::TestCase
 
     expected.each do |filename|
       path = icons_dir.join(filename)
-      assert path.exist?, "Expected #{filename} to be generated"
-      assert path.size.positive?, "Expected #{filename} to be non-empty"
+
+      assert_predicate path, :exist?, "Expected #{filename} to be generated"
+      assert_predicate path.size, :positive?, "Expected #{filename} to be non-empty"
     end
   end
 end
