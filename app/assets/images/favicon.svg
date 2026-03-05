@@ -1,5 +1,13 @@
 <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-  <rect width="16" height="16" fill="rgb(249,246,243)" />
-  <rect width="8" height="16" fill="rgb(190,12,30)" fill-opacity="0.5" />
-  <rect width="16" height="8" fill="rgb(190,12,30)" fill-opacity="0.5" />
+  <style>
+    .base { fill: rgb(249,246,243); }
+    .check { fill: rgb(190,12,30); fill-opacity: 0.5; }
+    @media (prefers-color-scheme: dark) {
+      .base { fill: rgb(38,35,32); }
+      .check { fill: rgb(200,55,60); fill-opacity: 0.35; }
+    }
+  </style>
+  <rect width="16" height="16" class="base" />
+  <rect width="8" height="16" class="check" />
+  <rect width="16" height="8" class="check" />
 </svg>
