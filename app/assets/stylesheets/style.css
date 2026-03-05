@@ -910,14 +910,17 @@ footer small {
 .qb-hl-category {
   font-weight: 700;
   color: var(--accent-color);
+  text-decoration: underline;
 }
 
 .qb-hl-item {
   color: var(--text-color);
+  font-weight: 600;
 }
 
 .qb-hl-ingredients {
   color: var(--muted-text);
+  font-style: italic;
 }
 
 .editor-footer {
