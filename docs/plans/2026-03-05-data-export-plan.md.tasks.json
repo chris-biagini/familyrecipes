@@ -1,0 +1,11 @@
+{
+  "planPath": "docs/plans/2026-03-05-data-export-plan.md",
+  "tasks": [
+    {"id": 1, "subject": "Task 1: Add rubyzip gem", "status": "pending"},
+    {"id": 2, "subject": "Task 2: ExportService with tests (TDD)", "status": "pending", "blockedBy": [1]},
+    {"id": 3, "subject": "Task 3: ExportsController with tests (TDD)", "status": "pending", "blockedBy": [2]},
+    {"id": 4, "subject": "Task 4: Homepage UI - export button", "status": "pending", "blockedBy": [3]},
+    {"id": 5, "subject": "Task 5: CSS styling for export actions", "status": "pending", "blockedBy": [4]}
+  ],
+  "lastUpdated": "2026-03-05T00:00:00Z"
+}
