@@ -1,9 +1,11 @@
 # frozen_string_literal: true
 
 require 'test_helper'
+require 'turbo/broadcastable/test_helper'
 
 class RecipeWriteServiceTest < ActiveSupport::TestCase
   include ActiveJob::TestHelper
+  include Turbo::Broadcastable::TestHelper
 
   setup do
     setup_test_kitchen
@@ -203,24 +205,24 @@ class RecipeWriteServiceTest < ActiveSupport::TestCase
     assert_nil xref.reload.target_recipe_id
   end
 
-  test 'create enqueues RecipeBroadcastJob' do
-    assert_enqueued_with(job: RecipeBroadcastJob) do
+  test 'create broadcasts to kitchen updates stream' do
+    assert_turbo_stream_broadcasts [@kitchen, :updates] do
       RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen)
     end
   end
 
-  test 'update enqueues RecipeBroadcastJob' do
+  test 'update broadcasts to kitchen updates stream' do
     RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen)
 
-    assert_enqueued_with(job: RecipeBroadcastJob) do
+    assert_turbo_stream_broadcasts [@kitchen, :updates] do
       RecipeWriteService.update(slug: 'focaccia', markdown: BASIC_MARKDOWN, kitchen: @kitchen)
     end
   end
 
-  test 'destroy enqueues RecipeBroadcastJob with parent_ids' do
+  test 'destroy broadcasts to kitchen updates stream' do
     RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen)
 
-    assert_enqueued_with(job: RecipeBroadcastJob) do
+    assert_turbo_stream_broadcasts [@kitchen, :updates] do
       RecipeWriteService.destroy(slug: 'focaccia', kitchen: @kitchen)
     end
   end

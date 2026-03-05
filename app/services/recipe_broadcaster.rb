@@ -1,24 +1,13 @@
 # frozen_string_literal: true
 
-# Owns all recipe-related Turbo Stream broadcasting: listings, ingredient tables,
-# recipe pages, and cascading updates to cross-referencing parents. Wraps queries
-# in ActsAsTenant.with_tenant since callers may lack controller tenant context.
-# Also triggers a meal-plan page-refresh so groceries/menu pages stay in sync.
+# Handles targeted recipe-specific broadcasts that cannot be expressed as page
+# morphs: delete notifications (recipe no longer exists) and rename redirects
+# (recipe URL changed). All other recipe updates use Kitchen#broadcast_update
+# for page-refresh morphs.
 #
-# - RecipeBroadcastJob: async caller for create/update/destroy broadcasts
-# - RecipeWriteService: synchronous caller for rename redirects (broadcast_rename)
-# - IngredientRowBuilder: builds ingredient rows and summary for broadcast
-# - Turbo::StreamsChannel: transport layer for all stream pushes
+# - RecipeWriteService: sole caller
+# - Turbo::StreamsChannel: transport layer for targeted stream pushes
 class RecipeBroadcaster
-  def self.broadcast(kitchen:, action:, recipe_title:, recipe: nil)
-    new(kitchen).broadcast(action:, recipe_title:, recipe:)
-  end
-
-  def self.broadcast_destroy(kitchen:, recipe:, recipe_title:, parent_ids:)
-    notify_recipe_deleted(recipe, recipe_title:)
-    new(kitchen).broadcast_destroy(parent_ids:, recipe_title:)
-  end
-
   def self.notify_recipe_deleted(recipe, recipe_title:)
     Turbo::StreamsChannel.broadcast_replace_to(
       recipe, 'content',
@@ -42,106 +31,6 @@ class RecipeBroadcaster
       locals: { recipe_title: old_recipe.title,
                 redirect_path:,
                 redirect_title: new_title }
-    )
-  end
-
-  def initialize(kitchen)
-    @kitchen = kitchen
-  end
-
-  def broadcast(action:, recipe_title:, recipe: nil)
-    ActsAsTenant.with_tenant(kitchen) do
-      resolver = IngredientCatalog.resolver_for(kitchen)
-      categories = preload_categories
-
-      broadcast_recipe_listings(categories)
-      broadcast_ingredients(categories.flat_map(&:recipes), resolver:)
-      broadcast_recipe_page(recipe, action:, recipe_title:)
-      append_toast([kitchen, 'recipes'], "#{recipe_title} was #{action}")
-      MealPlan.broadcast_refresh(kitchen)
-    end
-  end
-
-  def broadcast_destroy(parent_ids:, recipe_title:)
-    ActsAsTenant.with_tenant(kitchen) do
-      update_referencing_recipes(parent_ids)
-      broadcast(action: :deleted, recipe_title:)
-    end
-  end
-
-  private
-
-  attr_reader :kitchen
-
-  def preload_categories
-    kitchen.categories.ordered.includes(recipes: { steps: :ingredients })
-  end
-
-  def broadcast_recipe_listings(categories)
-    Turbo::StreamsChannel.broadcast_replace_to(
-      kitchen, 'recipes',
-      target: 'recipe-listings',
-      partial: 'homepage/recipe_listings',
-      locals: { categories: categories.reject { |c| c.recipes.empty? } }
-    )
-  end
-
-  def broadcast_ingredients(recipes, resolver:)
-    builder = IngredientRowBuilder.new(kitchen:, recipes:, resolver:)
-
-    Turbo::StreamsChannel.broadcast_replace_to(
-      kitchen, 'recipes',
-      target: 'ingredients-summary',
-      partial: 'ingredients/summary_bar',
-      locals: { summary: builder.summary }
-    )
-    Turbo::StreamsChannel.broadcast_replace_to(
-      kitchen, 'recipes',
-      target: 'ingredients-table',
-      partial: 'ingredients/table',
-      locals: { ingredient_rows: builder.rows }
-    )
-  end
-
-  def broadcast_recipe_page(recipe, action:, recipe_title:)
-    return unless recipe
-
-    message = "#{recipe_title} was #{action}"
-    append_toast([recipe, 'content'], message)
-
-    fresh = kitchen.recipes.with_full_tree.find_by(slug: recipe.slug)
-    return unless fresh
-
-    replace_recipe_content(fresh)
-    broadcast_referencing_recipes(fresh)
-  end
-
-  def broadcast_referencing_recipes(recipe)
-    recipe.referencing_recipes.with_full_tree.find_each do |parent|
-      replace_recipe_content(parent)
-    end
-  end
-
-  def update_referencing_recipes(parent_ids)
-    return if parent_ids.empty?
-
-    kitchen.recipes.where(id: parent_ids).with_full_tree.find_each do |parent|
-      replace_recipe_content(parent)
-    end
-  end
-
-  def replace_recipe_content(recipe)
-    Turbo::StreamsChannel.broadcast_replace_to(
-      recipe, 'content',
-      target: 'recipe-content',
-      partial: 'recipes/recipe_content',
-      locals: { recipe:, nutrition: recipe.nutrition_data }
-    )
-  end
-
-  def append_toast(stream, message)
-    Turbo::StreamsChannel.broadcast_append_to(
-      *stream, target: 'notifications', partial: 'shared/toast', locals: { message: }
     )
   end
 end

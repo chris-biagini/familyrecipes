@@ -470,38 +470,12 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     assert_select 'article.embedded-recipe a', text: 'Starter'
   end
 
-  test 'destroy broadcasts to referencing recipe pages' do
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
-      # Pizza Dough
+  test 'destroy broadcasts to kitchen updates stream' do
+    log_in
 
-      Category: Bread
-
-      ## Mix.
-      - Flour, 3 cups
-    MD
-
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
-      # White Pizza
-
-      Category: Bread
-
-      ## Make dough.
-      >>> @[Pizza Dough]
-    MD
-
-    streams = []
-    Turbo::StreamsChannel.stub :broadcast_replace_to, ->(*args, **kwargs) { streams << [args, kwargs] } do
-      Turbo::StreamsChannel.stub :broadcast_append_to, ->(*args, **kwargs) {} do
-        log_in
-        perform_enqueued_jobs do
-          delete recipe_path('pizza-dough')
-        end
-      end
+    assert_turbo_stream_broadcasts [@kitchen, :updates] do
+      delete recipe_path('focaccia')
     end
-
-    parent_broadcasts = streams.select { |args, _| args[0].is_a?(Recipe) && args[0].slug == 'white-pizza' }
-
-    assert_predicate parent_broadcasts, :any?, 'Expected broadcast to referencing recipe page'
   end
 
   test 'destroy returns 404 for unknown recipe' do
@@ -511,42 +485,23 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
-  test 'create enqueues broadcast job' do
+  test 'create broadcasts to kitchen updates stream' do
     log_in
-    markdown = <<~MD
-      # New Bread
 
-      Category: Bread
-
-      ## Step (do it)
-
-      - Flour, 1 cup
-
-      Mix.
-    MD
-
-    assert_enqueued_with(job: RecipeBroadcastJob) do
+    assert_turbo_stream_broadcasts [@kitchen, :updates] do
       post recipes_path(kitchen_slug: kitchen_slug),
-           params: { markdown_source: markdown },
+           params: { markdown_source: "# New Bread\n\nCategory: Bread\n\n## Mix (do it)\n\n- Flour, 1 cup\n\nMix." },
            as: :json
     end
   end
 
-  test 'update enqueues broadcast job' do
+  test 'update broadcasts to kitchen updates stream' do
     log_in
 
-    assert_enqueued_with(job: RecipeBroadcastJob) do
+    assert_turbo_stream_broadcasts [@kitchen, :updates] do
       patch recipe_path('focaccia', kitchen_slug: kitchen_slug),
             params: { markdown_source: @kitchen.recipes.find_by!(slug: 'focaccia').markdown_source },
             as: :json
-    end
-  end
-
-  test 'destroy enqueues broadcast job' do
-    log_in
-
-    assert_enqueued_with(job: RecipeBroadcastJob) do
-      delete recipe_path('focaccia', kitchen_slug: kitchen_slug), as: :json
     end
   end
 
