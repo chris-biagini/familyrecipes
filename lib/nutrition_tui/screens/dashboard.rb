@@ -30,6 +30,7 @@ module NutritionTui
         @hide_complete = false
         @filter = nil
         @filter_input = false
+        @name_input = nil
         @selected = 0
         @ingredients = build_ingredient_list
         @visible_ingredients = @ingredients
@@ -40,10 +41,12 @@ module NutritionTui
         render_summary_bar(frame, chunks[0])
         render_ingredient_table(frame, chunks[1])
         render_keybind_bar(frame, chunks[2])
+        render_name_input(frame) if @name_input
       end
 
       def handle_event(event)
         return unless event
+        return handle_name_input_event(event) if @name_input
 
         @filter_input ? handle_filter_event(event) : handle_normal_event(event)
       end
@@ -206,7 +209,7 @@ module NutritionTui
         in { type: :key, code: 't' }
           toggle_sort
         in { type: :key, code: 'n' }
-          { action: :new_ingredient }
+          start_name_input
         in { type: :key, code: 's' }
           { action: :usda_search }
         else
@@ -306,6 +309,39 @@ module NutritionTui
 
       def apply_filter
         recompute_visible
+      end
+
+      # --- New ingredient name input ---
+
+      def start_name_input
+        @name_input = Editors::TextInput.new(label: 'Ingredient name')
+        nil
+      end
+
+      def handle_name_input_event(event)
+        result = @name_input.handle_event(event)
+        return nil unless result&.dig(:done)
+
+        @name_input = nil
+        return nil if result[:cancelled] || result[:value].strip.empty?
+
+        { action: :open_ingredient, name: result[:value].strip }
+      end
+
+      def render_name_input(frame)
+        area = name_input_area(frame.area)
+        frame.render_widget(Widgets::Clear.new, area)
+        @name_input.render(frame, area)
+      end
+
+      def name_input_area(screen)
+        w = [screen.width / 2, 40].max
+        Layout::Rect.new(
+          x: screen.x + ((screen.width - w) / 2),
+          y: screen.y + (screen.height / 2) - 1,
+          width: w,
+          height: 3
+        )
       end
 
       # --- Data building ---
