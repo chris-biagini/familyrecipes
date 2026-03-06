@@ -26,7 +26,7 @@ namespace :catalog do
 
     catalog_data = YAML.safe_load_file(catalog_path, permitted_classes: [], permitted_symbols: [], aliases: false)
 
-    if catalog_data.nil? || catalog_data.empty?
+    if catalog_data.blank?
       puts 'ingredient-catalog.yaml is empty — skipping catalog sync.'
       next
     end
