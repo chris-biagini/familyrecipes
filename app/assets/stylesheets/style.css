@@ -120,7 +120,7 @@
 
 html {
   color-scheme: light dark;
-  font-size: 21.6px;
+  font-size: 18px;
   touch-action: manipulation; /* Should prevent double-tap zoom, but maybe doesn't? */
 
   /* Gingham pattern background — applied directly to the root element
