@@ -6,6 +6,7 @@
 # state, custom items, and aisle ordering.
 class GroceriesController < ApplicationController
   include MealPlanActions
+  include OrderedListEditor
 
   before_action :require_membership
   before_action :prevent_html_caching, only: :show
@@ -40,7 +41,11 @@ class GroceriesController < ApplicationController
     current_kitchen.aisle_order = params[:aisle_order].to_s
     current_kitchen.normalize_aisle_order!
 
-    errors = validate_aisle_order
+    errors = validate_ordered_list(
+      current_kitchen.parsed_aisle_order,
+      max_items: Kitchen::MAX_AISLES,
+      max_name_length: Kitchen::MAX_AISLE_NAME_LENGTH
+    )
     return render json: { errors: }, status: :unprocessable_content if errors.any?
 
     ActiveRecord::Base.transaction do
@@ -58,18 +63,6 @@ class GroceriesController < ApplicationController
   end
 
   private
-
-  def validate_aisle_order
-    lines = current_kitchen.parsed_aisle_order
-    too_many = lines.size > Kitchen::MAX_AISLES ? ["Too many aisles (max #{Kitchen::MAX_AISLES})"] : []
-
-    max = Kitchen::MAX_AISLE_NAME_LENGTH
-    too_long = lines.filter_map do |line|
-      "Aisle name '#{line.truncate(20)}' is too long (max #{max} characters)" if line.size > max
-    end
-
-    too_many + too_long
-  end
 
   def cascade_aisle_renames
     renames = params[:renames]
