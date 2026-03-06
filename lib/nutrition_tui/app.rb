@@ -108,8 +108,12 @@ module NutritionTui
     end
 
     def switch_to_dashboard
-      @previous_screen = nil
-      @current_screen = Screens::Dashboard.new(nutrition_data: @nutrition_data, ctx: @ctx)
+      if @previous_screen.is_a?(Screens::Dashboard)
+        restore_previous_screen
+      else
+        @previous_screen = nil
+        @current_screen = Screens::Dashboard.new(nutrition_data: @nutrition_data, ctx: @ctx)
+      end
     end
   end
 end

@@ -102,12 +102,13 @@ module NutritionTui
       end
 
       def overlay_area(screen)
-        w = [screen.width * 3 / 5, 40].max
-        h = [screen.height * 3 / 5, 10].max
+        right_x = screen.x + (screen.width * 3 / 5)
+        right_w = screen.width - (screen.width * 3 / 5)
+        h = [screen.height / 2, 8].max
         Layout::Rect.new(
-          x: screen.x + ((screen.width - w) / 2),
-          y: screen.y + ((screen.height - h) / 2),
-          width: w,
+          x: right_x,
+          y: screen.y + screen.height - h - 1,
+          width: right_w,
           height: h
         )
       end
