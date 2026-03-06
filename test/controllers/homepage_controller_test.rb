@@ -114,11 +114,13 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
   test 'homepage renders Edit Categories button for members' do
     log_in
     get kitchen_root_path(kitchen_slug: kitchen_slug)
+
     assert_select '#edit-categories-button'
   end
 
   test 'homepage does not render Edit Categories for non-members' do
     get kitchen_root_path(kitchen_slug: kitchen_slug)
+
     assert_select '#edit-categories-button', count: 0
   end
 
