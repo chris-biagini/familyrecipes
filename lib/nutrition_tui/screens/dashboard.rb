@@ -36,6 +36,11 @@ module NutritionTui
         @visible_ingredients = @ingredients
       end
 
+      def refresh_data
+        @ingredients = build_ingredient_list
+        recompute_visible
+      end
+
       def render(frame)
         chunks = split_layout(frame.area)
         render_summary_bar(frame, chunks[0])

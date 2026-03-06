@@ -21,6 +21,7 @@ module NutritionTui
       @nutrition_data = Data.load_nutrition_data
       @ctx = Data.load_context
       @api_key = FamilyRecipes::UsdaClient.load_api_key(project_root: NutritionTui::Data::PROJECT_ROOT)
+      @screen_stack = []
       @current_screen = initial_screen(jump_to)
     end
 
@@ -79,7 +80,7 @@ module NutritionTui
 
     def open_ingredient(name)
       entry = @nutrition_data[name]
-      @previous_screen = @current_screen
+      @screen_stack.push(@current_screen)
       @current_screen = Screens::Ingredient.new(
         name: name, entry: entry,
         nutrition_data: @nutrition_data, ctx: @ctx
@@ -89,29 +90,27 @@ module NutritionTui
     def open_usda_search(default_query: '')
       return unless @api_key
 
-      @previous_screen = @current_screen
+      @screen_stack.push(@current_screen)
       @current_screen = Screens::UsdaSearch.new(api_key: @api_key, default_query: default_query)
     end
 
     def apply_import(detail)
-      if @previous_screen.is_a?(Screens::Ingredient)
-        restore_previous_screen
+      previous = @screen_stack.last
+      if previous.is_a?(Screens::Ingredient)
+        @current_screen = @screen_stack.pop
         @current_screen.apply_usda_import(detail)
       else
         switch_to_dashboard
       end
     end
 
-    def restore_previous_screen
-      @current_screen = @previous_screen
-      @previous_screen = nil
-    end
-
     def switch_to_dashboard
-      if @previous_screen.is_a?(Screens::Dashboard)
-        restore_previous_screen
+      dashboard = @screen_stack.reverse.find { |s| s.is_a?(Screens::Dashboard) }
+      @screen_stack.clear
+      if dashboard
+        @current_screen = dashboard
+        @current_screen.refresh_data
       else
-        @previous_screen = nil
         @current_screen = Screens::Dashboard.new(nutrition_data: @nutrition_data, ctx: @ctx)
       end
     end
