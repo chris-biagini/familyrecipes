@@ -9,13 +9,12 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
 
   setup do
     create_kitchen_and_user
-    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    @bread = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @bread)
       # Focaccia
 
       A simple flatbread.
 
-      Category: Bread
       Serves: 8
 
       ## Make the dough (combine ingredients)
@@ -108,7 +107,6 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
 
       A revised flatbread.
 
-      Category: Bread
       Serves: 8
 
       ## Make the dough (combine ingredients)
@@ -130,7 +128,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
 
     log_in
     patch recipe_path('focaccia', kitchen_slug: kitchen_slug),
-          params: { markdown_source: updated_markdown },
+          params: { markdown_source: updated_markdown, category: 'Bread' },
           as: :json
 
     assert_response :success
@@ -171,7 +169,6 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
 
       A revised flatbread.
 
-      Category: Bread
       Serves: 8
 
       ## Make the dough (combine ingredients)
@@ -183,7 +180,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
 
     log_in
     patch recipe_path('focaccia', kitchen_slug: kitchen_slug),
-          params: { markdown_source: updated_markdown },
+          params: { markdown_source: updated_markdown, category: 'Bread' },
           as: :json
 
     assert_response :success
@@ -198,8 +195,6 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     updated_markdown = <<~MD
       # Focaccia
 
-      Category: Pastry
-
       ## Make it (do the thing)
 
       - Flour, 3 cups
@@ -209,7 +204,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
 
     log_in
     patch recipe_path('focaccia', kitchen_slug: kitchen_slug),
-          params: { markdown_source: updated_markdown },
+          params: { markdown_source: updated_markdown, category: 'Pastry' },
           as: :json
 
     assert_response :success
@@ -218,10 +213,8 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'update returns updated_references when title changes and cross-references exist' do
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @bread)
       # Panzanella
-
-      Category: Bread
 
       ## Make bread.
       >>> @[Focaccia], 1
@@ -236,7 +229,6 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     updated_markdown = <<~MD
       # Rosemary Focaccia
 
-      Category: Bread
       Serves: 8
 
       ## Make the dough (combine ingredients)
@@ -248,7 +240,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
 
     log_in
     patch recipe_path('focaccia', kitchen_slug: kitchen_slug),
-          params: { markdown_source: updated_markdown },
+          params: { markdown_source: updated_markdown, category: 'Bread' },
           as: :json
 
     assert_response :success
@@ -268,8 +260,6 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
 
       A rustic bread.
 
-      Category: Bread
-
       ## Mix (combine ingredients)
 
       - Flour, 4 cups
@@ -280,7 +270,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
 
     log_in
     post recipes_path(kitchen_slug: kitchen_slug),
-         params: { markdown_source: markdown },
+         params: { markdown_source: markdown, category: 'Bread' },
          as: :json
 
     assert_response :success
@@ -306,8 +296,6 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     markdown = <<~MD
       # Ciabatta
 
-      Category: Bread
-
       ## Mix (combine ingredients)
 
       - Flour, 4 cups
@@ -317,7 +305,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
 
     log_in
     post recipes_path(kitchen_slug: kitchen_slug),
-         params: { markdown_source: markdown },
+         params: { markdown_source: markdown, category: 'Bread' },
          as: :json
 
     assert_response :success
@@ -344,10 +332,8 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'destroy nullifies inbound cross-references' do
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @bread)
       # Panzanella
-
-      Category: Bread
 
       ## Make bread.
       >>> @[Focaccia], 1
@@ -376,10 +362,8 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'show renders resolved cross-reference as embedded recipe card' do
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @bread)
       # Pizza Dough
-
-      Category: Bread
 
       ## Mix.
       - Flour, 500 g
@@ -388,10 +372,8 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
       Combine ingredients.
     MD
 
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @bread)
       # White Pizza
-
-      Category: Bread
 
       ## Make dough.
       >>> @[Pizza Dough]
@@ -412,10 +394,8 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'show renders pending cross-reference as broken reference card' do
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @bread)
       # White Pizza
-
-      Category: Bread
 
       ## Make dough.
       >>> @[Nonexistent Recipe]
@@ -430,19 +410,15 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'show renders nested cross-reference as link when embedded' do
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @bread)
       # Starter
-
-      Category: Bread
 
       ## Feed.
       - Flour, 100 g
     MD
 
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @bread)
       # Pizza Dough
-
-      Category: Bread
 
       ## Make starter.
       >>> @[Starter]
@@ -451,10 +427,8 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
       - Flour, 400 g
     MD
 
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @bread)
       # White Pizza
-
-      Category: Bread
 
       ## Make dough.
       >>> @[Pizza Dough]
@@ -490,7 +464,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
 
     assert_turbo_stream_broadcasts [@kitchen, :updates] do
       post recipes_path(kitchen_slug: kitchen_slug),
-           params: { markdown_source: "# New Bread\n\nCategory: Bread\n\n## Mix (do it)\n\n- Flour, 1 cup\n\nMix." },
+           params: { markdown_source: "# New Bread\n\n## Mix (do it)\n\n- Flour, 1 cup\n\nMix.", category: 'Bread' },
            as: :json
     end
   end
@@ -506,19 +480,15 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'embedded recipe with multiplier shows scaled quantities' do
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @bread)
       # Pizza Dough
-
-      Category: Bread
 
       ## Mix.
       - Flour, 500 g
     MD
 
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @bread)
       # Double Pizza
-
-      Category: Bread
 
       ## Make dough.
       >>> @[Pizza Dough], 2
@@ -539,7 +509,6 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
 
       An updated description.
 
-      Category: Bread
       Serves: 12
 
       ## Make the dough (combine ingredients)
@@ -563,7 +532,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     # Save the edit
     log_in
     patch recipe_path('focaccia', kitchen_slug: kitchen_slug),
-          params: { markdown_source: updated_markdown },
+          params: { markdown_source: updated_markdown, category: 'Bread' },
           as: :json
 
     assert_response :success
