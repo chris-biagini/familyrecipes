@@ -971,6 +971,9 @@ footer small {
   gap: 0.5rem;
   padding: 0.5rem 1rem;
   border-top: 1px solid var(--border-color);
+  position: relative;
+  z-index: 2;
+  background: var(--content-background-color);
 }
 
 .editor-category-row label {
@@ -994,6 +997,7 @@ footer small {
   flex: 1;
   display: flex;
   min-height: 60vh;
+  overflow: hidden;
 }
 
 .hl-overlay {
