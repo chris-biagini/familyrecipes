@@ -7,8 +7,6 @@ class MarkdownValidatorTest < ActiveSupport::TestCase
     markdown = <<~MD
       # Focaccia
 
-      Category: Bread
-
       ## Mix (combine)
 
       - Flour, 3 cups
@@ -27,22 +25,6 @@ class MarkdownValidatorTest < ActiveSupport::TestCase
     assert(errors.any? { |e| e.include?('title') || e.include?('header') })
   end
 
-  test 'missing category returns error' do
-    markdown = <<~MD
-      # Focaccia
-
-      ## Mix (combine)
-
-      - Flour, 3 cups
-
-      Mix everything.
-    MD
-
-    errors = MarkdownValidator.validate(markdown)
-
-    assert(errors.any? { |e| e.include?('Category') })
-  end
-
   test 'empty markdown returns error' do
     errors = MarkdownValidator.validate('')
 
@@ -58,8 +40,6 @@ class MarkdownValidatorTest < ActiveSupport::TestCase
   test 'markdown with no steps returns error' do
     markdown = <<~MD
       # Focaccia
-
-      Category: Bread
     MD
 
     errors = MarkdownValidator.validate(markdown)

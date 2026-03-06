@@ -2,8 +2,8 @@
 
 # Quick-check validator for user-submitted recipe Markdown. Runs the parser
 # pipeline without touching the database to surface structural errors (missing
-# title, missing category, no steps) before MarkdownImporter is called. Used
-# by RecipesController on create and update.
+# title, no steps) before MarkdownImporter is called. Used by
+# RecipesController on create and update.
 class MarkdownValidator
   def self.validate(markdown_source)
     new(markdown_source).validate
@@ -18,7 +18,6 @@ class MarkdownValidator
 
     parsed = parse
     errors = []
-    errors << 'Category is required in front matter (e.g., "Category: Bread").' unless parsed[:front_matter][:category]
     errors << 'Recipe must have at least one step (## Step Name).' if parsed[:steps].empty?
     errors
   rescue RuntimeError => error
