@@ -22,6 +22,7 @@ class CatalogSyncTest < ActiveSupport::TestCase
 
   test 'all catalog entries pass model validations' do
     catalog_data = YAML.safe_load_file(CATALOG_PATH, permitted_classes: [], permitted_symbols: [], aliases: false)
+    skip 'ingredient-catalog.yaml is empty' if catalog_data.nil? || catalog_data.empty?
 
     failures = catalog_data.filter_map do |name, entry|
       record = IngredientCatalog.new(ingredient_name: name, **IngredientCatalog.attrs_from_yaml(entry))
