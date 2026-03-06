@@ -33,6 +33,8 @@ Rails.application.routes.draw do
     patch 'groceries/custom_items', to: 'groceries#update_custom_items', as: :groceries_custom_items
     patch 'groceries/aisle_order', to: 'groceries#update_aisle_order', as: :groceries_aisle_order
     get 'groceries/aisle_order_content', to: 'groceries#aisle_order_content', as: :groceries_aisle_order_content
+    patch 'categories/order', to: 'categories#update_order', as: :categories_order
+    get 'categories/order_content', to: 'categories#order_content', as: :categories_order_content
     get 'export', to: 'exports#show', as: :export
     post 'nutrition/:ingredient_name', to: 'nutrition_entries#upsert', as: :nutrition_entry_upsert
     delete 'nutrition/:ingredient_name', to: 'nutrition_entries#destroy', as: :nutrition_entry_destroy
