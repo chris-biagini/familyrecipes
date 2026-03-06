@@ -1215,6 +1215,10 @@ button.aisle-name:hover {
   display: block;
 }
 
+.aisle-icon--flipped {
+  transform: scaleY(-1);
+}
+
 .aisle-btn:hover:not(:disabled) {
   color: var(--muted-text);
   border-color: var(--border-muted);
