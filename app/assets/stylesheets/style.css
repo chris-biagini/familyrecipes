@@ -789,6 +789,18 @@ footer small {
   margin: 0.75rem 0 0;
 }
 
+.btn-inline-link {
+  all: unset;
+  cursor: pointer;
+  color: var(--accent-color);
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}
+
+.btn-inline-link:hover {
+  text-decoration-style: solid;
+}
+
 /******************************************************/
 /* Styles for interactivity, applies to screen media */
 /*****************************************************/
