@@ -4,14 +4,13 @@ require_relative 'test_helper'
 
 class RecipeTest < Minitest::Test
   def make_recipe(markdown)
-    FamilyRecipes::Recipe.new(markdown_source: markdown, id: 'test-recipe', category: 'Test')
+    FamilyRecipes::Recipe.new(markdown_source: markdown, id: 'test-recipe')
   end
 
   def test_ingredients_with_quantities_sums_same_unit_across_steps
     markdown = <<~MD
       # Chocolate Chip Cookies
 
-      Category: Test
 
       ## Step 1 (mix sugar)
 
@@ -42,7 +41,6 @@ class RecipeTest < Minitest::Test
     markdown = <<~MD
       # Test Recipe
 
-      Category: Test
 
       ## Step 1 (prep)
 
@@ -74,7 +72,6 @@ class RecipeTest < Minitest::Test
     markdown = <<~MD
       # Test Recipe
 
-      Category: Test
 
       ## Step 1 (prep)
 
@@ -107,7 +104,6 @@ class RecipeTest < Minitest::Test
     markdown = <<~MD
       # Test Recipe
 
-      Category: Test
 
       ## Step 1 (cook)
 
@@ -128,7 +124,6 @@ class RecipeTest < Minitest::Test
     markdown = <<~MD
       # Test Recipe
 
-      Category: Test
 
       ## Step 1 (prep)
 
@@ -150,7 +145,6 @@ class RecipeTest < Minitest::Test
     markdown = <<~MD
       # Test Recipe
 
-      Category: Test
 
       ## Step 1 (prep)
 
@@ -180,7 +174,6 @@ class RecipeTest < Minitest::Test
 
       Protein!
 
-      Category: Test
 
       ## Make ice bath.
 
@@ -238,7 +231,6 @@ class RecipeTest < Minitest::Test
     markdown = <<~MD
       # Test Recipe
 
-      Category: Test
 
       ## Step 1 (prep)
 
@@ -296,7 +288,6 @@ class RecipeTest < Minitest::Test
 
       Worth the effort.
 
-      Category: Test
       Makes: 1 cup
       Serves: 4
 
@@ -318,7 +309,7 @@ class RecipeTest < Minitest::Test
 
   def test_raises_on_recipe_with_no_steps
     assert_raises(StandardError) do
-      make_recipe("# Title\n\nCategory: Test\n\nJust a description, no steps.\n")
+      make_recipe("# Title\n\nJust a description, no steps.\n")
     end
   end
 
@@ -326,7 +317,6 @@ class RecipeTest < Minitest::Test
     dough_md = <<~MD
       # Pizza Dough
 
-      Category: Test
 
       ## Mix (make dough)
 
@@ -339,7 +329,6 @@ class RecipeTest < Minitest::Test
     pizza_md = <<~MD
       # Test Pizza
 
-      Category: Test
 
       ## Prep (prep toppings)
 
@@ -351,8 +340,8 @@ class RecipeTest < Minitest::Test
       >>> @[Pizza Dough]
     MD
 
-    dough = FamilyRecipes::Recipe.new(markdown_source: dough_md, id: 'pizza-dough', category: 'Test')
-    pizza = FamilyRecipes::Recipe.new(markdown_source: pizza_md, id: 'test-pizza', category: 'Test')
+    dough = FamilyRecipes::Recipe.new(markdown_source: dough_md, id: 'pizza-dough')
+    pizza = FamilyRecipes::Recipe.new(markdown_source: pizza_md, id: 'test-pizza')
     recipe_map = { 'pizza-dough' => dough, 'test-pizza' => pizza }
 
     iwq = pizza.all_ingredients_with_quantities(recipe_map)
@@ -369,31 +358,10 @@ class RecipeTest < Minitest::Test
 
   # --- Front matter tests ---
 
-  def test_parses_category_from_front_matter
-    markdown = <<~MD
-      # Hard-Boiled Eggs
-
-      Protein!
-
-      Category: Test
-
-      ## Cook eggs.
-
-      - Eggs
-
-      Cook them.
-    MD
-
-    recipe = make_recipe(markdown)
-
-    assert_equal 'Test', recipe.category
-  end
-
   def test_parses_makes
     markdown = <<~MD
       # Cookies
 
-      Category: Test
       Makes: 32 cookies
 
       ## Mix
@@ -414,7 +382,6 @@ class RecipeTest < Minitest::Test
     markdown = <<~MD
       # Beans
 
-      Category: Test
       Serves: 4
 
       ## Cook
@@ -429,49 +396,10 @@ class RecipeTest < Minitest::Test
     assert_equal '4', recipe.serves
   end
 
-  def test_category_mismatch_raises_error
-    markdown = <<~MD
-      # Cookies
-
-      Category: Dessert
-
-      ## Mix
-
-      - Flour
-
-      Mix.
-    MD
-
-    error = assert_raises(StandardError) do
-      make_recipe(markdown)
-    end
-
-    assert_includes error.message, 'Category'
-  end
-
-  def test_missing_category_raises_error
-    markdown = <<~MD
-      # Cookies
-
-      ## Mix
-
-      - Flour
-
-      Mix.
-    MD
-
-    error = assert_raises(StandardError) do
-      make_recipe(markdown)
-    end
-
-    assert_includes error.message, 'Category'
-  end
-
   def test_makes_without_unit_noun_raises_error
     markdown = <<~MD
       # Cookies
 
-      Category: Test
       Makes: 4
 
       ## Mix

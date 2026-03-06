@@ -3,14 +3,14 @@
 module FamilyRecipes
   # Parsed representation of a single Markdown recipe file. Constructed from raw
   # Markdown via LineClassifier → RecipeBuilder → Recipe. Holds the full parse
-  # tree: title, description, front matter (category/makes/serves), steps with
-  # their ingredients and cross-references, and an optional footer.
+  # tree: title, description, front matter (makes/serves), steps with their
+  # ingredients and cross-references, and an optional footer.
   #
   # This is a read-only parse artifact — MarkdownImporter consumes it to upsert
   # the corresponding AR Recipe, Steps, Ingredients, and CrossReferences. Views
   # never see this class; they render from the database.
   class Recipe
-    attr_reader :title, :description, :makes, :serves, :steps, :footer, :source, :id, :version_hash, :category
+    attr_reader :title, :description, :makes, :serves, :steps, :footer, :source, :id, :version_hash
 
     MARKDOWN = Redcarpet::Markdown.new(
       Redcarpet::Render::SmartyHTML.new(escape_html: true),
@@ -18,10 +18,9 @@ module FamilyRecipes
       no_intra_emphasis: true
     )
 
-    def initialize(markdown_source:, id:, category:)
+    def initialize(markdown_source:, id:)
       @source = markdown_source
       @id = id
-      @category = category
 
       @version_hash = Digest::SHA256.hexdigest(@source)
 
@@ -107,21 +106,10 @@ module FamilyRecipes
     def apply_front_matter(fields)
       @makes = fields[:makes]
       @serves = fields[:serves]
-      @front_matter_category = fields[:category]
     end
 
     def validate_front_matter
-      raise "Missing 'Category:' in front matter for '#{@title}'." unless @front_matter_category
-
-      validate_category_match
       validate_makes_has_unit_noun
-    end
-
-    def validate_category_match
-      return if @front_matter_category == @category
-
-      raise "Category mismatch for '#{@title}': " \
-            "front matter says '#{@front_matter_category}' but file is in '#{@category}/' directory."
     end
 
     def validate_makes_has_unit_noun
