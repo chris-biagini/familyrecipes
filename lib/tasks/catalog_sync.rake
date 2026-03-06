@@ -25,6 +25,12 @@ namespace :catalog do
     end
 
     catalog_data = YAML.safe_load_file(catalog_path, permitted_classes: [], permitted_symbols: [], aliases: false)
+
+    if catalog_data.nil? || catalog_data.empty?
+      puts 'ingredient-catalog.yaml is empty — skipping catalog sync.'
+      next
+    end
+
     counts = catalog_data.map { |name, entry| sync_catalog_entry(name, entry) }.tally
 
     created = counts.fetch(:created, 0)
