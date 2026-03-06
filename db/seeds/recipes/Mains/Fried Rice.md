@@ -2,7 +2,6 @@
 
 Vaguely Thai egg-fried rice.
 
-Category: Mains
 Serves: 4
 
 ## Cook rice.

@@ -2,7 +2,6 @@
 
 Minimum viable pizza.
 
-Category: Pizza
 Makes: 2 pizzas
 Serves: 4
 

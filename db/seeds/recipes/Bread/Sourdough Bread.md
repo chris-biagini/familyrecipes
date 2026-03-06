@@ -1,6 +1,5 @@
 # Sourdough Bread
 
-Category: Bread
 Makes: 1 loaf
 
 ## Feed starter.

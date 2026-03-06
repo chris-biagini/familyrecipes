@@ -2,7 +2,6 @@
 
 Italian lemon liqueur.
 
-Category: Drinks
 Makes: 750 mL
 
 ## Make lemon infusion.

@@ -2,7 +2,6 @@
 
 Pasta with chickpeas in a garlicky tomato broth
 
-Category: Mains
 Serves: 4
 
 ## Prepare base of garlic, oil, and tomato paste.

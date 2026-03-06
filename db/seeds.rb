@@ -37,6 +37,8 @@ puts "Importing #{recipe_files.size} recipes..."
 
 recipe_files.each do |path|
   markdown = File.read(path)
+  category_name = File.basename(File.dirname(path))
+
   tokens = LineClassifier.classify(markdown)
   parsed = RecipeBuilder.new(tokens).build
   slug = FamilyRecipes.slugify(parsed[:title])
@@ -47,7 +49,13 @@ recipe_files.each do |path|
     next
   end
 
-  recipe = MarkdownImporter.import(markdown, kitchen: kitchen)
+  category_slug = FamilyRecipes.slugify(category_name)
+  category = kitchen.categories.find_or_create_by!(slug: category_slug) do |cat|
+    cat.name = category_name
+    cat.position = kitchen.categories.maximum(:position).to_i + 1
+  end
+
+  recipe = MarkdownImporter.import(markdown, kitchen: kitchen, category: category)
   puts "  #{recipe.title} (#{recipe.category.name})"
 end
 

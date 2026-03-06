@@ -2,7 +2,6 @@
 
 Super-fast summertime dessert.
 
-Category: Dessert
 Serves: 1
 
 ## Prepare berries.
