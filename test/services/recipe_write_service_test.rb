@@ -60,6 +60,7 @@ class RecipeWriteServiceTest < ActiveSupport::TestCase
     result = RecipeWriteService.create(
       markdown: BASIC_MARKDOWN, kitchen: @kitchen, category_name: ''
     )
+
     assert_equal 'Miscellaneous', result.recipe.category.name
   end
 

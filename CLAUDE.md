@@ -10,6 +10,8 @@ Docker image for homelab installs during development, eventual move to hosted mo
 - Challenge assumptions, misconceptions, and poor design decisions.
 - Suggest quality-of-life, performance, and feature improvements.
 - Let's walk before we run. Don't solve scale problems I don't have.
+- We're still early in development, so we are not beholden to legacy code and
+  data. It's ok to break compatibility to keep things clean.
 
 ## Ruby Style
 
