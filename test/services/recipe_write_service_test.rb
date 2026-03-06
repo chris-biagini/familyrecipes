@@ -18,7 +18,6 @@ class RecipeWriteServiceTest < ActiveSupport::TestCase
 
     A simple flatbread.
 
-    Category: Bread
     Serves: 8
 
     ## Make the dough (combine ingredients)
@@ -30,7 +29,7 @@ class RecipeWriteServiceTest < ActiveSupport::TestCase
   MD
 
   test 'create imports recipe and returns Result' do
-    result = RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen)
+    result = RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen, category_name: 'Bread')
 
     assert_instance_of RecipeWriteService::Result, result
     assert_equal 'Focaccia', result.recipe.title
@@ -38,7 +37,7 @@ class RecipeWriteServiceTest < ActiveSupport::TestCase
   end
 
   test 'create sets edited_at' do
-    result = RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen)
+    result = RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen, category_name: 'Bread')
 
     assert_not_nil result.recipe.edited_at
   end
@@ -46,7 +45,7 @@ class RecipeWriteServiceTest < ActiveSupport::TestCase
   test 'create cleans up orphan categories' do
     Category.create!(name: 'Empty', slug: 'empty', position: 99, kitchen: @kitchen)
 
-    RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen)
+    RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen, category_name: 'Bread')
 
     assert_nil Category.find_by(slug: 'empty')
   end
@@ -57,15 +56,21 @@ class RecipeWriteServiceTest < ActiveSupport::TestCase
     end
   end
 
+  test 'create defaults to Miscellaneous when category_name is blank' do
+    result = RecipeWriteService.create(
+      markdown: BASIC_MARKDOWN, kitchen: @kitchen, category_name: ''
+    )
+    assert_equal 'Miscellaneous', result.recipe.category.name
+  end
+
   test 'update imports recipe and returns Result' do
-    RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen)
+    RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen, category_name: 'Bread')
 
     updated = <<~MD
       # Focaccia
 
       A revised flatbread.
 
-      Category: Bread
       Serves: 12
 
       ## Make the dough (combine ingredients)
@@ -75,7 +80,7 @@ class RecipeWriteServiceTest < ActiveSupport::TestCase
       Mix everything.
     MD
 
-    result = RecipeWriteService.update(slug: 'focaccia', markdown: updated, kitchen: @kitchen)
+    result = RecipeWriteService.update(slug: 'focaccia', markdown: updated, kitchen: @kitchen, category_name: 'Bread')
 
     assert_equal 'Focaccia', result.recipe.title
     assert_equal 'A revised flatbread.', result.recipe.description
@@ -83,12 +88,11 @@ class RecipeWriteServiceTest < ActiveSupport::TestCase
   end
 
   test 'update with title rename returns updated_references' do
-    RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen)
+    RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen, category_name: 'Bread')
 
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    bread = @kitchen.categories.find_by!(slug: 'bread')
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: bread)
       # Panzanella
-
-      Category: Bread
 
       ## Make bread.
       >>> @[Focaccia], 1
@@ -103,7 +107,6 @@ class RecipeWriteServiceTest < ActiveSupport::TestCase
     renamed = <<~MD
       # Rosemary Focaccia
 
-      Category: Bread
       Serves: 8
 
       ## Make the dough (combine ingredients)
@@ -113,19 +116,17 @@ class RecipeWriteServiceTest < ActiveSupport::TestCase
       Mix everything.
     MD
 
-    result = RecipeWriteService.update(slug: 'focaccia', markdown: renamed, kitchen: @kitchen)
+    result = RecipeWriteService.update(slug: 'focaccia', markdown: renamed, kitchen: @kitchen, category_name: 'Bread')
 
     assert_includes result.updated_references, 'Panzanella'
     assert_equal 'rosemary-focaccia', result.recipe.slug
   end
 
   test 'update with slug change destroys old record' do
-    RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen)
+    RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen, category_name: 'Bread')
 
     renamed = <<~MD
       # Rosemary Focaccia
-
-      Category: Bread
 
       ## Make (do it)
 
@@ -134,19 +135,17 @@ class RecipeWriteServiceTest < ActiveSupport::TestCase
       Mix.
     MD
 
-    RecipeWriteService.update(slug: 'focaccia', markdown: renamed, kitchen: @kitchen)
+    RecipeWriteService.update(slug: 'focaccia', markdown: renamed, kitchen: @kitchen, category_name: 'Bread')
 
     assert_nil Recipe.find_by(slug: 'focaccia')
     assert Recipe.find_by(slug: 'rosemary-focaccia')
   end
 
   test 'update cleans up orphan categories' do
-    RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen)
+    RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen, category_name: 'Bread')
 
     recategorized = <<~MD
       # Focaccia
-
-      Category: Pastry
 
       ## Make (do it)
 
@@ -155,14 +154,14 @@ class RecipeWriteServiceTest < ActiveSupport::TestCase
       Mix.
     MD
 
-    RecipeWriteService.update(slug: 'focaccia', markdown: recategorized, kitchen: @kitchen)
+    RecipeWriteService.update(slug: 'focaccia', markdown: recategorized, kitchen: @kitchen, category_name: 'Pastry')
 
     assert_nil Category.find_by(slug: 'bread')
     assert Category.find_by(slug: 'pastry')
   end
 
   test 'destroy removes recipe and returns Result' do
-    RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen)
+    RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen, category_name: 'Bread')
 
     result = RecipeWriteService.destroy(slug: 'focaccia', kitchen: @kitchen)
 
@@ -171,7 +170,7 @@ class RecipeWriteServiceTest < ActiveSupport::TestCase
   end
 
   test 'destroy cleans up orphan categories' do
-    RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen)
+    RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen, category_name: 'Bread')
 
     RecipeWriteService.destroy(slug: 'focaccia', kitchen: @kitchen)
 
@@ -179,12 +178,11 @@ class RecipeWriteServiceTest < ActiveSupport::TestCase
   end
 
   test 'destroy nullifies inbound cross-references' do
-    RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen)
+    RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen, category_name: 'Bread')
 
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    bread = @kitchen.categories.find_by!(slug: 'bread')
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: bread)
       # Panzanella
-
-      Category: Bread
 
       ## Make bread.
       >>> @[Focaccia], 1
@@ -207,20 +205,20 @@ class RecipeWriteServiceTest < ActiveSupport::TestCase
 
   test 'create broadcasts to kitchen updates stream' do
     assert_turbo_stream_broadcasts [@kitchen, :updates] do
-      RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen)
+      RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen, category_name: 'Bread')
     end
   end
 
   test 'update broadcasts to kitchen updates stream' do
-    RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen)
+    RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen, category_name: 'Bread')
 
     assert_turbo_stream_broadcasts [@kitchen, :updates] do
-      RecipeWriteService.update(slug: 'focaccia', markdown: BASIC_MARKDOWN, kitchen: @kitchen)
+      RecipeWriteService.update(slug: 'focaccia', markdown: BASIC_MARKDOWN, kitchen: @kitchen, category_name: 'Bread')
     end
   end
 
   test 'destroy broadcasts to kitchen updates stream' do
-    RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen)
+    RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen, category_name: 'Bread')
 
     assert_turbo_stream_broadcasts [@kitchen, :updates] do
       RecipeWriteService.destroy(slug: 'focaccia', kitchen: @kitchen)
