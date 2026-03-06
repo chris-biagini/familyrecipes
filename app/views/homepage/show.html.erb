@@ -41,6 +41,18 @@
                              editor_on_success: 'redirect',
                              editor_body_key: 'markdown_source',
                              extra_controllers: 'recipe-editor' } } do %>
-  <textarea class="editor-textarea" data-editor-target="textarea" data-recipe-editor-target="textarea" spellcheck="false"><%= "# Recipe Title\n\nOptional description.\n\nCategory: Mains\nMakes: 4 servings\nServes: 4\n\n## Step Name (short summary)\n\n- Ingredient, quantity: prep note\n\nInstructions here.\n\n---\n\nOptional notes or source." %></textarea>
+  <textarea class="editor-textarea" data-editor-target="textarea" data-recipe-editor-target="textarea" spellcheck="false"><%= "# Recipe Title\n\nOptional description.\n\nMakes: 4 servings\nServes: 4\n\n## Step Name (short summary)\n\n- Ingredient, quantity: prep note\n\nInstructions here.\n\n---\n\nOptional notes or source." %></textarea>
+  <div class="editor-category-row">
+    <label for="new-recipe-category">Category</label>
+    <select id="new-recipe-category" class="category-select" data-recipe-editor-target="categorySelect">
+      <% @all_categories.each do |cat| %>
+        <option value="<%= cat.name %>" <%= 'selected' if cat.name == 'Miscellaneous' %>><%= cat.name %></option>
+      <% end %>
+      <option disabled>&#x2500;&#x2500;&#x2500;</option>
+      <option value="__new__">New category&hellip;</option>
+    </select>
+    <input type="text" class="category-new-input" placeholder="New category name"
+           data-recipe-editor-target="categoryInput" hidden maxlength="50">
+  </div>
 <% end %>
 <% end %>

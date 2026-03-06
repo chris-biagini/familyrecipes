@@ -10,6 +10,7 @@ class RecipesController < ApplicationController
   def show
     @recipe = current_kitchen.recipes.with_full_tree.find_by!(slug: params[:slug])
     @nutrition = @recipe.nutrition_data
+    @all_categories = current_kitchen.categories.ordered
   end
 
   def create

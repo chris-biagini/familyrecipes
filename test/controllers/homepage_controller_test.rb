@@ -104,6 +104,13 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
     assert_select 'turbo-cable-stream-source', count: 0
   end
 
+  test 'new recipe editor includes category dropdown' do
+    log_in
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
+
+    assert_select '#recipe-editor select.category-select'
+  end
+
   test 'recipe links include description as title attribute' do
     bread = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
     MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: bread)

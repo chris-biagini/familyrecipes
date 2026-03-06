@@ -503,6 +503,13 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test 'recipe editor includes category dropdown' do
+    log_in
+    get recipe_path('focaccia', kitchen_slug: kitchen_slug)
+
+    assert_select '#recipe-editor select.category-select'
+  end
+
   test 'full edit round-trip: edit, save, re-render' do
     updated_markdown = <<~MD
       # Focaccia

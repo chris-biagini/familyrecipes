@@ -965,6 +965,28 @@ footer small {
   background: var(--content-background-color);
 }
 
+.editor-category-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.editor-category-row label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted-text);
+  white-space: nowrap;
+}
+
+.category-select, .category-new-input {
+  flex: 1;
+  max-width: 16rem;
+}
+
 /* Syntax-highlighting overlay (shared) */
 
 .hl-wrap {
