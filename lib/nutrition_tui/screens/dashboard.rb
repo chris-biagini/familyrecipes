@@ -315,9 +315,13 @@ module NutritionTui
         unresolvable = missing_result[:unresolvable]
         recipes_map = missing_result[:ingredients_to_recipes]
 
-        @all_rows = @nutrition_data.map do |name, entry|
+        catalog_rows = @nutrition_data.map do |name, entry|
           build_ingredient_row(name, entry, unresolvable, recipes_map)
         end
+        missing_rows = missing_result[:missing].map do |name|
+          build_ingredient_row(name, {}, unresolvable, recipes_map)
+        end
+        @all_rows = catalog_rows + missing_rows
         sorted_ingredients
       end
 
