@@ -11,7 +11,7 @@ Makes: 3 pizzas
 - Salt, 12.5 g
 - Yeast, 2 g
 - Water, 325 g
-- Flour (All purpose), 500 g
+- Flour (all-purpose), 500 g
 
 In large bowl, whisk together all ingredients except flour. Adjust yeast based on time available and ambient temperature.
 

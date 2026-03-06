@@ -17,7 +17,7 @@ Combine beans, water, and salt in a sealable container. Soak for a while.
 
 - Olive oil, 75 g
 - Onion, 1: Chopped.
-- Vegetarian bouillon
+- Bouillon
 - Black pepper
 - Water
 

@@ -17,7 +17,7 @@ Combine beans, water, and salt. Allow to soak for as much time as you have.
 
 - Jasmine rice, 3 gō
 - Olive oil, 3 Tbsp
-- Vegetarian bouillon
+- Bouillon
 - Water
 - Salt
 

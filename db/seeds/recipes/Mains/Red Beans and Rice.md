@@ -10,7 +10,7 @@ Serves: 4
 - Red beans (dry), 450 g: Check for debris.
 - Water, 1250 g: Boiling.
 - Salt, 10 g
-- Vegetarian bouillon
+- Bouillon
 - Soy sauce, 2 Tbsp
 - Smoked paprika, 1 tsp
 - Liquid smoke, 1 tsp

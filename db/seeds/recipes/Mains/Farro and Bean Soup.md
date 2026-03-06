@@ -19,7 +19,7 @@ Combine all ingredients in a stainless pot. Allow to soak for as much time as yo
 - Onion, 100 g: Coarsely chop.
 - Carrot, 75 g: Coarsely chop.
 - Celery, 50 g: Coarsely chop.
-- Vegetarian bouillon
+- Bouillon
 - Italian seasoning
 - MSG
 

@@ -9,7 +9,7 @@ Serves: 4
 
 - Farro, 2 gō: Rinsed until water runs clear.
 - Water
-- Vegetarian bouillon
+- Bouillon
 - Black pepper
 - Olive oil
 

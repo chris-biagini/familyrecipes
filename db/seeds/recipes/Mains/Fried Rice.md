@@ -25,7 +25,7 @@ Prepare all ingredients, setting aside in separate bowls. For the green onions, 
 
 - Olive oil (mild)
 - Soy sauce
-- Vegetarian bouillon
+- Bouillon
 
 Add oil to large pan over high heat. Add garlic and white parts of onion, and cook until fragrant.
 

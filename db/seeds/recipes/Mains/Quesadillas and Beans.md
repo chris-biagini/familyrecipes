@@ -9,7 +9,7 @@ Serves: 2
 - Black beans (canned), 3 cans
 - Olive oil
 - Tomato salsa
-- Vegetarian bouillon
+- Bouillon
 - Liquid smoke
 
 Drain most, but not all, of the bean cooking liquid. Add to small pot and bring to simmer. Add salsa, oil, and seasonings to taste.

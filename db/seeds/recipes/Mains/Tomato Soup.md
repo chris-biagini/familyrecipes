@@ -18,7 +18,7 @@ In large saucepan, gently sauté onion and garlic in oil until softened.
 
 - Bread, 60 g: Tear into small pieces.
 - Tomatoes (canned), 1600 g: Two 28-ounce cans.
-- Vegetarian bouillon
+- Bouillon
 - Water, 500 g
 
 Add ingredients to saucepan and stir to combine.

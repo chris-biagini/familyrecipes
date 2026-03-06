@@ -1,0 +1,1330 @@
+---
+Baking powder:
+  nutrients:
+    basis_grams: 100.0
+    calories: 51.0
+    fat: 0.0
+    saturated_fat: 0.0
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 7893.0
+    carbs: 24.1
+    fiber: 0.2
+    total_sugars: 0.0
+    protein: 0.1
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 172804
+    description: Leavening agents, baking powder, double-acting, straight phosphate
+  density:
+    grams: 4.6
+    volume: 1.0
+    unit: tsp
+  aisle: Baking
+Baking soda:
+  nutrients:
+    basis_grams: 100.0
+    calories: 0.0
+    fat: 0.0
+    saturated_fat: 0.0
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 27360.0
+    carbs: 0.0
+    fiber: 0.0
+    total_sugars: 0.0
+    protein: 0.0
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 175040
+    description: Leavening agents, baking soda
+  density:
+    grams: 4.6
+    volume: 1.0
+    unit: tsp
+  aisle: Baking
+Beans (any dry):
+  nutrients:
+    basis_grams: 100.0
+    calories: 337.0
+    fat: 1.06
+    saturated_fat: 0.154
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 12.0
+    carbs: 61.29
+    fiber: 15.2
+    total_sugars: 2.1
+    protein: 22.53
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 173744
+    description: Beans, kidney, red, mature seeds, raw
+  density:
+    grams: 184.0
+    volume: 1.0
+    unit: cup
+  aliases:
+  - Dry beans
+  aisle: Pantry
+Black beans (canned):
+  nutrients:
+    basis_grams: 100.0
+    calories: 91.0
+    fat: 0.29
+    saturated_fat: 0.075
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 384.0
+    carbs: 16.55
+    fiber: 6.9
+    total_sugars: 0.23
+    protein: 6.03
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 175188
+    description: Beans, black turtle, mature seeds, canned
+  density:
+    grams: 240.0
+    volume: 1.0
+    unit: cup
+  portions:
+    can: 439.0
+  aisle: Pantry
+  aliases:
+  - Canned black beans
+Black pepper:
+  nutrients:
+    basis_grams: 100.0
+    calories: 251.0
+    fat: 3.26
+    saturated_fat: 1.392
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 20.0
+    carbs: 63.95
+    fiber: 25.3
+    total_sugars: 0.64
+    protein: 10.39
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 170931
+    description: Spices, pepper, black
+  density:
+    grams: 6.9
+    volume: 1.0
+    unit: tbsp
+  aisle: Spices
+  aliases:
+  - Pepper
+Bouillon:
+  nutrients:
+    basis_grams: 100.0
+    calories: 267.0
+    fat: 13.88
+    saturated_fat: 3.43
+    trans_fat: 0.0
+    cholesterol: 13.0
+    sodium: 23875.0
+    carbs: 18.01
+    fiber: 0.0
+    total_sugars: 17.36
+    protein: 16.66
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 171562
+    description: Soup, chicken broth or bouillon, dry
+  density:
+    grams: 2.0
+    volume: 1.0
+    unit: tsp
+  aisle: Baking
+Bread:
+  nutrients:
+    basis_grams: 100.0
+    calories: 266.0
+    fat: 3.33
+    saturated_fat: 0.698
+    trans_fat: 0.027
+    cholesterol: 0.0
+    sodium: 490.0
+    carbs: 49.42
+    fiber: 2.7
+    total_sugars: 5.67
+    protein: 8.85
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 174924
+    description: Bread, white, commercially prepared (includes soft bread crumbs)
+  density:
+    grams: 45.0
+    volume: 1.0
+    unit: cup
+  aliases:
+  - Sandwich bread
+  aisle: Bread
+  portions:
+    slice: 29.0
+Broccoli:
+  nutrients:
+    basis_grams: 100.0
+    calories: 34.0
+    fat: 0.37
+    saturated_fat: 0.114
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 33.0
+    carbs: 6.64
+    fiber: 2.6
+    total_sugars: 1.7
+    protein: 2.82
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 170379
+    description: Broccoli, raw
+  density:
+    grams: 91.0
+    volume: 1.0
+    unit: cup
+  aisle: Produce
+Butter:
+  nutrients:
+    basis_grams: 100.0
+    calories: 717.0
+    fat: 81.11
+    saturated_fat: 51.368
+    trans_fat: 3.278
+    cholesterol: 215.0
+    sodium: 643.0
+    carbs: 0.06
+    fiber: 0.0
+    total_sugars: 0.06
+    protein: 0.85
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 173410
+    description: Butter, salted
+  density:
+    grams: 227.0
+    volume: 1.0
+    unit: cup
+  aliases:
+  - Salted butter
+  - Butter (salted)
+  portions:
+    pat: 5.0
+    stick: 113.0
+  aisle: Refrigerated
+Butter (unsalted):
+  nutrients:
+    basis_grams: 100.0
+    calories: 717.0
+    fat: 81.11
+    saturated_fat: 50.489
+    trans_fat: 0.0
+    cholesterol: 215.0
+    sodium: 11.0
+    carbs: 0.06
+    fiber: 0.0
+    total_sugars: 0.06
+    protein: 0.85
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 173430
+    description: Butter, without salt
+  density:
+    grams: 227.0
+    volume: 1.0
+    unit: cup
+  aliases:
+  - Unsalted butter
+  aisle: Refrigerated
+  portions:
+    pat: 5.0
+    stick: 113.0
+Buttermilk:
+  nutrients:
+    basis_grams: 100.0
+    calories: 62.0
+    fat: 3.31
+    saturated_fat: 1.899
+    trans_fat: 0.0
+    cholesterol: 11.0
+    sodium: 105.0
+    carbs: 4.88
+    fiber: 0.0
+    total_sugars: 4.88
+    protein: 3.21
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 172225
+    description: Milk, buttermilk, fluid, whole
+  density:
+    grams: 245.0
+    volume: 1.0
+    unit: cup
+  aisle: Refrigerated
+Carrot:
+  nutrients:
+    basis_grams: 100.0
+    calories: 41.0
+    fat: 0.24
+    saturated_fat: 0.032
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 69.0
+    carbs: 9.58
+    fiber: 2.8
+    total_sugars: 4.74
+    protein: 0.93
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 170393
+    description: Carrots, raw
+  density:
+    grams: 128.0
+    volume: 1.0
+    unit: cup
+  portions:
+    "~unitless": 72.0
+    small: 50.0
+    medium: 61.0
+    large: 72.0
+  aisle: Produce
+Cavatappi:
+  nutrients:
+    basis_grams: 100.0
+    calories: 371.0
+    fat: 1.51
+    saturated_fat: 0.277
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 6.0
+    carbs: 74.67
+    fiber: 3.2
+    total_sugars: 2.67
+    protein: 13.04
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 169736
+    description: Pasta, dry, enriched
+  aisle: Pantry
+Celery:
+  nutrients:
+    basis_grams: 100.0
+    calories: 14.0
+    fat: 0.17
+    saturated_fat: 0.042
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 80.0
+    carbs: 2.97
+    fiber: 1.6
+    total_sugars: 1.34
+    protein: 0.69
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 169988
+    description: Celery, raw
+  density:
+    grams: 101.0
+    volume: 1.0
+    unit: cup
+  portions:
+    stalk: 64.0
+  aisle: Produce
+Cheddar:
+  nutrients:
+    basis_grams: 100.0
+    calories: 410.0
+    fat: 33.82
+    saturated_fat: 19.368
+    trans_fat: 1.179
+    cholesterol: 99.0
+    sodium: 644.0
+    carbs: 2.13
+    fiber: 0.0
+    total_sugars: 0.27
+    protein: 24.25
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 170899
+    description: Cheese, cheddar, sharp, sliced
+  aliases:
+  - Cheddar cheese
+  aisle: Refrigerated
+  portions: {}
+  density:
+    grams: 112.0
+    volume: 1.0
+    unit: cup
+Chickpeas (canned):
+  nutrients:
+    basis_grams: 100.0
+    calories: 139.0
+    fat: 2.77
+    saturated_fat: 0.214
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 246.0
+    carbs: 22.53
+    fiber: 6.4
+    total_sugars: 4.01
+    protein: 7.05
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 173800
+    description: Chickpeas (garbanzo beans, bengal gram), mature seeds, canned, drained
+      solids
+  portions:
+    can: 439.0
+  aisle: Pantry
+  aliases: []
+  density:
+    grams: 130.0
+    volume: 0.5
+    unit: cup
+Cinnamon:
+  nutrients:
+    basis_grams: 100.0
+    calories: 247.0
+    fat: 1.24
+    saturated_fat: 0.345
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 10.0
+    carbs: 80.59
+    fiber: 53.1
+    total_sugars: 2.17
+    protein: 3.99
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 171320
+    description: Spices, cinnamon, ground
+  density:
+    grams: 7.8
+    volume: 1.0
+    unit: tbsp
+  aisle: Spices
+  aliases:
+  - Ground cinnamon
+  - Cinnamon (ground)
+Cornmeal:
+  nutrients:
+    basis_grams: 100.0
+    calories: 370.0
+    fat: 1.75
+    saturated_fat: 0.22
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 7.0
+    carbs: 79.45
+    fiber: 3.9
+    total_sugars: 1.61
+    protein: 7.11
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 168929
+    description: Cornmeal, degermed, unenriched, yellow
+  density:
+    grams: 157.0
+    volume: 1.0
+    unit: cup
+  aisle: Baking
+Eggs:
+  nutrients:
+    basis_grams: 100.0
+    calories: 143.0
+    fat: 9.51
+    saturated_fat: 3.126
+    trans_fat: 0.038
+    cholesterol: 372.0
+    sodium: 142.0
+    carbs: 0.72
+    fiber: 0.0
+    total_sugars: 0.37
+    protein: 12.56
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 171287
+    description: Egg, whole, raw, fresh
+  density:
+    grams: 243.0
+    volume: 1.0
+    unit: cup
+  portions:
+    large: 50.0
+    small: 38.0
+    medium: 44.0
+    extra large: 56.0
+    jumbo: 63.0
+  aisle: Refrigerated
+Flour (00):
+  nutrients:
+    basis_grams: 100.0
+    calories: 364.0
+    fat: 0.98
+    saturated_fat: 0.155
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 2.0
+    carbs: 76.31
+    fiber: 2.7
+    total_sugars: 0.27
+    protein: 10.33
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 169761
+    description: Wheat flour, white, all-purpose, unenriched
+  density:
+    grams: 125.0
+    volume: 1.0
+    unit: cup
+  aisle: Baking
+  aliases:
+  - 00 Flour
+  - Pizza flour
+Flour (all-purpose):
+  nutrients:
+    basis_grams: 100.0
+    calories: 364.0
+    fat: 0.98
+    saturated_fat: 0.155
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 2.0
+    carbs: 76.31
+    fiber: 2.7
+    total_sugars: 0.27
+    protein: 10.33
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 168936
+    description: Wheat flour, white, all-purpose, enriched, unbleached
+  density:
+    grams: 125.0
+    volume: 1.0
+    unit: cup
+  aisle: Baking
+  aliases:
+  - AP flour
+  - All purpose flour
+  - All-purpose flour
+  - Flour (AP)
+Flour (bread):
+  nutrients:
+    basis_grams: 100.0
+    calories: 361.0
+    fat: 1.66
+    saturated_fat: 0.244
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 2.0
+    carbs: 72.53
+    fiber: 2.4
+    total_sugars: 0.31
+    protein: 11.98
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 168896
+    description: Wheat flour, white, bread, enriched
+  density:
+    grams: 137.0
+    volume: 1.0
+    unit: cup
+  aisle: Baking
+  aliases:
+  - Bread flour
+Flour (semolina):
+  nutrients:
+    basis_grams: 100.0
+    calories: 360.0
+    fat: 1.05
+    saturated_fat: 0.15
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 1.0
+    carbs: 72.83
+    fiber: 3.9
+    total_sugars: 0.0
+    protein: 12.68
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 169715
+    description: Semolina, enriched
+  density:
+    grams: 167.0
+    volume: 1.0
+    unit: cup
+  aliases:
+  - Semolina flour
+  aisle: Baking
+Garlic:
+  nutrients:
+    basis_grams: 100.0
+    calories: 149.0
+    fat: 0.5
+    saturated_fat: 0.089
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 17.0
+    carbs: 33.06
+    fiber: 2.1
+    total_sugars: 1.0
+    protein: 6.36
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 169230
+    description: Garlic, raw
+  density:
+    grams: 136.0
+    volume: 1.0
+    unit: cup
+  portions:
+    clove: 3.0
+  aisle: Produce
+  aliases:
+  - Fresh garlic
+Honey:
+  nutrients:
+    basis_grams: 100.0
+    calories: 304.0
+    fat: 0.0
+    saturated_fat: 0.0
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 4.0
+    carbs: 82.4
+    fiber: 0.2
+    total_sugars: 82.12
+    protein: 0.3
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 169640
+    description: Honey
+  density:
+    grams: 339.0
+    volume: 1.0
+    unit: cup
+  aisle: Baking
+Jasmine rice:
+  nutrients:
+    basis_grams: 100.0
+    calories: 360.0
+    fat: 0.58
+    saturated_fat: 0.158
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 1.0
+    carbs: 79.34
+    fiber: 1.4
+    total_sugars: 0.0
+    protein: 6.61
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 168879
+    description: Rice, white, medium-grain, raw, enriched
+  density:
+    grams: 195.0
+    volume: 1.0
+    unit: cup
+  portions:
+    go: 150.0
+    gō: 150.0
+  aisle: International
+Maldon salt:
+  nutrients:
+    basis_grams: 100.0
+    calories: 0.0
+    fat: 0.0
+    saturated_fat: 0.0
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 38758.0
+    carbs: 0.0
+    fiber: 0.0
+    total_sugars: 0.0
+    protein: 0.0
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 173468
+    description: Salt, table
+  density:
+    grams: 130.0
+    volume: 1.0
+    unit: cup
+  aliases:
+  - Flaky salt
+  - Salt (flaky)
+  aisle: Baking
+Malt syrup:
+  nutrients:
+    basis_grams: 100.0
+    calories: 318.0
+    fat: 0.0
+    saturated_fat: 0.0
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 35.0
+    carbs: 71.3
+    fiber: 0.0
+    total_sugars: 71.3
+    protein: 6.2
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 169660
+    description: Syrups, malt
+  density:
+    grams: 332.0
+    volume: 1.0
+    unit: cup
+  aisle: Baking
+  aliases:
+  - Barley malt syrup
+  - Barley malt
+Maple syrup:
+  nutrients:
+    basis_grams: 100.0
+    calories: 260.0
+    fat: 0.06
+    saturated_fat: 0.007
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 12.0
+    carbs: 67.04
+    fiber: 0.0
+    total_sugars: 60.46
+    protein: 0.04
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 169661
+    description: Syrups, maple
+  density:
+    grams: 315.0
+    volume: 1.0
+    unit: cup
+  aisle: Pantry
+Milk:
+  nutrients:
+    basis_grams: 100.0
+    calories: 64.0
+    fat: 3.66
+    saturated_fat: 2.278
+    trans_fat: 0.0
+    cholesterol: 14.0
+    sodium: 49.0
+    carbs: 4.65
+    fiber: 0.0
+    total_sugars: 0.0
+    protein: 3.28
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 171266
+    description: Milk, producer, fluid, 3.7% milkfat
+  density:
+    grams: 976.0
+    volume: 1.0
+    unit: qt
+  aisle: Refrigerated
+  aliases:
+  - Whole milk
+  - Milk (whole)
+Mozzarella (low-moisture):
+  nutrients:
+    basis_grams: 100.0
+    calories: 299.0
+    fat: 22.14
+    saturated_fat: 13.9
+    trans_fat: 0.0
+    cholesterol: 79.0
+    sodium: 486.0
+    carbs: 2.4
+    fiber: 0.0
+    total_sugars: 0.0
+    protein: 22.17
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 170845
+    description: Cheese, mozzarella, whole milk
+  density:
+    grams: 112.0
+    volume: 1.0
+    unit: cup
+  aliases:
+  - Mozzarella
+  - Mozarella cheese
+  aisle: Refrigerated
+Olive oil:
+  nutrients:
+    basis_grams: 100.0
+    calories: 884.0
+    fat: 100.0
+    saturated_fat: 13.808
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 2.0
+    carbs: 0.0
+    fiber: 0.0
+    total_sugars: 0.0
+    protein: 0.0
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 171413
+    description: Oil, olive, salad or cooking
+  density:
+    grams: 216.0
+    volume: 1.0
+    unit: cup
+  aisle: Pantry
+  aliases:
+  - EVOO
+  - Olive oil (extra-virgin)
+  - Olive oil (extra virgin)
+  - Extra virgin olive oil
+  - Extra-virgin olive oil
+Olive oil (mild):
+  nutrients:
+    basis_grams: 100.0
+    calories: 884.0
+    fat: 100.0
+    saturated_fat: 13.808
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 2.0
+    carbs: 0.0
+    fiber: 0.0
+    total_sugars: 0.0
+    protein: 0.0
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 171413
+    description: Oil, olive, salad or cooking
+  density:
+    grams: 216.0
+    volume: 1.0
+    unit: cup
+  aliases:
+  - Olive oil (light)
+  - Light olive oil
+  aisle: Pantry
+Onion:
+  nutrients:
+    basis_grams: 100.0
+    calories: 40.0
+    fat: 0.1
+    saturated_fat: 0.042
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 4.0
+    carbs: 9.34
+    fiber: 1.7
+    total_sugars: 4.24
+    protein: 1.1
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 170000
+    description: Onions, raw
+  density:
+    grams: 160.0
+    volume: 1.0
+    unit: cup
+  portions:
+    "~unitless": 150.0
+    large: 150.0
+    medium: 110.0
+    small: 70.0
+  aisle: Produce
+  aliases:
+  - Yellow onion
+Oregano:
+  nutrients:
+    basis_grams: 100.0
+    calories: 265.0
+    fat: 4.28
+    saturated_fat: 1.551
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 25.0
+    carbs: 68.92
+    fiber: 42.5
+    total_sugars: 4.09
+    protein: 9.0
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 171328
+    description: Spices, oregano, dried
+  density:
+    grams: 1.8
+    volume: 1.0
+    unit: tsp
+  aisle: Spices
+  aliases:
+  - Dried oregano
+  - Oregano (dried)
+Parmesan:
+  nutrients:
+    basis_grams: 100.0
+    calories: 420.0
+    fat: 27.84
+    saturated_fat: 15.371
+    trans_fat: 0.876
+    cholesterol: 86.0
+    sodium: 1804.0
+    carbs: 13.91
+    fiber: 0.0
+    total_sugars: 0.07
+    protein: 28.42
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 171247
+    description: Cheese, parmesan, grated
+  density:
+    grams: 100.0
+    volume: 1.0
+    unit: cup
+  aisle: Gourmet
+  aliases:
+  - Parmesan cheese
+  - Parmigiano
+  - Parmigiano-Reggiano
+  - Parmigiano Reggiano
+Red bell pepper:
+  nutrients:
+    basis_grams: 100.0
+    calories: 26.0
+    fat: 0.3
+    saturated_fat: 0.059
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 4.0
+    carbs: 6.03
+    fiber: 2.1
+    total_sugars: 4.2
+    protein: 0.99
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 170108
+    description: Peppers, sweet, red, raw
+  density:
+    grams: 149.0
+    volume: 1.0
+    unit: cup
+  portions:
+    "~unitless": 164.0
+    small: 74.0
+    large: 164.0
+    medium: 119.0
+  aliases:
+  - Bell pepper
+  - Bell pepper (red)
+  aisle: Produce
+Ricotta:
+  nutrients:
+    basis_grams: 100.0
+    calories: 150.0
+    fat: 10.18
+    saturated_fat: 6.42
+    trans_fat: 0.333
+    cholesterol: 49.0
+    sodium: 110.0
+    carbs: 7.27
+    fiber: 0.0
+    total_sugars: 0.27
+    protein: 7.54
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 170851
+    description: Cheese, ricotta, whole milk
+  density:
+    grams: 246.0
+    volume: 1.0
+    unit: cup
+  aisle: Refrigerated
+Rolled oats:
+  nutrients:
+    basis_grams: 100.0
+    calories: 371.0
+    fat: 6.87
+    saturated_fat: 1.11
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 3.0
+    carbs: 68.18
+    fiber: 9.4
+    total_sugars: 1.42
+    protein: 13.7
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 172989
+    description: Cereals, QUAKER, Quick Oats, Dry
+  density:
+    grams: 80.0
+    volume: 1.0
+    unit: cup
+  aisle: Cereal
+Salt:
+  nutrients:
+    basis_grams: 100.0
+    calories: 0.0
+    fat: 0.0
+    saturated_fat: 0.0
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 38758.0
+    carbs: 0.0
+    fiber: 0.0
+    total_sugars: 0.0
+    protein: 0.0
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 173468
+    description: Salt, table
+  density:
+    grams: 292.0
+    volume: 1.0
+    unit: cup
+  aliases:
+  - Table salt
+  - Kosher salt
+  portions:
+    spoonful: 2.5
+  aisle: Baking
+Salt (Kosher):
+  nutrients:
+    basis_grams: 100.0
+    calories: 0.0
+    fat: 0.0
+    saturated_fat: 0.0
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 38758.0
+    carbs: 0.0
+    fiber: 0.0
+    total_sugars: 0.0
+    protein: 0.0
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 173468
+    description: Salt, table
+  density:
+    grams: 140.0
+    volume: 1.0
+    unit: cup
+  aisle: Baking
+  aliases:
+  - Kosher salt
+Sodium citrate:
+  aisle: Specialty
+Sugar (brown):
+  nutrients:
+    basis_grams: 100.0
+    calories: 380.0
+    fat: 0.0
+    saturated_fat: 0.0
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 28.0
+    carbs: 98.09
+    fiber: 0.0
+    total_sugars: 97.02
+    protein: 0.12
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 168833
+    description: Sugars, brown
+  density:
+    grams: 220.0
+    volume: 1.0
+    unit: cup
+  aliases:
+  - Brown sugar
+  aisle: Baking
+Sugar (white):
+  nutrients:
+    basis_grams: 100.0
+    calories: 387.0
+    fat: 0.0
+    saturated_fat: 0.0
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 1.0
+    carbs: 99.98
+    fiber: 0.0
+    total_sugars: 99.8
+    protein: 0.0
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 169655
+    description: Sugars, granulated
+  density:
+    grams: 200.0
+    volume: 1.0
+    unit: cup
+  aisle: Baking
+  aliases:
+  - White sugar
+Tomato passata:
+  nutrients:
+    basis_grams: 100.0
+    calories: 32.0
+    fat: 0.39
+    saturated_fat: 0.055
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 15.0
+    carbs: 7.09
+    fiber: 1.4
+    total_sugars: 0.0
+    protein: 1.32
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 170463
+    description: Tomato products, canned, sauce, with tomato tidbits
+  density:
+    grams: 244.0
+    volume: 1.0
+    unit: cup
+  aliases:
+  - Passata
+  aisle: Pantry
+Tomato paste:
+  nutrients:
+    basis_grams: 100.0
+    calories: 82.0
+    fat: 0.47
+    saturated_fat: 0.1
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 59.0
+    carbs: 18.91
+    fiber: 4.1
+    total_sugars: 12.18
+    protein: 4.32
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 170459
+    description: Tomato products, canned, paste, without salt added (Includes foods
+      for USDA's Food Distribution Program)
+  density:
+    grams: 262.0
+    volume: 1.0
+    unit: cup
+  aisle: Pantry
+Tomatoes (canned):
+  nutrients:
+    basis_grams: 100.0
+    calories: 32.0
+    fat: 0.28
+    saturated_fat: 0.04
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 186.0
+    carbs: 7.29
+    fiber: 1.9
+    total_sugars: 4.4
+    protein: 1.64
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 170501
+    description: Tomatoes, crushed, canned
+  density:
+    grams: 242.0
+    volume: 1.0
+    unit: cup
+  aisle: Pantry
+  aliases:
+  - Canned whole tomatoes
+Vanilla extract:
+  nutrients:
+    basis_grams: 100.0
+    calories: 288.0
+    fat: 0.06
+    saturated_fat: 0.01
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 9.0
+    carbs: 12.65
+    fiber: 0.0
+    total_sugars: 12.65
+    protein: 0.06
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 173471
+    description: Vanilla extract
+  density:
+    grams: 208.0
+    volume: 1.0
+    unit: cup
+  aisle: Baking
+Vinegar (balsamic):
+  nutrients:
+    basis_grams: 100.0
+    calories: 88.0
+    fat: 0.0
+    saturated_fat: 0.0
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 23.0
+    carbs: 17.03
+    fiber: 0.0
+    total_sugars: 14.95
+    protein: 0.49
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 172241
+    description: Vinegar, balsamic
+  density:
+    grams: 255.0
+    volume: 1.0
+    unit: cup
+  aisle: Pantry
+  aliases:
+  - Balsamic vinegar
+Water:
+  nutrients:
+    basis_grams: 100.0
+    calories: 0.0
+    fat: 0.0
+    saturated_fat: 0.0
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 3.0
+    carbs: 0.0
+    fiber: 0.0
+    total_sugars: 0.0
+    protein: 0.0
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 175103
+    description: Beverages, water, tap, municipal
+  density:
+    grams: 1000.0
+    volume: 1.0
+    unit: l
+  aisle: omit
+Yeast:
+  nutrients:
+    basis_grams: 100.0
+    calories: 325.0
+    fat: 7.61
+    saturated_fat: 1.001
+    trans_fat: 0.0
+    cholesterol: 0.0
+    sodium: 51.0
+    carbs: 41.22
+    fiber: 26.9
+    total_sugars: 0.0
+    protein: 40.44
+    added_sugars: 0.0
+  sources:
+  - type: usda
+    dataset: SR Legacy
+    fdc_id: 175043
+    description: Leavening agents, yeast, baker's, active dry
+  density:
+    grams: 12.0
+    volume: 1.0
+    unit: tbsp
+  portions:
+    packet: 7.0
+  aisle: Baking
+  aliases:
+  - Active dry yeast

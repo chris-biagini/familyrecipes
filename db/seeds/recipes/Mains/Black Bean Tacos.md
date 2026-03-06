@@ -13,7 +13,7 @@ Serves: 3
 - Onion: Finely chopped.
 - Salt
 - Tomato salsa
-- Vegetarian bouillon
+- Bouillon
 - Water
 
 Add rice, oil, and onion to sauté pan and cook gently until onion has softened and rice is translucent. 

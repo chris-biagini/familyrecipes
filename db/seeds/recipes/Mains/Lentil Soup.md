@@ -31,7 +31,7 @@ When onions are done, add tomato paste and cook until fragrant.
 
 - Lentils, 225 g: Check for stones, then rinse.
 - Water, 1500 g
-- Vegetarian bouillon
+- Bouillon
 
 Add lentils, water, and bouillon to pot. Bring to a gentle boil.
 
