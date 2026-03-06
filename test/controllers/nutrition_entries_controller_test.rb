@@ -430,10 +430,9 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
   private
 
   def import_recipe_with_flour
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Test Bread
 
-      Category: Bread
       Serves: 4
 
       ## Mix (combine)

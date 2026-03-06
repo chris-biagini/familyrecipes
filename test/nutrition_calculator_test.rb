@@ -54,7 +54,7 @@ class NutritionCalculatorTest < Minitest::Test
   end
 
   def make_recipe(markdown, id: 'test-recipe')
-    FamilyRecipes::Recipe.new(markdown_source: markdown, id: id, category: 'Test')
+    FamilyRecipes::Recipe.new(markdown_source: markdown, id: id)
   end
 
   # --- Basic calculations ---
@@ -63,7 +63,6 @@ class NutritionCalculatorTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Test
 
-      Category: Test
 
       ## Mix (combine)
 
@@ -87,7 +86,6 @@ class NutritionCalculatorTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Test
 
-      Category: Test
 
       ## Prep (crack eggs)
 
@@ -107,7 +105,6 @@ class NutritionCalculatorTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Test
 
-      Category: Test
 
       ## Mix (combine)
 
@@ -132,7 +129,6 @@ class NutritionCalculatorTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Test
 
-      Category: Test
 
       ## Step 1 (first)
 
@@ -159,7 +155,6 @@ class NutritionCalculatorTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Test
 
-      Category: Test
 
       ## Mix (combine)
 
@@ -178,7 +173,6 @@ class NutritionCalculatorTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Test
 
-      Category: Test
 
       ## Mix (combine)
 
@@ -199,7 +193,6 @@ class NutritionCalculatorTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Test
 
-      Category: Test
 
       ## Mix (combine)
 
@@ -222,7 +215,6 @@ class NutritionCalculatorTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Test
 
-      Category: Test
 
       ## Mix (combine)
 
@@ -245,7 +237,6 @@ class NutritionCalculatorTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Test
 
-      Category: Test
       Serves: 4
 
       ## Mix (combine)
@@ -265,7 +256,6 @@ class NutritionCalculatorTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Test
 
-      Category: Test
       Makes: 30 gougeres
 
       ## Mix (combine)
@@ -285,7 +275,6 @@ class NutritionCalculatorTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Test
 
-      Category: Test
       Makes: 12 cookies
       Serves: 6
 
@@ -305,7 +294,6 @@ class NutritionCalculatorTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Test
 
-      Category: Test
 
       ## Mix (combine)
 
@@ -326,7 +314,6 @@ class NutritionCalculatorTest < Minitest::Test
     dough_recipe = make_recipe(<<~MD, id: 'pizza-dough')
       # Pizza Dough
 
-      Category: Test
 
       ## Dough (make dough)
 
@@ -338,7 +325,6 @@ class NutritionCalculatorTest < Minitest::Test
     pizza_recipe = make_recipe(<<~MD, id: 'pizza')
       # Pizza
 
-      Category: Test
 
       ## Make dough.
       >>> @[Pizza Dough]
@@ -369,7 +355,6 @@ class NutritionCalculatorTest < Minitest::Test
     dough_recipe = make_recipe(<<~MD, id: 'pizza-dough')
       # Pizza Dough
 
-      Category: Test
 
       ## Dough (make dough)
 
@@ -381,7 +366,6 @@ class NutritionCalculatorTest < Minitest::Test
     pizza_recipe = make_recipe(<<~MD, id: 'pizza')
       # Pizza
 
-      Category: Test
 
       ## Make dough.
       >>> @[Pizza Dough], 2
@@ -408,7 +392,6 @@ class NutritionCalculatorTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Test
 
-      Category: Test
 
       ## Mix (combine)
 
@@ -429,7 +412,6 @@ class NutritionCalculatorTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Test
 
-      Category: Test
 
       ## Mix (combine)
 
@@ -449,7 +431,6 @@ class NutritionCalculatorTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Test
 
-      Category: Test
 
       ## Mix (combine)
 
@@ -474,7 +455,6 @@ class NutritionCalculatorTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Test
 
-      Category: Test
 
       ## Mix (combine)
 
@@ -498,7 +478,6 @@ class NutritionCalculatorTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Test
 
-      Category: Test
 
       ## Mix (combine)
 
@@ -521,7 +500,6 @@ class NutritionCalculatorTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Test
 
-      Category: Test
 
       ## Mix (combine)
 
@@ -571,7 +549,6 @@ class NutritionCalculatorTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Test
 
-      Category: Test
 
       ## Mix (combine)
 
@@ -597,7 +574,6 @@ class NutritionCalculatorTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Test
 
-      Category: Test
 
       ## Mix (combine)
 
@@ -638,7 +614,6 @@ class NutritionCalculatorTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Test
 
-      Category: Test
 
       ## Mix (combine)
 
@@ -673,7 +648,6 @@ class NutritionCalculatorTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Test
 
-      Category: Test
 
       ## Mix (combine)
 
@@ -748,7 +722,6 @@ class NutritionCalculatorTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Test
 
-      Category: Test
       Makes: 24 cookies
 
       ## Mix (combine)
@@ -770,7 +743,6 @@ class NutritionCalculatorTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Test
 
-      Category: Test
       Serves: 4
 
       ## Mix (combine)
@@ -790,7 +762,6 @@ class NutritionCalculatorTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Test
 
-      Category: Test
       Makes: 24 cookies
       Serves: 4
 
@@ -810,7 +781,6 @@ class NutritionCalculatorTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Test
 
-      Category: Test
       Makes: 12 bagels
 
       ## Mix (combine)
@@ -831,7 +801,6 @@ class NutritionCalculatorTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Test
 
-      Category: Test
 
       ## Mix (combine)
 
@@ -856,7 +825,6 @@ class NutritionCalculatorTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Test
 
-      Category: Test
 
       ## Mix (combine)
 
@@ -879,7 +847,6 @@ class NutritionCalculatorTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Test
 
-      Category: Test
       Makes: 2 loaves
 
       ## Mix (combine)

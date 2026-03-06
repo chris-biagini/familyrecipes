@@ -7,10 +7,9 @@ class RecipeAvailabilityCalculatorTest < ActiveSupport::TestCase
     setup_test_kitchen
     setup_test_category(name: 'Bread')
 
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Focaccia
 
-      Category: Bread
 
       ## Mix (combine)
 
@@ -21,10 +20,9 @@ class RecipeAvailabilityCalculatorTest < ActiveSupport::TestCase
       Mix well.
     MD
 
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Bagels
 
-      Category: Bread
 
       ## Mix (combine)
 
@@ -95,10 +93,9 @@ class RecipeAvailabilityCalculatorTest < ActiveSupport::TestCase
   test 'treats singular and plural ingredient names as equivalent' do
     create_catalog_entry('Eggs', basis_grams: 50, aisle: 'Refrigerated')
 
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Custard
 
-      Category: Bread
 
       ## Mix (combine)
 
@@ -144,10 +141,9 @@ class RecipeAvailabilityCalculatorTest < ActiveSupport::TestCase
   end
 
   test 'handles cross-referenced recipe ingredients' do
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Poolish
 
-      Category: Bread
 
       ## Mix (combine)
 
@@ -157,10 +153,9 @@ class RecipeAvailabilityCalculatorTest < ActiveSupport::TestCase
       Mix.
     MD
 
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Pizza
 
-      Category: Bread
 
       ## Make poolish.
       >>> @[Poolish]

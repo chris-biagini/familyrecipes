@@ -7,10 +7,9 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
     setup_test_kitchen
     setup_test_category(name: 'Bread')
 
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Focaccia
 
-      Category: Bread
 
       ## Mix (combine)
 
@@ -79,10 +78,9 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
   end
 
   test 'aggregates quantities from multiple recipes' do
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Sourdough
 
-      Category: Bread
 
       ## Mix (combine)
 
@@ -121,10 +119,9 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
   test 'unordered aisles appear after ordered aisles alphabetically' do
     create_catalog_entry('Eggs', basis_grams: 50, aisle: 'Refrigerated')
 
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Scramble
 
-      Category: Bread
 
       ## Cook (scramble)
 
@@ -198,10 +195,9 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
   end
 
   test 'includes cross-referenced recipe ingredients in shopping list' do
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Poolish
 
-      Category: Bread
 
       ## Mix (combine)
 
@@ -211,10 +207,9 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
       Mix.
     MD
 
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Pizza
 
-      Category: Bread
 
       ## Make poolish.
       >>> @[Poolish]
@@ -250,10 +245,9 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
   end
 
   test 'shared ingredients list all contributing recipe titles' do
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Sourdough
 
-      Category: Bread
 
       ## Mix (combine)
 
@@ -292,10 +286,9 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
   test 'consolidates singular and plural ingredient names into canonical form' do
     create_catalog_entry('Eggs', basis_grams: 50, aisle: 'Refrigerated')
 
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Omelet
 
-      Category: Bread
 
       ## Cook (fry)
 
@@ -304,10 +297,9 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
       Cook.
     MD
 
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Custard
 
-      Category: Bread
 
       ## Mix (combine)
 
@@ -336,10 +328,9 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
   end
 
   test 'merges ingredients case-insensitively when catalog entry exists' do
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Soda Bread
 
-      Category: Bread
 
       ## Mix (combine)
 
@@ -366,10 +357,9 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
   end
 
   test 'merges uncataloged ingredients case-insensitively' do
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Fizzy Water
 
-      Category: Bread
 
       ## Pour (serve)
 
@@ -378,10 +368,9 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
       Pour.
     MD
 
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Sparkling Lemonade
 
-      Category: Bread
 
       ## Mix (combine)
 
@@ -413,10 +402,9 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
   test 'custom item that duplicates a recipe ingredient is merged not doubled' do
     create_catalog_entry('Triscuits', basis_grams: 30, aisle: 'Snacks')
 
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Cheese Plate
 
-      Category: Bread
 
       ## Assemble (plate)
 
@@ -437,10 +425,9 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
   end
 
   test 'custom item that duplicates an uncataloged recipe ingredient is merged' do
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Snack Mix
 
-      Category: Bread
 
       ## Assemble (mix)
 
@@ -494,10 +481,9 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
   end
 
   test 'serializes singular unit for quantity of one' do
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Toast
 
-      Category: Bread
 
       ## Make (toast)
 

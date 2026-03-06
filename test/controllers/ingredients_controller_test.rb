@@ -14,11 +14,10 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'renders ingredient index grouped by ingredient name' do
-    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    @category = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Focaccia
 
-      Category: Bread
 
       ## Mix (combine)
 
@@ -37,12 +36,11 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'groups multiple recipes under the same ingredient' do
-    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    @category = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
 
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Focaccia
 
-      Category: Bread
 
       ## Mix (combine)
 
@@ -51,10 +49,9 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
       Mix well.
     MD
 
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Pizza Dough
 
-      Category: Bread
 
       ## Mix (combine)
 
@@ -71,11 +68,10 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'sorts ingredients alphabetically' do
-    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    @category = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Focaccia
 
-      Category: Bread
 
       ## Mix (combine)
 
@@ -95,11 +91,10 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'does not duplicate a recipe under the same ingredient' do
-    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    @category = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Focaccia
 
-      Category: Bread
 
       ## Step One (mix)
 
@@ -122,11 +117,10 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'shows missing nutrition badge for ingredients without data' do
-    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    @category = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Focaccia
 
-      Category: Bread
 
       ## Mix (combine)
 
@@ -144,11 +138,10 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
 
   test 'shows global badge for ingredients with global nutrition data' do
     IngredientCatalog.create!(ingredient_name: 'Flour', basis_grams: 30, calories: 110)
-    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    @category = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Focaccia
 
-      Category: Bread
 
       ## Mix (combine)
 
@@ -166,11 +159,10 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
 
   test 'shows custom badge for ingredients with kitchen override' do
     IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Flour', basis_grams: 30, calories: 110)
-    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    @category = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Focaccia
 
-      Category: Bread
 
       ## Mix (combine)
 
@@ -187,12 +179,11 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'consolidates singular and plural ingredient variants into one entry' do
-    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    @category = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
 
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Focaccia
 
-      Category: Bread
 
       ## Topping (add)
 
@@ -201,10 +192,9 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
       Scatter over dough.
     MD
 
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Pizza Dough
 
-      Category: Bread
 
       ## Topping (add)
 
@@ -224,12 +214,11 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
 
   test 'uses catalog entry name as canonical form for variants' do
     IngredientCatalog.create!(ingredient_name: 'Eggs', basis_grams: 50, calories: 70)
-    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    @category = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
 
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Brioche
 
-      Category: Bread
 
       ## Mix (combine)
 
@@ -246,11 +235,10 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'shows missing ingredients banner when nutrition data is absent' do
-    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    @category = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Focaccia
 
-      Category: Bread
 
       ## Mix (combine)
 
@@ -288,11 +276,10 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'edit includes recipe links for ingredient' do
-    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    @category = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Focaccia
 
-      Category: Bread
 
       ## Mix (combine)
 
@@ -310,11 +297,10 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
 
   test 'edit finds recipes via inflected variant names' do
     IngredientCatalog.create!(ingredient_name: 'Eggs', basis_grams: 50, calories: 70)
-    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    @category = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Brioche
 
-      Category: Bread
 
       ## Mix (combine)
 
@@ -334,11 +320,10 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
     IngredientCatalog.create!(ingredient_name: 'Flour (all-purpose)',
                               basis_grams: 30, calories: 110,
                               aliases: ['AP flour', 'All-purpose flour'])
-    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    @category = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Focaccia
 
-      Category: Bread
 
       ## Mix (combine)
 
@@ -355,11 +340,10 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'edit does not duplicate recipes using ingredient in multiple steps' do
-    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    @category = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Focaccia
 
-      Category: Bread
 
       ## Step One (mix)
 
@@ -386,11 +370,10 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
       kitchen: @kitchen, ingredient_name: 'Flour (all-purpose)',
       basis_grams: 30, aliases: ['AP flour', 'Plain flour']
     )
-    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    @category = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Test
 
-      Category: Bread
 
       ## Mix (combine)
 

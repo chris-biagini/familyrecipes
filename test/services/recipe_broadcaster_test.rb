@@ -8,13 +8,13 @@ class RecipeBroadcasterTest < ActiveSupport::TestCase
 
   setup do
     create_kitchen_and_user
+    setup_test_category
 
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Focaccia
 
       A simple bread.
 
-      Category: Bread
 
       ## Dough
 

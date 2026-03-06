@@ -7,10 +7,9 @@ class IngredientRowBuilderTest < ActiveSupport::TestCase
     setup_test_kitchen
     setup_test_category(name: 'Bread')
 
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Focaccia
 
-      Category: Bread
 
       ## Mix (combine)
 
@@ -20,10 +19,9 @@ class IngredientRowBuilderTest < ActiveSupport::TestCase
       Mix well.
     MD
 
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Sourdough
 
-      Category: Bread
 
       ## Mix (combine)
 
@@ -129,10 +127,9 @@ class IngredientRowBuilderTest < ActiveSupport::TestCase
   test 'rows canonicalizes ingredient names through inflector variants' do
     create_catalog_entry('Eggs', basis_grams: 50)
 
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Omelet
 
-      Category: Bread
 
       ## Cook (fry)
 

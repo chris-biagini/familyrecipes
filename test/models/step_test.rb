@@ -3,7 +3,7 @@
 require 'test_helper'
 
 class StepModelTest < ActiveSupport::TestCase
-  BASIC_MD = "# Test\n\nCategory: Test\n\n## Step\n\n- Flour\n\nMix."
+  BASIC_MD = "# Test\n\n## Step\n\n- Flour\n\nMix."
 
   setup do
     setup_test_kitchen

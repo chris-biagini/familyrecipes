@@ -7,10 +7,9 @@ class CrossReferenceUpdaterTest < ActiveSupport::TestCase
     setup_test_kitchen
     setup_test_category(name: 'Bread')
 
-    @dough = MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    @dough = MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Pizza Dough
 
-      Category: Bread
 
       ## Mix (combine ingredients)
 
@@ -19,10 +18,9 @@ class CrossReferenceUpdaterTest < ActiveSupport::TestCase
       Mix together.
     MD
 
-    @pizza = MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    @pizza = MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Margherita Pizza
 
-      Category: Bread
 
       ## Make dough.
       >>> @[Pizza Dough], 1

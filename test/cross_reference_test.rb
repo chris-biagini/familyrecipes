@@ -18,7 +18,7 @@ class CrossReferenceTest < Minitest::Test
   end
 
   def test_cross_reference_expanded_ingredients
-    md = "# Pizza Dough\n\nCategory: Test\n\n## Mix (make dough)\n\n- Flour, 500 g\n- Water, 325 g\n- Salt\n\nKnead."
+    md = "# Pizza Dough\n\n## Mix (make dough)\n\n- Flour, 500 g\n- Water, 325 g\n- Salt\n\nKnead."
     dough = make_recipe(md, id: 'pizza-dough')
     recipe_map = { 'pizza-dough' => dough }
     xref = FamilyRecipes::CrossReference.new(target_title: 'Pizza Dough', multiplier: 2.0)
@@ -47,7 +47,6 @@ class CrossReferenceTest < Minitest::Test
   def test_recipe_with_cross_reference_has_cross_references
     recipe = make_recipe(<<~MD)
       # Pizza
-      Category: Test
       ## Make dough.
       >>> @[Pizza Dough]
       ## Top.
@@ -62,7 +61,6 @@ class CrossReferenceTest < Minitest::Test
   def test_recipe_cross_reference_not_in_own_ingredients
     recipe = make_recipe(<<~MD)
       # Pizza
-      Category: Test
       ## Make dough.
       >>> @[Pizza Dough]
       ## Top.
@@ -76,7 +74,6 @@ class CrossReferenceTest < Minitest::Test
   def test_recipe_all_ingredients_with_quantities_includes_sub_recipe
     dough = make_recipe(<<~MD, id: 'pizza-dough')
       # Pizza Dough
-      Category: Test
       ## Mix (make dough)
       - Flour, 500 g
       - Water, 325 g
@@ -85,7 +82,6 @@ class CrossReferenceTest < Minitest::Test
 
     pizza = make_recipe(<<~MD)
       # Pizza
-      Category: Test
       ## Make dough.
       >>> @[Pizza Dough]
       ## Top.
@@ -105,7 +101,6 @@ class CrossReferenceTest < Minitest::Test
   def test_recipe_all_ingredients_with_quantities_scales_sub_recipe
     dough = make_recipe(<<~MD, id: 'pizza-dough')
       # Pizza Dough
-      Category: Test
       ## Mix (make dough)
       - Flour, 500 g
       Knead.
@@ -113,7 +108,6 @@ class CrossReferenceTest < Minitest::Test
 
     pizza = make_recipe(<<~MD)
       # Pizza
-      Category: Test
       ## Make dough.
       >>> @[Pizza Dough], 2
       ## Top.
@@ -133,7 +127,6 @@ class CrossReferenceTest < Minitest::Test
   def test_step_cross_reference_accessible_on_step
     recipe = make_recipe(<<~MD)
       # Pizza
-      Category: Test
       ## Make dough.
       >>> @[Pizza Dough]
       ## Top.
@@ -151,6 +144,6 @@ class CrossReferenceTest < Minitest::Test
   private
 
   def make_recipe(markdown, id: 'test-recipe')
-    FamilyRecipes::Recipe.new(markdown_source: markdown, id: id, category: 'Test')
+    FamilyRecipes::Recipe.new(markdown_source: markdown, id: id)
   end
 end

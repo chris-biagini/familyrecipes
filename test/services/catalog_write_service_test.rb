@@ -12,6 +12,7 @@ class CatalogWriteServiceTest < ActiveSupport::TestCase
 
   setup do
     setup_test_kitchen
+    setup_test_category
     IngredientCatalog.where(kitchen: @kitchen).delete_all
   end
 
@@ -84,10 +85,9 @@ class CatalogWriteServiceTest < ActiveSupport::TestCase
   test 'upsert recalculates affected recipes when nutrition present' do
     create_catalog_entry('flour', basis_grams: 100, calories: 364, aisle: 'Baking')
 
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Bread
 
-      Category: Bread
 
       ## Mix (combine)
 
@@ -107,10 +107,9 @@ class CatalogWriteServiceTest < ActiveSupport::TestCase
   test 'upsert recalculates recipes using inflector variants of ingredient name' do
     create_catalog_entry('Eggs', basis_grams: 50, calories: 78, aisle: 'Dairy')
 
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Omelette
 
-      Category: Breakfast
 
       ## Cook (combine)
 
@@ -154,10 +153,9 @@ class CatalogWriteServiceTest < ActiveSupport::TestCase
     override = IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'flour',
                                          basis_grams: 50, calories: 180)
 
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Bread
 
-      Category: Bread
 
       ## Mix (combine)
 
