@@ -13,7 +13,7 @@ module LineClassifier
     ingredient: /^- (.+)$/,
     cross_reference_block: /^>>>\s+(.+)$/,
     divider: /^---\s*$/,
-    front_matter: /^(Category|Makes|Serves):\s+(.+)$/,
+    front_matter: /^(Makes|Serves):\s+(.+)$/,
     blank: /^\s*$/
   }.freeze
 
