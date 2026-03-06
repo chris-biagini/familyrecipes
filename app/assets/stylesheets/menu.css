@@ -360,7 +360,7 @@
 }
 
 /* Desktop layout */
-@media (min-width: 700px) {
+@media (min-width: 840px) {
   #recipe-selector {
     display: grid;
     grid-template-columns: 1fr 1fr;

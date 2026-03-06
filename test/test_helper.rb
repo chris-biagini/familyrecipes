@@ -27,6 +27,7 @@ module ActiveSupport
     private
 
     def setup_test_kitchen
+      ActsAsTenant.without_tenant { Kitchen.where.not(slug: 'test-kitchen').delete_all }
       @kitchen = Kitchen.find_or_create_by!(name: 'Test Kitchen', slug: 'test-kitchen')
       ActsAsTenant.current_tenant = @kitchen
     end

@@ -120,7 +120,7 @@
 
 html {
   color-scheme: light dark;
-  font-size: 18px;
+  font-size: 21.6px;
   touch-action: manipulation; /* Should prevent double-tap zoom, but maybe doesn't? */
 
   /* Gingham pattern background — applied directly to the root element
@@ -147,8 +147,8 @@ html {
   background-size:
     var(--gingham-tile-size) var(--gingham-tile-size),
     var(--gingham-tile-size) var(--gingham-tile-size),
-    auto calc(2 * var(--weave-stripe-width)),
-    calc(2 * var(--weave-stripe-width)) auto,
+    var(--gingham-tile-size) var(--gingham-tile-size),
+    var(--gingham-tile-size) var(--gingham-tile-size),
     auto;
   background-image: repeating-linear-gradient(
       135deg,
@@ -165,14 +165,14 @@ html {
       transparent calc(2 * var(--gingham-stripe-width))
     ),
     repeating-linear-gradient(
-      0deg,
+      135deg,
       var(--weave-color) 0,
       var(--weave-color) var(--weave-stripe-width),
       transparent var(--weave-stripe-width),
       transparent calc(2 * var(--weave-stripe-width))
     ),
     repeating-linear-gradient(
-      90deg,
+      45deg,
       var(--weave-color) 0,
       var(--weave-color) var(--weave-stripe-width),
       transparent var(--weave-stripe-width),
@@ -288,7 +288,7 @@ nav > div:first-child {
   container-type: inline-size;
 }
 
-@container (max-width: 570px) {
+@container (max-width: 685px) {
   nav a {
     flex-direction: column;
     gap: 0.15rem;
@@ -657,7 +657,7 @@ section h2 {
 }
 
 /* Mobile: hide aisle and recipes columns */
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .col-aisle,
   .col-recipes,
   .ingredients-table thead .col-aisle,
@@ -822,7 +822,7 @@ footer small {
 /****************************************/
 
 /* small mobiles only */
-@media screen and (max-width: 600px) and (pointer: coarse) {
+@media screen and (max-width: 720px) and (pointer: coarse) {
   :root {
     --breathing-room: 0.75rem;
   }
@@ -833,7 +833,7 @@ footer small {
 }
 
 /* anything with a narrow window */
-@media screen and (max-width: 600px) {
+@media screen and (max-width: 720px) {
   :root {
     --breathing-room: 1.5rem;
   }
@@ -1656,7 +1656,7 @@ button.aisle-name:hover {
 }
 
 /* Mobile: nutrition editor goes fullscreen */
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .editor-form {
     padding: 0.75rem 1rem;
   }
@@ -1773,7 +1773,7 @@ button.aisle-name:hover {
 }
 
 /* Mobile: keep embedded card border/shadow even when main drops it */
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .embedded-recipe {
     padding: 1rem;
   }

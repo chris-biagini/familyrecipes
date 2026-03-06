@@ -3,6 +3,10 @@
 require 'test_helper'
 
 class LandingControllerTest < ActionDispatch::IntegrationTest
+  setup do
+    ActsAsTenant.without_tenant { Kitchen.destroy_all }
+  end
+
   test 'renders homepage for sole kitchen without redirect' do
     Kitchen.create!(name: 'Test Kitchen', slug: 'test-kitchen')
 
