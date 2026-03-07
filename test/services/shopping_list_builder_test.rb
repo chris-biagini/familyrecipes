@@ -457,6 +457,34 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
     assert_includes all_names, 'paper towels'
   end
 
+  test 'custom item matching catalog entry goes to catalog aisle not Miscellaneous' do
+    create_catalog_entry('Butter', basis_grams: 14, aisle: 'Dairy')
+
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('custom_items', item: 'butter', action: 'add')
+
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
+
+    assert result.key?('Dairy'), "Expected 'Dairy' aisle for cataloged custom item"
+    butter = result['Dairy'].find { |i| i[:name] == 'Butter' }
+
+    assert butter, 'Expected custom item canonicalized to "Butter" in Dairy aisle'
+    assert_empty butter[:amounts]
+  end
+
+  test 'custom item name is canonicalized to catalog name' do
+    create_catalog_entry('Olive Oil', basis_grams: 14, aisle: 'Oils')
+
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('custom_items', item: 'olive oil', action: 'add')
+
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
+    all_names = result.values.flatten.pluck(:name)
+
+    assert_includes all_names, 'Olive Oil'
+    assert_not_includes all_names, 'olive oil'
+  end
+
   test 'custom items have empty sources' do
     list = MealPlan.for_kitchen(@kitchen)
     list.apply_action('custom_items', item: 'birthday candles', action: 'add')

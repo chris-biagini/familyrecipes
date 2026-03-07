@@ -122,8 +122,12 @@ class ShoppingListBuilder
     novel = custom.reject { |item| existing.include?(canonical_name(item)) }
     return if novel.empty?
 
-    organized['Miscellaneous'] ||= []
-    organized['Miscellaneous'].concat(novel.map { |item| { name: item, amounts: [], sources: [] } })
+    novel.each do |item|
+      name = canonical_name(item)
+      aisle = aisle_for(name)
+      organized[aisle] ||= []
+      organized[aisle] << { name: name, amounts: [], sources: [] }
+    end
   end
 
   def existing_canonical_names(organized)
