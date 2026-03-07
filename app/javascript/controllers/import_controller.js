@@ -32,7 +32,10 @@ export default class extends Controller {
       body: formData
     })
       .then(response => response.json())
-      .then(data => notifyShow(data.message, { persistent: true }))
+      .then(data => {
+        // Delay toast so Turbo morph (from broadcast_update) settles first
+        setTimeout(() => notifyShow(data.message, { persistent: true }), 500)
+      })
       .catch(() => notifyShow("Import failed. Please try again."))
       .finally(() => { this.fileInputTarget.value = "" })
   }
