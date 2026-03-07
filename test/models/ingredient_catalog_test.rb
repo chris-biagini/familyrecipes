@@ -628,6 +628,27 @@ class IngredientCatalogTest < ActiveSupport::TestCase
                  'Canonical "Eggs" must not be overwritten by inflected alias of "Egg"'
   end
 
+  test 'add_alias_keys logs warning when alias collides across entries' do
+    IngredientCatalog.create!(
+      ingredient_name: 'Salt (Table)',
+      aisle: 'Baking',
+      aliases: ['Kosher salt']
+    )
+    IngredientCatalog.create!(
+      ingredient_name: 'Salt (Kosher)',
+      aisle: 'Baking',
+      aliases: ['Kosher salt']
+    )
+
+    warnings = []
+    Rails.logger.stub(:warn, ->(msg) { warnings << msg }) do
+      IngredientCatalog.lookup_for(@kitchen)
+    end
+
+    assert warnings.any? { |w| w.include?('Kosher salt') && w.include?('collides') },
+           "Expected a collision warning for 'Kosher salt', got: #{warnings.inspect}"
+  end
+
   # --- attrs_from_yaml ---
 
   test 'attrs_from_yaml extracts all fields from a complete entry' do

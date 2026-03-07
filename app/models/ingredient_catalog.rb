@@ -99,8 +99,16 @@ class IngredientCatalog < ApplicationRecord
       lowered = alias_name.downcase
       next if lookup.key?(alias_name) || lookup.key?(lowered)
 
-      alias_case_variants(alias_name).each { |v| extras[v] ||= entry }
-      FamilyRecipes::Inflector.ingredient_variants(alias_name).each { |v| extras[v] ||= entry }
+      variants = alias_case_variants(alias_name) +
+                 FamilyRecipes::Inflector.ingredient_variants(alias_name)
+      variants.each do |v|
+        if extras.key?(v) && extras[v].ingredient_name != entry.ingredient_name
+          Rails.logger.warn("Alias '#{alias_name}' on '#{entry.ingredient_name}' " \
+                            "collides with '#{extras[v].ingredient_name}' — skipping")
+          break
+        end
+        extras[v] ||= entry
+      end
     end
   end
 
