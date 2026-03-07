@@ -18,7 +18,7 @@ class ImportsControllerTest < ActionDispatch::IntegrationTest
     log_in
     post import_path(kitchen_slug: kitchen_slug)
 
-    assert_redirected_to kitchen_root_path(kitchen_slug: kitchen_slug)
+    assert_redirected_to home_path
     assert_match(/no importable files/i, flash[:notice])
   end
 end
