@@ -54,4 +54,30 @@ class CatalogSyncTest < ActiveSupport::TestCase
 
     assert_equal ['AP flour', 'Plain flour'], record.aliases
   end
+
+  test 'catalog aliases do not collide with other entries' do
+    catalog_data = YAML.safe_load_file(CATALOG_PATH, permitted_classes: [], permitted_symbols: [], aliases: false)
+    skip 'ingredient-catalog.yaml is empty' if catalog_data.blank?
+
+    canonical_names = catalog_data.keys.map(&:downcase).to_set
+    alias_owners = {}
+    collisions = []
+
+    catalog_data.each do |name, entry|
+      (entry['aliases'] || []).each do |alias_name|
+        lowered = alias_name.downcase
+
+        if canonical_names.include?(lowered)
+          collisions << "#{name}: alias '#{alias_name}' matches canonical entry"
+        elsif alias_owners.key?(lowered)
+          collisions << "#{name}: alias '#{alias_name}' also claimed by '#{alias_owners[lowered]}'"
+        else
+          alias_owners[lowered] = name
+        end
+      end
+    end
+
+    assert_empty collisions,
+                 "#{collisions.size} alias collision(s):\n  #{collisions.join("\n  ")}"
+  end
 end
