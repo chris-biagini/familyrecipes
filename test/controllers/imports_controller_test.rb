@@ -14,12 +14,12 @@ class ImportsControllerTest < ActionDispatch::IntegrationTest
     assert_response :forbidden
   end
 
-  test 'create with no files redirects with flash' do
+  test 'create with no files returns JSON message' do
     log_in
     post import_path(kitchen_slug: kitchen_slug)
 
-    assert_redirected_to home_path
-    assert_match(/no importable files/i, flash[:notice])
+    assert_response :success
+    assert_match(/no importable files/i, parsed_message)
   end
 
   test 'imports a recipe file via POST' do
@@ -27,8 +27,8 @@ class ImportsControllerTest < ActionDispatch::IntegrationTest
     file = uploaded_recipe_file('Bagels.md', "# Bagels\n\n## Boil\n\n- Flour, 3 cups\n\nBoil them.")
     post import_path(kitchen_slug: kitchen_slug), params: { files: [file] }
 
-    assert_redirected_to home_path
-    assert_match(/1 recipe/, flash[:notice])
+    assert_response :success
+    assert_match(/1 recipe/, parsed_message)
     assert @kitchen.recipes.find_by(slug: 'bagels')
   end
 
@@ -40,11 +40,11 @@ class ImportsControllerTest < ActionDispatch::IntegrationTest
     )
     post import_path(kitchen_slug: kitchen_slug), params: { files: [file] }
 
-    assert_redirected_to home_path
+    assert_response :success
     assert @kitchen.recipes.find_by(slug: 'focaccia')
   end
 
-  test 'flash summarizes multiple data types' do
+  test 'JSON summarizes multiple data types' do
     log_in
     yaml = { 'Test Ingredient' => { 'aisle' => 'Pantry' } }.to_yaml
     zip_data = build_zip(
@@ -57,16 +57,16 @@ class ImportsControllerTest < ActionDispatch::IntegrationTest
     )
     post import_path(kitchen_slug: kitchen_slug), params: { files: [file] }
 
-    assert_redirected_to home_path
-    assert_match(/1 recipe/, flash[:notice])
-    assert_match(/1 ingredient/, flash[:notice])
-    assert_match(/Quick Bites/, flash[:notice])
+    assert_response :success
+    assert_match(/1 recipe/, parsed_message)
+    assert_match(/1 ingredient/, parsed_message)
+    assert_match(/Quick Bites/, parsed_message)
   end
 
   private
 
-  def home_path
-    kitchen_root_path(kitchen_slug: kitchen_slug)
+  def parsed_message
+    response.parsed_body['message']
   end
 
   def uploaded_recipe_file(filename, content)

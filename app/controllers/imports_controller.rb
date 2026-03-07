@@ -14,12 +14,12 @@ class ImportsController < ApplicationController
     files = Array(params[:files])
 
     if files.empty?
-      redirect_to home_path, notice: 'No importable files found.'
+      render json: { message: 'No importable files found.' }
       return
     end
 
     result = ImportService.call(kitchen: current_kitchen, files:)
-    redirect_to home_path, notice: import_summary(result)
+    render json: { message: import_summary(result) }
   end
 
   private
