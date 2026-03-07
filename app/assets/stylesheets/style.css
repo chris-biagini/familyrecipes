@@ -439,8 +439,16 @@ nav a:focus-visible {
   transition: transform 0.3s ease, opacity 0.2s ease;
 }
 
+.hamburger-top {
+  transform: translateY(-5px);
+}
+
+.hamburger-bot {
+  transform: translateY(5px);
+}
+
 .hamburger-btn[aria-expanded="true"] .hamburger-top {
-  transform: translateY(5px) rotate(45deg);
+  transform: rotate(45deg);
 }
 
 .hamburger-btn[aria-expanded="true"] .hamburger-mid {
@@ -448,7 +456,7 @@ nav a:focus-visible {
 }
 
 .hamburger-btn[aria-expanded="true"] .hamburger-bot {
-  transform: translateY(-5px) rotate(-45deg);
+  transform: rotate(-45deg);
 }
 
 .nav-links {
@@ -459,7 +467,7 @@ nav a:focus-visible {
   display: none;
 }
 
-@media (max-width: 32rem) {
+@media (max-width: 650px) {
   .hamburger-btn {
     display: flex;
   }
