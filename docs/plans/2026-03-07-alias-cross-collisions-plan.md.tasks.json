@@ -1,0 +1,11 @@
+{
+  "planPath": "docs/plans/2026-03-07-alias-cross-collisions-plan.md",
+  "tasks": [
+    {"id": 1, "subject": "Task 1: Fix Kosher salt duplicate alias + YAML collision test", "status": "pending"},
+    {"id": 2, "subject": "Task 2: Add collision logging to add_alias_keys", "status": "pending", "blockedBy": [1]},
+    {"id": 3, "subject": "Task 3: Write-time alias collision validation", "status": "pending", "blockedBy": [1]},
+    {"id": 4, "subject": "Task 4: Collision reporting in catalog:sync", "status": "pending", "blockedBy": [1]},
+    {"id": 5, "subject": "Task 5: Lint and full test suite verification", "status": "pending", "blockedBy": [2, 3, 4]}
+  ],
+  "lastUpdated": "2026-03-07T00:00:00Z"
+}
