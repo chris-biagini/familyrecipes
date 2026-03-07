@@ -31,6 +31,9 @@ namespace :catalog do
       next
     end
 
+    collisions = AliasCollisionDetector.detect(catalog_data)
+    collisions.each { |msg| puts "WARNING: alias collision — #{msg}" }
+
     counts = catalog_data.map { |name, entry| sync_catalog_entry(name, entry) }.tally
 
     created = counts.fetch(:created, 0)

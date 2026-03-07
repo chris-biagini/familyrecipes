@@ -55,6 +55,35 @@ class CatalogSyncTest < ActiveSupport::TestCase
     assert_equal ['AP flour', 'Plain flour'], record.aliases
   end
 
+  test 'AliasCollisionDetector reports alias-vs-alias collisions' do
+    collisions = AliasCollisionDetector.detect(
+      'Salt (Table)' => { 'aliases' => ['Kosher salt'], 'aisle' => 'Baking' },
+      'Salt (Kosher)' => { 'aliases' => ['Kosher salt'], 'aisle' => 'Baking' }
+    )
+
+    assert_equal 1, collisions.size
+    assert_match(/Kosher salt/, collisions.first)
+  end
+
+  test 'AliasCollisionDetector reports alias-vs-canonical collisions' do
+    collisions = AliasCollisionDetector.detect(
+      'Butter' => { 'aisle' => 'Dairy' },
+      'Ghee' => { 'aliases' => ['Butter'], 'aisle' => 'Dairy' }
+    )
+
+    assert_equal 1, collisions.size
+    assert_match(/canonical/, collisions.first)
+  end
+
+  test 'AliasCollisionDetector reports no collisions for clean data' do
+    collisions = AliasCollisionDetector.detect(
+      'Salt (Table)' => { 'aliases' => ['Table salt'], 'aisle' => 'Baking' },
+      'Salt (Kosher)' => { 'aliases' => ['Kosher salt'], 'aisle' => 'Baking' }
+    )
+
+    assert_empty collisions
+  end
+
   test 'catalog aliases do not collide with other entries' do
     catalog_data = YAML.safe_load_file(CATALOG_PATH, permitted_classes: [], permitted_symbols: [], aliases: false)
     skip 'ingredient-catalog.yaml is empty' if catalog_data.blank?
