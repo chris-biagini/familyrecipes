@@ -1,6 +1,6 @@
 <nav data-controller="nav-menu"
      data-action="keydown.esc@document->nav-menu#close click@document->nav-menu#closeOutside turbo:before-visit@document->nav-menu#close">
-  <div>
+  <div data-nav-menu-target="container">
     <button type="button" class="hamburger-btn"
             data-nav-menu-target="button"
             data-action="nav-menu#toggle"
@@ -11,7 +11,7 @@
         <rect class="hamburger-bot" x="3" y="11" width="18" height="2" rx="1" fill="currentColor"/>
       </svg>
     </button>
-    <div class="nav-links">
+    <div class="nav-links" data-nav-menu-target="navLinks">
       <%= render 'shared/nav_links' %>
     </div>
     <div class="nav-drawer" data-nav-menu-target="drawer" aria-hidden="true">

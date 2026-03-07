@@ -1,16 +1,61 @@
 import { Controller } from "@hotwired/stimulus"
 
 /**
- * Hamburger menu for narrow viewports. Toggles a slide-down drawer of
- * nav links and morphs the hamburger SVG into an X via CSS transforms
- * keyed on aria-expanded.
+ * Responsive nav with three layout states: inline (icon + label),
+ * compact (stacked icon over label), and hamburger (drawer menu).
+ * Uses ResizeObserver to detect actual content overflow rather than
+ * hardcoded breakpoints — adapts to any link count or label length.
  *
- * - Collaborators: _nav.html.erb, style.css (hamburger/drawer rules)
+ * - Collaborators: _nav.html.erb, style.css (.nav-compact / .nav-hamburger)
  * - Drawer animates via CSS grid-template-rows (0fr <-> 1fr)
  * - Closes on Escape, click outside, and Turbo navigation
  */
 export default class extends Controller {
-  static targets = ["button", "drawer"]
+  static targets = ["button", "drawer", "navLinks", "container"]
+
+  connect() {
+    this.observer = new ResizeObserver(() => this.updateLayout())
+    this.observer.observe(this.containerTarget)
+    this.updateLayout()
+  }
+
+  disconnect() {
+    this.observer.disconnect()
+  }
+
+  updateLayout() {
+    const wasHamburger = this.element.classList.contains("nav-hamburger")
+
+    this.element.classList.remove("nav-compact", "nav-hamburger")
+
+    let needsHamburger = false
+    if (this.overflows()) {
+      this.element.classList.add("nav-compact")
+      if (this.overflows()) {
+        this.element.classList.add("nav-hamburger")
+        needsHamburger = true
+      }
+    }
+
+    if (wasHamburger && !needsHamburger) this.close()
+  }
+
+  overflows() {
+    const links = this.navLinksTarget.querySelectorAll(":scope > a")
+    links.forEach(link => {
+      link.style.flexShrink = "0"
+      link.style.flexBasis = "auto"
+    })
+
+    const result = this.navLinksTarget.scrollWidth > this.navLinksTarget.clientWidth
+
+    links.forEach(link => {
+      link.style.flexShrink = ""
+      link.style.flexBasis = ""
+    })
+
+    return result
+  }
 
   toggle() {
     this.isOpen ? this.close() : this.open()
