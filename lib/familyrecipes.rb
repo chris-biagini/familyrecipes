@@ -36,8 +36,7 @@ module FamilyRecipes
     recipe_files.map do |file|
       source = File.read(file)
       id = slugify(File.basename(file, '.*'))
-      category = File.basename(File.dirname(file)).sub(/^./, &:upcase)
-      Recipe.new(markdown_source: source, id: id, category: category)
+      Recipe.new(markdown_source: source, id: id)
     end
   end
 
