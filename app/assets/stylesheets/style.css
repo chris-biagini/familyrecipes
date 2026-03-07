@@ -312,7 +312,7 @@ nav > div:first-child {
   }
 }
 
-nav > div:last-child:not(:first-child) {
+nav > div:last-child:not(:first-child):not(.nav-drawer) {
   display: flex;
   gap: 0.4rem;
   padding: 0.4rem;
@@ -402,6 +402,102 @@ nav a:focus-visible {
   width: 1.15rem;
   height: 1.15rem;
   flex-shrink: 0;
+}
+
+/* Hamburger menu — visible only at the compact breakpoint */
+
+.hamburger-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem 0.9rem;
+  color: var(--text-color);
+  transition: color 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.hamburger-btn:hover {
+  color: var(--accent-color);
+}
+
+.hamburger-btn:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.hamburger-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.hamburger-icon rect {
+  transform-origin: 12px 12px;
+  transition: transform 0.3s ease, opacity 0.2s ease;
+}
+
+.hamburger-btn[aria-expanded="true"] .hamburger-top {
+  transform: translateY(5px) rotate(45deg);
+}
+
+.hamburger-btn[aria-expanded="true"] .hamburger-mid {
+  opacity: 0;
+}
+
+.hamburger-btn[aria-expanded="true"] .hamburger-bot {
+  transform: translateY(-5px) rotate(-45deg);
+}
+
+.nav-links {
+  display: contents;
+}
+
+.nav-drawer {
+  display: none;
+}
+
+@media (max-width: 32rem) {
+  .hamburger-btn {
+    display: flex;
+  }
+
+  .nav-links {
+    display: none;
+  }
+
+  .nav-drawer {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.3s ease;
+    flex-basis: 100%;
+    order: 3;
+  }
+
+  .nav-drawer[aria-hidden="false"] {
+    grid-template-rows: 1fr;
+  }
+
+  .nav-drawer-inner {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .nav-drawer[aria-hidden="false"] .nav-drawer-inner {
+    border-top: 1px solid var(--separator-color);
+  }
+
+  .nav-drawer a {
+    padding: 0.65rem 1rem;
+  }
+
+  .nav-drawer a::after {
+    left: 1rem;
+    right: 1rem;
+  }
 }
 
 main a {
