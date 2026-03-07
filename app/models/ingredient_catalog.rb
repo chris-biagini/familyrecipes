@@ -32,6 +32,7 @@ class IngredientCatalog < ApplicationRecord
   validate :nutrient_values_in_range
   validate :density_completeness
   validate :portion_values_positive
+  validate :aliases_do_not_collide
 
   before_save :normalize_portion_keys
 
@@ -177,6 +178,41 @@ class IngredientCatalog < ApplicationRecord
     portions.each do |name, value|
       valid, = FamilyRecipes::NutritionConstraints.valid_portion_value?(value.to_f)
       errors.add(:portions, "value for '#{name}' must be greater than 0") unless valid
+    end
+  end
+
+  def aliases_do_not_collide
+    return if aliases.blank?
+
+    scope = self.class.where(kitchen_id: [nil, kitchen_id])
+    scope = scope.where.not(id:) if persisted?
+    # Kitchen overrides share the same ingredient_name as their global entry
+    scope = scope.where.not(ingredient_name:)
+
+    check_aliases_vs_canonical_names(scope)
+    check_aliases_vs_other_aliases(scope)
+  end
+
+  def check_aliases_vs_canonical_names(scope)
+    aliases.each do |alias_name|
+      next unless scope.exists?(ingredient_name: alias_name)
+
+      errors.add(:aliases, "entry '#{alias_name}' conflicts with an existing ingredient name")
+    end
+  end
+
+  def check_aliases_vs_other_aliases(scope)
+    other_alias_map = scope.where.not(aliases: nil)
+                           .pluck(:ingredient_name, :aliases)
+                           .each_with_object({}) do |(name, entry_aliases), map|
+      entry_aliases.each { |a| map[a.downcase] = name }
+    end
+
+    aliases.each do |alias_name|
+      owner = other_alias_map[alias_name.downcase]
+      next unless owner
+
+      errors.add(:aliases, "entry '#{alias_name}' conflicts with alias on '#{owner}'")
     end
   end
 end

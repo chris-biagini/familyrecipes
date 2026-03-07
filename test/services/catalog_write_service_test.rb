@@ -134,6 +134,45 @@ class CatalogWriteServiceTest < ActiveSupport::TestCase
     end
   end
 
+  # --- alias collision validation ---
+
+  test 'upsert rejects alias that matches another canonical name' do
+    IngredientCatalog.create!(kitchen_id: nil, ingredient_name: 'Butter', aisle: 'Dairy')
+
+    result = upsert_entry('Ghee', aliases: ['Butter'])
+
+    assert_not result.persisted
+    assert result.entry.errors.full_messages.any? { |m| m.include?('Butter') }
+  end
+
+  test 'upsert rejects alias that matches another canonical name case-insensitively' do
+    IngredientCatalog.create!(kitchen_id: nil, ingredient_name: 'Butter', aisle: 'Dairy')
+
+    result = upsert_entry('Ghee', aliases: ['butter'])
+
+    assert_not result.persisted
+    assert result.entry.errors.full_messages.any? { |m| m.include?('butter') }
+  end
+
+  test 'upsert rejects alias that collides with another entry alias' do
+    IngredientCatalog.create!(kitchen_id: nil, ingredient_name: 'Salt (Table)',
+                              aisle: 'Baking', aliases: ['Kosher salt'])
+
+    result = upsert_entry('Salt (Kosher)', aliases: ['Kosher salt'])
+
+    assert_not result.persisted
+    assert result.entry.errors.full_messages.any? { |m| m.include?('Kosher salt') }
+  end
+
+  test 'upsert allows non-colliding aliases' do
+    IngredientCatalog.create!(kitchen_id: nil, ingredient_name: 'Butter', aisle: 'Dairy')
+
+    result = upsert_entry('Ghee', aliases: ['Clarified butter'])
+
+    assert_predicate result, :persisted
+    assert_equal ['Clarified butter'], result.entry.aliases
+  end
+
   # --- destroy ---
 
   test 'destroy deletes kitchen entry' do
