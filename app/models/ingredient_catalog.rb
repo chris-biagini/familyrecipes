@@ -25,7 +25,7 @@ class IngredientCatalog < ApplicationRecord
   DENSITY_FIELDS = %i[density_grams density_volume density_unit].freeze
   private_constant :DENSITY_FIELDS
 
-  validates :ingredient_name, presence: true, uniqueness: { scope: :kitchen_id }
+  validates :ingredient_name, presence: true, uniqueness: { scope: :kitchen_id, case_sensitive: false }
   validates :basis_grams, numericality: { greater_than: 0 }, allow_nil: true
   validates :aisle, length: { maximum: FamilyRecipes::NutritionConstraints::AISLE_MAX_LENGTH }, allow_nil: true
   validate :nutrients_require_basis_grams
@@ -51,8 +51,9 @@ class IngredientCatalog < ApplicationRecord
   end
 
   def self.lookup_for(kitchen)
-    base = global.index_by(&:ingredient_name)
-                 .merge(for_kitchen(kitchen).index_by(&:ingredient_name))
+    merged = global.index_by { |e| e.ingredient_name.downcase }
+                   .merge(for_kitchen(kitchen).index_by { |e| e.ingredient_name.downcase })
+    base = merged.values.index_by(&:ingredient_name)
     add_ingredient_variants(base)
   end
 

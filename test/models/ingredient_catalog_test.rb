@@ -199,6 +199,29 @@ class IngredientCatalogTest < ActiveSupport::TestCase
     assert_predicate entry, :valid?
   end
 
+  test 'rejects case-variant duplicate within same kitchen' do
+    IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Butter', basis_grams: 100)
+    duplicate = IngredientCatalog.new(kitchen: @kitchen, ingredient_name: 'butter', basis_grams: 100)
+
+    assert_not_predicate duplicate, :valid?
+    assert_includes duplicate.errors[:ingredient_name], 'has already been taken'
+  end
+
+  test 'rejects case-variant duplicate in global scope' do
+    IngredientCatalog.create!(ingredient_name: 'Butter', basis_grams: 100)
+    duplicate = IngredientCatalog.new(ingredient_name: 'butter', basis_grams: 100)
+
+    assert_not_predicate duplicate, :valid?
+    assert_includes duplicate.errors[:ingredient_name], 'has already been taken'
+  end
+
+  test 'allows case-variant between global and kitchen scope' do
+    IngredientCatalog.create!(ingredient_name: 'Butter', basis_grams: 100)
+    entry = IngredientCatalog.new(kitchen: @kitchen, ingredient_name: 'butter', basis_grams: 100)
+
+    assert_predicate entry, :valid?
+  end
+
   test 'allows aisle-only rows without basis_grams' do
     entry = IngredientCatalog.new(ingredient_name: 'Egg yolk', aisle: 'Refrigerated')
 
@@ -254,6 +277,20 @@ class IngredientCatalogTest < ActiveSupport::TestCase
 
     assert result.key?('Tomatoes (canned)')
     assert result.key?('Tomato (canned)')
+  end
+
+  test 'lookup_for kitchen override with different casing replaces global entry' do
+    IngredientCatalog.create!(ingredient_name: 'Butter', basis_grams: 100, calories: 717)
+    override = IngredientCatalog.create!(
+      kitchen: @kitchen, ingredient_name: 'butter', basis_grams: 100, calories: 700
+    )
+
+    result = IngredientCatalog.lookup_for(@kitchen)
+
+    butter_entries = result.values.select { |e| e.ingredient_name.downcase == 'butter' }.uniq
+
+    assert_equal 1, butter_entries.size, 'Expected one entry for butter, not two'
+    assert_equal override.id, butter_entries.first.id
   end
 
   test 'lookup_for kitchen override applies to variants too' do
