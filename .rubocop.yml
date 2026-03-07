@@ -83,6 +83,10 @@ Metrics/ModuleLength:
 Minitest/MultipleAssertions:
   Max: 12
 
+# Single-language homelab app — no i18n locale files
+Rails/I18nLocaleTexts:
+  Enabled: false
+
 # --- Rails cops ---
 
 # BuildValidator is a CLI build tool that intentionally uses puts

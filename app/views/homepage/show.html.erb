@@ -22,8 +22,13 @@
   <%= render 'homepage/recipe_listings', categories: @categories %>
 
   <% if current_member? %>
-  <div id="export-actions" data-controller="export" data-export-url-value="<%= export_path %>">
-    <button type="button" class="btn" data-action="export#download">Export All Data</button>
+  <div id="export-actions">
+    <button type="button" class="btn" data-controller="export" data-export-url-value="<%= export_path %>" data-action="export#download">Export All Data</button>
+    <span data-controller="import" data-import-url-value="<%= import_path %>">
+      <input type="file" multiple accept=".zip,.md,.txt,.text" name="files[]"
+             data-import-target="fileInput" data-action="change->import#submit" hidden>
+      <button type="button" class="btn" data-action="import#choose">Import</button>
+    </span>
   </div>
   <% end %>
 
