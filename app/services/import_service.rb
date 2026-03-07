@@ -94,7 +94,7 @@ class ImportService
   end
 
   def import_recipe_file(file, category_name)
-    import_recipe_content(file.read, category_name, file.original_filename)
+    import_recipe_content(file.read.force_encoding('UTF-8'), category_name, file.original_filename)
   end
 
   def import_recipe_content(content, category_name, filename)
