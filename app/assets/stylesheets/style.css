@@ -245,12 +245,22 @@ nav {
 nav::before {
   content: "";
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: calc(-1 * var(--drawer-height, 0px));
   background-color: var(--frosted-glass-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   z-index: -1;
 }
+
+nav:has(.nav-drawer[aria-hidden="false"]) {
+  border-bottom: none;
+  padding-bottom: 1px;
+  box-shadow: none;
+}
+
 
 nav a {
   font-family: "Futura", sans-serif;
@@ -315,7 +325,7 @@ nav > div:first-child {
   height: 1.35rem;
 }
 
-nav > div:last-child:not(:first-child) {
+nav > div:last-child:not(:first-child):not(.nav-drawer) {
   display: flex;
   gap: 0.4rem;
   padding: 0.4rem;
@@ -439,8 +449,7 @@ nav a:focus-visible {
 }
 
 .hamburger-icon rect {
-  transform-box: fill-box;
-  transform-origin: center;
+  transform-origin: 12px 12px;
   transition: transform 0.3s ease, opacity 0.2s ease;
 }
 
@@ -484,10 +493,6 @@ nav a:focus-visible {
   display: flex;
 }
 
-.nav-hamburger > div:first-child {
-  flex-wrap: wrap;
-}
-
 .nav-hamburger .nav-links {
   display: none;
 }
@@ -496,7 +501,13 @@ nav a:focus-visible {
   display: grid;
   grid-template-rows: 0fr;
   transition: grid-template-rows 0.3s ease;
-  flex-basis: 100%;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  border-bottom: 1px solid var(--gingham-stripe-color);
+  box-shadow: var(--shadow-nav);
+  clip-path: inset(0 -20px -20px -20px);
 }
 
 .nav-hamburger .nav-drawer[aria-hidden="false"] {

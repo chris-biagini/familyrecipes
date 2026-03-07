@@ -14,13 +14,20 @@ export default class extends Controller {
   static targets = ["button", "drawer", "navLinks", "container"]
 
   connect() {
-    this.observer = new ResizeObserver(() => this.updateLayout())
-    this.observer.observe(this.containerTarget)
+    this.layoutObserver = new ResizeObserver(() => this.updateLayout())
+    this.layoutObserver.observe(this.containerTarget)
+
+    this.drawerObserver = new ResizeObserver(([entry]) => {
+      this.element.style.setProperty("--drawer-height", `${entry.contentRect.height}px`)
+    })
+    this.drawerObserver.observe(this.drawerTarget)
+
     this.updateLayout()
   }
 
   disconnect() {
-    this.observer.disconnect()
+    this.layoutObserver.disconnect()
+    this.drawerObserver.disconnect()
   }
 
   updateLayout() {

@@ -14,10 +14,10 @@
     <div class="nav-links" data-nav-menu-target="navLinks">
       <%= render 'shared/nav_links' %>
     </div>
-    <div class="nav-drawer" data-nav-menu-target="drawer" aria-hidden="true">
-      <div class="nav-drawer-inner">
-        <%= render 'shared/nav_links' %>
-      </div>
+  </div>
+  <div class="nav-drawer" data-nav-menu-target="drawer" aria-hidden="true">
+    <div class="nav-drawer-inner">
+      <%= render 'shared/nav_links' %>
     </div>
   </div>
   <%= yield :extra_nav if content_for?(:extra_nav) %>
