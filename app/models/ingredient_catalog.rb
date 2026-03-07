@@ -10,7 +10,7 @@
 # Collaborators:
 # - FamilyRecipes::NutritionConstraints (shared validation rules)
 # - NutritionCalculator and ShoppingListBuilder consume this.
-class IngredientCatalog < ApplicationRecord
+class IngredientCatalog < ApplicationRecord # rubocop:disable Metrics/ClassLength
   self.table_name = 'ingredient_catalog'
 
   belongs_to :kitchen, optional: true
@@ -205,7 +205,7 @@ class IngredientCatalog < ApplicationRecord
     other_alias_map = scope.where.not(aliases: nil)
                            .pluck(:ingredient_name, :aliases)
                            .each_with_object({}) do |(name, entry_aliases), map|
-      entry_aliases.each { |a| map[a.downcase] = name }
+                             entry_aliases.each { |a| map[a.downcase] = name }
     end
 
     aliases.each do |alias_name|

@@ -142,7 +142,7 @@ class CatalogWriteServiceTest < ActiveSupport::TestCase
     result = upsert_entry('Ghee', aliases: ['Butter'])
 
     assert_not result.persisted
-    assert result.entry.errors.full_messages.any? { |m| m.include?('Butter') }
+    assert(result.entry.errors.full_messages.any? { |m| m.include?('Butter') })
   end
 
   test 'upsert rejects alias that matches another canonical name case-insensitively' do
@@ -151,7 +151,7 @@ class CatalogWriteServiceTest < ActiveSupport::TestCase
     result = upsert_entry('Ghee', aliases: ['butter'])
 
     assert_not result.persisted
-    assert result.entry.errors.full_messages.any? { |m| m.include?('butter') }
+    assert(result.entry.errors.full_messages.any? { |m| m.include?('butter') })
   end
 
   test 'upsert rejects alias that collides with another entry alias' do
@@ -161,7 +161,7 @@ class CatalogWriteServiceTest < ActiveSupport::TestCase
     result = upsert_entry('Salt (Kosher)', aliases: ['Kosher salt'])
 
     assert_not result.persisted
-    assert result.entry.errors.full_messages.any? { |m| m.include?('Kosher salt') }
+    assert(result.entry.errors.full_messages.any? { |m| m.include?('Kosher salt') })
   end
 
   test 'upsert allows non-colliding aliases' do

@@ -9,24 +9,27 @@
 # - CatalogSyncTest: unit tests collision detection logic
 class AliasCollisionDetector
   def self.detect(catalog_data)
-    canonical_names = catalog_data.keys.each_with_object({}) { |n, h| h[n.downcase] = n }
+    canonical_names = catalog_data.keys.index_by(&:downcase)
     alias_owners = {}
-    collisions = []
 
-    catalog_data.each do |name, entry|
-      (entry['aliases'] || []).each do |alias_name|
-        lowered = alias_name.downcase
+    catalog_data.flat_map do |name, entry|
+      check_aliases(name, entry['aliases'] || [], canonical_names, alias_owners)
+    end
+  end
 
-        if canonical_names.key?(lowered) && canonical_names[lowered] != name
-          collisions << "#{name}: alias '#{alias_name}' matches canonical entry '#{canonical_names[lowered]}'"
-        elsif alias_owners.key?(lowered)
-          collisions << "#{name}: alias '#{alias_name}' also claimed by '#{alias_owners[lowered]}'"
-        else
-          alias_owners[lowered] = name
-        end
+  def self.check_aliases(name, aliases, canonical_names, alias_owners)
+    aliases.filter_map do |alias_name|
+      lowered = alias_name.downcase
+
+      if canonical_names.key?(lowered) && canonical_names[lowered] != name
+        "#{name}: alias '#{alias_name}' matches canonical entry '#{canonical_names[lowered]}'"
+      elsif alias_owners.key?(lowered)
+        "#{name}: alias '#{alias_name}' also claimed by '#{alias_owners[lowered]}'"
+      else
+        alias_owners[lowered] = name
+        nil
       end
     end
-
-    collisions
   end
+  private_class_method :check_aliases
 end

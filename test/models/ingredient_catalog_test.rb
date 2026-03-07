@@ -637,7 +637,7 @@ class IngredientCatalogTest < ActiveSupport::TestCase
     # Bypass validation to simulate pre-existing collision data
     collider = IngredientCatalog.new(ingredient_name: 'Salt (Kosher)',
                                      aisle: 'Baking', aliases: ['Kosher salt'])
-    collider.save!(validate: false) # rubocop:disable Rails/SkipsModelValidations
+    collider.save!(validate: false)
 
     warnings = []
     Rails.logger.stub(:warn, ->(msg) { warnings << msg }) do

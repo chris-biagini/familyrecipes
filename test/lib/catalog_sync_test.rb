@@ -88,7 +88,7 @@ class CatalogSyncTest < ActiveSupport::TestCase
     catalog_data = YAML.safe_load_file(CATALOG_PATH, permitted_classes: [], permitted_symbols: [], aliases: false)
     skip 'ingredient-catalog.yaml is empty' if catalog_data.blank?
 
-    canonical_names = catalog_data.keys.map(&:downcase).to_set
+    canonical_names = catalog_data.keys.to_set(&:downcase)
     alias_owners = {}
     collisions = []
 
