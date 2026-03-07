@@ -283,13 +283,14 @@ nav a:focus::after {
 nav > div:first-child {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   flex: 1;
   min-width: 0;
   container-type: inline-size;
 }
 
 @container (max-width: 685px) {
-  nav a {
+  .nav-links a {
     flex-direction: column;
     gap: 0.15rem;
     padding: 0.45rem 0.5rem 0.3rem;
@@ -297,22 +298,22 @@ nav > div:first-child {
     flex: 1;
   }
 
-  nav a::after {
+  .nav-links a::after {
     display: none;
   }
 
-  nav a span {
+  .nav-links a span {
     font-size: 0.55rem;
     letter-spacing: 0.08em;
   }
 
-  .nav-icon {
+  .nav-links .nav-icon {
     width: 1.35rem;
     height: 1.35rem;
   }
 }
 
-nav > div:last-child:not(:first-child):not(.nav-drawer) {
+nav > div:last-child:not(:first-child) {
   display: flex;
   gap: 0.4rem;
   padding: 0.4rem;
@@ -467,7 +468,7 @@ nav a:focus-visible {
   display: none;
 }
 
-@media (max-width: 650px) {
+@container (max-width: 300px) {
   .hamburger-btn {
     display: flex;
   }
@@ -481,7 +482,6 @@ nav a:focus-visible {
     grid-template-rows: 0fr;
     transition: grid-template-rows 0.3s ease;
     flex-basis: 100%;
-    order: 3;
   }
 
   .nav-drawer[aria-hidden="false"] {
