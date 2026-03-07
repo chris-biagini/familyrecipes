@@ -251,11 +251,10 @@ class MealPlanTest < ActiveSupport::TestCase
   end
 
   test 'pruning removes checked items not on shopping list' do
-    Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Focaccia
 
-      Category: Bread
 
       ## Mix (combine)
 

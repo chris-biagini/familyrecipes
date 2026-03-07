@@ -1,0 +1,27 @@
+{
+  "planPath": "docs/plans/2026-03-06-categories-refinement-plan.md",
+  "tasks": [
+    {"id": 1, "subject": "Task 1: Remove Category from LineClassifier", "status": "pending"},
+    {"id": 2, "subject": "Task 2: Remove Category from FamilyRecipes::Recipe", "status": "pending", "blockedBy": [1]},
+    {"id": 3, "subject": "Task 3: Remove Category from MarkdownValidator", "status": "pending", "blockedBy": [1]},
+    {"id": 4, "subject": "Task 4: Update MarkdownImporter — accept category param", "status": "pending", "blockedBy": [1, 2, 3]},
+    {"id": 5, "subject": "Task 5: Update RecipeWriteService — add category_name param", "status": "pending", "blockedBy": [4]},
+    {"id": 6, "subject": "Task 6: Update RecipesController — pass category from params", "status": "pending", "blockedBy": [5]},
+    {"id": 7, "subject": "Task 7: Update seed files and seeder", "status": "pending", "blockedBy": [5, 6]},
+    {"id": 8, "subject": "Task 8: Data migration — strip Category from markdown_source", "status": "pending", "blockedBy": [7]},
+    {"id": 9, "subject": "Task 9: Update remaining tests — full suite green", "status": "pending", "blockedBy": [1, 2, 3, 4, 5, 6]},
+    {"id": 10, "subject": "Task 10: Add category dropdown to recipe editor views", "status": "pending", "blockedBy": [9]},
+    {"id": 11, "subject": "Task 11: Update recipe_editor_controller.js — category handling", "status": "pending", "blockedBy": [10]},
+    {"id": 12, "subject": "Task 12: Rename Add New Recipe to Add Recipe", "status": "pending"},
+    {"id": 13, "subject": "Task 13: Extract ordered_list_editor_utils.js", "status": "pending", "blockedBy": [9]},
+    {"id": 14, "subject": "Task 14: Refactor aisle editor to use shared utils", "status": "pending", "blockedBy": [13]},
+    {"id": 15, "subject": "Task 15: Extract Rails OrderedListEditor concern", "status": "pending", "blockedBy": [14]},
+    {"id": 16, "subject": "Task 16: Add category order routes", "status": "pending", "blockedBy": [15]},
+    {"id": 17, "subject": "Task 17: Create CategoriesController", "status": "pending", "blockedBy": [16]},
+    {"id": 18, "subject": "Task 18: Build category_order_editor_controller.js", "status": "pending", "blockedBy": [13, 17]},
+    {"id": 19, "subject": "Task 19: Add Edit Categories dialog to homepage", "status": "pending", "blockedBy": [17, 18]},
+    {"id": 20, "subject": "Task 20: Update html_safe allowlist and final cleanup", "status": "pending", "blockedBy": [19]},
+    {"id": 21, "subject": "Task 21: Final integration test", "status": "pending", "blockedBy": [20]}
+  ],
+  "lastUpdated": "2026-03-06T00:00:00Z"
+}

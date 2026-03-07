@@ -2,7 +2,6 @@
 
 Italian waffle cookies.
 
-Category: Dessert
 Makes: 32 cookies
 
 ## Prepare batter.

@@ -2,7 +2,6 @@
 
 Remember pecan pie? It's back, in bar form!
 
-Category: Dessert
 Makes: 24 bars
 
 ## Prepare pan.

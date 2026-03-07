@@ -2,7 +2,6 @@
 
 With browned butter and walnuts
 
-Category: Dessert
 Makes: 24 cookies
 
 ## Prepare sugar mixture.

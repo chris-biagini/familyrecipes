@@ -10,5 +10,6 @@ class HomepageController < ApplicationController
   def show
     @site_config = Rails.configuration.site
     @categories = current_kitchen.categories.ordered.with_recipes.includes(:recipes)
+    @all_categories = current_kitchen.categories.ordered
   end
 end

@@ -3,8 +3,8 @@
 require 'test_helper'
 
 class CrossReferenceModelTest < ActiveSupport::TestCase
-  DOUGH_MD = "# Pizza Dough\n\nCategory: Bread\n\n## Mix\n\n- Flour, 2 cups\n\nMix it."
-  POOLISH_MD = "# Poolish\n\nCategory: Bread\n\n## Mix\n\n- Flour, 1 cup\n\nMix it."
+  DOUGH_MD = "# Pizza Dough\n\n## Mix\n\n- Flour, 2 cups\n\nMix it."
+  POOLISH_MD = "# Poolish\n\n## Mix\n\n- Flour, 1 cup\n\nMix it."
 
   setup do
     setup_test_kitchen
@@ -215,8 +215,8 @@ class CrossReferenceModelTest < ActiveSupport::TestCase
 end
 
 class StepIngredientListItemsTest < ActiveSupport::TestCase
-  FOCACCIA_MD = "# Focaccia\n\nCategory: Bread\n\n## Mix\n\n- Flour, 2 cups\n\nMix it."
-  POOLISH_MD = "# Poolish\n\nCategory: Bread\n\n## Mix\n\n- Flour, 1 cup\n\nMix it."
+  FOCACCIA_MD = "# Focaccia\n\n## Mix\n\n- Flour, 2 cups\n\nMix it."
+  POOLISH_MD = "# Poolish\n\n## Mix\n\n- Flour, 1 cup\n\nMix it."
 
   setup do
     setup_test_kitchen
@@ -282,11 +282,11 @@ class StepCrossReferenceQueryTest < ActiveSupport::TestCase
     setup_test_category(name: 'Bread')
     @target = Recipe.find_or_create_by!(
       title: 'Poolish', slug: 'poolish',
-      category: @category, markdown_source: "# Poolish\n\nCategory: Bread\n\n## Mix\n\n- Flour, 1 cup\n\nMix."
+      category: @category, markdown_source: "# Poolish\n\n## Mix\n\n- Flour, 1 cup\n\nMix."
     )
     @recipe = Recipe.find_or_create_by!(
       title: 'Focaccia', slug: 'focaccia',
-      category: @category, markdown_source: "# Focaccia\n\nCategory: Bread\n\n## Mix\n\n- Flour, 2 cups\n\nMix."
+      category: @category, markdown_source: "# Focaccia\n\n## Mix\n\n- Flour, 2 cups\n\nMix."
     )
   end
 
@@ -333,7 +333,7 @@ class CrossReferenceExpandedIngredientsTest < ActiveSupport::TestCase
     @target = Recipe.find_or_create_by!(
       title: 'Poolish', slug: 'poolish',
       category: @category,
-      markdown_source: "# Poolish\n\nCategory: Bread\n\n## Mix\n\n- Flour, 2 cups\n- Water, 1 cup\n\nMix."
+      markdown_source: "# Poolish\n\n## Mix\n\n- Flour, 2 cups\n- Water, 1 cup\n\nMix."
     )
     target_step = @target.steps.find_or_create_by!(title: 'Mix', position: 1)
     target_step.ingredients.find_or_create_by!(name: 'Flour', quantity: '2', unit: 'cups', position: 1)
@@ -342,7 +342,7 @@ class CrossReferenceExpandedIngredientsTest < ActiveSupport::TestCase
     # Parent recipe with a cross-reference to Poolish
     @recipe = Recipe.find_or_create_by!(
       title: 'Focaccia', slug: 'focaccia',
-      category: @category, markdown_source: "# Focaccia\n\nCategory: Bread\n\n## Mix\n\n- @[Poolish]\n\nMix."
+      category: @category, markdown_source: "# Focaccia\n\n## Mix\n\n- @[Poolish]\n\nMix."
     )
     @step = @recipe.steps.find_or_create_by!(title: 'Mix', position: 1)
   end

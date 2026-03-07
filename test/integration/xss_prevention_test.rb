@@ -5,14 +5,13 @@ require 'test_helper'
 class XssPreventionTest < ActionDispatch::IntegrationTest
   setup do
     create_kitchen_and_user
-    Category.create!(name: 'Test', slug: 'test', position: 0, kitchen: @kitchen)
+    @category = Category.create!(name: 'Test', slug: 'test', position: 0, kitchen: @kitchen)
   end
 
   test 'script tag in instructions is escaped' do
     import_recipe(<<~MD)
       # Safe Recipe
 
-      Category: Test
 
       ## Step one (do it)
 
@@ -32,7 +31,6 @@ class XssPreventionTest < ActionDispatch::IntegrationTest
     import_recipe(<<~MD)
       # Safe Recipe
 
-      Category: Test
 
       ## Mix <img onerror=alert(1)> (do it)
 
@@ -51,7 +49,6 @@ class XssPreventionTest < ActionDispatch::IntegrationTest
     import_recipe(<<~MD)
       # Safe Recipe
 
-      Category: Test
 
       ## Mix (do it)
 
@@ -74,7 +71,6 @@ class XssPreventionTest < ActionDispatch::IntegrationTest
     import_recipe(<<~MD)
       # Safe Recipe
 
-      Category: Test
       Makes: 12 <b>loaves</b>
 
       ## Mix (do it)
@@ -93,6 +89,6 @@ class XssPreventionTest < ActionDispatch::IntegrationTest
   private
 
   def import_recipe(markdown)
-    MarkdownImporter.import(markdown, kitchen: @kitchen)
+    MarkdownImporter.import(markdown, kitchen: @kitchen, category: @category)
   end
 end

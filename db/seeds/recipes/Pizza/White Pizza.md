@@ -1,6 +1,5 @@
 # White Pizza
 
-Category: Pizza
 Makes: 2 pizzas
 
 ## Make dough.

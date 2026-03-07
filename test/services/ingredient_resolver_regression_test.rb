@@ -9,10 +9,9 @@ class IngredientResolverRegressionTest < ActiveSupport::TestCase
 
     create_catalog_entry('Parmesan', basis_grams: 10, aisle: 'Dairy')
 
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Pasta Alfredo
 
-      Category: Italian
 
       ## Cook (toss)
 
@@ -21,10 +20,9 @@ class IngredientResolverRegressionTest < ActiveSupport::TestCase
       Toss.
     MD
 
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Caesar Salad
 
-      Category: Italian
 
       ## Toss (combine)
 
@@ -63,10 +61,9 @@ class IngredientResolverRegressionTest < ActiveSupport::TestCase
   end
 
   test 'uncataloged ingredients collapse across services with shared resolver' do
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Bruschetta
 
-      Category: Italian
 
       ## Top (assemble)
 
@@ -75,10 +72,9 @@ class IngredientResolverRegressionTest < ActiveSupport::TestCase
       Top.
     MD
 
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Caprese
 
-      Category: Italian
 
       ## Drizzle (serve)
 

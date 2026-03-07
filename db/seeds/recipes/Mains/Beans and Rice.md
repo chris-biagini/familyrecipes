@@ -2,7 +2,6 @@
 
 Vaguely reminiscent of Cuban or Mexican beans and rice.
 
-Category: Mains
 Serves: 4
 
 ## Soak beans.

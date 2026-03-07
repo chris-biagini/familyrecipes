@@ -1,23 +1,31 @@
 import { Controller } from "@hotwired/stimulus"
 
 /**
- * Syntax-highlighting overlay and auto-dash for the recipe markdown textarea.
- * Same transparent-textarea-over-pre technique as quickbites_editor_controller.
- * Classifies lines using patterns that mirror LineClassifier, with ingredient
- * lines split into name/qty/prep spans mirroring IngredientParser.
+ * Syntax-highlighting overlay, auto-dash, and category dropdown handling for the
+ * recipe markdown textarea. Same transparent-textarea-over-pre technique as
+ * quickbites_editor_controller. Classifies lines using patterns that mirror
+ * LineClassifier, with ingredient lines split into name/qty/prep spans mirroring
+ * IngredientParser. Participates in editor:collect and editor:modified events to
+ * include category in the save payload and dirty checking.
  *
  * - editor_controller: owns the dialog lifecycle; this controller is additive
  * - style.css (.hl-*): overlay positioning and highlight colors
  */
 export default class extends Controller {
-  static targets = ["textarea"]
+  static targets = ["textarea", "categorySelect", "categoryInput"]
 
   connect() {
     this.cursorInitialized = false
+    this.boundCollect = (e) => this.handleCollect(e)
+    this.boundModified = (e) => this.handleModified(e)
+    this.element.addEventListener("editor:collect", this.boundCollect)
+    this.element.addEventListener("editor:modified", this.boundModified)
   }
 
   disconnect() {
     this.teardownTextarea()
+    if (this.boundCollect) this.element.removeEventListener("editor:collect", this.boundCollect)
+    if (this.boundModified) this.element.removeEventListener("editor:modified", this.boundModified)
   }
 
   textareaTargetConnected(element) {
@@ -119,7 +127,7 @@ export default class extends Controller {
     } else if (/^---\s*$/.test(line)) {
       this.inFooter = true
       this.appendSpan(fragment, line, "hl-divider")
-    } else if (/^(Category|Makes|Serves):\s+.+$/.test(line)) {
+    } else if (/^(Makes|Serves):\s+.+$/.test(line)) {
       this.appendSpan(fragment, line, "hl-front-matter")
     } else if (this.inFooter) {
       this.appendSpan(fragment, line, "hl-front-matter")
@@ -189,12 +197,61 @@ export default class extends Controller {
     }
   }
 
+  handleCollect(event) {
+    event.detail.handled = true
+    event.detail.data = {
+      markdown_source: this.hasTextareaTarget ? this.textareaTarget.value : null,
+      category: this.selectedCategory()
+    }
+  }
+
+  handleModified(event) {
+    if (this.hasCategorySelectTarget && this.originalCategory !== undefined) {
+      if (this.selectedCategory() !== this.originalCategory) {
+        event.detail.handled = true
+        event.detail.modified = true
+      }
+    }
+  }
+
+  selectedCategory() {
+    if (!this.hasCategorySelectTarget) return null
+    const val = this.categorySelectTarget.value
+    if (val === "__new__") {
+      return this.hasCategoryInputTarget ? this.categoryInputTarget.value.trim() : null
+    }
+    return val
+  }
+
+  categorySelectTargetConnected(element) {
+    this.originalCategory = element.value
+    element.addEventListener("change", () => this.handleCategoryChange())
+  }
+
+  handleCategoryChange() {
+    if (!this.hasCategorySelectTarget || !this.hasCategoryInputTarget) return
+    if (this.categorySelectTarget.value === "__new__") {
+      this.categoryInputTarget.hidden = false
+      this.categorySelectTarget.hidden = true
+      this.categoryInputTarget.focus()
+    }
+  }
+
+  categoryInputTargetConnected(element) {
+    element.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        this.categoryInputTarget.hidden = true
+        this.categorySelectTarget.hidden = false
+        this.categorySelectTarget.value = this.originalCategory
+      }
+    })
+  }
+
   setPlaceholder() {
     if (!this.textarea.getAttribute("data-placeholder-set")) {
       this.textarea.placeholder = [
         "# Recipe Title",
         "",
-        "Category: Dinner",
         "Serves: 4",
         "",
         "## First step.",

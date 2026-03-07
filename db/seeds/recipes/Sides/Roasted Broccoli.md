@@ -2,7 +2,6 @@
 
 ~
 
-Category: Sides
 Serves: 4
 
 ## Prepare broccoli.

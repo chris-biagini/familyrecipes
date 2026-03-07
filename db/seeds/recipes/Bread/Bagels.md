@@ -2,7 +2,6 @@
 
 🚧 A fun weekend baking project. 🚧
 
-Category: Bread
 Makes: 12 bagels
 
 ## Friday night, around 10 PM: Make poolish.

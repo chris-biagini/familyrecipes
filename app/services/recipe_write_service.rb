@@ -12,12 +12,12 @@
 class RecipeWriteService
   Result = Data.define(:recipe, :updated_references)
 
-  def self.create(markdown:, kitchen:)
-    new(kitchen:).create(markdown:)
+  def self.create(markdown:, kitchen:, category_name: 'Miscellaneous')
+    new(kitchen:).create(markdown:, category_name:)
   end
 
-  def self.update(slug:, markdown:, kitchen:)
-    new(kitchen:).update(slug:, markdown:)
+  def self.update(slug:, markdown:, kitchen:, category_name: 'Miscellaneous')
+    new(kitchen:).update(slug:, markdown:, category_name:)
   end
 
   def self.destroy(slug:, kitchen:)
@@ -28,16 +28,18 @@ class RecipeWriteService
     @kitchen = kitchen
   end
 
-  def create(markdown:)
-    recipe = import_and_timestamp(markdown)
+  def create(markdown:, category_name:)
+    category = find_or_create_category(category_name)
+    recipe = import_and_timestamp(markdown, category:)
     kitchen.broadcast_update
     post_write_cleanup
     Result.new(recipe:, updated_references: [])
   end
 
-  def update(slug:, markdown:)
+  def update(slug:, markdown:, category_name:)
     old_recipe = kitchen.recipes.find_by!(slug:)
-    recipe = import_and_timestamp(markdown)
+    category = find_or_create_category(category_name)
+    recipe = import_and_timestamp(markdown, category:)
     updated_references = rename_cross_references(old_recipe, recipe)
     handle_slug_change(old_recipe, recipe)
     kitchen.broadcast_update
@@ -58,8 +60,17 @@ class RecipeWriteService
 
   attr_reader :kitchen
 
-  def import_and_timestamp(markdown)
-    recipe = MarkdownImporter.import(markdown, kitchen:)
+  def find_or_create_category(name)
+    name = 'Miscellaneous' if name.blank?
+    slug = FamilyRecipes.slugify(name)
+    kitchen.categories.find_or_create_by!(slug:) do |cat|
+      cat.name = name
+      cat.position = kitchen.categories.maximum(:position).to_i + 1
+    end
+  end
+
+  def import_and_timestamp(markdown, category:)
+    recipe = MarkdownImporter.import(markdown, kitchen:, category:)
     recipe.update!(edited_at: Time.current)
     recipe
   end

@@ -8,13 +8,12 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'renders the homepage with categories and recipes' do
-    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    bread = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: bread)
       # Focaccia
 
       A simple flatbread.
 
-      Category: Bread
 
       ## Make the dough (mix ingredients)
 
@@ -31,15 +30,14 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'groups recipes by category with table of contents' do
-    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
-    Category.create!(name: 'Pasta', slug: 'pasta', position: 1, kitchen: @kitchen)
+    bread = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    pasta = Category.create!(name: 'Pasta', slug: 'pasta', position: 1, kitchen: @kitchen)
 
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: bread)
       # Focaccia
 
       A simple flatbread.
 
-      Category: Bread
 
       ## Make the dough (mix ingredients)
 
@@ -48,12 +46,11 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
       Mix well.
     MD
 
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: pasta)
       # Cacio e Pepe
 
       Roman pasta classic.
 
-      Category: Pasta
 
       ## Cook the pasta (boil it)
 
@@ -71,15 +68,14 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'skips empty categories' do
-    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    bread = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
     Category.create!(name: 'Empty', slug: 'empty', position: 1, kitchen: @kitchen)
 
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: bread)
       # Focaccia
 
       A simple flatbread.
 
-      Category: Bread
 
       ## Make the dough (mix ingredients)
 
@@ -108,14 +104,33 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
     assert_select 'turbo-cable-stream-source', count: 0
   end
 
+  test 'new recipe editor includes category dropdown' do
+    log_in
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
+
+    assert_select '#recipe-editor select.category-select'
+  end
+
+  test 'homepage renders Edit Categories button for members' do
+    log_in
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
+
+    assert_select '#edit-categories-button'
+  end
+
+  test 'homepage does not render Edit Categories for non-members' do
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
+
+    assert_select '#edit-categories-button', count: 0
+  end
+
   test 'recipe links include description as title attribute' do
-    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    bread = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: bread)
       # Focaccia
 
       A simple flatbread.
 
-      Category: Bread
 
       ## Make the dough (mix ingredients)
 

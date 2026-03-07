@@ -2,7 +2,6 @@
 
 Tender and garlicky.
 
-Category: Sides
 Serves: 4
 
 ## Prepare asparagus.

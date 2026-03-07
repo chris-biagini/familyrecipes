@@ -22,6 +22,22 @@
 
 <% if current_member? %>
 <%= render layout: 'shared/editor_dialog',
+    locals: { title: 'Edit Nutrition',
+              id: 'nutrition-editor',
+              dialog_data: { extra_controllers: 'nutrition-editor',
+                             editor_on_success: 'close' },
+              extra_data: {
+                'nutrition-editor-base-url-value' => nutrition_entry_upsert_path(ingredient_name: '__NAME__'),
+                'nutrition-editor-edit-url-value' => ingredient_edit_path(ingredient_name: '__NAME__')
+              } } do %>
+  <div class="editor-body">
+    <turbo-frame id="nutrition-editor-form">
+      <p class="loading-placeholder">Loading&hellip;</p>
+    </turbo-frame>
+  </div>
+<% end %>
+
+<%= render layout: 'shared/editor_dialog',
     locals: { title: "Editing: #{@recipe.title}",
               id: 'recipe-editor',
               dialog_data: { editor_open: '#edit-button',
@@ -32,5 +48,17 @@
                              extra_controllers: 'recipe-editor' },
               footer_extra: render('recipes/editor_delete_button', recipe: @recipe) } do %>
   <textarea class="editor-textarea" data-editor-target="textarea" data-recipe-editor-target="textarea" spellcheck="false"><%= @recipe.markdown_source %></textarea>
+  <div class="editor-category-row">
+    <label for="edit-recipe-category">Category</label>
+    <select id="edit-recipe-category" class="category-select" data-recipe-editor-target="categorySelect">
+      <% @all_categories.each do |cat| %>
+        <option value="<%= cat.name %>" <%= 'selected' if cat == @recipe.category %>><%= cat.name %></option>
+      <% end %>
+      <option disabled>&#x2500;&#x2500;&#x2500;</option>
+      <option value="__new__">New category&hellip;</option>
+    </select>
+    <input type="text" class="category-new-input" placeholder="New category name"
+           data-recipe-editor-target="categoryInput" hidden maxlength="50">
+  </div>
 <% end %>
 <% end %>

@@ -120,7 +120,7 @@
 
 html {
   color-scheme: light dark;
-  font-size: 21.6px;
+  font-size: 18px;
   touch-action: manipulation; /* Should prevent double-tap zoom, but maybe doesn't? */
 
   /* Gingham pattern background — applied directly to the root element
@@ -789,6 +789,18 @@ footer small {
   margin: 0.75rem 0 0;
 }
 
+.btn-inline-link {
+  all: unset;
+  cursor: pointer;
+  color: var(--accent-color);
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}
+
+.btn-inline-link:hover {
+  text-decoration-style: solid;
+}
+
 /******************************************************/
 /* Styles for interactivity, applies to screen media */
 /*****************************************************/
@@ -953,6 +965,31 @@ footer small {
   background: var(--content-background-color);
 }
 
+.editor-category-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-top: 1px solid var(--border-color);
+  position: relative;
+  z-index: 2;
+  background: var(--content-background-color);
+}
+
+.editor-category-row label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted-text);
+  white-space: nowrap;
+}
+
+.category-select, .category-new-input {
+  flex: 1;
+  max-width: 16rem;
+}
+
 /* Syntax-highlighting overlay (shared) */
 
 .hl-wrap {
@@ -960,6 +997,7 @@ footer small {
   flex: 1;
   display: flex;
   min-height: 60vh;
+  overflow: hidden;
 }
 
 .hl-overlay {
@@ -1179,6 +1217,10 @@ button.aisle-name:hover {
 
 .aisle-btn svg {
   display: block;
+}
+
+.aisle-icon--flipped {
+  transform: scaleY(-1);
 }
 
 .aisle-btn:hover:not(:disabled) {

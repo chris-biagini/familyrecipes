@@ -5,6 +5,7 @@ require 'test_helper'
 class ExportsControllerTest < ActionDispatch::IntegrationTest
   setup do
     create_kitchen_and_user
+    setup_test_category
   end
 
   # --- Access control ---
@@ -28,8 +29,8 @@ class ExportsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'ZIP contains recipe files' do
-    markdown = "# Bagels\n\nCategory: Bread\n\n## Steps\n\n- Flour, 2 cups\n\nBoil then bake."
-    MarkdownImporter.import(markdown, kitchen: @kitchen)
+    markdown = "# Bagels\n\n## Steps\n\n- Flour, 2 cups\n\nBoil then bake."
+    MarkdownImporter.import(markdown, kitchen: @kitchen, category: @category)
     log_in
     get export_path(kitchen_slug: kitchen_slug)
 

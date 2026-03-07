@@ -6,12 +6,11 @@ class ExportServiceTest < ActiveSupport::TestCase
   setup do
     setup_test_kitchen
     setup_test_category(name: 'Bread')
-    Category.find_or_create_by!(name: 'Desserts', slug: 'desserts')
+    @desserts = Category.find_or_create_by!(name: 'Desserts', slug: 'desserts')
 
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Focaccia
 
-      Category: Bread
 
       ## Mix (combine)
 
@@ -21,10 +20,9 @@ class ExportServiceTest < ActiveSupport::TestCase
       Mix well.
     MD
 
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @desserts)
       # Brownies
 
-      Category: Desserts
 
       ## Bake
 

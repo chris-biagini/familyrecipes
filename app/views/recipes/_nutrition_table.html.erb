@@ -23,6 +23,11 @@
   </table>
   <% missing = nutrition_missing_ingredients(nutrition) %>
   <%- if missing.any? -%>
-  <p class="nutrition-note">*Approximate. Data unavailable for: <%= missing.join(', ') %>.</p>
+  <p class="nutrition-note">*Approximate. Data unavailable for:
+    <%- missing.each_with_index do |name, i| -%>
+      <%- if current_member? -%>
+        <button type="button" class="btn-inline-link" data-open-editor data-ingredient-name="<%= name %>"><%= name %></button><%- else -%>
+        <%= name %><%- end -%><%= ',' unless i == missing.size - 1 %>
+    <%- end -%>.</p>
   <%- end -%>
 </aside>

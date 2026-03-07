@@ -207,11 +207,9 @@ class RecipeBuilderTest < Minitest::Test
 
   # --- Front matter parsing ---
 
-  def test_parses_category
+  def test_category_line_parsed_as_prose
     text = <<~RECIPE
       # Cookies
-
-      Delicious cookies.
 
       Category: Dessert
 
@@ -222,7 +220,8 @@ class RecipeBuilderTest < Minitest::Test
 
     result = build_recipe(text)
 
-    assert_equal 'Dessert', result[:front_matter][:category]
+    assert_nil result[:front_matter][:category]
+    assert_equal 'Category: Dessert', result[:description]
   end
 
   def test_parses_makes_with_unit_noun
@@ -231,7 +230,6 @@ class RecipeBuilderTest < Minitest::Test
 
       Delicious cookies.
 
-      Category: Dessert
       Makes: 32 cookies
 
       ## Mix
@@ -250,7 +248,6 @@ class RecipeBuilderTest < Minitest::Test
 
       A hearty dish.
 
-      Category: Mains
       Serves: 4
 
       ## Cook
@@ -269,7 +266,6 @@ class RecipeBuilderTest < Minitest::Test
 
       Basic dough.
 
-      Category: Pizza
       Makes: 6 dough balls
       Serves: 4
 
@@ -280,7 +276,6 @@ class RecipeBuilderTest < Minitest::Test
 
     result = build_recipe(text)
 
-    assert_equal 'Pizza', result[:front_matter][:category]
     assert_equal '6 dough balls', result[:front_matter][:makes]
     assert_equal '4', result[:front_matter][:serves]
   end
@@ -289,7 +284,7 @@ class RecipeBuilderTest < Minitest::Test
     text = <<~RECIPE
       # Pizza
 
-      Category: Pizza
+      Makes: 4 pies
 
       ## Make dough
 
@@ -299,7 +294,7 @@ class RecipeBuilderTest < Minitest::Test
     result = build_recipe(text)
 
     assert_nil result[:description]
-    assert_equal 'Pizza', result[:front_matter][:category]
+    assert_equal '4 pies', result[:front_matter][:makes]
   end
 
   def test_no_front_matter_returns_empty_hash
@@ -322,7 +317,7 @@ class RecipeBuilderTest < Minitest::Test
 
       Delicious chocolate chip cookies.
 
-      Category: Dessert
+      Makes: 24 cookies
 
       ## Mix
 
@@ -332,7 +327,7 @@ class RecipeBuilderTest < Minitest::Test
     result = build_recipe(text)
 
     assert_equal 'Delicious chocolate chip cookies.', result[:description]
-    assert_equal 'Dessert', result[:front_matter][:category]
+    assert_equal '24 cookies', result[:front_matter][:makes]
   end
 
   def test_typo_in_front_matter_key_parsed_as_prose
@@ -355,7 +350,6 @@ class RecipeBuilderTest < Minitest::Test
     text = <<~RECIPE
       # Nacho Cheese
 
-      Category: Snacks
 
       - Cheddar, 225 g
       - Milk, 225 g
@@ -375,7 +369,6 @@ class RecipeBuilderTest < Minitest::Test
     text = <<~RECIPE
       # Simple
 
-      Category: Test
 
       - Salt
 
@@ -442,7 +435,6 @@ class RecipeBuilderTest < Minitest::Test
     text = <<~RECIPE
       # Pizza
 
-      Category: Pizza
 
       ## Make dough.
 
@@ -477,7 +469,6 @@ class RecipeBuilderTest < Minitest::Test
     text = <<~RECIPE
       # Pizza
 
-      Category: Pizza
 
       ## Make dough.
 
@@ -496,7 +487,6 @@ class RecipeBuilderTest < Minitest::Test
     text = <<~RECIPE
       # Pizza
 
-      Category: Pizza
 
       >>> @[Pizza Dough]
     RECIPE
@@ -509,7 +499,6 @@ class RecipeBuilderTest < Minitest::Test
     text = <<~RECIPE
       # Pizza
 
-      Category: Pizza
 
       ## Make dough.
 
@@ -526,7 +515,6 @@ class RecipeBuilderTest < Minitest::Test
     text = <<~RECIPE
       # Pizza
 
-      Category: Pizza
 
       ## Make dough.
 
@@ -543,7 +531,6 @@ class RecipeBuilderTest < Minitest::Test
     text = <<~RECIPE
       # Pizza
 
-      Category: Pizza
 
       ## Prepare.
 

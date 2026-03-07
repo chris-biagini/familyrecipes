@@ -10,12 +10,13 @@ class RecipeNutritionJobTest < ActiveSupport::TestCase
     Recipe.destroy_all
     Category.destroy_all
     IngredientCatalog.destroy_all
+    setup_test_category
 
     create_catalog_entry('Flour', basis_grams: 30.0, calories: 110.0, fat: 0.5, protein: 3.0)
   end
 
   test 'computes and stores nutrition_data on recipe' do
-    markdown = "# Bread\n\nCategory: Cat\nServes: 2\n\n## Mix\n\n- Flour, 60 g\n\nMix."
+    markdown = "# Bread\n\nServes: 2\n\n## Mix\n\n- Flour, 60 g\n\nMix."
     recipe = import_without_nutrition(markdown)
 
     RecipeNutritionJob.perform_now(recipe)
@@ -26,7 +27,7 @@ class RecipeNutritionJobTest < ActiveSupport::TestCase
   end
 
   test 'stores per_serving when recipe has serves' do
-    markdown = "# Bread\n\nCategory: Cat\nServes: 2\n\n## Mix\n\n- Flour, 60 g\n\nMix."
+    markdown = "# Bread\n\nServes: 2\n\n## Mix\n\n- Flour, 60 g\n\nMix."
     recipe = import_without_nutrition(markdown)
 
     RecipeNutritionJob.perform_now(recipe)
@@ -39,7 +40,7 @@ class RecipeNutritionJobTest < ActiveSupport::TestCase
   test 'handles recipe with no nutrition entries gracefully' do
     IngredientCatalog.destroy_all
 
-    markdown = "# Salad\n\nCategory: Cat\n\n## Toss\n\n- Lettuce, 1 head\n\nToss."
+    markdown = "# Salad\n\n\n## Toss\n\n- Lettuce, 1 head\n\nToss."
     recipe = import_without_nutrition(markdown)
 
     RecipeNutritionJob.perform_now(recipe)
@@ -49,7 +50,7 @@ class RecipeNutritionJobTest < ActiveSupport::TestCase
   end
 
   test 'records missing ingredients' do
-    markdown = "# Salad\n\nCategory: Cat\n\n## Toss\n\n- Lettuce, 100 g\n- Flour, 30 g\n\nToss."
+    markdown = "# Salad\n\n\n## Toss\n\n- Lettuce, 100 g\n- Flour, 30 g\n\nToss."
     recipe = import_without_nutrition(markdown)
 
     RecipeNutritionJob.perform_now(recipe)
@@ -59,8 +60,8 @@ class RecipeNutritionJobTest < ActiveSupport::TestCase
   end
 
   test 'markdown importer triggers nutrition computation' do
-    markdown = "# Auto Bread\n\nCategory: Cat\nServes: 4\n\n## Mix\n\n- Flour, 120 g\n\nMix."
-    recipe = MarkdownImporter.import(markdown, kitchen: @kitchen)
+    markdown = "# Auto Bread\n\nServes: 4\n\n## Mix\n\n- Flour, 120 g\n\nMix."
+    recipe = MarkdownImporter.import(markdown, kitchen: @kitchen, category: @category)
 
     assert_predicate recipe.nutrition_data, :present?
     assert_predicate recipe.nutrition_data['totals']['calories'], :positive?
@@ -78,7 +79,7 @@ class RecipeNutritionJobTest < ActiveSupport::TestCase
       protein: 5.0
     )
 
-    markdown = "# Bread\n\nCategory: Cat\nServes: 1\n\n## Mix\n\n- Flour, 30 g\n\nMix."
+    markdown = "# Bread\n\nServes: 1\n\n## Mix\n\n- Flour, 30 g\n\nMix."
     recipe = import_without_nutrition(markdown)
 
     RecipeNutritionJob.perform_now(recipe)
@@ -90,11 +91,11 @@ class RecipeNutritionJobTest < ActiveSupport::TestCase
 
   test 'cascade job recomputes nutrition for referencing recipes' do
     dough = MarkdownImporter.import(
-      "# Dough\n\nCategory: Cat\nServes: 2\n\n## Mix\n\n- Flour, 60 g\n\nMix.", kitchen: @kitchen
+      "# Dough\n\nServes: 2\n\n## Mix\n\n- Flour, 60 g\n\nMix.", kitchen: @kitchen, category: @category
     )
-    pizza_md = "# Pizza\n\nCategory: Cat\nServes: 4\n\n" \
+    pizza_md = "# Pizza\n\nServes: 4\n\n" \
                "## Make dough.\n>>> @[Dough]\n\n## Build\n\n- Cheese, 1 oz\n\nBuild."
-    pizza = MarkdownImporter.import(pizza_md, kitchen: @kitchen)
+    pizza = MarkdownImporter.import(pizza_md, kitchen: @kitchen, category: @category)
 
     CascadeNutritionJob.perform_now(dough)
     pizza.reload
@@ -105,10 +106,8 @@ class RecipeNutritionJobTest < ActiveSupport::TestCase
 
   test 'MarkdownImporter enqueues CascadeNutritionJob' do
     assert_enqueued_with(job: CascadeNutritionJob) do
-      MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+      MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
         # Cascade Test
-
-        Category: Test
 
         ## Step (do it)
 
@@ -122,7 +121,7 @@ class RecipeNutritionJobTest < ActiveSupport::TestCase
   private
 
   def import_without_nutrition(markdown)
-    recipe = MarkdownImporter.import(markdown, kitchen: @kitchen)
+    recipe = MarkdownImporter.import(markdown, kitchen: @kitchen, category: @category)
     recipe.update_column(:nutrition_data, nil) # rubocop:disable Rails/SkipsModelValidations
     recipe
   end

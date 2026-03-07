@@ -9,20 +9,17 @@ import {
 } from "utilities/ordered_list_editor_utils"
 
 /**
- * Rich list-based editor for kitchen aisle ordering. Replaces the generic
- * textarea editor for the Aisle Order dialog. Manages a staged changeset of
- * aisle rows with visual indicators for renames, deletes, and new additions.
- * List rendering, reorder animation, and inline rename are delegated to
- * ordered_list_editor_utils; this controller owns the dialog lifecycle,
- * server communication, and aisle-specific payload shape.
+ * Rich list editor for recipe categories. Provides inline rename, drag-free
+ * reordering (up/down buttons), add/delete with undo, and visual state feedback.
+ * Submits staged changes as a single PATCH. Uses ordered_list_editor_utils for
+ * shared list logic; this controller owns the dialog lifecycle and fetch calls.
  *
- * - editor_utils: CSRF, error display, save request, beforeunload guard
- * - ordered_list_editor_utils: row rendering, swap animation, rename, payload
- * - GroceriesController: load and save endpoints
- * - editor_controller: NOT used — this controller fully owns the dialog lifecycle
+ * - ordered_list_editor_utils: changeset, row rendering, animation, payload
+ * - editor_utils: CSRF tokens, error display
+ * - CategoriesController: backend for load/save
  */
 export default class extends Controller {
-  static targets = ["list", "saveButton", "errors", "newAisleName"]
+  static targets = ["list", "saveButton", "errors", "newCategoryName"]
 
   static values = {
     loadUrl: String,
@@ -30,16 +27,16 @@ export default class extends Controller {
   }
 
   connect() {
-    this.aisles = []
+    this.categories = []
     this.initialSnapshot = null
 
-    this.openButton = document.querySelector("#edit-aisle-order-button")
+    this.openButton = document.querySelector("#edit-categories-button")
     if (this.openButton) {
       this.boundOpen = this.open.bind(this)
       this.openButton.addEventListener("click", this.boundOpen)
     }
 
-    this.guard = guardBeforeUnload(this.element, () => isModified(this.aisles, this.initialSnapshot))
+    this.guard = guardBeforeUnload(this.element, () => isModified(this.categories, this.initialSnapshot))
 
     this.boundCancel = this.handleCancel.bind(this)
     this.element.addEventListener("cancel", this.boundCancel)
@@ -57,13 +54,13 @@ export default class extends Controller {
     this.listTarget.replaceChildren()
     clearErrors(this.errorsTarget)
     this.resetSaveButton()
-    if (this.hasNewAisleNameTarget) this.newAisleNameTarget.value = ""
+    if (this.hasNewCategoryNameTarget) this.newCategoryNameTarget.value = ""
     this.element.showModal()
-    this.loadAisles()
+    this.loadCategories()
   }
 
   close() {
-    closeWithConfirmation(this.element, () => isModified(this.aisles, this.initialSnapshot), () => this.reset())
+    closeWithConfirmation(this.element, () => isModified(this.categories, this.initialSnapshot), () => this.reset())
   }
 
   save() {
@@ -71,7 +68,7 @@ export default class extends Controller {
     handleSave(
       this.saveButtonTarget,
       this.errorsTarget,
-      () => saveRequest(this.saveUrlValue, "PATCH", this.buildAislePayload()),
+      () => saveRequest(this.saveUrlValue, "PATCH", this.buildCategoryPayload()),
       () => {
         this.element.close()
         window.location.reload()
@@ -87,39 +84,39 @@ export default class extends Controller {
     this.move(index, 1, "down")
   }
 
-  addAisle() {
-    const name = this.newAisleNameTarget.value.trim()
+  addCategory() {
+    const name = this.newCategoryNameTarget.value.trim()
     if (!name) return
 
-    if (checkDuplicate(this.aisles, name)) {
+    if (checkDuplicate(this.categories, name)) {
       showErrors(this.errorsTarget, [`"${name}" already exists.`])
       return
     }
 
     clearErrors(this.errorsTarget)
-    this.aisles.push(createItem(null, name))
-    this.newAisleNameTarget.value = ""
+    this.categories.push(createItem(null, name))
+    this.newCategoryNameTarget.value = ""
     this.render()
-    this.newAisleNameTarget.focus()
+    this.newCategoryNameTarget.focus()
   }
 
-  addAisleOnEnter(event) {
+  addCategoryOnEnter(event) {
     if (event.key === "Enter") {
       event.preventDefault()
-      this.addAisle()
+      this.addCategory()
     }
   }
 
   // Private
 
   handleCancel(event) {
-    if (isModified(this.aisles, this.initialSnapshot)) {
+    if (isModified(this.categories, this.initialSnapshot)) {
       event.preventDefault()
       this.close()
     }
   }
 
-  loadAisles() {
+  loadCategories() {
     this.saveButtonTarget.disabled = true
 
     fetch(this.loadUrlValue, {
@@ -127,31 +124,30 @@ export default class extends Controller {
     })
       .then(r => r.json())
       .then(data => {
-        const raw = data.aisle_order || ""
-        this.aisles = raw.split("\n").filter(Boolean).map(name => createItem(name))
-        this.initialSnapshot = takeSnapshot(this.aisles)
+        this.categories = (data.categories || []).map(c => createItem(c.name))
+        this.initialSnapshot = takeSnapshot(this.categories)
         this.render()
         this.saveButtonTarget.disabled = false
       })
       .catch(() => {
-        showErrors(this.errorsTarget, ["Failed to load aisle order. Close and try again."])
+        showErrors(this.errorsTarget, ["Failed to load categories. Close and try again."])
       })
   }
 
   render() {
-    renderRows(this.listTarget, this.aisles, this.rowCallbacks())
+    renderRows(this.listTarget, this.categories, this.rowCallbacks())
   }
 
   rowCallbacks() {
     return {
       onMoveUp: (index) => this.moveUp(index),
       onMoveDown: (index) => this.moveDown(index),
-      onDelete: (index) => { this.aisles[index].deleted = true; this.render() },
-      onUndo: (index) => { this.aisles[index].deleted = false; this.render() },
+      onDelete: (index) => { this.categories[index].deleted = true; this.render() },
+      onUndo: (index) => { this.categories[index].deleted = false; this.render() },
       onRename: (index) => {
         const row = this.listTarget.children[index]
         const nameBtn = row.querySelector(".aisle-name")
-        startInlineRename(nameBtn, this.aisles[index], () => this.render())
+        startInlineRename(nameBtn, this.categories[index], () => this.render())
       }
     }
   }
@@ -166,15 +162,15 @@ export default class extends Controller {
     const rows = this.listTarget.children
 
     animateSwap(rows[index], rows[swapIndex], () => {
-      swapItems(this.aisles, index, swapIndex)
+      swapItems(this.categories, index, swapIndex)
       this.render()
       this.focusMoveButton(swapIndex, label)
     })
   }
 
   liveIndices() {
-    return this.aisles
-      .map((a, i) => a.deleted ? null : i)
+    return this.categories
+      .map((c, i) => c.deleted ? null : i)
       .filter(i => i !== null)
   }
 
@@ -187,14 +183,12 @@ export default class extends Controller {
     }
   }
 
-  buildAislePayload() {
-    const payload = buildPayload(this.aisles, "aisle_order")
-    payload.aisle_order = payload.aisle_order.join("\n")
-    return payload
+  buildCategoryPayload() {
+    return buildPayload(this.categories, "category_order")
   }
 
   reset() {
-    this.aisles = []
+    this.categories = []
     this.initialSnapshot = null
     clearErrors(this.errorsTarget)
   }

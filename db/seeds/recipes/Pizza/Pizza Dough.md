@@ -2,7 +2,6 @@
 
 Basic, versatile pizza dough.
 
-Category: Pizza
 Makes: 3 pizzas
 
 ## Advance Prep, around 10 am: Make dough.

@@ -9,12 +9,11 @@ class EndToEndTest < ActionDispatch::IntegrationTest
     @bread = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
     @pizza = Category.create!(name: 'Pizza', slug: 'pizza', position: 1, kitchen: @kitchen)
 
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @pizza)
       # Pizza Dough
 
       A versatile dough for any pizza.
 
-      Category: Pizza
       Makes: 4 dough balls
 
       ## Mix the dough (combine dry and wet)
@@ -36,12 +35,11 @@ class EndToEndTest < ActionDispatch::IntegrationTest
       Adapted from a classic Neapolitan recipe.
     MD
 
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @pizza)
       # White Pizza
 
       A simple pizza bianca.
 
-      Category: Pizza
       Serves: 4
 
       ## Make dough.
@@ -55,12 +53,11 @@ class EndToEndTest < ActionDispatch::IntegrationTest
       Top the dough and bake at 500* degrees for 12* minutes.
     MD
 
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @bread)
       # Focaccia
 
       Just a little sweet.
 
-      Category: Bread
       Serves: 8
 
       ## Make dough (mix ingredients)
@@ -295,7 +292,6 @@ class EndToEndTest < ActionDispatch::IntegrationTest
 
       A tangy loaf.
 
-      Category: Bread
 
       ## Mix (combine ingredients)
 

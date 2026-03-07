@@ -28,4 +28,4 @@
 - "app/views/recipes/_nutrition_table.html.erb:18" # nutrient data attrs: hardcoded key + numeric value
 
 # nutrition_tui — terminal UI, not web HTML; Text::Span.raw is safe
-- "lib/nutrition_tui/screens/ingredient.rb:464"
+- "lib/nutrition_tui/screens/ingredient.rb:465"

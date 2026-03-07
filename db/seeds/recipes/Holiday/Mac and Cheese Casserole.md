@@ -2,7 +2,6 @@
 
 Southern-style macaroni and cheese.
 
-Category: Holiday
 Serves: 8
 
 ## Preheat oven and pasta water; butter casserole dish.

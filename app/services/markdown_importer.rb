@@ -11,17 +11,19 @@
 # or instructions). The step-level :cross_reference key drives this branching.
 #
 # Kitchen-scoped (requires kitchen: keyword) and idempotent — db:seed calls
-# this repeatedly. After import, resolves pending cross-references, computes
+# this repeatedly. Category is passed in as an AR object by the caller (typically
+# RecipeWriteService). After import, resolves pending cross-references, computes
 # nutrition synchronously (RecipeNutritionJob), and enqueues CascadeNutritionJob
 # async so parent recipes update without blocking the saving user.
 class MarkdownImporter
-  def self.import(markdown_source, kitchen:)
-    new(markdown_source, kitchen: kitchen).import
+  def self.import(markdown_source, kitchen:, category:)
+    new(markdown_source, kitchen: kitchen, category: category).import
   end
 
-  def initialize(markdown_source, kitchen:)
+  def initialize(markdown_source, kitchen:, category:)
     @markdown_source = markdown_source
     @kitchen = kitchen
+    @category = category
     @parsed = parse_markdown
   end
 
@@ -34,7 +36,7 @@ class MarkdownImporter
 
   private
 
-  attr_reader :markdown_source, :kitchen, :parsed
+  attr_reader :markdown_source, :kitchen, :category, :parsed
 
   def save_recipe
     ActiveRecord::Base.transaction do
@@ -62,7 +64,6 @@ class MarkdownImporter
   end
 
   def update_recipe_attributes(recipe)
-    category = find_or_create_category(parsed[:front_matter][:category])
     makes_qty, makes_unit = FamilyRecipes::Recipe.parse_makes(parsed[:front_matter][:makes])
 
     recipe.assign_attributes(
@@ -76,14 +77,6 @@ class MarkdownImporter
       footer: parsed[:footer],
       markdown_source: markdown_source
     )
-  end
-
-  def find_or_create_category(name)
-    slug = FamilyRecipes.slugify(name)
-    kitchen.categories.find_or_create_by!(slug: slug) do |cat|
-      cat.name = name
-      cat.position = kitchen.categories.maximum(:position).to_i + 1
-    end
   end
 
   def replace_steps(recipe)

@@ -8,7 +8,6 @@ class MarkdownImporterTest < ActiveSupport::TestCase
 
     A simple Italian flatbread.
 
-    Category: Bread
     Makes: 1 loaf
     Serves: 8
 
@@ -35,23 +34,24 @@ class MarkdownImporterTest < ActiveSupport::TestCase
     setup_test_kitchen
     Recipe.destroy_all
     Category.destroy_all
+    @bread = @kitchen.categories.create!(name: 'Bread', slug: 'bread', position: 0)
+    @main = @kitchen.categories.create!(name: 'Main', slug: 'main', position: 1)
   end
 
   test 'imports a basic recipe from markdown' do
-    recipe = MarkdownImporter.import(BASIC_RECIPE, kitchen: @kitchen)
+    recipe = MarkdownImporter.import(BASIC_RECIPE, kitchen: @kitchen, category: @bread)
 
     assert_equal 'Focaccia', recipe.title
     assert_equal 'focaccia', recipe.slug
     assert_equal 'A simple Italian flatbread.', recipe.description
-    assert_equal 'Bread', recipe.category.name
-    assert_equal 'bread', recipe.category.slug
+    assert_equal @bread, recipe.category
     assert_equal 'Adapted from a classic Italian recipe.', recipe.footer
     assert_equal BASIC_RECIPE, recipe.markdown_source
     assert_predicate recipe, :persisted?
   end
 
   test 'imports steps with correct positions' do
-    recipe = MarkdownImporter.import(BASIC_RECIPE, kitchen: @kitchen)
+    recipe = MarkdownImporter.import(BASIC_RECIPE, kitchen: @kitchen, category: @bread)
 
     assert_equal 2, recipe.steps.size
 
@@ -68,7 +68,7 @@ class MarkdownImporterTest < ActiveSupport::TestCase
   end
 
   test 'imports ingredients with quantity, unit, and prep note' do
-    recipe = MarkdownImporter.import(BASIC_RECIPE, kitchen: @kitchen)
+    recipe = MarkdownImporter.import(BASIC_RECIPE, kitchen: @kitchen, category: @bread)
 
     flour = recipe.steps.first.ingredients.find_by(name: 'Flour')
 
@@ -93,7 +93,7 @@ class MarkdownImporterTest < ActiveSupport::TestCase
   end
 
   test 'imports makes and serves from front matter' do
-    recipe = MarkdownImporter.import(BASIC_RECIPE, kitchen: @kitchen)
+    recipe = MarkdownImporter.import(BASIC_RECIPE, kitchen: @kitchen, category: @bread)
 
     assert_in_delta(1.0, recipe.makes_quantity)
     assert_equal 'loaf', recipe.makes_unit_noun
@@ -101,11 +101,11 @@ class MarkdownImporterTest < ActiveSupport::TestCase
   end
 
   test 'idempotent import updates instead of duplicating' do
-    first = MarkdownImporter.import(BASIC_RECIPE, kitchen: @kitchen)
+    first = MarkdownImporter.import(BASIC_RECIPE, kitchen: @kitchen, category: @bread)
     first_id = first.id
 
     updated_source = BASIC_RECIPE.sub('A simple Italian flatbread.', 'The best flatbread ever.')
-    second = MarkdownImporter.import(updated_source, kitchen: @kitchen)
+    second = MarkdownImporter.import(updated_source, kitchen: @kitchen, category: @bread)
 
     assert_equal first_id, second.id
     assert_equal 'The best flatbread ever.', second.description
@@ -113,11 +113,11 @@ class MarkdownImporterTest < ActiveSupport::TestCase
   end
 
   test 'idempotent import replaces steps cleanly' do
-    MarkdownImporter.import(BASIC_RECIPE, kitchen: @kitchen)
+    MarkdownImporter.import(BASIC_RECIPE, kitchen: @kitchen, category: @bread)
 
     assert_equal 2, Recipe.find_by(slug: 'focaccia').steps.count
 
-    MarkdownImporter.import(BASIC_RECIPE, kitchen: @kitchen)
+    MarkdownImporter.import(BASIC_RECIPE, kitchen: @kitchen, category: @bread)
 
     assert_equal 2, Recipe.find_by(slug: 'focaccia').steps.count
   end
@@ -125,8 +125,6 @@ class MarkdownImporterTest < ActiveSupport::TestCase
   test 'cross-reference step has no ingredients' do
     markdown_with_xref = <<~MARKDOWN
       # Pizza
-
-      Category: Main
 
       ## Make dough.
       >>> @[Pizza Dough]
@@ -139,7 +137,7 @@ class MarkdownImporterTest < ActiveSupport::TestCase
       Spread sauce on dough, top with cheese.
     MARKDOWN
 
-    recipe = MarkdownImporter.import(markdown_with_xref, kitchen: @kitchen)
+    recipe = MarkdownImporter.import(markdown_with_xref, kitchen: @kitchen, category: @main)
 
     xref_step = recipe.steps.find_by(title: 'Make dough.')
 
@@ -157,8 +155,6 @@ class MarkdownImporterTest < ActiveSupport::TestCase
     dough_markdown = <<~MARKDOWN
       # Pizza Dough
 
-      Category: Bread
-
       ## Mix (combine ingredients)
 
       - Flour, 3 cups
@@ -170,8 +166,6 @@ class MarkdownImporterTest < ActiveSupport::TestCase
     pizza_markdown = <<~MARKDOWN
       # Pizza
 
-      Category: Main
-
       ## Make dough.
       >>> @[Pizza Dough]
 
@@ -182,8 +176,8 @@ class MarkdownImporterTest < ActiveSupport::TestCase
       Spread sauce on dough, top with cheese.
     MARKDOWN
 
-    MarkdownImporter.import(dough_markdown, kitchen: @kitchen)
-    pizza = MarkdownImporter.import(pizza_markdown, kitchen: @kitchen)
+    MarkdownImporter.import(dough_markdown, kitchen: @kitchen, category: @bread)
+    pizza = MarkdownImporter.import(pizza_markdown, kitchen: @kitchen, category: @main)
     xref_step = pizza.steps.find_by!(title: 'Make dough.')
 
     assert_equal 1, xref_step.cross_references.count
@@ -194,8 +188,6 @@ class MarkdownImporterTest < ActiveSupport::TestCase
     markdown_with_missing_ref = <<~MARKDOWN
       # Pasta
 
-      Category: Main
-
       ## Make sauce.
       >>> @[Nonexistent Sauce]
 
@@ -206,7 +198,7 @@ class MarkdownImporterTest < ActiveSupport::TestCase
       Cook and serve.
     MARKDOWN
 
-    recipe = MarkdownImporter.import(markdown_with_missing_ref, kitchen: @kitchen)
+    recipe = MarkdownImporter.import(markdown_with_missing_ref, kitchen: @kitchen, category: @main)
     xref_step = recipe.steps.find_by!(title: 'Make sauce.')
 
     assert_equal 1, xref_step.cross_references.count
@@ -217,8 +209,6 @@ class MarkdownImporterTest < ActiveSupport::TestCase
     markdown = <<~MARKDOWN
       # Pasta
 
-      Category: Main
-
       ## Make sauce.
       >>> @[Nonexistent Sauce]
 
@@ -229,7 +219,7 @@ class MarkdownImporterTest < ActiveSupport::TestCase
       Cook and serve.
     MARKDOWN
 
-    recipe = MarkdownImporter.import(markdown, kitchen: @kitchen)
+    recipe = MarkdownImporter.import(markdown, kitchen: @kitchen, category: @main)
     xref_step = recipe.steps.find_by!(title: 'Make sauce.')
     ref = xref_step.cross_references.first
 
@@ -244,8 +234,6 @@ class MarkdownImporterTest < ActiveSupport::TestCase
     pasta_md = <<~MARKDOWN
       # Pasta
 
-      Category: Main
-
       ## Make sauce.
       >>> @[Marinara Sauce]
 
@@ -259,8 +247,6 @@ class MarkdownImporterTest < ActiveSupport::TestCase
     sauce_md = <<~MARKDOWN
       # Marinara Sauce
 
-      Category: Sauce
-
       ## Cook (simmer)
 
       - Tomatoes, 1 can
@@ -268,13 +254,13 @@ class MarkdownImporterTest < ActiveSupport::TestCase
       Simmer for 30 minutes.
     MARKDOWN
 
-    pasta = MarkdownImporter.import(pasta_md, kitchen: @kitchen)
+    pasta = MarkdownImporter.import(pasta_md, kitchen: @kitchen, category: @main)
     xref_step = pasta.steps.find_by!(title: 'Make sauce.')
     xref = xref_step.cross_references.first
 
     assert_predicate xref, :pending?
 
-    sauce = MarkdownImporter.import(sauce_md, kitchen: @kitchen)
+    sauce = MarkdownImporter.import(sauce_md, kitchen: @kitchen, category: @main)
     xref.reload
 
     assert_predicate xref, :resolved?
@@ -295,8 +281,6 @@ class MarkdownImporterTest < ActiveSupport::TestCase
     simple_markdown = <<~MARKDOWN
       # Simple Salad
 
-      Category: Side
-
       ## Toss (mix it up)
 
       - Lettuce, 1 head
@@ -304,7 +288,7 @@ class MarkdownImporterTest < ActiveSupport::TestCase
       Toss the lettuce.
     MARKDOWN
 
-    recipe = MarkdownImporter.import(simple_markdown, kitchen: @kitchen)
+    recipe = MarkdownImporter.import(simple_markdown, kitchen: @kitchen, category: @main)
 
     assert_nil recipe.makes_quantity
     assert_nil recipe.makes_unit_noun
@@ -315,8 +299,6 @@ class MarkdownImporterTest < ActiveSupport::TestCase
     minimal_markdown = <<~MARKDOWN
       # Toast
 
-      Category: Breakfast
-
       ## Toast it (golden brown)
 
       - Bread, 2 slices
@@ -324,7 +306,7 @@ class MarkdownImporterTest < ActiveSupport::TestCase
       Put the bread in the toaster.
     MARKDOWN
 
-    recipe = MarkdownImporter.import(minimal_markdown, kitchen: @kitchen)
+    recipe = MarkdownImporter.import(minimal_markdown, kitchen: @kitchen, category: @bread)
 
     assert_nil recipe.description
     assert_nil recipe.footer
@@ -332,12 +314,10 @@ class MarkdownImporterTest < ActiveSupport::TestCase
 
   test 'imports cross-reference with multiplier and prep note via >>> syntax' do
     ActsAsTenant.with_tenant(@kitchen) do
-      MarkdownImporter.import("# Dough\n\nCategory: Bread\n\n## Mix\n\n- Flour, 2 cups\n\nMix it.", kitchen: @kitchen)
+      MarkdownImporter.import("# Dough\n\n## Mix\n\n- Flour, 2 cups\n\nMix it.", kitchen: @kitchen, category: @bread)
 
       markdown = <<~MARKDOWN
         # Pizza
-
-        Category: Bread
 
         ## Make dough.
         >>> @[Dough], 2: Let rest.
@@ -349,7 +329,7 @@ class MarkdownImporterTest < ActiveSupport::TestCase
         Assemble it.
       MARKDOWN
 
-      recipe = MarkdownImporter.import(markdown, kitchen: @kitchen)
+      recipe = MarkdownImporter.import(markdown, kitchen: @kitchen, category: @bread)
       xref_step = recipe.steps.find_by(title: 'Make dough.')
 
       assert_equal 1, xref_step.cross_references.size
@@ -364,12 +344,10 @@ class MarkdownImporterTest < ActiveSupport::TestCase
 
   test 'cross-reference and content steps get correct positions' do
     ActsAsTenant.with_tenant(@kitchen) do
-      MarkdownImporter.import("# Sauce\n\nCategory: Bread\n\n## Mix\n\n- Tomato, 1 can\n\nMix.", kitchen: @kitchen)
+      MarkdownImporter.import("# Sauce\n\n## Mix\n\n- Tomato, 1 can\n\nMix.", kitchen: @kitchen, category: @bread)
 
       markdown = <<~MARKDOWN
         # Pizza
-
-        Category: Bread
 
         ## Make sauce.
         >>> @[Sauce]
@@ -382,7 +360,7 @@ class MarkdownImporterTest < ActiveSupport::TestCase
         Build it.
       MARKDOWN
 
-      recipe = MarkdownImporter.import(markdown, kitchen: @kitchen)
+      recipe = MarkdownImporter.import(markdown, kitchen: @kitchen, category: @bread)
 
       assert_equal 0, recipe.steps.find_by(title: 'Make sauce.').position
       assert_equal 1, recipe.steps.find_by(title: 'Build (assemble)').position
@@ -391,8 +369,8 @@ class MarkdownImporterTest < ActiveSupport::TestCase
 
   test 'stores processed_instructions with scalable number spans' do
     ActsAsTenant.with_tenant(@kitchen) do
-      markdown = "# Bread\n\nCategory: Bread\n\n## Mix\n\n- Flour, 2 cups\n\nCombine 3* cups of water."
-      recipe = MarkdownImporter.import(markdown, kitchen: @kitchen)
+      markdown = "# Bread\n\n## Mix\n\n- Flour, 2 cups\n\nCombine 3* cups of water."
+      recipe = MarkdownImporter.import(markdown, kitchen: @kitchen, category: @bread)
 
       step = recipe.steps.first
 
@@ -407,7 +385,6 @@ class MarkdownImporterTest < ActiveSupport::TestCase
 
       Worth the effort.
 
-      Category: Snacks
       Makes: 1 cup
       Serves: 4
 
@@ -426,7 +403,7 @@ class MarkdownImporterTest < ActiveSupport::TestCase
       Based on a recipe from ChefSteps.
     MARKDOWN
 
-    recipe = MarkdownImporter.import(markdown, kitchen: @kitchen)
+    recipe = MarkdownImporter.import(markdown, kitchen: @kitchen, category: @main)
 
     assert_equal 'Nacho Cheese', recipe.title
     assert_equal 1, recipe.steps.size
@@ -446,8 +423,6 @@ class MarkdownImporterTest < ActiveSupport::TestCase
     markdown = <<~MARKDOWN
       # Pizza
 
-      Category: Main
-
       ## Make dough.
       >>> @[Pizza Dough]
 
@@ -458,7 +433,7 @@ class MarkdownImporterTest < ActiveSupport::TestCase
       Add cheese.
     MARKDOWN
 
-    recipe = MarkdownImporter.import(markdown, kitchen: @kitchen)
+    recipe = MarkdownImporter.import(markdown, kitchen: @kitchen, category: @main)
     xref_step = recipe.steps.find_by(title: 'Make dough.')
 
     assert_equal 1, xref_step.cross_references.size
@@ -470,8 +445,6 @@ class MarkdownImporterTest < ActiveSupport::TestCase
     markdown = <<~MARKDOWN
       # Pizza
 
-      Category: Main
-
       ## Make dough.
       >>> @[Pizza Dough]
 
@@ -482,18 +455,16 @@ class MarkdownImporterTest < ActiveSupport::TestCase
       Add cheese.
     MARKDOWN
 
-    recipe = MarkdownImporter.import(markdown, kitchen: @kitchen)
+    recipe = MarkdownImporter.import(markdown, kitchen: @kitchen, category: @main)
     xref_step = recipe.steps.find_by(title: 'Make dough.')
 
     assert_nil xref_step.instructions
     assert_nil xref_step.processed_instructions
   end
 
-  test 'category is reused when it already exists' do
+  test 'assigns the passed category to the recipe' do
     bread1 = <<~MARKDOWN
       # Focaccia
-
-      Category: Bread
 
       ## Mix (combine)
 
@@ -505,8 +476,6 @@ class MarkdownImporterTest < ActiveSupport::TestCase
     bread2 = <<~MARKDOWN
       # Ciabatta
 
-      Category: Bread
-
       ## Mix (combine)
 
       - Flour, 4 cups
@@ -514,10 +483,9 @@ class MarkdownImporterTest < ActiveSupport::TestCase
       Mix everything.
     MARKDOWN
 
-    MarkdownImporter.import(bread1, kitchen: @kitchen)
-    MarkdownImporter.import(bread2, kitchen: @kitchen)
+    MarkdownImporter.import(bread1, kitchen: @kitchen, category: @bread)
+    MarkdownImporter.import(bread2, kitchen: @kitchen, category: @bread)
 
-    assert_equal 1, Category.where(name: 'Bread').count
-    assert_equal 2, Category.find_by(name: 'Bread').recipes.count
+    assert_equal 2, @bread.recipes.count
   end
 end

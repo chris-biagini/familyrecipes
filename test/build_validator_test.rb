@@ -4,9 +4,9 @@ require_relative 'test_helper'
 
 class BuildValidatorTest < ActiveSupport::TestCase
   def test_detects_unresolved_cross_reference
-    dough_md = "# Pizza Dough\n\nCategory: Test\n\n## Mix (make dough)\n\n- Flour, 500 g\n\nKnead."
+    dough_md = "# Pizza Dough\n\n## Mix (make dough)\n\n- Flour, 500 g\n\nKnead."
     dough = make_recipe(dough_md, id: 'pizza-dough')
-    pizza_md = "# Test Pizza\n\nCategory: Test\n\n## Make dough.\n>>> @[Nonexistent Recipe]"
+    pizza_md = "# Test Pizza\n\n## Make dough.\n>>> @[Nonexistent Recipe]"
     pizza = make_recipe(pizza_md, id: 'test-pizza')
     validator = build_validator(recipes: [dough, pizza])
 
@@ -17,8 +17,8 @@ class BuildValidatorTest < ActiveSupport::TestCase
   end
 
   def test_detects_circular_reference
-    a = make_recipe("# Recipe A\n\nCategory: Test\n\n## Use B.\n>>> @[Recipe B]", id: 'recipe-a')
-    b = make_recipe("# Recipe B\n\nCategory: Test\n\n## Use A.\n>>> @[Recipe A]", id: 'recipe-b')
+    a = make_recipe("# Recipe A\n\n## Use B.\n>>> @[Recipe B]", id: 'recipe-a')
+    b = make_recipe("# Recipe B\n\n## Use A.\n>>> @[Recipe A]", id: 'recipe-b')
     validator = build_validator(recipes: [a, b])
 
     error = assert_raises(StandardError) { validator.validate_cross_references }
@@ -27,7 +27,7 @@ class BuildValidatorTest < ActiveSupport::TestCase
   end
 
   def test_detects_title_filename_mismatch
-    md = "# Actual Title\n\nCategory: Test\n\n## Step (do it)\n\n- Flour, 500 g\n\nMix."
+    md = "# Actual Title\n\n## Step (do it)\n\n- Flour, 500 g\n\nMix."
     recipe = make_recipe(md, id: 'wrong-slug')
     validator = build_validator(recipes: [recipe])
 
@@ -37,9 +37,9 @@ class BuildValidatorTest < ActiveSupport::TestCase
   end
 
   def test_valid_cross_references_pass
-    dough_md = "# Pizza Dough\n\nCategory: Test\n\n## Mix (make dough)\n\n- Flour, 500 g\n\nKnead."
+    dough_md = "# Pizza Dough\n\n## Mix (make dough)\n\n- Flour, 500 g\n\nKnead."
     dough = make_recipe(dough_md, id: 'pizza-dough')
-    pizza_md = "# Test Pizza\n\nCategory: Test\n\n## Make dough.\n>>> @[Pizza Dough]"
+    pizza_md = "# Test Pizza\n\n## Make dough.\n>>> @[Pizza Dough]"
     pizza = make_recipe(pizza_md, id: 'test-pizza')
     validator = build_validator(recipes: [dough, pizza])
 
@@ -49,7 +49,7 @@ class BuildValidatorTest < ActiveSupport::TestCase
   end
 
   def test_self_referential_cross_reference
-    recipe = make_recipe("# Loopy\n\nCategory: Test\n\n## Use self.\n>>> @[Loopy]", id: 'loopy')
+    recipe = make_recipe("# Loopy\n\n## Use self.\n>>> @[Loopy]", id: 'loopy')
     validator = build_validator(recipes: [recipe])
 
     error = assert_raises(StandardError) { validator.validate_cross_references }
@@ -58,9 +58,9 @@ class BuildValidatorTest < ActiveSupport::TestCase
   end
 
   def test_three_way_circular_reference
-    a = make_recipe("# Recipe A\n\nCategory: Test\n\n## Use B.\n>>> @[Recipe B]", id: 'recipe-a')
-    b = make_recipe("# Recipe B\n\nCategory: Test\n\n## Use C.\n>>> @[Recipe C]", id: 'recipe-b')
-    c = make_recipe("# Recipe C\n\nCategory: Test\n\n## Use A.\n>>> @[Recipe A]", id: 'recipe-c')
+    a = make_recipe("# Recipe A\n\n## Use B.\n>>> @[Recipe B]", id: 'recipe-a')
+    b = make_recipe("# Recipe B\n\n## Use C.\n>>> @[Recipe C]", id: 'recipe-b')
+    c = make_recipe("# Recipe C\n\n## Use A.\n>>> @[Recipe A]", id: 'recipe-c')
     validator = build_validator(recipes: [a, b, c])
 
     error = assert_raises(StandardError) { validator.validate_cross_references }
@@ -69,7 +69,7 @@ class BuildValidatorTest < ActiveSupport::TestCase
   end
 
   def test_validate_ingredients_warns_on_unknown
-    md = "# Test Recipe\n\nCategory: Test\n\n## Step (do it)\n\n- Flour, 500 g\n- Unicorn dust\n\nMix."
+    md = "# Test Recipe\n\n## Step (do it)\n\n- Flour, 500 g\n- Unicorn dust\n\nMix."
     recipe = make_recipe(md, id: 'test-recipe')
     IngredientCatalog.find_or_create_by!(ingredient_name: 'Flour', kitchen_id: nil) do |p|
       p.basis_grams = 30
@@ -83,7 +83,7 @@ class BuildValidatorTest < ActiveSupport::TestCase
   end
 
   def test_validate_ingredients_passes_when_all_known
-    md = "# Test Recipe\n\nCategory: Test\n\n## Step (do it)\n\n- Flour, 500 g\n- Salt\n\nMix."
+    md = "# Test Recipe\n\n## Step (do it)\n\n- Flour, 500 g\n- Salt\n\nMix."
     recipe = make_recipe(md, id: 'test-recipe')
     IngredientCatalog.find_or_create_by!(ingredient_name: 'Flour', kitchen_id: nil) do |p|
       p.basis_grams = 30
@@ -101,7 +101,7 @@ class BuildValidatorTest < ActiveSupport::TestCase
   end
 
   def test_validate_nutrition_warns_on_missing_data
-    md = "# Test Recipe\n\nCategory: Test\n\n## Step (do it)\n\n- Flour, 500 g\n\nMix."
+    md = "# Test Recipe\n\n## Step (do it)\n\n- Flour, 500 g\n\nMix."
     recipe = make_recipe(md, id: 'test-recipe')
     nutrition_data = {}
     calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data)
@@ -114,7 +114,7 @@ class BuildValidatorTest < ActiveSupport::TestCase
   end
 
   def test_validate_nutrition_passes_when_complete
-    md = "# Test Recipe\n\nCategory: Test\n\n## Step (do it)\n\n- Flour, 500 g\n\nMix."
+    md = "# Test Recipe\n\n## Step (do it)\n\n- Flour, 500 g\n\nMix."
     recipe = make_recipe(md, id: 'test-recipe')
     nutrition_data = {
       'Flour' => {
@@ -131,7 +131,7 @@ class BuildValidatorTest < ActiveSupport::TestCase
   end
 
   def test_validate_ingredients_matches_plural_variant
-    md = "# Test Recipe\n\nCategory: Test\n\n## Step (do it)\n\n- Egg, 2\n\nScramble."
+    md = "# Test Recipe\n\n## Step (do it)\n\n- Egg, 2\n\nScramble."
     recipe = make_recipe(md, id: 'test-recipe')
     IngredientCatalog.find_or_create_by!(ingredient_name: 'Eggs', kitchen_id: nil) do |p|
       p.basis_grams = 50
@@ -145,7 +145,7 @@ class BuildValidatorTest < ActiveSupport::TestCase
   end
 
   def test_validate_ingredients_matches_singular_variant
-    md = "# Test Recipe\n\nCategory: Test\n\n## Step (do it)\n\n- Carrots, 3\n\nChop."
+    md = "# Test Recipe\n\n## Step (do it)\n\n- Carrots, 3\n\nChop."
     recipe = make_recipe(md, id: 'test-recipe')
     IngredientCatalog.find_or_create_by!(ingredient_name: 'Carrot', kitchen_id: nil) do |p|
       p.basis_grams = 50
@@ -161,7 +161,7 @@ class BuildValidatorTest < ActiveSupport::TestCase
   private
 
   def make_recipe(markdown, id: 'test-recipe')
-    FamilyRecipes::Recipe.new(markdown_source: markdown, id: id, category: 'Test')
+    FamilyRecipes::Recipe.new(markdown_source: markdown, id: id)
   end
 
   def build_validator(recipes: [], quick_bites: [], nutrition_calculator: nil)

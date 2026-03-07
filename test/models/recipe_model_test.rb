@@ -3,7 +3,7 @@
 require 'test_helper'
 
 class RecipeModelTest < ActiveSupport::TestCase
-  BASIC_MD = "# Test Recipe\n\nCategory: Test\n\n## Step\n\n- Flour\n\nMix."
+  BASIC_MD = "# Test Recipe\n\n## Step\n\n- Flour\n\nMix."
 
   setup do
     setup_test_kitchen
@@ -151,10 +151,8 @@ class RecipeModelTest < ActiveSupport::TestCase
   # --- with_full_tree scope ---
 
   test 'with_full_tree eager loads steps, ingredients, and cross references' do
-    recipe = MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    recipe = MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Poolish
-
-      Category: Test
 
       ## Mix (combine)
 

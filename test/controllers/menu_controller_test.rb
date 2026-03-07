@@ -364,11 +364,10 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
   private
 
   def create_two_ingredient_recipe
-    Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Focaccia
 
-      Category: Bread
 
       ## Mix
 
@@ -380,11 +379,10 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
   end
 
   def create_focaccia_recipe
-    Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Focaccia
 
-      Category: Bread
 
       ## Mix
 

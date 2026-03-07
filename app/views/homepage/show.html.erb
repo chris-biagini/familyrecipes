@@ -3,7 +3,8 @@
 <% if current_member? %>
 <% content_for(:extra_nav) do %>
     <div>
-      <button type="button" id="new-recipe-button" class="btn">Add New Recipe</button>
+      <button type="button" id="edit-categories-button" class="btn">Edit Categories</button>
+      <button type="button" id="new-recipe-button" class="btn">Add Recipe</button>
     </div>
 <% end %>
 <% end %>
@@ -32,6 +33,40 @@
 </article>
 
 <% if current_member? %>
+<dialog class="editor-dialog"
+        data-controller="category-order-editor"
+        data-category-order-editor-load-url-value="<%= categories_order_content_path %>"
+        data-category-order-editor-save-url-value="<%= categories_order_path %>">
+  <div class="editor-header">
+    <h2>Categories</h2>
+    <button type="button" class="btn editor-close" data-action="click->category-order-editor#close" aria-label="Close">&times;</button>
+  </div>
+  <div class="editor-errors" data-category-order-editor-target="errors" hidden></div>
+  <div class="aisle-order-body">
+    <div class="aisle-list" data-category-order-editor-target="list"></div>
+    <div class="aisle-add-row">
+      <label for="new-category-input" class="sr-only">New category name</label>
+      <input type="text" id="new-category-input" class="aisle-add-input" placeholder="Add a category..."
+             data-category-order-editor-target="newCategoryName"
+             data-action="keydown->category-order-editor#addCategoryOnEnter"
+             maxlength="50">
+      <button type="button" class="aisle-btn aisle-btn--add" aria-label="Add category"
+              data-action="click->category-order-editor#addCategory">
+        <svg viewBox="0 0 24 24" width="18" height="18">
+          <line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+  <div class="editor-footer">
+    <button type="button" class="btn editor-cancel" data-action="click->category-order-editor#close">Cancel</button>
+    <button type="button" class="btn btn-primary editor-save" data-category-order-editor-target="saveButton" data-action="click->category-order-editor#save">Save</button>
+  </div>
+</dialog>
+<% end %>
+
+<% if current_member? %>
 <%= render layout: 'shared/editor_dialog',
     locals: { title: 'New Recipe',
               id: 'recipe-editor',
@@ -41,6 +76,18 @@
                              editor_on_success: 'redirect',
                              editor_body_key: 'markdown_source',
                              extra_controllers: 'recipe-editor' } } do %>
-  <textarea class="editor-textarea" data-editor-target="textarea" data-recipe-editor-target="textarea" spellcheck="false"><%= "# Recipe Title\n\nOptional description.\n\nCategory: Mains\nMakes: 4 servings\nServes: 4\n\n## Step Name (short summary)\n\n- Ingredient, quantity: prep note\n\nInstructions here.\n\n---\n\nOptional notes or source." %></textarea>
+  <textarea class="editor-textarea" data-editor-target="textarea" data-recipe-editor-target="textarea" spellcheck="false"><%= "# Recipe Title\n\nOptional description.\n\nMakes: 4 servings\nServes: 4\n\n## Step Name (short summary)\n\n- Ingredient, quantity: prep note\n\nInstructions here.\n\n---\n\nOptional notes or source." %></textarea>
+  <div class="editor-category-row">
+    <label for="new-recipe-category">Category</label>
+    <select id="new-recipe-category" class="category-select" data-recipe-editor-target="categorySelect">
+      <% @all_categories.each do |cat| %>
+        <option value="<%= cat.name %>" <%= 'selected' if cat.name == 'Miscellaneous' %>><%= cat.name %></option>
+      <% end %>
+      <option disabled>&#x2500;&#x2500;&#x2500;</option>
+      <option value="__new__">New category&hellip;</option>
+    </select>
+    <input type="text" class="category-new-input" placeholder="New category name"
+           data-recipe-editor-target="categoryInput" hidden maxlength="50">
+  </div>
 <% end %>
 <% end %>

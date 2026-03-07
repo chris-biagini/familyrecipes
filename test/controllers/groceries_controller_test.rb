@@ -92,11 +92,10 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'show renders aisle sections when recipes selected' do
-    Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Focaccia
 
-      Category: Bread
 
       ## Mix (combine)
 
@@ -122,11 +121,10 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'show pre-checks checked-off items' do
-    Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Focaccia
 
-      Category: Bread
 
       ## Mix (combine)
 
@@ -327,7 +325,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
           as: :json
 
     assert_response :unprocessable_entity
-    assert_includes response.parsed_body['errors'].first, 'Too many aisles'
+    assert_includes response.parsed_body['errors'].first, 'Too many items'
   end
 
   test 'update_aisle_order accepts exactly 50 aisles' do

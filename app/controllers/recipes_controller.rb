@@ -10,12 +10,15 @@ class RecipesController < ApplicationController
   def show
     @recipe = current_kitchen.recipes.with_full_tree.find_by!(slug: params[:slug])
     @nutrition = @recipe.nutrition_data
+    @all_categories = current_kitchen.categories.ordered
   end
 
   def create
     return render_validation_errors if validation_errors.any?
 
-    result = RecipeWriteService.create(markdown: params[:markdown_source], kitchen: current_kitchen)
+    result = RecipeWriteService.create(
+      markdown: params[:markdown_source], kitchen: current_kitchen, category_name: params[:category]
+    )
     render json: { redirect_url: recipe_path(result.recipe.slug) }
   rescue ActiveRecord::RecordInvalid, RuntimeError => error
     render json: { errors: [error.message] }, status: :unprocessable_content
@@ -26,7 +29,8 @@ class RecipesController < ApplicationController
     return render_validation_errors if validation_errors.any?
 
     result = RecipeWriteService.update(
-      slug: params[:slug], markdown: params[:markdown_source], kitchen: current_kitchen
+      slug: params[:slug], markdown: params[:markdown_source],
+      kitchen: current_kitchen, category_name: params[:category]
     )
     render json: update_response(result)
   rescue ActiveRecord::RecordInvalid, RuntimeError => error

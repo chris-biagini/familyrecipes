@@ -31,7 +31,7 @@ class CrossReferenceUpdater
 
     referencing.map do |ref_recipe|
       updated_source = yield(ref_recipe.markdown_source, @recipe.title)
-      MarkdownImporter.import(updated_source, kitchen: ref_recipe.kitchen)
+      MarkdownImporter.import(updated_source, kitchen: ref_recipe.kitchen, category: ref_recipe.category)
       ref_recipe.title
     end
   end

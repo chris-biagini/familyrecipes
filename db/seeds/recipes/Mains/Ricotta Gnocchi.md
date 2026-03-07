@@ -2,7 +2,6 @@
 
 Cheesy dumplings in tomato sauce.
 
-Category: Mains
 Serves: 4
 
 ## Prepare sauce.

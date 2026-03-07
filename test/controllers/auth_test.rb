@@ -5,10 +5,10 @@ require 'test_helper'
 class AuthTest < ActionDispatch::IntegrationTest
   setup do
     create_kitchen_and_user
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen)
+    setup_test_category
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Focaccia
 
-      Category: Bread
 
       ## Mix (combine)
 
@@ -20,7 +20,7 @@ class AuthTest < ActionDispatch::IntegrationTest
 
   test 'unauthenticated POST to recipes returns 403' do
     post recipes_path(kitchen_slug: kitchen_slug),
-         params: { markdown_source: "# New\n\nCategory: Bread\n\n## Step (do)\n\n- Flour\n\nMix." },
+         params: { markdown_source: "# New\n\n## Step (do)\n\n- Flour\n\nMix." },
          as: :json
 
     assert_response :forbidden
@@ -28,7 +28,7 @@ class AuthTest < ActionDispatch::IntegrationTest
 
   test 'unauthenticated PATCH to recipes returns 403' do
     patch recipe_path('focaccia', kitchen_slug: kitchen_slug),
-          params: { markdown_source: "# Focaccia\n\nCategory: Bread\n\n## Step (do)\n\n- Flour\n\nMix." },
+          params: { markdown_source: "# Focaccia\n\n## Step (do)\n\n- Flour\n\nMix." },
           as: :json
 
     assert_response :forbidden
@@ -57,7 +57,7 @@ class AuthTest < ActionDispatch::IntegrationTest
     get dev_login_path(id: outsider.id)
 
     post recipes_path(kitchen_slug: kitchen_slug),
-         params: { markdown_source: "# New\n\nCategory: Bread\n\n## Step (do)\n\n- Flour\n\nMix." },
+         params: { markdown_source: "# New\n\n## Step (do)\n\n- Flour\n\nMix." },
          as: :json
 
     assert_response :forbidden

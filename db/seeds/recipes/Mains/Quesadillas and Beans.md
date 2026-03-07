@@ -1,6 +1,5 @@
 # Quesadillas and Beans
 
-Category: Mains
 Makes: 4 quesadillas
 Serves: 2
 
