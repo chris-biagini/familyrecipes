@@ -5,11 +5,11 @@
             data-nav-menu-target="button"
             data-action="nav-menu#toggle"
             aria-label="Menu" aria-expanded="false">
-      <svg class="hamburger-icon" viewBox="0 0 24 24" aria-hidden="true">
-        <rect class="hamburger-top" x="3" y="11" width="18" height="2" rx="1" fill="currentColor"/>
-        <rect class="hamburger-mid" x="3" y="11" width="18" height="2" rx="1" fill="currentColor"/>
-        <rect class="hamburger-bot" x="3" y="11" width="18" height="2" rx="1" fill="currentColor"/>
-      </svg>
+      <span class="hamburger-icon" aria-hidden="true">
+        <span class="hamburger-top"></span>
+        <span class="hamburger-mid"></span>
+        <span class="hamburger-bot"></span>
+      </span>
     </button>
     <div class="nav-links" data-nav-menu-target="navLinks">
       <%= render 'shared/nav_links' %>
