@@ -97,7 +97,7 @@ class CreateSchema < ActiveRecord::Migration[8.1]
 
     create_table :ingredient_catalog do |t|
       t.references :kitchen, foreign_key: true
-      t.string :ingredient_name, null: false
+      t.string :ingredient_name, null: false, collation: 'NOCASE'
       t.string :aisle
       t.decimal :basis_grams
       t.decimal :calories
@@ -116,6 +116,7 @@ class CreateSchema < ActiveRecord::Migration[8.1]
       t.string :density_unit
       t.json :portions, default: {}
       t.json :sources, default: []
+      t.json :aliases, default: []
       t.timestamps
       t.index :ingredient_name, unique: true, where: 'kitchen_id IS NULL',
               name: 'index_ingredient_catalog_global_unique'
