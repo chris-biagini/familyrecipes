@@ -1,0 +1,14 @@
+{
+  "planPath": "docs/plans/2026-03-08-structured-deployment-plan.md",
+  "tasks": [
+    {"id": 0, "subject": "Task 0: Consolidate migrations", "status": "pending"},
+    {"id": 1, "subject": "Task 1: Update site.yml and config initializer", "status": "pending", "blockedBy": [0]},
+    {"id": 2, "subject": "Task 2: Single-kitchen validation on Kitchen model", "status": "pending", "blockedBy": [1]},
+    {"id": 3, "subject": "Task 3: Replace seed recipes with sample content", "status": "pending", "blockedBy": [0]},
+    {"id": 4, "subject": "Task 4: Make db:seed first-boot only", "status": "pending", "blockedBy": [3]},
+    {"id": 5, "subject": "Task 5: Update Docker entrypoint", "status": "pending", "blockedBy": [1, 4]},
+    {"id": 6, "subject": "Task 6: Update docker-compose.example.yml", "status": "pending", "blockedBy": [5]},
+    {"id": 7, "subject": "Task 7: Full integration verification", "status": "pending", "blockedBy": [6]}
+  ],
+  "lastUpdated": "2026-03-08T00:00:00Z"
+}
