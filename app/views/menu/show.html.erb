@@ -39,6 +39,7 @@
 <% if current_member? %>
 <%= render layout: 'shared/editor_dialog',
     locals: { title: 'Edit QuickBites',
+              id: 'quickbites-editor',
               dialog_data: { editor_open: '#edit-quick-bites-button',
                              editor_url: menu_quick_bites_path,
                              editor_method: 'PATCH',
