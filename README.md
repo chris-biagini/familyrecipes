@@ -27,35 +27,27 @@ Inspired by the beautifully-designed [Paprika](https://www.paprikaapp.com) by Hi
 
 ## Quick Start (Docker)
 
-Steps 1–4 get the app running. Step 5 adds authentication for production use.
+Steps 1–3 get the app running. Step 4 adds authentication for production use.
 
 ### 1. Download the configuration files
 
 ```bash
 mkdir familyrecipes && cd familyrecipes
 curl -O https://raw.githubusercontent.com/chris-biagini/familyrecipes/main/docker-compose.example.yml
-curl -O https://raw.githubusercontent.com/chris-biagini/familyrecipes/main/.env.example
 cp docker-compose.example.yml docker-compose.yml
-cp .env.example .env
 ```
 
-### 2. Generate a secret key
-
-```bash
-sed -i "s/^SECRET_KEY_BASE=$/SECRET_KEY_BASE=$(openssl rand -hex 64)/" .env
-```
-
-Optionally set `ALLOWED_HOSTS` in `.env` to your domain (e.g., `recipes.example.com`) for DNS rebinding protection. Keep `.env` out of version control — it holds your secrets.
-
-### 3. Start the container
+### 2. Start the container
 
 ```bash
 docker compose up -d
 ```
 
-On first start, the entrypoint creates the database, copies a default `site.yml` configuration to the storage volume, syncs the ingredient catalog, and seeds sample recipes. Subsequent starts apply any new migrations and sync the catalog, but skip sample content if recipes already exist.
+On first start, the entrypoint generates a `SECRET_KEY_BASE` (persisted in the storage volume), creates the database, copies a default `site.yml` configuration, syncs the ingredient catalog, and seeds sample recipes. Subsequent starts apply any new migrations and sync the catalog, but skip sample content if recipes already exist.
 
-### 4. Verify it's running
+Optionally create a `.env` file (see `.env.example`) to set `ALLOWED_HOSTS` for DNS rebinding protection, provide your own `SECRET_KEY_BASE`, or adjust logging. Keep `.env` out of version control — it holds your secrets.
+
+### 3. Verify it's running
 
 ```bash
 curl -s http://localhost:3030/up
@@ -63,7 +55,7 @@ curl -s http://localhost:3030/up
 
 A successful response means the app is healthy. Visit `http://localhost:3030` in a browser to see the sample recipes.
 
-### 5. Add authentication (production)
+### 4. Add authentication (production)
 
 For production, deploy behind [Caddy](https://caddyserver.com/) and [Authelia](https://www.authelia.com/) (or a similar reverse proxy with trusted-header auth). Add a Caddyfile entry for your domain:
 
@@ -89,7 +81,7 @@ Set in your `.env` file. Docker Compose reads `.env` automatically when it's in 
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `SECRET_KEY_BASE` | Yes | — | Rails session encryption key. Generate with the command above. |
+| `SECRET_KEY_BASE` | No | auto-generated | Rails session encryption key. Auto-generated and persisted in the storage volume if not set. |
 | `ALLOWED_HOSTS` | Recommended | allow all | Comma-separated domain(s) for DNS rebinding protection. |
 | `RAILS_LOG_LEVEL` | No | `info` | Log verbosity: `debug`, `info`, `warn`, `error`. |
 | `USDA_API_KEY` | No | — | Enables USDA FoodData Central lookups in `bin/nutrition`. Free at [fdc.nal.usda.gov](https://fdc.nal.usda.gov/api-key-signup). |

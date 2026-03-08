@@ -1,14 +1,14 @@
 # docker-compose.example.yml
 #
 # Reference configuration for deploying familyrecipes.
-# Secrets are read from a .env file in the same directory (not checked into git).
+# Optional: create a .env file for custom settings (see .env.example).
 #
 # Quick start:
 #   1. cp docker-compose.example.yml docker-compose.yml
-#   2. cp .env.example .env
-#   3. Generate a secret and add it to .env:
-#      docker run --rm ruby:3.2-slim ruby -rsecurerandom -e 'puts SecureRandom.hex(64)'
-#   4. docker compose up -d
+#   2. docker compose up -d
+#
+# SECRET_KEY_BASE is auto-generated and persisted in the storage volume.
+# To provide your own, create a .env file (see .env.example).
 
 services:
   app:
@@ -17,7 +17,7 @@ services:
     ports:
       - "127.0.0.1:3030:3030"
     environment:
-      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE:-}
       ALLOWED_HOSTS: ${ALLOWED_HOSTS:-}
       # RAILS_LOG_LEVEL: ${RAILS_LOG_LEVEL:-info}
       # USDA_API_KEY: ${USDA_API_KEY:-}

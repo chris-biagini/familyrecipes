@@ -6,6 +6,18 @@
 # All operations are idempotent — safe to run on every container start.
 set -e
 
+# Auto-generate SECRET_KEY_BASE when not provided via environment.
+# Persists to storage volume so sessions survive container restarts.
+if [ -z "$SECRET_KEY_BASE" ]; then
+  if [ ! -f storage/.secret_key_base ]; then
+    echo "Generating secret key..."
+    ruby -rsecurerandom -e 'print SecureRandom.hex(64)' > storage/.secret_key_base
+    chmod 600 storage/.secret_key_base
+  fi
+  export SECRET_KEY_BASE
+  SECRET_KEY_BASE=$(cat storage/.secret_key_base)
+fi
+
 echo "Preparing database..."
 bin/rails db:prepare
 
