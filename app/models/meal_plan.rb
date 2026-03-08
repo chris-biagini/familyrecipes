@@ -94,7 +94,7 @@ class MealPlan < ApplicationRecord
     save! if state['checked_off'].size < before_size
   end
 
-  def prune_stale_selections(kitchen:)
+  def prune_stale_selections(kitchen:) # rubocop:disable Metrics/AbcSize
     ensure_state_keys
     valid_slugs = kitchen.recipes.pluck(:slug).to_set
     valid_qb_ids = kitchen.parsed_quick_bites.to_set(&:id)
