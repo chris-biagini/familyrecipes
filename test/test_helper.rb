@@ -52,6 +52,16 @@ module ActiveSupport
       @user = User.create!(name: 'Test User', email: 'test@example.com')
       Membership.create!(kitchen: @kitchen, user: @user)
     end
+
+    def with_multi_kitchen
+      original = Rails.configuration.site
+      Rails.configuration.site = ActiveSupport::InheritableOptions.new(
+        original.to_h.merge(multi_kitchen: true)
+      )
+      yield
+    ensure
+      Rails.configuration.site = original
+    end
   end
 end
 

@@ -54,7 +54,10 @@ class IngredientCatalogTest < ActiveSupport::TestCase
   end
 
   test 'lookup_for does not return entries from other kitchens' do
-    other = Kitchen.find_or_create_by!(name: 'Other Kitchen', slug: 'other-kitchen')
+    other = nil
+    with_multi_kitchen do
+      other = Kitchen.find_or_create_by!(name: 'Other Kitchen', slug: 'other-kitchen')
+    end
     IngredientCatalog.create!(kitchen: other, ingredient_name: 'Butter', basis_grams: 100)
 
     result = IngredientCatalog.lookup_for(@kitchen)
@@ -185,7 +188,10 @@ class IngredientCatalogTest < ActiveSupport::TestCase
   end
 
   test 'allows same ingredient_name in different kitchens' do
-    other = Kitchen.find_or_create_by!(name: 'Other Kitchen', slug: 'other-kitchen')
+    other = nil
+    with_multi_kitchen do
+      other = Kitchen.find_or_create_by!(name: 'Other Kitchen', slug: 'other-kitchen')
+    end
     IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Butter', basis_grams: 100)
     entry = IngredientCatalog.new(kitchen: other, ingredient_name: 'Butter', basis_grams: 100)
 

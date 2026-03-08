@@ -45,7 +45,10 @@ class RecipeModelTest < ActiveSupport::TestCase
   test 'allows same slug in different kitchens' do
     Recipe.create!(title: 'First', slug: 'pizza', category: @category, markdown_source: BASIC_MD)
 
-    other_kitchen = Kitchen.create!(name: 'Other', slug: 'other')
+    other_kitchen = nil
+    with_multi_kitchen do
+      other_kitchen = Kitchen.create!(name: 'Other', slug: 'other')
+    end
     ActsAsTenant.current_tenant = other_kitchen
     other_category = Category.create!(name: 'Test', slug: 'test')
     other_recipe = Recipe.new(title: 'First', slug: 'pizza', category: other_category, markdown_source: BASIC_MD)

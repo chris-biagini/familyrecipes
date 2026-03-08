@@ -24,8 +24,10 @@ class LandingControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'renders landing page with kitchen list when multiple exist' do
-    Kitchen.create!(name: 'Kitchen A', slug: 'kitchen-a')
-    Kitchen.create!(name: 'Kitchen B', slug: 'kitchen-b')
+    with_multi_kitchen do
+      Kitchen.create!(name: 'Kitchen A', slug: 'kitchen-a')
+      Kitchen.create!(name: 'Kitchen B', slug: 'kitchen-b')
+    end
 
     get root_path
 

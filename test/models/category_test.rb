@@ -54,7 +54,10 @@ class CategoryTest < ActiveSupport::TestCase
   test 'allows same name in different kitchens' do
     Category.create!(name: 'Bread', slug: 'bread')
 
-    other_kitchen = Kitchen.create!(name: 'Other', slug: 'other')
+    other_kitchen = nil
+    with_multi_kitchen do
+      other_kitchen = Kitchen.create!(name: 'Other', slug: 'other')
+    end
     ActsAsTenant.current_tenant = other_kitchen
     other_category = Category.new(name: 'Bread', slug: 'bread')
 

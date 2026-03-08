@@ -140,6 +140,40 @@ class KitchenTest < ActiveSupport::TestCase
     assert_equal 'Goldfish', qbs.first.title
   end
 
+  test 'allows first kitchen when multi_kitchen is false' do
+    Kitchen.destroy_all
+    kitchen = Kitchen.new(name: 'First', slug: 'first')
+
+    assert_predicate kitchen, :valid?
+  end
+
+  test 'blocks second kitchen when multi_kitchen is false' do
+    Kitchen.destroy_all
+    Kitchen.create!(name: 'First', slug: 'first')
+    second = Kitchen.new(name: 'Second', slug: 'second')
+
+    assert_not second.valid?
+    assert_includes second.errors[:base], 'Only one kitchen is allowed in single-kitchen mode'
+  end
+
+  test 'allows second kitchen when multi_kitchen is true' do
+    Kitchen.destroy_all
+    with_multi_kitchen do
+      Kitchen.create!(name: 'First', slug: 'first')
+      second = Kitchen.new(name: 'Second', slug: 'second')
+
+      assert_predicate second, :valid?
+    end
+  end
+
+  test 'allows updating existing kitchen when multi_kitchen is false' do
+    Kitchen.destroy_all
+    kitchen = Kitchen.create!(name: 'First', slug: 'first')
+    kitchen.name = 'Updated'
+
+    assert_predicate kitchen, :valid?
+  end
+
   test 'all_aisles prefers kitchen catalog entries over global' do
     kitchen = Kitchen.create!(name: 'Test', slug: 'test-overlay')
     IngredientCatalog.create!(kitchen: nil, ingredient_name: 'Flour', aisle: 'Baking', basis_grams: 30)

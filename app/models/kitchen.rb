@@ -20,6 +20,7 @@ class Kitchen < ApplicationRecord
 
   validates :name, presence: true
   validates :slug, presence: true, uniqueness: true
+  validate :enforce_single_kitchen_mode, on: :create
 
   def broadcast_update
     Turbo::StreamsChannel.broadcast_refresh_to(self, :updates)
@@ -63,5 +64,14 @@ class Kitchen < ApplicationRecord
 
     saved_downcased = saved.to_set(&:downcase)
     saved + catalog_aisles.reject { |a| saved_downcased.include?(a.downcase) }
+  end
+
+  private
+
+  def enforce_single_kitchen_mode
+    return if Rails.configuration.site.multi_kitchen
+
+    # Intentionally unscoped — checking global kitchen count, not tenant-scoped data
+    errors.add(:base, 'Only one kitchen is allowed in single-kitchen mode') if Kitchen.exists?
   end
 end
