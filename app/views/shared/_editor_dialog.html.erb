@@ -1,7 +1,8 @@
-<%# locals: (title:, id: nil, dialog_data: {}, footer_extra: nil, extra_data: {}) %>
+<%# locals: (title:, id:, dialog_data: {}, footer_extra: nil, extra_data: {}) %>
 <%= tag.dialog id: id,
     class: 'editor-dialog',
     data: {
+      turbo_permanent: '',
       controller: ['editor', dialog_data[:extra_controllers]].compact.join(' '),
       editor_url_value: dialog_data[:editor_url],
       editor_method_value: dialog_data[:editor_method] || 'PATCH',
