@@ -112,7 +112,7 @@ class RecipeNutritionJobTest < ActiveSupport::TestCase
     recipe.reload
 
     assert_includes recipe.nutrition_data['skipped_ingredients'], 'Pepper'
-    refute_includes recipe.nutrition_data['missing_ingredients'], 'Pepper'
+    assert_not_includes recipe.nutrition_data['missing_ingredients'], 'Pepper'
   end
 
   test 'MarkdownImporter enqueues CascadeNutritionJob' do
