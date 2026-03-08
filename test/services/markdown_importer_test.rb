@@ -462,6 +462,24 @@ class MarkdownImporterTest < ActiveSupport::TestCase
     assert_nil xref_step.processed_instructions
   end
 
+  test 'raises SlugCollisionError when slug matches but title differs' do
+    MarkdownImporter.import(BASIC_RECIPE, kitchen: @kitchen, category: @bread)
+
+    colliding_markdown = BASIC_RECIPE.sub('# Focaccia', '# Focaccia!')
+
+    error = assert_raises(MarkdownImporter::SlugCollisionError) do
+      MarkdownImporter.import(colliding_markdown, kitchen: @kitchen, category: @bread)
+    end
+    assert_includes error.message, 'Focaccia'
+  end
+
+  test 'same-title reimport still works after collision check' do
+    first = MarkdownImporter.import(BASIC_RECIPE, kitchen: @kitchen, category: @bread)
+    second = MarkdownImporter.import(BASIC_RECIPE, kitchen: @kitchen, category: @bread)
+
+    assert_equal first.id, second.id
+  end
+
   test 'assigns the passed category to the recipe' do
     bread1 = <<~MARKDOWN
       # Focaccia

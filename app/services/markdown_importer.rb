@@ -16,6 +16,8 @@
 # nutrition synchronously (RecipeNutritionJob), and enqueues CascadeNutritionJob
 # async so parent recipes update without blocking the saving user.
 class MarkdownImporter
+  class SlugCollisionError < RuntimeError; end
+
   def self.import(markdown_source, kitchen:, category:)
     new(markdown_source, kitchen: kitchen, category: category).import
   end
@@ -60,7 +62,17 @@ class MarkdownImporter
 
   def find_or_initialize_recipe
     slug = FamilyRecipes.slugify(parsed[:title])
-    kitchen.recipes.find_or_initialize_by(slug: slug)
+    recipe = kitchen.recipes.find_or_initialize_by(slug: slug)
+    check_slug_collision!(recipe)
+    recipe
+  end
+
+  def check_slug_collision!(recipe)
+    return unless recipe.persisted?
+    return if recipe.title == parsed[:title]
+
+    raise SlugCollisionError,
+          "A recipe with a similar name already exists: '#{recipe.title}'"
   end
 
   def update_recipe_attributes(recipe)
