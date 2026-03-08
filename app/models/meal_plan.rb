@@ -94,6 +94,21 @@ class MealPlan < ApplicationRecord
     save! if state['checked_off'].size < before_size
   end
 
+  def prune_stale_selections(kitchen:)
+    ensure_state_keys
+    valid_slugs = kitchen.recipes.pluck(:slug).to_set
+    valid_qb_ids = kitchen.parsed_quick_bites.map(&:id).to_set
+
+    recipes_before = state['selected_recipes'].size
+    qb_before = state['selected_quick_bites'].size
+
+    state['selected_recipes'].select! { |s| valid_slugs.include?(s) }
+    state['selected_quick_bites'].select! { |s| valid_qb_ids.include?(s) }
+
+    save! if state['selected_recipes'].size < recipes_before ||
+             state['selected_quick_bites'].size < qb_before
+  end
+
   private
 
   def ensure_state_keys

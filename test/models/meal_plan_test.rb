@@ -379,4 +379,54 @@ class MealPlanTest < ActiveSupport::TestCase
 
     assert_equal version_before, plan.reload.lock_version
   end
+
+  test 'prune_stale_selections removes deleted recipe slugs' do
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'recipe', slug: 'exists', selected: true)
+    list.apply_action('select', type: 'recipe', slug: 'gone', selected: true)
+
+    category = Category.find_or_create_by!(name: 'Test', slug: 'test', kitchen: @kitchen)
+    MarkdownImporter.import("# Exists\n\n## Step (do it)\n\n- Flour, 1 cup\n\nDo it.\n", kitchen: @kitchen, category:)
+
+    list.prune_stale_selections(kitchen: @kitchen)
+
+    assert_includes list.state['selected_recipes'], 'exists'
+    assert_not_includes list.state['selected_recipes'], 'gone'
+  end
+
+  test 'prune_stale_selections removes deleted quick bite IDs' do
+    @kitchen.update!(quick_bites_content: "## Quick Bites: Snacks\n\n- Nachos\n  - Chips, 1 bag\n")
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'quick_bite', slug: 'nachos', selected: true)
+    list.apply_action('select', type: 'quick_bite', slug: 'gone-bite', selected: true)
+
+    list.prune_stale_selections(kitchen: @kitchen)
+
+    assert_includes list.state['selected_quick_bites'], 'nachos'
+    assert_not_includes list.state['selected_quick_bites'], 'gone-bite'
+  end
+
+  test 'prune_stale_selections is idempotent when all selections valid' do
+    category = Category.find_or_create_by!(name: 'Test', slug: 'test', kitchen: @kitchen)
+    MarkdownImporter.import("# Exists\n\n## Step (do it)\n\n- Flour, 1 cup\n\nDo it.\n", kitchen: @kitchen, category:)
+
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'recipe', slug: 'exists', selected: true)
+    version_before = list.lock_version
+
+    list.prune_stale_selections(kitchen: @kitchen)
+
+    assert_equal version_before, list.lock_version
+  end
+
+  test 'prune_stale_selections saves when items pruned' do
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'recipe', slug: 'gone', selected: true)
+    version_before = list.lock_version
+
+    list.prune_stale_selections(kitchen: @kitchen)
+
+    assert_operator list.lock_version, :>, version_before
+    assert_empty list.state['selected_recipes']
+  end
 end
