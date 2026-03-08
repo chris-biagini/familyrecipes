@@ -225,4 +225,60 @@ class RecipeWriteServiceTest < ActiveSupport::TestCase
       RecipeWriteService.destroy(slug: 'focaccia', kitchen: @kitchen)
     end
   end
+
+  test 'destroy prunes deleted recipe from meal plan selections' do
+    RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen, category_name: 'Bread')
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+
+    RecipeWriteService.destroy(slug: 'focaccia', kitchen: @kitchen)
+
+    plan.reload
+    assert_not_includes plan.state['selected_recipes'], 'focaccia'
+  end
+
+  test 'update with rename prunes old slug from meal plan selections' do
+    RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen, category_name: 'Bread')
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+
+    renamed = <<~MD
+      # Rosemary Focaccia
+
+      ## Make (do it)
+
+      - Flour, 4 cups
+
+      Mix.
+    MD
+
+    RecipeWriteService.update(slug: 'focaccia', markdown: renamed, kitchen: @kitchen, category_name: 'Bread')
+
+    plan.reload
+    assert_not_includes plan.state['selected_recipes'], 'focaccia'
+  end
+
+  test 'slug reuse after delete does not auto-select' do
+    RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen, category_name: 'Bread')
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+
+    RecipeWriteService.destroy(slug: 'focaccia', kitchen: @kitchen)
+
+    new_markdown = <<~MD
+      # Focaccia
+
+      A different focaccia.
+
+      ## Make (do it)
+
+      - Flour, 2 cups
+
+      Mix.
+    MD
+    RecipeWriteService.create(markdown: new_markdown, kitchen: @kitchen, category_name: 'Bread')
+
+    plan.reload
+    assert_not_includes plan.state['selected_recipes'], 'focaccia'
+  end
 end

@@ -100,7 +100,10 @@ class RecipeWriteService
 
   def prune_stale_meal_plan_items
     plan = MealPlan.for_kitchen(kitchen)
-    visible = ShoppingListBuilder.new(kitchen:, meal_plan: plan).visible_names
-    plan.with_optimistic_retry { plan.prune_checked_off(visible_names: visible) }
+    plan.with_optimistic_retry do
+      visible = ShoppingListBuilder.new(kitchen:, meal_plan: plan).visible_names
+      plan.prune_checked_off(visible_names: visible)
+      plan.prune_stale_selections(kitchen:)
+    end
   end
 end
