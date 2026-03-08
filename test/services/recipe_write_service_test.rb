@@ -234,6 +234,7 @@ class RecipeWriteServiceTest < ActiveSupport::TestCase
     RecipeWriteService.destroy(slug: 'focaccia', kitchen: @kitchen)
 
     plan.reload
+
     assert_not_includes plan.state['selected_recipes'], 'focaccia'
   end
 
@@ -255,6 +256,7 @@ class RecipeWriteServiceTest < ActiveSupport::TestCase
     RecipeWriteService.update(slug: 'focaccia', markdown: renamed, kitchen: @kitchen, category_name: 'Bread')
 
     plan.reload
+
     assert_not_includes plan.state['selected_recipes'], 'focaccia'
   end
 
@@ -310,6 +312,7 @@ class RecipeWriteServiceTest < ActiveSupport::TestCase
     RecipeWriteService.create(markdown: new_markdown, kitchen: @kitchen, category_name: 'Bread')
 
     plan.reload
+
     assert_not_includes plan.state['selected_recipes'], 'focaccia'
   end
 end

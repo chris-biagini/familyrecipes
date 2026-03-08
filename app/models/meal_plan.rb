@@ -97,7 +97,7 @@ class MealPlan < ApplicationRecord
   def prune_stale_selections(kitchen:)
     ensure_state_keys
     valid_slugs = kitchen.recipes.pluck(:slug).to_set
-    valid_qb_ids = kitchen.parsed_quick_bites.map(&:id).to_set
+    valid_qb_ids = kitchen.parsed_quick_bites.to_set(&:id)
 
     recipes_before = state['selected_recipes'].size
     qb_before = state['selected_quick_bites'].size
