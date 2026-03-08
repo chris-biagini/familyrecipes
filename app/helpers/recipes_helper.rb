@@ -46,7 +46,15 @@ module RecipesHelper
   end
 
   def nutrition_missing_ingredients(nutrition)
-    ((nutrition['missing_ingredients'] || []) + (nutrition['partial_ingredients'] || [])).uniq
+    nutrition['missing_ingredients'] || []
+  end
+
+  def nutrition_partial_ingredients(nutrition)
+    nutrition['partial_ingredients'] || []
+  end
+
+  def nutrition_skipped_ingredients(nutrition)
+    nutrition['skipped_ingredients'] || []
   end
 
   def ingredient_data_attrs(item, scale_factor: 1.0)

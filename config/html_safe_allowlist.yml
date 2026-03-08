@@ -15,7 +15,7 @@
 - "app/helpers/recipes_helper.rb:23"    # scalable_instructions: preprocessor escapes internally
 - "app/helpers/recipes_helper.rb:29"    # format_yield_line: preprocessor escapes internally
 - "app/helpers/recipes_helper.rb:35"    # format_yield_with_unit: preprocessor escapes internally
-- "app/helpers/recipes_helper.rb:124"   # per_serving_label: user values escaped with ERB::Util.html_escape
+- "app/helpers/recipes_helper.rb:132"   # per_serving_label: user values escaped with ERB::Util.html_escape
 
 # RecipesController — show_html: Redcarpet output (escape_html: true), title escaped via ERB::Util
 - "app/controllers/recipes_controller.rb:69"

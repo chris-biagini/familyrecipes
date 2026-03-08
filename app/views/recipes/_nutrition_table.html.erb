@@ -22,12 +22,25 @@
     </tbody>
   </table>
   <% missing = nutrition_missing_ingredients(nutrition) %>
+  <% partial = nutrition_partial_ingredients(nutrition) %>
+  <% skipped = nutrition_skipped_ingredients(nutrition) %>
   <%- if missing.any? -%>
-  <p class="nutrition-note">*Approximate. Data unavailable for:
+  <p class="nutrition-note">*Approximate. No nutrition data for:
     <%- missing.each_with_index do |name, i| -%>
       <%- if current_member? -%>
         <button type="button" class="btn-inline-link" data-open-editor data-ingredient-name="<%= name %>"><%= name %></button><%- else -%>
         <%= name %><%- end -%><%= ',' unless i == missing.size - 1 %>
     <%- end -%>.</p>
+  <%- end -%>
+  <%- if partial.any? -%>
+  <p class="nutrition-note">*Approximate. Could not calculate:
+    <%- partial.each_with_index do |name, i| -%>
+      <%- if current_member? -%>
+        <button type="button" class="btn-inline-link" data-open-editor data-ingredient-name="<%= name %>"><%= name %></button> (unknown portion size)<%- else -%>
+        <%= name %> (unknown portion size)<%- end -%><%= ',' unless i == partial.size - 1 %>
+    <%- end -%>.</p>
+  <%- end -%>
+  <%- if skipped.any? -%>
+  <p class="nutrition-note">Not included (no quantity specified): <%= skipped.join(', ') %>.</p>
   <%- end -%>
 </aside>
