@@ -1,0 +1,13 @@
+{
+  "planPath": "docs/plans/2026-03-08-recipe-extensions-plan.md",
+  "tasks": [
+    {"id": 1, "subject": "Task 1: Add routes", "status": "pending"},
+    {"id": 2, "subject": "Task 2: Write failing tests for show_markdown", "status": "pending", "blockedBy": [1]},
+    {"id": 3, "subject": "Task 3: Implement show_markdown", "status": "pending", "blockedBy": [2]},
+    {"id": 4, "subject": "Task 4: Write failing tests for show_html", "status": "pending", "blockedBy": [3]},
+    {"id": 5, "subject": "Task 5: Implement show_html", "status": "pending", "blockedBy": [4]},
+    {"id": 6, "subject": "Task 6: Update html_safe allowlist and run full suite", "status": "pending", "blockedBy": [5]},
+    {"id": 7, "subject": "Task 7: Update architectural comment", "status": "pending", "blockedBy": [6]}
+  ],
+  "lastUpdated": "2026-03-08T00:00:00Z"
+}
