@@ -7,8 +7,9 @@
 # Collaborators:
 # - MarkdownImporter — parses and persists each recipe Markdown file
 # - CrossReference.resolve_pending — links deferred @[Title] references
+# - catalog:sync rake task — reused here so catalog exists before recipe import
 # - db/seeds/recipes/ — sample Markdown files including Quick Bites.md
-# - db/seeds/resources/ — aisle-order.txt for grocery aisle display order
+# - db/seeds/resources/ — aisle-order.txt and ingredient-catalog.yaml
 kitchen = Kitchen.find_or_create_by!(slug: 'our-kitchen') do |k|
   k.name = 'Our Kitchen'
 end
@@ -22,6 +23,11 @@ Membership.find_or_create_by!(kitchen: kitchen, user: user)
 
 puts "Kitchen: #{kitchen.name} (#{kitchen.slug})"
 puts "User: #{user.name} (#{user.email})"
+
+# Sync ingredient catalog (idempotent — always update to latest).
+# Must run before recipe import so RecipeNutritionJob can compute nutrition.
+# db:prepare calls db:seed internally, before the entrypoint's catalog:sync.
+Rake::Task['catalog:sync'].invoke
 
 # Seed aisle order (idempotent — always update to latest)
 seeds_dir = Rails.root.join('db/seeds')
