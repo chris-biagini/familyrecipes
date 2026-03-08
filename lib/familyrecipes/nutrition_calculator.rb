@@ -7,7 +7,7 @@ module FamilyRecipes
   # with totals, per-serving, and per-unit breakdowns, plus lists of missing and
   # partially resolvable ingredients. RecipeNutritionJob calls this at save time;
   # the Result is stored as JSON on the AR Recipe.
-  class NutritionCalculator
+  class NutritionCalculator # rubocop:disable Metrics/ClassLength
     NUTRIENTS = NutritionConstraints::NUTRIENT_KEYS
 
     WEIGHT_CONVERSIONS = {
@@ -77,25 +77,24 @@ module FamilyRecipes
       known, unknown = active.partition { |name, _| @nutrition_data.key?(name) }
 
       totals = NUTRIENTS.index_with { |_n| 0.0 }
-      skipped = []
-      partial = known.each_with_object([]) do |(name, amounts), partials|
-        if amounts.all?(&:nil?)
-          skipped << name
-        else
-          accumulate_amounts(totals, partials, name, amounts, @nutrition_data[name])
-        end
-      end
-
-      missing = []
-      unknown.each do |name, amounts|
-        if amounts.all?(&:nil?)
-          skipped << name
-        else
-          missing << name
-        end
-      end
-
+      missing, partial, skipped = partition_ingredients(totals, known, unknown)
       [totals, missing, partial, skipped]
+    end
+
+    def partition_ingredients(totals, known, unknown)
+      known_quantified, known_skipped = split_by_quantified(known)
+      unknown_quantified, unknown_skipped = split_by_quantified(unknown)
+
+      partial = known_quantified.each_with_object([]) do |(name, amounts), partials|
+        accumulate_amounts(totals, partials, name, amounts, @nutrition_data[name])
+      end
+
+      skipped = known_skipped.map(&:first).concat(unknown_skipped.map(&:first))
+      [unknown_quantified.map(&:first), partial, skipped]
+    end
+
+    def split_by_quantified(ingredients)
+      ingredients.partition { |_, amounts| amounts.any? { |a| !a.nil? } }
     end
 
     def accumulate_amounts(totals, partial, name, amounts, entry)
