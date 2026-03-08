@@ -165,7 +165,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select '#edit-aisle-order-button', 'Edit Aisles'
-    assert_select 'dialog[data-controller="aisle-order-editor"]'
+    assert_select 'dialog[data-controller="ordered-list-editor"]'
   end
 
   # --- Mutation tests ---
