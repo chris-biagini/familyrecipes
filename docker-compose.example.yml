@@ -26,6 +26,9 @@ services:
       - app_storage:/app/storage
       # Bind mount alternative (if you have an appdata convention for backups):
       # - /path/to/familyrecipes/storage:/app/storage
+      #
+      # Site configuration (title, subtitle, etc.) lives in storage/site.yml.
+      # A default is created on first boot; edit it to customize your instance.
 
 volumes:
   app_storage:
