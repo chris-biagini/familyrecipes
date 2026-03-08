@@ -27,9 +27,9 @@ Inspired by the beautifully-designed [Paprika](https://www.paprikaapp.com) by Hi
 
 ## Quick Start (Docker)
 
-The recommended deployment is Docker behind [Caddy](https://caddyserver.com/) and [Authelia](https://www.authelia.com/).
+Steps 1–4 get the app running. Step 5 adds authentication for production use.
 
-### 1. Create a docker-compose.yml
+### 1. Download the configuration files
 
 ```bash
 mkdir familyrecipes && cd familyrecipes
@@ -39,15 +39,13 @@ cp docker-compose.example.yml docker-compose.yml
 cp .env.example .env
 ```
 
-### 2. Configure your .env
-
-Generate a secret key and add it to `.env`:
+### 2. Generate a secret key
 
 ```bash
-docker run --rm ruby:3.2-slim ruby -rsecurerandom -e 'puts SecureRandom.hex(64)'
+sed -i "s/^SECRET_KEY_BASE=$/SECRET_KEY_BASE=$(openssl rand -hex 64)/" .env
 ```
 
-Copy the output into `.env` as `SECRET_KEY_BASE`. Set `ALLOWED_HOSTS` to your domain (e.g., `recipes.example.com`) for DNS rebinding protection. Keep `.env` out of version control — it holds your secrets.
+Optionally set `ALLOWED_HOSTS` in `.env` to your domain (e.g., `recipes.example.com`) for DNS rebinding protection. Keep `.env` out of version control — it holds your secrets.
 
 ### 3. Start the container
 
@@ -55,11 +53,19 @@ Copy the output into `.env` as `SECRET_KEY_BASE`. Set `ALLOWED_HOSTS` to your do
 docker compose up -d
 ```
 
-On first start, the entrypoint creates the database, copies a default `site.yml` configuration to the storage volume, syncs the ingredient catalog, and seeds sample recipes. The app is available at `http://localhost:3030`. Subsequent starts apply any new migrations and sync the catalog, but skip sample content if recipes already exist.
+On first start, the entrypoint creates the database, copies a default `site.yml` configuration to the storage volume, syncs the ingredient catalog, and seeds sample recipes. Subsequent starts apply any new migrations and sync the catalog, but skip sample content if recipes already exist.
 
-### 4. Configure Caddy and Authelia
+### 4. Verify it's running
 
-Add a Caddyfile entry for your domain:
+```bash
+curl -s http://localhost:3030/up
+```
+
+A successful response means the app is healthy. Visit `http://localhost:3030` in a browser to see the sample recipes.
+
+### 5. Add authentication (production)
+
+For production, deploy behind [Caddy](https://caddyserver.com/) and [Authelia](https://www.authelia.com/) (or a similar reverse proxy with trusted-header auth). Add a Caddyfile entry for your domain:
 
 ```
 recipes.example.com {
@@ -73,7 +79,7 @@ recipes.example.com {
 
 Caddy terminates TLS and forwards authenticated requests to the app. The app expects `X-Forwarded-Proto: https` from the reverse proxy (Caddy sends this by default). Without a TLS-terminating proxy, the app will enter a redirect loop due to `force_ssl`.
 
-The health check endpoint at `/up` is excluded from SSL redirect and host authorization, making it safe for Docker health probes and uptime monitors.
+The `/up` health check endpoint is excluded from SSL redirect and host authorization, making it safe for Docker health probes and uptime monitors.
 
 ## Configuration
 
