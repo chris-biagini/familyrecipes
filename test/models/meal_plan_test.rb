@@ -395,7 +395,7 @@ class MealPlanTest < ActiveSupport::TestCase
   end
 
   test 'prune_stale_selections removes deleted quick bite IDs' do
-    @kitchen.update!(quick_bites_content: "## Quick Bites: Snacks\n\n- Nachos\n  - Chips, 1 bag\n")
+    @kitchen.update!(quick_bites_content: "Snacks:\n- Nachos: Chips\n")
     list = MealPlan.for_kitchen(@kitchen)
     list.apply_action('select', type: 'quick_bite', slug: 'nachos', selected: true)
     list.apply_action('select', type: 'quick_bite', slug: 'gone-bite', selected: true)

@@ -353,7 +353,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'update_quick_bites prunes removed quick bite from selections' do
-    both = "## Quick Bites: Snacks\n\n- Nachos\n  - Chips, 1 bag\n\n- Pretzels\n  - Pretzels, 1 bag\n"
+    both = "Snacks:\n- Nachos: Chips\n- Pretzels: Pretzels\n"
     @kitchen.update!(quick_bites_content: both)
     plan = MealPlan.for_kitchen(@kitchen)
     plan.apply_action('select', type: 'quick_bite', slug: 'nachos', selected: true)
@@ -361,7 +361,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
 
     log_in
     patch menu_quick_bites_path(kitchen_slug: kitchen_slug),
-          params: { content: "## Quick Bites: Snacks\n\n- Nachos\n  - Chips, 1 bag\n" },
+          params: { content: "Snacks:\n- Nachos: Chips\n" },
           as: :json
 
     plan.reload
