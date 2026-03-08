@@ -1,0 +1,18 @@
+{
+  "planPath": "docs/plans/2026-03-08-editor-morph-protection-plan.md",
+  "tasks": [
+    {"id": 1, "subject": "Task 1: Add data-turbo-permanent to shared editor dialog partial", "status": "pending"},
+    {"id": 2, "subject": "Task 2: Add morph protection to standalone dialogs", "status": "pending", "blockedBy": [1]},
+    {"id": 3, "subject": "Task 3: Fix highlight on content load (disabled→enabled)", "status": "pending", "blockedBy": [1]},
+    {"id": 4, "subject": "Task 4: Create highlight_overlay.js utility", "status": "pending"},
+    {"id": 5, "subject": "Task 5: Refactor quickbites_editor_controller to use HighlightOverlay", "status": "pending", "blockedBy": [4]},
+    {"id": 6, "subject": "Task 6: Refactor recipe_editor_controller to use HighlightOverlay", "status": "pending", "blockedBy": [4]},
+    {"id": 7, "subject": "Task 7: Create ordered_list_editor_controller.js", "status": "pending"},
+    {"id": 8, "subject": "Task 8: Migrate grocery aisle view to ordered-list-editor", "status": "pending", "blockedBy": [7]},
+    {"id": 9, "subject": "Task 9: Migrate category order view to ordered-list-editor", "status": "pending", "blockedBy": [7]},
+    {"id": 10, "subject": "Task 10: Delete old controllers and update header comments", "status": "pending", "blockedBy": [8, 9]},
+    {"id": 11, "subject": "Task 11: Verify lint, tests, and update html_safe allowlist", "status": "pending", "blockedBy": [3, 5, 6, 10]},
+    {"id": 12, "subject": "Task 12: Update CLAUDE.md", "status": "pending", "blockedBy": [11]}
+  ],
+  "lastUpdated": "2026-03-08T00:00:00Z"
+}
