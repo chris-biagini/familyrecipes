@@ -4,8 +4,7 @@
  * animations, and payload serialization. Each Stimulus controller owns
  * its dialog lifecycle and fetch calls; this module handles the list logic.
  *
- * - aisle_order_editor_controller: grocery aisle ordering
- * - category_order_editor_controller: recipe category ordering
+ * - ordered_list_editor_controller: unified controller for aisles and categories
  * - style.css (.aisle-row, .aisle-btn): shared row and button styles
  */
 
