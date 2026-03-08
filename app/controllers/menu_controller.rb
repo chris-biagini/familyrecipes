@@ -47,7 +47,10 @@ class MenuController < ApplicationController
     result = parse_quick_bites(stored)
     current_kitchen.update!(quick_bites_content: stored)
     plan = MealPlan.for_kitchen(current_kitchen)
-    plan.with_optimistic_retry { plan.prune_checked_off(visible_names: shopping_list_visible_names(plan)) }
+    plan.with_optimistic_retry do
+      plan.prune_checked_off(visible_names: shopping_list_visible_names(plan))
+      plan.prune_stale_selections(kitchen: current_kitchen)
+    end
     current_kitchen.broadcast_update
 
     body = { status: 'ok' }

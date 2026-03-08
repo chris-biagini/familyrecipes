@@ -352,6 +352,24 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     assert_nil json['warnings']
   end
 
+  test 'update_quick_bites prunes removed quick bite from selections' do
+    both = "## Quick Bites: Snacks\n\n- Nachos\n  - Chips, 1 bag\n\n- Pretzels\n  - Pretzels, 1 bag\n"
+    @kitchen.update!(quick_bites_content: both)
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('select', type: 'quick_bite', slug: 'nachos', selected: true)
+    plan.apply_action('select', type: 'quick_bite', slug: 'pretzels', selected: true)
+
+    log_in
+    patch menu_quick_bites_path(kitchen_slug: kitchen_slug),
+          params: { content: "## Quick Bites: Snacks\n\n- Nachos\n  - Chips, 1 bag\n" },
+          as: :json
+
+    plan.reload
+
+    assert_includes plan.state['selected_quick_bites'], 'nachos'
+    assert_not_includes plan.state['selected_quick_bites'], 'pretzels'
+  end
+
   test 'update_quick_bites broadcasts meal plan refresh' do
     log_in
     assert_turbo_stream_broadcasts [@kitchen, :updates] do
