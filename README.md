@@ -55,7 +55,7 @@ Copy the output into `.env` as `SECRET_KEY_BASE`. Set `ALLOWED_HOSTS` to your do
 docker compose up -d
 ```
 
-On first start, the entrypoint creates the database, runs migrations, and seeds recipe data. The app is available at `http://localhost:3030`. Subsequent starts skip already-applied migrations and already-imported recipes.
+On first start, the entrypoint creates the database, copies a default `site.yml` configuration to the storage volume, syncs the ingredient catalog, and seeds sample recipes. The app is available at `http://localhost:3030`. Subsequent starts apply any new migrations and sync the catalog, but skip sample content if recipes already exist.
 
 ### 4. Configure Caddy and Authelia
 
@@ -77,7 +77,9 @@ The health check endpoint at `/up` is excluded from SSL redirect and host author
 
 ## Configuration
 
-All configuration is done through environment variables in your `.env` file. Docker Compose reads `.env` automatically when it's in the same directory as `docker-compose.yml`. See `.env.example` for a template.
+### Environment Variables
+
+Set in your `.env` file. Docker Compose reads `.env` automatically when it's in the same directory as `docker-compose.yml`. See `.env.example` for a template.
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
@@ -86,9 +88,22 @@ All configuration is done through environment variables in your `.env` file. Doc
 | `RAILS_LOG_LEVEL` | No | `info` | Log verbosity: `debug`, `info`, `warn`, `error`. |
 | `USDA_API_KEY` | No | — | Enables USDA FoodData Central lookups in `bin/nutrition`. Free at [fdc.nal.usda.gov](https://fdc.nal.usda.gov/api-key-signup). |
 
+### Site Configuration
+
+On first boot, a `site.yml` is copied to the storage volume. Edit it to customize your instance:
+
+```yaml
+site_title: Family Recipes
+homepage_heading: Our Recipes
+homepage_subtitle: "A collection of our family's favorite recipes."
+multi_kitchen: false
+```
+
+Changes take effect on the next container restart. The file persists across image updates.
+
 ## Backups
 
-Both SQLite databases (recipes and ActionCable) live in the Docker volume mounted at `/app/storage`. Back up this volume regularly.
+Both SQLite databases (recipes and ActionCable) and your `site.yml` configuration live in the Docker volume mounted at `/app/storage`. Back up this volume regularly.
 
 > **Bind mounts:** The container runs as UID 1000 (the default user on most Linux systems). If you use a bind mount instead of a named volume (e.g., `./storage:/app/storage`), ensure the host directory is writable by UID 1000: `chown -R 1000:1000 ./storage`. Named volumes (the default in `docker-compose.example.yml`) handle permissions automatically.
 
@@ -121,11 +136,11 @@ docker compose pull
 docker compose up -d
 ```
 
-The entrypoint runs `db:prepare` and `db:seed` on every start. Both are idempotent:
+The entrypoint runs `db:prepare`, `catalog:sync`, and `db:seed` on every start. All are idempotent:
 
 - **Migrations** are applied only if not already present.
-- **Seed recipes** are imported only if they don't already exist. Recipes you've edited in the browser are never overwritten — the seeder skips any recipe with a web edit timestamp.
-- **New recipes** added in a code update are imported on the next container start.
+- **Ingredient catalog** is synced on every start, so new catalog entries ship with image updates automatically.
+- **Sample recipes** are seeded only on first boot (when no recipes exist). Once you've added your own recipes, the seeder is skipped entirely.
 
 ## Development
 
@@ -133,7 +148,7 @@ The entrypoint runs `db:prepare` and `db:seed` on every start. Both are idempote
 git clone https://github.com/chris-biagini/familyrecipes.git
 cd familyrecipes
 bundle install
-rails db:create db:migrate db:seed
+rails db:setup
 bin/dev
 ```
 

@@ -88,7 +88,7 @@ class HeaderAuthTest < ActionDispatch::IntegrationTest
   end
 
   test 'does not auto-join when multiple kitchens exist' do
-    Kitchen.create!(name: 'Second Kitchen', slug: 'second')
+    with_multi_kitchen { Kitchen.create!(name: 'Second Kitchen', slug: 'second') }
 
     get kitchen_root_path(kitchen_slug: @kitchen.slug), headers: {
       'HTTP_REMOTE_USER' => 'alice',
