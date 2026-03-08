@@ -431,6 +431,46 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     assert_nil IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'Bread').aisle
   end
 
+  test 'update_aisle_order cascades renames case-insensitively' do
+    IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Apples', aisle: 'produce')
+    IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Bananas', aisle: 'Produce')
+
+    log_in
+    patch groceries_aisle_order_path(kitchen_slug: kitchen_slug),
+          params: { aisle_order: 'Fruits & Vegetables',
+                    renames: { 'Produce' => 'Fruits & Vegetables' } },
+          as: :json
+
+    assert_response :success
+    assert_equal 'Fruits & Vegetables', IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'Apples').aisle
+    assert_equal 'Fruits & Vegetables', IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'Bananas').aisle
+  end
+
+  test 'update_aisle_order cascades deletes case-insensitively' do
+    IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Apples', aisle: 'produce')
+    IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Bananas', aisle: 'Produce')
+
+    log_in
+    patch groceries_aisle_order_path(kitchen_slug: kitchen_slug),
+          params: { aisle_order: '',
+                    deletes: ['Produce'] },
+          as: :json
+
+    assert_response :success
+    assert_nil IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'Apples').aisle
+    assert_nil IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'Bananas').aisle
+  end
+
+  test 'update_aisle_order normalizes case-duplicate aisles keeping first casing' do
+    log_in
+    patch groceries_aisle_order_path(kitchen_slug: kitchen_slug),
+          params: { aisle_order: "Produce\nproduce\nBaking" },
+          as: :json
+
+    assert_response :success
+    assert_equal "Produce\nBaking", @kitchen.reload.aisle_order
+  end
+
   test 'update_aisle_order rename does not affect other kitchens' do
     other_kitchen = Kitchen.create!(name: 'Other', slug: 'other')
     IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Apples', aisle: 'Produce')

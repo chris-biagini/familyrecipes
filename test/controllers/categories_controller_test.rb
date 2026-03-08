@@ -116,6 +116,16 @@ class CategoriesControllerTest < ActionDispatch::IntegrationTest
     assert_equal 1, @bread.reload.position
   end
 
+  test 'update_order rejects case-insensitive duplicate names' do
+    log_in
+    patch categories_order_path(kitchen_slug: kitchen_slug),
+          params: { category_order: %w[Bread bread Dessert], renames: {}, deletes: [] },
+          as: :json
+
+    assert_response :unprocessable_entity
+    assert(response.parsed_body['errors'].any? { |e| e.include?('more than once') })
+  end
+
   test 'update_order requires membership' do
     patch categories_order_path(kitchen_slug: kitchen_slug),
           params: { category_order: [], renames: {}, deletes: [] },

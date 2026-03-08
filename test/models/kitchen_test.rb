@@ -83,6 +83,20 @@ class KitchenTest < ActiveSupport::TestCase
     assert_not_includes kitchen.all_aisles, 'omit'
   end
 
+  test 'normalize_aisle_order! collapses case variants keeping first casing' do
+    kitchen = Kitchen.create!(name: 'Test', slug: 'test-case-norm', aisle_order: "Produce\nproduce\nPRODUCE\nBaking")
+    kitchen.normalize_aisle_order!
+
+    assert_equal "Produce\nBaking", kitchen.aisle_order
+  end
+
+  test 'all_aisles deduplicates case variants across sources' do
+    kitchen = Kitchen.create!(name: 'Test', slug: 'test-case-dedup', aisle_order: 'baking')
+    IngredientCatalog.create!(kitchen: nil, ingredient_name: 'Flour', aisle: 'Baking', basis_grams: 30)
+
+    assert_equal ['baking'], kitchen.all_aisles
+  end
+
   test 'all_aisles deduplicates across sources' do
     kitchen = Kitchen.create!(name: 'Test', slug: 'test-dedup', aisle_order: 'Baking')
     IngredientCatalog.create!(kitchen: nil, ingredient_name: 'Flour', aisle: 'Baking', basis_grams: 30)

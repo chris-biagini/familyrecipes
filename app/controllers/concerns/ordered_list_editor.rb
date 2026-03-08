@@ -17,6 +17,9 @@ module OrderedListEditor
 
     long = items.select { |name| name.size > max_name_length }
     long.each { |name| errors << "\"#{name}\" is too long (maximum #{max_name_length} characters)." }
+
+    dupes = items.group_by(&:downcase).select { |_, v| v.size > 1 }.values.map(&:first)
+    dupes.each { |name| errors << "\"#{name}\" appears more than once (case-insensitive)." }
     errors
   end
 end

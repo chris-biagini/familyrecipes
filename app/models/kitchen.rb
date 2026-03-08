@@ -48,7 +48,7 @@ class Kitchen < ApplicationRecord
   end
 
   def normalize_aisle_order!
-    lines = parsed_aisle_order.uniq
+    lines = parsed_aisle_order.uniq(&:downcase)
     self.aisle_order = lines.empty? ? nil : lines.join("\n")
   end
 
@@ -61,6 +61,7 @@ class Kitchen < ApplicationRecord
                      .where.not(aisle: [nil, '', 'omit'])
                      .distinct.pluck(:aisle).sort
 
-    saved + (catalog_aisles - saved)
+    saved_downcased = saved.to_set(&:downcase)
+    saved + catalog_aisles.reject { |a| saved_downcased.include?(a.downcase) }
   end
 end

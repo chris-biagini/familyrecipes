@@ -80,6 +80,14 @@ class CatalogWriteServiceTest < ActiveSupport::TestCase
     assert_equal 1, @kitchen.reload.parsed_aisle_order.count('Baking')
   end
 
+  test 'upsert does not add case-duplicate aisle' do
+    @kitchen.update!(aisle_order: "Produce\nBaking")
+
+    upsert_entry('flour', nutrients: {}, aisle: 'baking')
+
+    assert_equal %w[Produce Baking], @kitchen.reload.parsed_aisle_order
+  end
+
   # --- upsert nutrition recalculation ---
 
   test 'upsert recalculates affected recipes when nutrition present' do

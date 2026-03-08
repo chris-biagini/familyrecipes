@@ -54,7 +54,7 @@ class CatalogWriteService
 
   def sync_aisle_to_kitchen(aisle)
     return if aisle == 'omit'
-    return if kitchen.parsed_aisle_order.include?(aisle)
+    return if kitchen.parsed_aisle_order.any? { |a| a.casecmp?(aisle) }
 
     existing = kitchen.aisle_order.to_s
     kitchen.update!(aisle_order: [existing, aisle].reject(&:empty?).join("\n"))
