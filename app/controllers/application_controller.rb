@@ -129,6 +129,7 @@ class ApplicationController < ActionController::Base
     respond_to do |format|
       format.html { render file: Rails.public_path.join('404.html'), status: :not_found, layout: false }
       format.json { head :not_found }
+      format.text { head :not_found }
     end
   end
 end

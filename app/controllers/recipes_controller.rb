@@ -1,9 +1,11 @@
 # frozen_string_literal: true
 
-# Thin HTTP adapter for recipe CRUD. Show is public; writes require membership.
-# Validates Markdown params, delegates to RecipeWriteService for orchestration,
-# and renders JSON responses. All domain logic (import, broadcast, cleanup)
-# lives in the service.
+# Thin HTTP adapter for recipe CRUD and raw exports. Show is public; writes
+# require membership. Validates Markdown params, delegates to RecipeWriteService
+# for orchestration, and renders JSON responses for writes. Also serves raw
+# markdown (.md) and rendered HTML (.html) as easter-egg endpoints — no UI
+# links to these. All domain logic (import, broadcast, cleanup) lives in the
+# service.
 class RecipesController < ApplicationController
   before_action :require_membership, only: %i[create update destroy]
 
@@ -11,6 +13,17 @@ class RecipesController < ApplicationController
     @recipe = current_kitchen.recipes.with_full_tree.find_by!(slug: params[:slug])
     @nutrition = @recipe.nutrition_data
     @all_categories = current_kitchen.categories.ordered
+  end
+
+  def show_markdown
+    recipe = current_kitchen.recipes.find_by!(slug: params[:slug])
+    render plain: recipe.markdown_source, content_type: 'text/plain; charset=utf-8'
+  end
+
+  def show_html
+    recipe = current_kitchen.recipes.find_by!(slug: params[:slug])
+    body = FamilyRecipes::Recipe::MARKDOWN.render(recipe.markdown_source)
+    render html: minimal_html_document(title: recipe.title, body:), layout: false
   end
 
   def create
@@ -52,8 +65,23 @@ class RecipesController < ApplicationController
     render json: { errors: @validation_errors }, status: :unprocessable_content
   end
 
+  def minimal_html_document(title:, body:)
+    <<~HTML.html_safe # rubocop:disable Rails/OutputSafety
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>#{ERB::Util.html_escape(title)}</title>
+      </head>
+      <body>
+      #{body}
+      </body>
+      </html>
+    HTML
+  end
+
   def update_response(result)
-    response = { redirect_url: recipe_path(result.recipe.slug) }
+    response = { slug: result.recipe.slug }
     response[:updated_references] = result.updated_references if result.updated_references.any?
     response
   end

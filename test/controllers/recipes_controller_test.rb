@@ -134,7 +134,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     body = response.parsed_body
 
-    assert_equal recipe_path('focaccia', kitchen_slug: kitchen_slug), body['redirect_url']
+    assert_equal 'focaccia', body['slug']
 
     recipe = Recipe.find_by!(slug: 'focaccia')
 
@@ -186,7 +186,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     body = response.parsed_body
 
-    assert_equal recipe_path('rosemary-focaccia', kitchen_slug: kitchen_slug), body['redirect_url']
+    assert_equal 'rosemary-focaccia', body['slug']
     assert_nil Recipe.find_by(slug: 'focaccia')
     assert Recipe.find_by(slug: 'rosemary-focaccia')
   end
@@ -562,6 +562,39 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     body = response.parsed_body
 
     assert(body['errors'].any? { |e| e.include?('Focaccia') })
+  end
+
+  test 'show_html serves rendered markdown as minimal HTML document' do
+    get recipe_html_path('focaccia', kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_equal 'text/html; charset=utf-8', response.content_type
+    assert_includes response.body, '<!DOCTYPE html>'
+    assert_includes response.body, '<meta charset="utf-8">'
+    assert_includes response.body, '<title>Focaccia</title>'
+    assert_includes response.body, '<h2>'
+    assert_not_includes response.body, '<script'
+    assert_not_includes response.body, '<link'
+  end
+
+  test 'show_html returns 404 for unknown recipe' do
+    get recipe_html_path('nonexistent', kitchen_slug: kitchen_slug)
+
+    assert_response :not_found
+  end
+
+  test 'show_markdown serves raw markdown as text/plain UTF-8' do
+    get recipe_markdown_path('focaccia', kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_equal 'text/plain; charset=utf-8', response.content_type
+    assert_equal @kitchen.recipes.find_by!(slug: 'focaccia').markdown_source, response.body
+  end
+
+  test 'show_markdown returns 404 for unknown recipe' do
+    get recipe_markdown_path('nonexistent', kitchen_slug: kitchen_slug)
+
+    assert_response :not_found
   end
 
   test 'full edit round-trip: edit, save, re-render' do
