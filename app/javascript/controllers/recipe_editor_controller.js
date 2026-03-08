@@ -1,21 +1,22 @@
 import { Controller } from "@hotwired/stimulus"
+import HighlightOverlay from "utilities/highlight_overlay"
 
 /**
- * Syntax-highlighting overlay, auto-dash, and category dropdown handling for the
- * recipe markdown textarea. Same transparent-textarea-over-pre technique as
- * quickbites_editor_controller. Classifies lines using patterns that mirror
- * LineClassifier, with ingredient lines split into name/qty/prep spans mirroring
- * IngredientParser. Participates in editor:collect and editor:modified events to
- * include category in the save payload and dirty checking.
+ * Syntax-highlighting overlay and category dropdown for the recipe markdown
+ * textarea. Delegates overlay lifecycle, auto-dash, and scroll sync to
+ * HighlightOverlay. This controller provides recipe-specific line
+ * classification (titles, steps, ingredients, cross-refs, front matter) and
+ * participates in editor:collect/editor:modified events to include category
+ * in the save payload and dirty checking.
  *
  * - editor_controller: owns the dialog lifecycle; this controller is additive
- * - style.css (.hl-*): overlay positioning and highlight colors
+ * - highlight_overlay: overlay positioning, auto-dash, scroll sync
+ * - style.css (.hl-*): highlight colors
  */
 export default class extends Controller {
   static targets = ["textarea", "categorySelect", "categoryInput"]
 
   connect() {
-    this.cursorInitialized = false
     this.boundCollect = (e) => this.handleCollect(e)
     this.boundModified = (e) => this.handleModified(e)
     this.element.addEventListener("editor:collect", this.boundCollect)
@@ -23,85 +24,25 @@ export default class extends Controller {
   }
 
   disconnect() {
-    this.teardownTextarea()
+    this.hlOverlay?.detach()
+    this.hlOverlay = null
     if (this.boundCollect) this.element.removeEventListener("editor:collect", this.boundCollect)
     if (this.boundModified) this.element.removeEventListener("editor:modified", this.boundModified)
   }
 
   textareaTargetConnected(element) {
-    this.teardownTextarea()
-    this.textarea = element
-    this.buildOverlay()
-    this.setPlaceholder()
-    this.highlight()
-
-    this.boundHighlight = () => this.highlight()
-    this.boundSync = () => this.syncScroll()
-    this.boundKeydown = (e) => this.handleKeydown(e)
-    this.boundFocus = () => this.handleFocus()
-
-    this.textarea.addEventListener("input", this.boundHighlight)
-    this.textarea.addEventListener("scroll", this.boundSync)
-    this.textarea.addEventListener("keydown", this.boundKeydown)
-    this.textarea.addEventListener("focus", this.boundFocus)
-
-    this.observer = new MutationObserver(() => {
-      if (this.textarea.disabled) this.cursorInitialized = false
-    })
-    this.observer.observe(this.textarea, { attributes: true, attributeFilter: ["disabled"] })
+    this.hlOverlay?.detach()
+    this.setPlaceholder(element)
+    this.hlOverlay = new HighlightOverlay(element, (text) => this.buildFragment(text))
+    this.hlOverlay.attach()
   }
 
   textareaTargetDisconnected() {
-    this.teardownTextarea()
+    this.hlOverlay?.detach()
+    this.hlOverlay = null
   }
 
-  teardownTextarea() {
-    if (!this.textarea) return
-
-    if (this.boundHighlight) this.textarea.removeEventListener("input", this.boundHighlight)
-    if (this.boundSync) this.textarea.removeEventListener("scroll", this.boundSync)
-    if (this.boundKeydown) this.textarea.removeEventListener("keydown", this.boundKeydown)
-    if (this.boundFocus) this.textarea.removeEventListener("focus", this.boundFocus)
-    this.observer?.disconnect()
-
-    const wrapper = this.textarea.closest(".hl-wrap")
-    if (wrapper?.parentNode) {
-      this.textarea.classList.remove("hl-input")
-      wrapper.parentNode.insertBefore(this.textarea, wrapper)
-      wrapper.remove()
-    } else {
-      this.overlay?.remove()
-    }
-
-    this.textarea = null
-    this.overlay = null
-    this.boundHighlight = null
-    this.boundSync = null
-    this.boundKeydown = null
-    this.boundFocus = null
-  }
-
-  buildOverlay() {
-    const wrapper = document.createElement("div")
-    wrapper.classList.add("hl-wrap")
-
-    this.overlay = document.createElement("pre")
-    this.overlay.classList.add("hl-overlay")
-    this.overlay.setAttribute("aria-hidden", "true")
-
-    this.textarea.parentNode.insertBefore(wrapper, this.textarea)
-    wrapper.appendChild(this.overlay)
-    wrapper.appendChild(this.textarea)
-    this.textarea.classList.add("hl-input")
-  }
-
-  highlight() {
-    const text = this.textarea.value
-    if (!text) {
-      this.overlay.replaceChildren()
-      return
-    }
-
+  buildFragment(text) {
     const fragment = document.createDocumentFragment()
     this.inFooter = false
 
@@ -110,9 +51,7 @@ export default class extends Controller {
       this.classifyLine(line, fragment)
     })
 
-    if (text.endsWith("\n")) fragment.appendChild(document.createTextNode("\n"))
-
-    this.overlay.replaceChildren(fragment)
+    return fragment
   }
 
   classifyLine(line, fragment) {
@@ -137,8 +76,6 @@ export default class extends Controller {
   }
 
   highlightIngredient(line, fragment) {
-    // Mirror IngredientParser: split on first ":" for prep note,
-    // then first "," on left side for quantity
     const colonIdx = line.indexOf(":", 2)
     let left = colonIdx !== -1 ? line.slice(0, colonIdx) : line
     const prep = colonIdx !== -1 ? line.slice(colonIdx) : null
@@ -157,44 +94,6 @@ export default class extends Controller {
     span.classList.add(className)
     span.textContent = text
     fragment.appendChild(span)
-  }
-
-  handleFocus() {
-    this.highlight()
-    if (!this.cursorInitialized) {
-      this.cursorInitialized = true
-      this.textarea.selectionStart = 0
-      this.textarea.selectionEnd = 0
-      this.textarea.scrollTop = 0
-      this.overlay.scrollTop = 0
-    }
-  }
-
-  syncScroll() {
-    this.overlay.scrollTop = this.textarea.scrollTop
-    this.overlay.scrollLeft = this.textarea.scrollLeft
-  }
-
-  handleKeydown(e) {
-    if (e.key !== "Enter") return
-
-    const { selectionStart } = this.textarea
-    const text = this.textarea.value
-    const lineStart = text.lastIndexOf("\n", selectionStart - 1) + 1
-    const currentLine = text.slice(lineStart, selectionStart)
-
-    if (/^- $/.test(currentLine.trimStart())) {
-      e.preventDefault()
-      this.textarea.setRangeText("\n", lineStart, selectionStart, "end")
-      this.textarea.dispatchEvent(new Event("input", { bubbles: true }))
-      return
-    }
-
-    if (/^- .+/.test(currentLine.trimStart())) {
-      e.preventDefault()
-      this.textarea.setRangeText("\n- ", selectionStart, selectionStart, "end")
-      this.textarea.dispatchEvent(new Event("input", { bubbles: true }))
-    }
   }
 
   handleCollect(event) {
@@ -247,9 +146,9 @@ export default class extends Controller {
     })
   }
 
-  setPlaceholder() {
-    if (!this.textarea.getAttribute("data-placeholder-set")) {
-      this.textarea.placeholder = [
+  setPlaceholder(textarea) {
+    if (!textarea.getAttribute("data-placeholder-set")) {
+      textarea.placeholder = [
         "# Recipe Title",
         "",
         "Serves: 4",
@@ -267,7 +166,7 @@ export default class extends Controller {
         "",
         "More instructions."
       ].join("\n")
-      this.textarea.setAttribute("data-placeholder-set", "true")
+      textarea.setAttribute("data-placeholder-set", "true")
     }
   }
 }
