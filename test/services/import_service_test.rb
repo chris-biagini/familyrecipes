@@ -37,13 +37,24 @@ class ImportServiceTest < ActiveSupport::TestCase
     assert_equal 2, result.recipes
   end
 
-  test 'overwrites existing recipe on slug conflict' do
+  test 'same-title reimport overwrites existing recipe' do
     RecipeWriteService.create(markdown: simple_recipe('Pancakes'), kitchen: @kitchen)
 
     result = import_files(uploaded_file('Pancakes.md', simple_recipe('Pancakes')))
 
     assert_equal 1, result.recipes
     assert_equal 1, @kitchen.recipes.where(title: 'Pancakes').count
+  end
+
+  test 'single file import reports collision as error when slug matches different title' do
+    RecipeWriteService.create(markdown: simple_recipe('Pancakes'), kitchen: @kitchen)
+
+    result = import_files(uploaded_file('Pancakes!.md', simple_recipe('Pancakes!')))
+
+    assert_equal 0, result.recipes
+    assert_equal 1, result.errors.size
+    assert_match(/similar name already exists/, result.errors.first)
+    assert_equal 'Pancakes', @kitchen.recipes.find_by(slug: 'pancakes').title
   end
 
   test 'collects parse errors without aborting' do
@@ -101,6 +112,29 @@ class ImportServiceTest < ActiveSupport::TestCase
 
     assert_equal 1, result.recipes
     assert_nil @kitchen.recipes.find_by(title: 'Extra')
+  end
+
+  test 'ZIP import skips colliding recipe and reports error' do
+    RecipeWriteService.create(markdown: simple_recipe('Pancakes'), kitchen: @kitchen)
+
+    zip = build_zip('Bread/Pancakes!.md' => simple_recipe('Pancakes!'))
+    result = import_files(uploaded_file('export.zip', zip))
+
+    assert_equal 0, result.recipes
+    assert_equal 1, result.errors.size
+    assert_match(/similar name already exists/, result.errors.first)
+  end
+
+  test 'ZIP with internal slug collision skips second file and reports error' do
+    zip = build_zip(
+      'Bread/Cookies.md' => simple_recipe('Cookies'),
+      'Desserts/Cookies!.md' => simple_recipe('Cookies!')
+    )
+    result = import_files(uploaded_file('export.zip', zip))
+
+    assert_equal 1, result.recipes
+    assert_equal 1, result.errors.size
+    assert_match(/similar name already exists/, result.errors.first)
   end
 
   # --- Quick Bites ---
