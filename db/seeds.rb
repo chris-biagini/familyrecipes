@@ -32,7 +32,7 @@ if aisle_order_path.exist?
 end
 
 # Sample content — first boot only
-if Recipe.count.zero?
+if Recipe.none?
   recipes_dir = seeds_dir.join('recipes')
   quick_bites_filename = 'Quick Bites.md'
 
