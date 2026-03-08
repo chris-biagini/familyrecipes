@@ -34,25 +34,29 @@
 </div>
 
 <% if current_member? %>
-<dialog class="editor-dialog"
-        data-controller="aisle-order-editor"
-        data-aisle-order-editor-load-url-value="<%= groceries_aisle_order_content_path %>"
-        data-aisle-order-editor-save-url-value="<%= groceries_aisle_order_path %>">
+<dialog id="aisle-order-editor" class="editor-dialog" data-turbo-permanent
+        data-controller="ordered-list-editor"
+        data-ordered-list-editor-load-url-value="<%= groceries_aisle_order_content_path %>"
+        data-ordered-list-editor-save-url-value="<%= groceries_aisle_order_path %>"
+        data-ordered-list-editor-payload-key-value="aisle_order"
+        data-ordered-list-editor-join-with-value="<%= "\n" %>"
+        data-ordered-list-editor-load-key-value="aisle_order"
+        data-ordered-list-editor-open-selector-value="#edit-aisle-order-button">
   <div class="editor-header">
     <h2>Aisles</h2>
-    <button type="button" class="btn editor-close" data-action="click->aisle-order-editor#close" aria-label="Close">&times;</button>
+    <button type="button" class="btn editor-close" data-action="click->ordered-list-editor#close" aria-label="Close">&times;</button>
   </div>
-  <div class="editor-errors" data-aisle-order-editor-target="errors" hidden></div>
+  <div class="editor-errors" data-ordered-list-editor-target="errors" hidden></div>
   <div class="aisle-order-body">
-    <div class="aisle-list" data-aisle-order-editor-target="list"></div>
+    <div class="aisle-list" data-ordered-list-editor-target="list"></div>
     <div class="aisle-add-row">
       <label for="new-aisle-input" class="sr-only">New aisle name</label>
       <input type="text" id="new-aisle-input" class="aisle-add-input" placeholder="Add an aisle..."
-             data-aisle-order-editor-target="newAisleName"
-             data-action="keydown->aisle-order-editor#addAisleOnEnter"
+             data-ordered-list-editor-target="newItemName"
+             data-action="keydown->ordered-list-editor#addItemOnEnter"
              maxlength="50">
       <button type="button" class="aisle-btn aisle-btn--add" aria-label="Add aisle"
-              data-action="click->aisle-order-editor#addAisle">
+              data-action="click->ordered-list-editor#addItem">
         <svg viewBox="0 0 24 24" width="18" height="18">
           <line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
           <line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -61,8 +65,8 @@
     </div>
   </div>
   <div class="editor-footer">
-    <button type="button" class="btn editor-cancel" data-action="click->aisle-order-editor#close">Cancel</button>
-    <button type="button" class="btn btn-primary editor-save" data-aisle-order-editor-target="saveButton" data-action="click->aisle-order-editor#save">Save</button>
+    <button type="button" class="btn editor-cancel" data-action="click->ordered-list-editor#close">Cancel</button>
+    <button type="button" class="btn btn-primary editor-save" data-ordered-list-editor-target="saveButton" data-action="click->ordered-list-editor#save">Save</button>
   </div>
 </dialog>
 <% end %>
