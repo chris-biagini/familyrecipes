@@ -211,7 +211,7 @@ class NutritionCalculatorTest < Minitest::Test
 
   # --- Unquantified ingredients ---
 
-  def test_unquantified_ingredients_silently_skipped
+  def test_unquantified_ingredients_excluded_from_missing
     recipe = make_recipe(<<~MD)
       # Test
 
@@ -229,6 +229,62 @@ class NutritionCalculatorTest < Minitest::Test
     # Only flour contributes (200g: (109.2/30)*200 = 728 cal)
     assert_in_delta 728, result.totals[:calories], 1
     refute_includes result.missing_ingredients, 'Olive oil'
+  end
+
+  def test_unquantified_ingredients_tracked_in_skipped
+    recipe = make_recipe(<<~MD)
+      # Test
+
+
+      ## Mix (combine)
+
+      - Flour (all-purpose), 200 g
+      - Olive oil
+
+      Mix.
+    MD
+
+    result = @calculator.calculate(recipe, @recipe_map)
+
+    assert_includes result.skipped_ingredients, 'Olive oil'
+    assert_in_delta 728, result.totals[:calories], 1
+  end
+
+  def test_omit_set_excluded_from_skipped
+    recipe = make_recipe(<<~MD)
+      # Test
+
+
+      ## Mix (combine)
+
+      - Flour (all-purpose), 200 g
+      - Water
+
+      Mix.
+    MD
+
+    result = @calculator.calculate(recipe, @recipe_map)
+
+    refute_includes result.skipped_ingredients, 'Water'
+  end
+
+  def test_skipped_does_not_affect_complete
+    recipe = make_recipe(<<~MD)
+      # Test
+
+
+      ## Mix (combine)
+
+      - Flour (all-purpose), 200 g
+      - Olive oil
+
+      Mix.
+    MD
+
+    result = @calculator.calculate(recipe, @recipe_map)
+
+    # Skipped (to-taste) ingredients don't make a recipe "incomplete"
+    assert_predicate result, :complete?
   end
 
   # --- Serving count from front matter ---

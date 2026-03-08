@@ -28,7 +28,7 @@ module FamilyRecipes
       :totals, :serving_count, :per_serving, :per_unit,
       :makes_quantity, :makes_unit_singular, :makes_unit_plural,
       :units_per_serving,
-      :missing_ingredients, :partial_ingredients
+      :missing_ingredients, :partial_ingredients, :skipped_ingredients
     ) do
       def complete?
         missing_ingredients.empty? && partial_ingredients.empty?
@@ -51,7 +51,7 @@ module FamilyRecipes
     end
 
     def calculate(recipe, recipe_map)
-      totals, missing, partial = sum_totals(recipe, recipe_map)
+      totals, missing, partial, skipped = sum_totals(recipe, recipe_map)
       serving_count = parse_serving_count(recipe)
 
       Result.new(
@@ -60,7 +60,8 @@ module FamilyRecipes
         per_serving: divide_nutrients(totals, serving_count),
         **per_unit_metadata(recipe, totals, serving_count),
         missing_ingredients: missing,
-        partial_ingredients: partial
+        partial_ingredients: partial,
+        skipped_ingredients: skipped
       )
     end
 
@@ -76,11 +77,25 @@ module FamilyRecipes
       known, unknown = active.partition { |name, _| @nutrition_data.key?(name) }
 
       totals = NUTRIENTS.index_with { |_n| 0.0 }
+      skipped = []
       partial = known.each_with_object([]) do |(name, amounts), partials|
-        accumulate_amounts(totals, partials, name, amounts, @nutrition_data[name])
+        if amounts.all?(&:nil?)
+          skipped << name
+        else
+          accumulate_amounts(totals, partials, name, amounts, @nutrition_data[name])
+        end
       end
 
-      [totals, unknown.map(&:first), partial]
+      missing = []
+      unknown.each do |name, amounts|
+        if amounts.all?(&:nil?)
+          skipped << name
+        else
+          missing << name
+        end
+      end
+
+      [totals, missing, partial, skipped]
     end
 
     def accumulate_amounts(totals, partial, name, amounts, entry)
