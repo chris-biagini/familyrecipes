@@ -232,4 +232,59 @@ class IngredientRowBuilderTest < ActiveSupport::TestCase
     assert_includes names, 'Salt'
     assert_not_includes names, 'Yeast'
   end
+
+  # --- quick bites ---
+
+  test 'includes quick bite ingredients in rows' do
+    @kitchen.update!(quick_bites_content: <<~MD)
+      Snacks:
+      - Hummus with Pretzels: Hummus, Pretzels
+    MD
+
+    rows = IngredientRowBuilder.new(kitchen: @kitchen).rows
+    names = rows.pluck(:name)
+
+    assert_includes names, 'Hummus'
+    assert_includes names, 'Pretzels'
+  end
+
+  test 'quick bite sources count toward recipe_count' do
+    @kitchen.update!(quick_bites_content: <<~MD)
+      Snacks:
+      - Toast: Flour, Butter
+    MD
+
+    rows = IngredientRowBuilder.new(kitchen: @kitchen).rows
+    flour = rows.find { |r| r[:name] == 'Flour' }
+
+    assert_equal 3, flour[:recipe_count]
+  end
+
+  test 'quick bite sources appear as QuickBiteSource in recipes list' do
+    @kitchen.update!(quick_bites_content: <<~MD)
+      Snacks:
+      - Hummus with Pretzels: Hummus, Pretzels
+    MD
+
+    rows = IngredientRowBuilder.new(kitchen: @kitchen).rows
+    hummus = rows.find { |r| r[:name] == 'Hummus' }
+
+    assert_equal 1, hummus[:recipe_count]
+    assert_instance_of IngredientRowBuilder::QuickBiteSource, hummus[:recipes].first
+    assert_equal 'Hummus with Pretzels', hummus[:recipes].first.title
+  end
+
+  test 'quick bite ingredients are canonicalized through resolver' do
+    create_catalog_entry('Eggs', basis_grams: 50)
+    @kitchen.update!(quick_bites_content: <<~MD)
+      Breakfast:
+      - Quick Eggs: Egg, Toast
+    MD
+
+    rows = IngredientRowBuilder.new(kitchen: @kitchen).rows
+    names = rows.pluck(:name)
+
+    assert_includes names, 'Eggs'
+    assert_not_includes names, 'Egg'
+  end
 end

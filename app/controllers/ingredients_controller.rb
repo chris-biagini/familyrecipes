@@ -1,12 +1,13 @@
 # frozen_string_literal: true
 
 # Ingredients management page — member-only. Displays a searchable, filterable
-# table of all ingredients across recipes with their nutrition/density status
-# and aisle assignments. The edit action renders the nutrition editor form as a
-# partial for the dialog. Delegates row-building to IngredientRowBuilder.
+# table of all ingredients across recipes and Quick Bites with their
+# nutrition/density status and aisle assignments. The edit action renders the
+# nutrition editor form as a partial for the dialog. Delegates row-building to
+# IngredientRowBuilder.
 #
 # - IngredientResolver: canonical name resolution and catalog entry lookup
-# - IngredientRowBuilder: builds ingredient rows and summary from kitchen recipes
+# - IngredientRowBuilder: builds ingredient rows and summary from recipes and Quick Bites
 class IngredientsController < ApplicationController
   before_action :require_membership
   before_action :prevent_html_caching, only: :index
@@ -21,10 +22,10 @@ class IngredientsController < ApplicationController
   def edit
     ingredient_name, entry = load_ingredient_data
     aisles = current_kitchen.all_aisles
-    recipes = recipes_for_ingredient(ingredient_name)
+    sources = sources_for_ingredient(ingredient_name)
 
     render partial: 'ingredients/editor_form',
-           locals: { ingredient_name:, entry:, available_aisles: aisles, recipes: }
+           locals: { ingredient_name:, entry:, available_aisles: aisles, sources: }
   end
 
   private
@@ -42,11 +43,20 @@ class IngredientsController < ApplicationController
     row&.fetch(:name)
   end
 
-  def recipes_for_ingredient(name)
-    current_kitchen.recipes
-                   .joins(steps: :ingredients)
-                   .where(ingredients: { name: resolver.all_keys_for(name) })
-                   .distinct
+  def sources_for_ingredient(name)
+    recipes = current_kitchen.recipes
+                             .joins(steps: :ingredients)
+                             .where(ingredients: { name: resolver.all_keys_for(name) })
+                             .distinct
+    quick_bites = quick_bites_using(name)
+    recipes.to_a + quick_bites
+  end
+
+  def quick_bites_using(name)
+    keys = resolver.all_keys_for(name).to_set(&:downcase)
+    current_kitchen.parsed_quick_bites
+                   .select { |qb| qb.all_ingredient_names.any? { |n| keys.include?(n.downcase) } }
+                   .map { |qb| IngredientRowBuilder::QuickBiteSource.new(title: qb.title) }
   end
 
   def load_ingredient_data

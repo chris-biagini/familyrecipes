@@ -3,13 +3,16 @@
 # Builds ingredient table row data for the ingredients index page, Turbo Stream
 # updates, and real-time broadcasts. Delegates name resolution to an
 # IngredientResolver, then computes nutrition/density status for each unique
-# ingredient across all recipes.
+# ingredient across all recipes and Quick Bites.
 #
 # Collaborators:
 # - IngredientResolver (name resolution, catalog entry access)
 # - IngredientCatalog.resolver_for (default resolver factory)
 # - IngredientsController, NutritionEntriesController
+# - FamilyRecipes::QuickBite (parsed from Kitchen#quick_bites_content)
 class IngredientRowBuilder
+  QuickBiteSource = Data.define(:title)
+
   def initialize(kitchen:, recipes: nil, resolver: nil)
     @kitchen = kitchen
     @recipes = recipes || kitchen.recipes.includes(steps: :ingredients)
@@ -84,12 +87,27 @@ class IngredientRowBuilder
   def compute_recipes_by_ingredient
     seen = Hash.new { |h, k| h[k] = Set.new }
 
-    recipes.each_with_object(Hash.new { |h, k| h[k] = [] }) do |recipe, index|
+    index = recipes.each_with_object(Hash.new { |h, k| h[k] = [] }) do |recipe, idx|
       recipe.ingredients.each do |ingredient|
         name = canonical_ingredient_name(ingredient.name)
-        index[name] << recipe if seen[name].add?(recipe.id)
+        idx[name] << recipe if seen[name].add?(recipe.id)
       end
     end
+
+    merge_quick_bite_sources(index, seen)
+  end
+
+  def merge_quick_bite_sources(index, seen)
+    kitchen.parsed_quick_bites.each do |qb|
+      source = QuickBiteSource.new(title: qb.title)
+      qb.all_ingredient_names.each do |raw_name|
+        name = canonical_ingredient_name(raw_name)
+        qb_key = "qb:#{qb.id}"
+        index[name] << source if seen[name].add?(qb_key)
+      end
+    end
+
+    index
   end
 
   def canonical_ingredient_name(name)

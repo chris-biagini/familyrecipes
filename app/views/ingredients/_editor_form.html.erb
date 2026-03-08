@@ -1,4 +1,4 @@
-<%# locals: (ingredient_name:, entry:, available_aisles:, recipes: []) %>
+<%# locals: (ingredient_name:, entry:, available_aisles:, sources: []) %>
 <% has_density = entry&.density_grams.present? %>
 <turbo-frame id="nutrition-editor-form">
   <div class="editor-form" data-nutrition-editor-target="formContent">
@@ -128,12 +128,16 @@
       </div>
     </fieldset>
 
-    <% if recipes.any? %>
+    <% if sources.any? %>
       <div class="editor-recipes">
         <span class="editor-recipes-label">Used in</span>
-        <% recipes.each_with_index do |recipe, i| %>
+        <% sources.each_with_index do |source, i| %>
           <% unless i.zero? %>, <% end %>
-          <%= link_to recipe.title, recipe_path(recipe.slug), target: "_blank" %>
+          <% if source.is_a?(Recipe) %>
+            <%= link_to source.title, recipe_path(source.slug), target: "_blank" %>
+          <% else %>
+            <%= link_to source.title, menu_path, target: "_blank" %>
+          <% end %>
         <% end %>
       </div>
     <% end %>
