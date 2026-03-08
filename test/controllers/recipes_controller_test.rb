@@ -510,6 +510,60 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     assert_select '#recipe-editor select.category-select'
   end
 
+  test 'create returns 422 when slug collides with different title' do
+    colliding = <<~MD
+      # Focaccia!
+
+      ## Mix (do it)
+
+      - Flour, 1 cup
+
+      Mix.
+    MD
+
+    log_in
+    post recipes_path(kitchen_slug: kitchen_slug),
+         params: { markdown_source: colliding, category: 'Bread' },
+         as: :json
+
+    assert_response :unprocessable_entity
+    body = response.parsed_body
+
+    assert(body['errors'].any? { |e| e.include?('Focaccia') })
+  end
+
+  test 'update returns 422 when renamed title collides with another recipe' do
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @bread)
+      # Ciabatta
+
+      ## Mix (combine)
+
+      - Flour, 4 cups
+
+      Mix.
+    MD
+
+    colliding = <<~MD
+      # Focaccia!
+
+      ## Mix (do it)
+
+      - Flour, 1 cup
+
+      Mix.
+    MD
+
+    log_in
+    patch recipe_path('ciabatta', kitchen_slug: kitchen_slug),
+          params: { markdown_source: colliding, category: 'Bread' },
+          as: :json
+
+    assert_response :unprocessable_entity
+    body = response.parsed_body
+
+    assert(body['errors'].any? { |e| e.include?('Focaccia') })
+  end
+
   test 'full edit round-trip: edit, save, re-render' do
     updated_markdown = <<~MD
       # Focaccia

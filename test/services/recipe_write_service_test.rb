@@ -258,6 +258,37 @@ class RecipeWriteServiceTest < ActiveSupport::TestCase
     assert_not_includes plan.state['selected_recipes'], 'focaccia'
   end
 
+  test 'create raises SlugCollisionError when slug collides with different title' do
+    RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen, category_name: 'Bread')
+
+    colliding = BASIC_MARKDOWN.sub('# Focaccia', '# Focaccia!')
+
+    assert_raises(MarkdownImporter::SlugCollisionError) do
+      RecipeWriteService.create(markdown: colliding, kitchen: @kitchen, category_name: 'Bread')
+    end
+  end
+
+  test 'update raises SlugCollisionError when renamed title collides with another recipe' do
+    RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen, category_name: 'Bread')
+
+    other_md = <<~MD
+      # Ciabatta
+
+      ## Mix (combine)
+
+      - Flour, 4 cups
+
+      Mix.
+    MD
+    RecipeWriteService.create(markdown: other_md, kitchen: @kitchen, category_name: 'Bread')
+
+    renamed = other_md.sub('# Ciabatta', '# Focaccia!')
+
+    assert_raises(MarkdownImporter::SlugCollisionError) do
+      RecipeWriteService.update(slug: 'ciabatta', markdown: renamed, kitchen: @kitchen, category_name: 'Bread')
+    end
+  end
+
   test 'slug reuse after delete does not auto-select' do
     RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen, category_name: 'Bread')
     plan = MealPlan.for_kitchen(@kitchen)
