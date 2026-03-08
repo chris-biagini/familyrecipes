@@ -67,7 +67,8 @@ class RecipeNutritionJob < ApplicationJob
       'makes_unit_plural' => result.makes_unit_plural,
       'units_per_serving' => result.units_per_serving,
       'missing_ingredients' => result.missing_ingredients,
-      'partial_ingredients' => result.partial_ingredients
+      'partial_ingredients' => result.partial_ingredients,
+      'skipped_ingredients' => result.skipped_ingredients
     }
   end
 

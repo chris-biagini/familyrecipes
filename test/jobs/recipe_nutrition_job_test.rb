@@ -104,6 +104,17 @@ class RecipeNutritionJobTest < ActiveSupport::TestCase
     assert_predicate pizza.nutrition_data['totals']['calories'], :positive?
   end
 
+  test 'records skipped ingredients for unquantified items' do
+    markdown = "# Salad\n\n\n## Toss\n\n- Flour, 30 g\n- Pepper\n\nToss."
+    recipe = import_without_nutrition(markdown)
+
+    RecipeNutritionJob.perform_now(recipe)
+    recipe.reload
+
+    assert_includes recipe.nutrition_data['skipped_ingredients'], 'Pepper'
+    refute_includes recipe.nutrition_data['missing_ingredients'], 'Pepper'
+  end
+
   test 'MarkdownImporter enqueues CascadeNutritionJob' do
     assert_enqueued_with(job: CascadeNutritionJob) do
       MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
