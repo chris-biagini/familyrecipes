@@ -64,6 +64,58 @@ class CategoriesControllerTest < ActionDispatch::IntegrationTest
     assert_equal 1, Category.find_by!(name: 'Bread').position
   end
 
+  test 'update_order renames with case mismatch' do
+    log_in
+    patch categories_order_path(kitchen_slug: kitchen_slug),
+          params: {
+            category_order: ['Artisan Bread', 'Dessert'],
+            renames: { 'bread' => 'Artisan Bread' }, deletes: []
+          },
+          as: :json
+
+    assert_response :success
+    @bread.reload
+
+    assert_equal 'Artisan Bread', @bread.name
+    assert_equal 'artisan-bread', @bread.slug
+  end
+
+  test 'update_order handles case-only rename' do
+    log_in
+    patch categories_order_path(kitchen_slug: kitchen_slug),
+          params: {
+            category_order: %w[bread Dessert],
+            renames: { 'Bread' => 'bread' }, deletes: []
+          },
+          as: :json
+
+    assert_response :success
+    @bread.reload
+
+    assert_equal 'bread', @bread.name
+  end
+
+  test 'update_order deletes with case mismatch' do
+    log_in
+    patch categories_order_path(kitchen_slug: kitchen_slug),
+          params: { category_order: ['Dessert'], renames: {}, deletes: ['bread'] },
+          as: :json
+
+    assert_response :success
+    assert_nil Category.find_by(slug: 'bread')
+  end
+
+  test 'update_order reorders with case mismatch' do
+    log_in
+    patch categories_order_path(kitchen_slug: kitchen_slug),
+          params: { category_order: %w[dessert bread], renames: {}, deletes: [] },
+          as: :json
+
+    assert_response :success
+    assert_equal 0, @dessert.reload.position
+    assert_equal 1, @bread.reload.position
+  end
+
   test 'update_order requires membership' do
     patch categories_order_path(kitchen_slug: kitchen_slug),
           params: { category_order: [], renames: {}, deletes: [] },

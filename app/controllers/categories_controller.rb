@@ -44,7 +44,7 @@ class CategoriesController < ApplicationController
     return unless renames.is_a?(ActionController::Parameters)
 
     renames.each_pair do |old_name, new_name|
-      category = current_kitchen.categories.find_by!(name: old_name)
+      category = current_kitchen.categories.find_by!(slug: FamilyRecipes.slugify(old_name))
       category.update!(name: new_name, slug: FamilyRecipes.slugify(new_name))
     end
   end
@@ -56,7 +56,7 @@ class CategoriesController < ApplicationController
     misc = find_or_create_miscellaneous
 
     deletes.each do |name|
-      category = current_kitchen.categories.find_by(name: name)
+      category = current_kitchen.categories.find_by(slug: FamilyRecipes.slugify(name))
       next unless category
 
       category.recipes.update_all(category_id: misc.id) # rubocop:disable Rails/SkipsModelValidations
@@ -74,7 +74,7 @@ class CategoriesController < ApplicationController
 
   def update_category_positions(names)
     names.each_with_index do |name, index|
-      current_kitchen.categories.where(name: name).update_all(position: index) # rubocop:disable Rails/SkipsModelValidations
+      current_kitchen.categories.where(slug: FamilyRecipes.slugify(name)).update_all(position: index) # rubocop:disable Rails/SkipsModelValidations
     end
   end
 end

@@ -9,7 +9,7 @@ class Category < ApplicationRecord
 
   has_many :recipes, dependent: :destroy
 
-  validates :name, presence: true, uniqueness: { scope: :kitchen_id }
+  validates :name, presence: true, uniqueness: { scope: :kitchen_id, case_sensitive: false }
   validates :slug, presence: true, uniqueness: { scope: :kitchen_id }
 
   scope :ordered, -> { order(:position, :name) }

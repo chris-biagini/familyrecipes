@@ -35,6 +35,14 @@ class CategoryTest < ActiveSupport::TestCase
     assert_includes dup.errors[:name], 'has already been taken'
   end
 
+  test 'enforces case-insensitive unique name within kitchen' do
+    Category.create!(name: 'Bread', slug: 'bread')
+    dup = Category.new(name: 'bread', slug: 'bread-lower')
+
+    assert_not dup.valid?
+    assert_includes dup.errors[:name], 'has already been taken'
+  end
+
   test 'enforces unique slug within kitchen' do
     Category.create!(name: 'Bread', slug: 'bread')
     dup = Category.new(name: 'Different', slug: 'bread')
