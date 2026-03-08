@@ -1,18 +1,25 @@
 #!/bin/bash
 #
-# Docker container entry point. Runs database migrations (db:prepare), syncs
-# the ingredient catalog from YAML seeds, loads sample data, then execs the
-# CMD (typically Puma). Runs on every container start — db:prepare and
-# catalog:sync are idempotent.
+# Docker container entry point. Prepares the database, copies the default site
+# config to the persistent volume on first boot, syncs the ingredient catalog,
+# seeds sample data (first boot only), then execs the CMD (typically Puma).
+# All operations are idempotent — safe to run on every container start.
 set -e
 
 echo "Preparing database..."
 bin/rails db:prepare
 
+# Copy default site config to storage volume on first boot.
+# Users can edit storage/site.yml to customize their instance.
+if [ ! -f storage/site.yml ]; then
+  echo "Installing default site configuration..."
+  cp config/site.yml storage/site.yml
+fi
+
 echo "Syncing ingredient catalog..."
 bin/rails catalog:sync
 
-echo "Seeding sample data..."
+echo "Seeding data..."
 bin/rails db:seed
 
 echo "Starting server..."
