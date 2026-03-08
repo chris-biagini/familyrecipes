@@ -1,0 +1,11 @@
+{
+  "planPath": "docs/plans/2026-03-08-nutrition-reporting-plan.md",
+  "tasks": [
+    {"id": 2, "subject": "Task 1: Add skipped_ingredients to NutritionCalculator", "status": "pending"},
+    {"id": 3, "subject": "Task 2: Serialize skipped_ingredients in RecipeNutritionJob", "status": "pending", "blockedBy": [2]},
+    {"id": 4, "subject": "Task 3: Update view and helper for three distinct notes", "status": "pending", "blockedBy": [3]},
+    {"id": 5, "subject": "Task 4: Fix Eggs seed data", "status": "pending"},
+    {"id": 6, "subject": "Task 5: Run full lint and test suite", "status": "pending", "blockedBy": [2, 3, 4, 5]}
+  ],
+  "lastUpdated": "2026-03-08T00:00:00Z"
+}
