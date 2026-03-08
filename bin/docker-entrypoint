@@ -14,8 +14,7 @@ if [ -z "$SECRET_KEY_BASE" ]; then
     ruby -rsecurerandom -e 'print SecureRandom.hex(64)' > storage/.secret_key_base
     chmod 600 storage/.secret_key_base
   fi
-  export SECRET_KEY_BASE
-  SECRET_KEY_BASE=$(cat storage/.secret_key_base)
+  export SECRET_KEY_BASE=$(cat storage/.secret_key_base)
 fi
 
 echo "Preparing database..."
