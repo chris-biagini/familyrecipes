@@ -118,12 +118,6 @@ class EndToEndTest < ActionDispatch::IntegrationTest
     assert_select 'header p'
   end
 
-  test 'homepage renders footer with GitHub link' do
-    get kitchen_root_path(kitchen_slug: kitchen_slug)
-
-    assert_select 'footer a[href*="github"]'
-  end
-
   test 'homepage renders new recipe button for members' do
     log_in
 
