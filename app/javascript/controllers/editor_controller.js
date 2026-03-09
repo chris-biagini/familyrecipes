@@ -7,10 +7,11 @@ import { show as notifyShow } from "utilities/notify"
 
 /**
  * Generic <dialog> lifecycle controller for editor modals. Handles open, save
- * (PATCH/POST via fetch), dirty-checking, close with confirmation, and
- * beforeunload guards. Simple dialogs need zero custom JS — just Stimulus data
- * attributes on the <dialog>. Custom dialogs (nutrition editor) hook in via
- * lifecycle events: editor:collect, editor:save, editor:modified, editor:reset.
+ * (PATCH/POST via fetch), dirty-checking, close with confirmation, beforeunload
+ * guards, and Turbo Drive navigation guards. Simple dialogs need zero custom
+ * JS — just Stimulus data attributes on the <dialog>. Custom dialogs (nutrition
+ * editor) hook in via lifecycle events: editor:collect, editor:save,
+ * editor:modified, editor:reset.
  *
  * - editor_utils: CSRF tokens, error display, save requests, close-with-confirmation
  * - notify: toast notifications for save success/failure feedback

@@ -1,7 +1,7 @@
 /**
  * JS entry point. Boots Turbo Drive + Stimulus (via controllers/index.js) and
- * registers the service worker. Turbo progress bar styles live in style.css
- * (not Turbo's dynamic <style> injection) to satisfy our strict CSP.
+ * registers the service worker. Also manages global Turbo lifecycle handlers:
+ * morph protection for open dialogs (broadcast refresh) and pre-cache cleanup.
  * Pinned in config/importmap.rb as "application".
  */
 import { Turbo } from "@hotwired/turbo-rails"

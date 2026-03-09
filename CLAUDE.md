@@ -112,7 +112,7 @@ Use `home_path` (not `kitchen_root_path`) for homepage links.
 `MealPlan` (one row per kitchen) backs both the menu and groceries pages.
 
 **Editor dialogs.** Use `render layout: 'shared/editor_dialog'` with Stimulus data attributes — no JS needed. For custom content, add a controller listening to editor lifecycle events.
-All `<dialog>` elements use `data-turbo-permanent` to prevent Turbo morph from disrupting open editors during `broadcast_refresh_to`.
+Open `<dialog>` elements are protected from Turbo morph via a `turbo:before-morph-element` listener in `application.js`. A `turbo:before-cache` listener closes all open dialogs before page snapshots. Both editor controllers guard unsaved changes on `turbo:before-visit`. Do NOT use `data-turbo-permanent` on dialogs.
 `HighlightOverlay` (shared utility) powers syntax-colored overlays for both Quick Bites and recipe editors.
 `ordered_list_editor_controller` is a single parameterized controller for both aisle and category list editors.
 
