@@ -7,6 +7,7 @@ class IngredientsHelperTest < ActionView::TestCase
 
   setup do
     setup_test_kitchen
+    IngredientCatalog.where(kitchen_id: nil).delete_all
   end
 
   test 'nutrition_summary formats key macros from entry' do

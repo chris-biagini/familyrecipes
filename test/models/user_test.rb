@@ -26,11 +26,10 @@ class UserTest < ActiveSupport::TestCase
   end
 
   test 'accesses kitchens through memberships' do
-    kitchen = Kitchen.create!(name: 'Test Kitchen', slug: 'test-kitchen')
+    setup_test_kitchen
     user = User.create!(name: 'Alice', email: 'alice@example.com')
-    ActsAsTenant.current_tenant = kitchen
-    Membership.create!(kitchen: kitchen, user: user)
+    Membership.create!(kitchen: @kitchen, user: user)
 
-    assert_includes user.kitchens, kitchen
+    assert_includes user.kitchens, @kitchen
   end
 end

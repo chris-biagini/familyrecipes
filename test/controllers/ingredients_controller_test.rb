@@ -5,6 +5,7 @@ require 'test_helper'
 class IngredientsControllerTest < ActionDispatch::IntegrationTest
   setup do
     create_kitchen_and_user
+    IngredientCatalog.where(kitchen_id: nil).delete_all
   end
 
   test 'requires membership to view ingredients' do

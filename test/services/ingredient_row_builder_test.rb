@@ -6,6 +6,7 @@ class IngredientRowBuilderTest < ActiveSupport::TestCase
   setup do
     setup_test_kitchen
     setup_test_category(name: 'Bread')
+    IngredientCatalog.where(kitchen_id: nil).delete_all
 
     MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Focaccia

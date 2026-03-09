@@ -5,6 +5,7 @@ require 'test_helper'
 class EndToEndTest < ActionDispatch::IntegrationTest
   setup do
     create_kitchen_and_user
+    IngredientCatalog.where(kitchen_id: nil).delete_all
 
     @bread = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
     @pizza = Category.create!(name: 'Pizza', slug: 'pizza', position: 1, kitchen: @kitchen)

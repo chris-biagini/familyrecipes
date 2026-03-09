@@ -14,6 +14,7 @@ class CatalogWriteServiceTest < ActiveSupport::TestCase
     setup_test_kitchen
     setup_test_category
     IngredientCatalog.where(kitchen: @kitchen).delete_all
+    IngredientCatalog.where(kitchen_id: nil).delete_all
   end
 
   # --- upsert creates ---
