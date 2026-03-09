@@ -22,9 +22,11 @@ class ExportService
 
   def build_zip
     buffer = Zip::OutputStream.write_buffer do |zos|
-      add_recipes(zos)
-      add_quick_bites(zos)
+      add_aisle_order(zos)
+      add_category_order(zos)
       add_custom_ingredients(zos)
+      add_quick_bites(zos)
+      add_recipes(zos)
     end
     buffer.string
   end
@@ -43,6 +45,21 @@ class ExportService
 
     zos.put_next_entry('quick-bites.txt')
     zos.write(@kitchen.quick_bites_content)
+  end
+
+  def add_aisle_order(zos)
+    return if @kitchen.aisle_order.blank?
+
+    zos.put_next_entry('aisle-order.txt')
+    zos.write(@kitchen.aisle_order)
+  end
+
+  def add_category_order(zos)
+    names = @kitchen.categories.ordered.pluck(:name)
+    return if names.empty?
+
+    zos.put_next_entry('category-order.txt')
+    zos.write(names.join("\n"))
   end
 
   def add_custom_ingredients(zos)
