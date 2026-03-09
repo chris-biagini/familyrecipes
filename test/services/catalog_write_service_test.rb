@@ -239,6 +239,50 @@ class CatalogWriteServiceTest < ActiveSupport::TestCase
     end
   end
 
+  # --- meal plan reconciliation ---
+
+  test 'upsert reconciles stale checked-off items when canonical name changes' do
+    create_catalog_entry('flour', aisle: 'Baking')
+    @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Bread
+
+      ## Mix (combine)
+
+      - flour, 2 cups
+
+      Stir together.
+    MD
+
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('select', type: 'recipe', slug: 'bread', selected: true)
+    plan.apply_action('check', item: 'flour', checked: true)
+
+    # Rename the canonical name by adding an alias that captures 'flour'
+    # and destroying the old entry, then creating a new one
+    IngredientCatalog.where(ingredient_name: 'flour').delete_all
+    upsert_entry('All-Purpose Flour', nutrients: {}, aisle: 'Baking', aliases: ['flour'])
+
+    plan.reload
+
+    assert_not_includes plan.state['checked_off'], 'flour',
+                        'stale checked-off item should be pruned after catalog name change'
+  end
+
+  test 'destroy reconciles meal plan state' do
+    IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'flour', aisle: 'Baking')
+
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('check', item: 'flour', checked: true)
+
+    CatalogWriteService.destroy(kitchen: @kitchen, ingredient_name: 'flour')
+
+    plan.reload
+
+    assert_empty plan.state['checked_off'],
+                 'checked-off items should be pruned after catalog entry destroyed'
+  end
+
   # --- bulk_import ---
 
   test 'bulk_import creates entries from YAML hash' do

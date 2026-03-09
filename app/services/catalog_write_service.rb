@@ -2,15 +2,17 @@
 
 # Orchestrates IngredientCatalog create/update/destroy with post-write side
 # effects: syncing new aisles to the kitchen's aisle_order, recalculating
-# nutrition for affected recipes, and broadcasting a page-refresh morph.
-# Mirrors RecipeWriteService — controllers call class methods, never inline
-# post-save logic. Also provides bulk_import for ImportService: batch save
-# with single-pass aisle sync and nutrition recalc, no per-entry broadcast.
+# nutrition for affected recipes, reconciling stale meal plan state, and
+# broadcasting a page-refresh morph. Mirrors RecipeWriteService — controllers
+# call class methods, never inline post-save logic. Also provides bulk_import
+# for ImportService: batch save with single-pass aisle sync and nutrition
+# recalc, no per-entry broadcast or reconciliation.
 #
 # - IngredientCatalog: overlay model for ingredient metadata
 # - IngredientResolver: variant-aware name resolution for affected-recipe queries
 # - RecipeNutritionJob: recalculates recipe nutrition_data
 # - AisleWriteService: aisle sync after catalog saves
+# - MealPlan#reconcile!: prunes stale selections and checked-off items
 # - Kitchen#broadcast_update: page-refresh morph for all connected clients
 class CatalogWriteService
   Result = Data.define(:entry, :persisted)
@@ -42,6 +44,7 @@ class CatalogWriteService
 
     AisleWriteService.sync_new_aisle(kitchen:, aisle: entry.aisle) if entry.aisle
     recalculate_affected_recipes if entry.basis_grams.present?
+    reconcile_meal_plan
     kitchen.broadcast_update
 
     Result.new(entry:, persisted: true)
@@ -51,6 +54,7 @@ class CatalogWriteService
     entry = IngredientCatalog.find_by!(kitchen:, ingredient_name:)
     entry.destroy!
     recalculate_affected_recipes
+    reconcile_meal_plan
     kitchen.broadcast_update
     Result.new(entry:, persisted: true)
   end
@@ -67,6 +71,11 @@ class CatalogWriteService
   private
 
   attr_reader :kitchen, :ingredient_name
+
+  def reconcile_meal_plan
+    plan = MealPlan.for_kitchen(kitchen)
+    plan.with_optimistic_retry { plan.reconcile! }
+  end
 
   def recalculate_affected_recipes
     resolver = IngredientCatalog.resolver_for(kitchen)
