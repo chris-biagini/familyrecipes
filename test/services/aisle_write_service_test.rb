@@ -150,4 +150,64 @@ class AisleWriteServiceTest < ActiveSupport::TestCase
     assert result.success
     assert_equal 'Produce', @kitchen.reload.aisle_order
   end
+
+  # --- sync_new_aisle ---
+
+  test 'sync_new_aisle appends aisle to kitchen aisle_order' do
+    @kitchen.update!(aisle_order: 'Produce')
+
+    AisleWriteService.sync_new_aisle(kitchen: @kitchen, aisle: 'Baking')
+
+    assert_includes @kitchen.reload.parsed_aisle_order, 'Baking'
+  end
+
+  test 'sync_new_aisle skips omit aisle' do
+    @kitchen.update!(aisle_order: 'Produce')
+
+    AisleWriteService.sync_new_aisle(kitchen: @kitchen, aisle: 'omit')
+
+    assert_not_includes @kitchen.reload.parsed_aisle_order, 'omit'
+  end
+
+  test 'sync_new_aisle does not duplicate existing aisle' do
+    @kitchen.update!(aisle_order: "Produce\nBaking")
+
+    AisleWriteService.sync_new_aisle(kitchen: @kitchen, aisle: 'Baking')
+
+    assert_equal 1, @kitchen.reload.parsed_aisle_order.count('Baking')
+  end
+
+  test 'sync_new_aisle skips case-duplicate aisle' do
+    @kitchen.update!(aisle_order: "Produce\nBaking")
+
+    AisleWriteService.sync_new_aisle(kitchen: @kitchen, aisle: 'baking')
+
+    assert_equal %w[Produce Baking], @kitchen.reload.parsed_aisle_order
+  end
+
+  # --- sync_new_aisles (bulk) ---
+
+  test 'sync_new_aisles appends multiple new aisles in one pass' do
+    @kitchen.update!(aisle_order: 'Produce')
+
+    AisleWriteService.sync_new_aisles(kitchen: @kitchen, aisles: %w[Baking Dairy])
+
+    order = @kitchen.reload.parsed_aisle_order
+
+    assert_includes order, 'Baking'
+    assert_includes order, 'Dairy'
+    assert_includes order, 'Produce'
+  end
+
+  test 'sync_new_aisles skips omit and duplicates' do
+    @kitchen.update!(aisle_order: "Produce\nBaking")
+
+    AisleWriteService.sync_new_aisles(kitchen: @kitchen, aisles: %w[Baking omit Dairy])
+
+    order = @kitchen.reload.parsed_aisle_order
+
+    assert_equal 1, order.count('Baking')
+    assert_not_includes order, 'omit'
+    assert_includes order, 'Dairy'
+  end
 end

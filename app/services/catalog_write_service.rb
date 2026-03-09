@@ -39,7 +39,7 @@ class CatalogWriteService
     entry.assign_from_params(**params, sources: WEB_SOURCE)
     return Result.new(entry:, persisted: false) unless entry.save
 
-    sync_aisle_to_kitchen(entry.aisle) if entry.aisle
+    AisleWriteService.sync_new_aisle(kitchen:, aisle: entry.aisle) if entry.aisle
     recalculate_affected_recipes if entry.basis_grams.present?
     kitchen.broadcast_update
 
@@ -58,7 +58,7 @@ class CatalogWriteService
     return BulkResult.new(persisted_count: 0, errors: []) if entries_hash.blank?
 
     persisted_count, errors = save_all_entries(entries_hash)
-    sync_all_aisles(entries_hash)
+    sync_bulk_aisles(entries_hash)
     recalculate_all_affected_recipes(entries_hash)
     BulkResult.new(persisted_count:, errors:)
   end
@@ -66,14 +66,6 @@ class CatalogWriteService
   private
 
   attr_reader :kitchen, :ingredient_name
-
-  def sync_aisle_to_kitchen(aisle)
-    return if aisle == 'omit'
-    return if kitchen.parsed_aisle_order.any? { |a| a.casecmp?(aisle) }
-
-    existing = kitchen.aisle_order.to_s
-    kitchen.update!(aisle_order: [existing, aisle].reject(&:empty?).join("\n"))
-  end
 
   def recalculate_affected_recipes
     resolver = IngredientCatalog.resolver_for(kitchen)
@@ -102,20 +94,9 @@ class CatalogWriteService
     [persisted, errors]
   end
 
-  def sync_all_aisles(entries_hash)
-    new_aisles = entries_hash.values
-                             .filter_map { |e| e['aisle'] }
-                             .reject { |a| a == 'omit' }
-                             .uniq
-
-    return if new_aisles.empty?
-
-    existing = kitchen.parsed_aisle_order.to_set(&:downcase)
-    additions = new_aisles.reject { |a| existing.include?(a.downcase) }
-    return if additions.empty?
-
-    combined = [kitchen.aisle_order.to_s, *additions].reject(&:empty?).join("\n")
-    kitchen.reload.update!(aisle_order: combined)
+  def sync_bulk_aisles(entries_hash)
+    aisles = entries_hash.values.filter_map { |e| e['aisle'] }
+    AisleWriteService.sync_new_aisles(kitchen:, aisles:)
   end
 
   def recalculate_all_affected_recipes(entries_hash)

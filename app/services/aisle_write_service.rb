@@ -8,6 +8,14 @@ class AisleWriteService
     new(kitchen:).update_order(aisle_order:, renames:, deletes:)
   end
 
+  def self.sync_new_aisle(kitchen:, aisle:)
+    new(kitchen:).sync_new_aisle(aisle:)
+  end
+
+  def self.sync_new_aisles(kitchen:, aisles:)
+    new(kitchen:).sync_new_aisles(aisles:)
+  end
+
   def initialize(kitchen:)
     @kitchen = kitchen
   end
@@ -27,6 +35,26 @@ class AisleWriteService
     end
 
     Result.new(success: true, errors: [])
+  end
+
+  def sync_new_aisle(aisle:)
+    return if aisle == 'omit'
+    return if kitchen.parsed_aisle_order.any? { |a| a.casecmp?(aisle) }
+
+    existing = kitchen.aisle_order.to_s
+    kitchen.update!(aisle_order: [existing, aisle].reject(&:empty?).join("\n"))
+  end
+
+  def sync_new_aisles(aisles:)
+    new_aisles = aisles.reject { |a| a == 'omit' }.uniq
+    return if new_aisles.empty?
+
+    existing = kitchen.parsed_aisle_order.to_set(&:downcase)
+    additions = new_aisles.reject { |a| existing.include?(a.downcase) }
+    return if additions.empty?
+
+    combined = [kitchen.aisle_order.to_s, *additions].reject(&:empty?).join("\n")
+    kitchen.reload.update!(aisle_order: combined)
   end
 
   private
