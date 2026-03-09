@@ -2,13 +2,14 @@
 
 # Orchestrates recipe create/update/destroy. Owns the full post-write pipeline:
 # import via MarkdownImporter, handle renames (CrossReferenceUpdater), clean up
-# orphan categories, and prune stale meal plan entries. Triggers a page-refresh
-# morph via Kitchen#broadcast_update after every mutation.
+# orphan categories, and reconcile stale meal plan entries. Broadcasts a
+# page-refresh morph via Kitchen#broadcast_update after all cleanup completes.
 #
 # - MarkdownImporter: parses markdown into AR records
 # - Kitchen#broadcast_update: page-refresh morph for all connected clients
 # - RecipeBroadcaster: targeted delete notifications and rename redirects
 # - CrossReferenceUpdater: renames cross-references on title change
+# - MealPlan#reconcile!: prunes stale selections and checked-off items
 class RecipeWriteService
   Result = Data.define(:recipe, :updated_references)
 
@@ -31,8 +32,8 @@ class RecipeWriteService
   def create(markdown:, category_name:)
     category = find_or_create_category(category_name)
     recipe = import_and_timestamp(markdown, category:)
-    kitchen.broadcast_update
     post_write_cleanup
+    kitchen.broadcast_update
     Result.new(recipe:, updated_references: [])
   end
 
@@ -42,8 +43,8 @@ class RecipeWriteService
     recipe = import_and_timestamp(markdown, category:)
     updated_references = rename_cross_references(old_recipe, recipe)
     handle_slug_change(old_recipe, recipe)
-    kitchen.broadcast_update
     post_write_cleanup
+    kitchen.broadcast_update
     Result.new(recipe:, updated_references:)
   end
 
@@ -51,8 +52,8 @@ class RecipeWriteService
     recipe = kitchen.recipes.find_by!(slug:)
     RecipeBroadcaster.notify_recipe_deleted(recipe, recipe_title: recipe.title)
     recipe.destroy!
-    kitchen.broadcast_update
     post_write_cleanup
+    kitchen.broadcast_update
     Result.new(recipe:, updated_references: [])
   end
 
@@ -100,10 +101,6 @@ class RecipeWriteService
 
   def prune_stale_meal_plan_items
     plan = MealPlan.for_kitchen(kitchen)
-    plan.with_optimistic_retry do
-      visible = ShoppingListBuilder.new(kitchen:, meal_plan: plan).visible_names
-      plan.prune_checked_off(visible_names: visible)
-      plan.prune_stale_selections(kitchen:)
-    end
+    plan.with_optimistic_retry { plan.reconcile! }
   end
 end
