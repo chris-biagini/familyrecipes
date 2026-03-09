@@ -1004,7 +1004,7 @@ footer small {
   border: 1px solid var(--border-color);
   border-radius: 0.25rem;
   background: var(--content-background-color);
-  padding: 0;
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
   width: min(90vw, 50rem);
   max-height: 90vh;
   box-shadow: var(--shadow-dialog);
@@ -1013,6 +1013,7 @@ footer small {
 .editor-dialog[open] {
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .editor-dialog::backdrop {
@@ -1025,10 +1026,6 @@ footer small {
   align-items: center;
   padding: 1rem 1.5rem;
   border-bottom: 1px solid var(--separator-color);
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  background: var(--content-background-color);
 }
 
 .editor-header h2 {
@@ -1067,6 +1064,13 @@ footer small {
   color: var(--text-secondary-color);
 }
 
+.editor-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
 .editor-textarea {
   flex: 1;
   min-height: 60vh;
@@ -1079,6 +1083,7 @@ footer small {
   outline: none;
   color: var(--text-color);
   background: var(--content-background-color);
+  overscroll-behavior: contain;
 }
 
 .editor-category-row {
@@ -1214,9 +1219,6 @@ footer small {
   gap: 0.5rem;
   padding: 1rem 1.5rem;
   border-top: 1px solid var(--separator-color);
-  position: sticky;
-  bottom: 0;
-  background: var(--content-background-color);
 }
 
 .editor-footer-spacer {
@@ -1226,7 +1228,9 @@ footer small {
 /* Aisle Order Editor */
 .aisle-order-body {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 0.75rem 1.5rem;
 }
 
@@ -1818,11 +1822,10 @@ button.aisle-name:hover {
   .editor-dialog {
     width: 100vw;
     max-width: 100vw;
-    max-height: 100vh;
-    height: 100vh;
+    max-height: 100dvh;
+    height: 100dvh;
     border-radius: 0;
     border: none;
-    overflow-x: hidden;
   }
 
   .editor-header,

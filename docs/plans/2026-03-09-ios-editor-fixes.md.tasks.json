@@ -1,0 +1,12 @@
+{
+  "planPath": "docs/plans/2026-03-09-ios-editor-fixes.md",
+  "tasks": [
+    {"id": 1, "subject": "Task 1: Make dialog a non-scrolling frame with safe-area insets", "status": "pending"},
+    {"id": 2, "subject": "Task 2: Remove sticky positioning from header and footer", "status": "pending", "blockedBy": [1]},
+    {"id": 3, "subject": "Task 3: Make content areas scroll with overscroll containment", "status": "pending", "blockedBy": [1]},
+    {"id": 4, "subject": "Task 4: Clean up mobile media query", "status": "pending", "blockedBy": [1]},
+    {"id": 5, "subject": "Task 5: Visual verification", "status": "pending", "blockedBy": [1, 2, 3, 4]},
+    {"id": 6, "subject": "Task 6: Update html_safe allowlist if line numbers shifted", "status": "pending", "blockedBy": [1, 2, 3, 4]}
+  ],
+  "lastUpdated": "2026-03-09T00:00:00Z"
+}
