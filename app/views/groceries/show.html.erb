@@ -34,7 +34,7 @@
 </div>
 
 <% if current_member? %>
-<dialog id="aisle-order-editor" class="editor-dialog" data-turbo-permanent
+<dialog id="aisle-order-editor" class="editor-dialog"
         data-controller="ordered-list-editor"
         data-ordered-list-editor-load-url-value="<%= groceries_aisle_order_content_path %>"
         data-ordered-list-editor-save-url-value="<%= groceries_aisle_order_path %>"
