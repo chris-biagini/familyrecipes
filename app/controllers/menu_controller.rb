@@ -1,9 +1,11 @@
 # frozen_string_literal: true
 
-# Meal planning page -- member-only. Displays a recipe selector (recipes + quick
-# bites) with checkboxes. Mutations return 204 No Content and broadcast a
-# page-refresh signal for cross-device sync. Quick bites content is web-editable;
-# changes broadcast to all connected clients.
+# Meal planning page — member-only. Displays a recipe selector (recipes + quick
+# bites) with checkboxes. Mutations delegate to MealPlanWriteService and return
+# 204 No Content; broadcasts happen inside the service for cross-device sync.
+#
+# - MealPlanWriteService: select/deselect, select-all, clear, reconcile
+# - MealPlanActions: rescue_from for StaleObjectError
 class MenuController < ApplicationController
   include MealPlanActions
 
