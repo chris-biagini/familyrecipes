@@ -4,6 +4,8 @@
 # blob: selected recipes, selected quick bites, custom grocery items, and
 # checked-off items. Both the menu and groceries pages read and write this
 # model. Cross-device sync is handled by Kitchen#broadcast_update.
+# MealPlan#reconcile! is the sole entry point for pruning stale state —
+# called after any mutation that changes what appears on the shopping list.
 class MealPlan < ApplicationRecord
   acts_as_tenant :kitchen
 
@@ -103,7 +105,7 @@ class MealPlan < ApplicationRecord
     save! if state['checked_off'].size < before_size
   end
 
-  def prune_stale_selections
+  def prune_stale_selections # rubocop:disable Metrics/AbcSize
     ensure_state_keys
     valid_slugs = kitchen.recipes.pluck(:slug).to_set
     valid_qb_ids = kitchen.parsed_quick_bites.to_set(&:id)
