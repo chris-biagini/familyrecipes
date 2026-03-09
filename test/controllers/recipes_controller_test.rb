@@ -67,12 +67,13 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     assert_select '#edit-button'
   end
 
-  test 'renders editor dialog with markdown source' do
+  test 'renders editor dialog with load URL' do
     log_in
 
     get recipe_path('focaccia', kitchen_slug: kitchen_slug)
 
-    assert_select '#recipe-editor'
+    assert_select '#recipe-editor[data-editor-load-url-value]'
+    assert_select '#recipe-editor[data-editor-load-key-value="markdown_source"]'
     assert_select '.editor-textarea'
   end
 

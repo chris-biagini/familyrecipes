@@ -43,11 +43,13 @@
               dialog_data: { editor_open: '#edit-button',
                              editor_url: recipe_path(@recipe.slug),
                              editor_method: 'PATCH',
-                             editor_on_success: 'redirect',
+                             editor_on_success: 'close',
                              editor_body_key: 'markdown_source',
+                             editor_load_url: recipe_content_path(@recipe.slug),
+                             editor_load_key: 'markdown_source',
                              extra_controllers: 'recipe-editor' },
               footer_extra: render('recipes/editor_delete_button', recipe: @recipe) } do %>
-  <textarea class="editor-textarea" data-editor-target="textarea" data-recipe-editor-target="textarea" spellcheck="false"><%= @recipe.markdown_source %></textarea>
+  <textarea class="editor-textarea" data-editor-target="textarea" data-recipe-editor-target="textarea" spellcheck="false" placeholder="Loading..."></textarea>
   <div class="editor-category-row">
     <label for="edit-recipe-category">Category</label>
     <select id="edit-recipe-category" class="category-select" data-recipe-editor-target="categorySelect">
