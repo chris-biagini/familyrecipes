@@ -1,8 +1,11 @@
 # frozen_string_literal: true
 
 require 'test_helper'
+require 'turbo/broadcastable/test_helper'
 
 class CategoryWriteServiceTest < ActiveSupport::TestCase
+  include Turbo::Broadcastable::TestHelper
+
   setup do
     setup_test_kitchen
     Category.destroy_all
@@ -115,6 +118,24 @@ class CategoryWriteServiceTest < ActiveSupport::TestCase
 
     assert_equal 0, @dessert.reload.position
     assert_equal 1, @bread.reload.position
+  end
+
+  # --- broadcasts ---
+
+  test 'update_order broadcasts to kitchen updates stream' do
+    assert_turbo_stream_broadcasts [@kitchen, :updates] do
+      CategoryWriteService.update_order(
+        kitchen: @kitchen, names: %w[Bread Dessert], renames: {}, deletes: []
+      )
+    end
+  end
+
+  test 'update_order does not broadcast on validation failure' do
+    assert_no_turbo_stream_broadcasts [@kitchen, :updates] do
+      CategoryWriteService.update_order(
+        kitchen: @kitchen, names: (1..51).map { |i| "Cat #{i}" }, renames: {}, deletes: []
+      )
+    end
   end
 
   # --- success result ---
