@@ -238,6 +238,116 @@ class CatalogWriteServiceTest < ActiveSupport::TestCase
     end
   end
 
+  # --- bulk_import ---
+
+  test 'bulk_import creates entries from YAML hash' do
+    entries = {
+      'Special Flour' => { 'aisle' => 'Baking', 'sources' => [{ 'type' => 'import' }] },
+      'Fancy Salt' => { 'aisle' => 'Pantry' }
+    }
+
+    result = CatalogWriteService.bulk_import(kitchen: @kitchen, entries_hash: entries)
+
+    assert_equal 2, result.persisted_count
+    assert_empty result.errors
+    assert_equal 'Baking', IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'Special Flour').aisle
+    assert_equal 'Pantry', IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'Fancy Salt').aisle
+  end
+
+  test 'bulk_import upserts existing entries' do
+    IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Special Flour', aisle: 'Old Aisle')
+
+    result = CatalogWriteService.bulk_import(kitchen: @kitchen, entries_hash: {
+      'Special Flour' => { 'aisle' => 'New Aisle' }
+    })
+
+    assert_equal 1, result.persisted_count
+    assert_equal 1, IngredientCatalog.where(kitchen: @kitchen, ingredient_name: 'Special Flour').size
+    assert_equal 'New Aisle', IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'Special Flour').aisle
+  end
+
+  test 'bulk_import syncs new aisles to kitchen aisle_order in one pass' do
+    @kitchen.update!(aisle_order: 'Produce')
+
+    CatalogWriteService.bulk_import(kitchen: @kitchen, entries_hash: {
+      'flour' => { 'aisle' => 'Baking' },
+      'milk' => { 'aisle' => 'Dairy' }
+    })
+
+    order = @kitchen.reload.parsed_aisle_order
+    assert_includes order, 'Baking'
+    assert_includes order, 'Dairy'
+    assert_includes order, 'Produce'
+  end
+
+  test 'bulk_import skips omit aisles during sync' do
+    CatalogWriteService.bulk_import(kitchen: @kitchen, entries_hash: {
+      'vanilla' => { 'aisle' => 'omit' }
+    })
+
+    assert_not_includes @kitchen.reload.parsed_aisle_order.to_a, 'omit'
+  end
+
+  test 'bulk_import does not duplicate existing aisles' do
+    @kitchen.update!(aisle_order: "Produce\nBaking")
+
+    CatalogWriteService.bulk_import(kitchen: @kitchen, entries_hash: {
+      'flour' => { 'aisle' => 'Baking' }
+    })
+
+    assert_equal 1, @kitchen.reload.parsed_aisle_order.count('Baking')
+  end
+
+  test 'bulk_import recalculates nutrition for existing affected recipes' do
+    create_catalog_entry('flour', basis_grams: 100, calories: 364, aisle: 'Baking')
+
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Bread
+
+
+      ## Mix (combine)
+
+      - flour, 200 g
+
+      Stir together.
+    MD
+
+    recipe = @kitchen.recipes.find_by!(slug: 'bread')
+    recipe.update_column(:nutrition_data, nil) # rubocop:disable Rails/SkipsModelValidations
+
+    CatalogWriteService.bulk_import(kitchen: @kitchen, entries_hash: {
+      'flour' => { 'aisle' => 'Baking', 'nutrients' => { 'basis_grams' => 30, 'calories' => 110 } }
+    })
+
+    assert_not_nil recipe.reload.nutrition_data
+  end
+
+  test 'bulk_import returns errors for invalid entries without aborting' do
+    result = CatalogWriteService.bulk_import(kitchen: @kitchen, entries_hash: {
+      'good' => { 'aisle' => 'Pantry' },
+      'bad' => { 'nutrients' => { 'basis_grams' => 0, 'calories' => 100 } }
+    })
+
+    assert_equal 1, result.persisted_count
+    assert_equal 1, result.errors.size
+    assert_match(/bad/, result.errors.first)
+  end
+
+  test 'bulk_import is a no-op for empty hash' do
+    result = CatalogWriteService.bulk_import(kitchen: @kitchen, entries_hash: {})
+
+    assert_equal 0, result.persisted_count
+    assert_empty result.errors
+  end
+
+  test 'bulk_import does not broadcast' do
+    assert_no_turbo_stream_broadcasts [@kitchen, :updates] do
+      CatalogWriteService.bulk_import(kitchen: @kitchen, entries_hash: {
+        'flour' => { 'aisle' => 'Baking' }
+      })
+    end
+  end
+
   private
 
   def upsert_entry(name, nutrients: {}, density: {}, portions: {}, aisle: nil, aliases: nil) # rubocop:disable Metrics/ParameterLists
