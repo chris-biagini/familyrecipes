@@ -258,8 +258,8 @@ class CatalogWriteServiceTest < ActiveSupport::TestCase
     IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Special Flour', aisle: 'Old Aisle')
 
     result = CatalogWriteService.bulk_import(kitchen: @kitchen, entries_hash: {
-      'Special Flour' => { 'aisle' => 'New Aisle' }
-    })
+                                               'Special Flour' => { 'aisle' => 'New Aisle' }
+                                             })
 
     assert_equal 1, result.persisted_count
     assert_equal 1, IngredientCatalog.where(kitchen: @kitchen, ingredient_name: 'Special Flour').size
@@ -270,11 +270,12 @@ class CatalogWriteServiceTest < ActiveSupport::TestCase
     @kitchen.update!(aisle_order: 'Produce')
 
     CatalogWriteService.bulk_import(kitchen: @kitchen, entries_hash: {
-      'flour' => { 'aisle' => 'Baking' },
-      'milk' => { 'aisle' => 'Dairy' }
-    })
+                                      'flour' => { 'aisle' => 'Baking' },
+                                      'milk' => { 'aisle' => 'Dairy' }
+                                    })
 
     order = @kitchen.reload.parsed_aisle_order
+
     assert_includes order, 'Baking'
     assert_includes order, 'Dairy'
     assert_includes order, 'Produce'
@@ -282,8 +283,8 @@ class CatalogWriteServiceTest < ActiveSupport::TestCase
 
   test 'bulk_import skips omit aisles during sync' do
     CatalogWriteService.bulk_import(kitchen: @kitchen, entries_hash: {
-      'vanilla' => { 'aisle' => 'omit' }
-    })
+                                      'vanilla' => { 'aisle' => 'omit' }
+                                    })
 
     assert_not_includes @kitchen.reload.parsed_aisle_order.to_a, 'omit'
   end
@@ -292,8 +293,8 @@ class CatalogWriteServiceTest < ActiveSupport::TestCase
     @kitchen.update!(aisle_order: "Produce\nBaking")
 
     CatalogWriteService.bulk_import(kitchen: @kitchen, entries_hash: {
-      'flour' => { 'aisle' => 'Baking' }
-    })
+                                      'flour' => { 'aisle' => 'Baking' }
+                                    })
 
     assert_equal 1, @kitchen.reload.parsed_aisle_order.count('Baking')
   end
@@ -315,18 +316,19 @@ class CatalogWriteServiceTest < ActiveSupport::TestCase
     recipe = @kitchen.recipes.find_by!(slug: 'bread')
     recipe.update_column(:nutrition_data, nil) # rubocop:disable Rails/SkipsModelValidations
 
-    CatalogWriteService.bulk_import(kitchen: @kitchen, entries_hash: {
-      'flour' => { 'aisle' => 'Baking', 'nutrients' => { 'basis_grams' => 30, 'calories' => 110 } }
-    })
+    CatalogWriteService.bulk_import(
+      kitchen: @kitchen,
+      entries_hash: { 'flour' => { 'aisle' => 'Baking', 'nutrients' => { 'basis_grams' => 30, 'calories' => 110 } } }
+    )
 
     assert_not_nil recipe.reload.nutrition_data
   end
 
   test 'bulk_import returns errors for invalid entries without aborting' do
     result = CatalogWriteService.bulk_import(kitchen: @kitchen, entries_hash: {
-      'good' => { 'aisle' => 'Pantry' },
-      'bad' => { 'nutrients' => { 'basis_grams' => 0, 'calories' => 100 } }
-    })
+                                               'good' => { 'aisle' => 'Pantry' },
+                                               'bad' => { 'nutrients' => { 'basis_grams' => 0, 'calories' => 100 } }
+                                             })
 
     assert_equal 1, result.persisted_count
     assert_equal 1, result.errors.size
@@ -343,8 +345,8 @@ class CatalogWriteServiceTest < ActiveSupport::TestCase
   test 'bulk_import does not broadcast' do
     assert_no_turbo_stream_broadcasts [@kitchen, :updates] do
       CatalogWriteService.bulk_import(kitchen: @kitchen, entries_hash: {
-        'flour' => { 'aisle' => 'Baking' }
-      })
+                                        'flour' => { 'aisle' => 'Baking' }
+                                      })
     end
   end
 
