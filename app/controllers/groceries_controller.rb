@@ -6,7 +6,6 @@
 # state, custom items, and aisle ordering.
 class GroceriesController < ApplicationController
   include MealPlanActions
-  include OrderedListEditor
 
   before_action :require_membership
   before_action :prevent_html_caching, only: :show
@@ -38,51 +37,19 @@ class GroceriesController < ApplicationController
   end
 
   def update_aisle_order
-    current_kitchen.aisle_order = params[:aisle_order].to_s
-    current_kitchen.normalize_aisle_order!
-
-    errors = validate_ordered_list(
-      current_kitchen.parsed_aisle_order,
-      max_items: Kitchen::MAX_AISLES,
-      max_name_length: Kitchen::MAX_AISLE_NAME_LENGTH
+    result = AisleWriteService.update_order(
+      kitchen: current_kitchen,
+      aisle_order: params[:aisle_order].to_s,
+      renames: params[:renames],
+      deletes: params[:deletes]
     )
-    return render json: { errors: }, status: :unprocessable_content if errors.any?
-
-    ActiveRecord::Base.transaction do
-      cascade_aisle_renames
-      cascade_aisle_deletes
-      current_kitchen.save!
-    end
+    return render(json: { errors: result.errors }, status: :unprocessable_content) if result.errors.any?
 
     current_kitchen.broadcast_update
     render json: { status: 'ok' }
   end
 
   def aisle_order_content
-    render json: { aisle_order: build_aisle_order_text }
-  end
-
-  private
-
-  def cascade_aisle_renames
-    renames = params[:renames]
-    return unless renames.is_a?(ActionController::Parameters)
-
-    renames.each_pair do |old_name, new_name|
-      current_kitchen.ingredient_catalog.where('LOWER(aisle) = LOWER(?)', old_name).update_all(aisle: new_name) # rubocop:disable Rails/SkipsModelValidations
-    end
-  end
-
-  def cascade_aisle_deletes
-    deletes = params[:deletes]
-    return unless deletes.is_a?(Array)
-
-    deletes.each do |name|
-      current_kitchen.ingredient_catalog.where('LOWER(aisle) = LOWER(?)', name).update_all(aisle: nil) # rubocop:disable Rails/SkipsModelValidations
-    end
-  end
-
-  def build_aisle_order_text
-    current_kitchen.all_aisles.join("\n")
+    render json: { aisle_order: current_kitchen.all_aisles.join("\n") }
   end
 end
