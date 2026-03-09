@@ -5,7 +5,7 @@
 # Categories dialog changeset.
 #
 # - Category: AR model with position column for homepage ordering
-# - Kitchen#broadcast_update: page-refresh morph (called by controller, not service)
+# - Kitchen#broadcast_update: page-refresh morph after successful writes
 class CategoryWriteService
   Result = Data.define(:success, :errors)
 
@@ -30,6 +30,7 @@ class CategoryWriteService
       update_positions(names)
     end
 
+    kitchen.broadcast_update
     Result.new(success: true, errors: [])
   end
 

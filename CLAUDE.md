@@ -177,16 +177,21 @@ streams (recipe deleted or URL changed).  No async job needed —
 
 **Write path.** `RecipeWriteService` orchestrates all recipe mutations —
 import, cross-reference cascades, category cleanup, meal plan pruning, and
-`Kitchen#broadcast_update`.  `CatalogWriteService` orchestrates all
-`IngredientCatalog` mutations — aisle sync, nutrition recalculation, and
-`Kitchen#broadcast_update`.  `AisleWriteService` orchestrates all
-`Kitchen#aisle_order` mutations — reorder, rename/delete cascades to catalog
-rows, and new-aisle sync (called by `CatalogWriteService` after catalog saves).
-`CategoryWriteService` orchestrates category ordering, renaming, and deletion
-cascades.  Controllers are thin adapters: param parsing → service call →
-response rendering.  Don't call `MarkdownImporter` directly for web operations.
-`MealPlanActions` concern provides optimistic-locking retry and
-`StaleObjectError` handling for any controller that mutates `MealPlan`.
+`Kitchen#broadcast_update`.
+`CatalogWriteService` orchestrates all `IngredientCatalog` mutations — aisle
+sync, nutrition recalculation, and `Kitchen#broadcast_update`.
+`MealPlanWriteService` orchestrates all direct `MealPlan` mutations —
+select/deselect, select-all, clear, and standalone reconciliation.
+`AisleWriteService` orchestrates all `Kitchen#aisle_order` mutations — reorder,
+rename/delete cascades to catalog rows, new-aisle sync, and
+`Kitchen#broadcast_update`.
+`CategoryWriteService` orchestrates category ordering, renaming, deletion
+cascades, and `Kitchen#broadcast_update`.
+Controllers are thin adapters: param parsing → service call → response
+rendering. Services own all post-write side effects (reconcile, broadcast).
+Don't call `MarkdownImporter` directly for web operations.
+`MealPlanActions` concern provides `rescue_from StaleObjectError` for
+controllers whose write paths use `MealPlanWriteService`.
 `MealPlan#reconcile!` is the single pruning entry point — removes stale
 checked-off items and stale selections based on current shopping list state.
 Called after recipe CRUD, quick bites edits, catalog changes, and deselects.

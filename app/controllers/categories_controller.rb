@@ -5,7 +5,6 @@
 # CategoryWriteService. Read-only access is public; writes require membership.
 #
 # - CategoryWriteService: orchestrates rename/delete/reorder mutations
-# - Kitchen#broadcast_update: page-refresh morph after successful writes
 class CategoriesController < ApplicationController
   before_action :require_membership, only: [:update_order]
 
@@ -25,7 +24,6 @@ class CategoriesController < ApplicationController
     )
     return render(json: { errors: result.errors }, status: :unprocessable_content) unless result.success
 
-    current_kitchen.broadcast_update
     render json: { status: 'ok' }
   end
 end

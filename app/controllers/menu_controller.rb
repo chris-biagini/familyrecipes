@@ -1,9 +1,11 @@
 # frozen_string_literal: true
 
-# Meal planning page -- member-only. Displays a recipe selector (recipes + quick
-# bites) with checkboxes. Mutations return 204 No Content and broadcast a
-# page-refresh signal for cross-device sync. Quick bites content is web-editable;
-# changes broadcast to all connected clients.
+# Meal planning page — member-only. Displays a recipe selector (recipes + quick
+# bites) with checkboxes. Mutations delegate to MealPlanWriteService and return
+# 204 No Content; broadcasts happen inside the service for cross-device sync.
+#
+# - MealPlanWriteService: select/deselect, select-all, clear, reconcile
+# - MealPlanActions: rescue_from for StaleObjectError
 class MenuController < ApplicationController
   include MealPlanActions
 
@@ -21,20 +23,24 @@ class MenuController < ApplicationController
   end
 
   def select
-    apply_plan('select', type: params[:type], slug: params[:slug], selected: params[:selected])
-    current_kitchen.broadcast_update
+    MealPlanWriteService.apply_action(
+      kitchen: current_kitchen, action_type: 'select',
+      type: params[:type], slug: params[:slug], selected: params[:selected]
+    )
     head :no_content
   end
 
   def select_all
-    mutate_plan { |plan| plan.select_all!(all_recipe_slugs, all_quick_bite_slugs) }
-    current_kitchen.broadcast_update
+    MealPlanWriteService.select_all(
+      kitchen: current_kitchen,
+      recipe_slugs: all_recipe_slugs,
+      quick_bite_slugs: all_quick_bite_slugs
+    )
     head :no_content
   end
 
   def clear
-    mutate_plan(&:clear_selections!)
-    current_kitchen.broadcast_update
+    MealPlanWriteService.clear(kitchen: current_kitchen)
     head :no_content
   end
 
@@ -46,8 +52,7 @@ class MenuController < ApplicationController
     stored = params[:content].to_s.presence
     result = parse_quick_bites(stored)
     current_kitchen.update!(quick_bites_content: stored)
-    mutate_plan(&:reconcile!)
-    current_kitchen.broadcast_update
+    MealPlanWriteService.reconcile(kitchen: current_kitchen)
 
     body = { status: 'ok' }
     body[:warnings] = result.warnings if result.warnings.any?

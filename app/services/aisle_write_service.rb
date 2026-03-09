@@ -6,6 +6,7 @@
 #
 # - Kitchen#aisle_order: newline-delimited string of user-ordered aisle names
 # - IngredientCatalog: cascade target for rename/delete operations
+# - Kitchen#broadcast_update: notifies clients after successful order changes
 # - CatalogWriteService: calls sync_new_aisle / sync_new_aisles after catalog writes
 class AisleWriteService
   Result = Data.define(:success, :errors)
@@ -40,6 +41,7 @@ class AisleWriteService
       kitchen.save!
     end
 
+    kitchen.broadcast_update
     Result.new(success: true, errors: [])
   end
 
