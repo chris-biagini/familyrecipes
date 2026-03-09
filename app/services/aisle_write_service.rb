@@ -1,6 +1,12 @@
 # frozen_string_literal: true
 
-# Placeholder — architectural header comment will be added in Task 4.
+# Orchestrates all aisle mutations: reorder, rename, delete (with cascade to
+# IngredientCatalog rows), and new-aisle sync. Single owner of Kitchen#aisle_order
+# writes — CatalogWriteService delegates here for aisle sync after catalog saves.
+#
+# - Kitchen#aisle_order: newline-delimited string of user-ordered aisle names
+# - IngredientCatalog: cascade target for rename/delete operations
+# - CatalogWriteService: calls sync_new_aisle / sync_new_aisles after catalog writes
 class AisleWriteService
   Result = Data.define(:success, :errors)
 

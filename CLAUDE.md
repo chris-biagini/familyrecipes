@@ -128,6 +128,8 @@ No async job needed — `broadcast_refresh_to` is cheap enough to run inline.
 
 **Write path.** `RecipeWriteService` orchestrates all recipe mutations — import, cross-reference cascades, category cleanup, meal plan pruning, and `Kitchen#broadcast_update`.
 `CatalogWriteService` orchestrates all `IngredientCatalog` mutations — aisle sync, nutrition recalculation, and `Kitchen#broadcast_update`.
+`AisleWriteService` orchestrates all `Kitchen#aisle_order` mutations — reorder, rename/delete cascades to catalog rows, and new-aisle sync (called by `CatalogWriteService` after catalog saves).
+`CategoryWriteService` orchestrates category ordering, renaming, and deletion cascades.
 Controllers are thin adapters: param parsing → service call → response rendering.
 Don't call `MarkdownImporter` directly for web operations.
 `MealPlanActions` concern provides optimistic-locking retry and `StaleObjectError` handling for any controller that mutates `MealPlan`.

@@ -10,6 +10,7 @@
 # - IngredientCatalog: overlay model for ingredient metadata
 # - IngredientResolver: variant-aware name resolution for affected-recipe queries
 # - RecipeNutritionJob: recalculates recipe nutrition_data
+# - AisleWriteService: aisle sync after catalog saves
 # - Kitchen#broadcast_update: page-refresh morph for all connected clients
 class CatalogWriteService
   Result = Data.define(:entry, :persisted)

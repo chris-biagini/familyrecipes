@@ -1,9 +1,13 @@
 # frozen_string_literal: true
 
-# Shopping list page -- member-only. Server-renders the full shopping list on
-# page load via ShoppingListBuilder. Mutations return 204 No Content and
-# broadcast a page-refresh signal for cross-device sync. Manages check-off
-# state, custom items, and aisle ordering.
+# Shopping list page — member-only. Server-renders the full shopping list on page
+# load via ShoppingListBuilder. Mutations return 204 No Content and broadcast a
+# page-refresh signal for cross-device sync. Aisle reorder/rename/delete delegates
+# to AisleWriteService; check-off and custom items use MealPlanActions.
+#
+# - AisleWriteService: aisle order mutations
+# - MealPlanActions: check-off and custom item mutations
+# - ShoppingListBuilder: computes the shopping list for rendering
 class GroceriesController < ApplicationController
   include MealPlanActions
 

@@ -1,6 +1,11 @@
 # frozen_string_literal: true
 
-# Placeholder — architectural header comment will be added in Task 4.
+# Category ordering dialog — serves JSON for the Edit Categories editor and
+# processes the staged changeset (renames, deletes, reorder) via
+# CategoryWriteService. Read-only access is public; writes require membership.
+#
+# - CategoryWriteService: orchestrates rename/delete/reorder mutations
+# - Kitchen#broadcast_update: page-refresh morph after successful writes
 class CategoriesController < ApplicationController
   before_action :require_membership, only: [:update_order]
 

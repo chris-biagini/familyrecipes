@@ -1,6 +1,11 @@
 # frozen_string_literal: true
 
-# Placeholder — architectural header comment will be added in Task 4.
+# Orchestrates category ordering, renaming, and deletion. Cascade deletes reassign
+# orphaned recipes to Miscellaneous. Called by CategoriesController for the Edit
+# Categories dialog changeset.
+#
+# - Category: AR model with position column for homepage ordering
+# - Kitchen#broadcast_update: page-refresh morph (called by controller, not service)
 class CategoryWriteService
   Result = Data.define(:success, :errors)
 
