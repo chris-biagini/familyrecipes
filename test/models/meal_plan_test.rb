@@ -335,11 +335,12 @@ class MealPlanTest < ActiveSupport::TestCase
     assert_empty list.state['checked_off']
   end
 
-  test 'removing custom item cleans up checked-off entry' do
+  test 'removing custom item and reconciling cleans up checked-off entry' do
     list = MealPlan.for_kitchen(@kitchen)
     list.apply_action('custom_items', item: 'Birthday Candles', action: 'add')
     list.apply_action('check', item: 'Birthday Candles', checked: true)
     list.apply_action('custom_items', item: 'Birthday Candles', action: 'remove')
+    list.reconcile!
 
     list.reload
 
@@ -347,11 +348,12 @@ class MealPlanTest < ActiveSupport::TestCase
     assert_empty list.state['checked_off']
   end
 
-  test 'removing custom item cleans up case-mismatched checked-off entry' do
+  test 'removing custom item and reconciling cleans up case-mismatched checked-off entry' do
     list = MealPlan.for_kitchen(@kitchen)
     list.apply_action('custom_items', item: 'Test', action: 'add')
     list.apply_action('check', item: 'Test', checked: true)
     list.apply_action('custom_items', item: 'test', action: 'remove')
+    list.reconcile!
 
     list.reload
 
