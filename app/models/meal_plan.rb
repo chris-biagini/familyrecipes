@@ -86,6 +86,15 @@ class MealPlan < ApplicationRecord
     end
   end
 
+  def reconcile!
+    ensure_state_keys
+    visible = ShoppingListBuilder.new(kitchen:, meal_plan: self).visible_names
+    prune_checked_off(visible_names: visible)
+    prune_stale_selections
+  end
+
+  private
+
   def prune_checked_off(visible_names:)
     ensure_state_keys
     custom = state['custom_items']
@@ -94,7 +103,7 @@ class MealPlan < ApplicationRecord
     save! if state['checked_off'].size < before_size
   end
 
-  def prune_stale_selections(kitchen:) # rubocop:disable Metrics/AbcSize
+  def prune_stale_selections
     ensure_state_keys
     valid_slugs = kitchen.recipes.pluck(:slug).to_set
     valid_qb_ids = kitchen.parsed_quick_bites.to_set(&:id)
@@ -108,8 +117,6 @@ class MealPlan < ApplicationRecord
     save! if state['selected_recipes'].size < recipes_before ||
              state['selected_quick_bites'].size < qb_before
   end
-
-  private
 
   def ensure_state_keys
     STATE_KEYS.each { |key| state[key] ||= [] }

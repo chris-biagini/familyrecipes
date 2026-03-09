@@ -197,69 +197,26 @@ class MealPlanTest < ActiveSupport::TestCase
     end
   end
 
-  test 'prune_checked_off removes items not in visible names' do
-    list = MealPlan.for_kitchen(@kitchen)
-    list.apply_action('check', item: 'Flour', checked: true)
-    list.apply_action('check', item: 'Salt', checked: true)
+  # --- reconcile! ---
 
-    list.prune_checked_off(visible_names: Set.new(['Flour']))
+  test 'reconcile! removes checked-off items not on shopping list' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('check', item: 'Phantom Item', checked: true)
 
-    assert_includes list.state['checked_off'], 'Flour'
-    assert_not_includes list.state['checked_off'], 'Salt'
+    plan.reconcile!
+    plan.reload
+
+    assert_empty plan.state['checked_off']
   end
 
-  test 'prune_checked_off removes all when visible set is empty' do
-    list = MealPlan.for_kitchen(@kitchen)
-    list.apply_action('check', item: 'Flour', checked: true)
-    list.apply_action('check', item: 'Salt', checked: true)
-
-    list.prune_checked_off(visible_names: Set.new)
-
-    assert_empty list.state['checked_off']
-  end
-
-  test 'prune_checked_off preserves custom items even when not in visible names' do
-    list = MealPlan.for_kitchen(@kitchen)
-    list.apply_action('custom_items', item: 'birthday candles', action: 'add')
-    list.apply_action('check', item: 'birthday candles', checked: true)
-    list.apply_action('check', item: 'Flour', checked: true)
-
-    list.prune_checked_off(visible_names: Set.new)
-
-    assert_includes list.state['checked_off'], 'birthday candles'
-    assert_not_includes list.state['checked_off'], 'Flour'
-  end
-
-  test 'prune_checked_off is idempotent when nothing to prune' do
-    list = MealPlan.for_kitchen(@kitchen)
-    list.apply_action('check', item: 'Flour', checked: true)
-    version_before = list.lock_version
-
-    list.prune_checked_off(visible_names: Set.new(['Flour']))
-
-    assert_equal version_before, list.lock_version
-  end
-
-  test 'prune_checked_off saves when items are pruned' do
-    list = MealPlan.for_kitchen(@kitchen)
-    list.apply_action('check', item: 'Flour', checked: true)
-    version_before = list.lock_version
-
-    list.prune_checked_off(visible_names: Set.new)
-
-    assert_operator list.lock_version, :>, version_before
-  end
-
-  test 'pruning removes checked items not on shopping list' do
+  test 'reconcile! preserves checked-off items on shopping list' do
     @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
     MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Focaccia
 
-
       ## Mix (combine)
 
       - Flour, 3 cups
-      - Salt, 1 tsp
 
       Mix well.
     MD
@@ -267,30 +224,81 @@ class MealPlanTest < ActiveSupport::TestCase
     plan = MealPlan.for_kitchen(@kitchen)
     plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
     plan.apply_action('check', item: 'Flour', checked: true)
-    plan.apply_action('check', item: 'Phantom Item', checked: true)
+    plan.apply_action('check', item: 'Phantom', checked: true)
 
-    shopping_list = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: plan).build
-    visible = shopping_list.each_value.flat_map { |items| items.map { |i| i[:name] } }.to_set
-    plan.with_optimistic_retry { plan.prune_checked_off(visible_names: visible) }
-
+    plan.reconcile!
     plan.reload
 
     assert_includes plan.state['checked_off'], 'Flour'
-    assert_not_includes plan.state['checked_off'], 'Phantom Item'
+    assert_not_includes plan.state['checked_off'], 'Phantom'
   end
 
-  test 'pruning preserves custom items' do
+  test 'reconcile! preserves custom items even when not in visible names' do
     plan = MealPlan.for_kitchen(@kitchen)
     plan.apply_action('custom_items', item: 'birthday candles', action: 'add')
     plan.apply_action('check', item: 'birthday candles', checked: true)
 
-    shopping_list = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: plan).build
-    visible = shopping_list.each_value.flat_map { |items| items.map { |i| i[:name] } }.to_set
-    plan.with_optimistic_retry { plan.prune_checked_off(visible_names: visible) }
-
+    plan.reconcile!
     plan.reload
 
     assert_includes plan.state['checked_off'], 'birthday candles'
+  end
+
+  test 'reconcile! preserves custom items case-insensitively' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('custom_items', item: 'Birthday Candles', action: 'add')
+    plan.apply_action('check', item: 'birthday candles', checked: true)
+
+    plan.reconcile!
+    plan.reload
+
+    assert_includes plan.state['checked_off'], 'birthday candles'
+  end
+
+  test 'reconcile! removes deleted recipe slugs from selections' do
+    category = Category.find_or_create_by!(name: 'Test', slug: 'test', kitchen: @kitchen)
+    MarkdownImporter.import("# Exists\n\n## Step (do it)\n\n- Flour, 1 cup\n\nDo it.\n", kitchen: @kitchen, category:)
+
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('select', type: 'recipe', slug: 'exists', selected: true)
+    plan.apply_action('select', type: 'recipe', slug: 'gone', selected: true)
+
+    plan.reconcile!
+
+    assert_includes plan.state['selected_recipes'], 'exists'
+    assert_not_includes plan.state['selected_recipes'], 'gone'
+  end
+
+  test 'reconcile! removes deleted quick bite IDs from selections' do
+    @kitchen.update!(quick_bites_content: "Snacks:\n- Nachos: Chips\n")
+
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('select', type: 'quick_bite', slug: 'nachos', selected: true)
+    plan.apply_action('select', type: 'quick_bite', slug: 'gone-bite', selected: true)
+
+    plan.reconcile!
+
+    assert_includes plan.state['selected_quick_bites'], 'nachos'
+    assert_not_includes plan.state['selected_quick_bites'], 'gone-bite'
+  end
+
+  test 'reconcile! is idempotent when nothing to prune' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    version_before = plan.lock_version
+
+    plan.reconcile!
+
+    assert_equal version_before, plan.reload.lock_version
+  end
+
+  test 'reconcile! saves when items are pruned' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('check', item: 'Phantom', checked: true)
+    version_before = plan.lock_version
+
+    plan.reconcile!
+
+    assert_operator plan.lock_version, :>, version_before
   end
 
   # --- Case-insensitive custom items (issue #156) ---
@@ -351,16 +359,6 @@ class MealPlanTest < ActiveSupport::TestCase
     assert_empty list.state['checked_off']
   end
 
-  test 'prune_checked_off preserves custom items case-insensitively' do
-    list = MealPlan.for_kitchen(@kitchen)
-    list.apply_action('custom_items', item: 'Birthday Candles', action: 'add')
-    list.apply_action('check', item: 'birthday candles', checked: true)
-
-    list.prune_checked_off(visible_names: Set.new)
-
-    assert_includes list.state['checked_off'], 'birthday candles'
-  end
-
   test 'truthy? class method recognizes true and string true' do
     assert MealPlan.truthy?(true)
     assert MealPlan.truthy?('true')
@@ -369,64 +367,4 @@ class MealPlanTest < ActiveSupport::TestCase
     assert_not MealPlan.truthy?(nil)
   end
 
-  test 'pruning is no-op when nothing to prune' do
-    plan = MealPlan.for_kitchen(@kitchen)
-    version_before = plan.lock_version
-
-    shopping_list = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: plan).build
-    visible = shopping_list.each_value.flat_map { |items| items.map { |i| i[:name] } }.to_set
-    plan.with_optimistic_retry { plan.prune_checked_off(visible_names: visible) }
-
-    assert_equal version_before, plan.reload.lock_version
-  end
-
-  test 'prune_stale_selections removes deleted recipe slugs' do
-    list = MealPlan.for_kitchen(@kitchen)
-    list.apply_action('select', type: 'recipe', slug: 'exists', selected: true)
-    list.apply_action('select', type: 'recipe', slug: 'gone', selected: true)
-
-    category = Category.find_or_create_by!(name: 'Test', slug: 'test', kitchen: @kitchen)
-    MarkdownImporter.import("# Exists\n\n## Step (do it)\n\n- Flour, 1 cup\n\nDo it.\n", kitchen: @kitchen, category:)
-
-    list.prune_stale_selections(kitchen: @kitchen)
-
-    assert_includes list.state['selected_recipes'], 'exists'
-    assert_not_includes list.state['selected_recipes'], 'gone'
-  end
-
-  test 'prune_stale_selections removes deleted quick bite IDs' do
-    @kitchen.update!(quick_bites_content: "Snacks:\n- Nachos: Chips\n")
-    list = MealPlan.for_kitchen(@kitchen)
-    list.apply_action('select', type: 'quick_bite', slug: 'nachos', selected: true)
-    list.apply_action('select', type: 'quick_bite', slug: 'gone-bite', selected: true)
-
-    list.prune_stale_selections(kitchen: @kitchen)
-
-    assert_includes list.state['selected_quick_bites'], 'nachos'
-    assert_not_includes list.state['selected_quick_bites'], 'gone-bite'
-  end
-
-  test 'prune_stale_selections is idempotent when all selections valid' do
-    category = Category.find_or_create_by!(name: 'Test', slug: 'test', kitchen: @kitchen)
-    MarkdownImporter.import("# Exists\n\n## Step (do it)\n\n- Flour, 1 cup\n\nDo it.\n", kitchen: @kitchen, category:)
-
-    list = MealPlan.for_kitchen(@kitchen)
-    list.apply_action('select', type: 'recipe', slug: 'exists', selected: true)
-    version_before = list.lock_version
-
-    list.prune_stale_selections(kitchen: @kitchen)
-
-    assert_equal version_before, list.lock_version
-  end
-
-  test 'prune_stale_selections saves when items pruned' do
-    list = MealPlan.for_kitchen(@kitchen)
-    list.apply_action('select', type: 'recipe', slug: 'gone', selected: true)
-    version_before = list.lock_version
-
-    list.prune_stale_selections(kitchen: @kitchen)
-
-    assert_operator list.lock_version, :>, version_before
-    assert_empty list.state['selected_recipes']
-  end
 end
