@@ -47,6 +47,9 @@ export default class extends Controller {
 
     this.boundCancel = this.handleCancel.bind(this)
     this.element.addEventListener("cancel", this.boundCancel)
+
+    this.boundBeforeVisit = this.handleBeforeVisit.bind(this)
+    document.addEventListener("turbo:before-visit", this.boundBeforeVisit)
   }
 
   disconnect() {
@@ -55,6 +58,7 @@ export default class extends Controller {
     }
     if (this.guard) this.guard.remove()
     this.element.removeEventListener("cancel", this.boundCancel)
+    if (this.boundBeforeVisit) document.removeEventListener("turbo:before-visit", this.boundBeforeVisit)
   }
 
   open() {
@@ -120,6 +124,16 @@ export default class extends Controller {
     if (isModified(this.items, this.initialSnapshot)) {
       event.preventDefault()
       this.close()
+    }
+  }
+
+  handleBeforeVisit(event) {
+    if (!this.element.open) return
+    if (isModified(this.items, this.initialSnapshot)) {
+      event.preventDefault()
+      this.close()
+    } else {
+      this.element.close()
     }
   }
 
