@@ -11,7 +11,7 @@
 # - RecipeWriteService: recipe upsert (create or overwrite by slug)
 # - Kitchen: tenant container receiving imported data
 # - ExportService: produces the ZIP format this service consumes
-class ImportService
+class ImportService # rubocop:disable Metrics/ClassLength
   Result = Data.define(:recipes, :ingredients, :quick_bites, :errors) do
     def self.empty
       new(recipes: 0, ingredients: 0, quick_bites: false, errors: [])
@@ -76,9 +76,9 @@ class ImportService
     basename = File.basename(name, '.*')
     ext = File.extname(name)
 
-    if name == 'aisle-order.txt'
+    if aisle_order?(name)
       entries[:aisle_order] = content
-    elsif name == 'category-order.txt'
+    elsif category_order?(name)
       entries[:category_order] = content
     elsif quick_bites?(basename, ext)
       entries[:quick_bites] = content
@@ -146,6 +146,14 @@ class ImportService
   end
 
   # --- Classification helpers ---
+
+  def aisle_order?(name)
+    File.basename(name).casecmp('aisle-order.txt').zero?
+  end
+
+  def category_order?(name)
+    File.basename(name).casecmp('category-order.txt').zero?
+  end
 
   def quick_bites?(basename, ext)
     RECIPE_EXTENSIONS.include?(ext.downcase) && basename.match?(QUICK_BITES_PATTERN)

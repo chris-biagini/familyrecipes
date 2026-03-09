@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 
-# Builds an in-memory ZIP archive of all kitchen data: recipes organized by
-# category, Quick Bites, and custom ingredient catalog entries. The ZIP is
-# returned as a binary string suitable for streaming to a client.
+# Builds an in-memory ZIP archive of all kitchen data: aisle and category
+# ordering, custom ingredient catalog entries, Quick Bites, and recipes
+# organized by category. The ZIP is returned as a binary string suitable
+# for streaming to a client.
 #
 # - ExportsController: sole caller (planned)
 # - IngredientCatalog: custom entries exported as seed-compatible YAML
+# - ImportService: consumes the ZIP format this service produces
 # - Kitchen: tenant container providing recipes, quick_bites_content, slug
 class ExportService
   def self.call(kitchen:)
