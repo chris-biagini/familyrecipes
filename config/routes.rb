@@ -21,6 +21,7 @@ Rails.application.routes.draw do
   scope '(/kitchens/:kitchen_slug)' do
     get 'recipes/:slug.md', to: 'recipes#show_markdown', as: :recipe_markdown, defaults: { format: 'text' }
     get 'recipes/:slug.html', to: 'recipes#show_html', as: :recipe_html, defaults: { format: 'html' }
+    get 'recipes/:slug/content', to: 'recipes#content', as: :recipe_content
     resources :recipes, only: %i[show create update destroy], param: :slug
     get 'ingredients', to: 'ingredients#index', as: :ingredients
     get 'ingredients/:ingredient_name/edit', to: 'ingredients#edit', as: :ingredient_edit

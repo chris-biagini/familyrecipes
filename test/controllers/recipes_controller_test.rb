@@ -640,4 +640,27 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     assert_select '.ingredients li', 4
     assert_select 'b', 'Olive oil'
   end
+
+  test 'content returns markdown source as JSON for members' do
+    log_in
+    get recipe_content_path('focaccia', kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    body = response.parsed_body
+
+    assert_equal @kitchen.recipes.find_by!(slug: 'focaccia').markdown_source, body['markdown_source']
+  end
+
+  test 'content returns 403 for non-members' do
+    get recipe_content_path('focaccia', kitchen_slug: kitchen_slug)
+
+    assert_response :forbidden
+  end
+
+  test 'content returns 404 for unknown recipe' do
+    log_in
+    get recipe_content_path('nonexistent', kitchen_slug: kitchen_slug)
+
+    assert_response :not_found
+  end
 end

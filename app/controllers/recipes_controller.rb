@@ -7,12 +7,17 @@
 # links to these. All domain logic (import, broadcast, cleanup) lives in the
 # service.
 class RecipesController < ApplicationController
-  before_action :require_membership, only: %i[create update destroy]
+  before_action :require_membership, only: %i[content create update destroy]
 
   def show
     @recipe = current_kitchen.recipes.with_full_tree.find_by!(slug: params[:slug])
     @nutrition = @recipe.nutrition_data
     @all_categories = current_kitchen.categories.ordered
+  end
+
+  def content
+    recipe = current_kitchen.recipes.find_by!(slug: params[:slug])
+    render json: { markdown_source: recipe.markdown_source }
   end
 
   def show_markdown
