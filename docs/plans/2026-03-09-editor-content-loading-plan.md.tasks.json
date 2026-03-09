@@ -1,13 +1,13 @@
 {
   "planPath": "docs/plans/2026-03-09-editor-content-loading-plan.md",
   "tasks": [
-    {"id": 1, "subject": "Task 1: Add recipe content JSON endpoint", "status": "pending"},
-    {"id": 2, "subject": "Task 2: Convert recipe edit dialog to loadUrl", "status": "pending", "blockedBy": [1]},
-    {"id": 3, "subject": "Task 3: Add turbo:before-cache handler", "status": "pending"},
-    {"id": 4, "subject": "Task 4: Add turbo:before-visit handler to editor controller", "status": "pending"},
-    {"id": 5, "subject": "Task 5: Add turbo:before-visit handler to ordered-list-editor controller", "status": "pending"},
-    {"id": 6, "subject": "Task 6: Update header comments and CLAUDE.md", "status": "pending", "blockedBy": [3, 4, 5]},
-    {"id": 7, "subject": "Task 7: Manual verification", "status": "pending", "blockedBy": [1, 2, 3, 4, 5, 6]}
+    {"id": 1, "subject": "Task 1: Add recipe content JSON endpoint", "status": "completed"},
+    {"id": 2, "subject": "Task 2: Convert recipe edit dialog to loadUrl", "status": "completed", "blockedBy": [1]},
+    {"id": 3, "subject": "Task 3: Add turbo:before-cache handler", "status": "completed"},
+    {"id": 4, "subject": "Task 4: Add turbo:before-visit handler to editor controller", "status": "completed"},
+    {"id": 5, "subject": "Task 5: Add turbo:before-visit handler to ordered-list-editor controller", "status": "completed"},
+    {"id": 6, "subject": "Task 6: Update header comments and CLAUDE.md", "status": "completed", "blockedBy": [3, 4, 5]},
+    {"id": 7, "subject": "Task 7: Manual verification", "status": "completed", "blockedBy": [1, 2, 3, 4, 5, 6]}
   ],
-  "lastUpdated": "2026-03-09T00:00:00Z"
+  "lastUpdated": "2026-03-09T12:00:00Z"
 }
