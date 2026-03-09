@@ -169,6 +169,7 @@ class ImportServiceTest < ActiveSupport::TestCase
     entry = IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'Special Flour')
 
     assert_equal 'Pantry', entry.aisle
+    assert_includes @kitchen.reload.parsed_aisle_order, 'Pantry'
   end
 
   test 'upserts existing ingredient catalog entries' do
@@ -189,6 +190,90 @@ class ImportServiceTest < ActiveSupport::TestCase
 
     assert_equal 1, result.errors.size
     assert_match(/custom-ingredients\.yaml/, result.errors.first)
+  end
+
+  # --- Aisle order ---
+
+  test 'imports aisle-order.txt from ZIP' do
+    zip = build_zip('aisle-order.txt' => "Produce\nBaking\nDairy")
+    import_files(uploaded_file('export.zip', zip))
+
+    assert_equal "Produce\nBaking\nDairy", @kitchen.reload.aisle_order
+  end
+
+  test 'missing aisle-order.txt is gracefully skipped' do
+    zip = build_zip('Bread/Focaccia.md' => simple_recipe('Focaccia'))
+    import_files(uploaded_file('export.zip', zip))
+
+    assert_nil @kitchen.reload.aisle_order
+  end
+
+  # --- Category order ---
+
+  test 'imports category-order.txt and sets positions after recipe import' do
+    zip = build_zip(
+      'category-order.txt' => "Desserts\nBread",
+      'Bread/Focaccia.md' => simple_recipe('Focaccia'),
+      'Desserts/Brownies.md' => simple_recipe('Brownies')
+    )
+    import_files(uploaded_file('export.zip', zip))
+
+    bread = @kitchen.categories.find_by(name: 'Bread')
+    desserts = @kitchen.categories.find_by(name: 'Desserts')
+
+    assert bread.position > desserts.position,
+           "Expected Desserts (#{desserts.position}) before Bread (#{bread.position})"
+  end
+
+  test 'missing category-order.txt is gracefully skipped' do
+    zip = build_zip('Bread/Focaccia.md' => simple_recipe('Focaccia'))
+    import_files(uploaded_file('export.zip', zip))
+
+    assert @kitchen.categories.find_by(name: 'Bread')
+  end
+
+  # --- Import ordering: catalog before recipes ---
+
+  test 'recipes imported after catalog get correct nutrition on first pass' do
+    create_catalog_entry('Flour', basis_grams: 100, calories: 364, aisle: 'Baking')
+
+    yaml_content = { 'Flour' => { 'aisle' => 'Baking',
+                                   'nutrients' => { 'basis_grams' => 30, 'calories' => 110 } } }.to_yaml
+
+    zip = build_zip(
+      'custom-ingredients.yaml' => yaml_content,
+      'Bread/Focaccia.md' => simple_recipe_with_ingredient('Focaccia', 'Flour', '200 g')
+    )
+    import_files(uploaded_file('export.zip', zip))
+
+    recipe = @kitchen.recipes.find_by!(title: 'Focaccia')
+
+    assert_not_nil recipe.nutrition_data
+    # Custom entry: 110 cal per 30g → 200g = 733.3 cal (not 364 * 2 = 728 from global)
+    assert_in_delta 733.3, recipe.nutrition_data['totals']['calories'], 1.0
+  end
+
+  # --- Round-trip ---
+
+  test 'export then import into empty kitchen preserves all data' do
+    @kitchen.update!(aisle_order: "Produce\nBaking")
+    IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Test Flour', aisle: 'Baking')
+    @kitchen.categories.ordered.each_with_index { |c, i| c.update!(position: i) }
+
+    zip_data = ExportService.call(kitchen: @kitchen)
+
+    # Clear the kitchen
+    @kitchen.recipes.destroy_all
+    @kitchen.categories.destroy_all
+    IngredientCatalog.where(kitchen: @kitchen).delete_all
+    @kitchen.update!(aisle_order: nil)
+
+    import_files(uploaded_file('export.zip', zip_data))
+
+    assert_equal "Produce\nBaking", @kitchen.reload.aisle_order
+    assert IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'Test Flour')
+    assert @kitchen.recipes.any?
+    assert @kitchen.categories.any?
   end
 
   private
@@ -221,6 +306,19 @@ class ImportServiceTest < ActiveSupport::TestCase
       ## Steps
 
       - Flour, 1 cup
+
+      Do the thing.
+    MD
+  end
+
+  def simple_recipe_with_ingredient(title, ingredient, quantity)
+    <<~MD
+      # #{title}
+
+
+      ## Steps
+
+      - #{ingredient}, #{quantity}
 
       Do the thing.
     MD
