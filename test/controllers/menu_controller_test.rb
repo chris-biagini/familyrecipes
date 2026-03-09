@@ -145,6 +145,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
 
   test 'select adds recipe' do
     log_in
+    create_focaccia_recipe
     patch menu_select_path(kitchen_slug: kitchen_slug),
           params: { type: 'recipe', slug: 'focaccia', selected: true },
           as: :turbo_stream
@@ -158,6 +159,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
 
   test 'select broadcasts meal plan refresh' do
     log_in
+    create_focaccia_recipe
     assert_turbo_stream_broadcasts [@kitchen, :updates] do
       patch menu_select_path(kitchen_slug: kitchen_slug),
             params: { type: 'recipe', slug: 'focaccia', selected: true },
@@ -167,6 +169,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
 
   test 'select deselects recipe when selected is false' do
     log_in
+    create_focaccia_recipe
     patch menu_select_path(kitchen_slug: kitchen_slug),
           params: { type: 'recipe', slug: 'focaccia', selected: true },
           as: :turbo_stream

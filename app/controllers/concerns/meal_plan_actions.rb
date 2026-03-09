@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 # Shared meal-plan mutation helpers for controllers that modify MealPlan state.
-# Provides optimistic-locking retry, a common StaleObjectError handler, and
-# pruning of stale checked-off items on deselect.
+# Provides optimistic-locking retry with a common StaleObjectError handler.
+# Every mutation is followed by MealPlan#reconcile! to prune stale state.
 # Used by MenuController and GroceriesController.
 module MealPlanActions
   extend ActiveSupport::Concern
@@ -22,20 +22,8 @@ module MealPlanActions
   def apply_plan(action_type, **action_params)
     mutate_plan do |plan|
       plan.apply_action(action_type, **action_params)
-      prune_if_deselect(plan, action_type, action_params)
+      plan.reconcile!
     end
-  end
-
-  def prune_if_deselect(plan, action_type, action_params)
-    return unless action_type == 'select'
-    return if MealPlan.truthy?(action_params[:selected])
-
-    visible = shopping_list_visible_names(plan)
-    plan.prune_checked_off(visible_names: visible)
-  end
-
-  def shopping_list_visible_names(plan)
-    ShoppingListBuilder.new(kitchen: current_kitchen, meal_plan: plan).visible_names
   end
 
   def handle_stale_record
