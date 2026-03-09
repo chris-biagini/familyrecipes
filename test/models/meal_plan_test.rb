@@ -368,5 +368,4 @@ class MealPlanTest < ActiveSupport::TestCase
     assert_not MealPlan.truthy?('false')
     assert_not MealPlan.truthy?(nil)
   end
-
 end
