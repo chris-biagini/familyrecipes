@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
 # Shopping list page — member-only. Server-renders the full shopping list on page
-# load via ShoppingListBuilder. Mutations return 204 No Content and broadcast a
-# page-refresh signal for cross-device sync. Aisle reorder/rename/delete delegates
-# to AisleWriteService; check-off and custom items use MealPlanActions.
+# load via ShoppingListBuilder. Mutations delegate to write services and return
+# 204 No Content; broadcasts happen inside the services for cross-device sync.
 #
+# - MealPlanWriteService: check-off and custom item mutations
 # - AisleWriteService: aisle order mutations
-# - MealPlanActions: check-off and custom item mutations
+# - MealPlanActions: rescue_from for StaleObjectError
 # - ShoppingListBuilder: computes the shopping list for rendering
 class GroceriesController < ApplicationController
   include MealPlanActions
@@ -22,8 +22,10 @@ class GroceriesController < ApplicationController
   end
 
   def check
-    apply_plan('check', item: params[:item], checked: params[:checked])
-    current_kitchen.broadcast_update
+    MealPlanWriteService.apply_action(
+      kitchen: current_kitchen, action_type: 'check',
+      item: params[:item], checked: params[:checked]
+    )
     head :no_content
   end
 
@@ -35,8 +37,10 @@ class GroceriesController < ApplicationController
                     status: :unprocessable_content
     end
 
-    apply_plan('custom_items', item: item, action: params[:action_type])
-    current_kitchen.broadcast_update
+    MealPlanWriteService.apply_action(
+      kitchen: current_kitchen, action_type: 'custom_items',
+      item: item, action: params[:action_type]
+    )
     head :no_content
   end
 
@@ -49,7 +53,6 @@ class GroceriesController < ApplicationController
     )
     return render(json: { errors: result.errors }, status: :unprocessable_content) if result.errors.any?
 
-    current_kitchen.broadcast_update
     render json: { status: 'ok' }
   end
 
