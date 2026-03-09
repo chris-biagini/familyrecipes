@@ -11,6 +11,7 @@ desktop.ini
 
 # Claude Code local data
 .claude/
+.claude.local.md
 
 # Playwright MCP output
 .playwright-mcp/
