@@ -1,8 +1,11 @@
 # frozen_string_literal: true
 
 require 'test_helper'
+require 'turbo/broadcastable/test_helper'
 
 class AisleWriteServiceTest < ActiveSupport::TestCase
+  include Turbo::Broadcastable::TestHelper
+
   setup do
     setup_test_kitchen
     IngredientCatalog.where(kitchen: @kitchen).delete_all
@@ -149,6 +152,24 @@ class AisleWriteServiceTest < ActiveSupport::TestCase
 
     assert result.success
     assert_equal 'Produce', @kitchen.reload.aisle_order
+  end
+
+  # --- update_order: broadcasts ---
+
+  test 'update_order broadcasts to kitchen updates stream' do
+    assert_turbo_stream_broadcasts [@kitchen, :updates] do
+      AisleWriteService.update_order(
+        kitchen: @kitchen, aisle_order: 'Produce', renames: {}, deletes: []
+      )
+    end
+  end
+
+  test 'update_order does not broadcast on validation failure' do
+    assert_no_turbo_stream_broadcasts [@kitchen, :updates] do
+      AisleWriteService.update_order(
+        kitchen: @kitchen, aisle_order: 'a' * 51, renames: {}, deletes: []
+      )
+    end
   end
 
   # --- sync_new_aisle ---
