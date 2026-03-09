@@ -112,6 +112,38 @@ class ExportServiceTest < ActiveSupport::TestCase
     assert_equal expected, ExportService.filename(kitchen: @kitchen)
   end
 
+  test 'includes aisle-order.txt when kitchen has aisle_order' do
+    @kitchen.update!(aisle_order: "Produce\nBaking\nDairy")
+    zip_data = ExportService.call(kitchen: @kitchen)
+
+    assert_includes zip_entry_names(zip_data), 'aisle-order.txt'
+    assert_equal "Produce\nBaking\nDairy", zip_entry_content(zip_data, 'aisle-order.txt')
+  end
+
+  test 'omits aisle-order.txt when aisle_order is blank' do
+    @kitchen.update!(aisle_order: nil)
+    zip_data = ExportService.call(kitchen: @kitchen)
+
+    assert_not_includes zip_entry_names(zip_data), 'aisle-order.txt'
+  end
+
+  test 'includes category-order.txt with categories in position order' do
+    @category.update!(position: 1)
+    @desserts.update!(position: 0)
+    zip_data = ExportService.call(kitchen: @kitchen)
+
+    assert_includes zip_entry_names(zip_data), 'category-order.txt'
+    assert_equal "Desserts\nBread", zip_entry_content(zip_data, 'category-order.txt')
+  end
+
+  test 'omits category-order.txt when no categories exist' do
+    @kitchen.recipes.destroy_all
+    @kitchen.categories.destroy_all
+    zip_data = ExportService.call(kitchen: @kitchen)
+
+    assert_not_includes zip_entry_names(zip_data), 'category-order.txt'
+  end
+
   private
 
   def zip_entry_names(zip_data)
