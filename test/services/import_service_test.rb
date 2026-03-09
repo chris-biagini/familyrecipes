@@ -221,8 +221,8 @@ class ImportServiceTest < ActiveSupport::TestCase
     bread = @kitchen.categories.find_by(name: 'Bread')
     desserts = @kitchen.categories.find_by(name: 'Desserts')
 
-    assert bread.position > desserts.position,
-           "Expected Desserts (#{desserts.position}) before Bread (#{bread.position})"
+    assert_operator bread.position, :>, desserts.position,
+                    "Expected Desserts (#{desserts.position}) before Bread (#{bread.position})"
   end
 
   test 'missing category-order.txt is gracefully skipped' do
@@ -238,7 +238,7 @@ class ImportServiceTest < ActiveSupport::TestCase
     create_catalog_entry('Flour', basis_grams: 100, calories: 364, aisle: 'Baking')
 
     yaml_content = { 'Flour' => { 'aisle' => 'Baking',
-                                   'nutrients' => { 'basis_grams' => 30, 'calories' => 110 } } }.to_yaml
+                                  'nutrients' => { 'basis_grams' => 30, 'calories' => 110 } } }.to_yaml
 
     zip = build_zip(
       'custom-ingredients.yaml' => yaml_content,
@@ -257,6 +257,7 @@ class ImportServiceTest < ActiveSupport::TestCase
 
   test 'export then import into empty kitchen preserves all data' do
     @kitchen.update!(aisle_order: "Produce\nBaking")
+    RecipeWriteService.create(markdown: simple_recipe('Round Trip'), kitchen: @kitchen, category_name: 'Dinners')
     IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Test Flour', aisle: 'Baking')
     @kitchen.categories.ordered.each_with_index { |c, i| c.update!(position: i) }
 
@@ -272,8 +273,8 @@ class ImportServiceTest < ActiveSupport::TestCase
 
     assert_equal "Produce\nBaking", @kitchen.reload.aisle_order
     assert IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'Test Flour')
-    assert @kitchen.recipes.any?
-    assert @kitchen.categories.any?
+    assert_predicate @kitchen.recipes, :any?
+    assert_predicate @kitchen.categories, :any?
   end
 
   private
