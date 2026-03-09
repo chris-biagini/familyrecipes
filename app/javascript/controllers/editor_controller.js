@@ -43,13 +43,15 @@ export default class extends Controller {
     this.boundCancel = this.handleCancel.bind(this)
     this.element.addEventListener("cancel", this.boundCancel)
 
-    this.checkRefsUpdated()
+    this.boundBeforeVisit = this.handleBeforeVisit.bind(this)
+    document.addEventListener("turbo:before-visit", this.boundBeforeVisit)
   }
 
   disconnect() {
     if (this.boundOpen) document.removeEventListener("click", this.boundOpen)
     if (this.guard) this.guard.remove()
     this.element.removeEventListener("cancel", this.boundCancel)
+    if (this.boundBeforeVisit) document.removeEventListener("turbo:before-visit", this.boundBeforeVisit)
   }
 
   open() {
@@ -91,17 +93,22 @@ export default class extends Controller {
       if (this.onSuccessValue === "reload") {
         window.location.reload()
       } else if (this.onSuccessValue === "close") {
+        if (responseData.slug) {
+          const currentSlug = window.location.pathname.split("/").pop()
+          if (responseData.slug !== currentSlug) {
+            const newPath = window.location.pathname.replace(/\/[^/]+$/, `/${responseData.slug}`)
+            history.replaceState(null, "", newPath)
+          }
+        }
+        if (responseData.updated_references?.length > 0) {
+          notifyShow(`Updated references in ${responseData.updated_references.join(", ")}.`)
+        }
         this.element.close()
       } else {
         let redirectUrl = responseData.redirect_url
         if (!redirectUrl || !redirectUrl.startsWith("/")) {
           window.location.reload()
           return
-        }
-        if (responseData.updated_references?.length > 0) {
-          const param = encodeURIComponent(responseData.updated_references.join(", "))
-          const separator = redirectUrl.includes("?") ? "&" : "?"
-          redirectUrl += `${separator}refs_updated=${param}`
         }
         window.location = redirectUrl
       }
@@ -181,6 +188,16 @@ export default class extends Controller {
     }
   }
 
+  handleBeforeVisit(event) {
+    if (!this.element.open) return
+    if (this.isModified()) {
+      event.preventDefault()
+      this.close()
+    } else {
+      this.element.close()
+    }
+  }
+
   resetSaveButton() {
     if (this.hasSaveButtonTarget) {
       this.saveButtonTarget.disabled = false
@@ -241,15 +258,5 @@ export default class extends Controller {
         }
         showErrors(this.errorsTarget, ["Failed to load content. Close and try again."])
       })
-  }
-
-  checkRefsUpdated() {
-    const params = new URLSearchParams(window.location.search)
-    const refsUpdated = params.get("refs_updated")
-    if (refsUpdated) {
-      notifyShow(`Updated references in ${refsUpdated}.`)
-      const cleanUrl = window.location.pathname + window.location.hash
-      history.replaceState(null, "", cleanUrl)
-    }
   }
 }
