@@ -132,7 +132,7 @@ No async job needed — `broadcast_refresh_to` is cheap enough to run inline.
 `CategoryWriteService` orchestrates category ordering, renaming, and deletion cascades.
 Controllers are thin adapters: param parsing → service call → response rendering.
 Don't call `MarkdownImporter` directly for web operations.
-`MealPlanActions` concern provides optimistic-locking retry and `StaleObjectError` handling for any controller that mutates `MealPlan`.
+`MealPlanActions` concern provides `rescue_from StaleObjectError` for controllers whose write paths use `MealPlanWriteService`.
 `MealPlan#reconcile!` is the single pruning entry point — removes stale checked-off items and stale selections based on current shopping list state. Called after recipe CRUD, quick bites edits, catalog changes, and deselects.
 
 **Nutrition pipeline.** `IngredientCatalog` is an overlay model — global seed entries plus per-kitchen overrides, merged by `lookup_for` with `Inflector` variant matching and a JSON `aliases` column for alternate names.

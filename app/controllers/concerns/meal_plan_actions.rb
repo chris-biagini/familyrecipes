@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-# Shared meal-plan mutation helpers for controllers that modify MealPlan state.
-# Provides optimistic-locking retry with a common StaleObjectError handler.
-# Every mutation is followed by MealPlan#reconcile! to prune stale state.
+# Provides StaleObjectError handling for controllers whose write paths pass
+# through MealPlanWriteService. The service uses optimistic-locking retry
+# internally, but if retries are exhausted the exception bubbles up here.
 # Used by MenuController and GroceriesController.
 module MealPlanActions
   extend ActiveSupport::Concern
@@ -12,19 +12,6 @@ module MealPlanActions
   end
 
   private
-
-  def mutate_plan
-    plan = MealPlan.for_kitchen(current_kitchen)
-    plan.with_optimistic_retry { yield plan }
-    plan
-  end
-
-  def apply_plan(action_type, **action_params)
-    mutate_plan do |plan|
-      plan.apply_action(action_type, **action_params)
-      plan.reconcile!
-    end
-  end
 
   def handle_stale_record
     render json: { error: 'Meal plan was modified by another request. Please refresh.' },
