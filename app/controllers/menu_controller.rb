@@ -21,20 +21,24 @@ class MenuController < ApplicationController
   end
 
   def select
-    apply_plan('select', type: params[:type], slug: params[:slug], selected: params[:selected])
-    current_kitchen.broadcast_update
+    MealPlanWriteService.apply_action(
+      kitchen: current_kitchen, action_type: 'select',
+      type: params[:type], slug: params[:slug], selected: params[:selected]
+    )
     head :no_content
   end
 
   def select_all
-    mutate_plan { |plan| plan.select_all!(all_recipe_slugs, all_quick_bite_slugs) }
-    current_kitchen.broadcast_update
+    MealPlanWriteService.select_all(
+      kitchen: current_kitchen,
+      recipe_slugs: all_recipe_slugs,
+      quick_bite_slugs: all_quick_bite_slugs
+    )
     head :no_content
   end
 
   def clear
-    mutate_plan(&:clear_selections!)
-    current_kitchen.broadcast_update
+    MealPlanWriteService.clear(kitchen: current_kitchen)
     head :no_content
   end
 
@@ -46,8 +50,7 @@ class MenuController < ApplicationController
     stored = params[:content].to_s.presence
     result = parse_quick_bites(stored)
     current_kitchen.update!(quick_bites_content: stored)
-    mutate_plan(&:reconcile!)
-    current_kitchen.broadcast_update
+    MealPlanWriteService.reconcile(kitchen: current_kitchen)
 
     body = { status: 'ok' }
     body[:warnings] = result.warnings if result.warnings.any?
