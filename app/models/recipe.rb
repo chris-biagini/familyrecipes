@@ -5,6 +5,12 @@
 # processed instructions with scalable number markup). Views render entirely from
 # this model and its associations — the parser is never invoked on the read path.
 # Kitchen-scoped via acts_as_tenant.
+#
+# Collaborators:
+# - RecipeWriteService (sole write-path orchestrator for web operations)
+# - RecipeNutritionJob / CascadeNutritionJob (async nutrition recomputation)
+# - RecipeBroadcaster (delete/rename notifications on per-recipe streams)
+# - IngredientAggregator (quantity merging for all_ingredients_with_quantities)
 class Recipe < ApplicationRecord
   acts_as_tenant :kitchen
   belongs_to :category

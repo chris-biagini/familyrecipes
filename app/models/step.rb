@@ -4,6 +4,11 @@
 # raw and processed instructions (with scalable number HTML), and ordered
 # collections of Ingredients and CrossReferences. The mixed ingredient list
 # is reconstructed via #ingredient_list_items for rendering.
+#
+# Collaborators:
+# - Recipe (parent; preloads via with_full_tree)
+# - MarkdownImporter (creates steps from parsed FamilyRecipes::Step objects)
+# - Views call #ingredient_list_items to interleave ingredients and cross-references
 class Step < ApplicationRecord
   belongs_to :recipe, inverse_of: :steps
 
