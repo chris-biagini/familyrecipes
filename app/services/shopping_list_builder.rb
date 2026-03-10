@@ -87,7 +87,7 @@ class ShoppingListBuilder
   end
 
   def organize_by_aisle(ingredients)
-    visible = ingredients.reject { |name, _| aisle_for(name) == 'omit' }
+    visible = ingredients.reject { |name, _| @resolver.omitted?(name) }
     grouped = visible.each_with_object(Hash.new { |h, k| h[k] = [] }) do |(name, entry), result|
       result[aisle_for(name)] << { name: name, amounts: serialize_amounts(entry[:amounts]), sources: entry[:sources] }
     end

@@ -50,7 +50,7 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
   end
 
   test 'omits ingredients with aisle omit' do
-    IngredientCatalog.find_by(ingredient_name: 'Salt', kitchen_id: nil)&.update!(aisle: 'omit')
+    IngredientCatalog.find_by(ingredient_name: 'Salt', kitchen_id: nil)&.update!(omit_from_shopping: true)
     list = MealPlan.for_kitchen(@kitchen)
     list.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
 
@@ -565,7 +565,7 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
   end
 
   test 'visible_names excludes omitted ingredients' do
-    IngredientCatalog.find_by(ingredient_name: 'Salt', kitchen_id: nil)&.update!(aisle: 'omit')
+    IngredientCatalog.find_by(ingredient_name: 'Salt', kitchen_id: nil)&.update!(omit_from_shopping: true)
     list = MealPlan.for_kitchen(@kitchen)
     list.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
 
