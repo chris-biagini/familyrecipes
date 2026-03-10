@@ -917,4 +917,81 @@ class NutritionCalculatorTest < Minitest::Test
     assert_equal 'loaf', result.makes_unit_singular
     assert_equal 'loaves', result.makes_unit_plural
   end
+
+  # --- Total weight ---
+
+  def test_total_weight_grams_from_gram_ingredients
+    recipe = make_recipe(<<~MD)
+      # Test
+
+      Serves: 2
+
+      ## Mix (combine)
+
+      - Flour (all-purpose), 200 g
+      - Eggs, 2
+
+      Mix.
+    MD
+
+    result = @calculator.calculate(recipe, @recipe_map)
+
+    # 200g flour + 2 eggs * 50g = 300g total
+    assert_in_delta 300, result.total_weight_grams, 0.1
+  end
+
+  def test_total_weight_grams_with_volume_ingredients
+    recipe = make_recipe(<<~MD)
+      # Test
+
+      Serves: 1
+
+      ## Mix (combine)
+
+      - Butter, 2 tbsp
+
+      Mix.
+    MD
+
+    result = @calculator.calculate(recipe, @recipe_map)
+
+    expected_grams = 2 * 14.787 * (227.0 / 236.588)
+    assert_in_delta expected_grams, result.total_weight_grams, 0.5
+  end
+
+  def test_total_weight_grams_excludes_unresolvable
+    recipe = make_recipe(<<~MD)
+      # Test
+
+      Serves: 1
+
+      ## Mix (combine)
+
+      - Flour (all-purpose), 100 g
+      - Flour (all-purpose), 2 bushels
+
+      Mix.
+    MD
+
+    result = @calculator.calculate(recipe, @recipe_map)
+
+    assert_in_delta 100, result.total_weight_grams, 0.1
+  end
+
+  def test_total_weight_grams_zero_when_nothing_resolves
+    recipe = make_recipe(<<~MD)
+      # Test
+
+
+      ## Mix (combine)
+
+      - Unicorn dust, 50 g
+
+      Mix.
+    MD
+
+    result = @calculator.calculate(recipe, @recipe_map)
+
+    assert_in_delta 0, result.total_weight_grams, 0.01
+  end
 end
