@@ -199,6 +199,10 @@ Called after recipe CRUD, quick bites edits, catalog changes, and deselects.
 **Nutrition pipeline.** `IngredientCatalog` is an overlay model — global seed
 entries plus per-kitchen overrides, merged by `lookup_for` with `Inflector`
 variant matching and a JSON `aliases` column for alternate names.
+`NutritionConstraints` defines `NutrientDef` (with FDA daily values) and
+`DAILY_VALUES` hash for %DV calculation.  `NutritionCalculator` computes
+`total_weight_grams` by summing resolved ingredient weights — used for
+per-serving weight on the FDA-style nutrition label.
 `IngredientResolver` is the single resolution point for ingredient names —
 wraps `IngredientCatalog.lookup_for` with case-insensitive fallback and
 uncataloged variant collapsing.  Constructed via
@@ -271,6 +275,13 @@ caching, no fetch interception. The browser handles all requests normally.
 **Skills.** Always use the superpowers skill when getting ready to write code.
 
 **Commit timestamps.** A post-commit hook rewrites timestamps for privacy.
+This changes commit SHAs, so `git branch -d` fails after fast-forward merges
+— use `git branch -D` when you've verified the content is merged.
+
+**Migrations.** Use `db/migrate/` for all schema and data changes — never use
+one-off rake tasks for backfills.  Migrations are numbered sequentially
+(`001_`, `002_`, …).  When it is time to ship v1.0, consolidate all
+migrations into a single `001_create_schema.rb` to keep things clean.
 
 **Releases.** Tag pushes (`v0.2.5`) trigger Docker builds and set `:latest`.
 The `REVISION` build arg bakes the version into the image (read by
