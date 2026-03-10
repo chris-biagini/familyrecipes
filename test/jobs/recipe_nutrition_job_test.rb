@@ -129,6 +129,17 @@ class RecipeNutritionJobTest < ActiveSupport::TestCase
     end
   end
 
+  test 'stores total_weight_grams with no serves' do
+    markdown = "# Bread\n\n## Mix\n\n- Flour, 60 g\n\nMix."
+    recipe = import_without_nutrition(markdown)
+
+    RecipeNutritionJob.perform_now(recipe)
+    recipe.reload
+
+    assert_in_delta 60.0, recipe.nutrition_data['total_weight_grams'], 0.1
+    assert_nil recipe.nutrition_data['serving_count']
+  end
+
   test 'stores total_weight_grams in nutrition_data' do
     markdown = "# Bread\n\nServes: 2\n\n## Mix\n\n- Flour, 60 g\n\nMix."
     recipe = import_without_nutrition(markdown)
