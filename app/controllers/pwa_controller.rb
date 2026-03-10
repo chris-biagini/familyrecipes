@@ -1,12 +1,11 @@
 # frozen_string_literal: true
 
 # Serves the PWA manifest and service worker via Rails (not as static files)
-# so they can use ERB and get Cache-Control: no-cache headers. This prevents
-# Cloudflare from edge-caching them with the static file TTL. Skips
-# set_kitchen_from_path because these URLs are kitchen-agnostic.
+# so they get Cache-Control: no-cache headers preventing proxy/CDN caching.
+# Skips set_kitchen_from_path because these URLs are kitchen-agnostic.
 #
 # - Rails.configuration.site: site title for manifest name
-# - pwa/service_worker.js.erb: ERB template with cache-busted asset URLs
+# - pwa/service_worker.js.erb: minimal PWA-install stub (no caching)
 class PwaController < ApplicationController
   skip_forgery_protection
   skip_before_action :set_kitchen_from_path

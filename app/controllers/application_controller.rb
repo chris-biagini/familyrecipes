@@ -4,7 +4,7 @@
 # headers (Authelia in production) → auto-login in dev → auto-join sole kitchen
 # → set tenant from path. Public reads are allowed (allow_unauthenticated_access);
 # write paths and member-only pages call require_membership. Also manages the
-# optional kitchen_slug URL scope and JSON/HTML cache headers.
+# optional kitchen_slug URL scope and cache headers for member-only pages.
 class ApplicationController < ActionController::Base
   include Authentication
 
@@ -19,8 +19,6 @@ class ApplicationController < ActionController::Base
   before_action :auto_login_in_development
   before_action :auto_join_sole_kitchen
   before_action :set_kitchen_from_path
-  before_action :prevent_api_caching
-
   helper_method :current_kitchen, :current_member?, :logged_in?, :home_path, :versioned_icon_path
 
   private
@@ -115,10 +113,6 @@ class ApplicationController < ActionController::Base
     return { kitchen_slug: params[:kitchen_slug] } if params[:kitchen_slug]
 
     {}
-  end
-
-  def prevent_api_caching
-    response.headers['Cache-Control'] = 'no-store' if request.format.json?
   end
 
   def prevent_html_caching

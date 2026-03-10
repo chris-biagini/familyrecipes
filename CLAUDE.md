@@ -264,9 +264,9 @@ tmp/pids/server.pid` then `bin/dev`). Domain classes in `lib/` are loaded once
 at boot — they do not hot-reload.
 
 **PWA.** `rake pwa:icons` generates PNGs from `app/assets/images/favicon.svg`
-(requires `rsvg-convert`/`librsvg2-bin`). Service worker is ERB-rendered
-(`app/views/pwa/service_worker.js.erb`) — update the `API_PATTERN` regex when
-adding new API routes.
+(requires `rsvg-convert`/`librsvg2-bin`). Service worker
+(`app/views/pwa/service_worker.js.erb`) is a minimal PWA-install stub — no
+caching, no fetch interception. The browser handles all requests normally.
 
 **Skills.** Always use the superpowers skill when getting ready to write code.
 
