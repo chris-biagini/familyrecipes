@@ -41,9 +41,7 @@ module IngredientsHelper
   end
 
   def display_aisle(aisle)
-    return "\u2014" unless aisle
-
-    aisle == 'omit' ? 'Omit' : aisle
+    aisle || "\u2014"
   end
 
   def format_nutrient_value(value)

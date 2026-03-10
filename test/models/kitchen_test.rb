@@ -71,10 +71,10 @@ class KitchenTest < ActiveSupport::TestCase
     assert_includes aisles, 'Spices'
   end
 
-  test 'all_aisles excludes omit sentinel' do
-    IngredientCatalog.create!(kitchen_id: nil, ingredient_name: 'Bay leaves', aisle: 'omit', basis_grams: 1)
+  test 'all_aisles excludes entries with nil aisle' do
+    IngredientCatalog.create!(kitchen_id: nil, ingredient_name: 'Bay leaves', aisle: nil, omit_from_shopping: true, basis_grams: 1)
 
-    assert_not_includes @kitchen.all_aisles, 'omit'
+    assert_empty @kitchen.all_aisles
   end
 
   test 'normalize_aisle_order! collapses case variants keeping first casing' do

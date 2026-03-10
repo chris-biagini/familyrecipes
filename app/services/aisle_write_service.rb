@@ -46,7 +46,6 @@ class AisleWriteService
   end
 
   def sync_new_aisle(aisle:)
-    return if aisle == 'omit'
     return if kitchen.parsed_aisle_order.any? { |a| a.casecmp?(aisle) }
 
     existing = kitchen.aisle_order.to_s
@@ -54,7 +53,7 @@ class AisleWriteService
   end
 
   def sync_new_aisles(aisles:)
-    new_aisles = aisles.reject { |a| a == 'omit' }.uniq
+    new_aisles = aisles.uniq
     return if new_aisles.empty?
 
     existing = kitchen.parsed_aisle_order.to_set(&:downcase)

@@ -59,7 +59,7 @@ class Kitchen < ApplicationRecord
     catalog_aisles = IngredientCatalog
                      .where(kitchen_id: id)
                      .or(IngredientCatalog.where(kitchen_id: nil).where.not(ingredient_name: overridden))
-                     .where.not(aisle: [nil, '', 'omit'])
+                     .where.not(aisle: [nil, ''])
                      .distinct.pluck(:aisle).sort
 
     saved_downcased = saved.to_set(&:downcase)
