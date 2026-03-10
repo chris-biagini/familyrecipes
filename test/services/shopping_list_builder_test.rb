@@ -49,7 +49,7 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
     assert salt, 'Expected Salt in Miscellaneous'
   end
 
-  test 'omits ingredients with aisle omit' do
+  test 'omits ingredients marked omit_from_shopping' do
     IngredientCatalog.find_by(ingredient_name: 'Salt', kitchen_id: nil)&.update!(omit_from_shopping: true)
     list = MealPlan.for_kitchen(@kitchen)
     list.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)

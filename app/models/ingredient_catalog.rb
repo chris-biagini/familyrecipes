@@ -64,31 +64,34 @@ class IngredientCatalog < ApplicationRecord # rubocop:disable Metrics/ClassLengt
   end
 
   def self.attrs_from_yaml(entry)
-    attrs = { aisle: entry['aisle'] }
-    attrs[:omit_from_shopping] = true if entry['omit_from_shopping']
-
-    # Backward compat: treat aisle='omit' from old-format imports
-    if attrs[:aisle] == 'omit'
-      attrs[:aisle] = nil
-      attrs[:omit_from_shopping] = true
-    end
-
-    if (nutrients = entry['nutrients'])
-      NUTRIENT_COLUMNS.each { |col| attrs[col] = nutrients[col.to_s] }
-      attrs[:basis_grams] = nutrients['basis_grams']
-    end
-
-    if (density = entry['density'])
-      attrs[:density_grams] = density['grams']
-      attrs[:density_volume] = density['volume']
-      attrs[:density_unit] = density['unit']
-    end
-
+    attrs = aisle_attrs_from_yaml(entry)
+    attrs.merge!(nutrient_attrs_from_yaml(entry))
+    attrs.merge!(density_attrs_from_yaml(entry))
     attrs[:aliases] = entry['aliases'] || []
     attrs[:portions] = entry['portions'] || {}
     attrs[:sources] = entry['sources'] || []
-
     attrs
+  end
+
+  # Backward compat: old-format imports use aisle='omit' instead of the boolean
+  def self.aisle_attrs_from_yaml(entry)
+    aisle = entry['aisle']
+    omit = entry['omit_from_shopping'] || aisle == 'omit'
+    { aisle: (aisle == 'omit' ? nil : aisle), omit_from_shopping: omit || false }
+  end
+
+  def self.nutrient_attrs_from_yaml(entry)
+    return {} unless (nutrients = entry['nutrients'])
+
+    NUTRIENT_COLUMNS.each_with_object(basis_grams: nutrients['basis_grams']) do |col, attrs|
+      attrs[col] = nutrients[col.to_s]
+    end
+  end
+
+  def self.density_attrs_from_yaml(entry)
+    return {} unless (density = entry['density'])
+
+    { density_grams: density['grams'], density_volume: density['volume'], density_unit: density['unit'] }
   end
 
   def self.add_ingredient_variants(lookup)
@@ -126,7 +129,8 @@ class IngredientCatalog < ApplicationRecord # rubocop:disable Metrics/ClassLengt
     capped = name.gsub(/\b(\w)/) { ::Regexp.last_match(1).upcase }
     [name, name.downcase, capped].uniq
   end
-  private_class_method :add_ingredient_variants, :add_alias_keys, :alias_case_variants
+  private_class_method :add_ingredient_variants, :add_alias_keys, :alias_case_variants,
+                       :aisle_attrs_from_yaml, :nutrient_attrs_from_yaml, :density_attrs_from_yaml
 
   private
 

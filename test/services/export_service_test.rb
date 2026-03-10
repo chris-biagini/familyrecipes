@@ -99,6 +99,23 @@ class ExportServiceTest < ActiveSupport::TestCase
     assert_equal 'usda', entry.dig('sources', 0, 'type')
   end
 
+  test 'exports omit_from_shopping flag for omitted ingredients' do
+    IngredientCatalog.create!(
+      kitchen: @kitchen,
+      ingredient_name: 'Tap Water',
+      omit_from_shopping: true,
+      basis_grams: 100.0,
+      calories: 0
+    )
+
+    zip_data = ExportService.call(kitchen: @kitchen)
+    parsed = YAML.safe_load(zip_entry_content(zip_data, 'custom-ingredients.yaml'))
+    entry = parsed['Tap Water']
+
+    assert entry['omit_from_shopping']
+    assert_nil entry['aisle']
+  end
+
   test 'omits custom ingredients file when none exist' do
     zip_data = ExportService.call(kitchen: @kitchen)
     names = zip_entry_names(zip_data)
