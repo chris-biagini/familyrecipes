@@ -1,0 +1,11 @@
+{
+  "planPath": "docs/plans/2026-03-08-recipe-editor-close-not-redirect.md",
+  "tasks": [
+    {"id": 1, "subject": "Task 1: Update controller tests for new response format", "status": "pending"},
+    {"id": 2, "subject": "Task 2: Update controller response format", "status": "pending", "blockedBy": [1]},
+    {"id": 3, "subject": "Task 3: Add close-with-slug handling to editor_controller.js", "status": "pending"},
+    {"id": 4, "subject": "Task 4: Switch recipe edit view to onSuccess: 'close'", "status": "pending", "blockedBy": [2, 3]},
+    {"id": 5, "subject": "Task 5: Remove dead code (checkRefsUpdated)", "status": "pending", "blockedBy": [4]}
+  ],
+  "lastUpdated": "2026-03-08"
+}

@@ -1,0 +1,17 @@
+{
+  "planPath": "docs/plans/2026-03-10-fda-nutrition-label-plan.md",
+  "tasks": [
+    {"id": 0, "subject": "Task 0: Add DAILY_VALUES to NutritionConstraints", "status": "pending"},
+    {"id": 1, "subject": "Task 1: Compute total_weight_grams in NutritionCalculator", "status": "pending", "blockedBy": [0]},
+    {"id": 2, "subject": "Task 2: Serialize total_weight_grams in RecipeNutritionJob", "status": "pending", "blockedBy": [1]},
+    {"id": 3, "subject": "Task 3: Rewrite RecipesHelper for FDA label", "status": "pending", "blockedBy": [0]},
+    {"id": 4, "subject": "Task 4: Rewrite _nutrition_table.html.erb for FDA layout", "status": "pending", "blockedBy": [3]},
+    {"id": 5, "subject": "Task 5: Replace CSS for FDA nutrition label", "status": "pending", "blockedBy": [4]},
+    {"id": 6, "subject": "Task 6: Remove nutrition scaling from recipe_state_controller.js", "status": "pending", "blockedBy": [4, 5]},
+    {"id": 7, "subject": "Task 7: Clean up stale NUTRITION_ROWS consumers and allowlist", "status": "pending", "blockedBy": [3]},
+    {"id": 8, "subject": "Task 8: Edge case testing", "status": "pending", "blockedBy": [4, 5, 6, 7]},
+    {"id": 9, "subject": "Task 9: Rake task to recalculate existing nutrition_data", "status": "pending", "blockedBy": [2]},
+    {"id": 10, "subject": "Task 10: Final verification", "status": "pending", "blockedBy": [8, 9]}
+  ],
+  "lastUpdated": "2026-03-10T00:00:00Z"
+}
