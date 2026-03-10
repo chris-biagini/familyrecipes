@@ -1826,11 +1826,16 @@ button.aisle-name:hover {
     height: 100dvh;
     border-radius: 0;
     border: none;
+    margin: 0;
+    padding: 0;
   }
 
-  .editor-header,
+  .editor-header {
+    padding: calc(env(safe-area-inset-top, 0px) + 0.75rem) 1rem 0.75rem;
+  }
+
   .editor-footer {
-    padding: 0.75rem 1rem;
+    padding: 0.75rem 1rem calc(env(safe-area-inset-bottom, 0px) + 0.75rem);
   }
 
   .editor-errors {
