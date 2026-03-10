@@ -68,7 +68,8 @@ class RecipeNutritionJob < ApplicationJob
       'units_per_serving' => result.units_per_serving,
       'missing_ingredients' => result.missing_ingredients,
       'partial_ingredients' => result.partial_ingredients,
-      'skipped_ingredients' => result.skipped_ingredients
+      'skipped_ingredients' => result.skipped_ingredients,
+      'total_weight_grams' => result.total_weight_grams
     }
   end
 
