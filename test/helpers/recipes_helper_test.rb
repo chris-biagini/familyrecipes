@@ -54,6 +54,7 @@ class RecipesHelperTest < ActionView::TestCase
     }
 
     result = serving_size_text(nutrition)
+
     assert_includes result, '100 g'
   end
 
@@ -64,6 +65,7 @@ class RecipesHelperTest < ActionView::TestCase
     }
 
     result = serving_size_text(nutrition)
+
     assert_includes result, '300 g'
   end
 

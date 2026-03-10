@@ -956,6 +956,7 @@ class NutritionCalculatorTest < Minitest::Test
     result = @calculator.calculate(recipe, @recipe_map)
 
     expected_grams = 2 * 14.787 * (227.0 / 236.588)
+
     assert_in_delta expected_grams, result.total_weight_grams, 0.5
   end
 
