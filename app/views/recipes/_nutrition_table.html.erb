@@ -7,7 +7,7 @@
 
   <div class="calories-row">
     <span class="label">Calories</span>
-    <span class="value"><%= (nutrition.dig('per_serving', 'calories') || nutrition.dig('totals', 'calories'))&.to_f&.round || 0 %></span>
+    <span class="value"><%= calories_per_serving(nutrition) %></span>
   </div>
 
   <div class="nutrients">

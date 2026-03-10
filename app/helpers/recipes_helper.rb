@@ -58,6 +58,10 @@ module RecipesHelper # rubocop:disable Metrics/ModuleLength
     "#{serving_unit_description(nutrition)}#{weight_str}".strip
   end
 
+  def calories_per_serving(nutrition)
+    (nutrition.dig('per_serving', 'calories') || nutrition.dig('totals', 'calories'))&.to_f&.round || 0
+  end
+
   def percent_daily_value(nutrient_key, amount)
     dv = FamilyRecipes::NutritionConstraints::DAILY_VALUES[nutrient_key]
     return unless dv
@@ -100,25 +104,25 @@ module RecipesHelper # rubocop:disable Metrics/ModuleLength
   end
 
   def serving_unit_description(nutrition)
-    makes_qty = nutrition['makes_quantity']
-    serving_count = nutrition['serving_count']
-    ups = nutrition['units_per_serving']
+    makes = nutrition['makes_quantity']
+    count = nutrition['serving_count']
 
-    if makes_qty && ups
-      format_unit_serving(ups, nutrition)
-    elsif makes_qty && serving_count
-      format_unit_serving(makes_qty.to_f / serving_count, nutrition)
-    elsif serving_count && serving_count > 1
-      "#{FamilyRecipes::VulgarFractions.format(1.0 / serving_count)} recipe"
-    else
-      'entire recipe'
-    end
+    return unit_serving_text(nutrition['units_per_serving'], nutrition) if makes && nutrition['units_per_serving']
+    return unit_serving_text(makes.to_f / count, nutrition) if makes && count
+    return fraction_of_recipe(count) if count&.> 1
+
+    'entire recipe'
   end
 
-  def format_unit_serving(per_serving, nutrition)
+  def unit_serving_text(per_serving, nutrition)
     formatted = FamilyRecipes::VulgarFractions.format(per_serving)
-    unit_key = FamilyRecipes::VulgarFractions.singular_noun?(per_serving) ? 'makes_unit_singular' : 'makes_unit_plural'
-    "#{formatted} #{nutrition[unit_key]}"
+    singular = FamilyRecipes::VulgarFractions.singular_noun?(per_serving)
+    unit = singular ? nutrition['makes_unit_singular'] : nutrition['makes_unit_plural']
+    "#{formatted} #{unit}"
+  end
+
+  def fraction_of_recipe(count)
+    "#{FamilyRecipes::VulgarFractions.format(1.0 / count)} recipe"
   end
 
   def scaled_quantity_display(item, scale_factor)

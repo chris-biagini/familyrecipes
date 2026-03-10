@@ -77,6 +77,16 @@ class RecipesHelperTest < ActionView::TestCase
     assert_equal '1 serving per recipe', servings_per_recipe_text({ 'serving_count' => nil })
   end
 
+  test 'serving_size_text without weight shows unit only' do
+    nutrition = {
+      'serving_count' => 4, 'makes_quantity' => 8,
+      'makes_unit_singular' => 'taco', 'makes_unit_plural' => 'tacos',
+      'units_per_serving' => 2.0, 'total_weight_grams' => nil
+    }
+
+    assert_equal '2 tacos', serving_size_text(nutrition)
+  end
+
   test 'percent_daily_value for fat' do
     assert_equal 13, percent_daily_value(:fat, 10.0)
   end
