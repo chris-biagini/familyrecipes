@@ -271,3 +271,8 @@ caching, no fetch interception. The browser handles all requests normally.
 **Skills.** Always use the superpowers skill when getting ready to write code.
 
 **Commit timestamps.** A post-commit hook rewrites timestamps for privacy.
+
+**Releases.** Tag pushes (`v0.2.5`) trigger Docker builds and set `:latest`.
+The `REVISION` build arg bakes the version into the image (read by
+`ApplicationHelper#app_version`).  Only tag when code is known-good — in-between
+commits on main are not built.
