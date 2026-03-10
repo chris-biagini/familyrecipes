@@ -140,6 +140,18 @@ class RecipeNutritionJobTest < ActiveSupport::TestCase
     assert_nil recipe.nutrition_data['serving_count']
   end
 
+  test 'accepts a pre-built resolver and skips redundant catalog query' do
+    markdown = "# Bread\n\nServes: 2\n\n## Mix\n\n- Flour, 60 g\n\nMix."
+    recipe = import_without_nutrition(markdown)
+
+    resolver = IngredientCatalog.resolver_for(@kitchen)
+    RecipeNutritionJob.perform_now(recipe, resolver:)
+    recipe.reload
+
+    assert_predicate recipe.nutrition_data, :present?
+    assert_in_delta 220.0, recipe.nutrition_data['totals']['calories'], 0.01
+  end
+
   test 'stores total_weight_grams in nutrition_data' do
     markdown = "# Bread\n\nServes: 2\n\n## Mix\n\n- Flour, 60 g\n\nMix."
     recipe = import_without_nutrition(markdown)

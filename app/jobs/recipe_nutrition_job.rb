@@ -4,16 +4,16 @@
 # IngredientCatalog. Bridges the AR world (IngredientCatalog entries) to the
 # domain NutritionCalculator by building a lookup hash in the format the
 # calculator expects. Runs synchronously via perform_now at import time.
+# Accepts an optional resolver: to avoid redundant catalog queries when called
+# in a batch (e.g., from CatalogWriteService).
 class RecipeNutritionJob < ApplicationJob
-  def perform(recipe)
+  def perform(recipe, resolver: nil)
     loaded = eager_load_recipe(recipe)
+    resolver ||= IngredientCatalog.resolver_for(loaded.kitchen)
+    return if resolver.lookup.empty?
 
-    catalog = IngredientCatalog.lookup_for(loaded.kitchen)
-    return if catalog.empty?
-
-    nutrition_data = build_nutrition_data(catalog)
-    omits = extract_omit_set(catalog)
-    calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data, omit_set: omits)
+    nutrition_data = build_nutrition_data(resolver.lookup)
+    calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data, omit_set: resolver.omit_set)
     result = calculator.calculate(loaded, {})
 
     recipe.update_column(:nutrition_data, serialize_result(result)) # rubocop:disable Rails/SkipsModelValidations
@@ -32,14 +32,6 @@ class RecipeNutritionJob < ApplicationJob
       data['portions'] = entry.portions if entry.portions.present?
       data
     end
-  end
-
-  # Mirrors NutritionTui::Data.build_omit_set — same business rule, different
-  # input types (AR objects vs YAML hash). Update both if the omit rule changes.
-  def extract_omit_set(catalog)
-    catalog.each_value
-           .select { |entry| entry.aisle == 'omit' }
-           .to_set { |entry| entry.ingredient_name.downcase }
   end
 
   def nutrients_hash(entry)
