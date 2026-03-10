@@ -6,7 +6,10 @@
   </header>
 
   <div class="calories-row">
-    <span class="label">Calories</span>
+    <div class="calories-left">
+      <span class="amount-label">Amount per serving</span>
+      <span class="label">Calories</span>
+    </div>
     <span class="value"><%= calories_per_serving(nutrition) %></span>
   </div>
 
@@ -33,23 +36,22 @@
   <% missing = nutrition_missing_ingredients(nutrition) %>
   <% partial = nutrition_partial_ingredients(nutrition) %>
   <% skipped = nutrition_skipped_ingredients(nutrition) %>
-  <%- if missing.any? -%>
-  <p class="nutrition-note">*Approximate. No nutrition data for:
-    <%- missing.each_with_index do |name, i| -%>
+  <%- if missing.any? || partial.any? -%>
+  <p class="nutrition-footnote">Values are approximate. Could not calculate nutrition for:
+    <%- all_issues = [] -%>
+    <%- missing.each do |name| -%>
+      <%- all_issues << { name: name, reason: nil } -%>
+    <%- end -%>
+    <%- partial.each do |name| -%>
+      <%- all_issues << { name: name, reason: 'unknown portion size' } -%>
+    <%- end -%>
+    <%- all_issues.each_with_index do |issue, i| -%>
       <%- if current_member? -%>
-        <button type="button" class="btn-inline-link" data-open-editor data-ingredient-name="<%= name %>"><%= name %></button><%- else -%>
-        <%= name %><%- end -%><%= ',' unless i == missing.size - 1 %>
-    <%- end -%>.</p>
-  <%- end -%>
-  <%- if partial.any? -%>
-  <p class="nutrition-note">*Approximate. Could not calculate:
-    <%- partial.each_with_index do |name, i| -%>
-      <%- if current_member? -%>
-        <button type="button" class="btn-inline-link" data-open-editor data-ingredient-name="<%= name %>"><%= name %></button> (unknown portion size)<%- else -%>
-        <%= name %> (unknown portion size)<%- end -%><%= ',' unless i == partial.size - 1 %>
+        <button type="button" class="btn-inline-link" data-open-editor data-ingredient-name="<%= issue[:name] %>"><%= issue[:name] %></button><%- else -%>
+        <%= issue[:name] %><%- end -%><%= " (#{issue[:reason]})" if issue[:reason] %><%= ',' unless i == all_issues.size - 1 %>
     <%- end -%>.</p>
   <%- end -%>
   <%- if skipped.any? -%>
-  <p class="nutrition-note">Not included (no quantity specified): <%= skipped.join(', ') %>.</p>
+  <p class="nutrition-footnote">Not included (no quantity specified): <%= skipped.join(', ') %>.</p>
   <%- end -%>
 </aside>
