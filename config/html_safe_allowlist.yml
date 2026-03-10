@@ -25,9 +25,6 @@
 # _shopping_list.html.erb — title attribute with user content escaped by h()
 - "app/views/groceries/_shopping_list.html.erb:18"
 
-# _nutrition_table.html.erb — hardcoded literals, no user content
-- "app/views/recipes/_nutrition_table.html.erb:15" # indent class: hardcoded integer
-- "app/views/recipes/_nutrition_table.html.erb:18" # nutrient data attrs: hardcoded key + numeric value
 
 # nutrition_tui — terminal UI, not web HTML; Text::Span.raw is safe
 - "lib/nutrition_tui/screens/ingredient.rb:465"

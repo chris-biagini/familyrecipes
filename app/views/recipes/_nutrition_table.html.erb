@@ -1,26 +1,35 @@
-<aside class="nutrition-facts">
-  <h2>Nutrition Facts</h2>
-  <% columns = nutrition_columns(nutrition) %>
-  <table>
-    <thead>
-      <tr>
-        <th></th>
-        <%- columns.each do |label, _, _| -%>
-        <th><%= label %></th>
+<aside class="nutrition-label">
+  <header>
+    <h2>Nutrition Facts</h2>
+    <p class="servings"><%= servings_per_recipe_text(nutrition) %></p>
+    <p class="serving-size"><span class="label">Serving size</span> <span class="value"><%= serving_size_text(nutrition) %></span></p>
+  </header>
+
+  <div class="calories-row">
+    <span class="label">Calories</span>
+    <span class="value"><%= (nutrition.dig('per_serving', 'calories') || nutrition.dig('totals', 'calories'))&.to_f&.round || 0 %></span>
+  </div>
+
+  <div class="nutrients">
+    <p class="dv-header">% Daily Value*</p>
+    <%- per_serving = nutrition['per_serving'] || nutrition['totals'] || {} -%>
+    <%- RecipesHelper::NUTRITION_ROWS.each do |label, key, unit_label, indent, _daily_value| -%>
+      <%- next if key == 'calories' -%>
+      <%- value = per_serving[key].to_f -%>
+      <%- dv_percent = percent_daily_value(key.to_sym, value) -%>
+      <div class="nutrient-row<%= " indent-#{indent}" if indent > 0 %>">
+        <span class="name"><%= indent.zero? ? tag.strong(label) : label %> <%= "#{value.round}#{unit_label}" %></span>
+        <%- if dv_percent -%>
+          <span class="dv"><strong><%= dv_percent %>%</strong></span>
         <%- end -%>
-      </tr>
-    </thead>
-    <tbody>
-      <%- RecipesHelper::NUTRITION_ROWS.each do |label, key, unit_label, indent| -%>
-      <tr<%= %( class="indent-#{indent}").html_safe if indent > 0 %>>
-        <td><%= label %></td>
-        <%- columns.each do |_, values, is_scalable| -%>
-        <td<%= %( data-nutrient="#{key}" data-base-value="#{values[key].to_f.round(1)}" data-unit="#{unit_label}").html_safe if is_scalable %>><%= values[key].to_f.round %><%= unit_label %></td>
-        <%- end -%>
-      </tr>
-      <%- end -%>
-    </tbody>
-  </table>
+      </div>
+    <%- end -%>
+  </div>
+
+  <footer>
+    <p>* The % Daily Value tells you how much a nutrient in a serving of food contributes to a daily diet. 2,000 calories a day is used for general nutrition advice.</p>
+  </footer>
+
   <% missing = nutrition_missing_ingredients(nutrition) %>
   <% partial = nutrition_partial_ingredients(nutrition) %>
   <% skipped = nutrition_skipped_ingredients(nutrition) %>
