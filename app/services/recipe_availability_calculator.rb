@@ -14,7 +14,6 @@ class RecipeAvailabilityCalculator
     @kitchen = kitchen
     @resolver = resolver || IngredientCatalog.resolver_for(kitchen)
     @checked_off = Set.new(checked_off.map { |name| canonical_name(name) })
-    @omitted = build_omit_set
   end
 
   def call
@@ -24,10 +23,6 @@ class RecipeAvailabilityCalculator
   end
 
   private
-
-  def build_omit_set
-    Set.new(@resolver.lookup.each_value.select { |p| p.aisle == 'omit' }.map(&:ingredient_name))
-  end
 
   def recipe_availability
     loaded_recipes.each_with_object({}) do |recipe, result|
@@ -50,7 +45,7 @@ class RecipeAvailabilityCalculator
 
   def needed_ingredients(names)
     names.map { |name| canonical_name(name) }
-         .reject { |name| @omitted.include?(name) }
+         .reject { |name| @resolver.omitted?(name) }
          .uniq
   end
 

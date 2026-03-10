@@ -35,7 +35,7 @@ class RecipeAvailabilityCalculatorTest < ActiveSupport::TestCase
 
     create_catalog_entry('Flour', basis_grams: 30, aisle: 'Baking')
     create_catalog_entry('Salt', basis_grams: 6, aisle: 'Spices')
-    create_catalog_entry('Water', basis_grams: 240, aisle: 'omit')
+    create_catalog_entry('Water', basis_grams: 240, omit_from_shopping: true)
     create_catalog_entry('Yeast', basis_grams: 3, aisle: 'Baking')
   end
 
