@@ -5,7 +5,7 @@
 # merges global + kitchen entries with kitchen taking precedence, then adds
 # inflected name variants for fuzzy matching. Stores FDA-label nutrients,
 # density (for volume-to-gram conversion), named portions, aisle assignments,
-# and provenance sources.
+# omit-from-shopping flags, and provenance sources.
 #
 # Collaborators:
 # - FamilyRecipes::NutritionConstraints (shared validation rules)
@@ -64,6 +64,13 @@ class IngredientCatalog < ApplicationRecord # rubocop:disable Metrics/ClassLengt
 
   def self.attrs_from_yaml(entry)
     attrs = { aisle: entry['aisle'] }
+    attrs[:omit_from_shopping] = true if entry['omit_from_shopping']
+
+    # Backward compat: treat aisle='omit' from old-format imports
+    if attrs[:aisle] == 'omit'
+      attrs[:aisle] = nil
+      attrs[:omit_from_shopping] = true
+    end
 
     if (nutrients = entry['nutrients'])
       NUTRIENT_COLUMNS.each { |col| attrs[col] = nutrients[col.to_s] }
