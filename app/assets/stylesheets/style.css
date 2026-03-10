@@ -2137,6 +2137,11 @@ button.aisle-name:hover {
   text-align: center;
   padding: 1.5rem 0 0.75rem;
   font-size: 0.7rem;
+  font-style: normal;
   color: var(--text-color);
   opacity: 0.3;
+}
+
+.app-version::before {
+  content: none;
 }
