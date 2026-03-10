@@ -82,6 +82,7 @@ class ExportService
   def entry_to_hash(entry)
     h = {}
     h['aisle'] = entry.aisle if entry.aisle.present?
+    h['omit_from_shopping'] = true if entry.omit_from_shopping
     h['aliases'] = entry.aliases if entry.aliases.present?
     add_nutrients(h, entry)
     add_density(h, entry)

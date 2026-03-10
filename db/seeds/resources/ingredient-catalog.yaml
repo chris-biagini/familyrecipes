@@ -1116,7 +1116,7 @@ Hot sauce:
     unit: tsp
   aisle: Produce
 Ice:
-  aisle: omit
+  omit_from_shopping: true
 Ice cream (vanilla):
   nutrients:
     basis_grams: 100.0
@@ -1743,7 +1743,7 @@ Pickled jalapeños:
     unit: cup
   aisle: International
 Poolish:
-  aisle: omit
+  omit_from_shopping: true
 Queso fresco:
   nutrients:
     basis_grams: 100.0
@@ -2565,7 +2565,7 @@ Water:
     grams: 1000.0
     volume: 1.0
     unit: l
-  aisle: omit
+  omit_from_shopping: true
 Watermelon:
   nutrients:
     basis_grams: 100.0

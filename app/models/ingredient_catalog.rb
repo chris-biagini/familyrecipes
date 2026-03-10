@@ -42,13 +42,14 @@ class IngredientCatalog < ApplicationRecord # rubocop:disable Metrics/ClassLengt
   def global? = kitchen_id.nil?
   def custom? = kitchen_id.present?
 
-  def assign_from_params(nutrients:, density:, portions:, aisle:, sources:, aliases: nil) # rubocop:disable Metrics/ParameterLists
+  def assign_from_params(nutrients:, density:, portions:, aisle:, sources:, aliases: nil, omit_from_shopping: false) # rubocop:disable Metrics/ParameterLists
     assign_nutrients(nutrients)
     assign_density(density)
     self.portions = normalize_portions_hash(portions)
     self.aisle = aisle if aisle
     self.sources = sources
     self.aliases = aliases unless aliases.nil?
+    self.omit_from_shopping = omit_from_shopping
   end
 
   def self.lookup_for(kitchen)
