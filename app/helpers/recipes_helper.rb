@@ -2,12 +2,17 @@
 
 # View helpers for recipe pages: Markdown rendering (via Redcarpet with
 # escape_html), scalable number formatting for instructions and yield lines,
-# nutrition label column layout, and ingredient data attributes for the
-# client-side scaling controller. All .html_safe calls are audited by
-# rake lint:html_safe and allowlisted.
-module RecipesHelper
+# FDA nutrition label helpers (serving size, %DV), and ingredient data
+# attributes for the client-side scaling controller. All .html_safe calls are
+# audited by rake lint:html_safe and allowlisted.
+#
+# Collaborators:
+# - NutritionConstraints (nutrient definitions, daily values)
+# - VulgarFractions (human-readable fraction formatting)
+# - ScalableNumberPreprocessor (instruction/yield scaling)
+module RecipesHelper # rubocop:disable Metrics/ModuleLength
   NUTRITION_ROWS = FamilyRecipes::NutritionConstraints::NUTRIENT_DEFS.map do |d|
-    [d.label, d.key.to_s, d.unit, d.indent]
+    [d.label, d.key.to_s, d.unit, d.indent, d.daily_value]
   end.freeze
 
   def render_markdown(text)
@@ -41,8 +46,23 @@ module RecipesHelper
     "#{format_numeric(recipe.makes_quantity)} #{recipe.makes_unit_noun}"
   end
 
-  def nutrition_columns(nutrition)
-    [per_unit_column(nutrition), per_serving_column(nutrition), total_column(nutrition)].compact
+  def servings_per_recipe_text(nutrition)
+    count = nutrition['serving_count'] || 1
+    "#{count} #{'serving'.pluralize(count)} per recipe"
+  end
+
+  def serving_size_text(nutrition)
+    weight = per_serving_weight(nutrition)
+    weight_str = weight ? " (#{weight.round} g)" : ''
+
+    "#{serving_unit_description(nutrition)}#{weight_str}".strip
+  end
+
+  def percent_daily_value(nutrient_key, amount)
+    dv = FamilyRecipes::NutritionConstraints::DAILY_VALUES[nutrient_key]
+    return unless dv
+
+    (amount.to_f / dv * 100).round
   end
 
   def nutrition_missing_ingredients(nutrition)
@@ -70,6 +90,36 @@ module RecipesHelper
   end
 
   private
+
+  def per_serving_weight(nutrition)
+    total = nutrition['total_weight_grams']
+    return unless total&.positive?
+
+    count = nutrition['serving_count'] || 1
+    total.to_f / count
+  end
+
+  def serving_unit_description(nutrition)
+    makes_qty = nutrition['makes_quantity']
+    serving_count = nutrition['serving_count']
+    ups = nutrition['units_per_serving']
+
+    if makes_qty && ups
+      format_unit_serving(ups, nutrition)
+    elsif makes_qty && serving_count
+      format_unit_serving(makes_qty.to_f / serving_count, nutrition)
+    elsif serving_count && serving_count > 1
+      "#{FamilyRecipes::VulgarFractions.format(1.0 / serving_count)} recipe"
+    else
+      'entire recipe'
+    end
+  end
+
+  def format_unit_serving(per_serving, nutrition)
+    formatted = FamilyRecipes::VulgarFractions.format(per_serving)
+    unit_key = FamilyRecipes::VulgarFractions.singular_noun?(per_serving) ? 'makes_unit_singular' : 'makes_unit_plural'
+    "#{formatted} #{nutrition[unit_key]}"
+  end
 
   def scaled_quantity_display(item, scale_factor)
     return format_quantity_display(item) if scale_factor == 1.0 || !item.quantity_value # rubocop:disable Lint/FloatComparison
@@ -100,35 +150,5 @@ module RecipesHelper
 
     attrs[:'data-name-singular'] = singular
     attrs[:'data-name-plural'] = plural
-  end
-
-  def per_unit?(nutrition)
-    nutrition['per_unit'] && nutrition['makes_quantity']&.to_f&.positive?
-  end
-
-  def per_unit_column(nutrition)
-    return unless per_unit?(nutrition)
-
-    ["Per #{nutrition['makes_unit_singular']&.capitalize}", nutrition['per_unit'], false]
-  end
-
-  def per_serving_column(nutrition)
-    return unless nutrition['per_serving'] && nutrition['serving_count']
-    return ['Per Serving', nutrition['per_serving'], false] unless per_unit?(nutrition)
-    return unless nutrition['units_per_serving']
-
-    [per_serving_label(nutrition), nutrition['per_serving'], false]
-  end
-
-  def total_column(nutrition)
-    ['Total', nutrition['totals'], true]
-  end
-
-  def per_serving_label(nutrition)
-    ups = nutrition['units_per_serving']
-    formatted_ups = FamilyRecipes::VulgarFractions.format(ups)
-    singular = FamilyRecipes::VulgarFractions.singular_noun?(ups)
-    ups_unit = singular ? nutrition['makes_unit_singular'] : nutrition['makes_unit_plural']
-    "Per Serving<br>(#{ERB::Util.html_escape(formatted_ups)} #{ERB::Util.html_escape(ups_unit)})".html_safe # rubocop:disable Rails/OutputSafety
   end
 end
