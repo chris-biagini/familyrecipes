@@ -1007,6 +1007,7 @@ footer small {
   padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
   width: min(90vw, 50rem);
   height: 90vh;
+  max-height: 90vh;
   box-shadow: var(--shadow-dialog);
 }
 
@@ -1820,10 +1821,11 @@ button.aisle-name:hover {
 /* Mobile: all editors fill screen, no horizontal scroll, bigger tap targets */
 @media (max-width: 720px) {
   .editor-dialog {
-    width: 100vw;
-    max-width: 100vw;
-    max-height: 100dvh;
+    inset: 0;
+    width: 100%;
     height: 100dvh;
+    max-width: none;
+    max-height: none;
     border-radius: 0;
     border: none;
     margin: 0;
