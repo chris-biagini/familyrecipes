@@ -1011,6 +1011,10 @@ footer small {
   box-shadow: var(--shadow-dialog);
 }
 
+html:has(dialog[open]) {
+  overflow: hidden;
+}
+
 .editor-dialog[open] {
   display: flex;
   flex-direction: column;
