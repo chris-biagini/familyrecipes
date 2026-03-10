@@ -84,7 +84,7 @@ class CatalogWriteService
            .joins(steps: :ingredients)
            .where(ingredients: { name: raw_names })
            .distinct
-           .find_each { |recipe| RecipeNutritionJob.perform_now(recipe) }
+           .find_each { |recipe| RecipeNutritionJob.perform_now(recipe, resolver:) }
   end
 
   def save_all_entries(entries_hash)
@@ -118,6 +118,6 @@ class CatalogWriteService
            .joins(steps: :ingredients)
            .where(ingredients: { name: raw_names })
            .distinct
-           .find_each { |recipe| RecipeNutritionJob.perform_now(recipe) }
+           .find_each { |recipe| RecipeNutritionJob.perform_now(recipe, resolver:) }
   end
 end
