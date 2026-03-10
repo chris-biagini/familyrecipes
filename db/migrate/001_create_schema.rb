@@ -99,6 +99,7 @@ class CreateSchema < ActiveRecord::Migration[8.1]
       t.references :kitchen, foreign_key: true
       t.string :ingredient_name, null: false, collation: 'NOCASE'
       t.string :aisle
+      t.boolean :omit_from_shopping, default: false, null: false
       t.decimal :basis_grams
       t.decimal :calories
       t.decimal :fat

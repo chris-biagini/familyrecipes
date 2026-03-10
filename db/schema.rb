@@ -57,6 +57,7 @@ ActiveRecord::Schema[8.1].define(version: 3) do
     t.decimal "fiber"
     t.string "ingredient_name", null: false, collation: "NOCASE"
     t.integer "kitchen_id"
+    t.boolean "omit_from_shopping", default: false, null: false
     t.json "portions", default: {}
     t.decimal "protein"
     t.decimal "saturated_fat"
