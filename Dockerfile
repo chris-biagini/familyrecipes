@@ -18,6 +18,9 @@ COPY . .
 
 RUN SECRET_KEY_BASE=placeholder bin/rails assets:precompile
 
+ARG REVISION=dev
+RUN echo "${REVISION}" > REVISION
+
 # ---- Runtime stage ----
 FROM ruby:3.2-slim
 
