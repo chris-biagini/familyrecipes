@@ -1,15 +1,16 @@
 # frozen_string_literal: true
 
-# Single source of truth for resolving ingredient names to their canonical form.
-# Wraps an IngredientCatalog lookup hash with a three-step cascade: exact match,
-# case-insensitive fallback, and uncataloged variant collapsing via Inflector.
-# Stateful within a request — accumulates uncataloged names so that differently-
-# cased or inflected forms of the same unknown ingredient collapse to one canonical
-# name across all services sharing this resolver.
+# Single source of truth for resolving ingredient names to their canonical form
+# and for omit-from-shopping knowledge. Wraps an IngredientCatalog lookup hash
+# with a three-step cascade: exact match, case-insensitive fallback, and
+# uncataloged variant collapsing via Inflector. Stateful within a request —
+# accumulates uncataloged names so that differently-cased or inflected forms of
+# the same unknown ingredient collapse to one canonical name.
 #
 # Collaborators:
 # - IngredientCatalog.resolver_for(kitchen) — factory entry point
 # - ShoppingListBuilder, RecipeAvailabilityCalculator, IngredientRowBuilder — consumers
+# - RecipeNutritionJob — uses omit_set for nutrition calculations
 # - FamilyRecipes::Inflector — variant generation for uncataloged fallback
 class IngredientResolver
   attr_reader :lookup
@@ -33,6 +34,16 @@ class IngredientResolver
 
   def cataloged?(name)
     find_entry(name).present?
+  end
+
+  def omitted?(name)
+    find_entry(name)&.omit_from_shopping == true
+  end
+
+  def omit_set
+    @omit_set ||= @lookup.each_value
+                         .select(&:omit_from_shopping)
+                         .to_set { |e| e.ingredient_name.downcase }
   end
 
   def all_keys_for(canonical_name)

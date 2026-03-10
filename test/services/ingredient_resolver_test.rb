@@ -141,6 +141,44 @@ class IngredientResolverTest < ActiveSupport::TestCase
     assert_equal ['Seltzer'], keys
   end
 
+  # --- omit ---
+
+  test 'omitted? returns true for entries with omit_from_shopping' do
+    catalog = {
+      'Water' => OpenStruct.new(ingredient_name: 'Water', omit_from_shopping: true),
+      'Salt' => OpenStruct.new(ingredient_name: 'Salt', omit_from_shopping: false)
+    }
+    resolver = IngredientResolver.new(catalog)
+
+    assert resolver.omitted?('Water')
+    assert_not resolver.omitted?('Salt')
+  end
+
+  test 'omitted? returns false for uncataloged ingredients' do
+    resolver = IngredientResolver.new({})
+    assert_not resolver.omitted?('Unknown')
+  end
+
+  test 'omit_set returns downcased names of omitted entries' do
+    catalog = {
+      'Water' => OpenStruct.new(ingredient_name: 'Water', omit_from_shopping: true),
+      'Ice' => OpenStruct.new(ingredient_name: 'Ice', omit_from_shopping: true),
+      'Salt' => OpenStruct.new(ingredient_name: 'Salt', omit_from_shopping: false)
+    }
+    resolver = IngredientResolver.new(catalog)
+
+    assert_equal Set['water', 'ice'], resolver.omit_set
+  end
+
+  test 'omit_set is memoized' do
+    catalog = {
+      'Water' => OpenStruct.new(ingredient_name: 'Water', omit_from_shopping: true)
+    }
+    resolver = IngredientResolver.new(catalog)
+
+    assert_same resolver.omit_set, resolver.omit_set
+  end
+
   # --- factory ---
 
   test 'IngredientCatalog.resolver_for returns an IngredientResolver' do
