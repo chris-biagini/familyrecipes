@@ -93,14 +93,18 @@
             <option value="<%= aisle %>" <%= 'selected' if entry&.aisle == aisle %>><%= aisle %></option>
           <%- end -%>
           <option disabled>&#x2500;&#x2500;&#x2500;</option>
-          <option value="omit" <%= 'selected' if entry&.aisle == 'omit' %>>Omit from Grocery List</option>
-          <option disabled>&#x2500;&#x2500;&#x2500;</option>
           <option value="__other__">New aisle&hellip;</option>
         </select>
         <input type="text" class="aisle-new-input" placeholder="New aisle name" hidden
                data-nutrition-editor-target="aisleInput"
                data-action="keydown->nutrition-editor#aisleInputKeydown">
       </div>
+      <label class="form-row omit-row">
+        <input type="checkbox"
+               data-nutrition-editor-target="omitCheckbox"
+               <%= 'checked' if entry&.omit_from_shopping %>>
+        Omit from grocery list
+      </label>
     </fieldset>
 
     <fieldset class="editor-section">

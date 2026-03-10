@@ -18,7 +18,7 @@ export default class extends Controller {
     "basisGrams", "nutrientField",
     "densityVolume", "densityUnit", "densityGrams",
     "portionList", "portionRow", "portionName", "portionGrams",
-    "aisleSelect", "aisleInput",
+    "aisleSelect", "aisleInput", "omitCheckbox",
     "aliasList", "aliasInput", "aliasChip"
   ]
 
@@ -277,7 +277,8 @@ export default class extends Controller {
       density: this.collectDensity(),
       portions: this.collectPortions(),
       aisle: this.currentAisle(),
-      aliases: this.collectAliases()
+      aliases: this.collectAliases(),
+      omit_from_shopping: this.hasOmitCheckboxTarget && this.omitCheckboxTarget.checked
     }
   }
 

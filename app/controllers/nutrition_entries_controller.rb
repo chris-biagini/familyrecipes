@@ -32,7 +32,8 @@ class NutritionEntriesController < ApplicationController
   def catalog_params
     { nutrients: permitted_nutrients, density: permitted_density,
       portions: permitted_portions, aisle: params[:aisle]&.strip.presence,
-      aliases: permitted_aliases }
+      aliases: permitted_aliases,
+      omit_from_shopping: ActiveModel::Type::Boolean.new.cast(params[:omit_from_shopping]) || false }
   end
 
   def permitted_nutrients
