@@ -65,12 +65,12 @@ class CatalogWriteServiceTest < ActiveSupport::TestCase
     assert_includes @kitchen.reload.parsed_aisle_order, 'Baking'
   end
 
-  test 'upsert does not sync omit aisle' do
+  test 'upsert with omit_from_shopping does not affect aisle order' do
     @kitchen.update!(aisle_order: 'Produce')
 
-    upsert_entry('flour', nutrients: {}, aisle: 'omit')
+    upsert_entry('flour', nutrients: {}, aisle: 'Baking', omit_from_shopping: true)
 
-    assert_not_includes @kitchen.reload.parsed_aisle_order, 'omit'
+    assert_includes @kitchen.reload.parsed_aisle_order, 'Baking'
   end
 
   test 'upsert does not duplicate existing aisle' do
@@ -326,12 +326,15 @@ class CatalogWriteServiceTest < ActiveSupport::TestCase
     assert_includes order, 'Produce'
   end
 
-  test 'bulk_import skips omit aisles during sync' do
+  test 'bulk_import converts old aisle omit to omit_from_shopping' do
     CatalogWriteService.bulk_import(kitchen: @kitchen, entries_hash: {
                                       'vanilla' => { 'aisle' => 'omit' }
                                     })
 
-    assert_not_includes @kitchen.reload.parsed_aisle_order.to_a, 'omit'
+    entry = IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'vanilla')
+
+    assert entry.omit_from_shopping
+    assert_nil entry.aisle
   end
 
   test 'bulk_import does not duplicate existing aisles' do
@@ -397,10 +400,10 @@ class CatalogWriteServiceTest < ActiveSupport::TestCase
 
   private
 
-  def upsert_entry(name, nutrients: {}, density: {}, portions: {}, aisle: nil, aliases: nil) # rubocop:disable Metrics/ParameterLists
+  def upsert_entry(name, nutrients: {}, density: {}, portions: {}, aisle: nil, aliases: nil, omit_from_shopping: false) # rubocop:disable Metrics/ParameterLists
     CatalogWriteService.upsert( # rubocop:disable Rails/SkipsModelValidations
       kitchen: @kitchen, ingredient_name: name,
-      params: { nutrients:, density:, portions:, aisle:, aliases: }
+      params: { nutrients:, density:, portions:, aisle:, aliases:, omit_from_shopping: }
     )
   end
 end

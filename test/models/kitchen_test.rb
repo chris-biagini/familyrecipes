@@ -72,7 +72,8 @@ class KitchenTest < ActiveSupport::TestCase
   end
 
   test 'all_aisles excludes entries with nil aisle' do
-    IngredientCatalog.create!(kitchen_id: nil, ingredient_name: 'Bay leaves', aisle: nil, omit_from_shopping: true, basis_grams: 1)
+    IngredientCatalog.create!(kitchen_id: nil, ingredient_name: 'Bay leaves', aisle: nil, omit_from_shopping: true,
+                              basis_grams: 1)
 
     assert_empty @kitchen.all_aisles
   end

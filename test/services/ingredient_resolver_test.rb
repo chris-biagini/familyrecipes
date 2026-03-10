@@ -3,7 +3,7 @@
 require 'test_helper'
 
 class IngredientResolverTest < ActiveSupport::TestCase
-  FakeEntry = Struct.new(:ingredient_name, :aisle, :aliases, keyword_init: true) do
+  FakeEntry = Struct.new(:ingredient_name, :aisle, :aliases, :omit_from_shopping, keyword_init: true) do
     def basis_grams = nil
     def density_grams = nil
   end
@@ -145,8 +145,8 @@ class IngredientResolverTest < ActiveSupport::TestCase
 
   test 'omitted? returns true for entries with omit_from_shopping' do
     catalog = {
-      'Water' => OpenStruct.new(ingredient_name: 'Water', omit_from_shopping: true),
-      'Salt' => OpenStruct.new(ingredient_name: 'Salt', omit_from_shopping: false)
+      'Water' => FakeEntry.new(ingredient_name: 'Water', omit_from_shopping: true),
+      'Salt' => FakeEntry.new(ingredient_name: 'Salt', omit_from_shopping: false)
     }
     resolver = IngredientResolver.new(catalog)
 
@@ -156,14 +156,15 @@ class IngredientResolverTest < ActiveSupport::TestCase
 
   test 'omitted? returns false for uncataloged ingredients' do
     resolver = IngredientResolver.new({})
+
     assert_not resolver.omitted?('Unknown')
   end
 
   test 'omit_set returns downcased names of omitted entries' do
     catalog = {
-      'Water' => OpenStruct.new(ingredient_name: 'Water', omit_from_shopping: true),
-      'Ice' => OpenStruct.new(ingredient_name: 'Ice', omit_from_shopping: true),
-      'Salt' => OpenStruct.new(ingredient_name: 'Salt', omit_from_shopping: false)
+      'Water' => FakeEntry.new(ingredient_name: 'Water', omit_from_shopping: true),
+      'Ice' => FakeEntry.new(ingredient_name: 'Ice', omit_from_shopping: true),
+      'Salt' => FakeEntry.new(ingredient_name: 'Salt', omit_from_shopping: false)
     }
     resolver = IngredientResolver.new(catalog)
 
@@ -172,7 +173,7 @@ class IngredientResolverTest < ActiveSupport::TestCase
 
   test 'omit_set is memoized' do
     catalog = {
-      'Water' => OpenStruct.new(ingredient_name: 'Water', omit_from_shopping: true)
+      'Water' => FakeEntry.new(ingredient_name: 'Water', omit_from_shopping: true)
     }
     resolver = IngredientResolver.new(catalog)
 
