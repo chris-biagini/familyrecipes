@@ -7,8 +7,8 @@ import ListenerManager from "utilities/listener_manager"
  * strike through ingredients/instructions), and section toggling (click h2 to
  * cross off entire step). State is persisted to localStorage keyed by recipe ID
  * and version hash — stale or mismatched state is discarded. Scale factor
- * applies to quantities, scalable numbers in instructions, yield lines, and
- * nutrition facts. All of this is optional JS — the recipe renders fine without it.
+ * applies to quantities, scalable numbers in instructions, and yield lines.
+ * All of this is optional JS — the recipe renders fine without it.
  *
  * - vulgar_fractions: formats scaled quantities as Unicode fraction glyphs
  * - ListenerManager: tracks event listeners for clean teardown on disconnect
@@ -183,13 +183,6 @@ export default class extends Controller {
             : li.dataset.namePlural
         }
       })
-
-    this.element.querySelectorAll('.nutrition-facts td[data-nutrient]').forEach(td => {
-      const base = parseFloat(td.dataset.baseValue)
-      const scaled = base * factor
-      const unit = td.dataset.unit || ''
-      td.textContent = `${Math.round(scaled)}${unit}`
-    })
 
     this.element.querySelectorAll('.scalable[data-base-value]').forEach(span => {
       if (span.closest('.yield')) return
