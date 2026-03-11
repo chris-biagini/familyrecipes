@@ -54,13 +54,11 @@ module ActiveSupport
     end
 
     def with_multi_kitchen
-      original = Rails.configuration.site
-      Rails.configuration.site = ActiveSupport::InheritableOptions.new(
-        original.to_h.merge(multi_kitchen: true)
-      )
+      original = ENV.fetch('MULTI_KITCHEN', nil)
+      ENV['MULTI_KITCHEN'] = 'true'
       yield
     ensure
-      Rails.configuration.site = original
+      ENV['MULTI_KITCHEN'] = original
     end
   end
 end

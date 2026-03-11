@@ -5,10 +5,9 @@
 # for the sole-kitchen shortcut at the root URL.
 #
 # - Category: ordered categories with eager-loaded recipes
-# - Rails.configuration.site: site title and branding for the layout
+# - Kitchen: site title and branding read from current_kitchen
 class HomepageController < ApplicationController
   def show
-    @site_config = Rails.configuration.site
     @categories = current_kitchen.categories.ordered.with_recipes.includes(:recipes)
     @all_categories = current_kitchen.categories.ordered
   end

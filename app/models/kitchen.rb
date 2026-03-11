@@ -71,7 +71,7 @@ class Kitchen < ApplicationRecord
   private
 
   def enforce_single_kitchen_mode
-    return if Rails.configuration.site.multi_kitchen
+    return if ENV['MULTI_KITCHEN'] == 'true'
 
     # Intentionally unscoped — checking global kitchen count, not tenant-scoped data
     errors.add(:base, 'Only one kitchen is allowed in single-kitchen mode') if Kitchen.exists?

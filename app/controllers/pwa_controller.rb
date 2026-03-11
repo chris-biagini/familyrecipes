@@ -4,7 +4,7 @@
 # so they get Cache-Control: no-cache headers preventing proxy/CDN caching.
 # Skips set_kitchen_from_path because these URLs are kitchen-agnostic.
 #
-# - Rails.configuration.site: site title for manifest name
+# - Kitchen#site_title: manifest name resolved from the sole kitchen
 # - pwa/service_worker.js.erb: minimal PWA-install stub (no caching)
 class PwaController < ApplicationController
   skip_forgery_protection
@@ -25,7 +25,7 @@ class PwaController < ApplicationController
 
   def manifest_data
     {
-      name: Rails.configuration.site.site_title,
+      name: sole_kitchen_title,
       short_name: 'Recipes',
       start_url: '/',
       display: 'standalone',
@@ -45,6 +45,11 @@ class PwaController < ApplicationController
       icon_entry('icon-192-dark.png', '192x192', media: '(prefers-color-scheme: dark)'),
       icon_entry('icon-512-dark.png', '512x512', media: '(prefers-color-scheme: dark)')
     ]
+  end
+
+  def sole_kitchen_title
+    kitchen = ActsAsTenant.without_tenant { Kitchen.first }
+    kitchen&.site_title || 'Family Recipes'
   end
 
   def icon_entry(filename, sizes, media: nil)

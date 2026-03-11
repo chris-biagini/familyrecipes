@@ -1,4 +1,4 @@
-<% content_for(:title) { @site_config.site_title } %>
+<% content_for(:title) { current_kitchen.site_title } %>
 
 <% if current_member? %>
 <% content_for(:extra_nav) do %>
@@ -15,8 +15,8 @@
 
 <article class="homepage">
   <header>
-    <h1><%= @site_config.homepage_heading %></h1>
-    <p><%= @site_config.homepage_subtitle %></p>
+    <h1><%= current_kitchen.homepage_heading %></h1>
+    <p><%= current_kitchen.homepage_subtitle %></p>
   </header>
 
   <%= render 'homepage/recipe_listings', categories: @categories %>

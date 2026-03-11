@@ -124,6 +124,23 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
     assert_select '#edit-categories-button', count: 0
   end
 
+  test 'homepage uses kitchen site_title in page title' do
+    log_in
+    @kitchen.update!(site_title: 'Our Family Kitchen')
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
+
+    assert_select 'title', 'Our Family Kitchen'
+  end
+
+  test 'homepage uses kitchen heading and subtitle' do
+    log_in
+    @kitchen.update!(homepage_heading: 'Custom Heading', homepage_subtitle: 'Custom Sub')
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
+
+    assert_select 'h1', 'Custom Heading'
+    assert_select 'header p', 'Custom Sub'
+  end
+
   test 'recipe links include description as title attribute' do
     bread = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
     MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: bread)
