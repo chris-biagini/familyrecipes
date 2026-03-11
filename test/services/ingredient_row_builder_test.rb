@@ -148,6 +148,21 @@ class IngredientRowBuilderTest < ActiveSupport::TestCase
     assert_not_includes names, 'Egg'
   end
 
+  test 'rows includes resolvable key indicating unit resolution status' do
+    create_catalog_entry('Flour', basis_grams: 30)
+    entry = IngredientCatalog.find_by(ingredient_name: 'Flour', kitchen_id: nil)
+    entry.update!(density_grams: 125, density_volume: 1, density_unit: 'cup')
+
+    builder = IngredientRowBuilder.new(kitchen: @kitchen)
+    rows = builder.rows
+
+    flour = rows.find { |r| r[:name] == 'Flour' }
+    salt = rows.find { |r| r[:name] == 'Salt' }
+
+    assert flour[:resolvable], 'Flour with density should be resolvable'
+    assert_not salt[:resolvable], 'Salt without catalog entry should not be resolvable'
+  end
+
   # --- summary ---
 
   test 'summary counts statuses correctly' do
