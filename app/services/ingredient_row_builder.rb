@@ -3,14 +3,15 @@
 # Builds ingredient table row data for the ingredients index page, Turbo Stream
 # updates, and real-time broadcasts. Delegates name resolution to an
 # IngredientResolver, then computes nutrition/density status for each unique
-# ingredient across all recipes and Quick Bites.
+# ingredient across all recipes and Quick Bites. Also provides aggregate
+# coverage analysis (fully resolvable counts, unresolvable unit details).
 #
 # Collaborators:
 # - IngredientResolver (name resolution, catalog entry access)
 # - IngredientCatalog.resolver_for (default resolver factory)
 # - IngredientsController, NutritionEntriesController
 # - FamilyRecipes::QuickBite (parsed from Kitchen#quick_bites_content)
-class IngredientRowBuilder
+class IngredientRowBuilder # rubocop:disable Metrics/ClassLength
   QuickBiteSource = Data.define(:title)
   WEIGHT_UNITS = FamilyRecipes::NutritionCalculator::WEIGHT_CONVERSIONS.keys.freeze
   VOLUME_UNITS = FamilyRecipes::NutritionCalculator::VOLUME_TO_ML.keys.freeze
@@ -50,6 +51,10 @@ class IngredientRowBuilder
     units.map { |unit| build_unit_row(unit, calculator, calc_entry, entry) }
   end
 
+  def coverage
+    @coverage ||= build_coverage
+  end
+
   private
 
   attr_reader :kitchen, :recipes
@@ -70,6 +75,52 @@ class IngredientRowBuilder
       missing_aisle: rows.count { |r| r[:aisle].blank? },
       missing_nutrition: rows.count { |r| !r[:has_nutrition] },
       missing_density: rows.count { |r| !r[:has_density] } }
+  end
+
+  def build_coverage
+    units_map = all_units_by_ingredient
+    resolvable_count, unresolvable = partition_by_resolvability(units_map)
+
+    summary.merge(fully_resolvable: resolvable_count, unresolvable:)
+  end
+
+  def partition_by_resolvability(units_map)
+    unresolvable = []
+
+    resolvable_count = rows.count do |row|
+      bad = unresolvable_units_for(row[:name], row[:entry], units_map[row[:name]])
+      unresolvable << bad unless bad.nil?
+      bad.nil?
+    end
+
+    [resolvable_count, unresolvable]
+  end
+
+  def all_units_by_ingredient
+    recipes.each_with_object(Hash.new { |h, k| h[k] = Set.new }) do |recipe, map|
+      recipe.ingredients.each do |ingredient|
+        name = canonical_ingredient_name(ingredient.name)
+        map[name] << ingredient.quantity_unit
+      end
+    end
+  end
+
+  def unresolvable_units_for(name, entry, units)
+    return nil if units.blank?
+
+    bad = find_bad_units(name, entry, units)
+    return nil if bad.empty?
+
+    { name:, units: bad, recipes: recipes_by_ingredient[name] }
+  end
+
+  def find_bad_units(name, entry, units)
+    return units.map { |u| { unit: u, method: 'no nutrition data' } } if entry&.basis_grams.blank?
+
+    calculator = FamilyRecipes::NutritionCalculator.new({ name => entry }, omit_set: Set.new)
+    calc_entry = calculator.nutrition_data[name]
+    units.reject { |u| weight_unit?(u) || (calc_entry && calculator.resolvable?(1, u, calc_entry)) }
+         .map { |u| { unit: u, method: resolution_method(u, false, entry) } }
   end
 
   def ingredient_row(name, recs)

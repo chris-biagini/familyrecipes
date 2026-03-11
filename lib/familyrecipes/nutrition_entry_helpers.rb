@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module FamilyRecipes
-  # Shared logic for the bin/nutrition CLI and the web nutrition editor. Parses
+  # Shared logic for the web nutrition editor. Parses
   # FDA serving-size strings (e.g., "2 tbsp (30g)") into structured hashes with
   # gram weight, optional volume density, and optional discrete portions. The
   # density and portion data feeds into IngredientCatalog entries that

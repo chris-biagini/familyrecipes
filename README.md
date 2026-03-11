@@ -10,7 +10,7 @@ Inspired by the beautifully-designed [Paprika](https://www.paprikaapp.com) by Hi
 
 **Grocery Lists** — Build shopping lists from selected recipes. Items are grouped by grocery aisle with customizable ordering. Check off items as you shop. Add custom items that aren't part of any recipe. Quick Bites provide lightweight grocery bundles for common shopping runs. Lists sync in real time across all open tabs and devices.
 
-**Nutrition** — Per-ingredient nutrition data sourced from USDA FoodData Central. Automatic per-recipe and per-serving nutrition calculation with density-based unit resolution (weight, volume, and named portions like "1 stick"). Includes a CLI tool (`bin/nutrition`) for managing the ingredient catalog.
+**Nutrition** — Per-ingredient nutrition data sourced from USDA FoodData Central. Automatic per-recipe and per-serving nutrition calculation with density-based unit resolution (weight, volume, and named portions like "1 stick"). Web-based ingredient editor for managing the ingredient catalog.
 
 **Kitchens** — Multi-tenant support for separate recipe collections. Membership-based access control: recipes are publicly readable, but editing and grocery lists require membership. When only one kitchen exists, URLs are simplified (no `/kitchens/:slug` prefix).
 
@@ -84,7 +84,7 @@ Set in your `.env` file. Docker Compose reads `.env` automatically when it's in 
 | `SECRET_KEY_BASE` | No | auto-generated | Rails session encryption key. Auto-generated and persisted in the storage volume if not set. |
 | `ALLOWED_HOSTS` | Recommended | allow all | Comma-separated domain(s) for DNS rebinding protection. |
 | `RAILS_LOG_LEVEL` | No | `info` | Log verbosity: `debug`, `info`, `warn`, `error`. |
-| `USDA_API_KEY` | No | — | Enables USDA FoodData Central lookups in `bin/nutrition`. Free at [fdc.nal.usda.gov](https://fdc.nal.usda.gov/api-key-signup). |
+| `USDA_API_KEY` | No | — | Enables USDA FoodData Central lookups in the ingredient editor. Free at [fdc.nal.usda.gov](https://fdc.nal.usda.gov/api-key-signup). |
 
 ### Site Configuration
 

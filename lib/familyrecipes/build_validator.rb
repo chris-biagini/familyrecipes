@@ -112,7 +112,7 @@ module FamilyRecipes
         recipes = ingredients_to_recipes[ing].uniq.sort
         puts "  - #{ing} (in: #{recipes.join(', ')})"
       end
-      puts 'Add them via bin/nutrition or the web editor.'
+      puts 'Add them via the web ingredient editor.'
       puts ''
     end
 
@@ -172,7 +172,7 @@ module FamilyRecipes
 
       if has_warnings
         puts ''
-        puts 'Use bin/nutrition to add data, or edit db/seeds/resources/ingredient-catalog.yaml directly.'
+        puts 'Use the web ingredient editor, or edit db/seeds/resources/ingredient-catalog.yaml directly.'
         puts ''
       else
         print "done! (All ingredients have nutrition data.)\n"

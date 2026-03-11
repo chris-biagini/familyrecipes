@@ -354,6 +354,68 @@ class IngredientRowBuilderTest < ActiveSupport::TestCase
     assert_empty units
   end
 
+  # --- coverage ---
+
+  test 'coverage includes summary stats plus resolution data' do
+    builder = IngredientRowBuilder.new(kitchen: @kitchen)
+    cov = builder.coverage
+
+    assert_equal 3, cov[:total]
+    assert cov.key?(:fully_resolvable)
+    assert cov.key?(:unresolvable)
+  end
+
+  test 'coverage counts fully resolvable ingredients' do
+    create_catalog_entry('Flour', basis_grams: 30)
+    entry = IngredientCatalog.find_by(ingredient_name: 'Flour', kitchen_id: nil)
+    entry.update!(density_grams: 125, density_volume: 1, density_unit: 'cup')
+
+    create_catalog_entry('Salt', basis_grams: 6)
+    salt = IngredientCatalog.find_by(ingredient_name: 'Salt', kitchen_id: nil)
+    salt.update!(density_grams: 6, density_volume: 1, density_unit: 'tsp')
+
+    builder = IngredientRowBuilder.new(kitchen: @kitchen)
+    cov = builder.coverage
+
+    assert_equal 2, cov[:fully_resolvable]
+  end
+
+  test 'coverage lists unresolvable ingredients with bad units and recipes' do
+    create_catalog_entry('Flour', basis_grams: 30)
+
+    builder = IngredientRowBuilder.new(kitchen: @kitchen)
+    cov = builder.coverage
+
+    flour_entry = cov[:unresolvable].find { |u| u[:name] == 'Flour' }
+
+    assert flour_entry, 'expected Flour in unresolvable list'
+    assert(flour_entry[:units].any? { |u| u[:unit] == 'cup' && u[:method] == 'no density' })
+    assert_equal 2, flour_entry[:recipes].size
+  end
+
+  test 'coverage reports no nutrition data for uncataloged ingredients' do
+    builder = IngredientRowBuilder.new(kitchen: @kitchen)
+    cov = builder.coverage
+
+    yeast_entry = cov[:unresolvable].find { |u| u[:name] == 'Yeast' }
+
+    assert yeast_entry, 'expected Yeast in unresolvable list'
+    assert(yeast_entry[:units].any? { |u| u[:method] == 'no nutrition data' })
+  end
+
+  test 'coverage omits fully resolvable ingredients from unresolvable list' do
+    create_catalog_entry('Flour', basis_grams: 30)
+    entry = IngredientCatalog.find_by(ingredient_name: 'Flour', kitchen_id: nil)
+    entry.update!(density_grams: 125, density_volume: 1, density_unit: 'cup')
+
+    builder = IngredientRowBuilder.new(kitchen: @kitchen)
+    cov = builder.coverage
+
+    assert_nil(cov[:unresolvable].find { |u| u[:name] == 'Flour' })
+  end
+
+  # --- needed_units ---
+
   test 'needed_units handles bare counts' do
     MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Scrambled Eggs

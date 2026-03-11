@@ -10,8 +10,6 @@ module FamilyRecipes
   # - IngredientCatalog (NUTRIENT_COLUMNS, NUTRIENT_DISPLAY, validation)
   # - NutritionCalculator (NUTRIENTS key list)
   # - RecipesHelper (NUTRITION_ROWS for label rendering)
-  # - NutritionTui::Data (NUTRIENTS for TUI display)
-  # - NutritionTui::Editors::* (calls predicates on close/commit)
   module NutritionConstraints
     NutrientDef = Data.define(:key, :label, :unit, :indent, :daily_value)
 

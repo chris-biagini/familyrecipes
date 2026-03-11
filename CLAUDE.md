@@ -215,16 +215,16 @@ wraps `IngredientCatalog.lookup_for` with case-insensitive fallback and
 uncataloged variant collapsing.  Constructed via
 `IngredientCatalog.resolver_for(kitchen)`, shared across services within a
 request.  `RecipeNutritionJob` recomputes nutrition; `CascadeNutritionJob` fans
-out to cross-referencing recipes.  `IngredientRowBuilder` computes ingredient
-table rows, summaries, and next-needing-attention — shared by
-`IngredientsController` and `NutritionEntriesController`.
+out to cross-referencing recipes.
 `NutritionConstraints` is the single source of truth for nutrient definitions
 (NutrientDef) and validation rules — all downstream nutrient constants derive
 from it.  `RecipeAvailabilityCalculator` checks catalog coverage per recipe for
 availability badges on the menu page — uses `IngredientResolver` and refreshes
 automatically via Turbo morph when catalog entries change.
-`IngredientRowBuilder#needed_units` reports which recipe units an ingredient
-appears with and whether each is resolvable — shown in the editor form.
+`IngredientRowBuilder` computes per-ingredient `needed_units` (unit resolution
+status) and aggregate `coverage` (fully resolvable counts, unresolvable unit
+details with affected recipes) — shared by `IngredientsController` and
+`NutritionEntriesController`.
 `UsdaSearchController` exposes two JSON endpoints (`GET /usda/search`,
 `GET /usda/:fdc_id`) reading the API key from `Kitchen#usda_api_key`.
 `UsdaImportService` transforms raw USDA detail into editor-ready form values
@@ -232,7 +232,6 @@ appears with and whether each is resolvable — shown in the editor form.
 `UsdaClient` is a pure HTTP adapter returning flat portion arrays;
 `UsdaPortionClassifier` classifies them into density/portion/filtered buckets.
 `rake catalog:sync` pushes YAML changes into the database.
-`bin/nutrition` is a legacy TUI (broken, being replaced by the web editor).
 
 ## Recipe & Data Formats
 

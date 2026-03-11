@@ -134,8 +134,6 @@ GEM
     parser (3.3.10.2)
       ast (~> 2.4.1)
       racc
-    pastel (0.8.0)
-      tty-color (~> 0.5)
     pp (0.6.3)
       prettyprint
     prettyprint (0.2.0)
@@ -190,12 +188,6 @@ GEM
       zeitwerk (~> 2.6)
     rainbow (3.1.1)
     rake (13.0.6)
-    rake-compiler-dock (1.11.0)
-    ratatui_ruby (1.4.2-x86_64-linux)
-      rb_sys (~> 0.9)
-      rexml (~> 3.4)
-    rb_sys (0.9.124)
-      rake-compiler-dock (= 1.11.0)
     rdoc (7.2.0)
       erb
       psych (>= 4.0.0)
@@ -204,7 +196,6 @@ GEM
     regexp_parser (2.11.3)
     reline (0.6.3)
       io-console (~> 0.5)
-    rexml (3.4.4)
     rubocop (1.84.2)
       json (~> 2.3)
       language_server-protocol (~> 3.17.0.2)
@@ -245,44 +236,21 @@ GEM
     stimulus-rails (1.3.4)
       railties (>= 6.0.0)
     stringio (3.2.0)
-    strings (0.2.1)
-      strings-ansi (~> 0.2)
-      unicode-display_width (>= 1.5, < 3.0)
-      unicode_utils (~> 1.4)
-    strings-ansi (0.2.0)
     thor (1.5.0)
     timeout (0.6.0)
     tsort (0.2.0)
-    tty-color (0.6.0)
-    tty-cursor (0.7.1)
-    tty-prompt (0.23.1)
-      pastel (~> 0.8)
-      tty-reader (~> 0.8)
-    tty-reader (0.9.0)
-      tty-cursor (~> 0.7)
-      tty-screen (~> 0.8)
-      wisper (~> 2.0)
-    tty-screen (0.8.2)
-    tty-spinner (0.9.3)
-      tty-cursor (~> 0.7)
-    tty-table (0.12.0)
-      pastel (~> 0.8)
-      strings (~> 0.2.0)
-      tty-screen (~> 0.8)
     turbo-rails (2.0.23)
       actionpack (>= 7.1.0)
       railties (>= 7.1.0)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
     unicode-display_width (2.6.0)
-    unicode_utils (1.4.0)
     uri (1.1.1)
     useragent (0.16.11)
     websocket-driver (0.8.0)
       base64
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.5)
-    wisper (2.0.1)
     zeitwerk (2.7.5)
 
 PLATFORMS
@@ -293,12 +261,10 @@ DEPENDENCIES
   acts_as_tenant
   importmap-rails
   minitest
-  pastel
   propshaft
   puma (>= 5)
   rails (~> 8.0)
   rake
-  ratatui_ruby
   redcarpet
   rubocop
   rubocop-minitest
@@ -308,9 +274,6 @@ DEPENDENCIES
   solid_cable
   sqlite3
   stimulus-rails
-  tty-prompt
-  tty-spinner
-  tty-table
   turbo-rails
 
 CHECKSUMS
@@ -360,7 +323,6 @@ CHECKSUMS
   nokogiri (1.19.1-x86_64-linux-gnu) sha256=1a4902842a186b4f901078e692d12257678e6133858d0566152fe29cdb98456a
   parallel (1.27.0) sha256=4ac151e1806b755fb4e2dc2332cbf0e54f2e24ba821ff2d3dcf86bf6dc4ae130
   parser (3.3.10.2) sha256=6f60c84aa4bdcedb6d1a2434b738fe8a8136807b6adc8f7f53b97da9bc4e9357
-  pastel (0.8.0) sha256=481da9fb7d2f6e6b1a08faf11fa10363172dc40fd47848f096ae21209f805a75
   pp (0.6.3) sha256=2951d514450b93ccfeb1df7d021cae0da16e0a7f95ee1e2273719669d0ab9df6
   prettyprint (0.2.0) sha256=2bc9e15581a94742064a3cc8b0fb9d45aae3d03a1baa6ef80922627a0766f193
   prism (1.9.0) sha256=7b530c6a9f92c24300014919c9dcbc055bf4cdf51ec30aed099b06cd6674ef85
@@ -378,14 +340,10 @@ CHECKSUMS
   railties (8.1.2) sha256=1289ece76b4f7668fc46d07e55cc992b5b8751f2ad85548b7da351b8c59f8055
   rainbow (3.1.1) sha256=039491aa3a89f42efa1d6dec2fc4e62ede96eb6acd95e52f1ad581182b79bc6a
   rake (13.0.6) sha256=5ce4bf5037b4196c24ac62834d8db1ce175470391026bd9e557d669beeb19097
-  rake-compiler-dock (1.11.0) sha256=eab51f2cd533eb35cea6b624a75281f047123e70a64c58b607471bb49428f8c2
-  ratatui_ruby (1.4.2-x86_64-linux) sha256=dccd5fbc309a973119cfd16a3245746df763a1d20d0d29bcef757d47fce9d810
-  rb_sys (0.9.124) sha256=513476557b12eaf73764b3da9f8746024558fe8699bda785fb548c9aa3877ae7
   rdoc (7.2.0) sha256=8650f76cd4009c3b54955eb5d7e3a075c60a57276766ebf36f9085e8c9f23192
   redcarpet (3.6.1) sha256=d444910e6aa55480c6bcdc0cdb057626e8a32c054c29e793fa642ba2f155f445
   regexp_parser (2.11.3) sha256=ca13f381a173b7a93450e53459075c9b76a10433caadcb2f1180f2c741fc55a4
   reline (0.6.3) sha256=1198b04973565b36ec0f11542ab3f5cfeeec34823f4e54cebde90968092b1835
-  rexml (3.4.4) sha256=19e0a2c3425dfbf2d4fc1189747bdb2f849b6c5e74180401b15734bc97b5d142
   rubocop (1.84.2) sha256=5692cea54168f3dc8cb79a6fe95c5424b7ea893c707ad7a4307b0585e88dbf5f
   rubocop-ast (1.49.0) sha256=49c3676d3123a0923d333e20c6c2dbaaae2d2287b475273fddee0c61da9f71fd
   rubocop-minitest (0.38.2) sha256=5a9dfb5a538973d0601aa51e59637d3998bb8df81233edf1ff421504c6280068
@@ -398,27 +356,16 @@ CHECKSUMS
   sqlite3 (2.9.0-x86_64-linux-gnu) sha256=72fff9bd750070ba3af695511ba5f0e0a2d8a9206f84869640b3e99dfaf3d5a5
   stimulus-rails (1.3.4) sha256=765676ffa1f33af64ce026d26b48e8ffb2e0b94e0f50e9119e11d6107d67cb06
   stringio (3.2.0) sha256=c37cb2e58b4ffbd33fe5cd948c05934af997b36e0b6ca6fdf43afa234cf222e1
-  strings (0.2.1) sha256=933293b3c95cf85b81eb44b3cf673e3087661ba739bbadfeadf442083158d6fb
-  strings-ansi (0.2.0) sha256=90262d760ea4a94cc2ae8d58205277a343409c288cbe7c29416b1826bd511c88
   thor (1.5.0) sha256=e3a9e55fe857e44859ce104a84675ab6e8cd59c650a49106a05f55f136425e73
   timeout (0.6.0) sha256=6d722ad619f96ee383a0c557ec6eb8c4ecb08af3af62098a0be5057bf00de1af
   tsort (0.2.0) sha256=9650a793f6859a43b6641671278f79cfead60ac714148aabe4e3f0060480089f
-  tty-color (0.6.0) sha256=6f9c37ca3a4e2367fb2e6d09722762647d6f455c111f05b59f35730eeb24332a
-  tty-cursor (0.7.1) sha256=79534185e6a777888d88628b14b6a1fdf5154a603f285f80b1753e1908e0bf48
-  tty-prompt (0.23.1) sha256=fcdbce905238993f27eecfdf67597a636bc839d92192f6a0eef22b8166449ec8
-  tty-reader (0.9.0) sha256=c62972c985c0b1566f0e56743b6a7882f979d3dc32ff491ed490a076f899c2b1
-  tty-screen (0.8.2) sha256=c090652115beae764336c28802d633f204fb84da93c6a968aa5d8e319e819b50
-  tty-spinner (0.9.3) sha256=0e036f047b4ffb61f2aa45f5a770ec00b4d04130531558a94bfc5b192b570542
-  tty-table (0.12.0) sha256=fdc27a4750835c1a16efe19a0b857e3ced3652cc7aceafe6dca94908965b9939
   turbo-rails (2.0.23) sha256=ee0d90733aafff056cf51ff11e803d65e43cae258cc55f6492020ec1f9f9315f
   tzinfo (2.0.6) sha256=8daf828cc77bcf7d63b0e3bdb6caa47e2272dcfaf4fbfe46f8c3a9df087a829b
   unicode-display_width (2.6.0) sha256=12279874bba6d5e4d2728cef814b19197dbb10d7a7837a869bab65da943b7f5a
-  unicode_utils (1.4.0) sha256=b922d0cf2313b6b7136ada6645ce7154ffc86418ca07d53b058efe9eb72f2a40
   uri (1.1.1) sha256=379fa58d27ffb1387eaada68c749d1426738bd0f654d812fcc07e7568f5c57c6
   useragent (0.16.11) sha256=700e6413ad4bb954bb63547fa098dddf7b0ebe75b40cc6f93b8d54255b173844
   websocket-driver (0.8.0) sha256=ed0dba4b943c22f17f9a734817e808bc84cdce6a7e22045f5315aa57676d4962
   websocket-extensions (0.1.5) sha256=1c6ba63092cda343eb53fc657110c71c754c56484aad42578495227d717a8241
-  wisper (2.0.1) sha256=ce17bc5c3a166f241a2e6613848b025c8146fce2defba505920c1d1f3f88fae6
   zeitwerk (2.7.5) sha256=d8da92128c09ea6ec62c949011b00ed4a20242b255293dd66bf41545398f73dd
 
 BUNDLED WITH

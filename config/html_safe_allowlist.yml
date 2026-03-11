@@ -24,7 +24,3 @@
 
 # _shopping_list.html.erb — title attribute with user content escaped by h()
 - "app/views/groceries/_shopping_list.html.erb:18"
-
-
-# nutrition_tui — terminal UI, not web HTML; Text::Span.raw is safe
-- "lib/nutrition_tui/screens/ingredient.rb:465"

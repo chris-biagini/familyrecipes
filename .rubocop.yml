@@ -93,7 +93,6 @@ Rails/I18nLocaleTexts:
 Rails/Output:
   Exclude:
     - lib/familyrecipes/build_validator.rb
-    - lib/nutrition_tui/data.rb
     - db/seeds.rb
 
 # Plain Minitest tests (Minitest::Test) don't have assert_not_* methods
@@ -107,5 +106,4 @@ Rails/RefuteMethods:
     - test/scalable_number_preprocessor_test.rb
     - test/vulgar_fractions_test.rb
     - test/usda_client_test.rb
-    - test/nutrition_tui/data_test.rb
     - test/usda_portion_classifier_test.rb

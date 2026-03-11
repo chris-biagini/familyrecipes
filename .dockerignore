@@ -15,6 +15,3 @@ node_modules/
 vendor/bundle/
 storage/*.sqlite3
 storage/*.sqlite3-*
-bin/nutrition
-lib/nutrition_tui/
-lib/nutrition_tui.rb
