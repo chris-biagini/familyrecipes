@@ -92,14 +92,14 @@ class UsdaSearchControllerTest < ActionDispatch::IntegrationTest
     assert body.key?('portions')
     assert_equal 'usda', body['source']['type']
     assert_equal 9003, body['source']['fdc_id']
-    assert_equal 52.0, body['nutrients']['calories']
+    assert_in_delta(52.0, body['nutrients']['calories'])
   end
 
   test 'show returns density when volume candidates exist' do
     detail = usda_detail_fixture(portions: [
-      { modifier: 'cup, sliced', grams: 110.0, amount: 1.0 },
-      { modifier: 'medium (3" dia)', grams: 182.0, amount: 1.0 }
-    ])
+                                   { modifier: 'cup, sliced', grams: 110.0, amount: 1.0 },
+                                   { modifier: 'medium (3" dia)', grams: 182.0, amount: 1.0 }
+                                 ])
 
     stub_client_fetch(9003, result: detail) do
       get usda_show_path(9003, kitchen_slug: kitchen_slug), as: :json
@@ -154,24 +154,20 @@ class UsdaSearchControllerTest < ActionDispatch::IntegrationTest
     }
   end
 
-  def stub_client_search(query, page:, result:)
+  def stub_client_search(query, page:, result:, &)
     mock_client = Minitest::Mock.new
     mock_client.expect :search, result, [query], page: page
 
-    FamilyRecipes::UsdaClient.stub :new, mock_client do
-      yield
-    end
+    FamilyRecipes::UsdaClient.stub(:new, mock_client, &)
 
     mock_client.verify
   end
 
-  def stub_client_fetch(fdc_id, result:)
+  def stub_client_fetch(fdc_id, result:, &)
     mock_client = Minitest::Mock.new
     mock_client.expect :fetch, result, [], fdc_id: fdc_id.to_s
 
-    FamilyRecipes::UsdaClient.stub :new, mock_client do
-      yield
-    end
+    FamilyRecipes::UsdaClient.stub(:new, mock_client, &)
 
     mock_client.verify
   end

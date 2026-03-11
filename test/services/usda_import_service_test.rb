@@ -26,7 +26,7 @@ class UsdaImportServiceTest < ActiveSupport::TestCase
   test 'maps nutrients to catalog schema with basis_grams and symbol keys' do
     result = UsdaImportService.call(@detail)
 
-    assert_equal 100.0, result.nutrients[:basis_grams]
+    assert_in_delta(100.0, result.nutrients[:basis_grams])
     assert_in_delta 52.0, result.nutrients[:calories]
     assert_in_delta 0.17, result.nutrients[:fat]
     assert_in_delta 13.81, result.nutrients[:carbs]
@@ -68,11 +68,13 @@ class UsdaImportServiceTest < ActiveSupport::TestCase
   test 'extracts portion candidates with display names' do
     result = UsdaImportService.call(@detail)
 
-    names = result.portions.map { |p| p[:name] }
+    names = result.portions.pluck(:name)
+
     assert_includes names, 'medium'
     assert_includes names, 'large'
 
     medium = result.portions.find { |p| p[:name] == 'medium' }
+
     assert_in_delta 182.0, medium[:grams]
   end
 
@@ -80,7 +82,8 @@ class UsdaImportServiceTest < ActiveSupport::TestCase
     result = UsdaImportService.call(@detail)
 
     assert_not_empty result.density_candidates
-    modifiers = result.density_candidates.map { |c| c[:modifier] }
+    modifiers = result.density_candidates.pluck(:modifier)
+
     assert_includes modifiers, 'cup, quartered or chopped'
     assert_includes modifiers, 'tbsp'
   end

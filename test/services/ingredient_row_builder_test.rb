@@ -295,7 +295,7 @@ class IngredientRowBuilderTest < ActiveSupport::TestCase
     builder = IngredientRowBuilder.new(kitchen: @kitchen)
     units = builder.needed_units('Flour')
 
-    assert_includes units.map { |u| u[:unit] }, 'cup'
+    assert_includes units.pluck(:unit), 'cup'
   end
 
   test 'needed_units marks weight units as resolvable without catalog entry' do
@@ -351,7 +351,7 @@ class IngredientRowBuilderTest < ActiveSupport::TestCase
     builder = IngredientRowBuilder.new(kitchen: @kitchen)
     units = builder.needed_units('Nonexistent')
 
-    assert_equal [], units
+    assert_empty units
   end
 
   test 'needed_units handles bare counts' do
