@@ -139,62 +139,62 @@ parser module: `FamilyRecipes` (uppercase R). Different constants, no
 collision. Parser pipeline: `LineClassifier` → `RecipeBuilder` →
 `FamilyRecipes::Recipe`; `MarkdownImporter` is the sole write-path entry point.
 
-**Routing.** Routes use an optional `(/kitchens/:kitchen_slug)` scope.  When
-exactly one Kitchen exists, URLs are root-level (`/recipes/bagels`); when
-multiple exist, URLs include the prefix (`/kitchens/ours/recipes/bagels`).
-`default_url_options` auto-injects `kitchen_slug` — always use `_path` helpers,
-never hard-code URL strings.  Use `home_path` (not `kitchen_root_path`) for
-homepage links.  `MealPlan` (one row per kitchen) backs both the menu and
-groceries pages.
+**Routing.** Optional `(/kitchens/:kitchen_slug)` scope:
+- One Kitchen → root-level URLs (`/recipes/bagels`)
+- Multiple → prefixed (`/kitchens/ours/recipes/bagels`)
+- `default_url_options` auto-injects `kitchen_slug` — always use `_path`
+  helpers, never hard-code URL strings.
+- Use `home_path` (not `kitchen_root_path`) for homepage links.
+- `MealPlan` (one row per kitchen) backs both the menu and groceries pages.
 
 **Editor dialogs.** Use `render layout: 'shared/editor_dialog'` with Stimulus
 data attributes — no JS needed. For custom content, add a controller listening
-to editor lifecycle events.  Open `<dialog>` elements are protected from Turbo
-morph via a `turbo:before-morph-element` listener in `application.js`. A
-`turbo:before-cache` listener closes all open dialogs before page snapshots.
-Both editor controllers guard unsaved changes on `turbo:before-visit`. Do NOT
-use `data-turbo-permanent` on dialogs.  `HighlightOverlay` (shared utility)
-powers syntax-colored overlays for both Quick Bites and recipe editors.
-`ordered_list_editor_controller` is a single parameterized controller for both
-aisle and category list editors.
+to editor lifecycle events.
+- Open `<dialog>` elements are protected from Turbo morph via
+  `turbo:before-morph-element` in `application.js`.
+- `turbo:before-cache` closes all open dialogs before page snapshots.
+- Both editor controllers guard unsaved changes on `turbo:before-visit`.
+- Do NOT use `data-turbo-permanent` on dialogs.
+- `HighlightOverlay` (shared utility) powers syntax-colored overlays for both
+  Quick Bites and recipe editors.
+- `ordered_list_editor_controller` is a single parameterized controller for
+  both aisle and category list editors.
 
 **Hotwire stack.** Turbo Drive + Turbo Streams, Stimulus controllers,
-importmap-rails for ES modules.  New JS modules must be pinned in
-`config/importmap.rb`; new Stimulus controllers auto-register via
-`pin_all_from`.  CSP requires nonces for importmap's inline `<script>` — the
-nonce generator uses `request.session.id` (see `content_security_policy.rb`).
-Turbo's progress bar styles live in `style.css` (not Turbo's dynamic `<style>`
-injection) to satisfy strict CSP — the harmless console error from Turbo's
-blocked injection is expected.
+importmap-rails for ES modules.
+- New JS modules must be pinned in `config/importmap.rb`; new Stimulus
+  controllers auto-register via `pin_all_from`.
+- CSP requires nonces for importmap's inline `<script>` — the nonce generator
+  uses `request.session.id` (see `content_security_policy.rb`).
+- Turbo's progress bar styles live in `style.css` (not Turbo's dynamic
+  `<style>` injection) to satisfy strict CSP — the harmless console error
+  from Turbo's blocked injection is expected.
 
 **ActionCable.** Turbo Streams over Solid Cable, using `turbo_stream_from` tags
-in views.  A single kitchen-wide stream `[kitchen, :updates]` powers all
-page-refresh morphs via `Kitchen#broadcast_update` — each client re-fetches its
-own page and Turbo morphs the result.  `RecipeBroadcaster` is retained only for
-delete/rename targeted notifications on per-recipe `[recipe, "content"]`
-streams (recipe deleted or URL changed).  No async job needed —
-`broadcast_refresh_to` is cheap enough to run inline.
+in views.
+- Kitchen-wide stream `[kitchen, :updates]` powers all page-refresh morphs via
+  `Kitchen#broadcast_update` — each client re-fetches its own page and Turbo
+  morphs the result.
+- `RecipeBroadcaster` is retained only for delete/rename targeted notifications
+  on per-recipe `[recipe, "content"]` streams.
+- No async job needed — `broadcast_refresh_to` is cheap enough to run inline.
 
-**Write path.** `RecipeWriteService` orchestrates all recipe mutations —
-import, cross-reference cascades, category cleanup, meal plan pruning, and
-`Kitchen#broadcast_update`.
-`CatalogWriteService` orchestrates all `IngredientCatalog` mutations — aisle
-sync, nutrition recalculation, and `Kitchen#broadcast_update`.
-`MealPlanWriteService` orchestrates all direct `MealPlan` mutations —
-select/deselect, select-all, clear, and standalone reconciliation.
-`AisleWriteService` orchestrates all `Kitchen#aisle_order` mutations — reorder,
-rename/delete cascades to catalog rows, new-aisle sync, and
-`Kitchen#broadcast_update`.
-`CategoryWriteService` orchestrates category ordering, renaming, deletion
-cascades, and `Kitchen#broadcast_update`.
-Controllers are thin adapters: param parsing → service call → response
-rendering. Services own all post-write side effects (reconcile, broadcast).
-Don't call `MarkdownImporter` directly for web operations.
-`MealPlanActions` concern provides `rescue_from StaleObjectError` for
-controllers whose write paths use `MealPlanWriteService`.
-`MealPlan#reconcile!` is the single pruning entry point — removes stale
-checked-off items and stale selections based on current shopping list state.
-Called after recipe CRUD, quick bites edits, catalog changes, and deselects.
+**Write path.** Controllers are thin adapters: param parsing → service call →
+response rendering. Services own all post-write side effects (reconcile,
+broadcast). Don't call `MarkdownImporter` directly for web operations.
+- `RecipeWriteService` — recipe mutations, cross-reference cascades, category
+  cleanup, meal plan pruning, broadcast.
+- `CatalogWriteService` — `IngredientCatalog` mutations, aisle sync, nutrition
+  recalculation, broadcast.
+- `MealPlanWriteService` — select/deselect, select-all, clear, reconciliation.
+- `AisleWriteService` — reorder, rename/delete cascades to catalog rows,
+  new-aisle sync, broadcast.
+- `CategoryWriteService` — ordering, renaming, deletion cascades, broadcast.
+- `MealPlanActions` concern provides `rescue_from StaleObjectError` for
+  controllers using `MealPlanWriteService`.
+- `MealPlan#reconcile!` is the single pruning entry point — removes stale
+  checked-off items and stale selections. Called after recipe CRUD, quick
+  bites edits, catalog changes, and deselects.
 
 **Settings.** Site branding and API keys live as columns on Kitchen (no
 separate settings table). `usda_api_key` is encrypted via Active Record
@@ -202,41 +202,36 @@ Encryption. `SettingsController` is a thin show/update — no write service.
 The `multi_kitchen` flag is an env var (`MULTI_KITCHEN=true`), not a database
 setting.
 
-**Nutrition pipeline.** `IngredientCatalog` is an overlay model — global seed
-entries plus per-kitchen overrides, merged by `lookup_for` with `Inflector`
-variant matching and a JSON `aliases` column for alternate names.
-`NutritionConstraints` defines `NutrientDef` (with FDA daily values) and
-`DAILY_VALUES` hash for %DV calculation.  `NutritionCalculator` consumes
-`IngredientCatalog` records directly (via `resolver.lookup`) — no intermediate
-hash format.  Computes `total_weight_grams` by summing resolved ingredient
-weights, used for per-serving weight on the FDA-style nutrition label.
-`NutritionCalculator` also owns canonical unit conversion tables
-(`VOLUME_TO_ML`, `WEIGHT_CONVERSIONS`) and their Inflector-expanded variants
-(`EXPANDED_VOLUME_UNITS`, `EXPANDED_WEIGHT_UNITS`) — all unit recognition flows
-through these shared constants.
-`IngredientResolver` is the single resolution point for ingredient names —
-wraps `IngredientCatalog.lookup_for` with case-insensitive fallback and
-uncataloged variant collapsing.  Constructed via
-`IngredientCatalog.resolver_for(kitchen)`, shared across services within a
-request.  `RecipeNutritionJob` recomputes nutrition; `CascadeNutritionJob` fans
-out to cross-referencing recipes.
-`NutritionConstraints` is the single source of truth for nutrient definitions
-(NutrientDef) and validation rules — all downstream nutrient constants derive
-from it.  `RecipeAvailabilityCalculator` checks catalog coverage per recipe for
-availability badges on the menu page — uses `IngredientResolver` and refreshes
-automatically via Turbo morph when catalog entries change.
-`IngredientRowBuilder` computes per-ingredient `needed_units` (unit resolution
-status), `sources_for` (recipes and Quick Bites using an ingredient), and
-aggregate `coverage` (fully resolvable counts, unresolvable unit details with
-affected recipes) — shared by `IngredientsController` and
-`NutritionEntriesController`.
-`UsdaSearchController` exposes two JSON endpoints (`GET /usda/search`,
-`GET /usda/:fdc_id`) reading the API key from `Kitchen#usda_api_key`.
-`UsdaImportService` transforms raw USDA detail into editor-ready form values
-(nutrients, auto-picked density, source metadata, portion candidates).
-`UsdaClient` is a pure HTTP adapter returning flat portion arrays;
-`UsdaPortionClassifier` classifies them into density/portion/filtered buckets.
-`rake catalog:sync` pushes YAML changes into the database.
+**Nutrition pipeline.** Key classes (read their header comments for details):
+- `IngredientCatalog` — overlay model: global seed entries + per-kitchen
+  overrides, merged by `lookup_for` with Inflector variant matching and
+  `aliases` column.  `resolver_for(kitchen)` builds an `IngredientResolver`.
+- `IngredientResolver` — single resolution point for ingredient names
+  (case-insensitive fallback, variant collapsing). Shared across services
+  within a request.
+- `NutritionConstraints` — single source of truth for nutrient definitions
+  (`NutrientDef`, FDA daily values) and validation rules.
+- `NutritionCalculator` — consumes `IngredientCatalog` records directly. Owns
+  canonical unit conversion tables (`VOLUME_TO_ML`, `WEIGHT_CONVERSIONS`) and
+  Inflector-expanded variants — all unit recognition flows through these.
+- `RecipeNutritionJob` / `CascadeNutritionJob` — recompute nutrition; cascade
+  fans out to cross-referencing recipes.
+- `RecipeAvailabilityCalculator` — catalog coverage badges on the menu page.
+- `rake catalog:sync` pushes YAML seed changes into the database.
+
+**Ingredient editor.** `IngredientsController` shows a searchable, filterable
+table with coverage stats. Clicking a row opens the `nutrition_editor_controller`
+dialog.
+- `IngredientRowBuilder` — row data, `needed_units`, `sources_for`, aggregate
+  `coverage`.
+- Editor form: nutrients, density, portions, aisle, aliases, USDA search panel.
+- Inline USDA search (`UsdaSearchController` JSON endpoints) — click a result
+  to auto-populate fields via `UsdaImportService`. Density candidate picker
+  lets users choose among USDA volume-based portions.
+- `NutritionEntriesController` handles upsert/destroy; `CatalogWriteService`
+  orchestrates persistence.
+- `UsdaClient` is the HTTP adapter; `UsdaPortionClassifier` classifies portions
+  into density/portion/filtered buckets.
 
 ## Recipe & Data Formats
 
