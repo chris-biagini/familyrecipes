@@ -187,9 +187,14 @@ broadcast). Don't call `MarkdownImporter` directly for web operations.
 - `CatalogWriteService` — `IngredientCatalog` mutations, aisle sync, nutrition
   recalculation, broadcast.
 - `MealPlanWriteService` — select/deselect, select-all, clear, reconciliation.
+- `QuickBitesWriteService` — quick bites content persistence, parse
+  validation, reconciliation, broadcast.
 - `AisleWriteService` — reorder, rename/delete cascades to catalog rows,
   new-aisle sync, broadcast.
 - `CategoryWriteService` — ordering, renaming, deletion cascades, broadcast.
+- `Kitchen.batch_writes(kitchen)` — block scope that defers reconciliation
+  and broadcast to a single pass on block exit. Services check
+  `Kitchen.batching?` and skip their own finalize when true.
 - `MealPlanActions` concern provides `rescue_from StaleObjectError` for
   controllers using `MealPlanWriteService`.
 - `MealPlan#reconcile!` is the single pruning entry point — removes stale
