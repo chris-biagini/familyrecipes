@@ -19,6 +19,8 @@ module FamilyRecipes
         return NumericParsing.parse_fraction(value_str).to_s
       end
 
+      return nil unless Float(value_str, exception: false)
+
       value_str
     end
 

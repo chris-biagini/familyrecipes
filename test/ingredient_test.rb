@@ -165,6 +165,18 @@ class IngredientTest < Minitest::Test
     assert_equal ['a handful', nil], FamilyRecipes::Ingredient.split_quantity('a handful')
   end
 
+  def test_quantity_value_nil_for_freeform_text
+    ingredient = FamilyRecipes::Ingredient.new(name: 'Basil', quantity: 'a few leaves')
+
+    assert_nil ingredient.quantity_value
+  end
+
+  def test_quantity_value_nil_for_single_word_freeform
+    ingredient = FamilyRecipes::Ingredient.new(name: 'Parsley', quantity: 'some')
+
+    assert_nil ingredient.quantity_value
+  end
+
   # Normalized name tests
   def test_normalized_name_returns_name
     ingredient = FamilyRecipes::Ingredient.new(name: 'Flour')
