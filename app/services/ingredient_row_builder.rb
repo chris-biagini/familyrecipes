@@ -53,6 +53,10 @@ class IngredientRowBuilder # rubocop:disable Metrics/ClassLength
     @coverage ||= build_coverage
   end
 
+  def sources_for(name)
+    recipes_by_ingredient[name] || []
+  end
+
   private
 
   attr_reader :kitchen, :recipes

@@ -430,6 +430,37 @@ class IngredientRowBuilderTest < ActiveSupport::TestCase
     assert packet_entry[:resolvable]
   end
 
+  # --- sources_for ---
+
+  test 'sources_for returns recipes using the ingredient' do
+    builder = IngredientRowBuilder.new(kitchen: @kitchen)
+    sources = builder.sources_for('Flour')
+
+    assert_equal 2, sources.size
+    assert(sources.all? { |s| s.is_a?(Recipe) })
+  end
+
+  test 'sources_for includes quick bite sources' do
+    @kitchen.update!(quick_bites_content: <<~MD)
+      Snacks:
+      - Toast: Flour, Butter
+    MD
+
+    builder = IngredientRowBuilder.new(kitchen: @kitchen)
+    sources = builder.sources_for('Flour')
+
+    assert_equal 3, sources.size
+    assert(sources.any? { |s| s.is_a?(IngredientRowBuilder::QuickBiteSource) })
+  end
+
+  test 'sources_for returns empty array for unknown ingredient' do
+    builder = IngredientRowBuilder.new(kitchen: @kitchen)
+
+    assert_empty builder.sources_for('Nonexistent')
+  end
+
+  # --- needed_units (continued) ---
+
   test 'needed_units handles bare counts' do
     MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Scrambled Eggs

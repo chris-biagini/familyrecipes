@@ -22,7 +22,7 @@ class IngredientsController < ApplicationController
   def edit
     ingredient_name, entry = load_ingredient_data
     aisles = current_kitchen.all_aisles
-    sources = sources_for_ingredient(ingredient_name)
+    sources = row_builder.sources_for(ingredient_name)
     needed_units = row_builder.needed_units(ingredient_name)
 
     render partial: 'ingredients/editor_form',
@@ -42,22 +42,6 @@ class IngredientsController < ApplicationController
   def first_needing_attention
     row = @ingredient_rows.find { |r| r[:status] != 'complete' }
     row&.fetch(:name)
-  end
-
-  def sources_for_ingredient(name)
-    recipes = current_kitchen.recipes
-                             .joins(steps: :ingredients)
-                             .where(ingredients: { name: resolver.all_keys_for(name) })
-                             .distinct
-    quick_bites = quick_bites_using(name)
-    recipes.to_a + quick_bites
-  end
-
-  def quick_bites_using(name)
-    keys = resolver.all_keys_for(name).to_set(&:downcase)
-    current_kitchen.parsed_quick_bites
-                   .select { |qb| qb.all_ingredient_names.any? { |n| keys.include?(n.downcase) } }
-                   .map { |qb| IngredientRowBuilder::QuickBiteSource.new(title: qb.title) }
   end
 
   def load_ingredient_data
