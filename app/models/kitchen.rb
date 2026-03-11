@@ -7,6 +7,10 @@
 # Memberships. Also holds quick_bites_content (web-editable), aisle_order
 # (user-customized grocery aisle sequence), site branding (site_title,
 # homepage_heading, homepage_subtitle), and encrypted API keys (usda_api_key).
+#
+# Kitchen.batch_writes wraps a block so that reconciliation and broadcast happen
+# exactly once at the end, regardless of how many write services run inside.
+# Write services check Kitchen.batching? to skip their own finalization.
 class Kitchen < ApplicationRecord
   has_many :memberships, dependent: :destroy
   has_many :users, through: :memberships
@@ -20,6 +24,25 @@ class Kitchen < ApplicationRecord
 
   MAX_AISLE_NAME_LENGTH = FamilyRecipes::NutritionConstraints::AISLE_MAX_LENGTH
   MAX_AISLES = 50
+
+  def self.batch_writes(kitchen)
+    Current.batching_kitchen = kitchen
+    yield
+  ensure
+    Current.batching_kitchen = nil
+    finalize_batch(kitchen)
+  end
+
+  def self.batching?
+    Current.batching_kitchen.present?
+  end
+
+  def self.finalize_batch(kitchen)
+    plan = MealPlan.for_kitchen(kitchen)
+    plan.with_optimistic_retry { plan.reconcile! }
+    kitchen.broadcast_update
+  end
+  private_class_method :finalize_batch
 
   validates :name, presence: true
   validates :slug, presence: true, uniqueness: true
