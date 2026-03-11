@@ -308,7 +308,6 @@ nav > div:first-child {
   gap: 0.15rem;
   padding: 0.45rem 0.5rem 0.3rem;
   text-align: center;
-  flex: 1;
 }
 
 .nav-compact .nav-links a::after {
