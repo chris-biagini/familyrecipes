@@ -1,0 +1,11 @@
+{
+  "planPath": "docs/plans/2026-03-11-usda-portion-classifier-plan.md",
+  "tasks": [
+    {"id": 1, "subject": "Task 1: Create UsdaPortionClassifier with tests", "status": "pending"},
+    {"id": 2, "subject": "Task 2: Simplify UsdaClient to return flat portions", "status": "pending", "blockedBy": [1]},
+    {"id": 3, "subject": "Task 3: Remove USDA classification from NutritionTui::Data", "status": "pending", "blockedBy": [1]},
+    {"id": 4, "subject": "Task 4: Update TUI ingredient screen to use UsdaPortionClassifier", "status": "pending", "blockedBy": [2, 3]},
+    {"id": 5, "subject": "Task 5: Final verification and cleanup", "status": "pending", "blockedBy": [4]}
+  ],
+  "lastUpdated": "2026-03-11T00:00:00Z"
+}
