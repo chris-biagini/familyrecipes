@@ -437,7 +437,7 @@ class IngredientRowBuilderTest < ActiveSupport::TestCase
     sources = builder.sources_for('Flour')
 
     assert_equal 2, sources.size
-    assert(sources.all? { |s| s.is_a?(Recipe) })
+    assert(sources.all?(Recipe))
   end
 
   test 'sources_for includes quick bite sources' do
@@ -450,7 +450,7 @@ class IngredientRowBuilderTest < ActiveSupport::TestCase
     sources = builder.sources_for('Flour')
 
     assert_equal 3, sources.size
-    assert(sources.any? { |s| s.is_a?(IngredientRowBuilder::QuickBiteSource) })
+    assert(sources.any?(IngredientRowBuilder::QuickBiteSource))
   end
 
   test 'sources_for returns empty array for unknown ingredient' do
