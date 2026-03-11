@@ -4,8 +4,9 @@
 # query on tenant-scoped models must go through current_kitchen; unscoped finders
 # like Recipe.find_by would cross kitchen boundaries. Owns recipes, categories,
 # ingredient catalog entries, a single MealPlan, and its member Users via
-# Memberships. Also holds quick_bites_content (web-editable) and aisle_order
-# (user-customized grocery aisle sequence).
+# Memberships. Also holds quick_bites_content (web-editable), aisle_order
+# (user-customized grocery aisle sequence), site branding (site_title,
+# homepage_heading, homepage_subtitle), and encrypted API keys (usda_api_key).
 class Kitchen < ApplicationRecord
   has_many :memberships, dependent: :destroy
   has_many :users, through: :memberships

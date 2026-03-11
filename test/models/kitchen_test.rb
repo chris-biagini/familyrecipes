@@ -167,6 +167,7 @@ class KitchenTest < ActiveSupport::TestCase
     raw = ActiveRecord::Base.connection.select_value(
       "SELECT usda_api_key FROM kitchens WHERE id = #{@kitchen.id}"
     )
+
     assert_not_equal 'test-api-key-123', raw
   end
 

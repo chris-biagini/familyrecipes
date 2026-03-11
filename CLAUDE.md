@@ -196,6 +196,12 @@ controllers whose write paths use `MealPlanWriteService`.
 checked-off items and stale selections based on current shopping list state.
 Called after recipe CRUD, quick bites edits, catalog changes, and deselects.
 
+**Settings.** Site branding and API keys live as columns on Kitchen (no
+separate settings table). `usda_api_key` is encrypted via Active Record
+Encryption. `SettingsController` is a thin show/update — no write service.
+The `multi_kitchen` flag is an env var (`MULTI_KITCHEN=true`), not a database
+setting.
+
 **Nutrition pipeline.** `IngredientCatalog` is an overlay model — global seed
 entries plus per-kitchen overrides, merged by `lookup_for` with `Inflector`
 variant matching and a JSON `aliases` column for alternate names.
