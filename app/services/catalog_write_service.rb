@@ -88,20 +88,17 @@ class CatalogWriteService
   end
 
   def save_all_entries(entries_hash)
-    persisted = 0
-    errors = []
-
-    entries_hash.each do |name, entry|
+    saved, failed = entries_hash.each_with_object([[], []]) do |(name, entry), (ok, err)|
       record = IngredientCatalog.find_or_initialize_by(kitchen:, ingredient_name: name)
       record.assign_attributes(IngredientCatalog.attrs_from_yaml(entry))
       if record.save
-        persisted += 1
+        ok << record
       else
-        errors << "#{name}: #{record.errors.full_messages.join(', ')}"
+        err << "#{name}: #{record.errors.full_messages.join(', ')}"
       end
     end
 
-    [persisted, errors]
+    [saved.size, failed]
   end
 
   def sync_bulk_aisles(entries_hash)
