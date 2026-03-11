@@ -41,6 +41,7 @@ module FamilyRecipes
     def self.fraction_token?(token)
       token.match?(%r{\A\d+/\d+\z}) || token.match?(NumericParsing::VULGAR_PATTERN)
     end
+
     def self.numeric_token?(token)
       token.match?(/\A\d/) || token.match?(NumericParsing::VULGAR_PATTERN)
     end
