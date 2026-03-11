@@ -1,0 +1,11 @@
+{
+  "planPath": "docs/plans/2026-03-11-nutrition-calculator-ar-plan.md",
+  "tasks": [
+    {"id": 1, "subject": "Task 1: Convert NutritionCalculator test fixtures to IngredientCatalog records", "status": "pending"},
+    {"id": 2, "subject": "Task 2: Rewrite NutritionCalculator to consume AR records", "status": "pending", "blockedBy": [1]},
+    {"id": 3, "subject": "Task 3: Simplify RecipeNutritionJob", "status": "pending", "blockedBy": [2]},
+    {"id": 4, "subject": "Task 4: Update BuildValidator tests for AR-based calculator", "status": "pending", "blockedBy": [2]},
+    {"id": 5, "subject": "Task 5: Final verification and cleanup", "status": "pending", "blockedBy": [3, 4]}
+  ],
+  "lastUpdated": "2026-03-11T00:00:00Z"
+}
