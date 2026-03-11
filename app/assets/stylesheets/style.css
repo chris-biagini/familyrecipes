@@ -328,7 +328,7 @@ nav > div:not(:first-child):not(.nav-drawer) {
   display: flex;
   gap: 0.4rem;
   padding: 0.4rem;
-  align-self: flex-start;
+  align-self: center;
 }
 
 
