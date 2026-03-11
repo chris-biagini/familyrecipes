@@ -50,6 +50,15 @@ class IngredientAggregatorTest < Minitest::Test
     assert_equal [nil], result
   end
 
+  def test_freeform_quantity_treated_as_unquantified
+    ingredients = [
+      FamilyRecipes::Ingredient.new(name: 'Basil', quantity: 'a few leaves')
+    ]
+    result = IngredientAggregator.aggregate_amounts(ingredients)
+
+    assert_equal [nil], result
+  end
+
   def test_unitless_numeric_sums
     ingredients = [
       FamilyRecipes::Ingredient.new(name: 'Egg', quantity: '2'),
