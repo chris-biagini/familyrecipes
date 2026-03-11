@@ -44,8 +44,7 @@ class CatalogWriteService
 
     AisleWriteService.sync_new_aisle(kitchen:, aisle: entry.aisle) if entry.aisle
     recalculate_recipes_for(names: [ingredient_name]) if entry.basis_grams.present?
-    reconcile_meal_plan
-    kitchen.broadcast_update
+    finalize
 
     Result.new(entry:, persisted: true)
   end
@@ -54,8 +53,7 @@ class CatalogWriteService
     entry = IngredientCatalog.find_by!(kitchen:, ingredient_name:)
     entry.destroy!
     recalculate_recipes_for(names: [ingredient_name])
-    reconcile_meal_plan
-    kitchen.broadcast_update
+    finalize
     Result.new(entry:, persisted: true)
   end
 
@@ -71,6 +69,13 @@ class CatalogWriteService
   private
 
   attr_reader :kitchen, :ingredient_name
+
+  def finalize
+    return if Kitchen.batching?
+
+    reconcile_meal_plan
+    kitchen.broadcast_update
+  end
 
   def reconcile_meal_plan
     plan = MealPlan.for_kitchen(kitchen)

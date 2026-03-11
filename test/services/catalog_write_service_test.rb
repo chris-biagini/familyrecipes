@@ -283,6 +283,19 @@ class CatalogWriteServiceTest < ActiveSupport::TestCase
                  'checked-off items should be pruned after catalog entry destroyed'
   end
 
+  # --- batching guard ---
+
+  test 'upsert skips broadcast when batching' do
+    broadcast_count = 0
+    @kitchen.define_singleton_method(:broadcast_update) { broadcast_count += 1 }
+
+    Kitchen.stub(:batching?, true) do
+      upsert_entry('flour', nutrients: {}, aisle: 'Baking')
+    end
+
+    assert_equal 0, broadcast_count
+  end
+
   # --- bulk_import ---
 
   test 'bulk_import creates entries from YAML hash' do
