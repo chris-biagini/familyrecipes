@@ -1,0 +1,14 @@
+{
+  "planPath": "docs/plans/2026-03-11-batch-writes-plan.md",
+  "tasks": [
+    {"id": 1, "subject": "Task 1: Add batching_kitchen to Current and Kitchen.batch_writes", "status": "pending"},
+    {"id": 2, "subject": "Task 2: Guard RecipeWriteService finalization", "status": "pending", "blockedBy": [1]},
+    {"id": 3, "subject": "Task 3: Guard CatalogWriteService finalization", "status": "pending", "blockedBy": [1]},
+    {"id": 4, "subject": "Task 4: Guard MealPlanWriteService + add reconcile to select_all/clear", "status": "pending", "blockedBy": [1]},
+    {"id": 5, "subject": "Task 5: Create QuickBitesWriteService", "status": "pending", "blockedBy": [1]},
+    {"id": 6, "subject": "Task 6: Update MenuController to use QuickBitesWriteService", "status": "pending", "blockedBy": [5]},
+    {"id": 7, "subject": "Task 7: Update ImportService to use batch_writes + QuickBitesWriteService", "status": "pending", "blockedBy": [2, 3, 4, 5]},
+    {"id": 8, "subject": "Task 8: Update CLAUDE.md and close issue", "status": "pending", "blockedBy": [7]}
+  ],
+  "lastUpdated": "2026-03-11T00:00:00Z"
+}
