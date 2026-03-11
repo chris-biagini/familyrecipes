@@ -7,10 +7,12 @@ require 'uri'
 module FamilyRecipes
   # HTTP client for the USDA FoodData Central API. Encapsulates search and
   # detail-fetch operations, error classification, and nutrient/portion
-  # extraction. Used by bin/nutrition today; designed for future web integration.
+  # extraction. Returns flat portion arrays; classification into volume vs
+  # non-volume is handled by UsdaPortionClassifier.
   #
   # Collaborators: NutritionCalculator (consumes the nutrient hashes this
-  # client produces), bin/nutrition (interactive CLI wrapper).
+  # client produces), UsdaPortionClassifier (classifies portions downstream),
+  # bin/nutrition (interactive CLI wrapper).
   class UsdaClient
     class Error < StandardError; end
     class NetworkError < Error; end
@@ -132,7 +134,7 @@ module FamilyRecipes
       {
         fdc_id: data['fdcId'], description: data['description'],
         data_type: data['dataType'] || 'SR Legacy',
-        nutrients: extract_nutrients(data), portions: classify_portions(data)
+        nutrients: extract_nutrients(data), portions: extract_portions(data)
       }
     end
 
@@ -147,14 +149,8 @@ module FamilyRecipes
       nutrients
     end
 
-    def classify_portions(food_detail)
-      (food_detail['foodPortions'] || []).each_with_object(volume: [], non_volume: []) do |portion, result|
-        entry = build_portion_entry(portion)
-        next unless entry
-
-        bucket = volume_unit?(portion['modifier']) ? :volume : :non_volume
-        result[bucket] << entry
-      end
+    def extract_portions(food_detail)
+      (food_detail['foodPortions'] || []).filter_map { |p| build_portion_entry(p) }
     end
 
     def build_portion_entry(portion)
@@ -167,10 +163,5 @@ module FamilyRecipes
       { modifier: modifier, grams: grams, amount: portion['amount'] || 1.0 }
     end
 
-    def volume_unit?(modifier)
-      clean = modifier.to_s.downcase.sub(/\s*\(.*\)/, '').strip
-      normalized = FamilyRecipes::Inflector.normalize_unit(clean)
-      FamilyRecipes::NutritionCalculator::VOLUME_TO_ML.key?(normalized)
-    end
   end
 end

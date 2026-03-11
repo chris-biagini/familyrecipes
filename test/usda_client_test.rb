@@ -75,18 +75,18 @@ class UsdaClientTest < Minitest::Test
     end
   end
 
-  def test_fetch_classifies_volume_and_non_volume_portions
+  def test_fetch_returns_flat_portions_array
     body = sample_food_detail
 
     with_api_response(200, body) do
       result = @client.fetch(fdc_id: 168_913)
       portions = result[:portions]
 
-      assert_equal 1, portions[:volume].size
-      assert_equal 'cup', portions[:volume].first[:modifier]
-
-      assert_equal 1, portions[:non_volume].size
-      assert_equal 'serving', portions[:non_volume].first[:modifier]
+      assert_kind_of Array, portions
+      assert_equal 2, portions.size
+      assert_equal 'cup', portions.first[:modifier]
+      assert_in_delta 125.0, portions.first[:grams]
+      assert_equal 'serving', portions.last[:modifier]
     end
   end
 
@@ -103,8 +103,8 @@ class UsdaClientTest < Minitest::Test
     with_api_response(200, body) do
       result = @client.fetch(fdc_id: 100)
 
-      assert_equal 1, result[:portions][:volume].size
-      assert_empty result[:portions][:non_volume]
+      assert_equal 1, result[:portions].size
+      assert_equal 'cup', result[:portions].first[:modifier]
     end
   end
 
@@ -156,40 +156,6 @@ class UsdaClientTest < Minitest::Test
     with_api_response(200, 'not json at all') do
       assert_raises(FamilyRecipes::UsdaClient::ParseError) { @client.search('flour') }
     end
-  end
-
-  # -- volume_unit? --
-
-  def test_volume_unit_cup
-    assert @client.send(:volume_unit?, 'cup')
-  end
-
-  def test_volume_unit_cups_plural
-    assert @client.send(:volume_unit?, 'cups')
-  end
-
-  def test_volume_unit_tablespoon
-    assert @client.send(:volume_unit?, 'tablespoon')
-  end
-
-  def test_volume_unit_tsp
-    assert @client.send(:volume_unit?, 'tsp')
-  end
-
-  def test_volume_unit_fl_oz
-    assert @client.send(:volume_unit?, 'fl oz')
-  end
-
-  def test_volume_unit_strips_parenthetical
-    assert @client.send(:volume_unit?, 'cup (8 fl oz)')
-  end
-
-  def test_volume_unit_rejects_large
-    refute @client.send(:volume_unit?, 'large')
-  end
-
-  def test_volume_unit_rejects_piece
-    refute @client.send(:volume_unit?, 'piece')
   end
 
   # -- load_api_key --
