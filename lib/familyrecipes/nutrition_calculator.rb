@@ -63,6 +63,9 @@ module FamilyRecipes
           %w[totals per_serving per_unit].each do |key|
             h[key] = h[key]&.transform_keys(&:to_s)&.transform_values(&:to_f)
           end
+          %w[total_weight_grams serving_count makes_quantity units_per_serving].each do |key|
+            h[key] = h[key]&.to_f
+          end
         end
       end
     end

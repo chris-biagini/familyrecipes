@@ -976,4 +976,29 @@ class NutritionCalculatorTest < Minitest::Test
 
     assert_in_delta 0, result.total_weight_grams, 0.01
   end
+
+  def test_as_json_coerces_numeric_scalars_to_float
+    result = FamilyRecipes::NutritionCalculator::Result.new(
+      totals: { calories: BigDecimal('100') },
+      serving_count: BigDecimal('4'),
+      per_serving: { calories: BigDecimal('25') },
+      per_unit: nil,
+      makes_quantity: BigDecimal('8'),
+      makes_unit_singular: 'taco',
+      makes_unit_plural: 'tacos',
+      units_per_serving: BigDecimal('2'),
+      total_weight_grams: BigDecimal('592.5'),
+      missing_ingredients: [],
+      partial_ingredients: [],
+      skipped_ingredients: []
+    )
+
+    json = result.as_json
+
+    assert_instance_of Float, json['total_weight_grams']
+    assert_instance_of Float, json['serving_count']
+    assert_instance_of Float, json['makes_quantity']
+    assert_instance_of Float, json['units_per_serving']
+    assert_in_delta 592.5, json['total_weight_grams']
+  end
 end
