@@ -54,10 +54,10 @@ class MealPlanWriteService
   end
 
   def reconcile
-    mutate_plan do |plan|
-      plan.reconcile! unless Kitchen.batching?
-    end
-    finalize
+    return if Kitchen.batching?
+
+    mutate_plan(&:reconcile!)
+    kitchen.broadcast_update
   end
 
   private

@@ -98,16 +98,18 @@ class MealPlanWriteServiceTest < ActiveSupport::TestCase
     assert_equal %w[focaccia], @plan.state['selected_recipes']
   end
 
-  test 'select_all reconciles stale selections' do
-    @plan.apply_action('select', type: 'recipe', slug: 'ghost', selected: true)
+  test 'select_all reconciles stale checked-off items' do
+    create_focaccia_recipe
+    @plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+    @plan.apply_action('check', item: 'Stale Item', checked: true)
 
     MealPlanWriteService.select_all(
-      kitchen: @kitchen, recipe_slugs: %w[real], quick_bite_slugs: []
+      kitchen: @kitchen, recipe_slugs: %w[focaccia], quick_bite_slugs: []
     )
 
     @plan.reload
 
-    assert_not_includes @plan.state['selected_recipes'], 'ghost'
+    assert_not_includes @plan.state['checked_off'], 'Stale Item'
   end
 
   test 'select_all broadcasts to kitchen updates stream' do
@@ -132,14 +134,16 @@ class MealPlanWriteServiceTest < ActiveSupport::TestCase
     assert_empty @plan.state['checked_off']
   end
 
-  test 'clear reconciles stale selections' do
-    @plan.apply_action('select', type: 'recipe', slug: 'ghost', selected: true)
+  test 'clear reconciles stale checked-off items' do
+    create_focaccia_recipe
+    @plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+    @plan.apply_action('check', item: 'Stale Item', checked: true)
 
     MealPlanWriteService.clear(kitchen: @kitchen)
 
     @plan.reload
 
-    assert_not_includes @plan.state['selected_recipes'], 'ghost'
+    assert_not_includes @plan.state['checked_off'], 'Stale Item'
   end
 
   test 'clear broadcasts to kitchen updates stream' do
