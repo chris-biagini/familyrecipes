@@ -96,11 +96,11 @@ module RecipesHelper # rubocop:disable Metrics/ModuleLength
   private
 
   def per_serving_weight(nutrition)
-    total = nutrition['total_weight_grams']
-    return unless total&.positive?
+    total = nutrition['total_weight_grams'].to_f
+    return unless total.positive?
 
     count = nutrition['serving_count'] || 1
-    total.to_f / count
+    total / count
   end
 
   def serving_unit_description(nutrition)

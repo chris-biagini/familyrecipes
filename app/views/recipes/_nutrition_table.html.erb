@@ -18,6 +18,7 @@
     <%- per_serving = nutrition['per_serving'] || nutrition['totals'] || {} -%>
     <%- RecipesHelper::NUTRITION_ROWS.each do |label, key, unit_label, indent, _daily_value| -%>
       <%- next if key == 'calories' -%>
+      <%- next if key.in?(%w[trans_fat added_sugars]) -%>
       <%- value = per_serving[key].to_f -%>
       <%- dv_percent = percent_daily_value(key.to_sym, value) -%>
       <div class="nutrient-row<%= " indent-#{indent}" if indent > 0 %>">
