@@ -7,6 +7,7 @@ module FamilyRecipes
   # a Result with totals, per-serving, and per-unit breakdowns, plus lists of
   # missing and partially resolvable ingredients.
   #
+  # Collaborators:
   # - RecipeNutritionJob: calls this at save time; Result stored as JSON on Recipe
   # - NutritionConstraints: defines NUTRIENT_KEYS consumed here
   # - IngredientCatalog: AR model whose accessors this class reads directly
