@@ -44,6 +44,8 @@ Rails.application.routes.draw do
     patch 'settings', to: 'settings#update'
     post 'nutrition/:ingredient_name', to: 'nutrition_entries#upsert', as: :nutrition_entry_upsert
     delete 'nutrition/:ingredient_name', to: 'nutrition_entries#destroy', as: :nutrition_entry_destroy
+    get 'usda/search', to: 'usda_search#search', as: :usda_search
+    get 'usda/:fdc_id', to: 'usda_search#show', as: :usda_show
   end
 
   delete 'logout', to: 'dev_sessions#destroy', as: :logout
