@@ -88,6 +88,15 @@ class UsdaImportServiceTest < ActiveSupport::TestCase
     assert_includes modifiers, 'tbsp'
   end
 
+  test 'Result#as_json returns hash with all keys' do
+    result = UsdaImportService.call(@detail)
+    json = result.as_json
+
+    assert_kind_of Hash, json
+    assert_equal %i[density density_candidates nutrients portions source], json.keys.sort
+    assert_in_delta 52.0, json[:nutrients][:calories]
+  end
+
   test 'handles empty portions gracefully' do
     @detail[:portions] = []
 

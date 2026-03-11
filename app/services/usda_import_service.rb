@@ -11,7 +11,11 @@
 # - UsdaPortionClassifier (classifies portions into density/portion/filtered)
 # - UsdaSearchController (calls this after fetching USDA detail)
 class UsdaImportService
-  Result = Data.define(:nutrients, :density, :source, :portions, :density_candidates)
+  Result = Data.define(:nutrients, :density, :source, :portions, :density_candidates) do
+    def as_json(_options = nil)
+      to_h
+    end
+  end
 
   def self.call(detail)
     new(detail).call

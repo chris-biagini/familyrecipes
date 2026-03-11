@@ -23,7 +23,7 @@ class UsdaSearchController < ApplicationController
   def show
     detail = usda_client.fetch(fdc_id: params[:fdc_id])
     import = UsdaImportService.call(detail)
-    render json: import_json(import)
+    render json: import
   rescue FamilyRecipes::UsdaClient::Error => error
     render json: { error: error.message }, status: :unprocessable_content
   end
@@ -38,11 +38,5 @@ class UsdaSearchController < ApplicationController
 
   def usda_client
     FamilyRecipes::UsdaClient.new(api_key: current_kitchen.usda_api_key)
-  end
-
-  def import_json(import)
-    { nutrients: import.nutrients, density: import.density,
-      source: import.source, portions: import.portions,
-      density_candidates: import.density_candidates }
   end
 end
