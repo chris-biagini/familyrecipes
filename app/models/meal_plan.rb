@@ -88,25 +88,23 @@ class MealPlan < ApplicationRecord
     end
   end
 
-  def reconcile!
+  def reconcile!(visible_names:)
     ensure_state_keys
-    visible = ShoppingListBuilder.new(kitchen:, meal_plan: self).visible_names
-    prune_checked_off(visible_names: visible)
-    prune_stale_selections
+    changed = prune_checked_off(visible_names:)
+    changed |= prune_stale_selections
+    save! if changed
   end
 
   private
 
-  def prune_checked_off(visible_names:)
-    ensure_state_keys
+  def prune_checked_off(visible_names:) # rubocop:disable Naming/PredicateMethod
     custom = state['custom_items']
     before_size = state['checked_off'].size
     state['checked_off'].select! { |item| visible_names.include?(item) || custom.any? { |c| c.casecmp?(item) } }
-    save! if state['checked_off'].size < before_size
+    state['checked_off'].size < before_size
   end
 
-  def prune_stale_selections # rubocop:disable Metrics/AbcSize
-    ensure_state_keys
+  def prune_stale_selections # rubocop:disable Metrics/AbcSize, Naming/PredicateMethod
     valid_slugs = kitchen.recipes.pluck(:slug).to_set
     valid_qb_ids = kitchen.parsed_quick_bites.to_set(&:id)
 
@@ -116,8 +114,8 @@ class MealPlan < ApplicationRecord
     state['selected_recipes'].select! { |s| valid_slugs.include?(s) }
     state['selected_quick_bites'].select! { |s| valid_qb_ids.include?(s) }
 
-    save! if state['selected_recipes'].size < recipes_before ||
-             state['selected_quick_bites'].size < qb_before
+    state['selected_recipes'].size < recipes_before ||
+      state['selected_quick_bites'].size < qb_before
   end
 
   def ensure_state_keys

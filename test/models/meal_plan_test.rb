@@ -8,6 +8,11 @@ class MealPlanTest < ActiveSupport::TestCase
     MealPlan.where(kitchen: @kitchen).delete_all
   end
 
+  def reconcile_plan!(plan)
+    visible = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: plan).visible_names
+    plan.reconcile!(visible_names: visible)
+  end
+
   test 'belongs to kitchen' do
     list = MealPlan.create!(kitchen: @kitchen)
 
@@ -203,7 +208,7 @@ class MealPlanTest < ActiveSupport::TestCase
     plan = MealPlan.for_kitchen(@kitchen)
     plan.apply_action('check', item: 'Phantom Item', checked: true)
 
-    plan.reconcile!
+    reconcile_plan!(plan)
     plan.reload
 
     assert_empty plan.state['checked_off']
@@ -226,7 +231,7 @@ class MealPlanTest < ActiveSupport::TestCase
     plan.apply_action('check', item: 'Flour', checked: true)
     plan.apply_action('check', item: 'Phantom', checked: true)
 
-    plan.reconcile!
+    reconcile_plan!(plan)
     plan.reload
 
     assert_includes plan.state['checked_off'], 'Flour'
@@ -238,7 +243,7 @@ class MealPlanTest < ActiveSupport::TestCase
     plan.apply_action('custom_items', item: 'birthday candles', action: 'add')
     plan.apply_action('check', item: 'birthday candles', checked: true)
 
-    plan.reconcile!
+    reconcile_plan!(plan)
     plan.reload
 
     assert_includes plan.state['checked_off'], 'birthday candles'
@@ -249,7 +254,7 @@ class MealPlanTest < ActiveSupport::TestCase
     plan.apply_action('custom_items', item: 'Birthday Candles', action: 'add')
     plan.apply_action('check', item: 'birthday candles', checked: true)
 
-    plan.reconcile!
+    reconcile_plan!(plan)
     plan.reload
 
     assert_includes plan.state['checked_off'], 'birthday candles'
@@ -263,7 +268,7 @@ class MealPlanTest < ActiveSupport::TestCase
     plan.apply_action('select', type: 'recipe', slug: 'exists', selected: true)
     plan.apply_action('select', type: 'recipe', slug: 'gone', selected: true)
 
-    plan.reconcile!
+    reconcile_plan!(plan)
 
     assert_includes plan.state['selected_recipes'], 'exists'
     assert_not_includes plan.state['selected_recipes'], 'gone'
@@ -276,7 +281,7 @@ class MealPlanTest < ActiveSupport::TestCase
     plan.apply_action('select', type: 'quick_bite', slug: 'nachos', selected: true)
     plan.apply_action('select', type: 'quick_bite', slug: 'gone-bite', selected: true)
 
-    plan.reconcile!
+    reconcile_plan!(plan)
 
     assert_includes plan.state['selected_quick_bites'], 'nachos'
     assert_not_includes plan.state['selected_quick_bites'], 'gone-bite'
@@ -286,7 +291,7 @@ class MealPlanTest < ActiveSupport::TestCase
     plan = MealPlan.for_kitchen(@kitchen)
     version_before = plan.lock_version
 
-    plan.reconcile!
+    reconcile_plan!(plan)
 
     assert_equal version_before, plan.reload.lock_version
   end
@@ -296,7 +301,7 @@ class MealPlanTest < ActiveSupport::TestCase
     plan.apply_action('check', item: 'Phantom', checked: true)
     version_before = plan.lock_version
 
-    plan.reconcile!
+    reconcile_plan!(plan)
 
     assert_operator plan.lock_version, :>, version_before
   end
@@ -340,7 +345,7 @@ class MealPlanTest < ActiveSupport::TestCase
     list.apply_action('custom_items', item: 'Birthday Candles', action: 'add')
     list.apply_action('check', item: 'Birthday Candles', checked: true)
     list.apply_action('custom_items', item: 'Birthday Candles', action: 'remove')
-    list.reconcile!
+    reconcile_plan!(list)
 
     list.reload
 
@@ -353,7 +358,7 @@ class MealPlanTest < ActiveSupport::TestCase
     list.apply_action('custom_items', item: 'Test', action: 'add')
     list.apply_action('check', item: 'Test', checked: true)
     list.apply_action('custom_items', item: 'test', action: 'remove')
-    list.reconcile!
+    reconcile_plan!(list)
 
     list.reload
 
