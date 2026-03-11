@@ -223,17 +223,18 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'select_all preserves custom items and checked off' do
+    create_focaccia_recipe
     log_in
     plan = MealPlan.for_kitchen(@kitchen)
     plan.apply_action('custom_items', item: 'birthday candles', action: 'add')
-    plan.apply_action('check', item: 'flour', checked: true)
+    plan.apply_action('check', item: 'Flour', checked: true)
 
     patch menu_select_all_path(kitchen_slug: kitchen_slug), as: :turbo_stream
 
     plan.reload
 
     assert_includes plan.state['custom_items'], 'birthday candles'
-    assert_includes plan.state['checked_off'], 'flour'
+    assert_includes plan.state['checked_off'], 'Flour'
   end
 
   test 'select_all broadcasts meal plan refresh' do
