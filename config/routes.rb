@@ -40,6 +40,8 @@ Rails.application.routes.draw do
     get 'categories/order_content', to: 'categories#order_content', as: :categories_order_content
     get 'export', to: 'exports#show', as: :export
     post 'import', to: 'imports#create', as: :import
+    get 'settings', to: 'settings#show', as: :settings
+    patch 'settings', to: 'settings#update'
     post 'nutrition/:ingredient_name', to: 'nutrition_entries#upsert', as: :nutrition_entry_upsert
     delete 'nutrition/:ingredient_name', to: 'nutrition_entries#destroy', as: :nutrition_entry_destroy
   end
