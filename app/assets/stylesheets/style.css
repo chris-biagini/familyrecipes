@@ -332,19 +332,6 @@ nav > div:not(:first-child):not(.nav-drawer) {
   align-self: flex-start;
 }
 
-nav.nav-compact > div:not(:first-child):not(.nav-drawer) .btn {
-  font-size: 0.7rem;
-  padding: 0.2rem 0.5rem;
-}
-
-nav.nav-compact .nav-settings-link {
-  padding: 0.3rem 0.4rem !important;
-}
-
-nav.nav-compact .nav-settings-link .nav-icon {
-  width: 0.95rem;
-  height: 0.95rem;
-}
 
 .nav-auth-btn {
   appearance: none;
