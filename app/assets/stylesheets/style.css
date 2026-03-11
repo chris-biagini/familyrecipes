@@ -275,7 +275,7 @@ nav a {
   padding: 0.5rem 0.9rem;
   line-height: 1.5;
   color: var(--text-color);
-  transition: color 0.2s ease, padding 0.25s ease, gap 0.25s ease;
+  transition: color 0.2s ease;
   position: relative;
 }
 
@@ -288,8 +288,7 @@ nav a::after {
   height: 1px;
   background-color: var(--accent-color);
   transform: scaleX(0);
-  opacity: 1;
-  transition: transform 0.25s ease, opacity 0.2s ease;
+  transition: transform 0.25s ease;
 }
 
 nav a:hover::after,
@@ -312,7 +311,7 @@ nav > div:first-child {
 }
 
 .nav-compact .nav-links a::after {
-  opacity: 0;
+  display: none;
 }
 
 .nav-compact .nav-links a span {
@@ -427,11 +426,6 @@ nav a:focus-visible {
   width: 1.15rem;
   height: 1.15rem;
   flex-shrink: 0;
-  transition: width 0.25s ease, height 0.25s ease;
-}
-
-.nav-links a span {
-  transition: font-size 0.25s ease, letter-spacing 0.25s ease;
 }
 
 /* Hamburger menu — visible only at the compact breakpoint */
