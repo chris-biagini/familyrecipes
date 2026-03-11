@@ -277,6 +277,23 @@ class ImportServiceTest < ActiveSupport::TestCase
     assert_predicate @kitchen.categories, :any?
   end
 
+  # --- Batch broadcast ---
+
+  test 'multi-recipe import produces exactly one broadcast' do
+    broadcast_count = 0
+    @kitchen.define_singleton_method(:broadcast_update) { broadcast_count += 1 }
+
+    zip = build_zip(
+      'Bread/Focaccia.md' => simple_recipe('Focaccia'),
+      'Desserts/Brownies.md' => simple_recipe('Brownies'),
+      'Soup/Chowder.md' => simple_recipe('Chowder')
+    )
+    import_files(uploaded_file('export.zip', zip))
+
+    assert_equal 1, broadcast_count
+    assert_equal 3, @kitchen.recipes.count
+  end
+
   private
 
   def import_files(*file_list)

@@ -36,8 +36,9 @@ class ImportService # rubocop:disable Metrics/ClassLength
 
   def import
     zip_file = files.find { |f| File.extname(f.original_filename).casecmp('.zip').zero? }
-    zip_file ? import_zip(zip_file) : files.each { |f| import_recipe_file(f, 'Miscellaneous') }
-    kitchen.broadcast_update
+    Kitchen.batch_writes(kitchen) do
+      zip_file ? import_zip(zip_file) : files.each { |f| import_recipe_file(f, 'Miscellaneous') }
+    end
     build_result
   end
 
@@ -126,7 +127,7 @@ class ImportService # rubocop:disable Metrics/ClassLength
   def import_quick_bites(content)
     return if content.blank?
 
-    kitchen.update!(quick_bites_content: content)
+    QuickBitesWriteService.update(kitchen:, content:)
     @quick_bites_imported = true
   end
 
