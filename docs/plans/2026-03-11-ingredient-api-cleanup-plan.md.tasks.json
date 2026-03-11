@@ -1,0 +1,11 @@
+{
+  "planPath": "docs/plans/2026-03-11-ingredient-api-cleanup-plan.md",
+  "tasks": [
+    {"id": 1, "subject": "Task 1: Fix CatalogWriteService#save_all_entries imperative loop", "status": "pending"},
+    {"id": 2, "subject": "Task 2: Remove NutritionCalculator coupling from IngredientRowBuilder", "status": "pending"},
+    {"id": 3, "subject": "Task 3: Move sources_for_ingredient into IngredientRowBuilder", "status": "pending"},
+    {"id": 4, "subject": "Task 4: Add as_json to UsdaImportService::Result, remove import_json", "status": "pending"},
+    {"id": 5, "subject": "Task 5: Update architectural comments and CLAUDE.md", "status": "pending", "blockedBy": [1, 2, 3, 4]}
+  ],
+  "lastUpdated": "2026-03-11T00:00:00Z"
+}
