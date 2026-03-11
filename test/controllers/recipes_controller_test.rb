@@ -664,4 +664,23 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :not_found
   end
+
+  test 'show renders recipe with freeform quantity ingredient' do
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @bread)
+      # Salad
+
+      ## Toss (combine ingredients)
+
+      - Basil, a few leaves
+      - Lettuce, 1 head
+
+      Toss everything together.
+    MD
+
+    get recipe_path('salad', kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select 'b.ingredient-name', text: 'Basil'
+    assert_select 'li', text: /a few leaves/
+  end
 end
