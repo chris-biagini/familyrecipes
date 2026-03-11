@@ -126,12 +126,15 @@ class IngredientRowBuilder # rubocop:disable Metrics/ClassLength
 
   def ingredient_row(name, recs)
     entry = @resolver.catalog_entry(name)
+    units = collect_units_for(name)
+    all_resolvable = entry&.basis_grams.present? && units.all? { |u| unit_resolvable?(u, entry) }
     { name:, entry:, recipe_count: recs.size, recipes: recs,
       has_nutrition: entry&.basis_grams.present?,
       has_density: entry&.density_grams.present?,
       aisle: entry&.aisle,
       source: entry_source(entry),
-      status: row_status(entry) }
+      status: row_status(entry),
+      resolvable: all_resolvable }
   end
 
   def entry_source(entry)

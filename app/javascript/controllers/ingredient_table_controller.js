@@ -75,6 +75,7 @@ export default class extends Controller {
       case "no_aisle": return !row.dataset.aisle
       case "no_nutrition": return row.dataset.hasNutrition === "false"
       case "no_density": return row.dataset.hasDensity === "false"
+      case "not_resolvable": return row.dataset.resolvable === "false"
       default: return true
     }
   }

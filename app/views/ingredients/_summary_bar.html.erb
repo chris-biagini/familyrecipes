@@ -1,4 +1,4 @@
-<%# locals: (summary:) %>
+<%# locals: (summary:, coverage:) %>
 <button type="button" class="filter-pill active"
         data-ingredient-table-target="filterButton"
         data-filter="all"
@@ -24,3 +24,8 @@
         data-filter="no_density"
         data-action="click->ingredient-table#filter"
         aria-pressed="false">No Density (<%= summary[:missing_density] %>)</button>
+<button type="button" class="filter-pill"
+        data-ingredient-table-target="filterButton"
+        data-filter="not_resolvable"
+        data-action="click->ingredient-table#filter"
+        aria-pressed="false">Not Resolvable (<%= coverage[:unresolvable].size %>)</button>

@@ -391,6 +391,23 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
     assert_select '.alias-chip-text', text: 'Plain flour'
   end
 
+  test 'index renders not_resolvable filter pill with coverage count' do
+    @category = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Focaccia
+
+      ## Mix (combine)
+
+      - Flour, 3 cups
+    MD
+
+    log_in
+    get ingredients_path(kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select 'button.filter-pill[data-filter="not_resolvable"]'
+  end
+
   test 'edit requires membership' do
     get ingredient_edit_path('Flour', kitchen_slug: kitchen_slug)
 

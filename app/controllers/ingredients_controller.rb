@@ -14,6 +14,7 @@ class IngredientsController < ApplicationController
   def index
     @ingredient_rows = row_builder.rows
     @summary = row_builder.summary
+    @coverage = row_builder.coverage
     @available_aisles = current_kitchen.all_aisles
     @next_needing_attention = first_needing_attention
   end
