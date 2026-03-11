@@ -15,6 +15,8 @@ class Kitchen < ApplicationRecord
   has_many :ingredient_catalog, dependent: :destroy, class_name: 'IngredientCatalog'
   has_one :meal_plan, dependent: :destroy
 
+  encrypts :usda_api_key
+
   MAX_AISLE_NAME_LENGTH = FamilyRecipes::NutritionConstraints::AISLE_MAX_LENGTH
   MAX_AISLES = 50
 
