@@ -2,8 +2,9 @@
 
 # Orchestrates recipe create/update/destroy. Owns the full post-write pipeline:
 # import via MarkdownImporter, handle renames (CrossReferenceUpdater), clean up
-# orphan categories, and reconcile stale meal plan entries. Broadcasts a
-# page-refresh morph via Kitchen#broadcast_update after all cleanup completes.
+# orphan categories, and reconcile stale meal plan entries. The `finalize` step
+# always cleans orphan categories but skips reconcile and broadcast when
+# Kitchen.batching? is true (batch caller handles those once at the end).
 #
 # - MarkdownImporter: parses markdown into AR records
 # - Kitchen#broadcast_update: page-refresh morph for all connected clients
@@ -32,8 +33,7 @@ class RecipeWriteService
   def create(markdown:, category_name:)
     category = find_or_create_category(category_name)
     recipe = import_and_timestamp(markdown, category:)
-    post_write_cleanup
-    kitchen.broadcast_update
+    finalize
     Result.new(recipe:, updated_references: [])
   end
 
@@ -43,8 +43,7 @@ class RecipeWriteService
     recipe = import_and_timestamp(markdown, category:)
     updated_references = rename_cross_references(old_recipe, recipe)
     handle_slug_change(old_recipe, recipe)
-    post_write_cleanup
-    kitchen.broadcast_update
+    finalize
     Result.new(recipe:, updated_references:)
   end
 
@@ -52,8 +51,7 @@ class RecipeWriteService
     recipe = kitchen.recipes.find_by!(slug:)
     RecipeBroadcaster.notify_recipe_deleted(recipe, recipe_title: recipe.title)
     recipe.destroy!
-    post_write_cleanup
-    kitchen.broadcast_update
+    finalize
     Result.new(recipe:, updated_references: [])
   end
 
@@ -94,9 +92,12 @@ class RecipeWriteService
     old_recipe.destroy!
   end
 
-  def post_write_cleanup
+  def finalize
     Category.cleanup_orphans(kitchen)
+    return if Kitchen.batching?
+
     prune_stale_meal_plan_items
+    kitchen.broadcast_update
   end
 
   def prune_stale_meal_plan_items

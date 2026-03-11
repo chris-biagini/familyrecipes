@@ -226,6 +226,17 @@ class RecipeWriteServiceTest < ActiveSupport::TestCase
     end
   end
 
+  test 'create skips broadcast when batching' do
+    broadcast_count = 0
+    @kitchen.define_singleton_method(:broadcast_update) { broadcast_count += 1 }
+
+    Kitchen.stub(:batching?, true) do
+      RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen, category_name: 'Bread')
+    end
+
+    assert_equal 0, broadcast_count
+  end
+
   test 'destroy prunes deleted recipe from meal plan selections' do
     RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen, category_name: 'Bread')
     plan = MealPlan.for_kitchen(@kitchen)
