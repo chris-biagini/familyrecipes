@@ -1,4 +1,4 @@
-<%# locals: (ingredient_name:, entry:, available_aisles:, sources: []) %>
+<%# locals: (ingredient_name:, entry:, available_aisles:, sources: [], needed_units: []) %>
 <% has_density = entry&.density_grams.present? %>
 <turbo-frame id="nutrition-editor-form">
   <div class="editor-form" data-nutrition-editor-target="formContent">
@@ -131,6 +131,22 @@
                 data-action="click->nutrition-editor#addAlias">Add</button>
       </div>
     </fieldset>
+
+    <% if needed_units.any? %>
+      <div class="editor-section editor-recipe-units">
+        <div class="editor-section-title">Recipe Units</div>
+        <p class="editor-help">
+          Units used in recipes. A checkmark means the app can convert this unit to grams.
+        </p>
+        <% needed_units.each do |nu| %>
+          <div class="recipe-unit-row">
+            <span class="recipe-unit-status"><%= nu[:resolvable] ? "\u2713" : "\u2717" %></span>
+            <span class="recipe-unit-name"><%= nu[:unit] || '(bare count)' %></span>
+            <span class="recipe-unit-method"><%= nu[:method] %></span>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
 
     <% if sources.any? %>
       <div class="editor-recipes">

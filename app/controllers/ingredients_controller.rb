@@ -23,9 +23,10 @@ class IngredientsController < ApplicationController
     ingredient_name, entry = load_ingredient_data
     aisles = current_kitchen.all_aisles
     sources = sources_for_ingredient(ingredient_name)
+    needed_units = row_builder.needed_units(ingredient_name)
 
     render partial: 'ingredients/editor_form',
-           locals: { ingredient_name:, entry:, available_aisles: aisles, sources: }
+           locals: { ingredient_name:, entry:, available_aisles: aisles, sources:, needed_units: }
   end
 
   private
