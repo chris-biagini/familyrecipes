@@ -32,7 +32,7 @@ class MealPlanWriteService
   def apply_action(action_type:, **params)
     mutate_plan do |plan|
       plan.apply_action(action_type, **params)
-      plan.reconcile! unless Kitchen.batching?
+      reconcile_plan(plan) unless Kitchen.batching?
     end
     finalize
   end
@@ -40,7 +40,7 @@ class MealPlanWriteService
   def select_all(recipe_slugs:, quick_bite_slugs:)
     mutate_plan do |plan|
       plan.select_all!(recipe_slugs, quick_bite_slugs)
-      plan.reconcile! unless Kitchen.batching?
+      reconcile_plan(plan) unless Kitchen.batching?
     end
     finalize
   end
@@ -48,7 +48,7 @@ class MealPlanWriteService
   def clear
     mutate_plan do |plan|
       plan.clear_selections!
-      plan.reconcile! unless Kitchen.batching?
+      reconcile_plan(plan) unless Kitchen.batching?
     end
     finalize
   end
@@ -56,7 +56,7 @@ class MealPlanWriteService
   def reconcile
     return if Kitchen.batching?
 
-    mutate_plan(&:reconcile!)
+    mutate_plan { |plan| reconcile_plan(plan) }
     kitchen.broadcast_update
   end
 
@@ -68,6 +68,11 @@ class MealPlanWriteService
     return if Kitchen.batching?
 
     kitchen.broadcast_update
+  end
+
+  def reconcile_plan(plan)
+    visible = ShoppingListBuilder.new(kitchen:, meal_plan: plan).visible_names
+    plan.reconcile!(visible_names: visible)
   end
 
   def mutate_plan

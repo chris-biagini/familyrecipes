@@ -39,7 +39,10 @@ class Kitchen < ApplicationRecord
 
   def self.finalize_batch(kitchen)
     plan = MealPlan.for_kitchen(kitchen)
-    plan.with_optimistic_retry { plan.reconcile! }
+    plan.with_optimistic_retry do
+      visible = ShoppingListBuilder.new(kitchen:, meal_plan: plan).visible_names
+      plan.reconcile!(visible_names: visible)
+    end
     kitchen.broadcast_update
   end
   private_class_method :finalize_batch

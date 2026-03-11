@@ -102,6 +102,9 @@ class RecipeWriteService
 
   def prune_stale_meal_plan_items
     plan = MealPlan.for_kitchen(kitchen)
-    plan.with_optimistic_retry { plan.reconcile! }
+    plan.with_optimistic_retry do
+      visible = ShoppingListBuilder.new(kitchen:, meal_plan: plan).visible_names
+      plan.reconcile!(visible_names: visible)
+    end
   end
 end

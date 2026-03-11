@@ -79,7 +79,10 @@ class CatalogWriteService
 
   def reconcile_meal_plan
     plan = MealPlan.for_kitchen(kitchen)
-    plan.with_optimistic_retry { plan.reconcile! }
+    plan.with_optimistic_retry do
+      visible = ShoppingListBuilder.new(kitchen:, meal_plan: plan).visible_names
+      plan.reconcile!(visible_names: visible)
+    end
   end
 
   def recalculate_recipes_for(names:)
