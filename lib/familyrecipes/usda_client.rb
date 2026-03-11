@@ -10,9 +10,9 @@ module FamilyRecipes
   # extraction. Returns flat portion arrays; classification into volume vs
   # non-volume is handled by UsdaPortionClassifier.
   #
-  # Collaborators: NutritionCalculator (consumes the nutrient hashes this
-  # client produces), UsdaPortionClassifier (classifies portions downstream),
-  # bin/nutrition (interactive CLI wrapper).
+  # Collaborators: UsdaSearchController (web search/fetch endpoints),
+  # UsdaImportService (consumes fetch results), UsdaPortionClassifier
+  # (classifies portions downstream).
   class UsdaClient
     class Error < StandardError; end
     class NetworkError < Error; end
@@ -47,23 +47,6 @@ module FamilyRecipes
     def fetch(fdc_id:)
       format_fetch_response(get("/fdc/v1/food/#{fdc_id}"))
     end
-
-    def self.load_api_key(project_root: nil)
-      return ENV['USDA_API_KEY'] if ENV['USDA_API_KEY']
-
-      parse_env_file(File.join(project_root || Dir.pwd, '.env'))
-    end
-
-    def self.parse_env_file(path)
-      return nil unless File.exist?(path)
-
-      File.readlines(path).each do |line|
-        key, value = line.strip.split('=', 2)
-        return value if key == 'USDA_API_KEY' && value && !value.empty?
-      end
-      nil
-    end
-    private_class_method :parse_env_file
 
     private
 

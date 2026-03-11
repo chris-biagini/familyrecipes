@@ -158,50 +158,7 @@ class UsdaClientTest < Minitest::Test
     end
   end
 
-  # -- load_api_key --
-
-  def test_load_api_key_from_env
-    original = ENV.fetch('USDA_API_KEY', nil)
-    ENV['USDA_API_KEY'] = 'env-key-123'
-
-    assert_equal 'env-key-123', FamilyRecipes::UsdaClient.load_api_key
-  ensure
-    restore_env('USDA_API_KEY', original)
-  end
-
-  def test_load_api_key_from_env_file
-    original = ENV.fetch('USDA_API_KEY', nil)
-    ENV.delete('USDA_API_KEY')
-
-    Dir.mktmpdir do |dir|
-      File.write(File.join(dir, '.env'), "USDA_API_KEY=file-key-456\n")
-
-      assert_equal 'file-key-456', FamilyRecipes::UsdaClient.load_api_key(project_root: dir)
-    end
-  ensure
-    restore_env('USDA_API_KEY', original)
-  end
-
-  def test_load_api_key_returns_nil_when_missing
-    original = ENV.fetch('USDA_API_KEY', nil)
-    ENV.delete('USDA_API_KEY')
-
-    Dir.mktmpdir do |dir|
-      assert_nil FamilyRecipes::UsdaClient.load_api_key(project_root: dir)
-    end
-  ensure
-    restore_env('USDA_API_KEY', original)
-  end
-
   private
-
-  def restore_env(key, value)
-    if value
-      ENV[key] = value
-    else
-      ENV.delete(key)
-    end
-  end
 
   def with_api_response(code, body, &)
     body_string = body.is_a?(String) ? body : body.to_json
