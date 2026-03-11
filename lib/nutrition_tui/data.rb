@@ -8,14 +8,14 @@ require_relative '../familyrecipes'
 module NutritionTui
   # Data I/O and lookup layer for the nutrition catalog TUI. Owns all
   # reading/writing of ingredient-catalog.yaml, variant-aware name resolution,
-  # recipe context loading, coverage analysis, and USDA modifier classification.
+  # recipe context loading, and coverage analysis.
   # Pure functions with no TTY dependencies — screens call in, never the reverse.
   #
   # Collaborators:
   # - FamilyRecipes (recipe parsing, inflector, NutritionCalculator)
   # - ingredient-catalog.yaml (seed data read/write)
   # - db/seeds/recipes/ (recipe source files for context)
-  module Data # rubocop:disable Metrics/ModuleLength
+  module Data
     PROJECT_ROOT = File.expand_path('../..', __dir__)
     NUTRITION_PATH = File.join(PROJECT_ROOT, 'db/seeds/resources/ingredient-catalog.yaml')
     RECIPES_DIR = File.join(PROJECT_ROOT, 'db/seeds/recipes')
@@ -23,30 +23,6 @@ module NutritionTui
     NUTRIENTS = FamilyRecipes::NutritionConstraints::NUTRIENT_DEFS.map do |d|
       { key: d.key.to_s, label: d.label, unit: d.unit, indent: d.indent }
     end.freeze
-
-    # Derived once from frozen calculator constants + Inflector tables.
-    # Used by volume_modifier? / weight_modifier? for USDA modifier classification.
-    VOLUME_PREFIXES = begin
-      prefixes = FamilyRecipes::NutritionCalculator::VOLUME_TO_ML.keys.to_set
-      FamilyRecipes::Inflector::ABBREVIATIONS.each do |long_form, short_form|
-        prefixes << long_form if FamilyRecipes::NutritionCalculator::VOLUME_TO_ML.key?(short_form)
-      end
-      FamilyRecipes::Inflector::KNOWN_PLURALS.each do |singular, plural|
-        prefixes << plural if prefixes.include?(singular)
-      end
-      prefixes.freeze
-    end
-
-    WEIGHT_PREFIXES = begin
-      prefixes = FamilyRecipes::NutritionCalculator::WEIGHT_CONVERSIONS.keys.to_set
-      FamilyRecipes::Inflector::ABBREVIATIONS.each do |long_form, short_form|
-        prefixes << long_form if FamilyRecipes::NutritionCalculator::WEIGHT_CONVERSIONS.key?(short_form)
-      end
-      FamilyRecipes::Inflector::KNOWN_PLURALS.each do |singular, plural|
-        prefixes << plural if prefixes.include?(singular)
-      end
-      prefixes.freeze
-    end
 
     module_function
 
@@ -131,53 +107,6 @@ module NutritionTui
       return '0%' if total.zero?
 
       "#{(100.0 * count / total).round(0)}%"
-    end
-
-    # --- USDA modifier classification ---
-
-    def classify_usda_modifiers(modifiers)
-      modifiers.each_with_object(density_candidates: [], portion_candidates: [], filtered: []) do |mod, result|
-        entry = mod.merge(each: per_unit_grams(mod))
-        bucket, extra = modifier_bucket(mod[:modifier])
-        result[bucket] << entry.merge(extra)
-      end
-    end
-
-    def pick_best_density(density_candidates)
-      density_candidates.max_by { |c| c[:grams] }
-    end
-
-    def strip_parenthetical(modifier)
-      modifier.to_s.sub(/\s*\([^)]*\)/, '').strip
-    end
-
-    def volume_modifier?(modifier)
-      unit_prefix_match?(modifier, VOLUME_PREFIXES)
-    end
-
-    def weight_modifier?(modifier)
-      unit_prefix_match?(modifier, WEIGHT_PREFIXES)
-    end
-
-    # Matches when modifier starts with a unit and the next char is
-    # a word boundary (space, comma, paren, or end-of-string). Prevents
-    # 'l' matching 'large' or 'g' matching 'garlic'.
-    def unit_prefix_match?(modifier, prefixes)
-      downcased = modifier.to_s.downcase
-      prefixes.any? { |u| downcased.start_with?(u) && (downcased.size == u.size || downcased[u.size] =~ /[\s,(]/) }
-    end
-
-    def regulatory_modifier?(modifier)
-      modifier.to_s.downcase.match?(/\bnlea\b|\bserving\b|\bpacket\b/)
-    end
-
-    def normalize_volume_unit(modifier)
-      clean = modifier.to_s.downcase.sub(/\s*\(.*\)/, '').strip
-      words = clean.split(/[\s,]+/)
-      two_word = FamilyRecipes::Inflector.normalize_unit(words.first(2).join(' '))
-      return two_word if FamilyRecipes::NutritionCalculator::VOLUME_TO_ML.key?(two_word)
-
-      FamilyRecipes::Inflector.normalize_unit(words.first)
     end
 
     # --- Private helpers ---
@@ -288,22 +217,6 @@ module NutritionTui
       end
     end
 
-    def per_unit_grams(mod)
-      (mod[:grams] / mod[:amount].to_f).round(2)
-    end
-
-    def modifier_bucket(modifier)
-      if weight_modifier?(modifier)
-        [:filtered, { reason: 'weight unit' }]
-      elsif regulatory_modifier?(modifier)
-        [:filtered, { reason: 'regulatory' }]
-      elsif volume_modifier?(modifier)
-        [:density_candidates, {}]
-      else
-        [:portion_candidates, { display_name: strip_parenthetical(modifier) }]
-      end
-    end
-
     # Catalog entries resolve via variant lookup; uncataloged ingredients
     # fall back to exact name match so the TUI still finds their recipe usage.
     def matches_ingredient?(ing_name, target, lookup, in_catalog)
@@ -313,7 +226,6 @@ module NutritionTui
     private_class_method :register_name, :register_variants, :register_aliases,
                          :build_omit_set, :check_recipe_resolvability,
                          :check_recipe_units, :collect_all_units,
-                         :per_unit_grams, :modifier_bucket,
-                         :unit_prefix_match?, :matches_ingredient?
-  end # rubocop:enable Metrics/ModuleLength
+                         :matches_ingredient?
+  end
 end
