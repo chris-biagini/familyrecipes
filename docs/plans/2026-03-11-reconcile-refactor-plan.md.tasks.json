@@ -1,0 +1,10 @@
+{
+  "planPath": "docs/plans/2026-03-11-reconcile-refactor-plan.md",
+  "tasks": [
+    {"id": 1, "subject": "Task 1: Rewrite ShoppingListBuilder#visible_names", "status": "pending"},
+    {"id": 2, "subject": "Task 2: Refactor MealPlan#reconcile! to accept visible_names: and save once", "status": "pending", "blockedBy": [1]},
+    {"id": 3, "subject": "Task 3: Update write service call sites", "status": "pending", "blockedBy": [1, 2]},
+    {"id": 4, "subject": "Task 4: Update header comments and lint", "status": "pending", "blockedBy": [3]}
+  ],
+  "lastUpdated": "2026-03-11T00:00:00Z"
+}
