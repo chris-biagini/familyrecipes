@@ -28,6 +28,8 @@ module FamilyRecipes
       return [nil, nil] if raw.nil? || raw.strip.empty?
 
       parts = raw.strip.split(' ', 3)
+      return [raw.strip, nil] unless numeric_token?(parts[0])
+
       if parts.size >= 2 && fraction_token?(parts[1])
         ["#{parts[0]} #{parts[1]}", parts[2]]
       else
@@ -39,7 +41,10 @@ module FamilyRecipes
     def self.fraction_token?(token)
       token.match?(%r{\A\d+/\d+\z}) || token.match?(NumericParsing::VULGAR_PATTERN)
     end
-    private_class_method :fraction_token?
+    def self.numeric_token?(token)
+      token.match?(/\A\d/) || token.match?(NumericParsing::VULGAR_PATTERN)
+    end
+    private_class_method :fraction_token?, :numeric_token?
 
     def initialize(name:, quantity: nil, prep_note: nil)
       @name = name

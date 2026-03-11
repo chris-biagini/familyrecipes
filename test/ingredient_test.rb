@@ -152,6 +152,19 @@ class IngredientTest < Minitest::Test
     assert_nil ingredient.quantity_unit
   end
 
+  # Non-numeric quantity tests
+  def test_split_quantity_non_numeric_keeps_whole_string
+    assert_equal ['a few leaves', nil], FamilyRecipes::Ingredient.split_quantity('a few leaves')
+  end
+
+  def test_split_quantity_freeform_single_word
+    assert_equal ['some', nil], FamilyRecipes::Ingredient.split_quantity('some')
+  end
+
+  def test_split_quantity_freeform_handful
+    assert_equal ['a handful', nil], FamilyRecipes::Ingredient.split_quantity('a handful')
+  end
+
   # Normalized name tests
   def test_normalized_name_returns_name
     ingredient = FamilyRecipes::Ingredient.new(name: 'Flour')
