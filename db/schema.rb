@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 1) do
+ActiveRecord::Schema[8.1].define(version: 2) do
   create_table "categories", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "kitchen_id", null: false
@@ -87,10 +87,14 @@ ActiveRecord::Schema[8.1].define(version: 1) do
   create_table "kitchens", force: :cascade do |t|
     t.text "aisle_order"
     t.datetime "created_at", null: false
+    t.string "homepage_heading", default: "Our Recipes"
+    t.string "homepage_subtitle", default: "A collection of our family’s favorite recipes."
     t.string "name", null: false
     t.text "quick_bites_content"
+    t.string "site_title", default: "Family Recipes"
     t.string "slug", null: false
     t.datetime "updated_at", null: false
+    t.string "usda_api_key"
     t.index ["slug"], name: "index_kitchens_on_slug", unique: true
   end
 
