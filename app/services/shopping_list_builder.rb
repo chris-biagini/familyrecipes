@@ -27,7 +27,21 @@ class ShoppingListBuilder
   end
 
   def visible_names
-    build.each_value.flat_map { |items| items.map { |i| i[:name] } }.to_set
+    names = Set.new
+
+    selected_recipes.each do |recipe|
+      recipe.all_ingredients_with_quantities.each { |name, _| names << canonical_name(name) }
+    end
+
+    selected_quick_bites.each do |qb|
+      qb.ingredients_with_quantities.each { |name, _| names << canonical_name(name) }
+    end
+
+    names.reject! { |name| @resolver.omitted?(name) }
+
+    @meal_plan.custom_items_list.each { |item| names << canonical_name(item) }
+
+    names
   end
 
   private
