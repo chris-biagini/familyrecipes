@@ -135,6 +135,13 @@ export default class extends Controller {
     event.detail.handled = true
     this.currentIngredient = null
     this.originalSnapshot = null
+    this.usdaImportData = null
+    if (this.hasUsdaBadgeTarget) this.usdaBadgeTarget.hidden = true
+    if (this.hasUsdaResultsTarget) {
+      this.usdaResultsTarget.hidden = true
+      this.usdaResultsTarget.replaceChildren()
+    }
+    if (this.hasDensityCandidatesTarget) this.densityCandidatesTarget.hidden = true
   }
 
   // Form interactions
@@ -381,7 +388,74 @@ export default class extends Controller {
   }
 
   async importUsdaResult(fdcId, item) {
-    // Implemented in Task 3
+    item.classList.add("loading")
+
+    try {
+      const url = this.usdaShowUrlValue.replace("__FDC_ID__", fdcId)
+      const response = await fetch(url, {
+        headers: { "Accept": "application/json", "X-CSRF-Token": getCsrfToken() }
+      })
+
+      if (!response.ok) {
+        item.classList.remove("loading")
+        return
+      }
+
+      const data = await response.json()
+      this.populateFromUsda(data)
+
+      this.usdaPanelTarget.open = false
+      this.usdaBadgeTarget.hidden = false
+      this.usdaImportData = data
+    } catch {
+      item.classList.remove("loading")
+    }
+  }
+
+  populateFromUsda(data) {
+    if (data.nutrients) {
+      if (this.hasBasisGramsTarget) {
+        this.basisGramsTarget.value = data.nutrients.basis_grams || 100
+      }
+      this.nutrientFieldTargets.forEach(input => {
+        const key = input.dataset.nutrientKey
+        const value = data.nutrients[key]
+        input.value = value != null ? this.formatValue(value) : ""
+      })
+    }
+
+    if (data.density) {
+      this.densityVolumeTarget.value = data.density.volume || ""
+      this.densityUnitTarget.value = data.density.unit || ""
+      this.densityGramsTarget.value = data.density.grams != null
+        ? this.formatValue(data.density.grams) : ""
+    }
+
+    this.portionListTarget.replaceChildren()
+    if (data.portions) {
+      data.portions.forEach(p => this.addPortionWithValues(p.name, p.grams))
+    }
+
+    if (data.density_candidates && data.density_candidates.length > 1) {
+      this.showDensityCandidates(data.density_candidates, data.density)
+    }
+  }
+
+  formatValue(num) {
+    if (num == null) return ""
+    return String(Math.round(num * 100) / 100)
+  }
+
+  addPortionWithValues(name, grams) {
+    this.addPortion()
+    const rows = this.portionListTarget.querySelectorAll(".portion-row")
+    const lastRow = rows[rows.length - 1]
+    lastRow.querySelector("[data-nutrition-editor-target='portionName']").value = name
+    lastRow.querySelector("[data-nutrition-editor-target='portionGrams']").value = this.formatValue(grams)
+  }
+
+  showDensityCandidates(candidates, selectedDensity) {
+    // Implemented in Task 4
   }
 
   // Data collection and validation
