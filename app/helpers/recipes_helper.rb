@@ -126,7 +126,7 @@ module RecipesHelper # rubocop:disable Metrics/ModuleLength
   end
 
   def scaled_quantity_display(item, scale_factor)
-    return format_quantity_display(item) if scale_factor == 1.0 || !item.quantity_value # rubocop:disable Lint/FloatComparison
+    return item.quantity_display if !item.quantity_value || scale_factor == 1.0 # rubocop:disable Lint/FloatComparison
 
     scaled = item.quantity_value.to_f * scale_factor
     formatted = FamilyRecipes::VulgarFractions.format(scaled, unit: item.quantity_unit)
@@ -134,10 +134,7 @@ module RecipesHelper # rubocop:disable Metrics/ModuleLength
   end
 
   def format_quantity_display(item)
-    return unless item.quantity_value
-
-    formatted = FamilyRecipes::VulgarFractions.format(item.quantity_value.to_f, unit: item.quantity_unit)
-    [formatted, item.unit].compact.join(' ')
+    item.quantity_display
   end
 
   def add_unit_plural_attr(attrs, unit)
