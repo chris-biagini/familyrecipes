@@ -3,11 +3,10 @@
 # Ingredients management page — member-only. Displays a searchable, filterable
 # table of all ingredients across recipes and Quick Bites with their
 # nutrition/density status and aisle assignments. The edit action renders the
-# nutrition editor form as a partial for the dialog. Delegates row-building to
-# IngredientRowBuilder.
+# nutrition editor form as a partial for the dialog. Delegates all data
+# computation to IngredientRowBuilder (rows, sources, unit resolution).
 #
-# - IngredientResolver: canonical name resolution and catalog entry lookup
-# - IngredientRowBuilder: builds ingredient rows and summary from recipes and Quick Bites
+# - IngredientRowBuilder: rows, summary, sources, needed_units, coverage
 class IngredientsController < ApplicationController
   before_action :require_membership
   before_action :prevent_html_caching, only: :index

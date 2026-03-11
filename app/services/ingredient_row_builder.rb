@@ -3,8 +3,9 @@
 # Builds ingredient table row data for the ingredients index page, Turbo Stream
 # updates, and real-time broadcasts. Delegates name resolution to an
 # IngredientResolver, then computes nutrition/density status for each unique
-# ingredient across all recipes and Quick Bites. Also provides aggregate
-# coverage analysis (fully resolvable counts, unresolvable unit details).
+# ingredient across all recipes and Quick Bites. Also provides per-ingredient
+# source lists, unit resolution analysis, and aggregate coverage stats.
+# Resolution checking is self-contained — no NutritionCalculator dependency.
 #
 # Collaborators:
 # - IngredientResolver (name resolution, catalog entry access)

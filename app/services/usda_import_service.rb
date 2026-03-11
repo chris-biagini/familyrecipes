@@ -4,12 +4,13 @@
 # structured form values for the ingredient editor. Extracts nutrients, auto-
 # picks density from the largest volume-based portion candidate, and classifies
 # portions into informational categories. Pure data transformation — no
-# persistence, no side effects.
+# persistence, no side effects. Result#as_json enables direct `render json:`
+# in controllers.
 #
 # Collaborators:
 # - UsdaClient (produces the detail hash this service consumes)
 # - UsdaPortionClassifier (classifies portions into density/portion/filtered)
-# - UsdaSearchController (calls this after fetching USDA detail)
+# - UsdaSearchController (renders Result directly as JSON)
 class UsdaImportService
   Result = Data.define(:nutrients, :density, :source, :portions, :density_candidates) do
     def as_json(_options = nil)

@@ -222,8 +222,9 @@ from it.  `RecipeAvailabilityCalculator` checks catalog coverage per recipe for
 availability badges on the menu page — uses `IngredientResolver` and refreshes
 automatically via Turbo morph when catalog entries change.
 `IngredientRowBuilder` computes per-ingredient `needed_units` (unit resolution
-status) and aggregate `coverage` (fully resolvable counts, unresolvable unit
-details with affected recipes) — shared by `IngredientsController` and
+status), `sources_for` (recipes and Quick Bites using an ingredient), and
+aggregate `coverage` (fully resolvable counts, unresolvable unit details with
+affected recipes) — shared by `IngredientsController` and
 `NutritionEntriesController`.
 `UsdaSearchController` exposes two JSON endpoints (`GET /usda/search`,
 `GET /usda/:fdc_id`) reading the API key from `Kitchen#usda_api_key`.
