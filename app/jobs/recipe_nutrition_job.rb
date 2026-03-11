@@ -1,19 +1,22 @@
 # frozen_string_literal: true
 
 # Recalculates a recipe's nutrition_data JSON from its ingredients and the
-# IngredientCatalog. Bridges the AR world (IngredientCatalog entries) to the
-# domain NutritionCalculator by building a lookup hash in the format the
-# calculator expects. Runs synchronously via perform_now at import time.
-# Accepts an optional resolver: to avoid redundant catalog queries when called
-# in a batch (e.g., from CatalogWriteService).
+# IngredientCatalog. Passes the resolver's catalog lookup directly to
+# NutritionCalculator — no format translation needed. Runs synchronously
+# via perform_now at import time. Accepts an optional resolver: to avoid
+# redundant catalog queries when called in a batch.
+#
+# Collaborators:
+# - IngredientCatalog: overlay model for ingredient metadata
+# - IngredientResolver: variant-aware name resolution
+# - FamilyRecipes::NutritionCalculator: FDA-label computation
 class RecipeNutritionJob < ApplicationJob
   def perform(recipe, resolver: nil)
     loaded = eager_load_recipe(recipe)
     resolver ||= IngredientCatalog.resolver_for(loaded.kitchen)
     return if resolver.lookup.empty?
 
-    nutrition_data = build_nutrition_data(resolver.lookup)
-    calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data, omit_set: resolver.omit_set)
+    calculator = FamilyRecipes::NutritionCalculator.new(resolver.lookup, omit_set: resolver.omit_set)
     result = calculator.calculate(loaded, {})
 
     recipe.update_column(:nutrition_data, serialize_result(result)) # rubocop:disable Rails/SkipsModelValidations
@@ -23,29 +26,6 @@ class RecipeNutritionJob < ApplicationJob
 
   def eager_load_recipe(recipe)
     Recipe.with_full_tree.find(recipe.id)
-  end
-
-  def build_nutrition_data(catalog)
-    catalog.transform_values do |entry|
-      data = { 'nutrients' => nutrients_hash(entry) }
-      data['density'] = density_hash(entry) if entry.density_grams && entry.density_volume && entry.density_unit
-      data['portions'] = entry.portions if entry.portions.present?
-      data
-    end
-  end
-
-  def nutrients_hash(entry)
-    IngredientCatalog::NUTRIENT_COLUMNS.each_with_object({ 'basis_grams' => entry.basis_grams.to_f }) do |col, hash|
-      hash[col.to_s] = entry.public_send(col)&.to_f || 0
-    end
-  end
-
-  def density_hash(entry)
-    {
-      'grams' => entry.density_grams.to_f,
-      'volume' => entry.density_volume.to_f,
-      'unit' => entry.density_unit
-    }
   end
 
   def serialize_result(result)
