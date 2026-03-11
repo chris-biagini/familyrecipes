@@ -1090,6 +1090,10 @@ footer small {
   .nutrition-label .dv-header { border-bottom-color: var(--text-color); }
   .nutrition-label .nutrient-row { border-bottom-color: var(--text-color); }
   .nutrition-label .nutrient-row:last-child { border-bottom-color: var(--text-color); }
+  .usda-search-panel { border-color: var(--border-color); }
+  .usda-results { border-color: var(--border-color); }
+  .usda-result-item { border-bottom-color: var(--border-color); }
+  .density-candidates { border-color: var(--border-color); }
 }
 
 /******************************************************/
@@ -2224,6 +2228,10 @@ button.aisle-name:hover {
   .alias-add-row {
     flex-wrap: wrap;
   }
+
+  .usda-search-row { flex-wrap: wrap; }
+  .usda-search-input { min-width: 0; }
+  .usda-results { max-height: 200px; }
 }
 
 /*********************************/
