@@ -363,14 +363,6 @@ nav > div:last-child:not(:first-child):not(.nav-drawer) {
   height: 1.1rem;
 }
 
-.nav-settings-link span {
-  display: none;
-}
-
-.nav-settings-link::after {
-  display: none !important;
-}
-
 /* Buttons — the one shared interactive style across the site */
 .btn {
   appearance: none;
@@ -804,6 +796,7 @@ section h2 {
 }
 
 .settings-page h1 {
+  font-family: "Futura", sans-serif;
   margin-bottom: 1.5rem;
 }
 
@@ -812,12 +805,15 @@ section h2 {
 }
 
 .settings-section h2 {
-  font-size: 1rem;
+  font-family: "Futura", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   border-bottom: 1px solid var(--border-muted);
   padding-bottom: 0.4rem;
   margin-bottom: 1rem;
+  text-decoration: none;
 }
 
 .settings-field {
@@ -826,6 +822,7 @@ section h2 {
 
 .settings-field label {
   display: block;
+  font-family: "Futura", sans-serif;
   font-size: 0.85rem;
   font-weight: 600;
   margin-bottom: 0.25rem;
@@ -833,10 +830,9 @@ section h2 {
 
 .settings-input {
   width: 100%;
-  font-family: inherit;
-  font-size: 0.95rem;
-  padding: 0.4rem 0.6rem;
-  border: 1px solid var(--border-muted);
+  font-size: 0.85rem;
+  padding: 0.25rem 0.4rem;
+  border: 1px solid var(--border-light);
   border-radius: 3px;
   background: var(--content-background-color);
   color: var(--text-color);
@@ -844,9 +840,8 @@ section h2 {
 }
 
 .settings-input:focus {
-  outline: 2px solid var(--accent-color);
-  outline-offset: 1px;
-  border-color: var(--accent-color);
+  outline: none;
+  border-color: var(--border-muted);
 }
 
 .settings-api-key-row {
@@ -857,6 +852,7 @@ section h2 {
 
 .settings-api-key-row .settings-input {
   flex: 1;
+  font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, monospace;
 }
 
 .settings-reveal-btn {
@@ -866,6 +862,7 @@ section h2 {
 
 .settings-actions {
   margin-top: 2rem;
+  text-align: right;
 }
 
 .flash-notice {
@@ -1107,11 +1104,10 @@ footer small {
     cursor: pointer;
   }
 
-  /* Target h2 in a section where every <li> and instructions <p> is "crossed-off".
-     Scoped to .instructions p so decorative paragraphs (prep notes, descriptions)
-     don't block the auto-strikethrough. */
+  /* Target h2 in a recipe section where every <li> and instructions <p> is "crossed-off".
+     Scoped to .recipe so it doesn't affect settings or other pages with <section> + <h2>. */
   .crossed-off,
-  section:not(:has(li:not(.crossed-off), .instructions p:not(.crossed-off))) h2 {
+  .recipe section:not(:has(li:not(.crossed-off), .instructions p:not(.crossed-off))) h2 {
     text-decoration: line-through;
     color: var(--muted-text-light);
     border-color: var(--muted-text-light);

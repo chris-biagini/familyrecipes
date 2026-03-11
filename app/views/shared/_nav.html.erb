@@ -20,6 +20,7 @@
       <%= render 'shared/nav_links' %>
     </div>
   </div>
+  <%= yield :extra_nav if content_for?(:extra_nav) %>
   <% if logged_in? %>
     <%= link_to settings_path, class: 'nav-settings-link', title: 'Settings', aria: { label: 'Settings' } do %>
       <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -28,5 +29,4 @@
       </svg>
     <% end %>
   <% end %>
-  <%= yield :extra_nav if content_for?(:extra_nav) %>
 </nav>
