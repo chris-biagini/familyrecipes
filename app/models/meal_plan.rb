@@ -4,8 +4,8 @@
 # blob: selected recipes, selected quick bites, custom grocery items, and
 # checked-off items. Both the menu and groceries pages read and write this
 # model. Cross-device sync is handled by Kitchen#broadcast_update.
-# MealPlan#reconcile! is the sole entry point for pruning stale state —
-# called after any mutation that changes what appears on the shopping list.
+# MealPlan#reconcile!(visible_names:) is the sole entry point for pruning stale
+# state — callers compute visible_names via ShoppingListBuilder#visible_names.
 class MealPlan < ApplicationRecord
   acts_as_tenant :kitchen
 

@@ -3,8 +3,9 @@
 # Produces the grocery shopping list from a MealPlan's selected recipes and quick
 # bites. Aggregates ingredient quantities (via IngredientAggregator), canonicalizes
 # names through IngredientResolver, organizes items by grocery aisle, appends custom
-# items, and sorts aisles by the kitchen's user-defined order. Consumed by
-# GroceriesController#show, MealPlanActions, and RecipeWriteService.
+# items, and sorts aisles by the kitchen's user-defined order. The lightweight
+# `visible_names` method is used by write services for meal plan reconciliation
+# without invoking `build`. Consumed by GroceriesController#show and MealPlanActions.
 #
 # Collaborators:
 # - IngredientResolver — name canonicalization and catalog lookups
@@ -29,13 +30,11 @@ class ShoppingListBuilder
   def visible_names
     names = Set.new
 
-    selected_recipes.each do |recipe|
-      recipe.all_ingredients_with_quantities.each { |name, _| names << canonical_name(name) }
-    end
+    selected_recipes.flat_map { |r| r.all_ingredients_with_quantities.map(&:first) }
+                    .each { |name| names << canonical_name(name) }
 
-    selected_quick_bites.each do |qb|
-      qb.ingredients_with_quantities.each { |name, _| names << canonical_name(name) }
-    end
+    selected_quick_bites.flat_map { |qb| qb.ingredients_with_quantities.map(&:first) }
+                        .each { |name| names << canonical_name(name) }
 
     names.reject! { |name| @resolver.omitted?(name) }
 
