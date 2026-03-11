@@ -1844,6 +1844,27 @@ button.aisle-name:hover {
   font-size: 0.85rem;
 }
 
+.density-candidates {
+  margin: -0.5rem 0 1rem;
+  padding: 0;
+  border: 1px solid var(--border-light);
+  border-radius: 4px;
+}
+.density-candidates[open] { padding: 0 0.75rem 0.75rem; }
+.density-candidates > summary {
+  cursor: pointer;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.8rem;
+}
+.density-candidate-row {
+  display: block;
+  padding: 0.25rem 0;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.density-candidate-row:hover { color: var(--accent-color); }
+.density-candidate-row input[type="radio"] { margin-right: 0.4rem; }
+
 .form-row {
   display: flex;
   align-items: center;

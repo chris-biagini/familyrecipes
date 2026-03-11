@@ -455,7 +455,44 @@ export default class extends Controller {
   }
 
   showDensityCandidates(candidates, selectedDensity) {
-    // Implemented in Task 4
+    if (!this.hasDensityCandidatesTarget) return
+
+    this.densityCandidatesTarget.hidden = false
+    const list = this.densityCandidateListTarget
+    list.replaceChildren()
+
+    candidates.forEach((candidate, index) => {
+      const unit = this.normalizeUnit(candidate.modifier)
+      const perUnit = candidate.each
+      const isSelected = selectedDensity &&
+        Math.abs(perUnit - selectedDensity.grams) < 0.01 &&
+        unit === selectedDensity.unit
+
+      const label = document.createElement("label")
+      label.className = "density-candidate-row"
+
+      const radio = document.createElement("input")
+      radio.type = "radio"
+      radio.name = "density-candidate"
+      radio.value = index
+      radio.checked = isSelected
+      radio.addEventListener("change", () => {
+        this.densityVolumeTarget.value = 1
+        this.densityUnitTarget.value = unit
+        this.densityGramsTarget.value = this.formatValue(perUnit)
+      })
+
+      label.appendChild(radio)
+      label.appendChild(document.createTextNode(
+        ` ${this.formatValue(perUnit)}g per 1 ${unit}`
+      ))
+      list.appendChild(label)
+    })
+  }
+
+  normalizeUnit(modifier) {
+    const match = modifier.match(/^(cup|tablespoon|tbsp|teaspoon|tsp|fl oz|fluid ounce|ml|liter|litre|quart|pint|gallon)/i)
+    return match ? match[1].toLowerCase() : modifier.toLowerCase().split(/[\s(]/)[0]
   }
 
   // Data collection and validation
