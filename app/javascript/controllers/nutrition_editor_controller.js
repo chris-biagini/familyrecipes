@@ -360,12 +360,19 @@ export default class extends Controller {
     name.className = "usda-result-name"
     name.textContent = food.description
 
-    const nutrients = document.createElement("div")
-    nutrients.className = "usda-result-nutrients"
-    nutrients.textContent = food.nutrient_summary
+    const meta = document.createElement("div")
+    meta.className = "usda-result-nutrients"
+    if (food.data_type) {
+      const badge = document.createElement("span")
+      badge.className = "usda-result-dataset"
+      badge.textContent = food.data_type
+      meta.appendChild(badge)
+      meta.appendChild(document.createTextNode(" "))
+    }
+    meta.appendChild(document.createTextNode(food.nutrient_summary))
 
     item.appendChild(name)
-    item.appendChild(nutrients)
+    item.appendChild(meta)
 
     item.addEventListener("click", () => this.importUsdaResult(food.fdc_id, item))
     item.addEventListener("keydown", (e) => {

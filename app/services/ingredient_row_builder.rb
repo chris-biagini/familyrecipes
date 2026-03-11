@@ -88,15 +88,11 @@ class IngredientRowBuilder # rubocop:disable Metrics/ClassLength
   end
 
   def partition_by_resolvability(units_map)
-    unresolvable = []
-
-    resolvable_count = rows.count do |row|
-      bad = unresolvable_units_for(row[:name], row[:entry], units_map[row[:name]])
-      unresolvable << bad unless bad.nil?
-      bad.nil?
+    unresolvable = rows.filter_map do |row|
+      unresolvable_units_for(row[:name], row[:entry], units_map[row[:name]])
     end
 
-    [resolvable_count, unresolvable]
+    [rows.size - unresolvable.size, unresolvable]
   end
 
   def all_units_by_ingredient

@@ -1823,6 +1823,14 @@ button.aisle-name:hover {
   color: var(--muted-text);
   margin-top: 0.15rem;
 }
+.usda-result-dataset {
+  font-size: 0.7rem;
+  padding: 0.05rem 0.3rem;
+  border-radius: 3px;
+  background: var(--source-badge-bg);
+  color: var(--source-badge-text);
+  margin-right: 0.25rem;
+}
 .usda-more-btn {
   display: block;
   width: 100%;
