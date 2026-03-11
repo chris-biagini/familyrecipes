@@ -3,6 +3,28 @@
 <turbo-frame id="nutrition-editor-form">
   <div class="editor-form" data-nutrition-editor-target="formContent">
 
+    <details class="usda-search-panel"
+             data-nutrition-editor-target="usdaPanel"
+             <%= 'open' unless entry&.basis_grams %>>
+      <summary class="editor-section-title usda-summary-title">
+        Import from USDA
+        <span class="usda-imported-badge" hidden
+              data-nutrition-editor-target="usdaBadge">Imported</span>
+      </summary>
+      <div class="usda-search-row">
+        <input type="search" class="usda-search-input"
+               placeholder="Search USDA database…"
+               value="<%= ingredient_name %>"
+               data-nutrition-editor-target="usdaQuery"
+               data-action="keydown->nutrition-editor#usdaSearchKeydown"
+               aria-label="USDA search query">
+        <button type="button" class="btn usda-search-btn"
+                data-action="click->nutrition-editor#usdaSearch"
+                data-nutrition-editor-target="usdaSearchBtn">Search</button>
+      </div>
+      <div class="usda-results" hidden data-nutrition-editor-target="usdaResults"></div>
+    </details>
+
     <fieldset class="editor-section">
       <legend class="editor-section-title">Nutrition Information</legend>
 

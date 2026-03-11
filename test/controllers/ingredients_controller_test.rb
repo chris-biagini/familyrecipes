@@ -408,6 +408,25 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'button.filter-pill[data-filter="not_resolvable"]'
   end
 
+  test 'edit renders USDA search panel' do
+    @category = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Focaccia
+
+      ## Mix (combine)
+
+      - Flour, 3 cups
+    MD
+
+    log_in
+    get ingredient_edit_path(ingredient_name: 'Flour', kitchen_slug: kitchen_slug),
+        headers: { 'Accept' => 'text/html' }
+
+    assert_response :success
+    assert_select 'details.usda-search-panel'
+    assert_select 'input[data-nutrition-editor-target="usdaQuery"]'
+  end
+
   test 'edit requires membership' do
     get ingredient_edit_path('Flour', kitchen_slug: kitchen_slug)
 

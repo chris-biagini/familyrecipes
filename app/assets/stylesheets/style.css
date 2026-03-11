@@ -1753,6 +1753,97 @@ button.aisle-name:hover {
   font-size: 0.8rem;
 }
 
+/* USDA search panel */
+.usda-search-panel {
+  margin-bottom: 1rem;
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  padding: 0;
+}
+.usda-search-panel[open] { padding: 0 0.75rem 0.75rem; }
+.usda-summary-title {
+  cursor: pointer;
+  padding: 0.5rem 0.75rem;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.usda-summary-title::-webkit-details-marker { display: none; }
+.usda-summary-title::before {
+  content: '\25B8';
+  font-size: 0.8em;
+  transition: transform 0.15s;
+}
+.usda-search-panel[open] > .usda-summary-title::before { transform: rotate(90deg); }
+.usda-imported-badge {
+  font-size: 0.7rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  background: var(--aisle-new-bg);
+  border: 1px solid var(--aisle-new-border);
+  color: var(--text-color);
+  font-variant: normal;
+  letter-spacing: 0;
+}
+.usda-search-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.usda-search-input { flex: 1; }
+.usda-search-btn { white-space: nowrap; }
+.usda-results {
+  max-height: 250px;
+  overflow-y: auto;
+  border: 1px solid var(--border-light);
+  border-radius: 4px;
+}
+.usda-result-item {
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  border-bottom: 1px solid var(--separator-color);
+}
+.usda-result-item:last-child { border-bottom: none; }
+.usda-result-item:hover { background: var(--hover-bg); }
+.usda-result-item.loading { opacity: 0.5; pointer-events: none; }
+.usda-result-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.usda-result-nutrients {
+  font-size: 0.8rem;
+  color: var(--muted-text);
+  margin-top: 0.15rem;
+}
+.usda-more-btn {
+  display: block;
+  width: 100%;
+  padding: 0.4rem;
+  text-align: center;
+  background: none;
+  border: none;
+  border-top: 1px solid var(--separator-color);
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--accent-color);
+}
+.usda-more-btn:hover { background: var(--hover-bg); }
+.usda-no-results {
+  padding: 0.75rem;
+  text-align: center;
+  color: var(--muted-text);
+  font-size: 0.85rem;
+}
+.usda-error {
+  padding: 0.75rem;
+  color: var(--danger-color);
+  font-size: 0.85rem;
+}
+
 .form-row {
   display: flex;
   align-items: center;

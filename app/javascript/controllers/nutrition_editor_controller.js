@@ -19,12 +19,16 @@ export default class extends Controller {
     "densityVolume", "densityUnit", "densityGrams",
     "portionList", "portionRow", "portionName", "portionGrams",
     "aisleSelect", "aisleInput", "omitCheckbox",
-    "aliasList", "aliasInput", "aliasChip"
+    "aliasList", "aliasInput", "aliasChip",
+    "usdaPanel", "usdaQuery", "usdaResults", "usdaBadge", "usdaSearchBtn",
+    "densityCandidates", "densityCandidateList"
   ]
 
   static values = {
     baseUrl: String,
-    editUrl: String
+    editUrl: String,
+    usdaSearchUrl: String,
+    usdaShowUrl: String
   }
 
   connect() {
@@ -267,6 +271,117 @@ export default class extends Controller {
     } catch {
       btn.disabled = false
     }
+  }
+
+  // USDA search
+
+  async usdaSearch() {
+    const query = this.usdaQueryTarget.value.trim()
+    if (!query) return
+
+    this.usdaSearchBtnTarget.disabled = true
+    this.usdaSearchBtnTarget.textContent = "Searching\u2026"
+    this.usdaResultsTarget.hidden = false
+    this.usdaResultsTarget.replaceChildren()
+    this.usdaCurrentPage = 0
+
+    try {
+      await this.fetchUsdaPage(query, 0)
+    } finally {
+      this.usdaSearchBtnTarget.disabled = false
+      this.usdaSearchBtnTarget.textContent = "Search"
+    }
+  }
+
+  usdaSearchKeydown(event) {
+    if (event.key === "Enter") {
+      event.preventDefault()
+      this.usdaSearch()
+    }
+  }
+
+  async fetchUsdaPage(query, page) {
+    const url = `${this.usdaSearchUrlValue}?q=${encodeURIComponent(query)}&page=${page}`
+    const response = await fetch(url, {
+      headers: { "Accept": "application/json", "X-CSRF-Token": getCsrfToken() }
+    })
+
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}))
+      this.showUsdaError(data.error || "Search failed")
+      return
+    }
+
+    const data = await response.json()
+
+    if (data.foods.length === 0 && page === 0) {
+      const msg = document.createElement("div")
+      msg.className = "usda-no-results"
+      msg.textContent = "No results found"
+      this.usdaResultsTarget.replaceChildren(msg)
+      return
+    }
+
+    const moreBtn = this.usdaResultsTarget.querySelector(".usda-more-btn")
+    if (moreBtn) moreBtn.remove()
+
+    data.foods.forEach(food => {
+      this.usdaResultsTarget.appendChild(this.buildResultItem(food))
+    })
+
+    if (data.current_page + 1 < data.total_pages) {
+      const btn = document.createElement("button")
+      btn.type = "button"
+      btn.className = "usda-more-btn"
+      btn.textContent = "More results\u2026"
+      btn.addEventListener("click", () => {
+        btn.disabled = true
+        btn.textContent = "Loading\u2026"
+        this.fetchUsdaPage(query, page + 1)
+      })
+      this.usdaResultsTarget.appendChild(btn)
+    }
+  }
+
+  buildResultItem(food) {
+    const item = document.createElement("div")
+    item.className = "usda-result-item"
+    item.setAttribute("role", "button")
+    item.setAttribute("tabindex", "0")
+
+    const name = document.createElement("div")
+    name.className = "usda-result-name"
+    name.textContent = food.description
+
+    const nutrients = document.createElement("div")
+    nutrients.className = "usda-result-nutrients"
+    nutrients.textContent = food.nutrient_summary
+
+    item.appendChild(name)
+    item.appendChild(nutrients)
+
+    item.addEventListener("click", () => this.importUsdaResult(food.fdc_id, item))
+    item.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault()
+        this.importUsdaResult(food.fdc_id, item)
+      }
+    })
+
+    return item
+  }
+
+  showUsdaError(message) {
+    const div = document.createElement("div")
+    div.className = "usda-error"
+    div.textContent = message === "no_api_key"
+      ? "No USDA API key configured. Add one in Settings."
+      : message
+    this.usdaResultsTarget.replaceChildren(div)
+  }
+
+  async importUsdaResult(fdcId, item) {
+    // Implemented in Task 3
   }
 
   // Data collection and validation
