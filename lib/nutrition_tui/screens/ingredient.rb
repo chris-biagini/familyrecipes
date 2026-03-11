@@ -248,8 +248,8 @@ module NutritionTui
       end
 
       def usda_candidate_lines
-        density_lines = @usda_classified[:density_candidates].map { |c| format_usda_candidate(c) }
-        portion_lines = @usda_classified[:portion_candidates].map { |c| format_usda_candidate(c) }
+        density_lines = @usda_classified.density_candidates.map { |c| format_usda_candidate(c) }
+        portion_lines = @usda_classified.portion_candidates.map { |c| format_usda_candidate(c) }
         density_lines + portion_lines
       end
 
@@ -362,14 +362,13 @@ module NutritionTui
       end
 
       def classify_and_apply_density(detail)
-        all_modifiers = detail[:portions][:volume] + detail[:portions][:non_volume]
-        @usda_classified = Data.classify_usda_modifiers(all_modifiers)
-        best = Data.pick_best_density(@usda_classified[:density_candidates])
+        @usda_classified = FamilyRecipes::UsdaPortionClassifier.classify(detail[:portions])
+        best = FamilyRecipes::UsdaPortionClassifier.pick_best_density(@usda_classified.density_candidates)
         apply_density(best) if best
       end
 
       def apply_density(best)
-        unit = Data.normalize_volume_unit(best[:modifier])
+        unit = FamilyRecipes::UsdaPortionClassifier.normalize_volume_unit(best[:modifier])
         @entry['density'] = { 'grams' => best[:each].round(2), 'volume' => 1.0, 'unit' => unit }
         @auto_density_source = best[:modifier]
       end
