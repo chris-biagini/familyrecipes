@@ -353,6 +353,24 @@ nav > div:last-child:not(:first-child):not(.nav-drawer) {
   color: var(--accent-color);
 }
 
+.nav-settings-link {
+  padding: 0.5rem 0.6rem !important;
+  flex-shrink: 0;
+}
+
+.nav-settings-link .nav-icon {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.nav-settings-link span {
+  display: none;
+}
+
+.nav-settings-link::after {
+  display: none !important;
+}
+
 /* Buttons — the one shared interactive style across the site */
 .btn {
   appearance: none;

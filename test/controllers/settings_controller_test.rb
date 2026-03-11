@@ -54,6 +54,19 @@ class SettingsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'my-secret-key', @kitchen.usda_api_key
   end
 
+  test 'gear icon visible in navbar for members' do
+    log_in
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
+
+    assert_select 'nav a.nav-settings-link'
+  end
+
+  test 'gear icon hidden when not logged in' do
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
+
+    assert_select 'nav a.nav-settings-link', count: 0
+  end
+
   test 'rejects unpermitted params' do
     log_in
     patch settings_path(kitchen_slug: kitchen_slug), params: {
