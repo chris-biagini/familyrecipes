@@ -116,13 +116,13 @@ class BuildValidatorTest < ActiveSupport::TestCase
   def test_validate_nutrition_passes_when_complete
     md = "# Test Recipe\n\n## Step (do it)\n\n- Flour, 500 g\n\nMix."
     recipe = make_recipe(md, id: 'test-recipe')
-    nutrition_data = {
-      'Flour' => {
-        'nutrients' => { 'basis_grams' => 30.0, 'calories' => 110.0 },
-        'density' => { 'grams' => 30.0, 'volume' => 0.25, 'unit' => 'cup' }
-      }
+    catalog_lookup = {
+      'Flour' => IngredientCatalog.new(
+        ingredient_name: 'Flour', basis_grams: 30.0, calories: 110.0,
+        density_grams: 30.0, density_volume: 0.25, density_unit: 'cup'
+      )
     }
-    calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data)
+    calculator = FamilyRecipes::NutritionCalculator.new(catalog_lookup)
     validator = build_validator(recipes: [recipe], nutrition_calculator: calculator)
 
     output = capture_io { validator.validate_nutrition }
