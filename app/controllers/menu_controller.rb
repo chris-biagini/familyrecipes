@@ -1,10 +1,11 @@
 # frozen_string_literal: true
 
 # Meal planning page — member-only. Displays a recipe selector (recipes + quick
-# bites) with checkboxes. Mutations delegate to MealPlanWriteService and return
-# 204 No Content; broadcasts happen inside the service for cross-device sync.
+# bites) with checkboxes. Mutations delegate to write services and return
+# 204 No Content; broadcasts happen inside the services for cross-device sync.
 #
 # - MealPlanWriteService: select/deselect, select-all, clear, reconcile
+# - QuickBitesWriteService: quick bites content updates
 # - MealPlanActions: rescue_from for StaleObjectError
 class MenuController < ApplicationController
   include MealPlanActions
@@ -49,10 +50,9 @@ class MenuController < ApplicationController
   end
 
   def update_quick_bites
-    stored = params[:content].to_s.presence
-    result = parse_quick_bites(stored)
-    current_kitchen.update!(quick_bites_content: stored)
-    MealPlanWriteService.reconcile(kitchen: current_kitchen)
+    result = QuickBitesWriteService.update(
+      kitchen: current_kitchen, content: params[:content]
+    )
 
     body = { status: 'ok' }
     body[:warnings] = result.warnings if result.warnings.any?
@@ -60,12 +60,6 @@ class MenuController < ApplicationController
   end
 
   private
-
-  def parse_quick_bites(content)
-    return FamilyRecipes::QuickBitesResult.new(quick_bites: [], warnings: []) unless content
-
-    FamilyRecipes.parse_quick_bites_content(content)
-  end
 
   def recipe_selector_categories
     current_kitchen.categories.ordered.includes(:recipes)
