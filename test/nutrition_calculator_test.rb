@@ -5,47 +5,37 @@ require_relative 'test_helper'
 class NutritionCalculatorTest < Minitest::Test
   def setup
     @nutrition_data = {
-      'Flour (all-purpose)' => {
-        'nutrients' => {
-          'basis_grams' => 30,
-          'calories' => 109.2, 'protein' => 3.099, 'fat' => 0.294,
-          'saturated_fat' => 0.05, 'carbs' => 22.893, 'fiber' => 0.81, 'sodium' => 0.6
-        },
-        'density' => { 'grams' => 125, 'volume' => 1, 'unit' => 'cup' }
-      },
-      'Eggs' => {
-        'nutrients' => {
-          'basis_grams' => 50,
-          'calories' => 71.5, 'protein' => 6.28, 'fat' => 4.755,
-          'saturated_fat' => 1.6, 'carbs' => 0.36, 'fiber' => 0, 'sodium' => 71
-        },
-        'portions' => { '~unitless' => 50 }
-      },
-      'Butter' => {
-        'nutrients' => {
-          'basis_grams' => 14,
-          'calories' => 100.38, 'protein' => 0.119, 'fat' => 11.3554,
-          'saturated_fat' => 7.17, 'carbs' => 0.0084, 'fiber' => 0, 'sodium' => 90.02
-        },
-        'density' => { 'grams' => 227, 'volume' => 1, 'unit' => 'cup' },
-        'portions' => { 'stick' => 113.0 }
-      },
-      'Olive oil' => {
-        'nutrients' => {
-          'basis_grams' => 14,
-          'calories' => 123.76, 'protein' => 0, 'fat' => 14,
-          'saturated_fat' => 1.9, 'carbs' => 0, 'fiber' => 0, 'sodium' => 0.28
-        },
-        'density' => { 'grams' => 14, 'volume' => 1, 'unit' => 'tbsp' }
-      },
-      'Sugar (white)' => {
-        'nutrients' => {
-          'basis_grams' => 4,
-          'calories' => 15.48, 'protein' => 0, 'fat' => 0,
-          'saturated_fat' => 0, 'carbs' => 4, 'fiber' => 0, 'sodium' => 0.04
-        },
-        'density' => { 'grams' => 200, 'volume' => 1, 'unit' => 'cup' }
-      }
+      'Flour (all-purpose)' => IngredientCatalog.new(
+        ingredient_name: 'Flour (all-purpose)',
+        basis_grams: 30, calories: 109.2, protein: 3.099, fat: 0.294,
+        saturated_fat: 0.05, carbs: 22.893, fiber: 0.81, sodium: 0.6,
+        density_grams: 125, density_volume: 1, density_unit: 'cup'
+      ),
+      'Eggs' => IngredientCatalog.new(
+        ingredient_name: 'Eggs',
+        basis_grams: 50, calories: 71.5, protein: 6.28, fat: 4.755,
+        saturated_fat: 1.6, carbs: 0.36, fiber: 0, sodium: 71,
+        portions: { '~unitless' => 50 }
+      ),
+      'Butter' => IngredientCatalog.new(
+        ingredient_name: 'Butter',
+        basis_grams: 14, calories: 100.38, protein: 0.119, fat: 11.3554,
+        saturated_fat: 7.17, carbs: 0.0084, fiber: 0, sodium: 90.02,
+        density_grams: 227, density_volume: 1, density_unit: 'cup',
+        portions: { 'stick' => 113.0 }
+      ),
+      'Olive oil' => IngredientCatalog.new(
+        ingredient_name: 'Olive oil',
+        basis_grams: 14, calories: 123.76, protein: 0, fat: 14,
+        saturated_fat: 1.9, carbs: 0, fiber: 0, sodium: 0.28,
+        density_grams: 14, density_volume: 1, density_unit: 'tbsp'
+      ),
+      'Sugar (white)' => IngredientCatalog.new(
+        ingredient_name: 'Sugar (white)',
+        basis_grams: 4, calories: 15.48, protein: 0, fat: 0,
+        saturated_fat: 0, carbs: 4, fiber: 0, sodium: 0.04,
+        density_grams: 200, density_volume: 1, density_unit: 'cup'
+      )
     }
 
     @omit_set = Set.new(['water', 'ice', 'poolish', 'sourdough starter'])
@@ -505,7 +495,7 @@ class NutritionCalculatorTest < Minitest::Test
   # --- Volumetric with density fallback ---
 
   def test_density_derived_volume_conversion
-    # Olive oil has density hash (14g per 1 tbsp) but no cup portion
+    # Olive oil has density (14g per 1 tbsp) but no cup portion
     # Density: 14g / (1 * 14.787ml) = 0.9468 g/ml
     # 1 cup = 236.588ml * 0.9468 = 224.0g
     recipe = make_recipe(<<~MD)
@@ -655,15 +645,13 @@ class NutritionCalculatorTest < Minitest::Test
 
   def test_new_nutrients_calculated
     nutrition_data = {
-      'Butter' => {
-        'nutrients' => {
-          'basis_grams' => 14,
-          'calories' => 100, 'fat' => 11, 'saturated_fat' => 7, 'trans_fat' => 0.5,
-          'cholesterol' => 30, 'sodium' => 90, 'carbs' => 0, 'fiber' => 0,
-          'total_sugars' => 0, 'added_sugars' => 0, 'protein' => 0.1
-        },
-        'portions' => { 'stick' => 113 }
-      }
+      'Butter' => IngredientCatalog.new(
+        ingredient_name: 'Butter',
+        basis_grams: 14, calories: 100, fat: 11, saturated_fat: 7, trans_fat: 0.5,
+        cholesterol: 30, sodium: 90, carbs: 0, fiber: 0,
+        total_sugars: 0, added_sugars: 0, protein: 0.1,
+        portions: { 'stick' => 113 }
+      )
     }
     calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data)
 
@@ -688,16 +676,13 @@ class NutritionCalculatorTest < Minitest::Test
   end
 
   def test_missing_new_nutrient_keys_default_to_zero
-    # Entry without new nutrients (trans_fat, cholesterol, etc.)
     nutrition_data = {
-      'Flour (all-purpose)' => {
-        'nutrients' => {
-          'basis_grams' => 30,
-          'calories' => 109.2, 'protein' => 3.0, 'fat' => 0.3,
-          'saturated_fat' => 0.05, 'carbs' => 22.9, 'fiber' => 0.8, 'sodium' => 0.6
-        },
-        'density' => { 'grams' => 125, 'volume' => 1, 'unit' => 'cup' }
-      }
+      'Flour (all-purpose)' => IngredientCatalog.new(
+        ingredient_name: 'Flour (all-purpose)',
+        basis_grams: 30, calories: 109.2, protein: 3.0, fat: 0.3,
+        saturated_fat: 0.05, carbs: 22.9, fiber: 0.8, sodium: 0.6,
+        density_grams: 125, density_volume: 1, density_unit: 'cup'
+      )
     }
     calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data)
 
@@ -714,19 +699,17 @@ class NutritionCalculatorTest < Minitest::Test
 
     result = calculator.calculate(recipe, @recipe_map)
 
-    # New keys missing from YAML → default to 0
     assert_equal 0, result.totals[:trans_fat]
     assert_equal 0, result.totals[:cholesterol]
     assert_equal 0, result.totals[:total_sugars]
     assert_equal 0, result.totals[:added_sugars]
-    # Old keys still work
     assert_predicate result.totals[:calories], :positive?
   end
 
   # --- Schema validation (#11) ---
 
   def test_silently_skips_entries_without_nutrients
-    data = { 'Celery' => { 'aisle' => 'Produce' } }
+    data = { 'Celery' => IngredientCatalog.new(ingredient_name: 'Celery', aisle: 'Produce') }
     assert_silent do
       FamilyRecipes::NutritionCalculator.new(data)
     end
@@ -734,12 +717,12 @@ class NutritionCalculatorTest < Minitest::Test
 
   def test_malformed_entry_missing_basis_grams
     nutrition_data = {
-      'Good' => {
-        'nutrients' => { 'basis_grams' => 30, 'calories' => 100 }
-      },
-      'Bad' => {
-        'nutrients' => { 'calories' => 100 }
-      }
+      'Good' => IngredientCatalog.new(
+        ingredient_name: 'Good', basis_grams: 30, calories: 100
+      ),
+      'Bad' => IngredientCatalog.new(
+        ingredient_name: 'Bad', calories: 100
+      )
     }
 
     calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data)
@@ -748,23 +731,21 @@ class NutritionCalculatorTest < Minitest::Test
     refute calculator.nutrition_data.key?('Bad')
   end
 
-  def test_malformed_entry_invalid_nutrients
+  def test_entry_without_basis_grams_filtered
     nutrition_data = {
-      'Bad2' => {
-        'nutrients' => 'not a hash'
-      }
+      'NoBasis' => IngredientCatalog.new(ingredient_name: 'NoBasis', calories: 100)
     }
 
     calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data)
 
-    refute calculator.nutrition_data.key?('Bad2')
+    refute calculator.nutrition_data.key?('NoBasis')
   end
 
   def test_zero_basis_grams_skipped
     nutrition_data = {
-      'ZeroGrams' => {
-        'nutrients' => { 'basis_grams' => 0, 'calories' => 100 }
-      }
+      'ZeroGrams' => IngredientCatalog.new(
+        ingredient_name: 'ZeroGrams', basis_grams: 0, calories: 100
+      )
     }
 
     calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data)

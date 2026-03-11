@@ -1,12 +1,15 @@
 # frozen_string_literal: true
 
 module FamilyRecipes
-  # Computes FDA-label nutrition facts for a recipe from ingredient-catalog YAML
-  # data. Resolves ingredient quantities to grams via a priority chain: weight
-  # units → named portions → density-derived volume conversions. Produces a Result
-  # with totals, per-serving, and per-unit breakdowns, plus lists of missing and
-  # partially resolvable ingredients. RecipeNutritionJob calls this at save time;
-  # the Result is stored as JSON on the AR Recipe.
+  # Computes FDA-label nutrition facts for a recipe from IngredientCatalog
+  # entries. Resolves ingredient quantities to grams via a priority chain:
+  # weight units → named portions → density-derived volume conversions. Produces
+  # a Result with totals, per-serving, and per-unit breakdowns, plus lists of
+  # missing and partially resolvable ingredients.
+  #
+  # - RecipeNutritionJob: calls this at save time; Result stored as JSON on Recipe
+  # - NutritionConstraints: defines NUTRIENT_KEYS consumed here
+  # - IngredientCatalog: AR model whose accessors this class reads directly
   class NutritionCalculator # rubocop:disable Metrics/ClassLength
     NUTRIENTS = NutritionConstraints::NUTRIENT_KEYS
 
@@ -41,12 +44,7 @@ module FamilyRecipes
       @omit_set = omit_set
 
       @nutrition_data = nutrition_data.select do |_name, entry|
-        next false unless entry['nutrients'].is_a?(Hash)
-
-        basis_grams = entry.dig('nutrients', 'basis_grams')
-        next false unless basis_grams.is_a?(Numeric) && basis_grams.positive?
-
-        true
+        entry.basis_grams.present? && entry.basis_grams.positive?
       end.to_h
     end
 
@@ -133,14 +131,11 @@ module FamilyRecipes
     end
 
     def nutrient_per_gram(entry, nutrient)
-      basis_grams = entry.dig('nutrients', 'basis_grams')
-      return 0 if basis_grams.nil? || basis_grams <= 0
-
-      (entry.dig('nutrients', nutrient.to_s) || 0) / basis_grams.to_f
+      (entry.public_send(nutrient) || 0) / entry.basis_grams.to_f
     end
 
     def to_grams(value, unit, entry) # rubocop:disable Metrics/MethodLength, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
-      portions = entry['portions'] || {}
+      portions = entry.portions || {}
 
       # 1. Bare count with no unit (e.g. "Eggs, 3") — use ~unitless portion
       if unit.nil?
@@ -171,17 +166,15 @@ module FamilyRecipes
     end # rubocop:enable Metrics/MethodLength, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
 
     def derive_density(entry)
-      density = entry['density']
-      return nil unless density
-      return nil unless density['volume'] && density['unit']
+      return nil unless entry.density_grams && entry.density_volume && entry.density_unit
 
-      ml_factor = VOLUME_TO_ML[density['unit'].to_s.downcase]
+      ml_factor = VOLUME_TO_ML[entry.density_unit.downcase]
       return nil unless ml_factor
 
-      volume_ml = density['volume'] * ml_factor
+      volume_ml = entry.density_volume * ml_factor
       return nil if volume_ml <= 0
 
-      density['grams'] / volume_ml
+      entry.density_grams / volume_ml
     end
 
     def parse_serving_count(recipe)
