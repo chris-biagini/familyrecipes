@@ -43,12 +43,10 @@ class IngredientRowBuilder # rubocop:disable Metrics/ClassLength
     units = collect_units_for(ingredient_name)
     return [] if units.empty?
 
-    calculator = FamilyRecipes::NutritionCalculator.new(
-      entry ? { ingredient_name => entry } : {}, omit_set: Set.new
-    )
-    calc_entry = calculator.nutrition_data[ingredient_name]
-
-    units.map { |unit| build_unit_row(unit, calculator, calc_entry, entry) }
+    units.map do |unit|
+      resolvable = unit_resolvable?(unit, entry)
+      { unit:, resolvable:, method: resolution_method(unit, resolvable, entry) }
+    end
   end
 
   def coverage
@@ -114,12 +112,10 @@ class IngredientRowBuilder # rubocop:disable Metrics/ClassLength
     { name:, units: bad, recipes: recipes_by_ingredient[name] }
   end
 
-  def find_bad_units(name, entry, units)
+  def find_bad_units(_name, entry, units)
     return units.map { |u| { unit: u, method: 'no nutrition data' } } if entry&.basis_grams.blank?
 
-    calculator = FamilyRecipes::NutritionCalculator.new({ name => entry }, omit_set: Set.new)
-    calc_entry = calculator.nutrition_data[name]
-    units.reject { |u| weight_unit?(u) || (calc_entry && calculator.resolvable?(1, u, calc_entry)) }
+    units.reject { |u| unit_resolvable?(u, entry) }
          .map { |u| { unit: u, method: resolution_method(u, false, entry) } }
   end
 
@@ -186,9 +182,27 @@ class IngredientRowBuilder # rubocop:disable Metrics/ClassLength
     end.to_a
   end
 
-  def build_unit_row(unit, calculator, calc_entry, entry)
-    resolvable = weight_unit?(unit) || (calc_entry && calculator.resolvable?(1, unit, calc_entry))
-    { unit:, resolvable: resolvable || false, method: resolution_method(unit, resolvable, entry) }
+  def unit_resolvable?(unit, entry)
+    return true if weight_unit?(unit)
+    return false if entry&.basis_grams.blank?
+    return portion_defined?(entry, unit) if unit && !volume_unit?(unit)
+    return density_defined?(entry) if unit && volume_unit?(unit)
+
+    entry.portions&.key?('~unitless')
+  end
+
+  def volume_unit?(unit)
+    unit && VOLUME_UNITS.include?(unit.downcase)
+  end
+
+  def portion_defined?(entry, unit)
+    return false if entry.portions.blank?
+
+    entry.portions.any? { |k, _| k.casecmp(unit).zero? }
+  end
+
+  def density_defined?(entry)
+    entry.density_grams.present? && entry.density_volume.present? && entry.density_unit.present?
   end
 
   def weight_unit?(unit)

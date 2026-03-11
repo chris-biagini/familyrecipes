@@ -416,6 +416,20 @@ class IngredientRowBuilderTest < ActiveSupport::TestCase
 
   # --- needed_units ---
 
+  test 'needed_units marks named portion as resolvable' do
+    create_catalog_entry('Yeast', basis_grams: 3)
+    entry = IngredientCatalog.find_by(ingredient_name: 'Yeast', kitchen_id: nil)
+    entry.update!(portions: { 'packet' => 7.0 })
+
+    builder = IngredientRowBuilder.new(kitchen: @kitchen)
+    units = builder.needed_units('Yeast')
+
+    packet_entry = units.find { |u| u[:unit] == 'packet' }
+
+    assert packet_entry, 'expected a packet unit entry'
+    assert packet_entry[:resolvable]
+  end
+
   test 'needed_units handles bare counts' do
     MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Scrambled Eggs
