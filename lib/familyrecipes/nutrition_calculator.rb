@@ -5,12 +5,15 @@ module FamilyRecipes
   # entries. Resolves ingredient quantities to grams via a priority chain:
   # weight units → named portions → density-derived volume conversions. Produces
   # a Result with totals, per-serving, and per-unit breakdowns, plus lists of
-  # missing and partially resolvable ingredients.
+  # missing and partially resolvable ingredients. Also owns the canonical unit
+  # conversion tables (VOLUME_TO_ML, WEIGHT_CONVERSIONS) and their Inflector-
+  # expanded variants used by UsdaPortionClassifier and NutritionEntryHelpers.
   #
   # Collaborators:
   # - RecipeNutritionJob: calls this at save time; Result stored as JSON on Recipe
   # - NutritionConstraints: defines NUTRIENT_KEYS consumed here
   # - IngredientCatalog: AR model whose accessors this class reads directly
+  # - UsdaPortionClassifier, NutritionEntryHelpers: consume EXPANDED_*_UNITS
   class NutritionCalculator # rubocop:disable Metrics/ClassLength
     NUTRIENTS = NutritionConstraints::NUTRIENT_KEYS
 
@@ -27,6 +30,23 @@ module FamilyRecipes
     # Subset of VOLUME_TO_ML for the density editor dropdown — excludes bulk
     # units (pt, qt, gal) that don't make sense for expressing ingredient density.
     DENSITY_UNITS = ['cup', 'tbsp', 'tsp', 'fl oz', 'ml', 'l'].freeze
+
+    # Base keys plus long-form abbreviations and plurals from Inflector.
+    # Used by UsdaPortionClassifier and NutritionEntryHelpers to recognize
+    # unit variants in USDA data and serving-size strings.
+    EXPANDED_VOLUME_UNITS = begin
+      units = VOLUME_TO_ML.keys.to_set
+      Inflector::ABBREVIATIONS.each { |long, short| units << long if VOLUME_TO_ML.key?(short) }
+      Inflector::KNOWN_PLURALS.each { |sing, pl| units << pl if units.include?(sing) }
+      units.freeze
+    end
+
+    EXPANDED_WEIGHT_UNITS = begin
+      units = WEIGHT_CONVERSIONS.keys.to_set
+      Inflector::ABBREVIATIONS.each { |long, short| units << long if WEIGHT_CONVERSIONS.key?(short) }
+      Inflector::KNOWN_PLURALS.each { |sing, pl| units << pl if units.include?(sing) }
+      units.freeze
+    end
 
     Result = Data.define(
       :totals, :serving_count, :per_serving, :per_unit,

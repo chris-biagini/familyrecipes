@@ -8,32 +8,9 @@ module FamilyRecipes
   #
   # Collaborators:
   # - UsdaClient (produces the raw portion hashes this class consumes)
-  # - NutritionCalculator (VOLUME_TO_ML, WEIGHT_CONVERSIONS for unit sets)
-  # - Inflector (ABBREVIATIONS, KNOWN_PLURALS for variant expansion)
+  # - NutritionCalculator (EXPANDED_VOLUME_UNITS, EXPANDED_WEIGHT_UNITS)
   class UsdaPortionClassifier
     Result = Data.define(:density_candidates, :portion_candidates, :filtered)
-
-    VOLUME_PREFIXES = begin
-      prefixes = NutritionCalculator::VOLUME_TO_ML.keys.to_set
-      Inflector::ABBREVIATIONS.each do |long_form, short_form|
-        prefixes << long_form if NutritionCalculator::VOLUME_TO_ML.key?(short_form)
-      end
-      Inflector::KNOWN_PLURALS.each do |singular, plural|
-        prefixes << plural if prefixes.include?(singular)
-      end
-      prefixes.freeze
-    end
-
-    WEIGHT_PREFIXES = begin
-      prefixes = NutritionCalculator::WEIGHT_CONVERSIONS.keys.to_set
-      Inflector::ABBREVIATIONS.each do |long_form, short_form|
-        prefixes << long_form if NutritionCalculator::WEIGHT_CONVERSIONS.key?(short_form)
-      end
-      Inflector::KNOWN_PLURALS.each do |singular, plural|
-        prefixes << plural if prefixes.include?(singular)
-      end
-      prefixes.freeze
-    end
 
     def self.classify(portions)
       buckets = portions.each_with_object(density: [], portions: [], filtered: []) do |mod, result|
@@ -67,11 +44,11 @@ module FamilyRecipes
     end
 
     def self.volume_modifier?(modifier)
-      unit_prefix_match?(modifier, VOLUME_PREFIXES)
+      unit_prefix_match?(modifier, NutritionCalculator::EXPANDED_VOLUME_UNITS)
     end
 
     def self.weight_modifier?(modifier)
-      unit_prefix_match?(modifier, WEIGHT_PREFIXES)
+      unit_prefix_match?(modifier, NutritionCalculator::EXPANDED_WEIGHT_UNITS)
     end
 
     def self.regulatory_modifier?(modifier)

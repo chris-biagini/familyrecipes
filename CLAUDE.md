@@ -210,6 +210,10 @@ variant matching and a JSON `aliases` column for alternate names.
 `IngredientCatalog` records directly (via `resolver.lookup`) — no intermediate
 hash format.  Computes `total_weight_grams` by summing resolved ingredient
 weights, used for per-serving weight on the FDA-style nutrition label.
+`NutritionCalculator` also owns canonical unit conversion tables
+(`VOLUME_TO_ML`, `WEIGHT_CONVERSIONS`) and their Inflector-expanded variants
+(`EXPANDED_VOLUME_UNITS`, `EXPANDED_WEIGHT_UNITS`) — all unit recognition flows
+through these shared constants.
 `IngredientResolver` is the single resolution point for ingredient names —
 wraps `IngredientCatalog.lookup_for` with case-insensitive fallback and
 uncataloged variant collapsing.  Constructed via

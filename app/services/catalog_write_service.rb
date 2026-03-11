@@ -43,7 +43,7 @@ class CatalogWriteService
     return Result.new(entry:, persisted: false) unless entry.save
 
     AisleWriteService.sync_new_aisle(kitchen:, aisle: entry.aisle) if entry.aisle
-    recalculate_affected_recipes if entry.basis_grams.present?
+    recalculate_recipes_for(names: [ingredient_name]) if entry.basis_grams.present?
     reconcile_meal_plan
     kitchen.broadcast_update
 
@@ -53,7 +53,7 @@ class CatalogWriteService
   def destroy
     entry = IngredientCatalog.find_by!(kitchen:, ingredient_name:)
     entry.destroy!
-    recalculate_affected_recipes
+    recalculate_recipes_for(names: [ingredient_name])
     reconcile_meal_plan
     kitchen.broadcast_update
     Result.new(entry:, persisted: true)
@@ -64,7 +64,7 @@ class CatalogWriteService
 
     persisted_count, errors = save_all_entries(entries_hash)
     sync_bulk_aisles(entries_hash)
-    recalculate_all_affected_recipes(entries_hash)
+    recalculate_recipes_for(names: entries_hash.keys)
     BulkResult.new(persisted_count:, errors:)
   end
 
@@ -77,9 +77,11 @@ class CatalogWriteService
     plan.with_optimistic_retry { plan.reconcile! }
   end
 
-  def recalculate_affected_recipes
+  def recalculate_recipes_for(names:)
+    return if kitchen.recipes.none?
+
     resolver = IngredientCatalog.resolver_for(kitchen)
-    raw_names = resolver.all_keys_for(ingredient_name)
+    raw_names = names.flat_map { |name| resolver.all_keys_for(name) }.uniq
     kitchen.recipes
            .joins(steps: :ingredients)
            .where(ingredients: { name: raw_names })
@@ -104,17 +106,5 @@ class CatalogWriteService
   def sync_bulk_aisles(entries_hash)
     aisles = entries_hash.values.filter_map { |e| e['aisle'] }
     AisleWriteService.sync_new_aisles(kitchen:, aisles:)
-  end
-
-  def recalculate_all_affected_recipes(entries_hash)
-    return if kitchen.recipes.none?
-
-    resolver = IngredientCatalog.resolver_for(kitchen)
-    raw_names = entries_hash.keys.flat_map { |name| resolver.all_keys_for(name) }.uniq
-    kitchen.recipes
-           .joins(steps: :ingredients)
-           .where(ingredients: { name: raw_names })
-           .distinct
-           .find_each { |recipe| RecipeNutritionJob.perform_now(recipe, resolver:) }
   end
 end

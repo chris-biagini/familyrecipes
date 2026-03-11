@@ -1,19 +1,16 @@
 # frozen_string_literal: true
 
 module FamilyRecipes
-  # Shared logic for the web nutrition editor. Parses
-  # FDA serving-size strings (e.g., "2 tbsp (30g)") into structured hashes with
-  # gram weight, optional volume density, and optional discrete portions. The
-  # density and portion data feeds into IngredientCatalog entries that
-  # NutritionCalculator uses for unit resolution at nutrition-calculation time.
+  # Shared logic for the web ingredient editor. Parses FDA serving-size strings
+  # (e.g., "2 tbsp (30g)") into structured hashes with gram weight, optional
+  # volume density, and optional discrete portions. The density and portion data
+  # feeds into IngredientCatalog entries that NutritionCalculator uses for unit
+  # resolution at nutrition-calculation time.
+  #
+  # Collaborators:
+  # - NutritionCalculator (EXPANDED_VOLUME_UNITS for unit classification)
+  # - Inflector (normalize_unit for singular forms)
   module NutritionEntryHelpers
-    KNOWN_VOLUME_UNITS = begin
-      units = NutritionCalculator::VOLUME_TO_ML.keys.to_set
-      Inflector::ABBREVIATIONS.each { |long, short| units << long if NutritionCalculator::VOLUME_TO_ML.key?(short) }
-      Inflector::KNOWN_PLURALS.each { |sing, pl| units << pl if units.include?(sing) }
-      units.freeze
-    end
-
     NUTRITION_UNIT_OVERRIDES = { 'eggs' => '~unitless' }.freeze
 
     def self.parse_serving_size(input) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/PerceivedComplexity
@@ -49,7 +46,7 @@ module FamilyRecipes
       unit_down = raw_unit.downcase.chomp('.')
 
       # Classify: volume unit or discrete portion?
-      if KNOWN_VOLUME_UNITS.include?(unit_down)
+      if NutritionCalculator::EXPANDED_VOLUME_UNITS.include?(unit_down)
         result[:volume_amount] = amount
         result[:volume_unit] = Inflector.normalize_unit(unit_down)
       else
@@ -62,10 +59,6 @@ module FamilyRecipes
       result
     rescue ArgumentError
       result
-    end # rubocop:enable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
-
-    def self.volume_to_ml(unit)
-      NutritionCalculator::VOLUME_TO_ML[unit] || 1
-    end
+    end # rubocop:enable Metrics/MethodLength, Metrics/AbcSize, Metrics/PerceivedComplexity
   end
 end
