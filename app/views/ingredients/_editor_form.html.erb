@@ -3,175 +3,219 @@
 <turbo-frame id="nutrition-editor-form">
   <div class="editor-form" data-nutrition-editor-target="formContent">
 
-    <details class="usda-search-panel"
-             data-nutrition-editor-target="usdaPanel"
-             <%= 'open' unless entry&.basis_grams %>>
-      <summary class="editor-section-title usda-summary-title">
-        Import from USDA
-        <span class="usda-imported-badge" hidden
-              data-nutrition-editor-target="usdaBadge">Imported</span>
-      </summary>
-      <div class="usda-search-row">
-        <input type="search" class="usda-search-input"
-               placeholder="Search USDA database…"
-               value="<%= ingredient_name %>"
-               data-nutrition-editor-target="usdaQuery"
-               data-action="keydown->nutrition-editor#usdaSearchKeydown"
-               aria-label="USDA search query">
-        <button type="button" class="btn usda-search-btn"
-                data-action="click->nutrition-editor#usdaSearch"
-                data-nutrition-editor-target="usdaSearchBtn">Search</button>
-      </div>
-      <div class="usda-results" hidden data-nutrition-editor-target="usdaResults"></div>
-    </details>
-
-    <fieldset class="editor-section">
-      <legend class="editor-section-title">Nutrition Information</legend>
-
-      <div class="form-row serving-row">
-        <label for="editor-basis-grams">Per</label>
-        <input type="number" id="editor-basis-grams" class="field-narrow"
-               value="<%= format_nutrient_value(entry.basis_grams) if entry&.basis_grams %>"
-               inputmode="decimal" step="any" min="0.1"
-               placeholder="100"
-               data-nutrition-editor-target="basisGrams">
-        <span class="field-unit">g</span>
-      </div>
-
-      <% IngredientCatalog::NUTRIENT_DISPLAY.each do |label, key, unit| %>
-        <% indent = label.size - label.lstrip.size %>
-        <% nutrient_max = FamilyRecipes::NutritionConstraints::NUTRIENT_MAX[key.to_s] %>
-        <div class="nutrient-row indent-<%= indent / 2 %>">
-          <label for="editor-<%= key %>"><%= label.strip %></label>
-          <input type="number" id="editor-<%= key %>" class="field-narrow"
-                 value="<%= format_nutrient_value(entry.public_send(key)) if entry&.public_send(key) %>"
-                 inputmode="decimal" step="any" min="0" max="<%= nutrient_max %>"
-                 data-nutrition-editor-target="nutrientField"
-                 data-nutrient-key="<%= key %>"
-                 data-nutrient-max="<%= nutrient_max %>">
-          <span class="field-unit"><%= unit %></span>
+    <div class="editor-collapse">
+      <details class="editor-collapse-header"
+               data-nutrition-editor-target="usdaPanel">
+        <summary>USDA Import</summary>
+      </details>
+      <div class="editor-collapse-body">
+        <div class="editor-collapse-inner usda-search-content">
+          <div class="usda-search-row">
+            <input type="search" class="usda-search-input"
+                   placeholder="Search USDA database…"
+                   value="<%= ingredient_name %>"
+                   data-nutrition-editor-target="usdaQuery"
+                   data-action="keydown->nutrition-editor#usdaSearchKeydown"
+                   aria-label="USDA search query">
+            <button type="button" class="btn usda-search-btn"
+                    data-action="click->nutrition-editor#usdaSearch"
+                    data-nutrition-editor-target="usdaSearchBtn">Search</button>
+          </div>
+          <div class="usda-results" hidden data-nutrition-editor-target="usdaResults"></div>
         </div>
-      <% end %>
-    </fieldset>
-
-    <fieldset class="editor-section">
-      <legend class="editor-section-title">Density</legend>
-      <p class="editor-help">
-        How much does a measured volume weigh? This lets the app convert
-        cups and tablespoons to grams for nutrition math.
-      </p>
-      <div class="form-row density-row">
-        <input type="number" class="field-narrow"
-               value="<%= format_nutrient_value(entry.density_volume) if has_density %>"
-               inputmode="decimal" step="any" min="0"
-               placeholder="1"
-               data-nutrition-editor-target="densityVolume"
-               aria-label="Volume amount">
-        <select class="field-unit-select"
-                data-nutrition-editor-target="densityUnit"
-                aria-label="Volume unit">
-          <option value="">unit</option>
-          <% FamilyRecipes::NutritionCalculator::DENSITY_UNITS.each do |u| %>
-            <option value="<%= u %>" <%= 'selected' if has_density && entry.density_unit == u %>><%= u %></option>
-          <% end %>
-        </select>
-        <span class="portion-eq">=</span>
-        <input type="number" class="field-narrow"
-               value="<%= format_nutrient_value(entry.density_grams) if has_density %>"
-               inputmode="decimal" step="any" min="0"
-               placeholder="120"
-               data-nutrition-editor-target="densityGrams"
-               aria-label="Weight in grams">
-        <span class="field-unit">g</span>
       </div>
-    </fieldset>
+    </div>
 
-    <details class="density-candidates" hidden data-nutrition-editor-target="densityCandidates">
-      <summary class="editor-section-title">Other USDA densities</summary>
-      <div data-nutrition-editor-target="densityCandidateList"></div>
-    </details>
+    <div class="editor-collapse">
+      <details class="editor-collapse-header">
+        <summary>Nutrition Facts</summary>
+      </details>
+      <div class="editor-collapse-body">
+        <div class="editor-collapse-inner">
+          <div class="nf-editor">
+            <div class="nf-serving-row">
+              <label for="editor-basis-grams">Per</label>
+              <input type="number" id="editor-basis-grams" class="field-narrow"
+                     value="<%= format_nutrient_value(entry.basis_grams) if entry&.basis_grams %>"
+                     inputmode="decimal" step="any" min="0.1"
+                     placeholder="100"
+                     data-nutrition-editor-target="basisGrams">
+              <span class="nf-unit">g</span>
+            </div>
 
-    <fieldset class="editor-section">
-      <legend class="editor-section-title">Portions</legend>
-      <p class="editor-help">
-        Named portions map non-volume units to gram weights. Use "each" for
-        items counted by number (eggs, rolls).
-      </p>
-      <div data-nutrition-editor-target="portionList">
-        <% if entry&.portions.present? %>
-          <% entry.portions.each do |name, grams| %>
-            <%= render 'ingredients/portion_row', name: name, grams: grams %>
-          <% end %>
-        <% end %>
-      </div>
-      <button type="button" class="btn add-portion"
-              data-action="click->nutrition-editor#addPortion">+ Add portion</button>
-    </fieldset>
+            <div class="nf-thick-rule"></div>
 
-    <fieldset class="editor-section aisle-section">
-      <legend class="editor-section-title">Grocery Aisle</legend>
-      <div class="form-row aisle-row">
-        <select class="aisle-form-select"
-                data-nutrition-editor-target="aisleSelect"
-                data-action="change->nutrition-editor#aisleChanged"
-                aria-label="Grocery aisle">
-          <option value="">(none)</option>
-          <%- available_aisles.each do |aisle| -%>
-            <option value="<%= aisle %>" <%= 'selected' if entry&.aisle == aisle %>><%= aisle %></option>
-          <%- end -%>
-          <option disabled>&#x2500;&#x2500;&#x2500;</option>
-          <option value="__other__">New aisle&hellip;</option>
-        </select>
-        <input type="text" class="aisle-new-input" placeholder="New aisle name" hidden
-               data-nutrition-editor-target="aisleInput"
-               data-action="keydown->nutrition-editor#aisleInputKeydown">
+            <% IngredientCatalog::NUTRIENT_DISPLAY.each do |label, key, unit| %>
+              <% next if key.in?(%i[trans_fat added_sugars]) %>
+              <% indent = label.size - label.lstrip.size %>
+              <% nutrient_max = FamilyRecipes::NutritionConstraints::NUTRIENT_MAX[key.to_s] %>
+              <div class="nf-row<%= ' nf-indent' if indent.positive? %><%= ' nf-calories' if key == :calories %>">
+                <span class="nf-name"><%= label.strip %></span>
+                <input type="number" id="editor-<%= key %>" class="nf-input"
+                       value="<%= format_nutrient_value(entry.public_send(key)) if entry&.public_send(key) %>"
+                       inputmode="decimal" step="any" min="0" max="<%= nutrient_max %>"
+                       data-nutrition-editor-target="nutrientField"
+                       data-nutrient-key="<%= key %>"
+                       data-nutrient-max="<%= nutrient_max %>">
+                <span class="nf-unit"><%= unit %></span>
+              </div>
+              <% if key == :calories %>
+                <div class="nf-thick-rule"></div>
+              <% end %>
+            <% end %>
+          </div>
+        </div>
       </div>
-      <label class="form-row omit-row">
-        <input type="checkbox"
-               data-nutrition-editor-target="omitCheckbox"
-               <%= 'checked' if entry&.omit_from_shopping %>>
-        Omit from grocery list
-      </label>
-    </fieldset>
+    </div>
 
-    <fieldset class="editor-section">
-      <legend class="editor-section-title">Aliases</legend>
-      <p class="editor-help">
-        Alternate names for this ingredient. Recipes using any alias will map
-        to this entry for nutrition and grocery grouping.
-      </p>
-      <div class="alias-chip-list" data-nutrition-editor-target="aliasList">
-        <% (entry&.aliases || []).each do |alias_name| %>
-          <span class="alias-chip" data-nutrition-editor-target="aliasChip">
-            <span class="alias-chip-text"><%= alias_name %></span>
-            <button type="button" class="alias-chip-remove" aria-label="Remove alias"
-                    data-action="click->nutrition-editor#removeAlias">&times;</button>
-          </span>
-        <% end %>
+    <div class="editor-collapse">
+      <details class="editor-collapse-header">
+        <summary>Density</summary>
+      </details>
+      <div class="editor-collapse-body">
+        <div class="editor-collapse-inner">
+          <p class="editor-help">
+            How much does a measured volume weigh? This lets the app convert
+            cups and tablespoons to grams for nutrition math.
+          </p>
+          <div class="form-row density-row">
+            <input type="number" class="field-narrow"
+                   value="<%= format_nutrient_value(entry.density_volume) if has_density %>"
+                   inputmode="decimal" step="any" min="0"
+                   placeholder="1"
+                   data-nutrition-editor-target="densityVolume"
+                   aria-label="Volume amount">
+            <select class="field-unit-select"
+                    data-nutrition-editor-target="densityUnit"
+                    aria-label="Volume unit">
+              <option value="">unit</option>
+              <% FamilyRecipes::NutritionCalculator::DENSITY_UNITS.each do |u| %>
+                <option value="<%= u %>" <%= 'selected' if has_density && entry.density_unit == u %>><%= u %></option>
+              <% end %>
+            </select>
+            <span class="portion-eq">=</span>
+            <input type="number" class="field-narrow"
+                   value="<%= format_nutrient_value(entry.density_grams) if has_density %>"
+                   inputmode="decimal" step="any" min="0"
+                   placeholder="120"
+                   data-nutrition-editor-target="densityGrams"
+                   aria-label="Weight in grams">
+            <span class="field-unit">g</span>
+          </div>
+
+          <details class="density-candidates" hidden data-nutrition-editor-target="densityCandidates">
+            <summary class="editor-section-title">Other USDA densities</summary>
+            <div data-nutrition-editor-target="densityCandidateList"></div>
+          </details>
+        </div>
       </div>
-      <div class="alias-add-row">
-        <input type="text" class="alias-input" placeholder="e.g. AP flour"
-               data-nutrition-editor-target="aliasInput"
-               data-action="keydown->nutrition-editor#aliasInputKeydown"
-               aria-label="New alias name">
-        <button type="button" class="btn add-alias"
-                data-action="click->nutrition-editor#addAlias">Add</button>
+    </div>
+
+    <div class="editor-collapse">
+      <details class="editor-collapse-header">
+        <summary>Portions</summary>
+      </details>
+      <div class="editor-collapse-body">
+        <div class="editor-collapse-inner">
+          <p class="editor-help">
+            Named portions map non-volume units to gram weights. Use "each" for
+            items counted by number (eggs, rolls).
+          </p>
+          <div data-nutrition-editor-target="portionList">
+            <% if entry&.portions.present? %>
+              <% entry.portions.each do |name, grams| %>
+                <%= render 'ingredients/portion_row', name: name, grams: grams %>
+              <% end %>
+            <% end %>
+          </div>
+          <button type="button" class="btn add-portion"
+                  data-action="click->nutrition-editor#addPortion">+ Add portion</button>
+        </div>
       </div>
-    </fieldset>
+    </div>
+
+    <div class="editor-collapse">
+      <details class="editor-collapse-header">
+        <summary>Grocery Aisle</summary>
+      </details>
+      <div class="editor-collapse-body">
+        <div class="editor-collapse-inner">
+          <div class="form-row aisle-row">
+            <select class="aisle-form-select"
+                    data-nutrition-editor-target="aisleSelect"
+                    data-action="change->nutrition-editor#aisleChanged"
+                    aria-label="Grocery aisle">
+              <option value="">(none)</option>
+              <%- available_aisles.each do |aisle| -%>
+                <option value="<%= aisle %>" <%= 'selected' if entry&.aisle == aisle %>><%= aisle %></option>
+              <%- end -%>
+              <option disabled>&#x2500;&#x2500;&#x2500;</option>
+              <option value="__other__">New aisle&hellip;</option>
+            </select>
+            <input type="text" class="aisle-new-input" placeholder="New aisle name" hidden
+                   data-nutrition-editor-target="aisleInput"
+                   data-action="keydown->nutrition-editor#aisleInputKeydown">
+          </div>
+          <label class="form-row omit-row">
+            <input type="checkbox"
+                   data-nutrition-editor-target="omitCheckbox"
+                   <%= 'checked' if entry&.omit_from_shopping %>>
+            Omit from grocery list
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="editor-collapse">
+      <details class="editor-collapse-header">
+        <summary>Aliases</summary>
+      </details>
+      <div class="editor-collapse-body">
+        <div class="editor-collapse-inner">
+          <p class="editor-help">
+            Alternate names for this ingredient. Recipes using any alias will map
+            to this entry for nutrition and grocery grouping.
+          </p>
+          <div class="alias-chip-list" data-nutrition-editor-target="aliasList">
+            <% (entry&.aliases || []).each do |alias_name| %>
+              <span class="alias-chip" data-nutrition-editor-target="aliasChip">
+                <span class="alias-chip-text"><%= alias_name %></span>
+                <button type="button" class="alias-chip-remove" aria-label="Remove alias"
+                        data-action="click->nutrition-editor#removeAlias">&times;</button>
+              </span>
+            <% end %>
+          </div>
+          <div class="alias-add-row">
+            <input type="text" class="alias-input" placeholder="e.g. AP flour"
+                   data-nutrition-editor-target="aliasInput"
+                   data-action="keydown->nutrition-editor#aliasInputKeydown"
+                   aria-label="New alias name">
+            <button type="button" class="btn add-alias"
+                    data-action="click->nutrition-editor#addAlias">Add</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <% if needed_units.any? %>
-      <div class="editor-section editor-recipe-units">
-        <div class="editor-section-title">Recipe Units</div>
-        <p class="editor-help">
-          Units used in recipes. A checkmark means the app can convert this unit to grams.
-        </p>
-        <% needed_units.each do |nu| %>
-          <div class="recipe-unit-row">
-            <span class="recipe-unit-status"><%= nu[:resolvable] ? "\u2713" : "\u2717" %></span>
-            <span class="recipe-unit-name"><%= nu[:unit] || '(bare count)' %></span>
-            <span class="recipe-unit-method"><%= nu[:method] %></span>
+      <div class="editor-collapse">
+        <details class="editor-collapse-header">
+          <summary>Recipe Units</summary>
+        </details>
+        <div class="editor-collapse-body">
+          <div class="editor-collapse-inner">
+            <p class="editor-help">
+              Units used in recipes. A checkmark means the app can convert this unit to grams.
+            </p>
+            <% needed_units.each do |nu| %>
+              <div class="recipe-unit-row">
+                <span class="recipe-unit-status"><%= nu[:resolvable] ? "\u2713" : "\u2717" %></span>
+                <span class="recipe-unit-name"><%= nu[:unit] || '(bare count)' %></span>
+                <span class="recipe-unit-method"><%= nu[:method] %></span>
+              </div>
+            <% end %>
           </div>
-        <% end %>
+        </div>
       </div>
     <% end %>
 

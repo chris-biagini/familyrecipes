@@ -423,11 +423,11 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
         headers: { 'Accept' => 'text/html' }
 
     assert_response :success
-    assert_select 'details.usda-search-panel'
+    assert_select 'details.editor-collapse-header[data-nutrition-editor-target="usdaPanel"]'
     assert_select 'input[data-nutrition-editor-target="usdaQuery"]'
   end
 
-  test 'edit form opens USDA panel and hides density candidates when no nutrition data' do
+  test 'edit form starts with all sections collapsed and density candidates hidden' do
     @category = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
     MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Focaccia
@@ -442,30 +442,8 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
         headers: { 'Accept' => 'text/html' }
 
     assert_response :success
-    assert_select 'details.usda-search-panel[open]'
+    assert_select 'details.editor-collapse-header:not([open])', minimum: 1
     assert_select 'details.density-candidates[hidden]'
-  end
-
-  test 'edit form collapses USDA panel when ingredient has nutrition data' do
-    @category = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
-    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
-      # Focaccia
-
-      ## Mix (combine)
-
-      - Flour, 3 cups
-    MD
-    IngredientCatalog.create!(
-      ingredient_name: 'Flour', kitchen: @kitchen,
-      basis_grams: 100, calories: 364
-    )
-
-    log_in
-    get ingredient_edit_path(ingredient_name: 'Flour', kitchen_slug: kitchen_slug),
-        headers: { 'Accept' => 'text/html' }
-
-    assert_response :success
-    assert_select 'details.usda-search-panel:not([open])'
   end
 
   test 'edit requires membership' do

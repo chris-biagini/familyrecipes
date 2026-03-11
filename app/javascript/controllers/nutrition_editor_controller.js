@@ -20,7 +20,7 @@ export default class extends Controller {
     "portionList", "portionRow", "portionName", "portionGrams",
     "aisleSelect", "aisleInput", "omitCheckbox",
     "aliasList", "aliasInput", "aliasChip",
-    "usdaPanel", "usdaQuery", "usdaResults", "usdaBadge", "usdaSearchBtn",
+    "usdaPanel", "usdaQuery", "usdaResults", "usdaSearchBtn",
     "densityCandidates", "densityCandidateList"
   ]
 
@@ -135,8 +135,6 @@ export default class extends Controller {
     event.detail.handled = true
     this.currentIngredient = null
     this.originalSnapshot = null
-    this.usdaImportData = null
-    if (this.hasUsdaBadgeTarget) this.usdaBadgeTarget.hidden = true
     if (this.hasUsdaResultsTarget) {
       this.usdaResultsTarget.hidden = true
       this.usdaResultsTarget.replaceChildren()
@@ -353,8 +351,9 @@ export default class extends Controller {
   buildResultItem(food) {
     const item = document.createElement("div")
     item.className = "usda-result-item"
-    item.setAttribute("role", "button")
-    item.setAttribute("tabindex", "0")
+
+    const info = document.createElement("div")
+    info.className = "usda-result-info"
 
     const name = document.createElement("div")
     name.className = "usda-result-name"
@@ -362,27 +361,39 @@ export default class extends Controller {
 
     const meta = document.createElement("div")
     meta.className = "usda-result-nutrients"
-    if (food.data_type) {
-      const badge = document.createElement("span")
-      badge.className = "usda-result-dataset"
-      badge.textContent = food.data_type
-      meta.appendChild(badge)
-      meta.appendChild(document.createTextNode(" "))
-    }
-    meta.appendChild(document.createTextNode(food.nutrient_summary))
+    meta.textContent = food.nutrient_summary
 
-    item.appendChild(name)
-    item.appendChild(meta)
+    info.appendChild(name)
+    info.appendChild(meta)
 
-    item.addEventListener("click", () => this.importUsdaResult(food.fdc_id, item))
-    item.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault()
-        this.importUsdaResult(food.fdc_id, item)
-      }
-    })
+    const btn = document.createElement("button")
+    btn.type = "button"
+    btn.className = "usda-import-btn"
+    btn.setAttribute("aria-label", `Import ${food.description}`)
+    btn.appendChild(this.buildDownloadIcon())
+    btn.addEventListener("click", () => this.importUsdaResult(food.fdc_id, item))
+
+    item.appendChild(info)
+    item.appendChild(btn)
 
     return item
+  }
+
+  buildDownloadIcon() {
+    const ns = "http://www.w3.org/2000/svg"
+    const svg = document.createElementNS(ns, "svg")
+    svg.setAttribute("viewBox", "0 0 20 20")
+    svg.setAttribute("fill", "currentColor")
+
+    const arrow = document.createElementNS(ns, "path")
+    arrow.setAttribute("d", "M10 3a1 1 0 0 1 1 1v7.586l2.293-2.293a1 1 0 1 1 1.414 1.414l-4 4a1 1 0 0 1-1.414 0l-4-4a1 1 0 1 1 1.414-1.414L9 11.586V4a1 1 0 0 1 1-1z")
+
+    const tray = document.createElementNS(ns, "path")
+    tray.setAttribute("d", "M4 14a1 1 0 0 1 1 1v1h10v-1a1 1 0 1 1 2 0v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1a1 1 0 0 1 1-1z")
+
+    svg.appendChild(arrow)
+    svg.appendChild(tray)
+    return svg
   }
 
   showUsdaError(message) {
@@ -410,10 +421,6 @@ export default class extends Controller {
 
       const data = await response.json()
       this.populateFromUsda(data)
-
-      this.usdaPanelTarget.open = false
-      this.usdaBadgeTarget.hidden = false
-      this.usdaImportData = data
     } catch {
       item.classList.remove("loading")
     }
@@ -571,8 +578,6 @@ export default class extends Controller {
     this._originalAisle = this.currentAisle()
     this.originalSnapshot = JSON.stringify(this.collectFormData())
     this.moveResetButtonToFooter()
-
-    if (this.hasBasisGramsTarget) this.basisGramsTarget.focus()
   }
 
   moveResetButtonToFooter() {
