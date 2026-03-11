@@ -206,9 +206,10 @@ setting.
 entries plus per-kitchen overrides, merged by `lookup_for` with `Inflector`
 variant matching and a JSON `aliases` column for alternate names.
 `NutritionConstraints` defines `NutrientDef` (with FDA daily values) and
-`DAILY_VALUES` hash for %DV calculation.  `NutritionCalculator` computes
-`total_weight_grams` by summing resolved ingredient weights — used for
-per-serving weight on the FDA-style nutrition label.
+`DAILY_VALUES` hash for %DV calculation.  `NutritionCalculator` consumes
+`IngredientCatalog` records directly (via `resolver.lookup`) — no intermediate
+hash format.  Computes `total_weight_grams` by summing resolved ingredient
+weights, used for per-serving weight on the FDA-style nutrition label.
 `IngredientResolver` is the single resolution point for ingredient names —
 wraps `IngredientCatalog.lookup_for` with case-insensitive fallback and
 uncataloged variant collapsing.  Constructed via
@@ -221,9 +222,17 @@ table rows, summaries, and next-needing-attention — shared by
 (NutrientDef) and validation rules — all downstream nutrient constants derive
 from it.  `RecipeAvailabilityCalculator` checks catalog coverage per recipe for
 availability badges on the menu page — uses `IngredientResolver` and refreshes
-automatically via Turbo morph when catalog entries change.  `bin/nutrition` is
-a standalone TUI (not loaded by Rails); `rake catalog:sync` pushes YAML changes
-into the database.
+automatically via Turbo morph when catalog entries change.
+`IngredientRowBuilder#needed_units` reports which recipe units an ingredient
+appears with and whether each is resolvable — shown in the editor form.
+`UsdaSearchController` exposes two JSON endpoints (`GET /usda/search`,
+`GET /usda/:fdc_id`) reading the API key from `Kitchen#usda_api_key`.
+`UsdaImportService` transforms raw USDA detail into editor-ready form values
+(nutrients, auto-picked density, source metadata, portion candidates).
+`UsdaClient` is a pure HTTP adapter returning flat portion arrays;
+`UsdaPortionClassifier` classifies them into density/portion/filtered buckets.
+`rake catalog:sync` pushes YAML changes into the database.
+`bin/nutrition` is a legacy TUI (broken, being replaced by the web editor).
 
 ## Recipe & Data Formats
 
