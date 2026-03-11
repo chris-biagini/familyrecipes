@@ -1,1 +1,48 @@
-<h1>Settings</h1>
+<% content_for(:title) { "Settings — #{current_kitchen.site_title}" } %>
+
+<article class="settings-page">
+  <h1>Settings</h1>
+
+  <% if notice %>
+    <p class="flash-notice"><%= notice %></p>
+  <% end %>
+
+  <%= form_with model: current_kitchen, url: settings_path, method: :patch, class: 'settings-form' do |f| %>
+    <section class="settings-section">
+      <h2>Site</h2>
+      <div class="settings-field">
+        <%= f.label :site_title, 'Site title' %>
+        <%= f.text_field :site_title, class: 'settings-input' %>
+      </div>
+      <div class="settings-field">
+        <%= f.label :homepage_heading, 'Homepage heading' %>
+        <%= f.text_field :homepage_heading, class: 'settings-input' %>
+      </div>
+      <div class="settings-field">
+        <%= f.label :homepage_subtitle, 'Homepage subtitle' %>
+        <%= f.text_field :homepage_subtitle, class: 'settings-input' %>
+      </div>
+    </section>
+
+    <section class="settings-section">
+      <h2>API Keys</h2>
+      <div class="settings-field" data-controller="reveal">
+        <%= f.label :usda_api_key, 'USDA API key' %>
+        <div class="settings-api-key-row">
+          <%= f.password_field :usda_api_key,
+                value: current_kitchen.usda_api_key,
+                class: 'settings-input',
+                data: { reveal_target: 'input' },
+                autocomplete: 'off' %>
+          <button type="button" class="btn settings-reveal-btn"
+                  data-action="reveal#toggle"
+                  data-reveal-target="button">Show</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="settings-actions">
+      <%= f.submit 'Save', class: 'btn btn-primary' %>
+    </div>
+  <% end %>
+</article>

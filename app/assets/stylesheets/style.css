@@ -780,6 +780,85 @@ section h2 {
   padding: 0.5rem 0;
 }
 
+/* Settings page */
+.settings-page {
+  max-width: 36rem;
+}
+
+.settings-page h1 {
+  margin-bottom: 1.5rem;
+}
+
+.settings-section {
+  margin-bottom: 2rem;
+}
+
+.settings-section h2 {
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-bottom: 1px solid var(--border-muted);
+  padding-bottom: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.settings-field {
+  margin-bottom: 1rem;
+}
+
+.settings-field label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.settings-input {
+  width: 100%;
+  font-family: inherit;
+  font-size: 0.95rem;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--border-muted);
+  border-radius: 3px;
+  background: var(--content-background-color);
+  color: var(--text-color);
+  box-sizing: border-box;
+}
+
+.settings-input:focus {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 1px;
+  border-color: var(--accent-color);
+}
+
+.settings-api-key-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.settings-api-key-row .settings-input {
+  flex: 1;
+}
+
+.settings-reveal-btn {
+  white-space: nowrap;
+  min-width: 3.5rem;
+}
+
+.settings-actions {
+  margin-top: 2rem;
+}
+
+.flash-notice {
+  padding: 0.5rem 0.75rem;
+  background: var(--flash-success-bg, #e8f5e9);
+  border: 1px solid var(--flash-success-border, #a5d6a7);
+  border-radius: 3px;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
 /* Mobile: hide aisle and recipes columns */
 @media (max-width: 768px) {
   .col-aisle,
