@@ -71,17 +71,43 @@ class MealPlanWriteServiceTest < ActiveSupport::TestCase
     assert_equal 2, attempts
   end
 
+  test 'apply_action skips broadcast when batching' do
+    broadcast_count = 0
+    @kitchen.define_singleton_method(:broadcast_update) { broadcast_count += 1 }
+    Kitchen.stub(:batching?, true) do
+      MealPlanWriteService.apply_action(
+        kitchen: @kitchen, action_type: 'check',
+        item: 'flour', checked: true
+      )
+    end
+
+    assert_equal 0, broadcast_count
+  end
+
   # --- select_all ---
 
   test 'select_all selects all provided slugs' do
+    create_focaccia_recipe
+
     MealPlanWriteService.select_all(
-      kitchen: @kitchen, recipe_slugs: %w[a b], quick_bite_slugs: %w[c]
+      kitchen: @kitchen, recipe_slugs: %w[focaccia], quick_bite_slugs: []
     )
 
     @plan.reload
 
-    assert_equal %w[a b], @plan.state['selected_recipes']
-    assert_equal %w[c], @plan.state['selected_quick_bites']
+    assert_equal %w[focaccia], @plan.state['selected_recipes']
+  end
+
+  test 'select_all reconciles stale selections' do
+    @plan.apply_action('select', type: 'recipe', slug: 'ghost', selected: true)
+
+    MealPlanWriteService.select_all(
+      kitchen: @kitchen, recipe_slugs: %w[real], quick_bite_slugs: []
+    )
+
+    @plan.reload
+
+    assert_not_includes @plan.state['selected_recipes'], 'ghost'
   end
 
   test 'select_all broadcasts to kitchen updates stream' do
@@ -104,6 +130,16 @@ class MealPlanWriteServiceTest < ActiveSupport::TestCase
 
     assert_empty @plan.state['selected_recipes']
     assert_empty @plan.state['checked_off']
+  end
+
+  test 'clear reconciles stale selections' do
+    @plan.apply_action('select', type: 'recipe', slug: 'ghost', selected: true)
+
+    MealPlanWriteService.clear(kitchen: @kitchen)
+
+    @plan.reload
+
+    assert_not_includes @plan.state['selected_recipes'], 'ghost'
   end
 
   test 'clear broadcasts to kitchen updates stream' do

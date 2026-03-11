@@ -32,29 +32,43 @@ class MealPlanWriteService
   def apply_action(action_type:, **params)
     mutate_plan do |plan|
       plan.apply_action(action_type, **params)
-      plan.reconcile!
+      plan.reconcile! unless Kitchen.batching?
     end
-    kitchen.broadcast_update
+    finalize
   end
 
   def select_all(recipe_slugs:, quick_bite_slugs:)
-    mutate_plan { |plan| plan.select_all!(recipe_slugs, quick_bite_slugs) }
-    kitchen.broadcast_update
+    mutate_plan do |plan|
+      plan.select_all!(recipe_slugs, quick_bite_slugs)
+      plan.reconcile! unless Kitchen.batching?
+    end
+    finalize
   end
 
   def clear
-    mutate_plan(&:clear_selections!)
-    kitchen.broadcast_update
+    mutate_plan do |plan|
+      plan.clear_selections!
+      plan.reconcile! unless Kitchen.batching?
+    end
+    finalize
   end
 
   def reconcile
-    mutate_plan(&:reconcile!)
-    kitchen.broadcast_update
+    mutate_plan do |plan|
+      plan.reconcile! unless Kitchen.batching?
+    end
+    finalize
   end
 
   private
 
   attr_reader :kitchen
+
+  def finalize
+    return if Kitchen.batching?
+
+    kitchen.broadcast_update
+  end
 
   def mutate_plan
     plan = MealPlan.for_kitchen(kitchen)
