@@ -288,4 +288,90 @@ class IngredientRowBuilderTest < ActiveSupport::TestCase
     assert_includes names, 'Eggs'
     assert_not_includes names, 'Egg'
   end
+
+  # --- needed_units ---
+
+  test 'needed_units returns units used across recipes' do
+    builder = IngredientRowBuilder.new(kitchen: @kitchen)
+    units = builder.needed_units('Flour')
+
+    assert_includes units.map { |u| u[:unit] }, 'cup'
+  end
+
+  test 'needed_units marks weight units as resolvable without catalog entry' do
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Bread by Weight
+
+      ## Mix (combine)
+
+      - Flour, 500 g
+
+      Mix.
+    MD
+
+    builder = IngredientRowBuilder.new(kitchen: @kitchen)
+    units = builder.needed_units('Flour')
+
+    gram_entry = units.find { |u| u[:unit] == 'g' }
+
+    assert gram_entry, 'expected a g unit entry'
+    assert gram_entry[:resolvable]
+    assert_equal 'weight', gram_entry[:method]
+  end
+
+  test 'needed_units marks volume units as unresolvable without density' do
+    create_catalog_entry('Flour', basis_grams: 30)
+
+    builder = IngredientRowBuilder.new(kitchen: @kitchen)
+    units = builder.needed_units('Flour')
+
+    cup_entry = units.find { |u| u[:unit] == 'cup' }
+
+    assert cup_entry, 'expected a cup unit entry'
+    assert_not cup_entry[:resolvable]
+    assert_equal 'no density', cup_entry[:method]
+  end
+
+  test 'needed_units marks volume units as resolvable with density' do
+    create_catalog_entry('Flour', basis_grams: 30)
+    entry = IngredientCatalog.find_by(ingredient_name: 'Flour', kitchen_id: nil)
+    entry.update!(density_grams: 125, density_volume: 1, density_unit: 'cup')
+
+    builder = IngredientRowBuilder.new(kitchen: @kitchen)
+    units = builder.needed_units('Flour')
+
+    cup_entry = units.find { |u| u[:unit] == 'cup' }
+
+    assert cup_entry, 'expected a cup unit entry'
+    assert cup_entry[:resolvable]
+    assert_equal 'via density', cup_entry[:method]
+  end
+
+  test 'needed_units returns empty array for unknown ingredient' do
+    builder = IngredientRowBuilder.new(kitchen: @kitchen)
+    units = builder.needed_units('Nonexistent')
+
+    assert_equal [], units
+  end
+
+  test 'needed_units handles bare counts' do
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Scrambled Eggs
+
+      ## Cook (fry)
+
+      - Eggs, 3
+
+      Cook.
+    MD
+
+    builder = IngredientRowBuilder.new(kitchen: @kitchen)
+    units = builder.needed_units('Eggs')
+
+    bare_entry = units.find { |u| u[:unit].nil? }
+
+    assert bare_entry, 'expected a nil unit entry for bare count'
+    assert_not bare_entry[:resolvable]
+    assert_equal 'no nutrition data', bare_entry[:method]
+  end
 end
