@@ -37,9 +37,17 @@ module FamilyRecipes
       def complete?
         missing_ingredients.empty? && partial_ingredients.empty?
       end
+
+      def as_json(_options = nil)
+        to_h.transform_keys(&:to_s).tap do |h|
+          %w[totals per_serving per_unit].each do |key|
+            h[key] = h[key]&.transform_keys(&:to_s)&.transform_values(&:to_f)
+          end
+        end
+      end
     end
 
-    attr_reader :nutrition_data
+    attr_reader :nutrition_data, :omit_set
 
     def initialize(nutrition_data, omit_set: Set.new)
       @omit_set = omit_set

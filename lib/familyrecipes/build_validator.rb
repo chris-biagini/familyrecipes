@@ -48,10 +48,10 @@ module FamilyRecipes
 
       print 'Validating nutrition data...'
 
-      omit_set = IngredientCatalog.where(omit_from_shopping: true).pluck(:ingredient_name).to_set(&:downcase)
-      ingredients_to_recipes = build_nutrition_recipe_index(omit_set)
+      omit = @nutrition_calculator.omit_set
+      ingredients_to_recipes = build_nutrition_recipe_index(omit)
       missing = find_missing_nutrition(ingredients_to_recipes)
-      unresolvable, unquantified = find_nutrition_issues(omit_set)
+      unresolvable, unquantified = find_nutrition_issues(omit)
 
       print_nutrition_warnings(missing, unresolvable, unquantified, ingredients_to_recipes)
     end
