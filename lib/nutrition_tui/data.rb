@@ -15,7 +15,7 @@ module NutritionTui
   # - FamilyRecipes (recipe parsing, inflector, NutritionCalculator)
   # - ingredient-catalog.yaml (seed data read/write)
   # - db/seeds/recipes/ (recipe source files for context)
-  module Data
+  module Data # rubocop:disable Metrics/ModuleLength
     PROJECT_ROOT = File.expand_path('../..', __dir__)
     NUTRITION_PATH = File.join(PROJECT_ROOT, 'db/seeds/resources/ingredient-catalog.yaml')
     RECIPES_DIR = File.join(PROJECT_ROOT, 'db/seeds/recipes')
@@ -227,5 +227,5 @@ module NutritionTui
                          :build_omit_set, :check_recipe_resolvability,
                          :check_recipe_units, :collect_all_units,
                          :matches_ingredient?
-  end
+  end # rubocop:enable Metrics/ModuleLength
 end

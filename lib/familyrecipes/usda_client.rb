@@ -162,6 +162,5 @@ module FamilyRecipes
 
       { modifier: modifier, grams: grams, amount: portion['amount'] || 1.0 }
     end
-
   end
 end
