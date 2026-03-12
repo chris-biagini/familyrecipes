@@ -223,7 +223,7 @@ html {
 body {
   padding: env(safe-area-inset-top, 0px) var(--breathing-room) 0;
 
-  font-family: "Bodoni 72", Georgia, serif;
+  font-family: var(--font-body);
   color: var(--text-color);
 }
 
@@ -279,7 +279,7 @@ nav:has(.nav-drawer[aria-hidden="false"]) {
 
 
 nav a {
-  font-family: "Futura", sans-serif;
+  font-family: var(--font-display);
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
@@ -351,7 +351,7 @@ nav > div:not(:first-child):not(.nav-drawer) {
 .nav-auth-btn {
   appearance: none;
   -webkit-appearance: none;
-  font-family: "Futura", sans-serif;
+  font-family: var(--font-display);
   font-size: 0.8rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -383,7 +383,7 @@ nav > div:not(:first-child):not(.nav-drawer) {
 .btn {
   appearance: none;
   -webkit-appearance: none;
-  font-family: "Futura", sans-serif;
+  font-family: var(--font-body);
   font-size: 0.85rem;
   background: var(--content-background-color);
   border: 1px solid var(--border-muted);
@@ -588,8 +588,7 @@ header {
 }
 
 header h1 {
-  /* font-family: 'quigleywigglyregular', cursive; */
-  font-family: "Futura", sans-serif;
+  font-family: var(--font-display);
   font-size: 2.5rem;
   margin: 0 0 1rem 0;
 }
@@ -675,7 +674,7 @@ section > ul li {
 
 /* in allrecipes view, all headers get demoted by one to avoid multiple H1's on page */
 section h2 {
-  font-family: "Futura", sans-serif;
+  font-family: var(--font-display);
   font-size: 1.25rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -745,7 +744,7 @@ section h2 {
 .ingredients-table { width: 100%; border-collapse: collapse; }
 .ingredients-table thead th {
   text-align: left;
-  font-family: 'Futura', 'Trebuchet MS', Arial, sans-serif;
+  font-family: var(--font-display);
   font-size: 0.8rem;
   font-weight: 600;
   letter-spacing: 0.03em;
@@ -805,7 +804,7 @@ section h2 {
 }
 
 .settings-page h1 {
-  font-family: "Futura", sans-serif;
+  font-family: var(--font-display);
   margin-bottom: 1.5rem;
 }
 
@@ -814,7 +813,7 @@ section h2 {
 }
 
 .settings-section h2 {
-  font-family: "Futura", sans-serif;
+  font-family: var(--font-display);
   font-size: 0.85rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -831,7 +830,7 @@ section h2 {
 
 .settings-field label {
   display: block;
-  font-family: "Futura", sans-serif;
+  font-family: var(--font-display);
   font-size: 0.85rem;
   font-weight: 600;
   margin-bottom: 0.25rem;
@@ -861,7 +860,7 @@ section h2 {
 
 .settings-api-key-row .settings-input {
   flex: 1;
-  font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, monospace;
+  font-family: var(--font-mono);
 }
 
 .settings-reveal-btn {
@@ -1216,7 +1215,7 @@ html:has(dialog[open]) {
   margin: 0 auto;
   margin-top: 15vh;
   overflow: visible;
-  font-family: "Helvetica Neue", Helvetica, system-ui, -apple-system, sans-serif;
+  font-family: var(--font-body);
 }
 
 .search-overlay[open] {
@@ -1346,7 +1345,7 @@ html:has(dialog[open]) {
 }
 
 .editor-header h2 {
-  font-family: "Futura", sans-serif;
+  font-family: var(--font-display);
   font-size: 1rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -1367,7 +1366,7 @@ html:has(dialog[open]) {
 .editor-errors {
   padding: 0.75rem 1.5rem;
   color: var(--danger-color);
-  font-family: "Futura", sans-serif;
+  font-family: var(--font-display);
   font-size: 0.85rem;
   border-bottom: 1px solid var(--separator-color);
 }
@@ -1393,7 +1392,7 @@ html:has(dialog[open]) {
   min-height: 60vh;
   padding: 1.5rem;
   border: none;
-  font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, monospace;
+  font-family: var(--font-mono);
   font-size: 0.85rem;
   line-height: 1.6;
   resize: none;
@@ -1443,7 +1442,7 @@ html:has(dialog[open]) {
   inset: 0;
   padding: 1.5rem;
   margin: 0;
-  font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, monospace;
+  font-family: var(--font-mono);
   font-size: 0.85rem;
   line-height: 1.6;
   white-space: pre-wrap;
@@ -1596,7 +1595,7 @@ html:has(dialog[open]) {
 
 .aisle-name {
   display: block;
-  font-family: "Futura", sans-serif;
+  font-family: var(--font-display);
   font-size: 0.8rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -1745,7 +1744,7 @@ button.aisle-name:hover {
   -webkit-backdrop-filter: blur(12px);
   border-top: 1px solid var(--gingham-stripe-color);
   box-shadow: var(--shadow-nav-up);
-  font-family: "Futura", sans-serif;
+  font-family: var(--font-display);
   font-size: 0.9rem;
   color: var(--text-color);
   transform: translateY(100%);
@@ -1801,7 +1800,7 @@ button.aisle-name:hover {
 
 .login-field label {
   display: block;
-  font-family: "Futura", sans-serif;
+  font-family: var(--font-display);
   font-size: 0.8rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -1812,7 +1811,7 @@ button.aisle-name:hover {
 .login-field input {
   width: 100%;
   padding: 0.5rem 0.6rem;
-  font-family: inherit;
+  font-family: var(--font-body);
   font-size: 1rem;
   border: 1px solid var(--border-light);
   border-radius: 3px;
@@ -1859,7 +1858,7 @@ button.aisle-name:hover {
 }
 
 .editor-section-title {
-  font-family: "Futura", sans-serif;
+  font-family: var(--font-display);
   font-size: 0.8rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -1892,7 +1891,7 @@ button.aisle-name:hover {
   align-items: center;
   gap: 0.5rem;
   padding: 0.6rem 0.75rem;
-  font-family: "Futura", sans-serif;
+  font-family: var(--font-display);
   font-size: 0.8rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -2066,7 +2065,7 @@ button.aisle-name:hover {
 
 /* Nutrition Facts editor — FDA-inspired label styling */
 .nf-editor {
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: var(--font-body);
 }
 
 .nf-serving-row {
@@ -2597,7 +2596,7 @@ button.aisle-name:hover {
 }
 
 .embedded-recipe section h3 {
-  font-family: "Futura", sans-serif;
+  font-family: var(--font-display);
   font-size: 1rem;
   font-weight: 600;
   text-transform: uppercase;
