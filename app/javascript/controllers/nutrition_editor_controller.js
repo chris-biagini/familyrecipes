@@ -46,6 +46,7 @@ export default class extends Controller {
     }
 
     this.boundPrefetch = (event) => {
+      if (!event.target.closest) return
       const row = event.target.closest("[data-open-editor]")
       if (row) this.prefetch(row.dataset.ingredientName)
     }
