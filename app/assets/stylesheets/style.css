@@ -157,8 +157,8 @@ nav::before {
   right: 0;
   bottom: calc(-1 * var(--drawer-height, 0px));
   background-color: rgba(250, 248, 245, 0.82);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   z-index: -1;
 }
 
@@ -409,8 +409,8 @@ nav a:focus-visible {
   right: 0;
   top: 100%;
   background-color: rgba(250, 248, 245, 0.82);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--rule);
   box-shadow: var(--shadow-nav);
   clip-path: inset(0 -20px -20px -20px);
@@ -1085,6 +1085,7 @@ footer small {
   .usda-result-item { border-bottom-color: var(--text); }
   .density-candidates { border-color: var(--text); }
   nav::before { background-color: rgba(30, 27, 24, 0.82); }
+  .nav-hamburger .nav-drawer { background-color: rgba(30, 27, 24, 0.82); }
 }
 
 /******************************************************/
@@ -1318,6 +1319,11 @@ html:has(dialog[open]) {
   color: var(--text);
   display: flex;
   align-items: center;
+  transition: color 0.2s ease;
+}
+
+.nav-search-btn:hover {
+  color: var(--red);
 }
 
 .editor-header {
