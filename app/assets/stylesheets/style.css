@@ -133,66 +133,8 @@
 html {
   color-scheme: light dark;
   font-size: 18px;
-  touch-action: manipulation; /* Should prevent double-tap zoom, but maybe doesn't? */
-
-  /* Gingham pattern background — applied directly to the root element
-     so the browser paints it across the entire canvas (CSS spec), filling
-     every pixel of the physical screen including behind iOS Safari's
-     status bar and toolbar.  background-attachment: fixed keeps it
-     stationary on desktop; iOS ignores that and falls back to scroll,
-     but the repeating pattern makes the movement imperceptible.
-
-     background-size tiles each gradient in a fixed-size box (≈212px for
-     the gingham, one stripe-period for the weave).  Without it, the
-     repeating-linear-gradient is computed across the full viewport, and
-     its gradient line passes through the viewport's center — so any
-     change in viewport height (window resize, page navigation, content
-     reflow from collapsing grocery aisles) shifts the center and moves
-     the entire pattern relative to the content card.  Tiling in a
-     constant-size box makes the pattern independent of viewport and
-     document dimensions. */
-  /* Overscroll/edge color: the pink you get compositing one gingham
-     stripe over the base.  Visible during iOS rubber-band bounce and
-     in any sliver the gradient layers can't reach. */
-  background-color: var(--overscroll-color);
-  background-attachment: fixed;
-  background-size:
-    var(--gingham-tile-size) var(--gingham-tile-size),
-    var(--gingham-tile-size) var(--gingham-tile-size),
-    var(--gingham-tile-size) var(--gingham-tile-size),
-    var(--gingham-tile-size) var(--gingham-tile-size),
-    auto;
-  background-image: repeating-linear-gradient(
-      135deg,
-      var(--gingham-stripe-color) 0,
-      var(--gingham-stripe-color) var(--gingham-stripe-width),
-      transparent var(--gingham-stripe-width),
-      transparent calc(2 * var(--gingham-stripe-width))
-    ),
-    repeating-linear-gradient(
-      45deg,
-      var(--gingham-stripe-color) 0,
-      var(--gingham-stripe-color) var(--gingham-stripe-width),
-      transparent var(--gingham-stripe-width),
-      transparent calc(2 * var(--gingham-stripe-width))
-    ),
-    repeating-linear-gradient(
-      135deg,
-      var(--weave-color) 0,
-      var(--weave-color) var(--weave-stripe-width),
-      transparent var(--weave-stripe-width),
-      transparent calc(2 * var(--weave-stripe-width))
-    ),
-    repeating-linear-gradient(
-      45deg,
-      var(--weave-color) 0,
-      var(--weave-color) var(--weave-stripe-width),
-      transparent var(--weave-stripe-width),
-      transparent calc(2 * var(--weave-stripe-width))
-    ),
-    /* Opaque base layer — keeps the gingham appearance unchanged
-       despite the pink background-color underneath. */
-    linear-gradient(var(--gingham-base), var(--gingham-base));
+  touch-action: manipulation;
+  background-color: var(--ground);
 }
 
 /* Turbo Drive progress bar — base styles defined here because Turbo's
@@ -217,10 +159,17 @@ html {
 }
 
 body {
-  padding: env(safe-area-inset-top, 0px) var(--breathing-room) 0;
-
+  padding: env(safe-area-inset-top, 0px) 0 0;
   font-family: var(--font-body);
   color: var(--text-color);
+  line-height: 1.65;
+}
+
+body::before {
+  content: "";
+  display: block;
+  height: 2px;
+  background: var(--red);
 }
 
 .sr-only {
@@ -234,9 +183,6 @@ body {
   white-space: nowrap;
   border: 0;
 }
-
-/* Gingham appearance inspired by <https://www.penguinrandomhouse.com/books/13304/better-homes-and-gardens-new-cookbook-by-better-homes-and-gardens-editors/> */
-/* Implementation inspired by <https://www.gradientmagic.com/collection/gingham/gradient/1575939528284> */
 
 nav {
   margin: 0 calc(-1 * var(--breathing-room));
@@ -568,15 +514,9 @@ main a:focus-visible {
 }
 
 main {
-  max-width: 35rem; /* Ensures it never exceeds 35rem */
-  margin: var(--breathing-room) auto; /* Center horizontally with top/bottom margin */
-  padding: 3rem;
-
-  border: 1px solid var(--border-color);
-  background-color: var(--content-background-color);
-  border-radius: 0.25rem;
-
-  box-shadow: var(--shadow-sm);
+  max-width: 35rem;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 5rem;
 }
 
 header {
@@ -1133,10 +1073,6 @@ footer small {
 
 /* small mobiles only */
 @media screen and (max-width: 720px) and (pointer: coarse) {
-  :root {
-    --breathing-room: 0.75rem;
-  }
-
   html {
     font-size: 16px;
   }
@@ -1144,12 +1080,8 @@ footer small {
 
 /* anything with a narrow window */
 @media screen and (max-width: 720px) {
-  :root {
-    --breathing-room: 1.5rem;
-  }
-
   main {
-    padding: 1.5rem;
+    padding: 1.5rem 1rem 3rem;
   }
 
   section > div:has(.ingredients):has(.instructions) {
