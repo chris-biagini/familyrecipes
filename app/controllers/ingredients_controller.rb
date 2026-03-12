@@ -26,7 +26,8 @@ class IngredientsController < ApplicationController
     needed_units = row_builder.needed_units(ingredient_name)
 
     render partial: 'ingredients/editor_form',
-           locals: { ingredient_name:, entry:, available_aisles: aisles, sources:, needed_units: }
+           locals: { ingredient_name:, entry:, available_aisles: aisles, sources:, needed_units:,
+                     has_usda_key: current_kitchen.usda_api_key.present? }
   end
 
   private

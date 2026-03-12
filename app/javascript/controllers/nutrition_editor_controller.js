@@ -578,6 +578,20 @@ export default class extends Controller {
     this._originalAisle = this.currentAisle()
     this.originalSnapshot = JSON.stringify(this.collectFormData())
     this.moveResetButtonToFooter()
+    this.restoreSectionStates()
+  }
+
+  restoreSectionStates() {
+    this.formContentTarget.querySelectorAll("details[data-section-key]").forEach(details => {
+      const key = `editor:section:${details.dataset.sectionKey}`
+      const stored = sessionStorage.getItem(key)
+      if (stored === "open") details.open = true
+      else if (stored === "closed") details.open = false
+
+      details.addEventListener("toggle", () => {
+        sessionStorage.setItem(key, details.open ? "open" : "closed")
+      })
+    })
   }
 
   moveResetButtonToFooter() {

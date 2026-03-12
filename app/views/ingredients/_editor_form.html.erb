@@ -1,33 +1,36 @@
-<%# locals: (ingredient_name:, entry:, available_aisles:, sources: [], needed_units: []) %>
+<%# locals: (ingredient_name:, entry:, available_aisles:, sources: [], needed_units: [], has_usda_key: false) %>
 <% has_density = entry&.density_grams.present? %>
 <turbo-frame id="nutrition-editor-form">
   <div class="editor-form" data-nutrition-editor-target="formContent">
 
-    <div class="editor-collapse">
-      <details class="editor-collapse-header"
-               data-nutrition-editor-target="usdaPanel">
-        <summary>USDA Import</summary>
-      </details>
-      <div class="editor-collapse-body">
-        <div class="editor-collapse-inner usda-search-content">
-          <div class="usda-search-row">
-            <input type="search" class="usda-search-input"
-                   placeholder="Search USDA database…"
-                   value="<%= ingredient_name %>"
-                   data-nutrition-editor-target="usdaQuery"
-                   data-action="keydown->nutrition-editor#usdaSearchKeydown"
-                   aria-label="USDA search query">
-            <button type="button" class="btn usda-search-btn"
-                    data-action="click->nutrition-editor#usdaSearch"
-                    data-nutrition-editor-target="usdaSearchBtn">Search</button>
+    <% if has_usda_key %>
+      <div class="editor-collapse">
+        <details class="editor-collapse-header"
+                 data-nutrition-editor-target="usdaPanel"
+                 data-section-key="usda-import">
+          <summary>USDA Import</summary>
+        </details>
+        <div class="editor-collapse-body">
+          <div class="editor-collapse-inner usda-search-content">
+            <div class="usda-search-row">
+              <input type="search" class="usda-search-input"
+                     placeholder="Search USDA database…"
+                     value="<%= ingredient_name %>"
+                     data-nutrition-editor-target="usdaQuery"
+                     data-action="keydown->nutrition-editor#usdaSearchKeydown"
+                     aria-label="USDA search query">
+              <button type="button" class="btn usda-search-btn"
+                      data-action="click->nutrition-editor#usdaSearch"
+                      data-nutrition-editor-target="usdaSearchBtn">Search</button>
+            </div>
+            <div class="usda-results" hidden data-nutrition-editor-target="usdaResults"></div>
           </div>
-          <div class="usda-results" hidden data-nutrition-editor-target="usdaResults"></div>
         </div>
       </div>
-    </div>
+    <% end %>
 
     <div class="editor-collapse">
-      <details class="editor-collapse-header">
+      <details class="editor-collapse-header" data-section-key="nutrition-facts">
         <summary>Nutrition Facts</summary>
       </details>
       <div class="editor-collapse-body">
@@ -69,7 +72,7 @@
     </div>
 
     <div class="editor-collapse">
-      <details class="editor-collapse-header">
+      <details class="editor-collapse-header" data-section-key="density">
         <summary>Density</summary>
       </details>
       <div class="editor-collapse-body">
@@ -112,7 +115,7 @@
     </div>
 
     <div class="editor-collapse">
-      <details class="editor-collapse-header">
+      <details class="editor-collapse-header" data-section-key="portions">
         <summary>Portions</summary>
       </details>
       <div class="editor-collapse-body">
@@ -135,7 +138,7 @@
     </div>
 
     <div class="editor-collapse">
-      <details class="editor-collapse-header">
+      <details class="editor-collapse-header" data-section-key="grocery-aisle">
         <summary>Grocery Aisle</summary>
       </details>
       <div class="editor-collapse-body">
@@ -167,7 +170,7 @@
     </div>
 
     <div class="editor-collapse">
-      <details class="editor-collapse-header">
+      <details class="editor-collapse-header" data-section-key="aliases">
         <summary>Aliases</summary>
       </details>
       <div class="editor-collapse-body">
@@ -199,7 +202,7 @@
 
     <% if needed_units.any? %>
       <div class="editor-collapse">
-        <details class="editor-collapse-header">
+        <details class="editor-collapse-header" data-section-key="recipe-units">
           <summary>Recipe Units</summary>
         </details>
         <div class="editor-collapse-body">

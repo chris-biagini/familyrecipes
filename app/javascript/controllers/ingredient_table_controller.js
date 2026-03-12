@@ -5,14 +5,21 @@ import { Controller } from "@hotwired/stimulus"
  * (all/complete/no aisle/no nutrition/no density), sortable columns (name,
  * aisle, data, recipes), and keyboard navigation for row activation.
  * Works entirely on DOM data attributes — no server calls.
+ *
+ * Persists sort order and active filter pill to sessionStorage so state
+ * survives page reloads and Turbo visits.
  */
 export default class extends Controller {
   static targets = ["searchInput", "row", "filterButton", "table"]
 
   connect() {
-    this.currentFilter = "all"
-    this.sortKey = "name"
-    this.sortAsc = true
+    this.currentFilter = sessionStorage.getItem("ingredients:filter") || "all"
+    this.sortKey = sessionStorage.getItem("ingredients:sortKey") || "name"
+    this.sortAsc = sessionStorage.getItem("ingredients:sortAsc") !== "false"
+
+    this.restoreFilter()
+    this.updateSortIndicators()
+    this.sortRows()
   }
 
   search() {
@@ -21,11 +28,8 @@ export default class extends Controller {
 
   filter(event) {
     this.currentFilter = event.currentTarget.dataset.filter
-    this.filterButtonTargets.forEach(btn => {
-      const active = btn.dataset.filter === this.currentFilter
-      btn.classList.toggle("active", active)
-      btn.setAttribute("aria-pressed", active)
-    })
+    sessionStorage.setItem("ingredients:filter", this.currentFilter)
+    this.restoreFilter()
     this.applyFilters()
   }
 
@@ -38,6 +42,8 @@ export default class extends Controller {
       this.sortAsc = true
     }
 
+    sessionStorage.setItem("ingredients:sortKey", this.sortKey)
+    sessionStorage.setItem("ingredients:sortAsc", this.sortAsc)
     this.updateSortIndicators()
     this.sortRows()
   }
@@ -54,6 +60,14 @@ export default class extends Controller {
   }
 
   // Private
+
+  restoreFilter() {
+    this.filterButtonTargets.forEach(btn => {
+      const active = btn.dataset.filter === this.currentFilter
+      btn.classList.toggle("active", active)
+      btn.setAttribute("aria-pressed", active)
+    })
+  }
 
   applyFilters() {
     const query = this.hasSearchInputTarget
@@ -116,8 +130,8 @@ export default class extends Controller {
   }
 
   dataScore(row) {
-    const n = row.dataset.hasNutrition === "true" ? 0 : 1
-    const d = row.dataset.hasDensity === "true" ? 0 : 1
+    const n = row.dataset.hasNutrition === "true" ? 1 : 0
+    const d = row.dataset.hasDensity === "true" ? 1 : 0
     return n + d
   }
 

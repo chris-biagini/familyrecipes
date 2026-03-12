@@ -408,7 +408,8 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'button.filter-pill[data-filter="not_resolvable"]'
   end
 
-  test 'edit renders USDA search panel' do
+  test 'edit renders USDA search panel when API key is set' do
+    @kitchen.update!(usda_api_key: 'test-key')
     @category = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
     MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Focaccia
@@ -425,6 +426,24 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select 'details.editor-collapse-header[data-nutrition-editor-target="usdaPanel"]'
     assert_select 'input[data-nutrition-editor-target="usdaQuery"]'
+  end
+
+  test 'edit hides USDA search panel when no API key' do
+    @category = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Focaccia
+
+      ## Mix (combine)
+
+      - Flour, 3 cups
+    MD
+
+    log_in
+    get ingredient_edit_path(ingredient_name: 'Flour', kitchen_slug: kitchen_slug),
+        headers: { 'Accept' => 'text/html' }
+
+    assert_response :success
+    assert_select 'details.editor-collapse-header[data-nutrition-editor-target="usdaPanel"]', count: 0
   end
 
   test 'edit form starts with all sections collapsed and density candidates hidden' do
