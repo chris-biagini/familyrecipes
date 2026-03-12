@@ -2,8 +2,8 @@ import { Controller } from "@hotwired/stimulus"
 
 /**
  * Ingredients page table: client-side search filtering, status filtering
- * (all/complete/no aisle/no nutrition/no density), sortable columns (name,
- * aisle, data, recipes), and keyboard navigation for row activation.
+ * (all/complete/custom/no aisle/no nutrition/no density), sortable columns
+ * (name, aisle, recipes), and keyboard navigation for row activation.
  * Works entirely on DOM data attributes — no server calls.
  *
  * Persists sort order, active filter pill, and search text to sessionStorage
@@ -102,6 +102,7 @@ export default class extends Controller {
     switch (this.currentFilter) {
       case "all": return true
       case "complete": return row.dataset.status === "complete"
+      case "custom": return row.dataset.source === "custom"
       case "no_aisle": return !row.dataset.aisle
       case "no_nutrition": return row.dataset.hasNutrition === "false"
       case "no_density": return row.dataset.hasDensity === "false"
@@ -145,18 +146,10 @@ export default class extends Controller {
     return valA - valB
   }
 
-  dataScore(row) {
-    const n = row.dataset.hasNutrition === "true" ? 1 : 0
-    const d = row.dataset.hasDensity === "true" ? 1 : 0
-    return n + d
-  }
-
   sortValue(row) {
     switch (this.sortKey) {
       case "name":
         return (row.dataset.ingredientName || "").toLowerCase()
-      case "data":
-        return this.dataScore(row)
       case "aisle": {
         const aisle = (row.dataset.aisle || "").toLowerCase()
         return aisle || "\uffff"
