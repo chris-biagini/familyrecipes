@@ -1,0 +1,11 @@
+{
+  "planPath": "docs/plans/2026-03-12-typography-cleanup-plan.md",
+  "tasks": [
+    {"id": 2, "subject": "Task 1: Download and install Source Sans 3 font files", "status": "pending"},
+    {"id": 3, "subject": "Task 2: Add @font-face declarations and CSS custom properties", "status": "pending", "blockedBy": [2]},
+    {"id": 4, "subject": "Task 3: Replace font declarations in style.css", "status": "pending", "blockedBy": [3]},
+    {"id": 5, "subject": "Task 4: Replace font declarations in menu.css and groceries.css", "status": "pending", "blockedBy": [3]},
+    {"id": 6, "subject": "Task 5: Visual verification and cleanup", "status": "pending", "blockedBy": [4, 5]}
+  ],
+  "lastUpdated": "2026-03-12T00:00:00Z"
+}
