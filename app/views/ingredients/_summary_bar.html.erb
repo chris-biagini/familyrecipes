@@ -11,6 +11,11 @@
         aria-pressed="false">Complete (<%= summary[:complete] %>)</button>
 <button type="button" class="filter-pill"
         data-ingredient-table-target="filterButton"
+        data-filter="custom"
+        data-action="click->ingredient-table#filter"
+        aria-pressed="false">Custom (<%= summary[:custom] %>)</button>
+<button type="button" class="filter-pill"
+        data-ingredient-table-target="filterButton"
         data-filter="no_aisle"
         data-action="click->ingredient-table#filter"
         aria-pressed="false">No Aisle (<%= summary[:missing_aisle] %>)</button>

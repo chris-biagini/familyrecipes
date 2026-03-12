@@ -9,23 +9,26 @@
     data-aisle="<%= row[:aisle] || '' %>"
     data-recipe-count="<%= row[:recipe_count] %>"
     data-resolvable="<%= row[:resolvable] %>"
+    data-source="<%= row[:source] %>"
     data-open-editor
     tabindex="0"
     role="button"
     data-action="click->ingredient-table#openEditor keydown->ingredient-table#rowKeydown">
   <td class="col-name">
     <%= row[:name] %>
-    <% if row[:source] == 'custom' %>
-      <span class="source-badge source-custom">custom</span>
-    <% end %>
-  </td>
-  <td class="col-aisle"><%= display_aisle(row[:aisle]) %></td>
-  <td class="col-data">
-    <span class="data-icons">
-      <svg class="data-icon<%= ' empty' unless row[:has_nutrition] %>" width="16" height="16" viewBox="0 0 32 32" aria-label="<%= row[:has_nutrition] ? 'Has nutrition' : 'Missing nutrition' %>" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="16" y1="9" x2="16" y2="4"/><path d="M16 7c-2-2-5-2-6 0"/><path d="M16 9C13 7 7 8 5 12c-2 5 0 10 3 14 2 2 4 3 6 3 1 0 1.5-1 2-1s1 1 2 1c2 0 4-1 6-3 3-4 5-9 3-14-2-4-8-5-11-3z"/></svg>
-      <svg class="data-icon<%= ' empty' unless row[:has_density] %>" width="16" height="16" viewBox="0 0 32 32" aria-label="<%= row[:has_density] ? 'Has density' : 'Missing density' %>" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="16" y1="3" x2="16" y2="26"/><line x1="4" y1="9" x2="28" y2="9"/><path d="M6 9L3 19h10L10 9"/><path d="M22 9l-3 10h10l-3-10"/><line x1="10" y1="26" x2="22" y2="26"/></svg>
+    <span class="ingredient-icons">
+      <% if row[:source] == 'custom' %>
+        <svg class="ingredient-icon" width="14" height="14" viewBox="0 0 32 32" aria-label="Custom entry" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 4l6 6-16 16H6v-6z"/><line x1="18" y1="8" x2="24" y2="14"/></svg>
+      <% end %>
+      <% if row[:has_nutrition] %>
+        <svg class="ingredient-icon" width="14" height="14" viewBox="0 0 32 32" aria-label="Has nutrition" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="16" y1="9" x2="16" y2="4"/><path d="M16 7c-2-2-5-2-6 0"/><path d="M16 9C13 7 7 8 5 12c-2 5 0 10 3 14 2 2 4 3 6 3 1 0 1.5-1 2-1s1 1 2 1c2 0 4-1 6-3 3-4 5-9 3-14-2-4-8-5-11-3z"/></svg>
+      <% end %>
+      <% if row[:has_density] %>
+        <svg class="ingredient-icon" width="14" height="14" viewBox="0 0 32 32" aria-label="Has density" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="16" y1="3" x2="16" y2="26"/><line x1="4" y1="9" x2="28" y2="9"/><path d="M6 9L3 19h10L10 9"/><path d="M22 9l-3 10h10l-3-10"/><line x1="10" y1="26" x2="22" y2="26"/></svg>
+      <% end %>
     </span>
   </td>
+  <td class="col-aisle"><%= display_aisle(row[:aisle]) %></td>
   <td class="col-recipes"><%= row[:recipe_count] %></td>
 </tr>
 </tbody>

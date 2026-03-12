@@ -465,6 +465,84 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'details.density-candidates[hidden]'
   end
 
+  test 'rows have data-source attribute' do
+    IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Flour', basis_grams: 30, calories: 110)
+    @category = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Focaccia
+
+      ## Mix (combine)
+
+      - Flour, 3 cups
+
+      Mix well.
+    MD
+
+    log_in
+    get ingredients_path(kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select 'tr.ingredient-row[data-source="custom"]'
+  end
+
+  test 'renders custom filter pill' do
+    @category = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Focaccia
+
+      ## Mix (combine)
+
+      - Flour, 3 cups
+
+      Mix well.
+    MD
+
+    log_in
+    get ingredients_path(kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select 'button.filter-pill[data-filter="custom"]'
+  end
+
+  test 'renders inline ingredient icons for custom entry with nutrition' do
+    IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Flour', basis_grams: 30, calories: 110)
+    @category = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Focaccia
+
+      ## Mix (combine)
+
+      - Flour, 3 cups
+
+      Mix well.
+    MD
+
+    log_in
+    get ingredients_path(kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select 'td.col-name .ingredient-icons svg.ingredient-icon', minimum: 1
+  end
+
+  test 'does not render Data column header' do
+    @category = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Focaccia
+
+      ## Mix (combine)
+
+      - Flour, 3 cups
+
+      Mix well.
+    MD
+
+    log_in
+    get ingredients_path(kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select 'th.col-data', count: 0
+  end
+
   test 'edit requires membership' do
     get ingredient_edit_path('Flour', kitchen_slug: kitchen_slug)
 
