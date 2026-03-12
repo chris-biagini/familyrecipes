@@ -119,12 +119,6 @@ body {
   line-height: 1.65;
 }
 
-body::before {
-  content: "";
-  display: block;
-  height: 2px;
-  background: var(--red);
-}
 
 .sr-only {
   position: absolute;
@@ -150,9 +144,22 @@ nav {
   top: 0;
   z-index: 10;
 
-  background-color: var(--ground);
+  border-top: 2px solid var(--red);
   border-bottom: 1px solid var(--rule);
   box-shadow: var(--shadow-nav);
+}
+
+nav::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: calc(-1 * var(--drawer-height, 0px));
+  background-color: rgba(250, 248, 245, 0.82);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  z-index: -1;
 }
 
 nav:has(.nav-drawer[aria-hidden="false"]) {
@@ -168,28 +175,18 @@ nav a {
   align-items: center;
   gap: 0.35rem;
   text-decoration: none;
-  font-weight: 500;
-  font-size: 0.72rem;
+  font-weight: 600;
+  font-size: 0.8rem;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   padding: 0.5rem 0.9rem;
   line-height: 1.5;
-  color: var(--text-light);
+  color: var(--text);
   transition: color 0.2s ease;
 }
 
 nav a:hover {
   color: var(--red);
-}
-
-nav a.recipes {
-  font-family: var(--font-display);
-  font-size: 1.1rem;
-  font-weight: 400;
-  text-transform: none;
-  letter-spacing: normal;
-  color: var(--text);
-  margin-right: auto;
 }
 
 nav > div:first-child {
@@ -232,8 +229,8 @@ nav > div:not(:first-child):not(.nav-drawer) {
   appearance: none;
   -webkit-appearance: none;
   font-family: var(--font-body);
-  font-size: 0.72rem;
-  font-weight: 500;
+  font-size: 0.8rem;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   background: none;
@@ -411,7 +408,9 @@ nav a:focus-visible {
   left: 0;
   right: 0;
   top: 100%;
-  background-color: var(--ground);
+  background-color: rgba(250, 248, 245, 0.82);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--rule);
   box-shadow: var(--shadow-nav);
   clip-path: inset(0 -20px -20px -20px);
@@ -1085,6 +1084,7 @@ footer small {
   .usda-results { border-color: var(--text); }
   .usda-result-item { border-bottom-color: var(--text); }
   .density-candidates { border-color: var(--text); }
+  nav::before { background-color: rgba(30, 27, 24, 0.82); }
 }
 
 /******************************************************/
