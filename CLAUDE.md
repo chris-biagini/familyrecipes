@@ -238,6 +238,11 @@ dialog.
 - `UsdaClient` is the HTTP adapter; `UsdaPortionClassifier` classifies portions
   into density/portion/filtered buckets.
 
+**Search overlay.** Spotlight-style `<dialog>` on every page, triggered by `/`
+key or nav icon. `SearchDataHelper` embeds a JSON blob (title, slug,
+description, category, ingredients) in the layout; `search_overlay_controller`
+does client-side substring matching with tiered ranking. No server endpoint.
+
 ## Recipe & Data Formats
 
 Recipe source is Markdown with custom syntax — the parser pipeline is the
