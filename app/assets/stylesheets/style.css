@@ -21,45 +21,41 @@
 }
 
 :root {
-  --font-display: "Futura", "Trebuchet MS", sans-serif;
-  --font-body: "Source Sans 3", "Source Sans Pro", sans-serif;
+  --font-display: "Instrument Serif", Georgia, serif;
+  --font-body: "Outfit", system-ui, sans-serif;
   --font-mono: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, monospace;
 
-  --border-color: rgb(25, 25, 25);
-  --text-color: rgb(50, 50, 50);
+  /* Canonical color tokens */
+  --ground: #faf8f5;
+  --text: #2d2a26;
+  --text-soft: #706960;
+  --text-light: #a09788;
+  --red: #b33a3a;
+  --red-light: rgba(179, 58, 58, 0.08);
+  --rule: #e4dfd8;
+  --rule-faint: #eee9e3;
 
-  --frosted-glass-bg: rgba(255, 252, 249, 0.75);
-  --content-background-color: rgb(255, 252, 249);
+  --border-color: var(--text);
+  --text-color: var(--text);
+  --content-background-color: var(--ground);
+  --frosted-glass-bg: var(--ground);
 
-  --breathing-room: 3rem;
-
-  /* Gingham */
-  --gingham-base: rgb(249, 246, 243);
-  --gingham-stripe-color: rgba(190, 12, 30, 0.5);
-  --gingham-stripe-width: 75px;
-  --gingham-tile-size: calc(var(--gingham-stripe-width) * 2 * 1.41421356);
-  --weave-color: rgba(150, 150, 150, 0.05);
-  --weave-stripe-width: 1.5px;
-
-  /* Shared UI colors */
-  --checked-color: rgb(155, 10, 25);
-  --muted-text: #666;
-  --muted-text-light: #888;
-  --border-light: #ccc;
-  --border-muted: #999;
-  --separator-color: #ddd;
-  --surface-alt: #fafafa;
+  --checked-color: var(--red);
+  --muted-text: var(--text-soft);
+  --muted-text-light: var(--text-light);
+  --border-light: var(--rule-faint);
+  --border-muted: var(--rule);
+  --separator-color: var(--rule);
+  --surface-alt: #f5f2ee;
   --danger-color: #c00;
-  --accent-color: rgb(155, 10, 25);
-
-  /* Availability indicators */
-  --on-hand-color: rgb(155, 10, 25);
-  --missing-color: rgb(155, 10, 25);
-  --hover-bg: #f5efe8;
+  --accent-color: var(--red);
+  --on-hand-color: var(--red);
+  --missing-color: var(--red);
+  --hover-bg: var(--red-light);
 
   --input-bg: white;
-  --accent-hover: rgb(135, 8, 20);
-  --overscroll-color: rgb(205, 71, 84);
+  --accent-hover: #993030;
+  --overscroll-color: var(--ground);
   --scaled-highlight: rgba(255, 243, 205, 0.6);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.06);
   --shadow-nav: 0 2px 4px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
