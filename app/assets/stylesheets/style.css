@@ -4,22 +4,6 @@
 
 /* Made with invaluable assistance from ChatGPT and Claude. :) */
 
-@font-face {
-  font-family: "Source Sans 3";
-  src: url("/fonts/source-sans-3/SourceSans3.woff2") format("woff2");
-  font-weight: 400 700;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Source Sans 3";
-  src: url("/fonts/source-sans-3/SourceSans3-Italic.woff2") format("woff2");
-  font-weight: 400 700;
-  font-style: italic;
-  font-display: swap;
-}
-
 :root {
   --font-display: "Instrument Serif", Georgia, serif;
   --font-body: "Outfit", system-ui, sans-serif;
@@ -35,27 +19,12 @@
   --rule: #e4dfd8;
   --rule-faint: #eee9e3;
 
-  --border-color: var(--text);
-  --text-color: var(--text);
-  --content-background-color: var(--ground);
-  --frosted-glass-bg: var(--ground);
-
-  --checked-color: var(--red);
-  --muted-text: var(--text-soft);
-  --muted-text-light: var(--text-light);
-  --border-light: var(--rule-faint);
-  --border-muted: var(--rule);
-  --separator-color: var(--rule);
   --surface-alt: #f5f2ee;
   --danger-color: #c00;
-  --accent-color: var(--red);
-  --on-hand-color: var(--red);
-  --missing-color: var(--red);
   --hover-bg: var(--red-light);
 
   --input-bg: white;
   --accent-hover: #993030;
-  --overscroll-color: var(--ground);
   --scaled-highlight: rgba(255, 243, 205, 0.6);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.06);
   --shadow-nav: 0 2px 4px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
@@ -87,28 +56,12 @@
     --rule: #3a3530;
     --rule-faint: #2e2a26;
 
-    /* Aliases — old variable names pointing to new tokens */
-    --border-color: var(--rule);
-    --text-color: var(--text);
-    --frosted-glass-bg: var(--ground);
-    --content-background-color: var(--ground);
-
-    --checked-color: var(--red);
-    --muted-text: var(--text-soft);
-    --muted-text-light: var(--text-light);
-    --border-light: var(--rule-faint);
-    --border-muted: var(--rule);
-    --separator-color: var(--rule);
     --surface-alt: #252220;
     --danger-color: #d05050;
-    --accent-color: var(--red);
-    --on-hand-color: var(--red);
-    --missing-color: var(--red);
     --hover-bg: rgba(255, 255, 255, 0.04);
 
     --input-bg: #1a1816;
     --accent-hover: #a03838;
-    --overscroll-color: var(--ground);
     --scaled-highlight: rgba(180, 140, 60, 0.2);
 
     /* Shadows — reduced opacity for dark backgrounds */
@@ -147,7 +100,7 @@ html {
   top: 0;
   left: 0;
   height: 3px;
-  background: var(--text-color);
+  background: var(--text);
   z-index: 2147483647;
   transition: width 300ms ease-out, opacity 150ms 150ms ease-in;
   transform: translate3d(0, 0, 0);
@@ -162,7 +115,7 @@ html {
 body {
   padding: env(safe-area-inset-top, 0px) 0 0;
   font-family: var(--font-body);
-  color: var(--text-color);
+  color: var(--text);
   line-height: 1.65;
 }
 
@@ -235,7 +188,7 @@ nav a.recipes {
   font-weight: 400;
   text-transform: none;
   letter-spacing: normal;
-  color: var(--text-color);
+  color: var(--text);
   margin-right: auto;
 }
 
@@ -285,7 +238,7 @@ nav > div:not(:first-child):not(.nav-drawer) {
   letter-spacing: 0.12em;
   background: none;
   border: none;
-  color: var(--text-color);
+  color: var(--text);
   cursor: pointer;
   padding: 0.5rem 0.9rem;
   line-height: 1.5;
@@ -293,7 +246,7 @@ nav > div:not(:first-child):not(.nav-drawer) {
 }
 
 .nav-auth-btn:hover {
-  color: var(--accent-color);
+  color: var(--red);
 }
 
 .nav-settings-link {
@@ -312,30 +265,30 @@ nav > div:not(:first-child):not(.nav-drawer) {
   -webkit-appearance: none;
   font-family: var(--font-body);
   font-size: 0.85rem;
-  background: var(--content-background-color);
-  border: 1px solid var(--border-muted);
+  background: var(--ground);
+  border: 1px solid var(--rule);
   border-radius: 3px;
   padding: 0.3rem 0.75rem;
-  color: var(--text-color);
+  color: var(--text);
   cursor: pointer;
   line-height: 1.5;
   transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease, box-shadow 0.12s ease;
 }
 
 .btn:hover {
-  border-color: var(--border-color);
+  border-color: var(--text);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .btn:focus-visible {
-  outline: 2px solid var(--accent-color);
+  outline: 2px solid var(--red);
   outline-offset: 2px;
 }
 
 .btn-primary {
-  background: var(--accent-color);
+  background: var(--red);
   color: white;
-  border-color: var(--accent-color);
+  border-color: var(--red);
 }
 
 .btn-primary:hover {
@@ -356,11 +309,11 @@ nav > div:not(:first-child):not(.nav-drawer) {
 
 nav a:hover,
 nav a:focus {
-  color: var(--accent-color);
+  color: var(--red);
 }
 
 nav a:focus-visible {
-  outline: 2px solid var(--accent-color);
+  outline: 2px solid var(--red);
   outline-offset: 2px;
   border-radius: 2px;
 }
@@ -381,17 +334,17 @@ nav a:focus-visible {
   border: none;
   cursor: pointer;
   padding: 0.5rem 0.9rem;
-  color: var(--text-color);
+  color: var(--text);
   transition: color 0.2s ease;
   -webkit-tap-highlight-color: transparent;
 }
 
 .hamburger-btn:hover {
-  color: var(--accent-color);
+  color: var(--red);
 }
 
 .hamburger-btn:focus-visible {
-  outline: 2px solid var(--accent-color);
+  outline: 2px solid var(--red);
   outline-offset: 2px;
   border-radius: 2px;
 }
@@ -480,21 +433,21 @@ nav a:focus-visible {
 }
 
 main a {
-  color: var(--text-color);
+  color: var(--text);
   text-decoration: underline;
-  text-decoration-color: var(--border-light);
+  text-decoration-color: var(--rule-faint);
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
   transition: color 0.2s ease, text-decoration-color 0.2s ease;
 }
 
 main a:hover {
-  color: var(--accent-color);
-  text-decoration-color: var(--accent-color);
+  color: var(--red);
+  text-decoration-color: var(--red);
 }
 
 main a:focus-visible {
-  outline: 2px solid var(--accent-color);
+  outline: 2px solid var(--red);
   outline-offset: 2px;
   border-radius: 2px;
 }
@@ -593,7 +546,7 @@ header::after {
 
 .toc_nav ul li:not(:last-child)::after {
   content: " \00b7 ";
-  color: var(--muted-text-light);
+  color: var(--text-light);
 }
 
 .toc_nav ul li a {
@@ -676,7 +629,7 @@ section:first-of-type h2 {
 #export-actions {
   margin-top: 1.5rem;
   padding: 1.5rem 0;
-  border-top: 1px solid var(--separator-color);
+  border-top: 1px solid var(--rule);
   text-align: center;
   display: flex;
   justify-content: center;
@@ -694,31 +647,31 @@ section:first-of-type h2 {
 .ingredients-search {
   width: 100%;
   padding: 0.5rem 0.75rem;
-  border: 1px solid var(--border-color, #ccc);
+  border: 1px solid var(--rule);
   border-radius: 0.25rem;
   font-size: 1rem;
   margin-bottom: 0.5rem;
 }
 .ingredients-search:focus {
-  outline: 2px solid var(--accent-color);
+  outline: 2px solid var(--red);
   outline-offset: -1px;
 }
 
 .filter-pills { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 .filter-pill {
   padding: 0.25rem 0.75rem;
-  border: 1px solid var(--border-color, #ccc);
+  border: 1px solid var(--rule);
   border-radius: 999px;
   background: transparent;
   font-size: 0.85rem;
   cursor: pointer;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
-.filter-pill:hover { background: var(--hover-bg); border-color: var(--accent-color); }
+.filter-pill:hover { background: var(--hover-bg); border-color: var(--red); }
 .filter-pill.active {
-  background: var(--accent-color);
+  background: var(--red);
   color: #fff;
-  border-color: var(--accent-color);
+  border-color: var(--red);
 }
 
 /* Ingredient table */
@@ -729,13 +682,13 @@ section:first-of-type h2 {
   font-size: 0.8rem;
   font-weight: 600;
   letter-spacing: 0.03em;
-  color: var(--muted-text);
+  color: var(--text-soft);
   padding: 0.4rem 0.5rem;
-  border-bottom: 2px solid var(--border-color, #e5e7eb);
+  border-bottom: 2px solid var(--rule);
 }
 
 .sortable { cursor: pointer; user-select: none; white-space: nowrap; }
-.sortable:hover { color: var(--text-color, #1f2937); }
+.sortable:hover { color: var(--text); }
 .sort-arrow { font-size: 0.65rem; margin-left: 0.15em; }
 
 .ingredient-row {
@@ -747,7 +700,7 @@ section:first-of-type h2 {
 }
 .ingredient-row td {
   padding: 0.5rem;
-  border-bottom: 1px solid var(--border-color, #f0f0f0);
+  border-bottom: 1px solid var(--rule-faint);
   vertical-align: middle;
 }
 
@@ -759,22 +712,22 @@ section:first-of-type h2 {
   margin-left: 0.4rem;
   vertical-align: middle;
 }
-.ingredient-icon { color: var(--muted-text); flex-shrink: 0; }
-.col-aisle { color: var(--muted-text); font-size: 0.9rem; width: 8rem; }
-.col-recipes { width: 4.5rem; text-align: center; color: var(--muted-text); font-size: 0.9rem; }
+.ingredient-icon { color: var(--text-soft); flex-shrink: 0; }
+.col-aisle { color: var(--text-soft); font-size: 0.9rem; width: 8rem; }
+.col-recipes { width: 4.5rem; text-align: center; color: var(--text-soft); font-size: 0.9rem; }
 
 .btn-small {
   font-size: 0.8rem;
   padding: 0.25rem 0.5rem;
-  border: 1px solid var(--border-color, #ccc);
+  border: 1px solid var(--rule);
   border-radius: 0.25rem;
   background: transparent;
   cursor: pointer;
 }
-.btn-small:hover { background: var(--hover-bg, #f3f4f6); }
+.btn-small:hover { background: var(--hover-bg); }
 
 .loading-placeholder {
-  color: var(--muted-text);
+  color: var(--text-soft);
   font-style: italic;
   padding: 0.5rem 0;
 }
@@ -799,7 +752,7 @@ section:first-of-type h2 {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  border-bottom: 1px solid var(--border-muted);
+  border-bottom: 1px solid var(--rule);
   padding-bottom: 0.4rem;
   margin-bottom: 1rem;
   text-decoration: none;
@@ -821,16 +774,16 @@ section:first-of-type h2 {
   width: 100%;
   font-size: 0.85rem;
   padding: 0.25rem 0.4rem;
-  border: 1px solid var(--border-light);
+  border: 1px solid var(--rule-faint);
   border-radius: 3px;
-  background: var(--content-background-color);
-  color: var(--text-color);
+  background: var(--ground);
+  color: var(--text);
   box-sizing: border-box;
 }
 
 .settings-input:focus {
   outline: none;
-  border-color: var(--border-muted);
+  border-color: var(--rule);
 }
 
 .settings-api-key-row {
@@ -1097,7 +1050,7 @@ footer small {
 .btn-inline-link {
   all: unset;
   cursor: pointer;
-  color: var(--accent-color);
+  color: var(--red);
   text-decoration: underline;
   text-decoration-style: dotted;
 }
@@ -1108,20 +1061,20 @@ footer small {
 
 @media (prefers-color-scheme: dark) {
   .nutrition-label {
-    border-color: var(--text-color);
-    background: var(--content-background-color);
-    color: var(--text-color);
+    border-color: var(--text);
+    background: var(--ground);
+    color: var(--text);
   }
-  .nutrition-label .serving-size { border-bottom-color: var(--text-color); }
-  .nutrition-label .calories-row { border-bottom-color: var(--text-color); }
-  .nutrition-label .dv-header { border-bottom-color: var(--text-color); }
-  .nutrition-label .nutrient-row { border-bottom-color: var(--text-color); }
-  .nutrition-label .nutrient-row:last-child { border-bottom-color: var(--text-color); }
-  .editor-collapse { border-color: var(--border-color); }
-  .nf-thick-rule { border-top-color: var(--text-color); }
-  .usda-results { border-color: var(--border-color); }
-  .usda-result-item { border-bottom-color: var(--border-color); }
-  .density-candidates { border-color: var(--border-color); }
+  .nutrition-label .serving-size { border-bottom-color: var(--text); }
+  .nutrition-label .calories-row { border-bottom-color: var(--text); }
+  .nutrition-label .dv-header { border-bottom-color: var(--text); }
+  .nutrition-label .nutrient-row { border-bottom-color: var(--text); }
+  .nutrition-label .nutrient-row:last-child { border-bottom-color: var(--text); }
+  .editor-collapse { border-color: var(--text); }
+  .nf-thick-rule { border-top-color: var(--text); }
+  .usda-results { border-color: var(--text); }
+  .usda-result-item { border-bottom-color: var(--text); }
+  .density-candidates { border-color: var(--text); }
 }
 
 /******************************************************/
@@ -1141,8 +1094,8 @@ footer small {
   .crossed-off,
   .recipe section:not(:has(li:not(.crossed-off), .instructions p:not(.crossed-off))) h2 {
     text-decoration: line-through;
-    color: var(--muted-text-light);
-    border-color: var(--muted-text-light);
+    color: var(--text-light);
+    border-color: var(--text-light);
   }
 
   /* Fade the entire embedded card when the parent step is crossed off */
@@ -1200,9 +1153,9 @@ footer small {
 /************************/
 
 .editor-dialog {
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--text);
   border-radius: 0.25rem;
-  background: var(--content-background-color);
+  background: var(--ground);
   padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
   width: min(90vw, 50rem);
   height: 90vh;
@@ -1249,7 +1202,7 @@ html:has(dialog[open]) {
 }
 
 .search-panel {
-  background: var(--content-background-color);
+  background: var(--ground);
   border: none;
   border-radius: 0.75rem;
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.25), 0 2px 12px rgba(0, 0, 0, 0.15);
@@ -1267,7 +1220,7 @@ html:has(dialog[open]) {
   width: 1.35rem;
   height: 1.35rem;
   flex-shrink: 0;
-  color: var(--muted-text);
+  color: var(--text-soft);
 }
 
 .search-input {
@@ -1276,14 +1229,14 @@ html:has(dialog[open]) {
   background: transparent;
   font-size: 1.25rem;
   font-weight: 300;
-  color: var(--text-color);
+  color: var(--text);
   outline: none;
   font-family: inherit;
   letter-spacing: -0.01em;
 }
 
 .search-input::placeholder {
-  color: var(--muted-text-light);
+  color: var(--text-light);
   font-weight: 300;
 }
 
@@ -1293,7 +1246,7 @@ html:has(dialog[open]) {
   padding: 0.25rem 0;
   max-height: 24rem;
   overflow-y: auto;
-  border-top: 1px solid var(--separator-color);
+  border-top: 1px solid var(--rule);
 }
 
 .search-results:empty {
@@ -1311,7 +1264,7 @@ html:has(dialog[open]) {
 }
 
 .search-result.selected {
-  background: var(--accent-color);
+  background: var(--red);
   color: white;
 }
 
@@ -1328,20 +1281,20 @@ html:has(dialog[open]) {
 }
 
 .search-result-title {
-  color: var(--text-color);
+  color: var(--text);
   font-size: 0.95rem;
 }
 
 .search-result-category {
   font-size: 0.8rem;
-  color: var(--muted-text);
+  color: var(--text-soft);
   flex-shrink: 0;
 }
 
 .search-no-results {
   padding: 1rem;
   text-align: center;
-  color: var(--muted-text);
+  color: var(--text-soft);
   font-size: 0.9rem;
 }
 
@@ -1352,7 +1305,7 @@ html:has(dialog[open]) {
   border: none;
   cursor: pointer;
   padding: 0.25rem;
-  color: var(--text-color);
+  color: var(--text);
   display: flex;
   align-items: center;
 }
@@ -1362,7 +1315,7 @@ html:has(dialog[open]) {
   justify-content: space-between;
   align-items: center;
   padding: 1rem 1.5rem;
-  border-bottom: 1px solid var(--separator-color);
+  border-bottom: 1px solid var(--rule);
 }
 
 .editor-header h2 {
@@ -1389,7 +1342,7 @@ html:has(dialog[open]) {
   color: var(--danger-color);
   font-family: var(--font-body);
   font-size: 0.85rem;
-  border-bottom: 1px solid var(--separator-color);
+  border-bottom: 1px solid var(--rule);
 }
 
 .editor-errors ul {
@@ -1418,8 +1371,8 @@ html:has(dialog[open]) {
   line-height: 1.6;
   resize: none;
   outline: none;
-  color: var(--text-color);
-  background: var(--content-background-color);
+  color: var(--text);
+  background: var(--ground);
   overscroll-behavior: contain;
 }
 
@@ -1428,10 +1381,10 @@ html:has(dialog[open]) {
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid var(--text);
   position: relative;
   z-index: 2;
-  background: var(--content-background-color);
+  background: var(--ground);
 }
 
 .editor-category-row label {
@@ -1439,7 +1392,7 @@ html:has(dialog[open]) {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--muted-text);
+  color: var(--text-soft);
   white-space: nowrap;
 }
 
@@ -1470,14 +1423,14 @@ html:has(dialog[open]) {
   overflow-wrap: break-word;
   overflow: hidden;
   pointer-events: none;
-  color: var(--text-color);
+  color: var(--text);
   background: transparent;
   border: none;
 }
 
 .hl-input {
   color: transparent !important;
-  caret-color: var(--text-color);
+  caret-color: var(--text);
   background: transparent !important;
   position: relative;
   z-index: 1;
@@ -1489,22 +1442,22 @@ html:has(dialog[open]) {
 }
 
 .hl-input::placeholder {
-  color: var(--muted-text-light);
+  color: var(--text-light);
 }
 
 .hl-category {
   font-weight: 700;
-  color: var(--accent-color);
+  color: var(--red);
   text-decoration: underline;
 }
 
 .hl-item {
-  color: var(--text-color);
+  color: var(--text);
   font-weight: 600;
 }
 
 .hl-ingredients {
-  color: var(--muted-text);
+  color: var(--text-soft);
   font-style: italic;
 }
 
@@ -1512,42 +1465,42 @@ html:has(dialog[open]) {
 
 .hl-title {
   font-weight: 700;
-  color: var(--accent-color);
+  color: var(--red);
   text-decoration: underline;
 }
 
 .hl-step-header {
   font-weight: 700;
-  color: var(--text-color);
+  color: var(--text);
   text-decoration: underline;
 }
 
 .hl-ingredient-name {
-  color: var(--text-color);
+  color: var(--text);
   font-weight: 600;
 }
 
 .hl-ingredient-qty {
-  color: var(--text-color);
+  color: var(--text);
 }
 
 .hl-ingredient-prep {
-  color: var(--muted-text);
+  color: var(--text-soft);
   font-style: italic;
 }
 
 .hl-cross-ref {
   font-weight: 600;
-  color: var(--accent-color);
+  color: var(--red);
   font-style: italic;
 }
 
 .hl-front-matter {
-  color: var(--muted-text);
+  color: var(--text-soft);
 }
 
 .hl-divider {
-  color: var(--muted-text);
+  color: var(--text-soft);
 }
 
 .editor-footer {
@@ -1555,7 +1508,7 @@ html:has(dialog[open]) {
   justify-content: flex-end;
   gap: 0.5rem;
   padding: 1rem 1.5rem;
-  border-top: 1px solid var(--separator-color);
+  border-top: 1px solid var(--rule);
 }
 
 .editor-footer-spacer {
@@ -1626,28 +1579,28 @@ html:has(dialog[open]) {
   padding: 0;
   cursor: pointer;
   text-align: left;
-  color: var(--text-color);
+  color: var(--text);
   width: 100%;
 }
 
 button.aisle-name:hover {
-  color: var(--accent-color);
+  color: var(--red);
 }
 
 .aisle-rename-input {
   box-sizing: border-box;
   font-size: 0.85rem;
   padding: 0.25rem 0.4rem;
-  border: 1px solid var(--border-light);
+  border: 1px solid var(--rule-faint);
   border-radius: 3px;
-  background: var(--content-background-color);
-  color: var(--text-color);
+  background: var(--ground);
+  color: var(--text);
   outline: none;
   width: 100%;
 }
 
 .aisle-rename-input:focus {
-  border-color: var(--border-muted);
+  border-color: var(--rule);
 }
 
 .aisle-controls {
@@ -1666,8 +1619,8 @@ button.aisle-name:hover {
   height: 1.75rem;
   padding: 0;
   background: none;
-  color: var(--border-muted);
-  border: 1px solid var(--border-light);
+  color: var(--rule);
+  border: 1px solid var(--rule-faint);
   border-radius: 50%;
   cursor: pointer;
 }
@@ -1681,8 +1634,8 @@ button.aisle-name:hover {
 }
 
 .aisle-btn:hover:not(:disabled) {
-  color: var(--muted-text);
-  border-color: var(--border-muted);
+  color: var(--text-soft);
+  border-color: var(--rule);
 }
 
 .aisle-btn:disabled {
@@ -1697,8 +1650,8 @@ button.aisle-name:hover {
 }
 
 .aisle-btn--undo:hover:not(:disabled) {
-  color: var(--checked-color);
-  border-color: var(--checked-color);
+  color: var(--red);
+  border-color: var(--red);
 }
 
 .aisle-btn--add {
@@ -1708,8 +1661,8 @@ button.aisle-name:hover {
 }
 
 .aisle-btn--add:hover {
-  color: var(--muted-text);
-  border-color: var(--border-muted);
+  color: var(--text-soft);
+  border-color: var(--rule);
 }
 
 .aisle-add-row {
@@ -1723,25 +1676,25 @@ button.aisle-name:hover {
   flex: 1;
   font-size: 0.85rem;
   padding: 0.25rem 0.4rem;
-  border: 1px solid var(--border-light);
+  border: 1px solid var(--rule-faint);
   border-radius: 3px;
-  background: var(--content-background-color);
-  color: var(--text-color);
+  background: var(--ground);
+  color: var(--text);
 }
 
 .aisle-add-input:focus {
   outline: none;
-  border-color: var(--border-muted);
+  border-color: var(--rule);
 }
 
 .aisle-select,
 .aisle-input {
   font-size: 0.85rem;
   padding: 0.25rem 0.5rem;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--text);
   border-radius: 0.25rem;
-  background: var(--content-background-color);
-  color: var(--text-color);
+  background: var(--ground);
+  color: var(--text);
   max-width: 12rem;
 }
 
@@ -1760,14 +1713,14 @@ button.aisle-name:hover {
   justify-content: center;
   gap: 0.75rem;
   padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
-  background: var(--frosted-glass-bg);
+  background: var(--ground);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-top: 1px solid var(--rule);
   box-shadow: var(--shadow-nav-up);
   font-family: var(--font-body);
   font-size: 0.9rem;
-  color: var(--text-color);
+  color: var(--text);
   transform: translateY(100%);
   opacity: 0;
   transition: transform 0.3s ease, opacity 0.3s ease;
@@ -1792,14 +1745,14 @@ button.aisle-name:hover {
   background: none;
   border: none;
   font-size: 1.25rem;
-  color: var(--border-muted);
+  color: var(--rule);
   cursor: pointer;
   padding: 0.25rem 0.4rem;
   line-height: 1;
 }
 
 .notify-dismiss:hover {
-  color: var(--muted-text);
+  color: var(--text-soft);
 }
 
 /************************/
@@ -1834,17 +1787,17 @@ button.aisle-name:hover {
   padding: 0.5rem 0.6rem;
   font-family: var(--font-body);
   font-size: 1rem;
-  border: 1px solid var(--border-light);
+  border: 1px solid var(--rule-faint);
   border-radius: 3px;
   background: var(--input-bg);
-  color: var(--text-color);
+  color: var(--text);
   box-sizing: border-box;
 }
 
 .login-field input:focus {
-  outline: 2px solid var(--accent-color);
+  outline: 2px solid var(--red);
   outline-offset: 1px;
-  border-color: var(--accent-color);
+  border-color: var(--red);
 }
 
 .login-actions {
@@ -1861,7 +1814,7 @@ button.aisle-name:hover {
 .login-placeholder {
   text-align: center;
   font-style: italic;
-  color: var(--muted-text);
+  color: var(--text-soft);
 }
 
 .editor-form {
@@ -1884,7 +1837,7 @@ button.aisle-name:hover {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--muted-text);
+  color: var(--text-soft);
   margin-bottom: 0.5rem;
   cursor: default;
 }
@@ -1920,7 +1873,7 @@ button.aisle-name:hover {
   cursor: pointer;
   list-style: none;
   user-select: none;
-  color: var(--text-color);
+  color: var(--text);
 }
 
 .editor-collapse-header > summary::-webkit-details-marker {
@@ -1934,7 +1887,7 @@ button.aisle-name:hover {
   height: 0;
   border-style: solid;
   border-width: 0.3rem 0 0.3rem 0.45rem;
-  border-color: transparent transparent transparent var(--border-muted);
+  border-color: transparent transparent transparent var(--rule);
   transition: transform 0.15s ease;
   flex-shrink: 0;
 }
@@ -1966,7 +1919,7 @@ button.aisle-name:hover {
 
 .editor-help {
   font-size: 0.8rem;
-  color: var(--muted-text);
+  color: var(--text-soft);
   margin: 0 0 0.75rem;
   line-height: 1.4;
 }
@@ -1974,15 +1927,15 @@ button.aisle-name:hover {
 .editor-note {
   font-size: 0.8rem;
   font-style: italic;
-  color: var(--muted-text);
+  color: var(--text-soft);
   margin: 0.5rem 0 0;
 }
 
 .editor-recipes {
   font-size: 0.85rem;
-  color: var(--muted-text);
+  color: var(--text-soft);
   padding-top: 0.75rem;
-  border-top: 1px solid var(--border-color, #e5e7eb);
+  border-top: 1px solid var(--rule);
 }
 .editor-recipes-label {
   font-weight: 600;
@@ -2011,7 +1964,7 @@ button.aisle-name:hover {
 .usda-results {
   max-height: 250px;
   overflow-y: auto;
-  border: 1px solid var(--border-light);
+  border: 1px solid var(--rule-faint);
   border-radius: 4px;
 }
 .usda-result-item {
@@ -2019,7 +1972,7 @@ button.aisle-name:hover {
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 0.75rem;
-  border-bottom: 1px solid var(--separator-color);
+  border-bottom: 1px solid var(--rule);
 }
 .usda-result-item:last-child { border-bottom: none; }
 .usda-result-item.loading .usda-result-info { opacity: 0.5; }
@@ -2036,7 +1989,7 @@ button.aisle-name:hover {
 }
 .usda-result-nutrients {
   font-size: 0.8rem;
-  color: var(--muted-text);
+  color: var(--text-soft);
   margin-top: 0.15rem;
 }
 .usda-import-btn {
@@ -2045,14 +1998,14 @@ button.aisle-name:hover {
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--border-muted);
+  color: var(--rule);
   padding: 0.25rem;
   flex-shrink: 0;
   border-radius: 3px;
   transition: color 0.15s ease;
 }
 .usda-import-btn:hover {
-  color: var(--accent-color);
+  color: var(--red);
 }
 .usda-import-btn svg {
   display: block;
@@ -2066,16 +2019,16 @@ button.aisle-name:hover {
   text-align: center;
   background: none;
   border: none;
-  border-top: 1px solid var(--separator-color);
+  border-top: 1px solid var(--rule);
   cursor: pointer;
   font-size: 0.85rem;
-  color: var(--accent-color);
+  color: var(--red);
 }
 .usda-more-btn:hover { background: var(--hover-bg); }
 .usda-no-results {
   padding: 0.75rem;
   text-align: center;
-  color: var(--muted-text);
+  color: var(--text-soft);
   font-size: 0.85rem;
 }
 .usda-error {
@@ -2099,7 +2052,7 @@ button.aisle-name:hover {
 }
 
 .nf-thick-rule {
-  border-top: 4px solid var(--text-color);
+  border-top: 4px solid var(--text);
   margin: 0.25rem 0;
 }
 
@@ -2108,7 +2061,7 @@ button.aisle-name:hover {
   align-items: center;
   gap: 0.4rem;
   padding: 0.125rem 0;
-  border-bottom: 1px solid var(--border-muted);
+  border-bottom: 1px solid var(--rule);
   font-size: 0.8rem;
 }
 
@@ -2144,19 +2097,19 @@ button.aisle-name:hover {
 .nf-input {
   width: 4.5rem;
   padding: 0.2rem 0.35rem;
-  border: 1px solid var(--border-light);
+  border: 1px solid var(--rule-faint);
   border-radius: 3px;
   text-align: right;
   background: var(--input-bg);
-  color: var(--text-color);
+  color: var(--text);
   font-family: inherit;
   font-size: 0.85rem;
 }
 
 .nf-input:focus {
-  outline: 2px solid var(--accent-color);
+  outline: 2px solid var(--red);
   outline-offset: -1px;
-  border-color: var(--accent-color);
+  border-color: var(--red);
 }
 
 /* Hide spin buttons on all number inputs in editor */
@@ -2174,7 +2127,7 @@ button.aisle-name:hover {
 
 .nf-unit {
   font-size: 0.75rem;
-  color: var(--muted-text);
+  color: var(--text-soft);
   min-width: 1.25rem;
 }
 
@@ -2182,7 +2135,7 @@ button.aisle-name:hover {
 .density-candidates {
   margin: -0.5rem 0 1rem;
   padding: 0;
-  border: 1px solid var(--border-light);
+  border: 1px solid var(--rule-faint);
   border-radius: 4px;
 }
 .density-candidates[open] { padding: 0 0.75rem 0.75rem; }
@@ -2197,7 +2150,7 @@ button.aisle-name:hover {
   font-size: 0.85rem;
   cursor: pointer;
 }
-.density-candidate-row:hover { color: var(--accent-color); }
+.density-candidate-row:hover { color: var(--red); }
 .density-candidate-row input[type="radio"] { margin-right: 0.4rem; }
 
 .form-row {
@@ -2221,35 +2174,35 @@ button.aisle-name:hover {
 .field-narrow {
   width: 5rem;
   padding: 0.3rem 0.4rem;
-  border: 1px solid var(--border-light);
+  border: 1px solid var(--rule-faint);
   border-radius: 3px;
   text-align: right;
   background: var(--input-bg);
-  color: var(--text-color);
+  color: var(--text);
 }
 
 .field-narrow:focus {
-  outline: 2px solid var(--accent-color);
+  outline: 2px solid var(--red);
   outline-offset: -1px;
-  border-color: var(--accent-color);
+  border-color: var(--red);
 }
 
 .field-unit {
   font-size: 0.85rem;
-  color: var(--muted-text);
+  color: var(--text-soft);
   min-width: 1.5rem;
 }
 
 .field-unit-select {
   padding: 0.3rem 0.3rem;
-  border: 1px solid var(--border-light);
+  border: 1px solid var(--rule-faint);
   border-radius: 3px;
   background: var(--input-bg);
-  color: var(--text-color);
+  color: var(--text);
 }
 
 .portion-eq {
-  color: var(--muted-text);
+  color: var(--text-soft);
   font-size: 0.9rem;
 }
 
@@ -2268,32 +2221,32 @@ button.aisle-name:hover {
 .portion-name-input {
   width: 6rem;
   padding: 0.3rem 0.4rem;
-  border: 1px solid var(--border-light);
+  border: 1px solid var(--rule-faint);
   border-radius: 3px;
   background: var(--input-bg);
-  color: var(--text-color);
+  color: var(--text);
 }
 
 .portion-name-input:focus,
 .portion-grams-input:focus {
-  outline: 2px solid var(--accent-color);
+  outline: 2px solid var(--red);
   outline-offset: -1px;
-  border-color: var(--accent-color);
+  border-color: var(--red);
 }
 
 .portion-grams-input {
   width: 5rem;
   padding: 0.3rem 0.4rem;
-  border: 1px solid var(--border-light);
+  border: 1px solid var(--rule-faint);
   border-radius: 3px;
   text-align: right;
   background: var(--input-bg);
-  color: var(--text-color);
+  color: var(--text);
 }
 
 .portion-unit {
   font-size: 0.85rem;
-  color: var(--muted-text);
+  color: var(--text-soft);
 }
 
 .btn-icon {
@@ -2302,7 +2255,7 @@ button.aisle-name:hover {
   background: none;
   border: none;
   font-size: 1.1rem;
-  color: var(--muted-text);
+  color: var(--text-soft);
   cursor: pointer;
   padding: 0.1rem 0.3rem;
   line-height: 1;
@@ -2335,7 +2288,7 @@ button.aisle-name:hover {
   padding: 0.15rem 0.4rem;
   border-radius: 3px;
   background: var(--surface-alt);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--rule);
   font-size: 0.85rem;
   line-height: 1.3;
 }
@@ -2346,7 +2299,7 @@ button.aisle-name:hover {
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--muted-text);
+  color: var(--text-soft);
   font-size: 1rem;
   line-height: 1;
   padding: 0 0.1rem;
@@ -2380,29 +2333,29 @@ button.aisle-name:hover {
 
 .aisle-form-select {
   padding: 0.3rem 0.5rem;
-  border: 1px solid var(--border-light);
+  border: 1px solid var(--rule-faint);
   border-radius: 3px;
   background: var(--input-bg);
-  color: var(--text-color);
+  color: var(--text);
   min-width: 0;
   flex: 1;
 }
 
 .aisle-new-input {
   padding: 0.3rem 0.5rem;
-  border: 1px solid var(--border-light);
+  border: 1px solid var(--rule-faint);
   border-radius: 3px;
   background: var(--input-bg);
-  color: var(--text-color);
+  color: var(--text);
   min-width: 0;
   flex: 1;
 }
 
 .aisle-new-input:focus,
 .aisle-form-select:focus {
-  outline: 2px solid var(--accent-color);
+  outline: 2px solid var(--red);
   outline-offset: -1px;
-  border-color: var(--accent-color);
+  border-color: var(--red);
 }
 
 /* iOS zoom prevention: all form inputs in the editor need 1rem+ */
@@ -2548,9 +2501,9 @@ button.aisle-name:hover {
 
 /* "Paper on paper" effect — matches main card's border, radius, shadow */
 .embedded-recipe {
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--rule);
   border-radius: 0.25rem;
-  background-color: var(--content-background-color);
+  background-color: var(--ground);
   box-shadow: var(--shadow-sm);
   padding: 1.5rem;
   margin-top: 0.5rem;
@@ -2578,33 +2531,33 @@ button.aisle-name:hover {
 }
 
 .embedded-recipe-link:hover {
-  color: var(--accent-color);
+  color: var(--red);
 }
 
 .embedded-description {
   font-size: 0.9rem;
   font-style: italic;
-  color: var(--muted-text);
+  color: var(--text-soft);
   margin: 0 0 0.5rem;
 }
 
 .embedded-footer {
   font-size: 0.85rem;
-  color: var(--muted-text);
-  border-top: 1px solid var(--separator-color);
+  color: var(--text-soft);
+  border-top: 1px solid var(--rule);
   margin-top: 1.5rem;
   padding-top: 0.75rem;
 }
 
 .embedded-multiplier {
   font-size: 0.9rem;
-  color: var(--muted-text);
+  color: var(--text-soft);
   margin-left: 0.5rem;
 }
 
 .embedded-prep-note {
   font-size: 0.9rem;
-  color: var(--muted-text);
+  color: var(--text-soft);
   margin: 0.25rem 0 0;
 }
 
@@ -2626,7 +2579,7 @@ button.aisle-name:hover {
 
 .broken-reference {
   background-color: var(--broken-reference-bg);
-  color: var(--muted-text);
+  color: var(--text-soft);
 }
 
 .broken-reference p {
@@ -2704,7 +2657,7 @@ button.aisle-name:hover {
   padding: 1.5rem 0 0.75rem;
   font-size: 0.7rem;
   font-style: normal;
-  color: var(--text-color);
+  color: var(--text);
   opacity: 0.3;
 }
 

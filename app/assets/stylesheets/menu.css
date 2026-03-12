@@ -6,7 +6,7 @@
 #menu-header p {
   font-style: italic;
   font-size: 0.95rem;
-  color: var(--muted-text);
+  color: var(--text-soft);
   margin-top: -0.5rem;
 }
 
@@ -21,7 +21,7 @@
   -webkit-appearance: none;
   width: 1rem;
   height: 1rem;
-  border: 1.5px solid var(--border-muted);
+  border: 1.5px solid var(--rule);
   border-radius: 2px;
   cursor: pointer;
   flex-shrink: 0;
@@ -30,8 +30,8 @@
 }
 
 #recipe-selector input[type="checkbox"]:checked {
-  background-color: var(--checked-color);
-  border-color: var(--checked-color);
+  background-color: var(--red);
+  border-color: var(--red);
 }
 
 #recipe-selector input[type="checkbox"]:checked::after {
@@ -59,7 +59,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  border-bottom: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--rule-faint);
   padding-bottom: 0.4rem;
   margin-bottom: 0.75rem;
 }
@@ -83,7 +83,7 @@
 
 #recipe-selector .category li:hover {
   background-color: var(--hover-bg);
-  border-left-color: var(--accent-color);
+  border-left-color: var(--red);
 }
 
 #recipe-selector .category input[type="checkbox"] {
@@ -96,7 +96,7 @@
 }
 
 #recipe-selector .category .recipe-link {
-  color: var(--text-color);
+  color: var(--text);
   text-decoration: none;
   font-size: 0.9rem;
   padding-left: 0.5rem;
@@ -104,7 +104,7 @@
 }
 
 #recipe-selector .category .recipe-link:hover {
-  color: var(--accent-color);
+  color: var(--red);
   text-decoration: underline;
 }
 
@@ -117,18 +117,18 @@
   justify-content: center;
   padding: 0.25rem;
   background: var(--surface-alt);
-  border: 1px solid var(--missing-color);
+  border: 1px solid var(--red);
   border-radius: 6px;
   transition: opacity 0.15s ease;
 }
 
 .availability-single.on-hand {
-  color: var(--on-hand-color);
-  border-color: var(--on-hand-color);
+  color: var(--red);
+  border-color: var(--red);
 }
 
 .availability-single.not-on-hand {
-  color: var(--missing-color);
+  color: var(--red);
 }
 
 .availability-detail {
@@ -145,19 +145,19 @@
   font-family: var(--font-body);
   font-size: 0.75rem;
   font-weight: 400;
-  color: var(--missing-color);
+  color: var(--red);
   cursor: pointer;
   padding: 0.15rem 0.5rem;
   white-space: nowrap;
   background: var(--surface-alt);
-  border: 1px solid var(--missing-color);
+  border: 1px solid var(--red);
   border-radius: 6px;
   transition: border-color 0.12s ease;
 }
 
 .availability-detail.all-on-hand summary {
-  color: var(--on-hand-color);
-  border-color: var(--on-hand-color);
+  color: var(--red);
+  border-color: var(--red);
 }
 
 .availability-detail summary::-webkit-details-marker {
@@ -171,12 +171,12 @@
   height: 0;
   border-style: solid;
   border-width: 0.25rem 0 0.25rem 0.35rem;
-  border-color: transparent transparent transparent var(--missing-color);
+  border-color: transparent transparent transparent var(--red);
   transition: transform 0.15s ease;
 }
 
 .availability-detail.all-on-hand summary::before {
-  border-color: transparent transparent transparent var(--on-hand-color);
+  border-color: transparent transparent transparent var(--red);
 }
 
 .availability-detail[open] summary::before {
@@ -184,11 +184,11 @@
 }
 
 .availability-detail summary:hover {
-  border-color: var(--missing-color);
+  border-color: var(--red);
 }
 
 .availability-detail.all-on-hand summary:hover {
-  border-color: var(--on-hand-color);
+  border-color: var(--red);
 }
 
 /* Proportional opacity for availability pills (0/10 = invisible, 10/10 = full) */
@@ -227,7 +227,7 @@
   font-family: var(--font-body);
   font-size: 0.8rem;
   font-style: normal;
-  color: var(--text-color);
+  color: var(--text);
   padding-left: calc(1.6rem + 4px);
   padding-top: 0;
   padding-bottom: 0;
@@ -246,11 +246,11 @@
 }
 
 .availability-have {
-  color: var(--text-color);
+  color: var(--text);
 }
 
 .availability-need {
-  color: var(--text-color);
+  color: var(--text);
 }
 
 .availability-have strong,
@@ -302,7 +302,7 @@
   letter-spacing: 0.1em;
   margin-bottom: 0.5rem;
   padding-bottom: 0.25rem;
-  border-bottom: 1px dotted var(--border-light);
+  border-bottom: 1px dotted var(--rule-faint);
 }
 
 #recipe-selector .quick-bites .subsection ul {
@@ -325,7 +325,7 @@
 
 #recipe-selector .quick-bites .subsection li:hover {
   background-color: var(--hover-bg);
-  border-left-color: var(--accent-color);
+  border-left-color: var(--red);
 }
 
 #recipe-selector .quick-bites .subsection input[type="checkbox"] {
@@ -431,7 +431,7 @@
 
   #recipe-selector .quick-bites {
     grid-column: 1 / -1;
-    border-top: 1px solid var(--border-light);
+    border-top: 1px solid var(--rule-faint);
     padding-top: 0.75rem;
   }
 
