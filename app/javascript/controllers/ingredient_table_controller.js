@@ -6,8 +6,8 @@ import { Controller } from "@hotwired/stimulus"
  * aisle, data, recipes), and keyboard navigation for row activation.
  * Works entirely on DOM data attributes — no server calls.
  *
- * Persists sort order and active filter pill to sessionStorage so state
- * survives page reloads and Turbo visits.
+ * Persists sort order, active filter pill, and search text to sessionStorage
+ * so state survives page reloads, Turbo visits, and broadcast morphs.
  */
 export default class extends Controller {
   static targets = ["searchInput", "row", "filterButton", "table"]
@@ -17,12 +17,18 @@ export default class extends Controller {
     this.sortKey = sessionStorage.getItem("ingredients:sortKey") || "name"
     this.sortAsc = sessionStorage.getItem("ingredients:sortAsc") !== "false"
 
-    this.restoreFilter()
-    this.updateSortIndicators()
-    this.sortRows()
+    this.restore()
+
+    this.boundRestore = () => this.restore()
+    document.addEventListener("turbo:morph", this.boundRestore)
+  }
+
+  disconnect() {
+    document.removeEventListener("turbo:morph", this.boundRestore)
   }
 
   search() {
+    sessionStorage.setItem("ingredients:search", this.searchInputTarget.value)
     this.applyFilters()
   }
 
@@ -60,6 +66,16 @@ export default class extends Controller {
   }
 
   // Private
+
+  restore() {
+    if (this.hasSearchInputTarget) {
+      this.searchInputTarget.value = sessionStorage.getItem("ingredients:search") || ""
+    }
+    this.restoreFilter()
+    this.updateSortIndicators()
+    this.sortRows()
+    this.applyFilters()
+  }
 
   restoreFilter() {
     this.filterButtonTargets.forEach(btn => {
