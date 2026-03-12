@@ -574,10 +574,8 @@ header::after {
 
 .toc_nav {
   text-align: center;
-  margin-bottom: 2.5rem;
-  padding: 1.25rem 0;
-  border-top: 1px solid var(--separator-color);
-  border-bottom: 1px solid var(--separator-color);
+  margin-bottom: 3rem;
+  padding: 0;
 }
 
 .toc_nav ul {
@@ -598,8 +596,15 @@ header::after {
 }
 
 .toc_nav ul li a {
-  font-style: italic;
-  text-decoration-color: var(--border-muted);
+  font-style: normal;
+  font-size: 0.84rem;
+  color: var(--text-light);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.toc_nav ul li a:hover {
+  color: var(--red);
 }
 
 section {
@@ -608,15 +613,28 @@ section {
 }
 
 section > ul {
-  column-count: 3;
+  column-count: 2;
+  column-gap: 2.5rem;
   list-style: none;
-  padding-left: 0.5rem;
+  padding-left: 0;
 }
 
 section > ul li {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+section > ul li a {
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 400;
+  transition: color 0.2s;
+}
+
+section > ul li a:hover {
+  color: var(--red);
 }
 
 section h2 {
