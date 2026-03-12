@@ -408,9 +408,7 @@ nav a:focus-visible {
   left: 0;
   right: 0;
   top: 100%;
-  background-color: rgba(250, 248, 245, 0.82);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background-color: transparent;
   border-bottom: 1px solid var(--rule);
   box-shadow: var(--shadow-nav);
   clip-path: inset(0 -20px -20px -20px);
@@ -1085,7 +1083,6 @@ footer small {
   .usda-result-item { border-bottom-color: var(--text); }
   .density-candidates { border-color: var(--text); }
   nav::before { background-color: rgba(30, 27, 24, 0.82); }
-  .nav-hamburger .nav-drawer { background-color: rgba(30, 27, 24, 0.82); }
 }
 
 /******************************************************/
