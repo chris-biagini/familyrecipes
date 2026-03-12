@@ -24,3 +24,6 @@
 
 # _shopping_list.html.erb — title attribute with user content escaped by h()
 - "app/views/groceries/_shopping_list.html.erb:18"
+
+# _search_overlay.html.erb — JSON inside <script type="application/json"> (not executed as JS)
+- "app/views/shared/_search_overlay.html.erb:2"

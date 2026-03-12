@@ -21,6 +21,17 @@
     </div>
   </div>
   <%= yield :extra_nav if content_for?(:extra_nav) %>
+  <% if current_kitchen %>
+    <button type="button" class="nav-search-btn"
+            data-action="search-overlay#open"
+            title="Search recipes (press /)"
+            aria-label="Search recipes">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="11" cy="11" r="8"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+    </button>
+  <% end %>
   <% if logged_in? %>
     <%= link_to settings_path, class: 'nav-settings-link', title: 'Settings', aria: { label: 'Settings' } do %>
       <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">

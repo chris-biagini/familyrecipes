@@ -1,0 +1,21 @@
+<% if current_kitchen %>
+  <script type="application/json" data-search-overlay-target="data"><%= search_data_json.html_safe %></script>
+  <dialog class="search-overlay" data-search-overlay-target="dialog" data-action="click->search-overlay#backdropClick">
+    <div class="search-panel">
+      <div class="search-input-wrap">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text"
+               class="search-input"
+               placeholder="Search recipes…"
+               autocomplete="off"
+               spellcheck="false"
+               data-search-overlay-target="input"
+               data-action="input->search-overlay#search keydown->search-overlay#keydown">
+      </div>
+      <ul class="search-results" data-search-overlay-target="results" role="listbox"></ul>
+    </div>
+  </dialog>
+<% end %>

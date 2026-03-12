@@ -20,12 +20,13 @@
   <%= javascript_importmap_tags %>
   <%= yield :head %>
 </head>
-<body <%= yield :body_attrs %>>
+<body data-controller="search-overlay" data-search-overlay-base-path="<%= params[:kitchen_slug] ? "/kitchens/#{params[:kitchen_slug]}" : '' %>" <%= yield :body_attrs %>>
   <%= render 'shared/nav' %>
   <main>
     <%= yield %>
   </main>
   <div id="notifications"></div>
   <footer class="app-version">v<%= app_version %></footer>
+  <%= render 'shared/search_overlay' %>
 </body>
 </html>
