@@ -38,7 +38,7 @@
 #custom-items-section {
   margin-top: 2rem;
   padding-top: 1.5rem;
-  border-top: 2px solid var(--separator-color);
+  border-top: 1px solid var(--rule);
 }
 
 #custom-input-row {
@@ -130,7 +130,7 @@
 }
 
 .shopping-list-header h2 {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 1.1rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -164,7 +164,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.6rem 0.75rem;
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 0.8rem;
   font-weight: 600;
   text-transform: uppercase;

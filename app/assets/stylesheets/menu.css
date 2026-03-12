@@ -54,7 +54,7 @@
 }
 
 #recipe-selector .category h2 {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 1.1rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -142,7 +142,7 @@
   align-items: center;
   gap: 0.3rem;
   list-style: none;
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 0.75rem;
   font-weight: 400;
   color: var(--missing-color);
@@ -224,7 +224,7 @@
 .availability-ingredients > .availability-ingredients-inner {
   min-height: 0;
   overflow: hidden;
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 0.8rem;
   font-style: normal;
   color: var(--text-color);
@@ -268,11 +268,11 @@
 #recipe-selector .quick-bites {
   margin-top: 1rem;
   padding-top: 1.5rem;
-  border-top: 2px solid var(--separator-color);
+  border-top: 1px solid var(--rule);
 }
 
 #recipe-selector .quick-bites > h2 {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 1.2rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -295,7 +295,7 @@
 }
 
 #recipe-selector .quick-bites .subsection h3 {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 0.85rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -341,7 +341,7 @@
 #menu-actions {
   margin-top: 1.5rem;
   padding-top: 1.5rem;
-  border-top: 2px solid var(--separator-color);
+  border-top: 1px solid var(--rule);
   text-align: center;
   display: flex;
   justify-content: center;
