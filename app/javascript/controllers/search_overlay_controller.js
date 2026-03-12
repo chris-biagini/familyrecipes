@@ -51,8 +51,8 @@ export default class extends Controller {
     }
 
     const matches = this.rankResults(query)
-    this.selectedIndex = -1
     this.renderResults(matches)
+    this.selectFirst()
   }
 
   keydown(event) {
@@ -151,6 +151,14 @@ export default class extends Controller {
   clearResults() {
     this.resultsTarget.replaceChildren()
     this.selectedIndex = -1
+  }
+
+  selectFirst() {
+    const first = this.resultsTarget.querySelector(".search-result")
+    if (!first) return
+
+    this.selectedIndex = 0
+    first.classList.add("selected")
   }
 
   moveSelection(delta) {
