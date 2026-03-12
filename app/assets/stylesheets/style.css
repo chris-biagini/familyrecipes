@@ -77,40 +77,41 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --border-color: rgb(65, 60, 55);
-    --text-color: rgb(220, 215, 210);
+    /* Canonical dark-mode color tokens */
+    --ground: #1e1b18;
+    --text: #dcd7d0;
+    --text-soft: #a09788;
+    --text-light: #706960;
+    --red: #c85050;
+    --red-light: rgba(200, 80, 80, 0.12);
+    --rule: #3a3530;
+    --rule-faint: #2e2a26;
 
-    --frosted-glass-bg: rgba(38, 35, 32, 0.8);
-    --content-background-color: rgb(38, 35, 32);
+    /* Aliases — old variable names pointing to new tokens */
+    --border-color: var(--rule);
+    --text-color: var(--text);
+    --frosted-glass-bg: var(--ground);
+    --content-background-color: var(--ground);
 
-    /* Gingham */
-    --gingham-base: rgb(24, 22, 20);
-    --gingham-stripe-color: rgba(140, 20, 30, 0.05);
-    --weave-color: rgba(100, 100, 100, 0.04);
+    --checked-color: var(--red);
+    --muted-text: var(--text-soft);
+    --muted-text-light: var(--text-light);
+    --border-light: var(--rule-faint);
+    --border-muted: var(--rule);
+    --separator-color: var(--rule);
+    --surface-alt: #252220;
+    --danger-color: #d05050;
+    --accent-color: var(--red);
+    --on-hand-color: var(--red);
+    --missing-color: var(--red);
+    --hover-bg: rgba(255, 255, 255, 0.04);
 
-    /* Shared UI colors */
-    --checked-color: rgb(200, 55, 60);
-    --muted-text: rgb(140, 135, 130);
-    --muted-text-light: rgb(110, 106, 102);
-    --border-light: rgb(60, 56, 52);
-    --border-muted: rgb(85, 80, 75);
-    --separator-color: rgb(50, 47, 44);
-    --surface-alt: rgb(32, 30, 28);
-    --danger-color: rgb(220, 60, 50);
-    --accent-color: rgb(200, 55, 60);
-
-    /* Availability indicators */
-    --on-hand-color: rgb(200, 55, 60);
-    --missing-color: rgb(200, 55, 60);
-    --hover-bg: rgb(48, 44, 40);
-
-    /* Surfaces & inputs */
-    --input-bg: rgb(30, 28, 26);
-    --accent-hover: rgb(170, 45, 50);
-    --overscroll-color: rgb(30, 24, 22);
+    --input-bg: #1a1816;
+    --accent-hover: #a03838;
+    --overscroll-color: var(--ground);
     --scaled-highlight: rgba(180, 140, 60, 0.2);
 
-    /* Shadows — reduced opacity, dark bg makes shadows less effective */
+    /* Shadows — reduced opacity for dark backgrounds */
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.16), 0 4px 12px rgba(0, 0, 0, 0.12);
     --shadow-nav: 0 2px 4px rgba(0, 0, 0, 0.16), 0 1px 2px rgba(0, 0, 0, 0.08);
     --shadow-dialog: 0 4px 24px rgba(0, 0, 0, 0.3);
@@ -724,7 +725,7 @@ section:first-of-type h2 {
 .ingredients-table { width: 100%; border-collapse: collapse; }
 .ingredients-table thead th {
   text-align: left;
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 0.8rem;
   font-weight: 600;
   letter-spacing: 0.03em;
@@ -793,7 +794,7 @@ section:first-of-type h2 {
 }
 
 .settings-section h2 {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 0.85rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -810,7 +811,7 @@ section:first-of-type h2 {
 
 .settings-field label {
   display: block;
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 0.85rem;
   font-weight: 600;
   margin-bottom: 0.25rem;
@@ -1365,7 +1366,7 @@ html:has(dialog[open]) {
 }
 
 .editor-header h2 {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 1rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -1386,7 +1387,7 @@ html:has(dialog[open]) {
 .editor-errors {
   padding: 0.75rem 1.5rem;
   color: var(--danger-color);
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 0.85rem;
   border-bottom: 1px solid var(--separator-color);
 }
@@ -1615,7 +1616,7 @@ html:has(dialog[open]) {
 
 .aisle-name {
   display: block;
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 0.8rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -1762,9 +1763,9 @@ button.aisle-name:hover {
   background: var(--frosted-glass-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-top: 1px solid var(--gingham-stripe-color);
+  border-top: 1px solid var(--rule);
   box-shadow: var(--shadow-nav-up);
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 0.9rem;
   color: var(--text-color);
   transform: translateY(100%);
@@ -1820,7 +1821,7 @@ button.aisle-name:hover {
 
 .login-field label {
   display: block;
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 0.8rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -1878,7 +1879,7 @@ button.aisle-name:hover {
 }
 
 .editor-section-title {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 0.8rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -1911,7 +1912,7 @@ button.aisle-name:hover {
   align-items: center;
   gap: 0.5rem;
   padding: 0.6rem 0.75rem;
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 0.8rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -2616,7 +2617,7 @@ button.aisle-name:hover {
 }
 
 .embedded-recipe section h3 {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 1rem;
   font-weight: 600;
   text-transform: uppercase;
