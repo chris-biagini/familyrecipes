@@ -181,6 +181,15 @@ class IngredientRowBuilderTest < ActiveSupport::TestCase
     assert_equal 2, summary[:missing_density]
   end
 
+  test 'summary counts custom entries' do
+    IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Flour', basis_grams: 30, calories: 110)
+
+    builder = IngredientRowBuilder.new(kitchen: @kitchen)
+    summary = builder.summary
+
+    assert_equal 1, summary[:custom]
+  end
+
   # --- next_needing_attention ---
 
   test 'next_needing_attention finds next incomplete ingredient after given name' do

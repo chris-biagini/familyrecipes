@@ -75,6 +75,7 @@ class IngredientRowBuilder # rubocop:disable Metrics/ClassLength
   def build_summary
     { total: rows.size,
       complete: rows.count { |r| r[:status] == 'complete' },
+      custom: rows.count { |r| r[:source] == 'custom' },
       missing_aisle: rows.count { |r| r[:aisle].blank? },
       missing_nutrition: rows.count { |r| !r[:has_nutrition] },
       missing_density: rows.count { |r| !r[:has_density] } }
