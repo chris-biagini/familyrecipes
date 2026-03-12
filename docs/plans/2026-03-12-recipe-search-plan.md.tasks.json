@@ -1,0 +1,12 @@
+{
+  "planPath": "docs/plans/2026-03-12-recipe-search-plan.md",
+  "tasks": [
+    {"id": 2, "subject": "Task 1: SearchDataHelper — build the JSON blob", "status": "pending"},
+    {"id": 3, "subject": "Task 2: Search overlay partial and layout integration", "status": "pending", "blockedBy": [2]},
+    {"id": 4, "subject": "Task 3: Stimulus controller — search_overlay_controller.js", "status": "pending", "blockedBy": [2, 3]},
+    {"id": 5, "subject": "Task 4: CSS — search overlay styles", "status": "pending", "blockedBy": [3]},
+    {"id": 6, "subject": "Task 5: Integration test", "status": "pending", "blockedBy": [2, 3, 4, 5]},
+    {"id": 7, "subject": "Task 6: Manual testing and polish", "status": "pending", "blockedBy": [2, 3, 4, 5, 6]}
+  ],
+  "lastUpdated": "2026-03-12T00:00:00Z"
+}
