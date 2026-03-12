@@ -916,6 +916,7 @@ footer small {
   margin: 2.5rem auto 0;
   max-width: 16rem;
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  line-height: 1.2;
   border: 1.5px solid #000;
   padding: 0.1875rem 0.3125rem;
   background: #fff;
@@ -940,9 +941,15 @@ footer small {
   text-align: left;
 }
 
+.nutrition-label header::after {
+  display: none;
+}
+
 .nutrition-label header p {
+  font-family: inherit;
   font-style: normal;
   font-size: inherit;
+  color: inherit;
 }
 
 .nutrition-label .servings {
@@ -1024,6 +1031,9 @@ footer small {
 }
 
 .nutrition-label footer {
+  font-family: inherit;
+  color: inherit;
+  margin-top: 0;
   padding-top: 0.1875rem;
   font-style: normal;
   font-weight: normal;
