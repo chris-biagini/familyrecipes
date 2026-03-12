@@ -3,10 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
   <meta name="turbo-refresh-method" content="morph">
   <meta name="turbo-refresh-scroll" content="preserve">
-  <meta name="theme-color" content="rgb(205, 71, 84)" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="rgb(30, 24, 22)" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#b33a3a" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#1e1b18" media="(prefers-color-scheme: dark)">
   <title><%= content_for?(:title) ? content_for(:title) : current_kitchen&.site_title || 'Family Recipes' %></title>
   <%= csrf_meta_tags %>
   <%= action_cable_meta_tag %>
