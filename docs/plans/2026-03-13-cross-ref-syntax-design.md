@@ -19,16 +19,13 @@ Two changes to cross-reference syntax:
 
 ### LineClassifier
 
-Pattern changes from `/^>>>\s+(.+)$/` to `/^>\s*@\[(.+)$/`.
+Pattern changes from `/^>>>\s+(.+)$/` to `/^>\s*(@\[.+)$/`.
 
-The new pattern requires `@[` after `>` (with optional whitespace), so plain
-`>` lines (Markdown blockquotes) are not captured. The captured content starts
-at `@[`, which is what `CrossReferenceParser.parse` already expects.
-
-**Note:** The captured group shifts. Currently `token.content[0]` yields the
-full text after `>>> ` (e.g., `@[Pizza Dough], 2`). The new pattern should
-capture the same content — everything from `@[` onward — so
-`CrossReferenceParser` needs no changes.
+The capture group includes `@[` so that `token.content[0]` yields
+`@[Pizza Dough], 2` — exactly what `CrossReferenceParser.parse` expects
+(its pattern starts with `\A@\[`). The `>` prefix and optional whitespace
+are consumed but not captured, matching the old behavior where `>>>` was
+consumed and only the `@[...]` portion was passed through.
 
 ### CrossReferenceParser
 
@@ -41,15 +38,22 @@ which is independent of the `>` prefix.
 Error messages reference `>>>` in three places (lines 141, 152, 157). Update
 to `>` for clarity. No logic changes.
 
+### IngredientParser
+
+Error message at line 8 references `>>>` syntax — update to `>`. Test at
+`test/ingredient_parser_test.rb:86` asserts `>>> syntax` in the error — update.
+
 ### MarkdownImporter
 
-No changes. It receives parsed cross-reference data from RecipeBuilder, not
-raw syntax.
+Header comment references `>>>` syntax — update. No logic changes; it receives
+parsed cross-reference data from RecipeBuilder, not raw syntax.
 
 ### CrossReferenceUpdater
 
-No changes. The `gsub("@[#{old_title}]", "@[#{new_title}]")` pattern doesn't
-reference `>>>` — it operates on the `@[Title]` portion, which is unchanged.
+No changes. The `gsub("@[#{old_title}]", "@[#{new_title}]")` operates on the
+`@[Title]` portion, which is unchanged. **Side effect:** this gsub also
+catches `@[Title]` hyperlinks in prose/footer, giving hyperlinks free rename
+cascading as a bonus — desirable behavior.
 
 ### Editor Highlighting (JS)
 
@@ -95,15 +99,20 @@ A single helper method `linkify_recipe_references(html)` in `RecipesHelper`:
 4. Needs kitchen context for URL generation — available via
    `default_url_options` which auto-injects `kitchen_slug`
 
-Applied in three rendering paths:
+Applied at render time only — never baked into stored HTML:
 
-- **`render_markdown(text)`** — footer rendering. Redcarpet first, then
-  linkify.
+- **`render_markdown(text)`** — footer rendering (used in both
+  `_recipe_content.html.erb` and `_embedded_recipe.html.erb`). Redcarpet
+  first, then linkify.
 - **`scalable_instructions(text)`** — step instruction rendering. Redcarpet +
   scalable number processing, then linkify.
 - **`processed_instructions` in views** — pre-rendered HTML stored on Step.
-  Pipe through linkifier at render time (small change in `_step.html.erb`
-  line 44, and in `MarkdownImporter#process_instructions`).
+  Pipe through linkifier at render time in `_step.html.erb` (line 44). Do
+  NOT bake links into `MarkdownImporter#process_instructions` — that would
+  create stale URLs on rename.
+
+**Not applied to:** recipe descriptions (rendered as plain text, not
+Markdown — `@[Title]` would display literally).
 
 ### Pattern Safety
 
@@ -112,11 +121,11 @@ HTML output. The `@` and `[` `]` characters have no special meaning in
 Redcarpet's Markdown dialect, so they pass through unmodified. The regex
 replacement operates on safe, escaped HTML.
 
-The helper must avoid double-linkifying (e.g., if `@[Title]` appears inside
-an already-rendered `<a>` tag). Since the only `<a>` tags in rendered recipe
-content come from Redcarpet Markdown links (`[text](url)`), and those don't
-contain `@[`, this isn't a practical concern. But a negative lookbehind or
-check that we're not inside a tag is cheap insurance.
+The helper must avoid replacing `@[Title]` inside HTML tags (`<a>`, `<code>`).
+Use a non-greedy match `@\[(.+?)\]` (matching `CrossReferenceParser`'s
+approach) and skip matches inside `<code>` spans or existing links. A simple
+check that the match is not preceded by `>` (closing of an HTML tag) or inside
+a `<code>` block is cheap insurance.
 
 ### Editor Highlighting (JS)
 
@@ -137,11 +146,15 @@ suggest "this is a link, not an import."
 
 ### Ruby
 - `lib/familyrecipes/line_classifier.rb` — pattern change
-- `lib/familyrecipes/recipe_builder.rb` — error message text
+- `lib/familyrecipes/recipe_builder.rb` — error message text (`>>>` → `>`)
+- `lib/familyrecipes/ingredient_parser.rb` — error message text (`>>>` → `>`)
+- `lib/familyrecipes/step.rb` — header comment references `>>>`
+- `app/services/markdown_importer.rb` — header comment references `>>>`
 - `app/helpers/recipes_helper.rb` — new `linkify_recipe_references` helper,
   updated `render_markdown` and `scalable_instructions`
 - `app/views/recipes/_step.html.erb` — pipe `processed_instructions` through
   linkifier
+- `config/html_safe_allowlist.yml` — update line numbers if shifted
 
 ### JavaScript
 - `app/javascript/controllers/recipe_editor_controller.js` — update cross-ref
@@ -154,16 +167,24 @@ suggest "this is a link, not an import."
 - `db/seeds/recipes/Basics/Pasta with Tomato Sauce.md` — new syntax
 - One seed recipe — add hyperlink example in prose or footer
 
-### Tests
+### Tests (all `>>>` → `>` in markdown fixtures)
 - `test/line_classifier_test.rb` — update cross-ref tests, add `> @[` cases
 - `test/cross_reference_parser_test.rb` — no changes expected
-- `test/recipe_builder_test.rb` — update any tests using `>>>` syntax
-- `test/services/markdown_importer_test.rb` — update cross-ref import tests
-- `test/services/cross_reference_updater_test.rb` — update if test fixtures
-  use `>>>` in markdown source
+- `test/ingredient_parser_test.rb` — error message assertion
+- `test/recipe_builder_test.rb`
+- `test/build_validator_test.rb` (12 occurrences)
+- `test/cross_reference_test.rb` (5 occurrences)
+- `test/recipe_test.rb`
+- `test/services/markdown_importer_test.rb`
+- `test/services/cross_reference_updater_test.rb`
+- `test/services/recipe_write_service_test.rb`
+- `test/services/recipe_availability_calculator_test.rb`
+- `test/services/shopping_list_builder_test.rb`
+- `test/jobs/recipe_nutrition_job_test.rb`
+- `test/nutrition_calculator_test.rb`
+- `test/integration/end_to_end_test.rb`
 - `test/helpers/recipes_helper_test.rb` — new tests for
   `linkify_recipe_references`
-- Integration tests for hyperlink rendering in instructions and footer
 
 ### Docs
 - `CLAUDE.md` — update cross-reference syntax documentation
