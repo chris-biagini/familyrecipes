@@ -9,13 +9,12 @@
 <article class="embedded-recipe"
          data-controller="recipe-state"
          data-recipe-state-recipe-id-value="xref-<%= cross_reference.target_slug %>"
-         data-recipe-state-version-hash-value="<%= Digest::SHA256.hexdigest(target.markdown_source) %>">
+         data-recipe-state-version-hash-value="<%= Digest::SHA256.hexdigest(target.markdown_source) %>"
+         data-base-multiplier="<%= cross_reference.multiplier %>">
   <header>
     <h3><%= cross_reference.target_title %></h3>
     <%= link_to "\u2192", recipe_path(cross_reference.target_slug), class: 'embedded-recipe-link', title: "Open #{cross_reference.target_title}" %>
-    <%- if cross_reference.multiplier != 1.0 -%>
-    <span class="embedded-multiplier">&times; <%= format_numeric(cross_reference.multiplier) %></span>
-    <%- end -%>
+    <span class="embedded-multiplier"<%= ' hidden' if cross_reference.multiplier == 1.0 %>>&times; <%= format_numeric(cross_reference.multiplier) %></span>
     <%- if cross_reference.prep_note -%>
     <p class="embedded-prep-note"><%= cross_reference.prep_note %></p>
     <%- end -%>

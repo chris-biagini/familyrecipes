@@ -504,6 +504,26 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test 'embedded recipe article includes data-base-multiplier' do
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @bread)
+      # Pizza Dough
+
+      ## Mix.
+      - Flour, 500 g
+    MD
+
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @bread)
+      # Double Pizza
+
+      ## Make dough.
+      >>> @[Pizza Dough], 2
+    MD
+
+    get recipe_path('double-pizza')
+
+    assert_select 'article.embedded-recipe[data-base-multiplier="2.0"]'
+  end
+
   test 'recipe editor includes category dropdown' do
     log_in
     get recipe_path('focaccia', kitchen_slug: kitchen_slug)
