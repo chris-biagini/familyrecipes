@@ -248,8 +248,9 @@ does client-side substring matching with tiered ranking. No server endpoint.
 Recipe source is Markdown with custom syntax — the parser pipeline is the
 authoritative spec. Read the header comments on `LineClassifier` (token types),
 `RecipeBuilder` (assembly), `IngredientParser` (ingredient bullets), and
-`CrossReferenceParser` (`>>> @[Title]` syntax). Seed files in
-`db/seeds/recipes/` are working examples.
+`CrossReferenceParser` (`> @[Title]` import syntax). Bare `@[Title]` in prose
+or the footer renders as a clickable link to that recipe (render-time only, no
+DB tracking). Seed files in `db/seeds/recipes/` are working examples.
 
 **Quick Bites** are grocery bundles, not recipes. See
 `FamilyRecipes::QuickBite` header comment for format. Stored in
