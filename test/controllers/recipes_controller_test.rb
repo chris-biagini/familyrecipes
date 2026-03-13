@@ -732,6 +732,35 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     assert_select '.recipe-tag-pill', 'vegan'
   end
 
+  test 'full tag lifecycle: create, update, display, remove' do
+    markdown = "# Tag Lifecycle\n\n## Step (do it)\n\n- Flour, 1 cup\n\nMix."
+
+    log_in
+    post recipes_path(kitchen_slug: kitchen_slug),
+         params: { markdown_source: markdown, category: @bread.name,
+                   tags: %w[vegan quick] },
+         as: :json
+
+    assert_response :success
+
+    get recipe_path('tag-lifecycle', kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select '.recipe-tag-pill', count: 2
+
+    patch recipe_path('tag-lifecycle', kitchen_slug: kitchen_slug),
+          params: { markdown_source: markdown, category: @bread.name,
+                    tags: %w[vegan weeknight] },
+          as: :json
+
+    assert_response :success
+
+    recipe = Recipe.find_by!(slug: 'tag-lifecycle')
+
+    assert_equal %w[vegan weeknight], recipe.tags.map(&:name).sort
+    assert_not Tag.exists?(name: 'quick')
+  end
+
   test 'show renders recipe with freeform quantity ingredient' do
     MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @bread)
       # Salad
