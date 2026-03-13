@@ -22,6 +22,7 @@
   --surface-alt: #f7f5f1;
   --danger-color: #c00;
   --hover-bg: var(--red-light);
+  --hover-bg-strong: rgba(179, 58, 58, 0.15);
 
   --input-bg: white;
   --accent-hover: #993030;
@@ -59,6 +60,7 @@
     --surface-alt: #2a2724;
     --danger-color: #d05050;
     --hover-bg: rgba(255, 255, 255, 0.04);
+    --hover-bg-strong: rgba(200, 80, 80, 0.22);
 
     --input-bg: #1a1816;
     --accent-hover: #a03838;
@@ -145,8 +147,7 @@ nav {
   top: 0;
   z-index: 10;
 
-  border-top: 2px solid var(--red);
-  border-bottom: 1px solid var(--rule);
+  border-bottom: 2px solid var(--red);
   box-shadow: var(--shadow-nav);
 }
 
@@ -164,8 +165,7 @@ nav::before {
 }
 
 nav:has(.nav-drawer[aria-hidden="false"]) {
-  border-bottom: none;
-  padding-bottom: 1px;
+  border-bottom-color: transparent;
   box-shadow: none;
 }
 
@@ -183,11 +183,22 @@ nav a {
   padding: 0.5rem 0.9rem;
   line-height: 1.5;
   color: var(--text);
-  transition: color 0.2s ease;
+  border-radius: 0.4rem;
+  transition: color 0.2s ease, background-color 0.35s ease-out;
 }
 
 nav a:hover {
   color: var(--red);
+  background-color: var(--hover-bg);
+}
+
+nav a[aria-current="page"] {
+  color: var(--red);
+  background-color: var(--hover-bg);
+}
+
+nav a[aria-current="page"]:hover {
+  background-color: var(--hover-bg-strong);
 }
 
 nav > div:first-child {
@@ -195,6 +206,7 @@ nav > div:first-child {
   align-items: center;
   flex: 1;
   min-width: 0;
+  padding-left: 0.35rem;
 }
 
 .nav-compact .nav-links a {
@@ -202,10 +214,6 @@ nav > div:first-child {
   gap: 0.15rem;
   padding: 0.45rem 0.5rem 0.3rem;
   text-align: center;
-}
-
-.nav-compact .nav-links a::after {
-  display: none;
 }
 
 .nav-compact .nav-links a span {
@@ -235,11 +243,13 @@ nav > div:not(:first-child):not(.nav-drawer) {
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  transition: color 0.2s ease;
+  border-radius: 0.4rem;
+  transition: color 0.2s ease, background-color 0.35s ease-out;
 }
 
 .nav-settings-link:hover {
   color: var(--red);
+  background-color: var(--hover-bg);
 }
 
 .nav-settings-link .nav-icon {
@@ -323,12 +333,14 @@ nav a:focus-visible {
   cursor: pointer;
   padding: 0.5rem 0.9rem;
   color: var(--text);
-  transition: color 0.2s ease;
+  border-radius: 0.4rem;
+  transition: color 0.2s ease, background-color 0.35s ease-out;
   -webkit-tap-highlight-color: transparent;
 }
 
 .hamburger-btn:hover {
   color: var(--red);
+  background-color: var(--hover-bg);
 }
 
 .hamburger-btn:focus-visible {
@@ -374,6 +386,7 @@ nav a:focus-visible {
 .nav-links {
   display: flex;
   align-items: center;
+  gap: 0.2rem;
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -400,7 +413,7 @@ nav a:focus-visible {
   right: 0;
   top: 100%;
   background-color: transparent;
-  border-bottom: 1px solid var(--rule);
+  border-bottom: 2px solid var(--red);
   box-shadow: var(--shadow-nav);
   clip-path: inset(0 -20px -20px -20px);
 }
@@ -504,12 +517,15 @@ header .recipe-meta a:hover {
   text-decoration: none;
   cursor: pointer;
   font-size: 0.85rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 0.4rem;
   user-select: none;
-  transition: color 0.12s ease;
+  transition: color 0.2s ease, background-color 0.35s ease-out;
 }
 
 .scale-toggle:hover {
   color: var(--red);
+  background-color: var(--hover-bg);
 }
 
 .scale-toggle::before {
@@ -527,12 +543,26 @@ header .recipe-meta a:hover {
   transform: rotate(90deg);
 }
 
-/* Recipe actions row — scale toggle + edit, middot-separated */
+/* Recipe actions row — scale toggle + edit, middot-separated.
+   Grid with 1fr/auto/1fr anchors the middot at dead center. */
 .recipe-actions {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: center;
   gap: 0.5rem;
+}
+
+.recipe-actions > :first-child {
+  justify-self: end;
+}
+
+.recipe-actions > :last-child {
+  justify-self: start;
+}
+
+.recipe-actions > :only-child {
+  grid-column: 1 / -1;
+  justify-self: center;
 }
 
 header > .recipe-actions {
@@ -551,22 +581,23 @@ header > .recipe-actions {
   gap: 0.3rem;
   background: none;
   border: none;
-  padding: 0;
+  padding: 0.3rem 0.6rem;
   color: var(--text-light);
   cursor: pointer;
   font-family: var(--font-body);
   font-size: 0.85rem;
-  transition: color 0.12s ease;
+  border-radius: 0.4rem;
+  transition: color 0.2s ease, background-color 0.35s ease-out;
 }
 
 .edit-toggle:hover {
   color: var(--red);
+  background-color: var(--hover-bg);
 }
 
 .edit-toggle:focus-visible {
   outline: 2px solid var(--red);
   outline-offset: 2px;
-  border-radius: 2px;
 }
 
 /* Scale controls — animated vertical expand/collapse */
@@ -1433,11 +1464,13 @@ html:has(dialog[open]) {
   color: var(--text);
   display: flex;
   align-items: center;
-  transition: color 0.2s ease;
+  border-radius: 0.4rem;
+  transition: color 0.2s ease, background-color 0.35s ease-out;
 }
 
 .nav-search-btn:hover {
   color: var(--red);
+  background-color: var(--hover-bg);
 }
 
 .editor-header {
