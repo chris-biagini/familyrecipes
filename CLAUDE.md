@@ -207,6 +207,12 @@ Encryption. `SettingsController` is a thin show/update — no write service.
 The `multi_kitchen` flag is an env var (`MULTI_KITCHEN=true`), not a database
 setting.
 
+**Tags.** Kitchen-scoped labels for cross-cutting recipe classification.
+`Tag` + `RecipeTag` join table. `RecipeWriteService` handles tag sync on
+recipe save; `TagWriteService` handles bulk rename/delete from the management
+dialog. Tags are single-word (`[a-zA-Z-]`), stored lowercase. Orphan cleanup
+via `Tag.cleanup_orphans(kitchen)`.
+
 **Nutrition pipeline.** Key classes (read their header comments for details):
 - `IngredientCatalog` — overlay model: global seed entries + per-kitchen
   overrides, merged by `lookup_for` with Inflector variant matching and
