@@ -1,10 +1,11 @@
 /**
- * Shared utilities for ordered-list editor dialogs (aisles, categories).
+ * Shared utilities for ordered-list editor dialogs (aisles, categories, tags).
  * Provides changeset tracking, row rendering, inline rename, reorder
  * animations, and payload serialization. Each Stimulus controller owns
  * its dialog lifecycle and fetch calls; this module handles the list logic.
+ * Supports an `orderable` flag to suppress up/down buttons for unordered lists.
  *
- * - ordered_list_editor_controller: unified controller for aisles and categories
+ * - ordered_list_editor_controller: unified controller for aisles, categories, tags
  * - style.css (.aisle-row, .aisle-btn): shared row and button styles
  */
 
@@ -53,24 +54,24 @@ export function checkDuplicate(items, name, excludeIndex = -1) {
 
 // --- DOM / Rendering ---
 
-export function buildRowElement(item, index, liveItems, callbacks) {
+export function buildRowElement(item, index, liveItems, callbacks, orderable = true) {
   const row = document.createElement("div")
   row.className = rowClassName(item)
   row.dataset.index = index
 
   row.appendChild(buildNameArea(item, index, callbacks))
-  row.appendChild(buildControls(item, index, liveItems, callbacks))
+  row.appendChild(buildControls(item, index, liveItems, callbacks, orderable))
 
   return row
 }
 
-export function renderRows(container, items, callbacks) {
+export function renderRows(container, items, callbacks, orderable = true) {
   const liveItems = items
     .map((item, i) => item.deleted ? null : i)
     .filter(i => i !== null)
 
   const rows = items.map((item, index) =>
-    buildRowElement(item, index, liveItems, callbacks)
+    buildRowElement(item, index, liveItems, callbacks, orderable)
   )
   container.replaceChildren(...rows)
 }
@@ -203,19 +204,23 @@ function buildNameArea(item, index, callbacks) {
   return area
 }
 
-function buildControls(item, index, liveItems, callbacks) {
+function buildControls(item, index, liveItems, callbacks, orderable = true) {
   const controls = document.createElement("div")
   controls.className = "aisle-controls"
 
   const livePos = liveItems.indexOf(index)
 
-  const upBtn = buildIconButton(chevronSvg(), "aisle-btn--up", "Move up", index)
-  upBtn.addEventListener("click", () => callbacks.onMoveUp(index))
-  if (item.deleted || livePos === 0) upBtn.disabled = true
+  if (orderable) {
+    const upBtn = buildIconButton(chevronSvg(), "aisle-btn--up", "Move up", index)
+    upBtn.addEventListener("click", () => callbacks.onMoveUp(index))
+    if (item.deleted || livePos === 0) upBtn.disabled = true
+    controls.appendChild(upBtn)
 
-  const downBtn = buildIconButton(chevronSvg(true), "aisle-btn--down", "Move down", index)
-  downBtn.addEventListener("click", () => callbacks.onMoveDown(index))
-  if (item.deleted || livePos === liveItems.length - 1) downBtn.disabled = true
+    const downBtn = buildIconButton(chevronSvg(true), "aisle-btn--down", "Move down", index)
+    downBtn.addEventListener("click", () => callbacks.onMoveDown(index))
+    if (item.deleted || livePos === liveItems.length - 1) downBtn.disabled = true
+    controls.appendChild(downBtn)
+  }
 
   const toggleBtn = item.deleted
     ? buildIconButton(undoSvg(), "aisle-btn--undo", "Undo delete", index)
@@ -228,8 +233,6 @@ function buildControls(item, index, liveItems, callbacks) {
     }
   })
 
-  controls.appendChild(upBtn)
-  controls.appendChild(downBtn)
   controls.appendChild(toggleBtn)
   return controls
 }

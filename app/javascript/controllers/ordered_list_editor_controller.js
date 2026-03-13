@@ -11,13 +11,12 @@ import {
 /**
  * Generic ordered-list editor dialog for managing named items with reorder,
  * rename, add, and delete. Parameterized via Stimulus values so one controller
- * handles both grocery aisles and recipe categories. Uses
- * ordered_list_editor_utils for shared list logic; this controller owns the
- * dialog lifecycle and server communication.
+ * handles grocery aisles, recipe categories, and tags. The `orderable` value
+ * suppresses up/down reorder buttons for unordered lists like tags.
  *
  * - ordered_list_editor_utils: changeset, row rendering, animation, payload
  * - editor_utils: CSRF tokens, error display, save/close helpers
- * - GroceriesController / CategoriesController: backend load/save endpoints
+ * - GroceriesController / CategoriesController / TagsController: backend endpoints
  */
 export default class extends Controller {
   static targets = ["list", "saveButton", "errors", "newItemName"]
@@ -28,7 +27,8 @@ export default class extends Controller {
     payloadKey: { type: String, default: "order" },
     joinWith: String,
     loadKey: { type: String, default: "items" },
-    openSelector: String
+    openSelector: String,
+    orderable: { type: Boolean, default: true }
   }
 
   connect() {
@@ -163,7 +163,7 @@ export default class extends Controller {
   }
 
   render() {
-    renderRows(this.listTarget, this.items, this.rowCallbacks())
+    renderRows(this.listTarget, this.items, this.rowCallbacks(), this.orderableValue)
   }
 
   rowCallbacks() {
