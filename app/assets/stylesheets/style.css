@@ -88,6 +88,7 @@ html {
   color-scheme: light dark;
   font-size: 18px;
   touch-action: manipulation;
+  scrollbar-gutter: stable;
   background-color: var(--ground);
 }
 
