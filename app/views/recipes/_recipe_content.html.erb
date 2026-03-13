@@ -26,15 +26,17 @@
         </div>
         <div class="scale-controls" data-scale-panel-target="inner" aria-hidden="true">
           <div class="scale-controls-inner">
-            <div class="scale-presets">
-              <button type="button" class="scale-preset" data-scale-panel-target="preset" data-action="scale-panel#selectPreset">&frac12;&times;</button>
-              <button type="button" class="scale-preset active" data-scale-panel-target="preset" data-action="scale-panel#selectPreset">1&times;</button>
-              <button type="button" class="scale-preset" data-scale-panel-target="preset" data-action="scale-panel#selectPreset">2&times;</button>
-              <button type="button" class="scale-preset" data-scale-panel-target="preset" data-action="scale-panel#selectPreset">3&times;</button>
+            <div class="scale-controls-center">
+              <div class="scale-presets">
+                <button type="button" class="scale-preset" data-scale-panel-target="preset" data-action="scale-panel#selectPreset">&frac12;&times;</button>
+                <button type="button" class="scale-preset active" data-scale-panel-target="preset" data-action="scale-panel#selectPreset">1&times;</button>
+                <button type="button" class="scale-preset" data-scale-panel-target="preset" data-action="scale-panel#selectPreset">2&times;</button>
+                <button type="button" class="scale-preset" data-scale-panel-target="preset" data-action="scale-panel#selectPreset">3&times;</button>
+              </div>
+              <span class="scale-divider"></span>
+              <input type="text" class="scale-input" data-scale-panel-target="input" data-action="input->scale-panel#onInput" value="1" placeholder="e.g. 3/2" inputmode="text" autocomplete="off">
+              <button type="button" class="scale-reset" data-scale-panel-target="reset" data-action="scale-panel#reset" hidden>Reset</button>
             </div>
-            <span class="scale-divider"></span>
-            <input type="text" class="scale-input" data-scale-panel-target="input" data-action="input->scale-panel#onInput" value="1" placeholder="e.g. 3/2" inputmode="text" autocomplete="off">
-            <button type="button" class="scale-reset" data-scale-panel-target="reset" data-action="scale-panel#reset" hidden>Reset</button>
           </div>
         </div>
       </div>

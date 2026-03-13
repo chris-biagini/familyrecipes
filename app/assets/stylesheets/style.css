@@ -613,13 +613,20 @@ header > .recipe-actions {
 }
 
 .scale-controls-inner {
+  min-height: 0;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
   white-space: nowrap;
-  padding-top: 0.5rem;
+}
+
+.scale-controls-center {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 0;
+  padding: 0.5rem 0.25rem;
 }
 
 .scale-presets {
@@ -645,10 +652,17 @@ header > .recipe-actions {
   color: var(--red);
 }
 
+@keyframes preset-box-pop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
 .scale-preset.active {
   background: var(--red);
   border-color: var(--red);
   color: white;
+  animation: preset-box-pop 250ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .scale-divider {
@@ -675,10 +689,13 @@ header > .recipe-actions {
   border-color: var(--red);
 }
 
-.scale-input.invalid {
+.scale-input.invalid,
+.scale-input.invalid:focus {
   outline: 2px solid var(--danger-color);
   outline-offset: -1px;
   border-color: var(--danger-color);
+  color: var(--danger-color);
+  background: color-mix(in srgb, var(--danger-color) 8%, var(--input-bg));
 }
 
 .scale-reset {
@@ -690,7 +707,14 @@ header > .recipe-actions {
   background: none;
   color: var(--text-light);
   cursor: pointer;
-  transition: color 0.12s ease;
+  transition: color 0.12s ease, opacity 0.15s ease;
+}
+
+.scale-reset[hidden] {
+  display: block;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .scale-reset:hover {
@@ -1317,6 +1341,7 @@ footer small {
   height: 90vh;
   max-height: 90vh;
   box-shadow: var(--shadow-dialog);
+  animation: bloop 250ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 html:has(dialog[open]) {
@@ -1331,6 +1356,7 @@ html:has(dialog[open]) {
 
 .editor-dialog::backdrop {
   background: var(--dialog-backdrop);
+  animation: fade-in 200ms ease-out;
 }
 
 /************************/
@@ -1355,6 +1381,30 @@ html:has(dialog[open]) {
 
 .search-overlay::backdrop {
   background: var(--dialog-backdrop);
+  animation: fade-in 200ms ease-out;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes bloop {
+  0%   { transform: scale(0.92); opacity: 0; }
+  60%  { transform: scale(1.04); opacity: 1; }
+  100% { transform: scale(1);    opacity: 1; }
+}
+
+@keyframes check-box-pop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+@keyframes check-mark-pop {
+  0%   { transform: translate(-50%, -50%) scale(0); }
+  60%  { transform: translate(-50%, -50%) scale(1.4); }
+  100% { transform: translate(-50%, -50%) scale(1); }
 }
 
 .search-panel {
@@ -1363,6 +1413,7 @@ html:has(dialog[open]) {
   border-radius: 0.75rem;
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.25), 0 2px 12px rgba(0, 0, 0, 0.15);
   overflow: hidden;
+  animation: bloop 250ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .search-input-wrap {
@@ -1409,6 +1460,11 @@ html:has(dialog[open]) {
   display: none;
 }
 
+@keyframes result-slide-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 .search-result {
   display: flex;
   align-items: center;
@@ -1417,7 +1473,17 @@ html:has(dialog[open]) {
   cursor: pointer;
   margin: 0.15rem 0.4rem;
   border-radius: 0.4rem;
+  animation: result-slide-in 150ms ease-out both;
 }
+
+.search-result:nth-child(2)  { animation-delay: 20ms; }
+.search-result:nth-child(3)  { animation-delay: 40ms; }
+.search-result:nth-child(4)  { animation-delay: 60ms; }
+.search-result:nth-child(5)  { animation-delay: 80ms; }
+.search-result:nth-child(6)  { animation-delay: 100ms; }
+.search-result:nth-child(7)  { animation-delay: 120ms; }
+.search-result:nth-child(8)  { animation-delay: 140ms; }
+.search-result:nth-child(n+9) { animation-delay: 140ms; }
 
 .search-result.selected {
   background: var(--red);
@@ -1889,9 +1955,16 @@ button.aisle-name:hover {
   transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
+@keyframes slide-up-bounce {
+  0%   { transform: translateY(100%); opacity: 0; }
+  60%  { transform: translateY(-8%);  opacity: 1; }
+  100% { transform: translateY(0);    opacity: 1; }
+}
+
 .notify-bar.notify-visible {
   transform: translateY(0);
   opacity: 1;
+  animation: slide-up-bounce 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .notify-actions {
@@ -2750,5 +2823,13 @@ button.aisle-name:hover {
   font-style: normal;
   color: var(--text);
   opacity: 0.3;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
