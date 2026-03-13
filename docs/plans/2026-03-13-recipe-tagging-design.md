@@ -57,11 +57,13 @@ recipe_tags
 
 ### Tag Name Rules
 
-- Single-word: validated with no-whitespace constraint
-- Stored and displayed lowercase
+- Characters restricted to `[a-zA-Z-]` (letters and hyphens only)
+- Stored and displayed lowercase (downcased on save)
 - No slug column — for single-word lowercase tags, the name itself serves as
   the identifier in any URL context
 - Kitchen-scoped uniqueness on name
+- Validated server-side on the `Tag` model; client-side the tag input field
+  rejects disallowed characters on keypress
 
 ### Orphan Cleanup
 
