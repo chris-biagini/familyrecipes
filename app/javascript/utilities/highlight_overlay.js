@@ -69,6 +69,8 @@ export default class HighlightOverlay {
   }
 
   highlight() {
+    if (!this.overlay.isConnected) this.buildOverlay()
+
     const text = this.textarea.value
     if (!text) {
       this.overlay.replaceChildren()
@@ -98,8 +100,10 @@ export default class HighlightOverlay {
   }
 
   syncScroll() {
-    this.overlay.scrollTop = this.textarea.scrollTop
-    this.overlay.scrollLeft = this.textarea.scrollLeft
+    if (this.overlay.isConnected) {
+      this.overlay.scrollTop = this.textarea.scrollTop
+      this.overlay.scrollLeft = this.textarea.scrollLeft
+    }
   }
 
   handleFocus() {
