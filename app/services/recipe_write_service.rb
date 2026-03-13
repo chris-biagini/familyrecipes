@@ -14,12 +14,12 @@
 class RecipeWriteService
   Result = Data.define(:recipe, :updated_references)
 
-  def self.create(markdown:, kitchen:, category_name: 'Miscellaneous')
-    new(kitchen:).create(markdown:, category_name:)
+  def self.create(markdown:, kitchen:, category_name: 'Miscellaneous', tags: nil)
+    new(kitchen:).create(markdown:, category_name:, tags:)
   end
 
-  def self.update(slug:, markdown:, kitchen:, category_name: 'Miscellaneous')
-    new(kitchen:).update(slug:, markdown:, category_name:)
+  def self.update(slug:, markdown:, kitchen:, category_name: 'Miscellaneous', tags: nil)
+    new(kitchen:).update(slug:, markdown:, category_name:, tags:)
   end
 
   def self.destroy(slug:, kitchen:)
@@ -30,17 +30,19 @@ class RecipeWriteService
     @kitchen = kitchen
   end
 
-  def create(markdown:, category_name:)
+  def create(markdown:, category_name:, tags: nil)
     category = find_or_create_category(category_name)
     recipe = import_and_timestamp(markdown, category:)
+    sync_tags(recipe, tags) if tags
     finalize
     Result.new(recipe:, updated_references: [])
   end
 
-  def update(slug:, markdown:, category_name:)
+  def update(slug:, markdown:, category_name:, tags: nil)
     old_recipe = kitchen.recipes.find_by!(slug:)
     category = find_or_create_category(category_name)
     recipe = import_and_timestamp(markdown, category:)
+    sync_tags(recipe, tags) if tags
     updated_references = rename_cross_references(old_recipe, recipe)
     handle_slug_change(old_recipe, recipe)
     finalize
@@ -94,10 +96,16 @@ class RecipeWriteService
 
   def finalize
     Category.cleanup_orphans(kitchen)
+    Tag.cleanup_orphans(kitchen)
     return if Kitchen.batching?
 
     prune_stale_meal_plan_items
     kitchen.broadcast_update
+  end
+
+  def sync_tags(recipe, tag_names)
+    desired = tag_names.map { |n| kitchen.tags.find_or_create_by!(name: n.downcase) }
+    recipe.tags = desired
   end
 
   def prune_stale_meal_plan_items
