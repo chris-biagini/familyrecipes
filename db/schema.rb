@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 3) do
+ActiveRecord::Schema[8.1].define(version: 4) do
   create_table "categories", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "kitchen_id", null: false
@@ -118,6 +118,16 @@ ActiveRecord::Schema[8.1].define(version: 3) do
     t.index ["user_id"], name: "index_memberships_on_user_id"
   end
 
+  create_table "recipe_tags", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "recipe_id", null: false
+    t.integer "tag_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["recipe_id", "tag_id"], name: "index_recipe_tags_on_recipe_id_and_tag_id", unique: true
+    t.index ["recipe_id"], name: "index_recipe_tags_on_recipe_id"
+    t.index ["tag_id"], name: "index_recipe_tags_on_tag_id"
+  end
+
   create_table "recipes", force: :cascade do |t|
     t.integer "category_id", null: false
     t.datetime "created_at", null: false
@@ -159,6 +169,15 @@ ActiveRecord::Schema[8.1].define(version: 3) do
     t.index ["recipe_id"], name: "index_steps_on_recipe_id"
   end
 
+  create_table "tags", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "kitchen_id", null: false
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.index ["kitchen_id", "name"], name: "index_tags_on_kitchen_id_and_name", unique: true
+    t.index ["kitchen_id"], name: "index_tags_on_kitchen_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email", null: false
@@ -176,8 +195,11 @@ ActiveRecord::Schema[8.1].define(version: 3) do
   add_foreign_key "meal_plans", "kitchens"
   add_foreign_key "memberships", "kitchens"
   add_foreign_key "memberships", "users"
+  add_foreign_key "recipe_tags", "recipes"
+  add_foreign_key "recipe_tags", "tags"
   add_foreign_key "recipes", "categories"
   add_foreign_key "recipes", "kitchens"
   add_foreign_key "sessions", "users"
   add_foreign_key "steps", "recipes"
+  add_foreign_key "tags", "kitchens"
 end

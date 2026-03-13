@@ -22,6 +22,8 @@ class Recipe < ApplicationRecord
                                       foreign_key: :target_recipe_id,
                                       inverse_of: :target_recipe,
                                       dependent: :nullify
+  has_many :recipe_tags, dependent: :destroy
+  has_many :tags, through: :recipe_tags
 
   def referencing_recipes
     Recipe.where(id: inbound_cross_references.joins(:step).select('steps.recipe_id')).distinct
@@ -33,7 +35,7 @@ class Recipe < ApplicationRecord
 
   scope :alphabetical, -> { order(:title) }
   scope :with_full_tree, lambda {
-    includes(:category,
+    includes(:category, :tags,
              steps: [:ingredients,
                      { cross_references: { target_recipe: { steps: %i[ingredients cross_references] } } }])
   }
