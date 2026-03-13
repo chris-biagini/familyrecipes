@@ -30,11 +30,12 @@ class SearchOverlayTest < ActionDispatch::IntegrationTest
 
     json_tag = css_select('script[data-search-overlay-target="data"]').first
     data = JSON.parse(json_tag.text)
+    recipes = data['recipes']
 
-    assert_equal 1, data.size
-    assert_equal 'Pancakes', data.first['title']
-    assert_equal 'pancakes', data.first['slug']
-    assert_includes data.first['ingredients'], 'flour'
+    assert_equal 1, recipes.size
+    assert_equal 'Pancakes', recipes.first['title']
+    assert_equal 'pancakes', recipes.first['slug']
+    assert_includes recipes.first['ingredients'], 'flour'
   end
 
   test 'nav includes search button' do

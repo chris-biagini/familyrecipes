@@ -1,18 +1,22 @@
 # frozen_string_literal: true
 
 # Builds a JSON blob of searchable recipe data for the client-side search
-# overlay. Rendered once per page in the application layout. The blob is small
-# (well under 10KB even at 100 recipes) because it carries only the fields
-# the search overlay needs: title, slug, description, category, ingredients.
+# overlay. Rendered once per page in the application layout. Returns a
+# top-level object with all_tags, all_categories, and recipes keys so the
+# overlay can offer tag/category pill filtering without a server round-trip.
 #
 # Collaborators:
 # - ApplicationController (current_kitchen provides tenant scope)
 # - search_overlay_controller.js (consumes the JSON in the browser)
 module SearchDataHelper
   def search_data_json
-    recipes = current_kitchen.recipes.includes(:category, :ingredients).alphabetical
+    recipes = current_kitchen.recipes.includes(:category, :ingredients, :tags).alphabetical
 
-    recipes.map { |recipe| search_entry_for(recipe) }.to_json
+    {
+      all_tags: current_kitchen.tags.order(:name).pluck(:name),
+      all_categories: current_kitchen.categories.ordered.pluck(:name),
+      recipes: recipes.map { |r| search_entry_for(r) }
+    }.to_json
   end
 
   private
@@ -23,6 +27,7 @@ module SearchDataHelper
       slug: recipe.slug,
       description: recipe.description.to_s,
       category: recipe.category.name,
+      tags: recipe.tags.map(&:name).sort,
       ingredients: recipe.ingredients.map(&:name).uniq
     }
   end
