@@ -1,0 +1,14 @@
+{
+  "planPath": "docs/plans/2026-03-13-recipe-scaling-overhaul-plan.md",
+  "tasks": [
+    {"id": 1, "subject": "Task 1: Add data-base-multiplier to embedded recipe articles", "status": "pending"},
+    {"id": 2, "subject": "Task 2: Add embedded value to recipe_state_controller, skip scaling for embedded", "status": "pending", "blockedBy": [1]},
+    {"id": 3, "subject": "Task 3: Add cross-reference multiplier badge updating to applyScale", "status": "pending", "blockedBy": [2]},
+    {"id": 4, "subject": "Task 4: Create scale_panel_controller Stimulus controller", "status": "pending", "blockedBy": [2]},
+    {"id": 5, "subject": "Task 5: Wire scale panel into recipe views, connect to recipe_state_controller", "status": "pending", "blockedBy": [3, 4]},
+    {"id": 6, "subject": "Task 6: Add CSS for scale panel", "status": "pending", "blockedBy": [5]},
+    {"id": 7, "subject": "Task 7: Update html_safe allowlist and run lints", "status": "pending", "blockedBy": [6]},
+    {"id": 8, "subject": "Task 8: End-to-end manual verification and cleanup", "status": "pending", "blockedBy": [7]}
+  ],
+  "lastUpdated": "2026-03-13T14:45:00Z"
+}
