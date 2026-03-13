@@ -159,7 +159,7 @@
                    data-nutrition-editor-target="aisleInput"
                    data-action="keydown->nutrition-editor#aisleInputKeydown">
           </div>
-          <label class="form-row omit-row">
+          <label class="form-row">
             <input type="checkbox"
                    data-nutrition-editor-target="omitCheckbox"
                    <%= 'checked' if entry&.omit_from_shopping %>>
@@ -237,7 +237,7 @@
     <% end %>
 
     <% if entry&.custom? %>
-      <button type="button" class="btn btn-small btn-secondary editor-reset-btn" hidden
+      <button type="button" class="btn btn-small editor-reset-btn" hidden
               data-reset-ingredient
               data-ingredient-name="<%= ingredient_name %>">Reset to built-in</button>
     <% end %>

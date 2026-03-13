@@ -1834,6 +1834,17 @@ button.aisle-name:hover {
   font-size: 0.8rem;
 }
 
+.recipe-unit-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  padding: 0.2rem 0;
+  font-size: 0.85rem;
+}
+.recipe-unit-status { flex-shrink: 0; width: 1.2em; text-align: center; }
+.recipe-unit-name { font-weight: 500; }
+.recipe-unit-method { color: var(--text-soft); }
+
 /* USDA search content (inside collapsible section) */
 .usda-search-content {
   padding-top: 0.25rem;
