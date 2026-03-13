@@ -19,7 +19,7 @@
   --rule: #e4dfd8;
   --rule-faint: #eee9e3;
 
-  --surface-alt: #f5f2ee;
+  --surface-alt: #f7f5f1;
   --danger-color: #c00;
   --hover-bg: var(--red-light);
 
@@ -56,7 +56,7 @@
     --rule: #3a3530;
     --rule-faint: #2e2a26;
 
-    --surface-alt: #252220;
+    --surface-alt: #2a2724;
     --danger-color: #d05050;
     --hover-bg: rgba(255, 255, 255, 0.04);
 
@@ -1633,8 +1633,8 @@ button.aisle-name:hover {
   height: 1.75rem;
   padding: 0;
   background: none;
-  color: var(--rule);
-  border: 1px solid var(--rule-faint);
+  color: var(--text-light);
+  border: 1px solid var(--rule);
   border-radius: 50%;
   cursor: pointer;
 }
