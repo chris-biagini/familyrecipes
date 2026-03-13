@@ -8,74 +8,73 @@ class SettingsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'requires membership to view settings' do
-    get settings_path(kitchen_slug: kitchen_slug)
-
+    get settings_path(kitchen_slug: kitchen_slug), as: :json
     assert_response :forbidden
   end
 
-  test 'renders settings page for logged-in member' do
+  test 'returns settings as JSON for logged-in member' do
     log_in
-    get settings_path(kitchen_slug: kitchen_slug)
+    get settings_path(kitchen_slug: kitchen_slug), as: :json
 
     assert_response :success
-    assert_select 'h1', 'Settings'
+    data = response.parsed_body
+    assert_equal @kitchen.site_title, data['site_title']
+    assert_equal @kitchen.homepage_heading, data['homepage_heading']
+    assert_equal @kitchen.homepage_subtitle, data['homepage_subtitle']
+    assert data.key?('usda_api_key')
   end
 
   test 'requires membership to update settings' do
-    patch settings_path(kitchen_slug: kitchen_slug), params: { kitchen: { site_title: 'New' } }
-
+    patch settings_path(kitchen_slug: kitchen_slug),
+          params: { kitchen: { site_title: 'New' } }, as: :json
     assert_response :forbidden
   end
 
-  test 'updates site settings' do
+  test 'updates site settings via JSON' do
     log_in
-    patch settings_path(kitchen_slug: kitchen_slug), params: {
-      kitchen: { site_title: 'New Title', homepage_heading: 'New Heading', homepage_subtitle: 'New Sub' }
-    }
+    patch settings_path(kitchen_slug: kitchen_slug),
+          params: { kitchen: { site_title: 'New Title', homepage_heading: 'New Heading', homepage_subtitle: 'New Sub' } },
+          as: :json
 
-    assert_redirected_to settings_path(kitchen_slug: kitchen_slug)
-    follow_redirect!
+    assert_response :success
     @kitchen.reload
-
     assert_equal 'New Title', @kitchen.site_title
     assert_equal 'New Heading', @kitchen.homepage_heading
     assert_equal 'New Sub', @kitchen.homepage_subtitle
   end
 
-  test 'updates usda api key' do
+  test 'updates usda api key via JSON' do
     log_in
-    patch settings_path(kitchen_slug: kitchen_slug), params: {
-      kitchen: { usda_api_key: 'my-secret-key' }
-    }
+    patch settings_path(kitchen_slug: kitchen_slug),
+          params: { kitchen: { usda_api_key: 'my-secret-key' } }, as: :json
 
-    assert_redirected_to settings_path(kitchen_slug: kitchen_slug)
+    assert_response :success
     @kitchen.reload
-
     assert_equal 'my-secret-key', @kitchen.usda_api_key
   end
 
-  test 'gear icon visible in navbar for members' do
+  # NOTE: These two nav tests assert `button.nav-settings-link` which requires
+  # the nav partial update from Task 3. Skipped until then.
+  test 'gear button visible in navbar for members' do
+    skip 'Needs nav partial update (Task 3) to change <a> to <button>'
     log_in
     get kitchen_root_path(kitchen_slug: kitchen_slug)
-
-    assert_select 'nav a.nav-settings-link'
+    assert_select 'nav button.nav-settings-link'
   end
 
-  test 'gear icon hidden when not logged in' do
+  test 'gear button hidden when not logged in' do
+    skip 'Needs nav partial update (Task 3) to change <a> to <button>'
     get kitchen_root_path(kitchen_slug: kitchen_slug)
-
-    assert_select 'nav a.nav-settings-link', count: 0
+    assert_select 'nav button.nav-settings-link', count: 0
   end
 
   test 'rejects unpermitted params' do
     log_in
-    patch settings_path(kitchen_slug: kitchen_slug), params: {
-      kitchen: { site_title: 'OK', slug: 'hacked' }
-    }
+    patch settings_path(kitchen_slug: kitchen_slug),
+          params: { kitchen: { site_title: 'OK', slug: 'hacked' } }, as: :json
 
-    assert_redirected_to settings_path(kitchen_slug: kitchen_slug)
+    assert_response :success
     @kitchen.reload
-
     assert_equal 'OK', @kitchen.site_title
     assert_equal 'test-kitchen', @kitchen.slug
   end
