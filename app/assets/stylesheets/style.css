@@ -248,8 +248,19 @@ nav > div:not(:first-child):not(.nav-drawer) {
 }
 
 .nav-settings-link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text);
   padding: 0.5rem 0.6rem !important;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s ease;
+}
+
+.nav-settings-link:hover {
+  color: var(--red);
 }
 
 .nav-settings-link .nav-icon {
@@ -518,7 +529,6 @@ header::after {
 
 .homepage header::after,
 .index header::after,
-.settings-page header::after,
 .login header::after,
 .ingredients-page header::after {
   display: none;
@@ -730,30 +740,9 @@ section:first-of-type h2 {
   padding: 0.5rem 0;
 }
 
-/* Settings page */
-.settings-page {
-  max-width: 36rem;
-}
-
-.settings-page h1 {
-  font-family: var(--font-display);
-  margin-bottom: 1.5rem;
-}
-
-.settings-section {
-  margin-bottom: 2rem;
-}
-
-.settings-section h2 {
-  font-family: var(--font-body);
-  font-size: 0.85rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  border-bottom: 1px solid var(--rule);
-  padding-bottom: 0.4rem;
-  margin-bottom: 1rem;
-  text-decoration: none;
+/* Settings dialog */
+#settings-editor {
+  width: min(90vw, 460px);
 }
 
 .settings-field {
@@ -770,8 +759,8 @@ section:first-of-type h2 {
 
 .settings-input {
   width: 100%;
-  font-size: 0.85rem;
-  padding: 0.25rem 0.4rem;
+  font-size: 1rem;
+  padding: 0.4rem 0.5rem;
   border: 1px solid var(--rule-faint);
   border-radius: 3px;
   background: var(--ground);
@@ -798,20 +787,6 @@ section:first-of-type h2 {
 .settings-reveal-btn {
   white-space: nowrap;
   min-width: 3.5rem;
-}
-
-.settings-actions {
-  margin-top: 2rem;
-  text-align: right;
-}
-
-.flash-notice {
-  padding: 0.5rem 0.75rem;
-  background: var(--flash-success-bg, #e8f5e9);
-  border: 1px solid var(--flash-success-border, #a5d6a7);
-  border-radius: 3px;
-  margin-bottom: 1.5rem;
-  font-size: 0.9rem;
 }
 
 /* Mobile: hide aisle and recipes columns */
