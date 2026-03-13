@@ -1,0 +1,12 @@
+{
+  "planPath": "docs/plans/2026-03-13-settings-dialog-plan.md",
+  "tasks": [
+    {"id": 1, "subject": "Task 1: Convert SettingsController to JSON", "status": "pending"},
+    {"id": 2, "subject": "Task 2: Create settings editor Stimulus controller", "status": "pending", "blockedBy": [1]},
+    {"id": 3, "subject": "Task 3: Add settings dialog to application layout", "status": "pending", "blockedBy": [1, 2]},
+    {"id": 4, "subject": "Task 4: Clean up CSS", "status": "pending", "blockedBy": [3]},
+    {"id": 5, "subject": "Task 5: Delete old settings view", "status": "pending", "blockedBy": [3]},
+    {"id": 6, "subject": "Task 6: Run full test suite and lint", "status": "pending", "blockedBy": [3, 4, 5]}
+  ],
+  "lastUpdated": "2026-03-13T00:00:00Z"
+}
