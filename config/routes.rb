@@ -38,6 +38,8 @@ Rails.application.routes.draw do
     get 'groceries/aisle_order_content', to: 'groceries#aisle_order_content', as: :groceries_aisle_order_content
     patch 'categories/order', to: 'categories#update_order', as: :categories_order
     get 'categories/order_content', to: 'categories#order_content', as: :categories_order_content
+    patch 'tags/update', to: 'tags#update_tags', as: :tags_update
+    get 'tags/content', to: 'tags#content', as: :tags_content
     get 'export', to: 'exports#show', as: :export
     post 'import', to: 'imports#create', as: :import
     get 'settings', to: 'settings#show', as: :settings
