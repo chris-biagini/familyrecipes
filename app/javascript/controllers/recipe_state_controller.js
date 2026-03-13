@@ -3,12 +3,15 @@ import { formatVulgar, isVulgarSingular } from "utilities/vulgar_fractions"
 import ListenerManager from "utilities/listener_manager"
 
 /**
- * Recipe page progressive enhancement: ingredient scaling, cross-off (click to
- * strike through ingredients/instructions), and section toggling (click h2 to
- * cross off entire step). State is persisted to localStorage keyed by recipe ID
- * and version hash — stale or mismatched state is discarded. Scale factor
- * applies to quantities, scalable numbers in instructions, and yield lines.
- * All of this is optional JS — the recipe renders fine without it.
+ * Recipe page progressive enhancement: cross-off (click to strike through
+ * ingredients/instructions), section toggling (click h2 to cross off entire
+ * step), and ingredient scaling. State is persisted to localStorage keyed by
+ * recipe ID and version hash — stale or mismatched state is discarded.
+ *
+ * Top-level instances own scaling; embedded instances (cross-references) only
+ * handle cross-off state. The `embedded` value flag distinguishes the two —
+ * embedded controllers skip scale factor persistence and restoration, deferring
+ * to the parent recipe's scale_panel_controller for coordinated scaling.
  *
  * - vulgar_fractions: formats scaled quantities as Unicode fraction glyphs
  * - ListenerManager: tracks event listeners for clean teardown on disconnect
@@ -16,12 +19,11 @@ import ListenerManager from "utilities/listener_manager"
 const STORED_STATE_TTL = 48 * 60 * 60 * 1000
 
 export default class extends Controller {
-  static values = { recipeId: String, versionHash: String }
+  static values = { recipeId: String, versionHash: String, embedded: Boolean }
 
   connect() {
     this.recipeId = this.hasRecipeIdValue ? this.recipeIdValue : document.body.dataset.recipeId
     this.versionHash = this.hasVersionHashValue ? this.versionHashValue : document.body.dataset.versionHash
-    this.lastScaleInput = '1'
 
     this.crossableItemNodes = Array.from(
       this.element.querySelectorAll('.ingredients li, .instructions p')
@@ -33,8 +35,6 @@ export default class extends Controller {
     this.listeners = new ListenerManager()
     this.setupEventListeners()
     this.loadRecipeState()
-    this.setupScaleButton()
-    this.updateScaleButtonLabel()
   }
 
   disconnect() {
@@ -42,22 +42,19 @@ export default class extends Controller {
   }
 
   saveRecipeState() {
-    const currentRecipeState = {
+    const state = {
       lastInteractionTime: Date.now(),
       versionHash: this.versionHash,
-      crossableItemState: {},
-      scaleFactor: this.lastScaleInput
+      crossableItemState: {}
     }
 
+    if (!this.embeddedValue) state.scaleFactor = this.scaleFactor || 1
+
     this.crossableItemNodes.forEach((node, idx) => {
-      currentRecipeState.crossableItemState[idx] =
-        node.classList.contains('crossed-off')
+      state.crossableItemState[idx] = node.classList.contains('crossed-off')
     })
 
-    localStorage.setItem(
-      `saved-state-for-${this.recipeId}`,
-      JSON.stringify(currentRecipeState)
-    )
+    localStorage.setItem(`saved-state-for-${this.recipeId}`, JSON.stringify(state))
   }
 
   loadRecipeState() {
@@ -86,10 +83,12 @@ export default class extends Controller {
       if (crossableItemState[idx]) node.classList.add('crossed-off')
     })
 
-    if (scaleFactor) {
-      this.lastScaleInput = scaleFactor
-      this.applyScale(scaleFactor)
-      this.updateScaleButtonLabel()
+    if (scaleFactor && !this.embeddedValue) {
+      const parsed = typeof scaleFactor === 'string' ? parseFloat(scaleFactor) : scaleFactor
+      if (parsed && isFinite(parsed)) {
+        this.scaleFactor = parsed
+        this.applyScale(parsed)
+      }
     }
   }
 
@@ -133,37 +132,7 @@ export default class extends Controller {
     })
   }
 
-  setupScaleButton() {
-    const btn = document.getElementById('scale-button')
-    if (!btn) return
-
-    const handler = () => {
-      const input = prompt(
-        'Scale ingredients by factor (e.g. 2 or 3/2):',
-        this.lastScaleInput
-      )
-      if (!input) return
-
-      const factor = this.parseFactor(input)
-      if (!(factor > 0 && isFinite(factor))) {
-        alert(
-          'Invalid scale. Please enter a positive number or fraction (e.g. "2" or "3/2"), and make sure denominator isn\'t zero.'
-        )
-        return
-      }
-
-      this.lastScaleInput = input
-      this.applyScale(input)
-      this.updateScaleButtonLabel()
-      this.saveRecipeState()
-    }
-
-    this.listeners.add(btn, 'click', handler)
-  }
-
-  applyScale(rawInput) {
-    const factor = this.parseFactor(rawInput)
-
+  applyScale(factor) {
     this.element
       .querySelectorAll('li[data-quantity-value]')
       .forEach(li => {
@@ -228,26 +197,4 @@ export default class extends Controller {
     })
   }
 
-  updateScaleButtonLabel() {
-    const btn = document.getElementById('scale-button')
-    if (!btn) return
-
-    const factor = this.parseFactor(this.lastScaleInput)
-    if (factor === 1) {
-      btn.textContent = 'Scale'
-    } else {
-      const pretty = Number.isInteger(factor)
-        ? factor
-        : Math.round(factor * 100) / 100
-      btn.textContent = `Scale (x${pretty})`
-    }
-  }
-
-  parseFactor(str) {
-    str = str.trim()
-    const frac = str.match(/^(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)$/)
-    if (frac) return parseFloat(frac[1]) / parseFloat(frac[2])
-    const num = parseFloat(str)
-    return isNaN(num) ? NaN : num
-  }
 }
