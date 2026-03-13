@@ -5,7 +5,7 @@ import {
 } from "utilities/editor_utils"
 import {
   createItem, buildPayload, takeSnapshot, isModified, checkDuplicate,
-  renderRows, startInlineRename, swapItems, animateSwap
+  renderRows, startInlineRename, swapItems, animateSwap, updateButtonStates
 } from "utilities/ordered_list_editor_utils"
 
 /**
@@ -188,6 +188,10 @@ export default class extends Controller {
 
     const swapIndex = liveIndices[targetPos]
     const rows = this.listTarget.children
+    const lastLive = liveIndices.length - 1
+
+    updateButtonStates(rows[index], targetPos, lastLive)
+    updateButtonStates(rows[swapIndex], livePos, lastLive)
 
     animateSwap(rows[index], rows[swapIndex], () => {
       swapItems(this.items, index, swapIndex)

@@ -83,11 +83,15 @@ export function updateDisabledStates(container) {
 
   rows.forEach((row, i) => {
     const livePos = liveIndices.indexOf(i)
-    const up = row.querySelector(".aisle-btn--up")
-    const down = row.querySelector(".aisle-btn--down")
-    if (up) up.disabled = livePos <= 0
-    if (down) down.disabled = livePos < 0 || livePos >= liveIndices.length - 1
+    updateButtonStates(row, livePos, liveIndices.length - 1)
   })
+}
+
+export function updateButtonStates(row, livePos, lastLiveIndex) {
+  const up = row.querySelector(".aisle-btn--up")
+  const down = row.querySelector(".aisle-btn--down")
+  if (up) up.disabled = livePos <= 0
+  if (down) down.disabled = livePos < 0 || livePos >= lastLiveIndex
 }
 
 // --- Interaction ---
