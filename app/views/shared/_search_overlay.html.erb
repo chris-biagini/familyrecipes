@@ -1,5 +1,5 @@
 <% if current_kitchen %>
-  <script type="application/json" data-search-overlay-target="data"><%= search_data_json.html_safe %></script>
+  <script type="application/json" nonce="<%= content_security_policy_nonce %>" data-search-overlay-target="data"><%= search_data_json.html_safe %></script>
   <dialog class="search-overlay" data-search-overlay-target="dialog" data-action="click->search-overlay#backdropClick">
     <div class="search-panel">
       <div class="search-input-wrap">
