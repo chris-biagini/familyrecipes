@@ -2,14 +2,15 @@ import { Controller } from "@hotwired/stimulus"
 import HighlightOverlay from "utilities/highlight_overlay"
 
 /**
- * Syntax-highlighting overlay and category dropdown for the recipe markdown
- * textarea. Delegates overlay lifecycle, auto-dash, and scroll sync to
- * HighlightOverlay. This controller provides recipe-specific line
- * classification (titles, steps, ingredients, cross-refs, front matter) and
- * participates in editor:collect/editor:modified events to include category
- * in the save payload and dirty checking.
+ * Syntax-highlighting overlay, category dropdown, and tag input for the
+ * recipe markdown textarea. Delegates overlay lifecycle, auto-dash, and
+ * scroll sync to HighlightOverlay. This controller provides recipe-specific
+ * line classification (titles, steps, ingredients, cross-refs, front matter)
+ * and participates in editor:collect/editor:modified events to include
+ * category and tags in the save payload and dirty checking.
  *
  * - editor_controller: owns the dialog lifecycle; this controller is additive
+ * - tag_input_controller: nested controller for tag pills and autocomplete
  * - highlight_overlay: overlay positioning, auto-dash, scroll sync
  * - style.css (.hl-*): highlight colors
  */
@@ -116,11 +117,17 @@ export default class extends Controller {
     fragment.appendChild(span)
   }
 
+  get tagController() {
+    const el = this.element.querySelector("[data-controller~='tag-input']")
+    return el ? this.application.getControllerForElementAndIdentifier(el, "tag-input") : null
+  }
+
   handleCollect(event) {
     event.detail.handled = true
     event.detail.data = {
       markdown_source: this.hasTextareaTarget ? this.textareaTarget.value : null,
-      category: this.selectedCategory()
+      category: this.selectedCategory(),
+      tags: this.tagController?.tags || []
     }
   }
 
@@ -130,6 +137,10 @@ export default class extends Controller {
         event.detail.handled = true
         event.detail.modified = true
       }
+    }
+    if (this.tagController?.modified) {
+      event.detail.handled = true
+      event.detail.modified = true
     }
   }
 
