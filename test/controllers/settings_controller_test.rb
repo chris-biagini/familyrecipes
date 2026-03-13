@@ -53,17 +53,13 @@ class SettingsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'my-secret-key', @kitchen.usda_api_key
   end
 
-  # NOTE: These two nav tests assert `button.nav-settings-link` which requires
-  # the nav partial update from Task 3. Skipped until then.
   test 'gear button visible in navbar for members' do
-    skip 'Needs nav partial update (Task 3) to change <a> to <button>'
     log_in
     get kitchen_root_path(kitchen_slug: kitchen_slug)
     assert_select 'nav button.nav-settings-link'
   end
 
   test 'gear button hidden when not logged in' do
-    skip 'Needs nav partial update (Task 3) to change <a> to <button>'
     get kitchen_root_path(kitchen_slug: kitchen_slug)
     assert_select 'nav button.nav-settings-link', count: 0
   end

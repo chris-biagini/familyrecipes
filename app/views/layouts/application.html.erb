@@ -31,5 +31,6 @@
   <div id="notifications"></div>
   <footer class="app-version">v<%= app_version %></footer>
   <%= render 'shared/search_overlay' %>
+  <%= render 'settings/dialog' if logged_in? %>
 </body>
 </html>
