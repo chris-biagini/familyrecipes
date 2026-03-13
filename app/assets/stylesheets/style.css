@@ -487,38 +487,60 @@ header .recipe-meta a:hover {
   text-decoration: underline;
 }
 
-/* Scale toggle in recipe-meta */
+/* Scale bar — centered disclosure toggle + vertical reveal */
+.scale-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 0.6rem;
+}
+
 .scale-toggle {
-  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--text-light);
   text-decoration: none;
   cursor: pointer;
+  font-size: 0.85rem;
+  user-select: none;
 }
 
-.scale-toggle:hover {
-  text-decoration: underline;
+.scale-toggle::before {
+  content: '';
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0.3rem 0 0.3rem 0.45rem;
+  border-color: transparent transparent transparent currentColor;
+  transition: transform 0.15s ease;
 }
 
-/* Scale panel — animated expand/collapse */
-.scale-panel {
+.scale-bar.open .scale-toggle::before {
+  transform: rotate(90deg);
+}
+
+/* Scale controls — animated vertical expand/collapse */
+.scale-controls {
   display: grid;
   grid-template-rows: 0fr;
+  overflow: hidden;
   transition: grid-template-rows 0.2s ease;
 }
 
-.scale-panel.open {
+.scale-bar.open .scale-controls {
   grid-template-rows: 1fr;
 }
 
-.scale-panel-inner {
+.scale-controls-inner {
   overflow: hidden;
-}
-
-.scale-panel-row {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.5rem 0 1.5rem;
+  white-space: nowrap;
+  padding-top: 0.5rem;
 }
 
 .scale-presets {
@@ -556,12 +578,6 @@ header .recipe-meta a:hover {
   background: var(--rule);
 }
 
-.scale-input-group {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-}
-
 .scale-input {
   font-family: var(--font-body);
   font-size: 0.85rem;
@@ -584,11 +600,6 @@ header .recipe-meta a:hover {
   outline: 2px solid var(--danger-color);
   outline-offset: -1px;
   border-color: var(--danger-color);
-}
-
-.scale-suffix {
-  color: var(--text-light);
-  font-size: 0.8rem;
 }
 
 .scale-reset {

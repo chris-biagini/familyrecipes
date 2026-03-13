@@ -32,6 +32,9 @@ export default class extends Controller {
       this.element.querySelectorAll('section :is(h2, h3)')
     ).filter(node => node.closest('[data-controller*="recipe-state"]') === this.element)
 
+    this.boundSyncSave = () => this.saveRecipeState()
+    this.element.addEventListener('recipe-state:sync-save', this.boundSyncSave)
+
     this.listeners = new ListenerManager()
     this.setupEventListeners()
     this.loadRecipeState()
@@ -48,6 +51,7 @@ export default class extends Controller {
 
   disconnect() {
     this.listeners.teardown()
+    this.element.removeEventListener('recipe-state:sync-save', this.boundSyncSave)
     if (this.boundOnScaleChange) {
       this.element.removeEventListener('scale-panel:change', this.boundOnScaleChange)
     }
@@ -140,6 +144,9 @@ export default class extends Controller {
         )
         items.forEach(i => i.classList.toggle('crossed-off', !allCrossed))
         this.saveRecipeState()
+        section.querySelectorAll('[data-controller*="recipe-state"]').forEach(el => {
+          el.dispatchEvent(new CustomEvent('recipe-state:sync-save', { bubbles: false }))
+        })
       }
 
       this.listeners.add(h2, 'click', handler)

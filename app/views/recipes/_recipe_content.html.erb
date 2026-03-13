@@ -12,28 +12,24 @@
         &middot; Makes <%= format_yield_with_unit(format_makes(recipe), nutrition['makes_unit_singular'], nutrition['makes_unit_plural']) %><%- else -%>
         &middot; Makes <%= format_yield_line(format_makes(recipe)) %><%- end -%><%- end -%><%- if recipe.serves -%>
         &middot; Serves <%= format_yield_line(recipe.serves.to_s) %><%- end -%>
-        &middot; <a href="#" class="scale-toggle" data-scale-panel-target="toggle" data-action="click->scale-panel#toggle:prevent">Scale</a>
       </p>
-    </header>
-
-    <div class="scale-panel" data-scale-panel-target="panel">
-      <div class="scale-panel-inner" data-scale-panel-target="inner" aria-hidden="true">
-        <div class="scale-panel-row">
-          <div class="scale-presets">
-            <button type="button" class="scale-preset" data-scale-panel-target="preset" data-action="scale-panel#selectPreset">&frac12;&times;</button>
-            <button type="button" class="scale-preset active" data-scale-panel-target="preset" data-action="scale-panel#selectPreset">1&times;</button>
-            <button type="button" class="scale-preset" data-scale-panel-target="preset" data-action="scale-panel#selectPreset">2&times;</button>
-            <button type="button" class="scale-preset" data-scale-panel-target="preset" data-action="scale-panel#selectPreset">3&times;</button>
-          </div>
-          <span class="scale-divider"></span>
-          <div class="scale-input-group">
+      <div class="scale-bar" data-scale-panel-target="panel">
+        <a href="#" class="scale-toggle" data-scale-panel-target="toggle" data-action="click->scale-panel#toggle:prevent">Scale</a>
+        <div class="scale-controls" data-scale-panel-target="inner" aria-hidden="true">
+          <div class="scale-controls-inner">
+            <div class="scale-presets">
+              <button type="button" class="scale-preset" data-scale-panel-target="preset" data-action="scale-panel#selectPreset">&frac12;&times;</button>
+              <button type="button" class="scale-preset active" data-scale-panel-target="preset" data-action="scale-panel#selectPreset">1&times;</button>
+              <button type="button" class="scale-preset" data-scale-panel-target="preset" data-action="scale-panel#selectPreset">2&times;</button>
+              <button type="button" class="scale-preset" data-scale-panel-target="preset" data-action="scale-panel#selectPreset">3&times;</button>
+            </div>
+            <span class="scale-divider"></span>
             <input type="text" class="scale-input" data-scale-panel-target="input" data-action="input->scale-panel#onInput" value="1" placeholder="e.g. 3/2" inputmode="text" autocomplete="off">
-            <span class="scale-suffix">&times;</span>
+            <button type="button" class="scale-reset" data-scale-panel-target="reset" data-action="scale-panel#reset" hidden>Reset</button>
           </div>
-          <button type="button" class="scale-reset" data-scale-panel-target="reset" data-action="scale-panel#reset" hidden>Reset</button>
         </div>
       </div>
-    </div>
+    </header>
 
     <% recipe.steps.each do |step| %>
       <%= render 'recipes/step', step: step, embedded: false, heading_level: 2, scale_factor: 1.0 %>
