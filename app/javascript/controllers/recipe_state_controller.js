@@ -100,6 +100,7 @@ export default class extends Controller {
       if (factor && isFinite(factor)) {
         this.scaleFactor = factor
         this.applyScale(factor)
+        this.element.dataset.restoredScaleFactor = factor
         this.dispatch('restored', { detail: { factor }, bubbles: false })
       }
     }

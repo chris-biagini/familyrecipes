@@ -8,10 +8,13 @@ import { Controller } from "@hotwired/stimulus"
  * in sync — clicking a preset updates the input and vice versa.
  *
  * Dispatches "scale-panel:change" on factor change, consumed by
- * recipe_state_controller for actual ingredient scaling. Listens for
- * "recipe-state:restored" to sync UI when localStorage state is loaded.
+ * recipe_state_controller for actual ingredient scaling. Syncs from
+ * restored state via two mechanisms (async module loading means controller
+ * connect order is nondeterministic):
+ *   1. "recipe-state:restored" event — if scale-panel connects first
+ *   2. data-restored-scale-factor attribute — if recipe-state connects first
  *
- * - recipe_state_controller: consumes change events, dispatches restored
+ * - recipe_state_controller: consumes change events, sets restored attribute
  */
 const PRESETS = [
   { label: '\u00BD\u00D7', value: 0.5, input: '1/2' },
@@ -29,6 +32,9 @@ export default class extends Controller {
 
     this.boundOnRestored = (e) => this.syncToFactor(e.detail.factor)
     this.element.addEventListener('recipe-state:restored', this.boundOnRestored)
+
+    const restored = parseFloat(this.element.dataset.restoredScaleFactor)
+    if (restored > 0 && isFinite(restored)) this.syncToFactor(restored)
   }
 
   disconnect() {
