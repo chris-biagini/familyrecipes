@@ -687,6 +687,40 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  test 'create with tags assigns tags to the recipe' do
+    markdown = "# Tag Test\n\n## Step (do it)\n\n- Flour, 1 cup\n\nMix."
+    log_in
+    post recipes_path(kitchen_slug: kitchen_slug),
+         params: { markdown_source: markdown, category: @bread.name,
+                   tags: %w[vegan quick] },
+         as: :json
+
+    assert_response :success
+    recipe = Recipe.find_by!(slug: 'tag-test')
+
+    assert_equal %w[quick vegan], recipe.tags.map(&:name).sort
+  end
+
+  test 'update with tags syncs tags' do
+    focaccia_markdown = @kitchen.recipes.find_by!(slug: 'focaccia').markdown_source
+
+    log_in
+    patch recipe_path('focaccia', kitchen_slug: kitchen_slug),
+          params: { markdown_source: focaccia_markdown, category: @bread.name,
+                    tags: %w[vegan] },
+          as: :json
+
+    patch recipe_path('focaccia', kitchen_slug: kitchen_slug),
+          params: { markdown_source: focaccia_markdown, category: @bread.name,
+                    tags: %w[quick weeknight] },
+          as: :json
+
+    assert_response :success
+    recipe = Recipe.find_by!(slug: 'focaccia')
+
+    assert_equal %w[quick weeknight], recipe.tags.map(&:name).sort
+  end
+
   test 'show renders recipe with freeform quantity ingredient' do
     MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @bread)
       # Salad

@@ -35,7 +35,8 @@ class RecipesController < ApplicationController
     return render_validation_errors if validation_errors.any?
 
     result = RecipeWriteService.create(
-      markdown: params[:markdown_source], kitchen: current_kitchen, category_name: params[:category]
+      markdown: params[:markdown_source], kitchen: current_kitchen,
+      category_name: params[:category], tags: params[:tags]
     )
     render json: { redirect_url: recipe_path(result.recipe.slug) }
   rescue ActiveRecord::RecordInvalid, RuntimeError => error
@@ -48,7 +49,8 @@ class RecipesController < ApplicationController
 
     result = RecipeWriteService.update(
       slug: params[:slug], markdown: params[:markdown_source],
-      kitchen: current_kitchen, category_name: params[:category]
+      kitchen: current_kitchen, category_name: params[:category],
+      tags: params[:tags]
     )
     render json: update_response(result)
   rescue ActiveRecord::RecordInvalid, RuntimeError => error
