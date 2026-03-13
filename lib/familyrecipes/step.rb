@@ -31,7 +31,7 @@ module FamilyRecipes
       raise ArgumentError, 'Step must have either ingredients, instructions, or a cross-reference.'
     end
 
-    # Step-level cross_reference (from >>>) merges with any inline cross-references
+    # Step-level cross_reference (from > @[...]) merges with any inline cross-references
     # from ingredient_list_items for a unified collection.
     def build_cross_references(items, xref)
       refs = items.grep(CrossReference)

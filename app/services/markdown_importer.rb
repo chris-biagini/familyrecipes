@@ -7,7 +7,7 @@
 # to generate the scalable-number HTML stored in Step#processed_instructions.
 #
 # Steps come in two flavors: content steps (ingredients + instructions) and
-# cross-reference steps (>>> syntax, exactly one CrossReference, no ingredients
+# cross-reference steps (> @[...] syntax, exactly one CrossReference, no ingredients
 # or instructions). The step-level :cross_reference key drives this branching.
 #
 # Kitchen-scoped (requires kitchen: keyword) and idempotent — db:seed calls
