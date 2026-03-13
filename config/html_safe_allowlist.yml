@@ -11,10 +11,10 @@
 
 # RecipesHelper — renderer and preprocessor output (safe by construction)
 - "app/helpers/recipes_helper.rb:6"     # header comment mentions .html_safe (not a call)
-- "app/helpers/recipes_helper.rb:21"    # render_markdown: Redcarpet with escape_html: true
-- "app/helpers/recipes_helper.rb:28"    # scalable_instructions: preprocessor escapes internally
-- "app/helpers/recipes_helper.rb:34"    # format_yield_line: preprocessor escapes internally
-- "app/helpers/recipes_helper.rb:40"    # format_yield_with_unit: preprocessor escapes internally
+- "app/helpers/recipes_helper.rb:22"    # render_markdown: Redcarpet with escape_html: true, linkified
+- "app/helpers/recipes_helper.rb:30"    # scalable_instructions: preprocessor escapes internally, linkified
+- "app/helpers/recipes_helper.rb:36"    # format_yield_line: preprocessor escapes internally
+- "app/helpers/recipes_helper.rb:42"    # format_yield_with_unit: preprocessor escapes internally
 
 # RecipesController — show_html: Redcarpet output (escape_html: true), title escaped via ERB::Util
 - "app/controllers/recipes_controller.rb:74"

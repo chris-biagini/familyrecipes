@@ -114,4 +114,58 @@ class RecipesHelperTest < ActionView::TestCase
 
     assert_equal 'a few leaves', result
   end
+
+  test 'linkify_recipe_references converts @[Title] to link' do
+    html = '<p>Try the @[Simple Tomato Sauce] next.</p>'
+    result = linkify_recipe_references(html)
+
+    assert_includes result, '<a href='
+    assert_includes result, 'simple-tomato-sauce'
+    assert_includes result, '>Simple Tomato Sauce</a>'
+  end
+
+  test 'linkify_recipe_references handles multiple references' do
+    html = '<p>See @[Pizza Dough] and @[Tomato Sauce].</p>'
+    result = linkify_recipe_references(html)
+
+    assert_includes result, 'pizza-dough'
+    assert_includes result, 'tomato-sauce'
+  end
+
+  test 'linkify_recipe_references ignores @[Title] inside code tags' do
+    html = '<p>Use <code>@[Recipe Title]</code> syntax.</p>'
+    result = linkify_recipe_references(html)
+
+    assert_not_includes result, '<a href='
+  end
+
+  test 'linkify_recipe_references with no references returns unchanged html' do
+    html = '<p>Just regular text.</p>'
+
+    assert_equal html, linkify_recipe_references(html)
+  end
+
+  test 'linkify_recipe_references uses non-greedy match for brackets' do
+    html = '<p>@[First] and @[Second]</p>'
+    result = linkify_recipe_references(html)
+
+    assert_includes result, '>First</a>'
+    assert_includes result, '>Second</a>'
+  end
+
+  test 'render_markdown linkifies recipe references in footer text' do
+    text = 'See also @[Pizza Dough].'
+    result = render_markdown(text)
+
+    assert_includes result, 'pizza-dough'
+    assert_includes result, '>Pizza Dough</a>'
+  end
+
+  test 'scalable_instructions linkifies recipe references in prose' do
+    text = 'Use the @[Simple Tomato Sauce] from yesterday.'
+    result = scalable_instructions(text)
+
+    assert_includes result, 'simple-tomato-sauce'
+    assert_includes result, '>Simple Tomato Sauce</a>'
+  end
 end

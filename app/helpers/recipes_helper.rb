@@ -18,14 +18,16 @@ module RecipesHelper # rubocop:disable Metrics/ModuleLength
   def render_markdown(text)
     return '' if text.blank?
 
-    FamilyRecipes::Recipe::MARKDOWN.render(text).html_safe # rubocop:disable Rails/OutputSafety
+    html = FamilyRecipes::Recipe::MARKDOWN.render(text)
+    linkify_recipe_references(html).html_safe # rubocop:disable Rails/OutputSafety
   end
 
   def scalable_instructions(text)
     return '' if text.blank?
 
     html = FamilyRecipes::Recipe::MARKDOWN.render(text)
-    ScalableNumberPreprocessor.process_instructions(html).html_safe # rubocop:disable Rails/OutputSafety
+    html = ScalableNumberPreprocessor.process_instructions(html)
+    linkify_recipe_references(html).html_safe # rubocop:disable Rails/OutputSafety
   end
 
   def format_yield_line(text)
@@ -81,6 +83,20 @@ module RecipesHelper # rubocop:disable Metrics/ModuleLength
     nutrition['skipped_ingredients'] || []
   end
 
+  RECIPE_REF_PATTERN = /@\[(.+?)\]/
+
+  def linkify_recipe_references(html)
+    return html unless html.include?('@[')
+
+    html.gsub(RECIPE_REF_PATTERN) do |match|
+      title = Regexp.last_match(1)
+      next match if inside_code_or_tag?(Regexp.last_match.pre_match)
+
+      slug = FamilyRecipes.slugify(title)
+      %(<a href="#{recipe_path(slug)}" class="recipe-link">#{ERB::Util.html_escape(title)}</a>)
+    end
+  end
+
   def ingredient_data_attrs(item, scale_factor: 1.0)
     attrs = {}
     return tag.attributes(attrs) unless item.quantity_value
@@ -94,6 +110,20 @@ module RecipesHelper # rubocop:disable Metrics/ModuleLength
   end
 
   private
+
+  def inside_code_or_tag?(preceding)
+    last_open = preceding.rindex('<')
+    return false unless last_open
+    return true unless preceding.index('>', last_open)
+
+    inside_code_element?(preceding)
+  end
+
+  def inside_code_element?(preceding)
+    open = preceding.rindex('<code')
+    close = preceding.rindex('</code')
+    open && (close.nil? || close < open)
+  end
 
   def per_serving_weight(nutrition)
     total = nutrition['total_weight_grams'].to_f
