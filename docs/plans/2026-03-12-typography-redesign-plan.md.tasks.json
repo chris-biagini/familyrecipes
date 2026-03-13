@@ -1,0 +1,22 @@
+{
+  "planPath": "docs/plans/2026-03-12-typography-redesign-plan.md",
+  "tasks": [
+    {"id": 1, "subject": "Task 0: CSP and font loading", "status": "pending"},
+    {"id": 2, "subject": "Task 1: Root variables and base typography", "status": "pending", "blockedBy": [1]},
+    {"id": 3, "subject": "Task 2: Body, HTML, main restructure", "status": "pending", "blockedBy": [2]},
+    {"id": 4, "subject": "Task 3: Nav retheme", "status": "pending", "blockedBy": [3]},
+    {"id": 5, "subject": "Task 4: Recipe content", "status": "pending", "blockedBy": [4]},
+    {"id": 6, "subject": "Task 5: Homepage/TOC", "status": "pending", "blockedBy": [5]},
+    {"id": 7, "subject": "Task 6: Menu page", "status": "pending", "blockedBy": [5]},
+    {"id": 8, "subject": "Task 7: Groceries page", "status": "pending", "blockedBy": [5]},
+    {"id": 9, "subject": "Task 8: Ingredients page", "status": "pending", "blockedBy": [5]},
+    {"id": 10, "subject": "Task 9: Editor dialogs", "status": "pending", "blockedBy": [5]},
+    {"id": 11, "subject": "Task 10: Search overlay", "status": "pending", "blockedBy": [5]},
+    {"id": 12, "subject": "Task 11: Settings, login, notifications", "status": "pending", "blockedBy": [5]},
+    {"id": 13, "subject": "Task 12: Embedded recipe cards", "status": "pending", "blockedBy": [5]},
+    {"id": 14, "subject": "Task 13: Dark mode", "status": "pending", "blockedBy": [7, 8, 9, 10, 11, 12, 13]},
+    {"id": 15, "subject": "Task 14: Print styles", "status": "pending", "blockedBy": [14]},
+    {"id": 16, "subject": "Task 15: Cleanup", "status": "pending", "blockedBy": [15]}
+  ],
+  "lastUpdated": "2026-03-12T00:00:00Z"
+}

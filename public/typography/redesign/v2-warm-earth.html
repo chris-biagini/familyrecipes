@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>V2: Warm Earth</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/*
+  V2: Warm Earth
+  Deeper, earthier palette — terracotta, sage, warm stone.
+  Nav anchored to the left side on wide screens.
+  Feels like a worn, beautiful hardcover cookbook.
+  The crosshatch becomes a subtle woven linen texture.
+*/
+
+:root {
+  --stone: #f0ebe4;
+  --parchment: #faf6f1;
+  --text: #2f2a24;
+  --text-soft: #6b6259;
+  --text-light: #978d82;
+  --terracotta: #a5533a;
+  --terracotta-light: rgba(165, 83, 58, 0.12);
+  --terracotta-faint: rgba(165, 83, 58, 0.05);
+  --sage: #6b7f5e;
+  --sage-light: rgba(107, 127, 94, 0.15);
+  --rule: #d4ccc2;
+
+  --font-display: "Instrument Serif", Georgia, serif;
+  --font-body: "Outfit", system-ui, sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { font-size: 17px; }
+
+body {
+  font-family: var(--font-body);
+  font-weight: 400;
+  color: var(--text);
+  line-height: 1.6;
+  background-color: var(--stone);
+  /* Linen weave: very tight subtle crosshatch */
+  background-image:
+    repeating-linear-gradient(90deg, transparent, transparent 3px, rgba(0,0,0,0.015) 3px, rgba(0,0,0,0.015) 4px),
+    repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.015) 3px, rgba(0,0,0,0.015) 4px);
+  min-height: 100vh;
+}
+
+/* ── Top stripe ─────────────────────────────────── */
+body::before {
+  content: "";
+  display: block;
+  height: 4px;
+  background: linear-gradient(90deg, var(--terracotta) 0%, var(--sage) 100%);
+}
+
+/* ── Side nav (wide) / Top nav (narrow) ─────────── */
+.site-nav {
+  position: fixed;
+  left: 0;
+  top: 4px;
+  bottom: 0;
+  width: 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem 0;
+  gap: 1.5rem;
+  z-index: 50;
+}
+
+.site-nav a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  color: var(--text-soft);
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+}
+.site-nav a:hover {
+  background: var(--terracotta-light);
+  color: var(--terracotta);
+}
+.site-nav a.active {
+  background: var(--terracotta-light);
+  color: var(--terracotta);
+}
+
+.site-nav .nav-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.site-nav .nav-label {
+  position: absolute;
+  left: -9999px;
+}
+
+/* ── Layout ─────────────────────────────────────── */
+.page {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 4rem;
+  margin-left: calc(56px + max(0px, (100vw - 700px - 56px) / 2));
+}
+
+/* ── Card ───────────────────────────────────────── */
+.card {
+  background: var(--parchment);
+  padding: 2.75rem 2.5rem;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  /* Subtle warm shadow for depth */
+  box-shadow: 0 1px 3px rgba(47, 42, 36, 0.06), 0 6px 20px rgba(47, 42, 36, 0.04);
+}
+.card + .card { margin-top: 2rem; }
+
+/* ── Recipe header ──────────────────────────────── */
+.recipe-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.recipe-header h1 {
+  font-family: var(--font-display);
+  font-size: 3.2rem;
+  font-weight: 400;
+  line-height: 1.1;
+  margin-bottom: 0.4rem;
+}
+
+.recipe-header .desc {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.2rem;
+  color: var(--text-soft);
+}
+
+.recipe-header .meta {
+  display: inline-flex;
+  gap: 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-light);
+  margin-top: 0.8rem;
+}
+
+.recipe-header .meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+/* ── Step headers with sage/terracotta accent ───── */
+.step + .step { margin-top: 2.5rem; }
+
+.step-header {
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  font-weight: 400;
+  line-height: 1.3;
+  margin-bottom: 1.1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--rule);
+  position: relative;
+}
+.step-header::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 32px;
+  height: 2px;
+  background: var(--terracotta);
+}
+
+/* ── Ingredients & instructions ─────────────────── */
+.step-content {
+  display: grid;
+  grid-template-columns: 10.5rem 1fr;
+  gap: 0 1.75rem;
+}
+
+.ingredients {
+  list-style: none;
+  font-size: 0.86rem;
+  line-height: 1.9;
+  padding-right: 1rem;
+  border-right: 1px dashed var(--rule);
+}
+.ingredients .name { font-weight: 500; }
+.ingredients .qty { color: var(--text-soft); font-weight: 300; }
+
+.instructions p {
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+.instructions em { font-style: italic; color: var(--text-soft); }
+
+.instructions-full { grid-column: 1 / -1; }
+
+/* ── Source note ────────────────────────────────── */
+.source-note {
+  text-align: center;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.02rem;
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  color: var(--text-soft);
+  border-top: 1px solid var(--rule);
+}
+
+/* ── TOC ────────────────────────────────────────── */
+.toc-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+.toc-header h1 {
+  font-family: var(--font-display);
+  font-size: 3.2rem;
+  font-weight: 400;
+  line-height: 1.1;
+  margin-bottom: 0.4rem;
+}
+.toc-header .desc {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.2rem;
+  color: var(--text-soft);
+}
+
+.toc-nav {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--rule);
+  font-size: 0.85rem;
+}
+.toc-nav a {
+  color: var(--text-soft);
+  text-decoration: none;
+  margin: 0 0.25rem;
+  transition: color 0.15s;
+}
+.toc-nav a:hover { color: var(--terracotta); }
+
+.category-header {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--sage);
+  margin: 2.25rem 0 0.8rem;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid var(--rule);
+  position: relative;
+}
+.category-header::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 32px;
+  height: 2px;
+  background: var(--sage);
+}
+.category-header:first-of-type { margin-top: 0; }
+
+.recipe-list {
+  list-style: none;
+  columns: 2;
+  column-gap: 2rem;
+}
+.recipe-list li { margin-bottom: 0.45rem; }
+.recipe-list a {
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: color 0.15s;
+}
+.recipe-list a:hover { color: var(--terracotta); }
+
+/* ── Responsive ─────────────────────────────────── */
+@media (max-width: 768px) {
+  .site-nav {
+    position: static;
+    flex-direction: row;
+    width: 100%;
+    padding: 0.75rem 1.5rem;
+    justify-content: center;
+    border-bottom: 1px solid var(--rule);
+    background: var(--stone);
+  }
+  .page {
+    margin-left: auto;
+    padding-top: 1.5rem;
+  }
+}
+@media (max-width: 600px) {
+  .recipe-header h1, .toc-header h1 { font-size: 2.4rem; }
+  .card { padding: 2rem 1.5rem; }
+  .step-content {
+    grid-template-columns: 1fr;
+    gap: 1rem 0;
+  }
+  .ingredients {
+    border-right: none;
+    padding-right: 0;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px dashed var(--rule);
+  }
+  .recipe-list { columns: 1; }
+}
+
+.badge {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  background: var(--terracotta);
+  color: white;
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.7rem;
+  border-radius: 2px;
+  z-index: 100;
+}
+</style>
+</head>
+<body>
+  <div class="badge">V2</div>
+
+  <nav class="site-nav">
+    <a href="index.html" class="active" title="Recipes">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M2 17 V18.5 L12 19.5"/>
+        <path d="M22 17 V18.5 L12 19.5"/>
+        <path d="M2 4 C5 3.5 9 4 12 5.5 V18.5 C9 17 5 16.5 2 17 Z"/>
+        <path d="M22 4 C19 3.5 15 4 12 5.5 V18.5 C15 17 19 16.5 22 17 Z"/>
+        <path d="M12 5.5 V18.5"/>
+      </svg>
+      <span class="nav-label">Recipes</span>
+    </a>
+    <a href="#" title="Menu">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="4" y="1" width="16" height="22"/>
+        <line x1="8" y1="7" x2="16" y2="7"/>
+        <line x1="8" y1="11" x2="16" y2="11"/>
+        <line x1="8" y1="15" x2="16" y2="15"/>
+        <line x1="8" y1="19" x2="16" y2="19"/>
+      </svg>
+      <span class="nav-label">Menu</span>
+    </a>
+    <a href="#" title="Groceries">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M1 1h3.5l2 11h11l2.5-7H6"/>
+        <circle cx="8.5" cy="19" r="2"/>
+        <circle cx="16.5" cy="19" r="2"/>
+        <path d="M6.5 12h11"/>
+      </svg>
+      <span class="nav-label">Groceries</span>
+    </a>
+    <a href="#" title="Search">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <span class="nav-label">Search</span>
+    </a>
+  </nav>
+
+  <div class="page">
+    <!-- ═══ TABLE OF CONTENTS ═══ -->
+    <div class="card">
+      <div class="toc-header">
+        <h1>Our Recipes</h1>
+        <p class="desc">A collection of our family's favorite recipes.</p>
+      </div>
+
+      <nav class="toc-nav">
+        <a href="#">Baking</a> &middot;
+        <a href="#">Basics</a> &middot;
+        <a href="#">Bread</a> &middot;
+        <a href="#">Breakfast</a> &middot;
+        <a href="#">Dessert</a> &middot;
+        <a href="#">Mains</a> &middot;
+        <a href="#">Pizza</a> &middot;
+        <a href="#">Sides</a> &middot;
+        <a href="#">Snacks</a>
+      </nav>
+
+      <h2 class="category-header">Bread</h2>
+      <ul class="recipe-list">
+        <li><a href="#">Bagels</a></li>
+        <li><a href="#">Basic Bread</a></li>
+        <li><a href="#">Biscuits</a></li>
+        <li><a href="#">Focaccia</a></li>
+        <li><a href="#">Italian Bread</a></li>
+        <li><a href="#">Soda Bread</a></li>
+        <li><a href="#">Sourdough Bread</a></li>
+      </ul>
+
+      <h2 class="category-header">Mains</h2>
+      <ul class="recipe-list">
+        <li><a href="#">Baked Ziti</a></li>
+        <li><a href="#">Beans and Rice</a></li>
+        <li><a href="#">Black Bean Tacos</a></li>
+        <li><a href="#">Chickpea Salad</a></li>
+        <li><a href="#">Farro and Bean Soup</a></li>
+        <li><a href="#">Fried Rice</a></li>
+        <li><a href="#">Lentil Soup</a></li>
+        <li><a href="#">Pasta con Ceci</a></li>
+      </ul>
+
+      <h2 class="category-header">Dessert</h2>
+      <ul class="recipe-list">
+        <li><a href="#">Apple Crisp</a></li>
+        <li><a href="#">Berries and Cream</a></li>
+        <li><a href="#">Chocolate Chip Cookies</a></li>
+        <li><a href="#">Oatmeal-Raisin Cookies</a></li>
+        <li><a href="#">Pecan Nate-ies</a></li>
+        <li><a href="#">Pizzelle</a></li>
+      </ul>
+    </div>
+
+    <!-- ═══ RECIPE: BAGELS ═══ -->
+    <div class="card">
+      <div class="recipe-header">
+        <h1>Bagels</h1>
+        <p class="desc">A fun weekend baking project.</p>
+        <div class="meta">
+          <span>Bread</span>
+          <span>&middot;</span>
+          <span>Makes 12 bagels</span>
+        </div>
+      </div>
+
+      <div class="step">
+        <h2 class="step-header">Friday night, around 10 PM: Make poolish.</h2>
+        <div class="step-content">
+          <ul class="ingredients">
+            <li><span class="name">Flour (bread),</span> <span class="qty">525 g</span></li>
+            <li><span class="name">Water,</span> <span class="qty">525 g</span></li>
+            <li><span class="name">Yeast,</span> <span class="qty">0.5 g</span></li>
+          </ul>
+          <div class="instructions">
+            <p>Whisk together flour, water, and yeast in a medium bowl. Let sit on counter overnight.</p>
+            <p>Note that you only need 1000 g of poolish the next day; making extra now accounts for residue on your bowl and utensils.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <h2 class="step-header">Saturday morning, around 10 AM: Make dough and bulk ferment.</h2>
+        <div class="step-content">
+          <ul class="ingredients">
+            <li><span class="name">Poolish,</span> <span class="qty">1000 g</span></li>
+            <li><span class="name">Malt syrup,</span> <span class="qty">20 g</span></li>
+            <li><span class="name">Salt,</span> <span class="qty">18 g</span></li>
+            <li><span class="name">Diastatic malt powder,</span> <span class="qty">2.5 g</span></li>
+            <li><span class="name">Yeast,</span> <span class="qty">4 g</span></li>
+            <li><span class="name">Water,</span> <span class="qty">100 g</span></li>
+            <li><span class="name">Flour (bread),</span> <span class="qty">500 g</span></li>
+          </ul>
+          <div class="instructions">
+            <p>In large bowl, combine all ingredients. <em>(Do not use a stand mixer, because this is a very tough dough and the mixer will break. Ask me how I know.)</em></p>
+            <p>Knead <em>by hand</em> for 5 minutes. Let dough (and yourself) rest for 20 minutes, then knead for an additional 5 minutes.</p>
+            <p>Form dough into a neat ball and place back in bowl. Cover the bowl tightly and let rise until not quite doubled.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <h2 class="step-header">Saturday: Shape and refrigerate overnight.</h2>
+        <div class="step-content">
+          <div class="instructions instructions-full">
+            <p>Divide dough into twelve 130 g portions. Pre-shape portions into balls and keep covered. Let rest for 20 minutes or so.</p>
+            <p>Form each portion into a bagel by pinching through the center and stretching it into a wide ring. Place finished bagels in proofing boxes.</p>
+            <p>Cover the proofing boxes and refrigerate immediately.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <h2 class="step-header">Sunday: Boil and bake.</h2>
+        <div class="step-content">
+          <ul class="ingredients">
+            <li><span class="name">Water</span></li>
+            <li><span class="name">Sodium carbonate,</span> <span class="qty">1 spoonful</span></li>
+            <li><span class="name">Salt,</span> <span class="qty">1 spoonful</span></li>
+            <li><span class="name">Sesame seeds</span></li>
+          </ul>
+          <div class="instructions">
+            <p>Preheat oven to 450&deg; convection roast.</p>
+            <p>Fill large pot with water. Stir in a spoonful of sodium carbonate (or baking soda) and a spoonful of salt. Bring to a boil.</p>
+            <p>Working in batches, drop the bagels into the water and boil for 60 seconds, then flip and boil for another 60 seconds. Dip each bagel in toppings, then transfer to sheet pans.</p>
+            <p>Bake for 9 minutes. Flip bagels over and rotate sheets. Bake for an additional 9 minutes.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="source-note">
+        Based on a recipe from ChefSteps.
+      </div>
+    </div>
+  </div>
+</body>
+</html>

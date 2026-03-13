@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Option B: Futura + Lora</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+/*
+  OPTION B: Futura + Lora
+  Futura stays for UI chrome (nav, category labels, buttons).
+  Lora replaces Source Sans as the body and recipe-reading font.
+  The geometric-sans / warm-serif contrast is the classic cookbook
+  pairing. Lora's old-style figures and subtle brush stroke endings
+  feel handmade — a good match for the gingham tablecloth.
+*/
+
+:root {
+  --gingham-base: rgb(249, 246, 243);
+  --gingham-stripe-color: rgba(190, 12, 30, 0.5);
+  --gingham-stripe-width: 75px;
+  --gingham-tile-size: calc(var(--gingham-stripe-width) * 2 * 1.41421356);
+  --content-bg: rgb(255, 252, 249);
+  --text-color: rgb(50, 50, 50);
+  --muted: #666;
+  --border-light: #ccc;
+  --accent: rgb(155, 10, 25);
+  --font-display: "Futura", "Trebechet MS", sans-serif;
+  --font-body: "Lora", Georgia, serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { font-size: 18px; }
+
+body {
+  font-family: var(--font-body);
+  color: var(--text-color);
+  line-height: 1.6;
+  background-color: var(--gingham-base);
+  background-image:
+    repeating-linear-gradient(
+      45deg, transparent, transparent var(--gingham-stripe-width),
+      var(--gingham-stripe-color) var(--gingham-stripe-width),
+      var(--gingham-stripe-color) calc(var(--gingham-stripe-width) * 2)
+    ),
+    repeating-linear-gradient(
+      -45deg, transparent, transparent var(--gingham-stripe-width),
+      var(--gingham-stripe-color) var(--gingham-stripe-width),
+      var(--gingham-stripe-color) calc(var(--gingham-stripe-width) * 2)
+    );
+  background-size: var(--gingham-tile-size) var(--gingham-tile-size);
+  padding: 2rem 1rem;
+}
+
+.badge {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  background: var(--accent);
+  color: white;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.4rem 0.8rem;
+  border-radius: 3px;
+  z-index: 100;
+}
+
+.back-link {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  text-decoration: none;
+  margin-bottom: 1.5rem;
+}
+.back-link:hover { text-decoration: underline; }
+
+.card {
+  max-width: 640px;
+  margin: 0 auto 2.5rem;
+  background: var(--content-bg);
+  border-radius: 0.25rem;
+  padding: 2.5rem 2rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.06);
+}
+
+/* --- Page title --- */
+.card > header { text-align: center; margin-bottom: 1.5rem; }
+.card > header h1 {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+.card > header .desc {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 1.2rem;
+}
+.card > header .meta {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  color: var(--muted);
+  margin-top: 0.25rem;
+}
+
+/* --- Category headers (Futura, uppercase — short labels) --- */
+.category-header {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 0.4rem;
+  margin: 1.75rem 0 0.75rem;
+}
+.category-header:first-of-type { margin-top: 0; }
+
+/* --- Recipe links (Lora body font) --- */
+.recipe-list {
+  list-style: none;
+  columns: 2;
+  column-gap: 1.5rem;
+}
+.recipe-list li { margin-bottom: 0.35rem; }
+.recipe-list a {
+  color: var(--accent);
+  text-decoration: none;
+}
+.recipe-list a:hover { text-decoration: underline; }
+
+/* --- Recipe step headers (Futura, title case) --- */
+.step-header {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 0.35rem;
+  margin: 2rem 0 1rem;
+}
+.step-header:first-of-type { margin-top: 0; }
+
+/* --- Ingredients & instructions --- */
+.step-content {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 0 1.5rem;
+}
+.ingredients {
+  list-style: none;
+  font-size: 0.92rem;
+  line-height: 1.9;
+}
+.ingredients .name { font-weight: 600; }
+.ingredients .qty { color: var(--muted); }
+.instructions p {
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+}
+
+.source-note {
+  text-align: center;
+  font-style: italic;
+  margin-top: 2rem;
+  color: var(--muted);
+}
+.source-note::before {
+  content: "❇︎";
+  display: block;
+  font-style: normal;
+  margin-bottom: 0.25rem;
+}
+
+.toc {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+}
+.toc a {
+  color: var(--accent);
+  text-decoration: none;
+  margin: 0 0.15rem;
+}
+</style>
+</head>
+<body>
+  <div class="badge">Option B</div>
+
+  <div style="max-width:640px; margin:0 auto;">
+    <a class="back-link" href="index.html">&larr; All Options</a>
+  </div>
+  <div class="card">
+    <header>
+      <h1>Our Recipes</h1>
+      <p class="desc">A collection of our family's favorite recipes.</p>
+    </header>
+    <nav class="toc">
+      <a href="#">Baking</a> &middot;
+      <a href="#">Basics</a> &middot;
+      <a href="#">Bread</a> &middot;
+      <a href="#">Breakfast</a> &middot;
+      <a href="#">Dessert</a> &middot;
+      <a href="#">Mains</a> &middot;
+      <a href="#">Pizza</a> &middot;
+      <a href="#">Sides</a> &middot;
+      <a href="#">Snacks</a>
+    </nav>
+
+    <h2 class="category-header">Bread</h2>
+    <ul class="recipe-list">
+      <li><a href="#">Bagels</a></li>
+      <li><a href="#">Basic Bread</a></li>
+      <li><a href="#">Biscuits</a></li>
+      <li><a href="#">Focaccia</a></li>
+      <li><a href="#">Italian Bread</a></li>
+      <li><a href="#">Soda Bread</a></li>
+      <li><a href="#">Sourdough Bread</a></li>
+    </ul>
+
+    <h2 class="category-header">Mains</h2>
+    <ul class="recipe-list">
+      <li><a href="#">Baked Ziti</a></li>
+      <li><a href="#">Beans and Rice</a></li>
+      <li><a href="#">Black Bean Tacos</a></li>
+      <li><a href="#">Chickpea Salad</a></li>
+      <li><a href="#">Farro and Bean Soup</a></li>
+      <li><a href="#">Fried Rice</a></li>
+      <li><a href="#">Lentil Soup</a></li>
+      <li><a href="#">Pasta con Ceci</a></li>
+    </ul>
+
+    <h2 class="category-header">Dessert</h2>
+    <ul class="recipe-list">
+      <li><a href="#">Apple Crisp</a></li>
+      <li><a href="#">Berries and Cream</a></li>
+      <li><a href="#">Chocolate Chip Cookies</a></li>
+      <li><a href="#">Oatmeal-Raisin Cookies</a></li>
+      <li><a href="#">Pecan Nate-ies</a></li>
+      <li><a href="#">Pizzelle</a></li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <header>
+      <h1>Bagels</h1>
+      <p class="desc">A fun weekend baking project.</p>
+      <p class="meta">Bread &middot; Makes 12 bagels</p>
+    </header>
+
+    <h2 class="step-header">Friday night, around 10 PM: Make poolish.</h2>
+    <div class="step-content">
+      <ul class="ingredients">
+        <li><span class="name">Flour (bread),</span> <span class="qty">525 g</span></li>
+        <li><span class="name">Water,</span> <span class="qty">525 g</span></li>
+        <li><span class="name">Yeast,</span> <span class="qty">0.5 g</span></li>
+      </ul>
+      <div class="instructions">
+        <p>Whisk together flour, water, and yeast in a medium bowl. Let sit on counter overnight.</p>
+        <p>Note that you only need 1000 g of poolish the next day; making extra now accounts for residue on your bowl and utensils.</p>
+      </div>
+    </div>
+
+    <h2 class="step-header">Saturday morning, around 10 AM: Make dough and bulk ferment.</h2>
+    <div class="step-content">
+      <ul class="ingredients">
+        <li><span class="name">Poolish,</span> <span class="qty">1000 g</span></li>
+        <li><span class="name">Malt syrup,</span> <span class="qty">20 g</span></li>
+        <li><span class="name">Salt,</span> <span class="qty">18 g</span></li>
+        <li><span class="name">Diastatic malt powder,</span> <span class="qty">2.5 g</span></li>
+        <li><span class="name">Yeast,</span> <span class="qty">4 g</span></li>
+        <li><span class="name">Water,</span> <span class="qty">100 g</span></li>
+        <li><span class="name">Flour (bread),</span> <span class="qty">500 g</span></li>
+      </ul>
+      <div class="instructions">
+        <p>In large bowl, combine all ingredients. <em>(Do not use a stand mixer, because this is a very tough dough and the mixer will break. Ask me how I know.)</em></p>
+        <p>Knead <em>by hand</em> for 5 minutes. Let dough (and yourself) rest for 20 minutes, then knead for an additional 5 minutes.</p>
+        <p>Form dough into a neat ball and place back in bowl. Cover the bowl tightly and let rise until not quite doubled.</p>
+      </div>
+    </div>
+
+    <h2 class="step-header">Saturday: Shape and refrigerate overnight.</h2>
+    <div class="step-content">
+      <div class="instructions" style="grid-column: 1 / -1;">
+        <p>Divide dough into twelve 130 g portions. Pre-shape portions into balls and keep covered. Let rest for 20 minutes or so.</p>
+        <p>Form each portion into a bagel by pinching through the center and stretching it into a wide ring. Place finished bagels in proofing boxes.</p>
+        <p>Cover the proofing boxes and refrigerate immediately.</p>
+      </div>
+    </div>
+
+    <h2 class="step-header">Sunday: Boil and bake.</h2>
+    <div class="step-content">
+      <ul class="ingredients">
+        <li><span class="name">Water</span></li>
+        <li><span class="name">Sodium carbonate,</span> <span class="qty">1 spoonful</span></li>
+        <li><span class="name">Salt,</span> <span class="qty">1 spoonful</span></li>
+        <li><span class="name">Sesame seeds</span></li>
+      </ul>
+      <div class="instructions">
+        <p>Preheat oven to 450&deg; convection roast.</p>
+        <p>Fill large pot with water. Stir in a spoonful of sodium carbonate (or baking soda) and a spoonful of salt. Bring to a boil.</p>
+        <p>Working in batches, drop the bagels into the water and boil for 60 seconds, then flip and boil for another 60 seconds. Dip each bagel in toppings, then transfer to sheet pans.</p>
+        <p>Bake for 9 minutes. Flip bagels over and rotate sheets. Bake for an additional 9 minutes.</p>
+      </div>
+    </div>
+
+    <div class="source-note">
+      Based on a recipe from ChefSteps.
+    </div>
+  </div>
+</body>
+</html>

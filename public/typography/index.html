@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Typography Options</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Source Sans 3", sans-serif;
+    background: #f5f0eb;
+    color: #333;
+    padding: 3rem 1.5rem;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+  .intro {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    margin-bottom: 2.5rem;
+    color: #555;
+  }
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+  a.option {
+    display: block;
+    background: white;
+    border-radius: 6px;
+    padding: 1.5rem 1.75rem;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    transition: box-shadow 0.2s, transform 0.15s;
+  }
+  a.option:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    transform: translateY(-1px);
+  }
+  .option-name {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 0.35rem;
+    color: rgb(155, 10, 25);
+  }
+  .option-desc {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #666;
+  }
+  .option-changes {
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    color: #888;
+  }
+</style>
+</head>
+<body>
+  <h1>Typography Options</h1>
+  <p class="intro">
+    Each page below shows the same recipe content with a different typography
+    treatment. Open them in separate tabs to flip between them, or compare
+    against the <a href="/" style="color: rgb(155,10,25);">live site</a>.
+  </p>
+  <div class="options">
+    <a class="option" href="option-a.html">
+      <div class="option-name">Option A: Futura Refined</div>
+      <div class="option-desc">
+        Keep Futura everywhere, but drop the ALL CAPS on recipe step headers.
+        Title case + tighter letter-spacing lets the long step names breathe.
+        Category headers stay uppercase since they're short labels.
+      </div>
+      <div class="option-changes">Changes: text-transform, letter-spacing, font-weight on h2s</div>
+    </a>
+    <a class="option" href="option-b.html">
+      <div class="option-name">Option B: Futura + Lora</div>
+      <div class="option-desc">
+        Keep Futura for UI/labels, but swap Source Sans for Lora (a warm text serif)
+        as the body font. The geometric-sans / warm-serif contrast is a classic
+        cookbook pairing and sits well with the gingham.
+      </div>
+      <div class="option-changes">Changes: body font to Lora, adjusted sizing</div>
+    </a>
+    <a class="option" href="option-c.html">
+      <div class="option-name">Option C: Fraunces + Source Sans</div>
+      <div class="option-desc">
+        Replace Futura headers with Fraunces, a variable "soft serif" with
+        personality. Warm, slightly quirky, very food-appropriate. Source Sans
+        stays for body text. No ALL CAPS anywhere.
+      </div>
+      <div class="option-changes">Changes: display font to Fraunces, drop uppercase treatment</div>
+    </a>
+    <a class="option" href="option-d.html">
+      <div class="option-name">Option D: Futura + Bitter</div>
+      <div class="option-desc">
+        Keep Futura for short UI labels (nav, categories) but use Bitter, a
+        sturdy slab serif, for recipe step headers and body. Slab serifs have
+        the geometric DNA that harmonizes with Futura but add warmth.
+      </div>
+      <div class="option-changes">Changes: recipe headers and body to Bitter slab serif</div>
+    </a>
+    <a class="option" href="option-e.html" style="border-top: 2px solid rgb(155, 10, 25); padding-top: 1.75rem;">
+      <div class="option-name">Option E: Refined Heritage</div>
+      <div class="option-desc">
+        Full redesign. Cormorant Garamond (elegant Italian-cookbook serif) for headings,
+        DM Sans for body. Gingham ghosted to ~10% opacity — a watermark, not a tablecloth.
+        Deeper burgundy palette. Same warmth, more sophistication.
+      </div>
+      <div class="option-changes">Redesign: fonts, colors, gingham opacity, spacing, hierarchy</div>
+    </a>
+    <a class="option" href="option-f.html">
+      <div class="option-name">Option F: Woven</div>
+      <div class="option-desc">
+        Gingham abstracted into a vibe. Background becomes a faint diagonal crosshatch
+        of thin lines. Red shows up as a "thread" accent on borders and dividers.
+        Instrument Serif (modern, graceful) for display, Outfit for body. Double-border
+        "stitched" card edges.
+      </div>
+      <div class="option-changes">Redesign: abstract gingham, new fonts, thread-accent system, card borders</div>
+    </a>
+    <a class="option" href="option-g.html">
+      <div class="option-name">Option G: Night Kitchen</div>
+      <div class="option-desc">
+        No rules. Dark, warm, dramatic — like cooking late at night with the kitchen
+        lit and everything else dark. Bodoni Moda (ultra high-contrast display serif)
+        at huge sizes, Libre Franklin body. Charcoal with amber/copper accents.
+        No gingham at all.
+      </div>
+      <div class="option-changes">Redesign: dark theme, entirely new aesthetic, no gingham</div>
+    </a>
+  </div>
+</body>
+</html>

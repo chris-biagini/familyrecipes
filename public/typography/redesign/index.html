@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Redesign Explorations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --linen: #f7f2ec;
+  --cream: #fefbf7;
+  --text: #33302b;
+  --text-soft: #6e665d;
+  --thread-red: #b33a3a;
+  --rule: #ddd5cb;
+  --font-display: "Instrument Serif", Georgia, serif;
+  --font-body: "Outfit", system-ui, sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { font-size: 17px; }
+
+body {
+  font-family: var(--font-body);
+  color: var(--text);
+  line-height: 1.6;
+  background-color: var(--linen);
+  background-image:
+    repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(179,58,58,0.06) 40px, rgba(179,58,58,0.06) 41px),
+    repeating-linear-gradient(-45deg, transparent, transparent 40px, rgba(179,58,58,0.06) 40px, rgba(179,58,58,0.06) 41px);
+  min-height: 100vh;
+  padding: 3rem 1.5rem;
+}
+
+body::before {
+  content: "";
+  display: block;
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--thread-red) 0%, var(--thread-red) 33%, transparent 33%, transparent 34%, var(--thread-red) 34%, var(--thread-red) 66%, transparent 66%, transparent 67%, var(--thread-red) 67%, var(--thread-red) 100%);
+  z-index: 100;
+}
+
+.page {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+h1 {
+  font-family: var(--font-display);
+  font-size: 2.8rem;
+  font-weight: 400;
+  line-height: 1.15;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.15rem;
+  color: var(--text-soft);
+  margin-bottom: 2.5rem;
+}
+
+.variant-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.variant-list a {
+  display: block;
+  background: var(--cream);
+  border: 1px solid var(--rule);
+  outline: 1px solid var(--rule);
+  outline-offset: 3px;
+  padding: 1.4rem 1.8rem;
+  text-decoration: none;
+  color: var(--text);
+  transition: border-color 0.2s, outline-color 0.2s;
+}
+
+.variant-list a:hover {
+  border-color: var(--thread-red);
+  outline-color: var(--thread-red);
+}
+
+.variant-name {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  margin-bottom: 0.25rem;
+}
+
+.variant-desc {
+  font-size: 0.85rem;
+  color: var(--text-soft);
+  font-weight: 300;
+  line-height: 1.5;
+}
+
+.back-link {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--thread-red);
+  text-decoration: none;
+  margin-bottom: 2rem;
+}
+.back-link:hover { text-decoration: underline; }
+
+.category-header {
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--text-soft);
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--rule);
+}
+</style>
+</head>
+<body>
+  <div class="page">
+    <a class="back-link" href="../index.html">&larr; All Options</a>
+    <h1>Redesign Explorations</h1>
+    <p class="subtitle">Riffs on Option F &mdash; the Woven baseline.</p>
+
+    <ul class="variant-list">
+      <li><a href="v1-open-air.html">
+        <div class="variant-name">V1: Open Air</div>
+        <div class="variant-desc">Drop the content card. Full-width with generous margins and breathing room. A lighter, more editorial feel with the linen texture carrying the whole page.</div>
+      </a></li>
+      <li><a href="v2-warm-earth.html">
+        <div class="variant-name">V2: Warm Earth</div>
+        <div class="variant-desc">Deeper, earthier palette with terracotta and sage tones. A side-anchored nav. Designed for warmth and comfort — like a well-loved cookbook.</div>
+      </a></li>
+      <li><a href="v3-vibrant-thread.html">
+        <div class="variant-name">V3: Vibrant Thread</div>
+        <div class="variant-desc">Brings back the favicon's bold red as a first-class accent. Richer color contrast, a compact sticky nav, and crisp visual rhythm that pairs with the gingham icon.</div>
+      </a></li>
+      <li><a href="v4-quiet-lux.html">
+        <div class="variant-name">V4: Quiet Luxury</div>
+        <div class="variant-desc">Maximum restraint. Whisper-thin rules, generous whitespace, a nearly monochrome palette with one precise red accent. The recipe as a beautiful document.</div>
+      </a></li>
+    </ul>
+
+    <h2 class="category-header" style="margin-top: 3rem;">V4 Riffs &mdash; Adding Brand</h2>
+
+    <ul class="variant-list">
+      <li><a href="v4a-crossing.html">
+        <div class="variant-name">V4a: Crossing Threads</div>
+        <div class="variant-desc">Two semi-transparent red stripes &mdash; one horizontal under the nav, one vertical along the content edge &mdash; cross at the top-left, creating a tiny gingham moment. Section breaks use a miniature check square.</div>
+      </a></li>
+      <li><a href="v4b-gingham-mark.html">
+        <div class="variant-name">V4b: Gingham Mark</div>
+        <div class="variant-desc">The favicon rendered in pure CSS becomes the logo mark in the nav and section dividers. A large, ghosted check watermarks behind each page title. The favicon is the brand.</div>
+      </a></li>
+      <li><a href="v4c-twin-rules.html">
+        <div class="variant-name">V4c: Twin Rules</div>
+        <div class="variant-desc">Every rule becomes a pair of thin lines with a small gap &mdash; the two bars of the gingham abstracted to pure geometry. Twin red stripes at the top, twin gray rules under headers, twin dividers everywhere. The doubled line is the brand motif.</div>
+      </a></li>
+    </ul>
+  </div>
+</body>
+</html>
