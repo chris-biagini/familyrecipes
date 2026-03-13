@@ -153,6 +153,14 @@ export default class extends Controller {
     })
   }
 
+  searchTag(event) {
+    const tag = event.currentTarget.dataset.tag
+    const searchDialog = document.querySelector("[data-controller='search-overlay']")
+    if (!searchDialog) return
+    const overlay = this.application.getControllerForElementAndIdentifier(searchDialog, "search-overlay")
+    if (overlay) overlay.openWithTag(tag)
+  }
+
   applyScale(factor) {
     this.element
       .querySelectorAll('li[data-quantity-value]')

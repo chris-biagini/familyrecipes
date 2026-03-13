@@ -13,6 +13,15 @@
         &middot; Makes <%= format_yield_line(format_makes(recipe)) %><%- end -%><%- end -%><%- if recipe.serves -%>
         &middot; Serves <%= format_yield_line(recipe.serves.to_s) %><%- end -%>
       </p>
+      <% if recipe.tags.any? %>
+        <p class="recipe-tags">
+          <% recipe.tags.sort_by(&:name).each do |tag| %>
+            <button type="button" class="recipe-tag-pill tag-pill tag-pill--tag"
+                    data-action="click->recipe-state#searchTag"
+                    data-tag="<%= tag.name %>"><%= tag.name %></button>
+          <% end %>
+        </p>
+      <% end %>
       <div class="scale-bar" data-scale-panel-target="panel">
         <div class="recipe-actions">
           <%- if current_member? -%>

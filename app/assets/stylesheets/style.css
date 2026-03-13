@@ -513,6 +513,22 @@ header .recipe-meta a:hover {
   text-decoration: underline;
 }
 
+.recipe-tags {
+  margin-top: 0.25rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.recipe-tag-pill {
+  border: none;
+  cursor: pointer;
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+}
+
+.recipe-tag-pill:hover { opacity: 0.8; }
+
 /* Scale bar — centered disclosure toggle + vertical reveal */
 .scale-bar {
   display: flex;

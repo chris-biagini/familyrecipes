@@ -721,6 +721,17 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     assert_equal %w[quick weeknight], recipe.tags.map(&:name).sort
   end
 
+  test 'show page displays tags as pills' do
+    recipe = @kitchen.recipes.find_by!(slug: 'focaccia')
+    tag = Tag.create!(name: 'vegan', kitchen: @kitchen)
+    RecipeTag.create!(recipe: recipe, tag: tag)
+
+    get recipe_path(recipe.slug, kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select '.recipe-tag-pill', 'vegan'
+  end
+
   test 'show renders recipe with freeform quantity ingredient' do
     MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @bread)
       # Salad
