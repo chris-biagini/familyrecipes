@@ -44,6 +44,7 @@ export default class extends Controller {
   toggle() {
     this.open = !this.open
     this.panelTarget.classList.toggle('open', this.open)
+    this.innerTarget.setAttribute('aria-hidden', !this.open)
   }
 
   selectPreset(e) {
