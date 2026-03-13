@@ -622,11 +622,26 @@ header > .recipe-actions {
 }
 
 .scale-controls-center {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: 0.5rem;
   min-height: 0;
   padding: 0.5rem 0.25rem;
+}
+
+.scale-controls-center > :first-child {
+  justify-self: end;
+}
+
+.scale-controls-center > :last-child {
+  justify-self: start;
+}
+
+.scale-input-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .scale-presets {
@@ -701,7 +716,7 @@ header > .recipe-actions {
 .scale-reset {
   font-family: var(--font-body);
   font-size: 0.75rem;
-  padding: 0.2rem 0.5rem;
+  padding: 0.2rem 0.5rem 0.2rem 0;
   border: none;
   border-radius: 3px;
   background: none;

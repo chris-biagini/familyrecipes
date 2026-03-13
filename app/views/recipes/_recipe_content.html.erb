@@ -15,14 +15,14 @@
       </p>
       <div class="scale-bar" data-scale-panel-target="panel">
         <div class="recipe-actions">
-          <a href="#" class="scale-toggle" data-scale-panel-target="toggle" data-action="click->scale-panel#toggle:prevent">Scale</a>
           <%- if current_member? -%>
-          <span class="recipe-actions-dot">&middot;</span>
           <button type="button" id="edit-button" class="edit-toggle">
             <svg width="12" height="12" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 4l6 6-16 16H6v-6z"/><line x1="18" y1="8" x2="24" y2="14"/></svg>
             Edit
           </button>
+          <span class="recipe-actions-dot">&middot;</span>
           <%- end -%>
+          <a href="#" class="scale-toggle" data-scale-panel-target="toggle" data-action="click->scale-panel#toggle:prevent">Scale</a>
         </div>
         <div class="scale-controls" data-scale-panel-target="inner" aria-hidden="true">
           <div class="scale-controls-inner">
@@ -34,8 +34,10 @@
                 <button type="button" class="scale-preset" data-scale-panel-target="preset" data-action="scale-panel#selectPreset">3&times;</button>
               </div>
               <span class="scale-divider"></span>
-              <input type="text" class="scale-input" data-scale-panel-target="input" data-action="input->scale-panel#onInput" value="1" placeholder="e.g. 3/2" inputmode="text" autocomplete="off">
-              <button type="button" class="scale-reset" data-scale-panel-target="reset" data-action="scale-panel#reset" hidden>Reset</button>
+              <div class="scale-input-group">
+                <input type="text" class="scale-input" data-scale-panel-target="input" data-action="input->scale-panel#onInput" value="1" placeholder="e.g. 3/2" inputmode="text" autocomplete="off">
+                <button type="button" class="scale-reset" data-scale-panel-target="reset" data-action="scale-panel#reset" hidden>Reset</button>
+              </div>
             </div>
           </div>
         </div>
