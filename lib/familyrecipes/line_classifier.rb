@@ -11,7 +11,7 @@ module LineClassifier
     title: /^# (.+)$/,
     step_header: /^## (.+)$/,
     ingredient: /^- (.+)$/,
-    cross_reference_block: /^>>>\s+(.+)$/,
+    cross_reference_block: /^>\s*(@\[.+)$/,
     divider: /^---\s*$/,
     front_matter: /^(Makes|Serves):\s+(.+)$/,
     blank: /^\s*$/
