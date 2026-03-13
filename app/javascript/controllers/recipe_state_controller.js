@@ -195,6 +195,23 @@ export default class extends Controller {
         unitSpan.textContent = ` ${unit}`
       }
     })
+
+    this.element.querySelectorAll('article.embedded-recipe[data-base-multiplier]').forEach(article => {
+      const base = parseFloat(article.dataset.baseMultiplier)
+      const effective = base * factor
+      const badge = article.querySelector('.embedded-multiplier')
+      if (!badge) return
+
+      if (Math.abs(effective - 1) < 0.001) {
+        badge.hidden = true
+      } else {
+        badge.hidden = false
+        const pretty = Number.isInteger(effective)
+          ? effective
+          : Math.round(effective * 100) / 100
+        badge.textContent = `\u00D7 ${pretty}`
+      }
+    })
   }
 
 }
