@@ -6,7 +6,7 @@ Serves: 4
 
 ## Make the sauce.
 
->>> @[Simple Tomato Sauce]
+> @[Simple Tomato Sauce]
 
 ## Cook the pasta.
 
@@ -15,3 +15,7 @@ Serves: 4
 - Parmesan: Grated, for serving.
 
 Bring a large pot of well-salted water to a boil. Cook spaghetti until al dente. Reserve a cup of pasta water before draining. Toss pasta with the sauce, adding a splash of pasta water to loosen if needed. Serve with grated parmesan.
+
+---
+
+This pairs well with @[Simple Salad].

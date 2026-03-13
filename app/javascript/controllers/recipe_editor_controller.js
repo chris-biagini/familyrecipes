@@ -61,7 +61,7 @@ export default class extends Controller {
       this.appendSpan(fragment, line, "hl-step-header")
     } else if (/^- .+$/.test(line)) {
       this.highlightIngredient(line, fragment)
-    } else if (/^>>>\s+.+$/.test(line)) {
+    } else if (/^>\s*@\[.+$/.test(line)) {
       this.appendSpan(fragment, line, "hl-cross-ref")
     } else if (/^---\s*$/.test(line)) {
       this.inFooter = true
