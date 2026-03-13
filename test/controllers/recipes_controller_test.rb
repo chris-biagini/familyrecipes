@@ -220,7 +220,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
       # Panzanella
 
       ## Make bread.
-      >>> @[Focaccia], 1
+      > @[Focaccia], 1
 
       ## Assemble (put it together)
 
@@ -339,7 +339,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
       # Panzanella
 
       ## Make bread.
-      >>> @[Focaccia], 1
+      > @[Focaccia], 1
 
       ## Assemble (put it together)
 
@@ -379,7 +379,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
       # White Pizza
 
       ## Make dough.
-      >>> @[Pizza Dough]
+      > @[Pizza Dough]
 
       ## Top.
       - Mozzarella, 200 g
@@ -401,7 +401,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
       # White Pizza
 
       ## Make dough.
-      >>> @[Nonexistent Recipe]
+      > @[Nonexistent Recipe]
     MD
 
     get recipe_path('white-pizza')
@@ -424,7 +424,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
       # Pizza Dough
 
       ## Make starter.
-      >>> @[Starter]
+      > @[Starter]
 
       ## Mix.
       - Flour, 400 g
@@ -434,7 +434,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
       # White Pizza
 
       ## Make dough.
-      >>> @[Pizza Dough]
+      > @[Pizza Dough]
     MD
 
     get recipe_path('white-pizza')
@@ -494,7 +494,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
       # Double Pizza
 
       ## Make dough.
-      >>> @[Pizza Dough], 2
+      > @[Pizza Dough], 2
     MD
 
     get recipe_path('double-pizza')
@@ -518,7 +518,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
       # Double Pizza
 
       ## Make dough.
-      >>> @[Pizza Dough], 2
+      > @[Pizza Dough], 2
     MD
 
     get recipe_path('double-pizza')

@@ -213,7 +213,7 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
 
 
       ## Make poolish.
-      >>> @[Poolish]
+      > @[Poolish]
 
       ## Dough (assemble)
 

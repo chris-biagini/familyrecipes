@@ -23,7 +23,7 @@ class CrossReferenceUpdaterTest < ActiveSupport::TestCase
 
 
       ## Make dough.
-      >>> @[Pizza Dough], 1
+      > @[Pizza Dough], 1
 
       ## Assemble (put it together)
 

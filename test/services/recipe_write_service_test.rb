@@ -96,7 +96,7 @@ class RecipeWriteServiceTest < ActiveSupport::TestCase
       # Panzanella
 
       ## Make bread.
-      >>> @[Focaccia], 1
+      > @[Focaccia], 1
 
       ## Assemble (put it together)
 
@@ -186,7 +186,7 @@ class RecipeWriteServiceTest < ActiveSupport::TestCase
       # Panzanella
 
       ## Make bread.
-      >>> @[Focaccia], 1
+      > @[Focaccia], 1
 
       ## Assemble (put it together)
 

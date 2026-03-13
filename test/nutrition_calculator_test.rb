@@ -373,7 +373,7 @@ class NutritionCalculatorTest < Minitest::Test
 
 
       ## Make dough.
-      >>> @[Pizza Dough]
+      > @[Pizza Dough]
 
       ## Assemble (put together)
 
@@ -414,7 +414,7 @@ class NutritionCalculatorTest < Minitest::Test
 
 
       ## Make dough.
-      >>> @[Pizza Dough], 2
+      > @[Pizza Dough], 2
 
       ## Assemble (put together)
 

@@ -127,7 +127,7 @@ class MarkdownImporterTest < ActiveSupport::TestCase
       # Pizza
 
       ## Make dough.
-      >>> @[Pizza Dough]
+      > @[Pizza Dough]
 
       ## Assemble (build the pizza)
 
@@ -167,7 +167,7 @@ class MarkdownImporterTest < ActiveSupport::TestCase
       # Pizza
 
       ## Make dough.
-      >>> @[Pizza Dough]
+      > @[Pizza Dough]
 
       ## Assemble (build the pizza)
 
@@ -189,7 +189,7 @@ class MarkdownImporterTest < ActiveSupport::TestCase
       # Pasta
 
       ## Make sauce.
-      >>> @[Nonexistent Sauce]
+      > @[Nonexistent Sauce]
 
       ## Cook (boil it)
 
@@ -210,7 +210,7 @@ class MarkdownImporterTest < ActiveSupport::TestCase
       # Pasta
 
       ## Make sauce.
-      >>> @[Nonexistent Sauce]
+      > @[Nonexistent Sauce]
 
       ## Cook (boil it)
 
@@ -235,7 +235,7 @@ class MarkdownImporterTest < ActiveSupport::TestCase
       # Pasta
 
       ## Make sauce.
-      >>> @[Marinara Sauce]
+      > @[Marinara Sauce]
 
       ## Cook (boil it)
 
@@ -312,7 +312,7 @@ class MarkdownImporterTest < ActiveSupport::TestCase
     assert_nil recipe.footer
   end
 
-  test 'imports cross-reference with multiplier and prep note via >>> syntax' do
+  test 'imports cross-reference with multiplier and prep note via > syntax' do
     ActsAsTenant.with_tenant(@kitchen) do
       MarkdownImporter.import("# Dough\n\n## Mix\n\n- Flour, 2 cups\n\nMix it.", kitchen: @kitchen, category: @bread)
 
@@ -320,7 +320,7 @@ class MarkdownImporterTest < ActiveSupport::TestCase
         # Pizza
 
         ## Make dough.
-        >>> @[Dough], 2: Let rest.
+        > @[Dough], 2: Let rest.
 
         ## Add toppings.
 
@@ -350,7 +350,7 @@ class MarkdownImporterTest < ActiveSupport::TestCase
         # Pizza
 
         ## Make sauce.
-        >>> @[Sauce]
+        > @[Sauce]
 
         ## Build (assemble)
 
@@ -419,12 +419,12 @@ class MarkdownImporterTest < ActiveSupport::TestCase
     assert_includes recipe.footer, 'ChefSteps'
   end
 
-  test 'imports cross-reference step with >>> syntax' do
+  test 'imports cross-reference step with > syntax' do
     markdown = <<~MARKDOWN
       # Pizza
 
       ## Make dough.
-      >>> @[Pizza Dough]
+      > @[Pizza Dough]
 
       ## Top (add cheese)
 
@@ -446,7 +446,7 @@ class MarkdownImporterTest < ActiveSupport::TestCase
       # Pizza
 
       ## Make dough.
-      >>> @[Pizza Dough]
+      > @[Pizza Dough]
 
       ## Top (add cheese)
 

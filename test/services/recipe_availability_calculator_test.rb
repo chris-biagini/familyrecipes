@@ -158,7 +158,7 @@ class RecipeAvailabilityCalculatorTest < ActiveSupport::TestCase
 
 
       ## Make poolish.
-      >>> @[Poolish]
+      > @[Poolish]
 
       ## Dough (assemble)
 

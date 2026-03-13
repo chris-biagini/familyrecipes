@@ -94,7 +94,7 @@ class RecipeNutritionJobTest < ActiveSupport::TestCase
       "# Dough\n\nServes: 2\n\n## Mix\n\n- Flour, 60 g\n\nMix.", kitchen: @kitchen, category: @category
     )
     pizza_md = "# Pizza\n\nServes: 4\n\n" \
-               "## Make dough.\n>>> @[Dough]\n\n## Build\n\n- Cheese, 1 oz\n\nBuild."
+               "## Make dough.\n> @[Dough]\n\n## Build\n\n- Cheese, 1 oz\n\nBuild."
     pizza = MarkdownImporter.import(pizza_md, kitchen: @kitchen, category: @category)
 
     CascadeNutritionJob.perform_now(dough)

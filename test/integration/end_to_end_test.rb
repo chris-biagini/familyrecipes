@@ -44,7 +44,7 @@ class EndToEndTest < ActionDispatch::IntegrationTest
       Serves: 4
 
       ## Make dough.
-      >>> @[Pizza Dough]
+      > @[Pizza Dough]
 
       ## Assemble (top the dough)
 

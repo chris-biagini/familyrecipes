@@ -42,13 +42,13 @@ class CrossReferenceTest < Minitest::Test
     assert_includes salt[1], nil
   end
 
-  # --- Recipe integration (>>> syntax) ---
+  # --- Recipe integration (> syntax) ---
 
   def test_recipe_with_cross_reference_has_cross_references
     recipe = make_recipe(<<~MD)
       # Pizza
       ## Make dough.
-      >>> @[Pizza Dough]
+      > @[Pizza Dough]
       ## Top.
       - Cheese
       Add cheese.
@@ -62,7 +62,7 @@ class CrossReferenceTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Pizza
       ## Make dough.
-      >>> @[Pizza Dough]
+      > @[Pizza Dough]
       ## Top.
       - Cheese
       Add cheese.
@@ -83,7 +83,7 @@ class CrossReferenceTest < Minitest::Test
     pizza = make_recipe(<<~MD)
       # Pizza
       ## Make dough.
-      >>> @[Pizza Dough]
+      > @[Pizza Dough]
       ## Top.
       - Cheese, 200 g
       Add cheese.
@@ -109,7 +109,7 @@ class CrossReferenceTest < Minitest::Test
     pizza = make_recipe(<<~MD)
       # Pizza
       ## Make dough.
-      >>> @[Pizza Dough], 2
+      > @[Pizza Dough], 2
       ## Top.
       - Cheese
       Add cheese.
@@ -128,7 +128,7 @@ class CrossReferenceTest < Minitest::Test
     recipe = make_recipe(<<~MD)
       # Pizza
       ## Make dough.
-      >>> @[Pizza Dough]
+      > @[Pizza Dough]
       ## Top.
       - Cheese
       Add cheese.

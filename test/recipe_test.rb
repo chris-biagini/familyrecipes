@@ -337,7 +337,7 @@ class RecipeTest < Minitest::Test
       Dust the counter.
 
       ## Make dough.
-      >>> @[Pizza Dough]
+      > @[Pizza Dough]
     MD
 
     dough = FamilyRecipes::Recipe.new(markdown_source: dough_md, id: 'pizza-dough')
