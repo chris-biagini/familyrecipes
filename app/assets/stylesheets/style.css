@@ -448,6 +448,7 @@ main {
 
 header {
   text-align: center;
+  margin-bottom: 1.5rem;
 }
 
 header h1 {
@@ -504,6 +505,11 @@ header .recipe-meta a:hover {
   cursor: pointer;
   font-size: 0.85rem;
   user-select: none;
+  transition: color 0.12s ease;
+}
+
+.scale-toggle:hover {
+  color: var(--red);
 }
 
 .scale-toggle::before {
@@ -519,6 +525,48 @@ header .recipe-meta a:hover {
 
 .scale-bar.open .scale-toggle::before {
   transform: rotate(90deg);
+}
+
+/* Recipe actions row — scale toggle + edit, middot-separated */
+.recipe-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+header > .recipe-actions {
+  margin-top: 0.6rem;
+}
+
+.recipe-actions-dot {
+  color: var(--text-light);
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.edit-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--text-light);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  transition: color 0.12s ease;
+}
+
+.edit-toggle:hover {
+  color: var(--red);
+}
+
+.edit-toggle:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+  border-radius: 2px;
 }
 
 /* Scale controls — animated vertical expand/collapse */
@@ -637,10 +685,6 @@ header::after {
   margin: 1.5rem auto 0;
 }
 
-.homepage header::after,
-.ingredients-page header::after {
-  display: none;
-}
 
 .toc_nav {
   text-align: center;
@@ -754,7 +798,6 @@ section:first-of-type h2 {
 /* Ingredients page             */
 /********************************/
 
-.ingredients-page header { margin-bottom: 0.5rem; }
 
 /* Search + filter toolbar */
 .ingredients-toolbar { margin-bottom: 1rem; }

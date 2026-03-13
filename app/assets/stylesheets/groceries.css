@@ -1,11 +1,3 @@
-.subtitle {
-  text-align: center;
-  font-size: 0.95rem;
-  color: var(--text-soft);
-  margin-top: -0.5rem;
-  margin-bottom: 1.5rem;
-}
-
 /* Shared checkbox styles */
 .check-off input[type="checkbox"] {
   appearance: none;

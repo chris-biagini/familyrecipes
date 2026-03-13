@@ -4,14 +4,6 @@
   data-recipe-id="<%= @recipe.slug %>" data-version-hash="<%= Digest::SHA256.hexdigest(@recipe.markdown_source) %>"
 <% end %>
 
-<% content_for(:extra_nav) do %>
-    <div>
-      <% if current_member? %>
-      <button type="button" id="edit-button" class="btn">Edit</button>
-      <% end %>
-    </div>
-<% end %>
-
 <% if current_member? %>
   <%= turbo_stream_from current_kitchen, :updates %>
   <%= turbo_stream_from @recipe, "content" %>

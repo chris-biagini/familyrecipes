@@ -4,19 +4,19 @@
   <%= stylesheet_link_tag 'groceries', "data-turbo-track": "reload" %>
 <% end %>
 
-<% if current_member? %>
-<% content_for(:extra_nav) do %>
-  <div>
-    <button type="button" id="edit-aisle-order-button" class="btn">Edit Aisles</button>
-  </div>
-<% end %>
-<% end %>
-
 <%= turbo_stream_from current_kitchen, :updates %>
 
 <header id="groceries-header">
   <h1>Groceries</h1>
-  <p class="subtitle">Your shopping list, built from the <%= link_to 'Menu', menu_path %>.</p>
+  <p>Your shopping list, built from the <%= link_to 'Menu', menu_path %>.</p>
+  <%- if current_member? -%>
+  <div class="recipe-actions">
+    <button type="button" id="edit-aisle-order-button" class="edit-toggle">
+      <svg width="12" height="12" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 4l6 6-16 16H6v-6z"/><line x1="18" y1="8" x2="24" y2="14"/></svg>
+      Edit Aisles
+    </button>
+  </div>
+  <%- end -%>
 </header>
 
 <div id="groceries-app"

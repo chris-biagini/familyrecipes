@@ -4,20 +4,19 @@
   <%= stylesheet_link_tag 'menu', "data-turbo-track": "reload" %>
 <% end %>
 
-<% if current_member? %>
-<% content_for(:extra_nav) do %>
-  <div>
-    <button type="button" id="edit-quick-bites-button" class="btn">Edit QuickBites</button>
-  </div>
-<% end %>
-<% end %>
-
 <%= turbo_stream_from current_kitchen, :updates %>
 
 <header id="menu-header">
   <h1>Menu</h1>
-  <p>Select recipes and QuickBites for your kitchen to serve this week.</p>
-  <p class="subtitle-detail">Selected items will be tracked in <%= link_to 'Groceries', groceries_path %>.</p>
+  <p>Selected items will be tracked in <%= link_to 'Groceries', groceries_path %>.</p>
+  <%- if current_member? -%>
+  <div class="recipe-actions">
+    <button type="button" id="edit-quick-bites-button" class="edit-toggle">
+      <svg width="12" height="12" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 4l6 6-16 16H6v-6z"/><line x1="18" y1="8" x2="24" y2="14"/></svg>
+      Edit QuickBites
+    </button>
+  </div>
+  <%- end -%>
 </header>
 
 <div id="menu-app"

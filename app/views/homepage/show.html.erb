@@ -1,15 +1,6 @@
 <% content_for(:title) { current_kitchen.site_title } %>
 
 <% if current_member? %>
-<% content_for(:extra_nav) do %>
-    <div>
-      <button type="button" id="edit-categories-button" class="btn">Edit Categories</button>
-      <button type="button" id="new-recipe-button" class="btn">Add Recipe</button>
-    </div>
-<% end %>
-<% end %>
-
-<% if current_member? %>
   <%= turbo_stream_from current_kitchen, :updates %>
 <% end %>
 
@@ -17,6 +8,19 @@
   <header>
     <h1><%= current_kitchen.homepage_heading %></h1>
     <p><%= current_kitchen.homepage_subtitle %></p>
+    <%- if current_member? -%>
+    <div class="recipe-actions">
+      <button type="button" id="edit-categories-button" class="edit-toggle">
+        <svg width="12" height="12" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 4l6 6-16 16H6v-6z"/><line x1="18" y1="8" x2="24" y2="14"/></svg>
+        Edit Categories
+      </button>
+      <span class="recipe-actions-dot">&middot;</span>
+      <button type="button" id="new-recipe-button" class="edit-toggle">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Recipe
+      </button>
+    </div>
+    <%- end -%>
   </header>
 
   <%= render 'homepage/recipe_listings', categories: @categories %>
