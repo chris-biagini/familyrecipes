@@ -151,6 +151,13 @@ class LineClassifierTest < Minitest::Test
     assert_equal ['@[Pizza Dough]'], content
   end
 
+  def test_classifies_cross_reference_block_with_leading_whitespace
+    type, content = LineClassifier.classify_line(' > @[Pizza Dough], 2')
+
+    assert_equal :cross_reference_block, type
+    assert_equal ['@[Pizza Dough], 2'], content
+  end
+
   def test_plain_blockquote_is_not_cross_reference
     type, _content = LineClassifier.classify_line('> some quoted text')
 
