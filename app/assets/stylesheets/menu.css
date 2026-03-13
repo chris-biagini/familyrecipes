@@ -108,7 +108,9 @@
   text-decoration: underline;
 }
 
-/* Availability badges */
+/* Availability badges — all states share the same red accent.
+   .on-hand / .not-on-hand / .all-on-hand modifiers exist in HTML
+   for JS hooks; they no longer need distinct styles. */
 .availability-single {
   flex-shrink: 0;
   margin-left: auto;
@@ -119,16 +121,8 @@
   background: var(--surface-alt);
   border: 1px solid var(--red);
   border-radius: 6px;
+  color: var(--red);
   transition: opacity 0.15s ease;
-}
-
-.availability-single.on-hand {
-  color: var(--red);
-  border-color: var(--red);
-}
-
-.availability-single.not-on-hand {
-  color: var(--red);
 }
 
 .availability-detail {
@@ -152,12 +146,6 @@
   background: var(--surface-alt);
   border: 1px solid var(--red);
   border-radius: 6px;
-  transition: border-color 0.12s ease;
-}
-
-.availability-detail.all-on-hand summary {
-  color: var(--red);
-  border-color: var(--red);
 }
 
 .availability-detail summary::-webkit-details-marker {
@@ -175,20 +163,8 @@
   transition: transform 0.15s ease;
 }
 
-.availability-detail.all-on-hand summary::before {
-  border-color: transparent transparent transparent var(--red);
-}
-
 .availability-detail[open] summary::before {
   transform: rotate(90deg);
-}
-
-.availability-detail summary:hover {
-  border-color: var(--red);
-}
-
-.availability-detail.all-on-hand summary:hover {
-  border-color: var(--red);
 }
 
 /* Proportional opacity for availability pills (0/10 = invisible, 10/10 = full) */
@@ -243,14 +219,6 @@
 .availability-need {
   display: flex;
   gap: 0.4rem;
-}
-
-.availability-have {
-  color: var(--text);
-}
-
-.availability-need {
-  color: var(--text);
 }
 
 .availability-have strong,

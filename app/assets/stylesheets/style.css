@@ -226,27 +226,6 @@ nav > div:not(:first-child):not(.nav-drawer) {
 }
 
 
-.nav-auth-btn {
-  appearance: none;
-  -webkit-appearance: none;
-  font-family: var(--font-body);
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  background: none;
-  border: none;
-  color: var(--text);
-  cursor: pointer;
-  padding: 0.5rem 0.9rem;
-  line-height: 1.5;
-  transition: color 0.2s ease;
-}
-
-.nav-auth-btn:hover {
-  color: var(--red);
-}
-
 .nav-settings-link {
   background: none;
   border: none;
@@ -528,8 +507,6 @@ header::after {
 }
 
 .homepage header::after,
-.index header::after,
-.login header::after,
 .ingredients-page header::after {
   display: none;
 }
@@ -616,8 +593,7 @@ section:first-of-type h2 {
   margin-top: 0;
 }
 
-.homepage section h2,
-.index section h2 {
+.homepage section h2 {
   font-family: var(--font-body);
   font-size: 0.68rem;
   font-weight: 600;
@@ -629,8 +605,7 @@ section:first-of-type h2 {
   border-bottom: 1px solid var(--rule-faint);
 }
 
-.homepage section:first-of-type h2,
-.index section:first-of-type h2 {
+.homepage section:first-of-type h2 {
   margin-top: 0;
 }
 
@@ -872,13 +847,9 @@ footer::after {
   display: none;
 }
 
-footer::before {
-  display: none;
-}
-
 footer small {
-  text-align: right; /* Right-align the small text */
-  display: block; /* Ensures it takes up a full line for alignment to work */
+  text-align: right;
+  display: block;
 }
 
 /***********************/
@@ -895,10 +866,6 @@ footer small {
   background: #fff;
   color: #000;
   text-align: left;
-}
-
-.nutrition-label footer::before {
-  content: none;
 }
 
 .nutrition-label h2 {
@@ -1023,7 +990,7 @@ footer small {
 .nutrition-footnote {
   font-size: 0.6875rem;
   font-style: italic;
-  color: var(--text-secondary);
+  color: var(--text-soft);
   margin: 0.5rem 0 0;
   max-width: 16rem;
   margin-left: auto;
@@ -1340,7 +1307,7 @@ html:has(dialog[open]) {
 }
 
 .editor-warnings {
-  color: var(--text-secondary-color);
+  color: var(--text-soft);
 }
 
 .editor-body {
@@ -1744,68 +1711,6 @@ button.aisle-name:hover {
   color: var(--text-soft);
 }
 
-/************************/
-/* Login page           */
-/************************/
-
-.login header {
-  margin-bottom: 1.5rem;
-}
-
-.login-form {
-  max-width: 20rem;
-  margin: 0 auto;
-}
-
-.login-field {
-  margin-bottom: 1rem;
-}
-
-.login-field label {
-  display: block;
-  font-family: var(--font-body);
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-bottom: 0.35rem;
-}
-
-.login-field input {
-  width: 100%;
-  padding: 0.5rem 0.6rem;
-  font-family: var(--font-body);
-  font-size: 1rem;
-  border: 1px solid var(--rule-faint);
-  border-radius: 3px;
-  background: var(--input-bg);
-  color: var(--text);
-  box-sizing: border-box;
-}
-
-.login-field input:focus {
-  outline: 2px solid var(--red);
-  outline-offset: 1px;
-  border-color: var(--red);
-}
-
-.login-actions {
-  margin-top: 1.5rem;
-  text-align: center;
-}
-
-.login-actions .btn {
-  width: 100%;
-  padding: 0.6rem;
-  font-size: 0.9rem;
-}
-
-.login-placeholder {
-  text-align: center;
-  font-style: italic;
-  color: var(--text-soft);
-}
-
 .editor-form {
   padding: 1rem 1.5rem;
 }
@@ -1911,13 +1816,6 @@ button.aisle-name:hover {
   color: var(--text-soft);
   margin: 0 0 0.75rem;
   line-height: 1.4;
-}
-
-.editor-note {
-  font-size: 0.8rem;
-  font-style: italic;
-  color: var(--text-soft);
-  margin: 0.5rem 0 0;
 }
 
 .editor-recipes {
@@ -2155,11 +2053,6 @@ button.aisle-name:hover {
   flex-shrink: 0;
 }
 
-.serving-row > label {
-  min-width: auto;
-  flex-shrink: 0;
-}
-
 .field-narrow {
   width: 5rem;
   padding: 0.3rem 0.4rem;
@@ -2314,22 +2207,7 @@ button.aisle-name:hover {
   font-size: 0.85rem;
 }
 
-.aisle-section .form-row {
-  gap: 0.5rem;
-  flex-wrap: nowrap;
-  overflow: hidden;
-}
-
-.aisle-form-select {
-  padding: 0.3rem 0.5rem;
-  border: 1px solid var(--rule-faint);
-  border-radius: 3px;
-  background: var(--input-bg);
-  color: var(--text);
-  min-width: 0;
-  flex: 1;
-}
-
+.aisle-form-select,
 .aisle-new-input {
   padding: 0.3rem 0.5rem;
   border: 1px solid var(--rule-faint);
@@ -2340,8 +2218,8 @@ button.aisle-name:hover {
   flex: 1;
 }
 
-.aisle-new-input:focus,
-.aisle-form-select:focus {
+.aisle-form-select:focus,
+.aisle-new-input:focus {
   outline: 2px solid var(--red);
   outline-offset: -1px;
   border-color: var(--red);
@@ -2447,8 +2325,7 @@ button.aisle-name:hover {
     flex-wrap: wrap;
   }
 
-  .form-row > label,
-  .serving-row > label {
+  .form-row > label {
     min-width: 4.5rem;
     font-size: 0.85rem;
   }
@@ -2657,6 +2534,3 @@ button.aisle-name:hover {
   opacity: 0.3;
 }
 
-.app-version::before {
-  content: none;
-}
