@@ -41,7 +41,7 @@
 
     <%- if step.processed_instructions.present? -%>
     <div class="instructions">
-      <%= step.processed_instructions.html_safe %>
+      <%= linkify_recipe_references(step.processed_instructions).html_safe %>
     </div>
     <%- elsif step.instructions.present? -%>
     <div class="instructions">
