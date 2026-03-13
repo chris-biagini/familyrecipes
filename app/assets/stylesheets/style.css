@@ -1739,6 +1739,12 @@ html:has(dialog[open]) {
   font-style: italic;
 }
 
+.hl-recipe-link {
+  color: var(--red);
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}
+
 .hl-front-matter {
   color: var(--text-soft);
 }
@@ -2698,6 +2704,10 @@ button.aisle-name:hover {
   font-size: 1.3rem;
   font-weight: 400;
   margin: 0;
+}
+
+a.recipe-link {
+  text-decoration-style: dotted;
 }
 
 .embedded-recipe-link {

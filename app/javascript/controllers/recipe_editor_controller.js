@@ -71,7 +71,7 @@ export default class extends Controller {
     } else if (this.inFooter) {
       this.appendSpan(fragment, line, "hl-front-matter")
     } else {
-      fragment.appendChild(document.createTextNode(line))
+      this.highlightProseLinks(line, fragment)
     }
   }
 
@@ -87,6 +87,26 @@ export default class extends Controller {
     this.appendSpan(fragment, name, "hl-ingredient-name")
     if (qty) this.appendSpan(fragment, qty, "hl-ingredient-qty")
     if (prep) this.appendSpan(fragment, prep, "hl-ingredient-prep")
+  }
+
+  highlightProseLinks(line, fragment) {
+    const pattern = /@\[(.+?)\]/g
+    let lastIndex = 0
+    let match
+
+    while ((match = pattern.exec(line)) !== null) {
+      if (match.index > lastIndex) {
+        fragment.appendChild(document.createTextNode(line.slice(lastIndex, match.index)))
+      }
+      this.appendSpan(fragment, match[0], "hl-recipe-link")
+      lastIndex = pattern.lastIndex
+    }
+
+    if (lastIndex < line.length) {
+      fragment.appendChild(document.createTextNode(line.slice(lastIndex)))
+    } else if (lastIndex === 0) {
+      fragment.appendChild(document.createTextNode(line))
+    }
   }
 
   appendSpan(fragment, text, className) {
