@@ -14,7 +14,7 @@ import HighlightOverlay from "utilities/highlight_overlay"
  * - style.css (.hl-*): highlight colors
  */
 export default class extends Controller {
-  static targets = ["textarea", "categorySelect", "categoryInput"]
+  static targets = ["textarea", "categorySelect", "categoryInput", "mobilePillPreview"]
 
   connect() {
     this.boundCollect = (e) => this.handleCollect(e)
@@ -164,6 +164,13 @@ export default class extends Controller {
         this.categorySelectTarget.value = this.originalCategory
       }
     })
+  }
+
+  toggleMobilePanel(event) {
+    const toggle = event.currentTarget
+    const panel = this.element.querySelector(".editor-side-panel")
+    toggle.classList.toggle("editor-mobile-meta--open")
+    panel.classList.toggle("editor-side-panel--mobile-open")
   }
 
   setPlaceholder(textarea) {

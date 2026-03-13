@@ -42,18 +42,43 @@
                              editor_load_key: 'markdown_source',
                              extra_controllers: 'recipe-editor' },
               footer_extra: render('recipes/editor_delete_button', recipe: @recipe) } do %>
-  <textarea class="editor-textarea" data-editor-target="textarea" data-recipe-editor-target="textarea" spellcheck="false" placeholder="Loading..."></textarea>
-  <div class="editor-category-row">
-    <label for="edit-recipe-category">Category</label>
-    <select id="edit-recipe-category" class="category-select" data-recipe-editor-target="categorySelect">
-      <% @all_categories.each do |cat| %>
-        <option value="<%= cat.name %>" <%= 'selected' if cat == @recipe.category %>><%= cat.name %></option>
-      <% end %>
-      <option disabled>&#x2500;&#x2500;&#x2500;</option>
-      <option value="__new__">New category&hellip;</option>
-    </select>
-    <input type="text" class="category-new-input" placeholder="New category name"
-           data-recipe-editor-target="categoryInput" hidden maxlength="50">
+  <div class="editor-body-split">
+    <textarea class="editor-textarea" data-editor-target="textarea"
+              data-recipe-editor-target="textarea" spellcheck="false"
+              placeholder="Loading..."></textarea>
+    <div class="editor-side-panel">
+      <div class="side-section">
+        <label for="edit-recipe-category">Category</label>
+        <select id="edit-recipe-category" class="category-select"
+                data-recipe-editor-target="categorySelect">
+          <% @all_categories.each do |cat| %>
+            <option value="<%= cat.name %>" <%= 'selected' if cat == @recipe.category %>><%= cat.name %></option>
+          <% end %>
+          <option disabled>&#x2500;&#x2500;&#x2500;</option>
+          <option value="__new__">New category&hellip;</option>
+        </select>
+        <input type="text" class="category-new-input" placeholder="New category name"
+               data-recipe-editor-target="categoryInput" hidden maxlength="50">
+      </div>
+      <div class="side-section" data-controller="tag-input"
+           data-tag-input-tags-value='<%= (local_assigns[:recipe] ? recipe.tags.pluck(:name) : []).to_json %>'
+           data-tag-input-all-tags-value='<%= current_kitchen.tags.left_joins(:recipe_tags).group(:id).order(:name).pluck(:name, Arel.sql("COUNT(recipe_tags.id)")).to_json %>'>
+        <label>Tags</label>
+        <div class="tag-pills-editor" data-tag-input-target="pills"></div>
+        <div class="tag-autocomplete-wrapper">
+          <input type="text" class="tag-text-input" placeholder="Add tag..."
+                 data-tag-input-target="input"
+                 data-action="input->tag-input#onInput keydown->tag-input#onKeydown"
+                 maxlength="30">
+          <div class="tag-autocomplete" data-tag-input-target="dropdown" hidden></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="editor-mobile-meta" data-action="click->recipe-editor#toggleMobilePanel">
+    <span class="editor-mobile-meta__chevron">&#x25BC;</span>
+    <span>Category &amp; Tags</span>
+    <div class="editor-mobile-meta__preview" data-recipe-editor-target="mobilePillPreview"></div>
   </div>
 <% end %>
 <% end %>
