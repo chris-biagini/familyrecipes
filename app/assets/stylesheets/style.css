@@ -487,6 +487,126 @@ header .recipe-meta a:hover {
   text-decoration: underline;
 }
 
+/* Scale toggle in recipe-meta */
+.scale-toggle {
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.scale-toggle:hover {
+  text-decoration: underline;
+}
+
+/* Scale panel — animated expand/collapse */
+.scale-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.2s ease;
+}
+
+.scale-panel.open {
+  grid-template-rows: 1fr;
+}
+
+.scale-panel-inner {
+  overflow: hidden;
+}
+
+.scale-panel-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0 1.5rem;
+}
+
+.scale-presets {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.scale-preset {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  padding: 0.25rem 0.55rem;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  background: var(--ground);
+  color: var(--text);
+  cursor: pointer;
+  transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+  line-height: 1;
+}
+
+.scale-preset:hover {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.scale-preset.active {
+  background: var(--red);
+  border-color: var(--red);
+  color: white;
+}
+
+.scale-divider {
+  width: 1px;
+  height: 1.25rem;
+  background: var(--rule);
+}
+
+.scale-input-group {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.scale-input {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  width: 4.5rem;
+  padding: 0.25rem 0.4rem;
+  border: 1px solid var(--rule-faint);
+  border-radius: 3px;
+  background: var(--input-bg);
+  color: var(--text);
+  text-align: center;
+}
+
+.scale-input:focus {
+  outline: 2px solid var(--red);
+  outline-offset: -1px;
+  border-color: var(--red);
+}
+
+.scale-input.invalid {
+  outline: 2px solid var(--danger-color);
+  outline-offset: -1px;
+  border-color: var(--danger-color);
+}
+
+.scale-suffix {
+  color: var(--text-light);
+  font-size: 0.8rem;
+}
+
+.scale-reset {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  padding: 0.2rem 0.5rem;
+  border: none;
+  border-radius: 3px;
+  background: none;
+  color: var(--text-light);
+  cursor: pointer;
+  transition: color 0.12s ease;
+}
+
+.scale-reset:hover {
+  color: var(--red);
+}
+
 .scalable.scaled {
   background-color: var(--scaled-highlight);
   border-radius: 2px;
