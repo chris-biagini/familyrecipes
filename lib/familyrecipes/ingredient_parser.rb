@@ -5,7 +5,7 @@
 # token. Cross-references use CrossReferenceParser instead.
 module IngredientParser
   def self.parse(text)
-    raise "Cross-references now use >>> syntax. Write: >>> #{text}" if text.start_with?('@[')
+    raise "Cross-references now use > @[...] syntax. Write: > #{text}" if text.start_with?('@[')
 
     parts = text.split(':', 2)
     left_side = parts[0]

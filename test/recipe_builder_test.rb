@@ -438,7 +438,7 @@ class RecipeBuilderTest < Minitest::Test
 
       ## Make dough.
 
-      >>> @[Pizza Dough]
+      > @[Pizza Dough]
 
       ## Top.
 
@@ -472,7 +472,7 @@ class RecipeBuilderTest < Minitest::Test
 
       ## Make dough.
 
-      >>> @[Pizza Dough], 2: Let rest 30 min.
+      > @[Pizza Dough], 2: Let rest 30 min.
     RECIPE
 
     result = build_recipe(text)
@@ -488,7 +488,7 @@ class RecipeBuilderTest < Minitest::Test
       # Pizza
 
 
-      >>> @[Pizza Dough]
+      > @[Pizza Dough]
     RECIPE
 
     error = assert_raises(StandardError) { build_recipe(text) }
@@ -504,7 +504,7 @@ class RecipeBuilderTest < Minitest::Test
 
       - Flour, 3 cups
 
-      >>> @[Pizza Dough]
+      > @[Pizza Dough]
     RECIPE
 
     error = assert_raises(StandardError) { build_recipe(text) }
@@ -518,7 +518,7 @@ class RecipeBuilderTest < Minitest::Test
 
       ## Make dough.
 
-      >>> @[Pizza Dough]
+      > @[Pizza Dough]
 
       Mix everything.
     RECIPE
@@ -534,8 +534,8 @@ class RecipeBuilderTest < Minitest::Test
 
       ## Prepare.
 
-      >>> @[Pizza Dough]
-      >>> @[Pizza Sauce]
+      > @[Pizza Dough]
+      > @[Pizza Sauce]
     RECIPE
 
     error = assert_raises(StandardError) { build_recipe(text) }

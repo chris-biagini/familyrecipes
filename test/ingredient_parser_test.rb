@@ -83,6 +83,6 @@ class IngredientParserTest < Minitest::Test
   def test_raises_on_cross_reference_syntax
     error = assert_raises(RuntimeError) { IngredientParser.parse('@[Pizza Dough]') }
 
-    assert_match(/>>> syntax/, error.message)
+    assert_match(/> @\[/, error.message)
   end
 end

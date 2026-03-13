@@ -138,7 +138,7 @@ class RecipeBuilder # rubocop:disable Metrics/ClassLength
   end
 
   def reject_implicit_cross_reference(token)
-    raise "Cross-reference (>>>) at line #{token.line_number} must appear inside " \
+    raise "Cross-reference (>) at line #{token.line_number} must appear inside " \
           'an explicit step (## Step Name)'
   end
 
@@ -149,12 +149,12 @@ class RecipeBuilder # rubocop:disable Metrics/ClassLength
   end
 
   def raise_duplicate_cross_reference(token)
-    raise 'Only one cross-reference (>>>) is allowed per step ' \
+    raise 'Only one cross-reference (>) is allowed per step ' \
           "(line #{token.line_number})"
   end
 
   def raise_mixed_content_error(token, content_type)
-    raise "Cross-reference (>>>) at line #{token.line_number} " \
+    raise "Cross-reference (>) at line #{token.line_number} " \
           "cannot be mixed with #{content_type} in the same step"
   end
 
