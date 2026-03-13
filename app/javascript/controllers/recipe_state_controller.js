@@ -35,10 +35,22 @@ export default class extends Controller {
     this.listeners = new ListenerManager()
     this.setupEventListeners()
     this.loadRecipeState()
+
+    if (!this.embeddedValue) {
+      this.boundOnScaleChange = (e) => {
+        this.scaleFactor = e.detail.factor
+        this.applyScale(e.detail.factor)
+        this.saveRecipeState()
+      }
+      this.element.addEventListener('scale-panel:change', this.boundOnScaleChange)
+    }
   }
 
   disconnect() {
     this.listeners.teardown()
+    if (this.boundOnScaleChange) {
+      this.element.removeEventListener('scale-panel:change', this.boundOnScaleChange)
+    }
   }
 
   saveRecipeState() {
@@ -84,10 +96,11 @@ export default class extends Controller {
     })
 
     if (scaleFactor && !this.embeddedValue) {
-      const parsed = typeof scaleFactor === 'string' ? parseFloat(scaleFactor) : scaleFactor
-      if (parsed && isFinite(parsed)) {
-        this.scaleFactor = parsed
-        this.applyScale(parsed)
+      const factor = typeof scaleFactor === 'string' ? parseFloat(scaleFactor) : scaleFactor
+      if (factor && isFinite(factor)) {
+        this.scaleFactor = factor
+        this.applyScale(factor)
+        this.dispatch('restored', { detail: { factor }, bubbles: false })
       }
     }
   }

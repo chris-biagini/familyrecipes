@@ -77,10 +77,18 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     assert_select '.editor-textarea'
   end
 
-  test 'renders scale button' do
+  test 'renders scale toggle in recipe meta' do
     get recipe_path('focaccia', kitchen_slug: kitchen_slug)
 
-    assert_select '#scale-button'
+    assert_select '.recipe-meta .scale-toggle'
+  end
+
+  test 'renders scale panel with presets' do
+    get recipe_path('focaccia', kitchen_slug: kitchen_slug)
+
+    assert_select '.scale-panel'
+    assert_select '.scale-preset', count: 4
+    assert_select '.scale-input'
   end
 
   test 'renders ingredient data attributes for scaling' do
