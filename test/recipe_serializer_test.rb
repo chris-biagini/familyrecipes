@@ -318,6 +318,38 @@ class RecipeSerializerTest < Minitest::Test
     end
   end
 
+  def test_cross_reference_with_string_multiplier
+    ir = {
+      title: 'Test',
+      description: nil,
+      front_matter: {},
+      steps: [{ tldr: 'Make it.', ingredients: [], instructions: nil,
+                cross_reference: { target_title: 'Sauce', multiplier: '2.0', prep_note: nil } }],
+      footer: nil
+    }
+
+    serialized = FamilyRecipes::RecipeSerializer.serialize(ir)
+
+    assert_includes serialized, '> @[Sauce], 2'
+    refute_includes serialized, '> @[Sauce], 2.0'
+  end
+
+  def test_cross_reference_with_string_default_multiplier
+    ir = {
+      title: 'Test',
+      description: nil,
+      front_matter: {},
+      steps: [{ tldr: 'Make it.', ingredients: [], instructions: nil,
+                cross_reference: { target_title: 'Sauce', multiplier: '1.0', prep_note: nil } }],
+      footer: nil
+    }
+
+    serialized = FamilyRecipes::RecipeSerializer.serialize(ir)
+
+    assert_includes serialized, '> @[Sauce]'
+    refute_match(/> @\[Sauce\], 1/, serialized)
+  end
+
   def test_ends_with_single_newline
     markdown = <<~MD
       # Test Recipe

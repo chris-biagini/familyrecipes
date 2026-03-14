@@ -87,11 +87,12 @@ module FamilyRecipes
     end
 
     def default_multiplier?(multiplier)
-      multiplier.nil? || (multiplier - 1.0).abs < 0.0001
+      multiplier.nil? || (multiplier.to_f - 1.0).abs < 0.0001
     end
 
     def format_multiplier(value)
-      value == value.to_i ? value.to_i.to_s : value.to_s
+      float_val = value.to_f
+      float_val == float_val.to_i ? float_val.to_i.to_s : float_val.to_s
     end
 
     def append_ingredients(lines, ingredients)

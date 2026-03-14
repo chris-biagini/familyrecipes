@@ -37,7 +37,15 @@ export default class extends Controller {
 
   set content(markdown) {
     this.textareaTarget.value = markdown
-    this.hlOverlay?.highlight()
+    this.ensureOverlay()
+    this.hlOverlay.highlight()
+  }
+
+  ensureOverlay() {
+    if (this.hlOverlay) return
+
+    this.hlOverlay = new HighlightOverlay(this.textareaTarget, (text) => this.buildFragment(text))
+    this.hlOverlay.attach()
   }
 
   isModified(originalContent) {
