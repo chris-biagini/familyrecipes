@@ -64,7 +64,7 @@
 |------|---------|
 | `app/javascript/controllers/recipe_editor_controller.js` | Becomes coordinator: mode toggle, routes lifecycle events to active child |
 | `app/javascript/controllers/quickbites_editor_controller.js` | Becomes coordinator: mode toggle, routes lifecycle events to active child |
-| `app/javascript/controllers/editor_controller.js` | Minor: support `structure` as alternative body key for graphical saves |
+| `app/javascript/controllers/editor_controller.js` | Defer to coordinator for content loading via `editor:content-loaded` handled check |
 
 ### Modified Files (Views)
 
@@ -72,6 +72,7 @@
 |------|---------|
 | `app/views/recipes/show.html.erb` | Replace split layout with mode-switchable container; remove side panel |
 | `app/views/menu/show.html.erb` | Add mode-switchable container for Quick Bites editor |
+| `app/views/homepage/show.html.erb` | Update new-recipe dialog for dual mode |
 | `app/views/shared/_editor_dialog.html.erb` | Add mode toggle button to header bar |
 
 ---
@@ -1881,6 +1882,8 @@ Copy `buildFragment`, `classifyLine`, `highlightIngredient`, and `highlightProse
 
 Header comment: plaintext recipe editor, collaborators: recipe_editor_controller (coordinator), HighlightOverlay (utility), editor_controller (dialog lifecycle).
 
+**Important:** The plaintext controller does NOT register its own `editor:collect`, `editor:modified`, or `editor:content-loaded` listeners. The coordinator (`recipe_editor_controller`) is the sole listener for these events and delegates to child controllers via their public methods (`content`, `isModified`). This avoids duplicate/conflicting event handling.
+
 - [ ] **Step 2: Verify plaintext controller works in isolation**
 
 Temporarily wire up the plaintext controller to the recipe editor dialog (swap the controller name in the view). Verify syntax highlighting still works. Then revert.
@@ -1953,7 +1956,47 @@ git commit -m "feat: add recipe graphical editor controller"
 
 ---
 
-### Task 17: Refactor recipe_editor_controller as Coordinator
+### Task 17: Adapt editor_controller for Dual-Mode Support
+
+**Files:**
+- Modify: `app/javascript/controllers/editor_controller.js`
+
+The base `editor_controller.js` currently does two things that conflict with the dual-mode coordinator:
+
+1. **Textarea population on load:** `openWithRemoteContent()` (lines 231-265) fetches content and sets `this.textareaTarget.value`. In dual-mode editors, the coordinator handles populating both child controllers via `editor:content-loaded`. The base controller should skip textarea population when a coordinator handles the event.
+
+2. **Save body construction:** `saveRequest()` builds the request body using `this.bodyKeyValue`. In dual-mode, the coordinator's `handleCollect` provides the data. The existing `editor:collect` mechanism already handles this — when `event.detail.handled` is true, the base controller uses `event.detail.data` instead of reading the textarea. **No change needed for this.**
+
+- [ ] **Step 1: Update `openWithRemoteContent` to check for coordinator handling**
+
+In `editor_controller.js`, after the fetch in `openWithRemoteContent`, dispatch `editor:content-loaded` BEFORE setting the textarea. If the event's `detail.handled` is true (set by the coordinator), skip the textarea population:
+
+```javascript
+// In openWithRemoteContent, after receiving the response:
+const event = this.dispatchEditorEvent('content-loaded', data)
+if (!event.handled) {
+  // No coordinator — fall back to direct textarea population (non-dual-mode editors)
+  this.textareaTarget.value = data[this.loadKeyValue]
+  this.originalContent = this.textareaTarget.value
+}
+```
+
+This is backwards-compatible: non-dual-mode editors (like the ordered list editors) don't have coordinators, so `event.handled` stays false and they work as before.
+
+- [ ] **Step 2: Verify non-dual-mode editors still work**
+
+Run `bin/dev`, open the category and aisle ordered-list editors, verify they still load and save correctly.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add app/javascript/controllers/editor_controller.js
+git commit -m "refactor: editor_controller defers to coordinator for content loading"
+```
+
+---
+
+### Task 18: Refactor recipe_editor_controller as Coordinator
 
 **Files:**
 - Modify: `app/javascript/controllers/recipe_editor_controller.js`
@@ -1995,7 +2038,7 @@ git commit -m "refactor: recipe_editor_controller becomes dual-mode coordinator"
 
 ---
 
-### Task 18: Update Recipe Editor View for Dual Mode
+### Task 19: Update Recipe Editor View for Dual Mode
 
 **Files:**
 - Modify: `app/views/recipes/show.html.erb`
@@ -2010,6 +2053,10 @@ In `app/views/shared/_editor_dialog.html.erb`, add a toggle button in the header
 - [ ] **Step 2: Create graphical editor partial**
 
 Create `app/views/recipes/_graphical_editor.html.erb` with the form structure matching the wireframe: title input, description textarea, front matter row (serves, makes, category dropdown with inline new-category option), tag input (reuses `tag_input_controller`), steps container with Add Step button, footer textarea. All elements use `data-recipe-graphical-target` attributes.
+
+The partial must emit Stimulus values for the graphical controller:
+- `data-recipe-graphical-categories-value="<%= current_kitchen.categories.ordered.pluck(:name).to_json %>"`
+- The tag-input controller is nested inside with its existing `data-tag-input-all-tags-value` attribute
 
 - [ ] **Step 3: Update recipe show view for dual mode**
 
@@ -2039,7 +2086,7 @@ git commit -m "feat: dual-mode recipe editor with mode toggle"
 
 ---
 
-### Task 19: Add CSS for Graphical Editor
+### Task 20: Add CSS for Graphical Editor
 
 **Files:**
 - Modify: `app/assets/stylesheets/style.css` (or appropriate stylesheet)
@@ -2063,7 +2110,7 @@ git commit -m "feat: add CSS for graphical recipe editor"
 
 ---
 
-### Task 20: Quick Bites Dual-Mode Editor
+### Task 21: Quick Bites Dual-Mode Editor
 
 **Files:**
 - Create: `app/javascript/controllers/quickbites_plaintext_controller.js`
@@ -2111,7 +2158,7 @@ git commit -m "feat: add Quick Bites dual-mode editor"
 
 ---
 
-### Task 21: Final Lint and Full Verification
+### Task 22: Final Lint and Full Verification
 
 - [ ] **Step 1: Run RuboCop**
 
