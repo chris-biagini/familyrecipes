@@ -671,7 +671,34 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     body = response.parsed_body
 
-    assert_equal @kitchen.recipes.find_by!(slug: 'focaccia').markdown_source, body['markdown_source']
+    assert_includes body['markdown_source'], '# Focaccia'
+    assert_includes body['markdown_source'], 'Serves: 8'
+  end
+
+  test 'content returns structure alongside markdown' do
+    log_in
+    get recipe_content_path('focaccia', kitchen_slug: kitchen_slug)
+
+    assert_response :ok
+    body = response.parsed_body
+
+    assert_includes body['markdown_source'], '# Focaccia'
+    assert_equal 'Focaccia', body['structure']['title']
+    assert_equal 2, body['structure']['steps'].size
+    assert_equal 'Make the dough (combine ingredients)', body['structure']['steps'][0]['tldr']
+  end
+
+  test 'content regenerates markdown_source with front matter' do
+    recipe = @kitchen.recipes.find_by!(slug: 'focaccia')
+    recipe.tags.create!(name: 'italian', kitchen: @kitchen)
+
+    log_in
+    get recipe_content_path('focaccia', kitchen_slug: kitchen_slug)
+
+    body = response.parsed_body
+
+    assert_includes body['markdown_source'], 'Category: Bread'
+    assert_includes body['markdown_source'], 'Tags: italian'
   end
 
   test 'content returns 403 for non-members' do
@@ -805,6 +832,55 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     assert_includes body['markdown'], '# Test'
     assert_includes body['markdown'], '## Mix.'
     assert_includes body['markdown'], '- Flour'
+  end
+
+  test 'create with structure param uses structured path' do
+    log_in
+    ir = {
+      title: 'GUI Recipe',
+      description: nil,
+      front_matter: { category: 'Basics', tags: %w[test] },
+      steps: [{
+        tldr: 'Mix.',
+        ingredients: [{ name: 'Flour', quantity: nil, prep_note: nil }],
+        instructions: 'Mix.', cross_reference: nil
+      }],
+      footer: nil
+    }
+
+    assert_difference 'Recipe.count', 1 do
+      post recipes_path, params: { structure: ir }, as: :json
+    end
+
+    assert_response :ok
+    recipe = Recipe.last
+
+    assert_equal 'GUI Recipe', recipe.title
+    assert_equal 'Basics', recipe.category.name
+  end
+
+  test 'update with structure param uses structured path' do
+    log_in
+    recipe = create_recipe("# Existing\n\n## Step\n\n- Flour\n\nMix.")
+
+    ir = {
+      title: 'Existing',
+      description: 'Now with a description.',
+      front_matter: {},
+      steps: [{
+        tldr: 'Step.',
+        ingredients: [{ name: 'Flour', quantity: nil, prep_note: nil }],
+        instructions: 'Mix.', cross_reference: nil
+      }],
+      footer: nil
+    }
+
+    patch recipe_path(recipe.slug), params: { structure: ir }, as: :json
+
+    assert_response :ok
+    recipe.reload
+
+    assert_equal 'Now with a description.', recipe.description
   end
 
   test 'show renders recipe with freeform quantity ingredient' do

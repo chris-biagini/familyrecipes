@@ -6,14 +6,29 @@ module FamilyRecipes
   # RecipeBuilder). Single source of truth for the recipe markdown format when
   # generating text from structured data.
   #
+  # Two entry points: `serialize` takes a plain hash (the RecipeBuilder IR),
+  # while `from_record` bridges ActiveRecord Recipe objects to the same IR
+  # format. The content endpoint uses both: from_record -> serialize to produce
+  # enriched markdown with front matter that may not exist in the stored source.
+  #
   # Collaborators:
   # - RecipeBuilder: produces the IR hash this module consumes
   # - MarkdownImporter: may use serialized output for structured imports
   # - RecipesController: populates plaintext textarea during mode switching
-  module RecipeSerializer
+  module RecipeSerializer # rubocop:disable Metrics/ModuleLength
     FRONT_MATTER_KEYS = %i[makes serves category tags].freeze
 
     module_function
+
+    def from_record(recipe)
+      {
+        title: recipe.title,
+        description: recipe.description,
+        front_matter: build_front_matter(recipe),
+        steps: recipe.steps.map { |step| build_step_ir(step) },
+        footer: recipe.footer
+      }
+    end
 
     def serialize(recipe)
       lines = ["# #{recipe[:title]}"]
@@ -105,9 +120,49 @@ module FamilyRecipes
       lines << '' << '---' << '' << footer
     end
 
+    def build_front_matter(recipe)
+      fm = {}
+      makes = [format_decimal(recipe.makes_quantity), recipe.makes_unit_noun].compact.join(' ')
+      fm[:makes] = makes unless makes.empty?
+      fm[:serves] = recipe.serves.to_s if recipe.serves
+      fm[:category] = recipe.category.name if recipe.category
+      tags = recipe.tags.pluck(:name)
+      fm[:tags] = tags if tags.any?
+      fm
+    end
+
+    # Strip trailing ".0" from decimals so "2.0" renders as "2"
+    def format_decimal(value)
+      return unless value
+
+      value == value.to_i ? value.to_i.to_s : value.to_s
+    end
+
+    def build_step_ir(step)
+      return build_cross_reference_step(step) if step.cross_references.any?
+
+      { tldr: step.title,
+        ingredients: step.ingredients.map { |ing| build_ingredient_ir(ing) },
+        instructions: step.instructions, cross_reference: nil }
+    end
+
+    def build_cross_reference_step(step)
+      xref = step.cross_references.first
+      { tldr: step.title, ingredients: [], instructions: nil,
+        cross_reference: { target_title: xref.target_title,
+                           multiplier: xref.multiplier, prep_note: xref.prep_note } }
+    end
+
+    def build_ingredient_ir(ing)
+      quantity = [ing.quantity, ing.unit].compact.join(' ')
+      { name: ing.name, quantity: quantity.empty? ? nil : quantity, prep_note: ing.prep_note }
+    end
+
     private_class_method :append_description, :append_front_matter, :format_front_matter_field,
                          :append_step, :append_cross_reference, :format_cross_reference,
                          :default_multiplier?, :format_multiplier, :append_ingredients,
-                         :format_ingredient, :append_instructions, :append_footer
+                         :format_ingredient, :append_instructions, :append_footer,
+                         :build_front_matter, :build_step_ir, :build_cross_reference_step,
+                         :build_ingredient_ir, :format_decimal
   end
 end

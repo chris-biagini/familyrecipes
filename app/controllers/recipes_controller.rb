@@ -16,11 +16,15 @@ class RecipesController < ApplicationController
   end
 
   def content
-    recipe = current_kitchen.recipes.find_by!(slug: params[:slug])
+    recipe = current_kitchen.recipes.with_full_tree.find_by!(slug: params[:slug])
+    ir = FamilyRecipes::RecipeSerializer.from_record(recipe)
+    markdown = FamilyRecipes::RecipeSerializer.serialize(ir)
+
     render json: {
-      markdown_source: recipe.markdown_source,
+      markdown_source: markdown,
       category: recipe.category&.name,
-      tags: recipe.tags.pluck(:name)
+      tags: recipe.tags.pluck(:name),
+      structure: ir
     }
   end
 
@@ -50,27 +54,16 @@ class RecipesController < ApplicationController
   end
 
   def create
-    return render_validation_errors if validation_errors.any?
-
-    result = RecipeWriteService.create(
-      markdown: params[:markdown_source], kitchen: current_kitchen,
-      category_name: params[:category], tags: params[:tags]
-    )
-    render json: { redirect_url: recipe_path(result.recipe.slug) }
+    result = create_result
+    render json: { redirect_url: recipe_path(result.recipe.slug) } unless performed?
   rescue ActiveRecord::RecordInvalid, RuntimeError => error
     render json: { errors: [error.message] }, status: :unprocessable_content
   end
 
   def update
     current_kitchen.recipes.find_by!(slug: params[:slug])
-    return render_validation_errors if validation_errors.any?
-
-    result = RecipeWriteService.update(
-      slug: params[:slug], markdown: params[:markdown_source],
-      kitchen: current_kitchen, category_name: params[:category],
-      tags: params[:tags]
-    )
-    render json: update_response(result)
+    result = update_result
+    render json: update_response(result) unless performed?
   rescue ActiveRecord::RecordInvalid, RuntimeError => error
     render json: { errors: [error.message] }, status: :unprocessable_content
   end
@@ -103,6 +96,36 @@ class RecipesController < ApplicationController
       </body>
       </html>
     HTML
+  end
+
+  def create_result
+    if params[:structure]
+      return RecipeWriteService.create_from_structure(
+        structure: structure_params, kitchen: current_kitchen
+      )
+    end
+
+    render_validation_errors and return if validation_errors.any?
+
+    RecipeWriteService.create(
+      markdown: params[:markdown_source], kitchen: current_kitchen,
+      category_name: params[:category], tags: params[:tags]
+    )
+  end
+
+  def update_result
+    if params[:structure]
+      return RecipeWriteService.update_from_structure(
+        slug: params[:slug], structure: structure_params, kitchen: current_kitchen
+      )
+    end
+
+    render_validation_errors and return if validation_errors.any?
+
+    RecipeWriteService.update(
+      slug: params[:slug], markdown: params[:markdown_source],
+      kitchen: current_kitchen, category_name: params[:category], tags: params[:tags]
+    )
   end
 
   def structure_params
