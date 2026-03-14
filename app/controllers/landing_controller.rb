@@ -19,8 +19,9 @@ class LandingController < ApplicationController
 
   def render_sole_kitchen_homepage
     set_current_tenant(@kitchens.first)
-    @categories = current_kitchen.categories.ordered.with_recipes.includes(:recipes)
-    @all_categories = current_kitchen.categories.ordered
+    all = current_kitchen.categories.ordered.includes(:recipes)
+    @all_categories = all
+    @categories = all.select { |c| c.recipes.any? }
     render 'homepage/show'
   end
 end

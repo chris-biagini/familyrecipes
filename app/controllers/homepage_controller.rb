@@ -8,7 +8,8 @@
 # - Kitchen: site title and branding read from current_kitchen
 class HomepageController < ApplicationController
   def show
-    @categories = current_kitchen.categories.ordered.with_recipes.includes(:recipes)
-    @all_categories = current_kitchen.categories.ordered
+    all = current_kitchen.categories.ordered.includes(:recipes)
+    @all_categories = all
+    @categories = all.select { |c| c.recipes.any? }
   end
 end

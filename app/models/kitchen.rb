@@ -47,6 +47,7 @@ class Kitchen < ApplicationRecord
   validates :name, presence: true
   validates :slug, presence: true, uniqueness: true
   validate :enforce_single_kitchen_mode, on: :create
+  after_save :clear_parsed_quick_bites_cache, if: :saved_change_to_quick_bites_content?
 
   def broadcast_update
     Turbo::StreamsChannel.broadcast_refresh_to(self, :updates)
@@ -61,7 +62,7 @@ class Kitchen < ApplicationRecord
   def parsed_quick_bites
     return [] unless quick_bites_content
 
-    FamilyRecipes.parse_quick_bites_content(quick_bites_content).quick_bites
+    @parsed_quick_bites ||= FamilyRecipes.parse_quick_bites_content(quick_bites_content).quick_bites
   end
 
   def quick_bites_by_subsection
@@ -93,6 +94,10 @@ class Kitchen < ApplicationRecord
   end
 
   private
+
+  def clear_parsed_quick_bites_cache
+    @parsed_quick_bites = nil
+  end
 
   def enforce_single_kitchen_mode
     return if ENV['MULTI_KITCHEN'] == 'true'

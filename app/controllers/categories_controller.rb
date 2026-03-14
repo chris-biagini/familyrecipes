@@ -9,7 +9,7 @@ class CategoriesController < ApplicationController
   before_action :require_membership, only: [:update_order]
 
   def order_content
-    categories = current_kitchen.categories.ordered
+    categories = current_kitchen.categories.ordered.includes(:recipes)
     render json: {
       categories: categories.map { |c| { name: c.name, position: c.position, recipe_count: c.recipes.size } }
     }

@@ -10,10 +10,11 @@
 # - IngredientCatalog.resolver_for — default resolver factory
 # - MenuController — sole caller
 class RecipeAvailabilityCalculator
-  def initialize(kitchen:, checked_off:, resolver: nil)
+  def initialize(kitchen:, checked_off:, resolver: nil, recipes: nil)
     @kitchen = kitchen
     @resolver = resolver || IngredientCatalog.resolver_for(kitchen)
     @checked_off = Set.new(checked_off.map { |name| canonical_name(name) })
+    @recipes = recipes
   end
 
   def call
@@ -53,8 +54,12 @@ class RecipeAvailabilityCalculator
     @resolver.resolve(name)
   end
 
+  # Only needs ingredient names (own + cross-ref targets). Skips the full
+  # recursive tree that with_full_tree loads (target recipe's own cross-refs).
   def loaded_recipes
-    @kitchen.recipes.with_full_tree
+    @recipes || @kitchen.recipes.includes(
+      steps: [:ingredients, { cross_references: { target_recipe: { steps: :ingredients } } }]
+    )
   end
 
   def quick_bites

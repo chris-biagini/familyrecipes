@@ -21,7 +21,8 @@ class MenuController < ApplicationController
     @selected_recipes = plan.selected_recipes_set
     @selected_quick_bites = plan.selected_quick_bites_set
     checked_off = plan.state.fetch('checked_off', [])
-    @availability = RecipeAvailabilityCalculator.new(kitchen: current_kitchen, checked_off:).call
+    recipes = @categories.flat_map(&:recipes)
+    @availability = RecipeAvailabilityCalculator.new(kitchen: current_kitchen, checked_off:, recipes:).call
   end
 
   def select
@@ -85,7 +86,9 @@ class MenuController < ApplicationController
   private
 
   def recipe_selector_categories
-    current_kitchen.categories.ordered.includes(:recipes)
+    current_kitchen.categories.ordered.includes(
+      recipes: { steps: [:ingredients, { cross_references: { target_recipe: { steps: :ingredients } } }] }
+    )
   end
 
   def all_recipe_slugs

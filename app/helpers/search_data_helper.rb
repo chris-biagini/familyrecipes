@@ -5,6 +5,10 @@
 # top-level object with all_tags, all_categories, and recipes keys so the
 # overlay can offer tag/category pill filtering without a server round-trip.
 #
+# Trade-off: the full blob is embedded on every page for instant search with
+# no server round-trip. Payload grows linearly with recipe count (~1KB per
+# recipe). If it exceeds ~50KB, consider lazy-loading via fetch on overlay open.
+#
 # Collaborators:
 # - ApplicationController (current_kitchen provides tenant scope)
 # - search_overlay_controller.js (consumes the JSON in the browser)

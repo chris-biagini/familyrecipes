@@ -19,7 +19,7 @@ class IngredientRowBuilder # rubocop:disable Metrics/ClassLength
 
   def initialize(kitchen:, recipes: nil, resolver: nil)
     @kitchen = kitchen
-    @recipes = recipes || kitchen.recipes.includes(steps: :ingredients)
+    @recipes = recipes || kitchen.recipes.select(:id, :title, :slug).includes(steps: :ingredients)
     @resolver = resolver || IngredientCatalog.resolver_for(kitchen)
   end
 
@@ -82,8 +82,7 @@ class IngredientRowBuilder # rubocop:disable Metrics/ClassLength
   end
 
   def build_coverage
-    units_map = all_units_by_ingredient
-    resolvable_count, unresolvable = partition_by_resolvability(units_map)
+    resolvable_count, unresolvable = partition_by_resolvability(units_by_ingredient)
 
     summary.merge(fully_resolvable: resolvable_count, unresolvable:)
   end
@@ -94,15 +93,6 @@ class IngredientRowBuilder # rubocop:disable Metrics/ClassLength
     end
 
     [rows.size - unresolvable.size, unresolvable]
-  end
-
-  def all_units_by_ingredient
-    recipes.each_with_object(Hash.new { |h, k| h[k] = Set.new }) do |recipe, map|
-      recipe.ingredients.each do |ingredient|
-        name = canonical_ingredient_name(ingredient.name)
-        map[name] << ingredient.quantity_unit
-      end
-    end
   end
 
   def unresolvable_units_for(name, entry, units)
@@ -178,13 +168,20 @@ class IngredientRowBuilder # rubocop:disable Metrics/ClassLength
   end
 
   def collect_units_for(ingredient_name)
-    keys = @resolver.all_keys_for(ingredient_name).to_set(&:downcase)
+    (units_by_ingredient[ingredient_name] || Set.new).to_a
+  end
 
-    recipes.each_with_object(Set.new) do |recipe, units|
-      recipe.ingredients
-            .select { |i| keys.include?(i.name.downcase) }
-            .each { |i| units << i.quantity_unit }
-    end.to_a
+  def units_by_ingredient
+    @units_by_ingredient ||= compute_units_by_ingredient
+  end
+
+  def compute_units_by_ingredient
+    recipes.each_with_object(Hash.new { |h, k| h[k] = Set.new }) do |recipe, map|
+      recipe.ingredients.each do |ingredient|
+        name = canonical_ingredient_name(ingredient.name)
+        map[name] << ingredient.quantity_unit
+      end
+    end
   end
 
   def unit_resolvable?(unit, entry)
