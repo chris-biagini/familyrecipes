@@ -161,12 +161,29 @@ to editor lifecycle events.
 - Open `<dialog>` elements are protected from Turbo morph via
   `turbo:before-morph-element` in `application.js`.
 - `turbo:before-cache` closes all open dialogs before page snapshots.
-- Both editor controllers guard unsaved changes on `turbo:before-visit`.
 - Do NOT use `data-turbo-permanent` on dialogs.
 - `HighlightOverlay` (shared utility) powers syntax-colored overlays for both
-  Quick Bites and recipe editors.
+  Quick Bites and recipe plaintext editors.
 - `ordered_list_editor_controller` is a single parameterized controller for
   both aisle and category list editors.
+- **Dual-mode editors** (recipe + Quick Bites) use a coordinator/child pattern:
+  `editor_controller` (dialog lifecycle) → coordinator (`recipe_editor_controller`
+  / `quickbites_editor_controller`) → plaintext or graphical child controller.
+  Coordinator manages mode toggle (persisted in `localStorage`), routes
+  lifecycle events to the active child, and handles mode-switch serialization
+  via server round-trips (`/parse` and `/serialize` endpoints).
+- `RecipeSerializer` and `QuickBitesSerializer` are pure-function modules that
+  convert IR hashes ↔ Markdown/plaintext — the inverse of the parser pipeline.
+  Used by mode switching, structured writes, and content loading.
+- Graphical controllers build DOM entirely via `createElement`/`textContent`
+  (strict CSP). Cross-reference steps render read-only in graphical mode.
+
+**Scale panel.** `scale_panel_controller` provides inline recipe scaling
+(presets + free-form input), dispatching `scale-panel:change` events consumed
+by `recipe_state_controller`. Uses dual-restoration for async Stimulus
+connection: event-based (`recipe-state:restored`) with attribute fallback
+(`data-restored-scale-factor`). Embedded cross-reference recipes carry
+`data-base-multiplier` — effective scale = base × user factor.
 
 **Hotwire stack.** Turbo Drive + Turbo Streams, Stimulus controllers,
 importmap-rails for ES modules.
@@ -191,12 +208,16 @@ in views.
 response rendering. Services own all post-write side effects (reconcile,
 broadcast). Don't call `MarkdownImporter` directly for web operations.
 - `RecipeWriteService` — recipe mutations, cross-reference cascades, category
-  cleanup, meal plan pruning, broadcast.
+  cleanup, tag sync, meal plan pruning, broadcast. Dual entry: `create`/`update`
+  (markdown) and `create_from_structure`/`update_from_structure` (IR hash).
 - `CatalogWriteService` — `IngredientCatalog` mutations, aisle sync, nutrition
   recalculation, broadcast.
 - `MealPlanWriteService` — select/deselect, select-all, clear, reconciliation.
 - `QuickBitesWriteService` — quick bites content persistence, parse
-  validation, reconciliation, broadcast.
+  validation, reconciliation, broadcast. Also has `update_from_structure`.
+- `MarkdownImporter` has two entry points: `import` (markdown string) and
+  `import_from_structure` (IR hash → serializes to markdown internally).
+  Both converge on the same DB upsert + cross-ref resolution path.
 - `AisleWriteService` — reorder, rename/delete cascades to catalog rows,
   new-aisle sync, broadcast.
 - `CategoryWriteService` — ordering, renaming, deletion cascades, broadcast.
@@ -253,9 +274,11 @@ dialog.
   into density/portion/filtered buckets.
 
 **Search overlay.** Spotlight-style `<dialog>` on every page, triggered by `/`
-key or nav icon. `SearchDataHelper` embeds a JSON blob (title, slug,
-description, category, ingredients) in the layout; `search_overlay_controller`
-does client-side substring matching with tiered ranking. No server endpoint.
+key or nav icon. `SearchDataHelper` embeds a JSON blob (recipes with title,
+slug, description, category, tags, ingredients; plus `all_tags` and
+`all_categories` lists); `search_overlay_controller` does client-side substring
+matching with tiered ranking and pill-based tag/category filtering. No server
+endpoint.
 
 ## Recipe & Data Formats
 
@@ -265,6 +288,12 @@ authoritative spec. Read the header comments on `LineClassifier` (token types),
 `CrossReferenceParser` (`> @[Title]` import syntax). Bare `@[Title]` in prose
 or the footer renders as a clickable link to that recipe (render-time only, no
 DB tracking). Seed files in `db/seeds/recipes/` are working examples.
+
+**Front matter.** Recipes support optional front matter lines before the first
+step: `Serves:`, `Makes:`, `Category:`, `Tags:`. Tags are comma-separated,
+normalized to lowercase `[a-zA-Z-]`. Front matter category overrides the
+explicit category parameter; tags sync to the `Tag`/`RecipeTag` join table
+via `RecipeWriteService`.
 
 **Quick Bites** are grocery bundles, not recipes. See
 `FamilyRecipes::QuickBite` header comment for format. Stored in
