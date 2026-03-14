@@ -124,13 +124,25 @@
 <%= render layout: 'shared/editor_dialog',
     locals: { title: 'New Recipe',
               id: 'recipe-editor',
+              mode_toggle: true,
               dialog_data: { editor_open: '#new-recipe-button',
                              editor_url: recipes_path,
                              editor_method: 'POST',
                              editor_on_success: 'redirect',
                              editor_body_key: 'markdown_source',
-                             extra_controllers: 'recipe-editor' } } do %>
-  <textarea class="editor-textarea" data-editor-target="textarea"
-            data-recipe-editor-target="textarea" spellcheck="false"><%= "# Recipe Title\n\nOptional description.\n\nCategory: Miscellaneous\n\nMakes: 4 servings\nServes: 4\n\n## Step Name (short summary)\n\n- Ingredient, quantity: prep note\n\nInstructions here.\n\n---\n\nOptional notes or source." %></textarea>
+                             extra_controllers: 'recipe-editor' },
+              extra_data: {
+                'recipe-editor-parse-url-value' => recipe_parse_path,
+                'recipe-editor-serialize-url-value' => recipe_serialize_path
+              } } do %>
+  <div data-recipe-editor-target="plaintextContainer">
+    <div data-controller="recipe-plaintext">
+      <textarea class="editor-textarea" data-editor-target="textarea"
+                data-recipe-plaintext-target="textarea" spellcheck="false"><%= "# Recipe Title\n\nOptional description.\n\nCategory: Miscellaneous\n\nMakes: 4 servings\nServes: 4\n\n## Step Name (short summary)\n\n- Ingredient, quantity: prep note\n\nInstructions here.\n\n---\n\nOptional notes or source." %></textarea>
+    </div>
+  </div>
+  <div data-recipe-editor-target="graphicalContainer" hidden>
+    <%= render 'recipes/graphical_editor' %>
+  </div>
 <% end %>
 <% end %>

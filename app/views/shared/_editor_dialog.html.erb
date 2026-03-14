@@ -1,4 +1,4 @@
-<%# locals: (title:, id:, dialog_data: {}, footer_extra: nil, extra_data: {}) %>
+<%# locals: (title:, id:, dialog_data: {}, footer_extra: nil, extra_data: {}, mode_toggle: false) %>
 <%= tag.dialog id: id,
     class: 'editor-dialog',
     data: {
@@ -13,7 +13,16 @@
     }.compact.merge(extra_data) do %>
   <div class="editor-header">
     <h2><%= title %></h2>
-    <button type="button" class="btn editor-close" data-editor-target="closeButton" data-action="click->editor#close" aria-label="Close">&times;</button>
+    <div class="editor-header-actions">
+      <% if mode_toggle %>
+        <button type="button" class="btn editor-mode-toggle"
+                data-action="click->recipe-editor#toggleMode"
+                data-recipe-editor-target="modeToggle"
+                title="Switch editor mode">&lt;/&gt;</button>
+      <% end %>
+      <button type="button" class="btn editor-close" data-editor-target="closeButton"
+              data-action="click->editor#close" aria-label="Close">&times;</button>
+    </div>
   </div>
   <div class="editor-errors" data-editor-target="errors" hidden></div>
   <%= yield %>

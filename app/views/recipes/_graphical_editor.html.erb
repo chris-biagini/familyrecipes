@@ -1,0 +1,82 @@
+<%# Graphical (form-based) recipe editor. Rendered inside the editor dialog
+    alongside the plaintext textarea; the recipe_editor coordinator toggles
+    visibility between them. All step cards are built dynamically by the
+    recipe_graphical_controller — stepsContainer starts empty. %>
+<div data-controller="recipe-graphical"
+     data-recipe-graphical-categories-value="<%= current_kitchen.categories.ordered.pluck(:name).to_json %>">
+
+  <div class="graphical-editor">
+    <div class="graphical-field-group">
+      <label class="graphical-label" for="graphical-title">Title</label>
+      <input type="text" id="graphical-title" class="graphical-input"
+             data-recipe-graphical-target="title"
+             placeholder="Recipe title">
+    </div>
+
+    <div class="graphical-field-group">
+      <label class="graphical-label" for="graphical-description">Description</label>
+      <textarea id="graphical-description" class="graphical-input graphical-textarea"
+                data-recipe-graphical-target="description"
+                rows="2" placeholder="Optional description"></textarea>
+    </div>
+
+    <div class="graphical-front-matter">
+      <div class="graphical-field-group graphical-field-group--inline">
+        <label class="graphical-label" for="graphical-serves">Serves</label>
+        <input type="text" id="graphical-serves" class="graphical-input graphical-input--short"
+               data-recipe-graphical-target="serves"
+               placeholder="e.g. 4">
+      </div>
+
+      <div class="graphical-field-group graphical-field-group--inline">
+        <label class="graphical-label" for="graphical-makes">Makes</label>
+        <input type="text" id="graphical-makes" class="graphical-input graphical-input--short"
+               data-recipe-graphical-target="makes"
+               placeholder="e.g. 12 rolls">
+      </div>
+
+      <div class="graphical-field-group graphical-field-group--inline">
+        <label class="graphical-label" for="graphical-category">Category</label>
+        <select id="graphical-category" class="graphical-input graphical-select"
+                data-recipe-graphical-target="categorySelect"
+                data-action="change->recipe-graphical#categoryChanged">
+          <option value="">None</option>
+          <% current_kitchen.categories.ordered.each do |cat| %>
+            <option value="<%= cat.name %>"><%= cat.name %></option>
+          <% end %>
+          <option value="__new__">New category...</option>
+        </select>
+        <input type="text" class="graphical-input graphical-input--short" hidden
+               data-recipe-graphical-target="categoryInput"
+               data-action="keydown->recipe-graphical#categoryInputKeydown"
+               placeholder="New category name">
+      </div>
+    </div>
+
+    <div class="graphical-field-group">
+      <label class="graphical-label">Tags</label>
+      <div data-controller="tag-input"
+           data-tag-input-all-tags-value="<%= current_kitchen.tags.left_joins(:recipe_tags).group(:name).order(:name).count.to_a.to_json %>">
+        <div class="tag-input-container">
+          <div class="tag-pills" data-tag-input-target="pills"></div>
+          <input type="text" class="tag-input-field" placeholder="Add tag..."
+                 data-tag-input-target="input"
+                 data-action="input->tag-input#onInput keydown->tag-input#onKeydown">
+        </div>
+        <div class="tag-autocomplete" data-tag-input-target="dropdown" hidden></div>
+      </div>
+    </div>
+
+    <div data-recipe-graphical-target="stepsContainer" class="graphical-steps-container"></div>
+
+    <button type="button" class="btn graphical-btn--add-step"
+            data-action="click->recipe-graphical#addStep">+ Add Step</button>
+
+    <div class="graphical-field-group">
+      <label class="graphical-label" for="graphical-footer">Footer</label>
+      <textarea id="graphical-footer" class="graphical-input graphical-textarea"
+                data-recipe-graphical-target="footer"
+                rows="2" placeholder="Optional notes or source"></textarea>
+    </div>
+  </div>
+</div>

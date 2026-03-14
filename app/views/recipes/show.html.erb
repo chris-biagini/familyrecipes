@@ -33,6 +33,7 @@
 <%= render layout: 'shared/editor_dialog',
     locals: { title: "Editing: #{@recipe.title}",
               id: 'recipe-editor',
+              mode_toggle: true,
               dialog_data: { editor_open: '#edit-button',
                              editor_url: recipe_path(@recipe.slug),
                              editor_method: 'PATCH',
@@ -41,9 +42,20 @@
                              editor_load_url: recipe_content_path(@recipe.slug),
                              editor_load_key: 'markdown_source',
                              extra_controllers: 'recipe-editor' },
+              extra_data: {
+                'recipe-editor-parse-url-value' => recipe_parse_path,
+                'recipe-editor-serialize-url-value' => recipe_serialize_path
+              },
               footer_extra: render('recipes/editor_delete_button', recipe: @recipe) } do %>
-  <textarea class="editor-textarea" data-editor-target="textarea"
-            data-recipe-editor-target="textarea" spellcheck="false"
-            placeholder="Loading..."></textarea>
+  <div data-recipe-editor-target="plaintextContainer">
+    <div data-controller="recipe-plaintext">
+      <textarea class="editor-textarea" data-editor-target="textarea"
+                data-recipe-plaintext-target="textarea" spellcheck="false"
+                placeholder="Loading..."></textarea>
+    </div>
+  </div>
+  <div data-recipe-editor-target="graphicalContainer" hidden>
+    <%= render 'recipes/graphical_editor' %>
+  </div>
 <% end %>
 <% end %>
