@@ -43,8 +43,8 @@ class RecipeWriteService
 
   def create(markdown:, category_name: nil, tags: nil)
     category = find_or_create_category(category_name)
-    recipe = import_and_timestamp(markdown, category:)
-    sync_resolved_tags(recipe, tags)
+    recipe, front_matter_tags = import_and_timestamp(markdown, category:)
+    sync_tags(recipe, tags || front_matter_tags)
     finalize
     Result.new(recipe:, updated_references: [])
   end
@@ -52,7 +52,7 @@ class RecipeWriteService
   def create_from_structure(structure:)
     category = find_or_create_category(structure.dig(:front_matter, :category))
     recipe = import_structure_and_timestamp(structure, category:)
-    sync_resolved_tags(recipe, structure.dig(:front_matter, :tags))
+    sync_tags(recipe, structure.dig(:front_matter, :tags))
     finalize
     Result.new(recipe:, updated_references: [])
   end
@@ -60,8 +60,8 @@ class RecipeWriteService
   def update(slug:, markdown:, category_name: nil, tags: nil)
     old_recipe = kitchen.recipes.find_by!(slug:)
     category = find_or_create_category(category_name)
-    recipe = import_and_timestamp(markdown, category:)
-    sync_resolved_tags(recipe, tags)
+    recipe, front_matter_tags = import_and_timestamp(markdown, category:)
+    sync_tags(recipe, tags || front_matter_tags)
     updated_references = rename_cross_references(old_recipe, recipe)
     handle_slug_change(old_recipe, recipe)
     finalize
@@ -72,7 +72,7 @@ class RecipeWriteService
     old_recipe = kitchen.recipes.find_by!(slug:)
     category = find_or_create_category(structure.dig(:front_matter, :category))
     recipe = import_structure_and_timestamp(structure, category:)
-    sync_resolved_tags(recipe, structure.dig(:front_matter, :tags))
+    sync_tags(recipe, structure.dig(:front_matter, :tags))
     updated_references = rename_cross_references(old_recipe, recipe)
     handle_slug_change(old_recipe, recipe)
     finalize
@@ -100,8 +100,7 @@ class RecipeWriteService
   def import_and_timestamp(markdown, category:)
     result = MarkdownImporter.import(markdown, kitchen:, category:)
     result.recipe.update!(edited_at: Time.current)
-    @last_front_matter_tags = result.front_matter_tags
-    result.recipe
+    [result.recipe, result.front_matter_tags]
   end
 
   def import_structure_and_timestamp(structure, category:)
@@ -137,11 +136,10 @@ class RecipeWriteService
     kitchen.broadcast_update
   end
 
-  def sync_resolved_tags(recipe, explicit_tags)
-    resolved = explicit_tags || @last_front_matter_tags
-    return unless resolved
+  def sync_tags(recipe, tags)
+    return unless tags
 
-    desired = resolved.map { |n| kitchen.tags.find_or_create_by!(name: n.downcase) }
+    desired = tags.map { |n| kitchen.tags.find_or_create_by!(name: n.downcase) }
     recipe.tags = desired
   end
 
