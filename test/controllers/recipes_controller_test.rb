@@ -761,6 +761,52 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     assert_not Tag.exists?(name: 'quick')
   end
 
+  test 'parse returns IR from markdown' do
+    log_in
+    post recipe_parse_path,
+         params: { markdown_source: "# Test\n\nServes: 2\n\n## Mix.\n\n- Flour\n\nMix." },
+         as: :json
+
+    assert_response :ok
+    body = response.parsed_body
+
+    assert_equal 'Test', body['title']
+    assert_equal 'Mix.', body['steps'][0]['tldr']
+    assert_equal 'Flour', body['steps'][0]['ingredients'][0]['name']
+  end
+
+  test 'parse returns errors for invalid markdown' do
+    log_in
+    post recipe_parse_path, params: { markdown_source: '' }, as: :json
+
+    assert_response :unprocessable_content
+    assert_predicate response.parsed_body['errors'], :any?
+  end
+
+  test 'serialize returns markdown from IR' do
+    log_in
+    ir = {
+      title: 'Test',
+      description: nil,
+      front_matter: { serves: '2' },
+      steps: [{
+        tldr: 'Mix.',
+        ingredients: [{ name: 'Flour', quantity: nil, prep_note: nil }],
+        instructions: 'Mix.', cross_reference: nil
+      }],
+      footer: nil
+    }
+
+    post recipe_serialize_path, params: { structure: ir }, as: :json
+
+    assert_response :ok
+    body = response.parsed_body
+
+    assert_includes body['markdown'], '# Test'
+    assert_includes body['markdown'], '## Mix.'
+    assert_includes body['markdown'], '- Flour'
+  end
+
   test 'show renders recipe with freeform quantity ingredient' do
     MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @bread)
       # Salad

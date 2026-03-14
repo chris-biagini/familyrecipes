@@ -7,7 +7,7 @@
 # links to these. All domain logic (import, broadcast, cleanup) lives in the
 # service.
 class RecipesController < ApplicationController
-  before_action :require_membership, only: %i[content create update destroy]
+  before_action :require_membership, only: %i[content create update destroy parse serialize]
 
   def show
     @recipe = current_kitchen.recipes.with_full_tree.find_by!(slug: params[:slug])
@@ -22,6 +22,20 @@ class RecipesController < ApplicationController
       category: recipe.category&.name,
       tags: recipe.tags.pluck(:name)
     }
+  end
+
+  def parse
+    errors = MarkdownValidator.validate(params[:markdown_source])
+    return render json: { errors: }, status: :unprocessable_content if errors.any?
+
+    tokens = LineClassifier.classify(params[:markdown_source])
+    ir = RecipeBuilder.new(tokens).build
+    render json: ir
+  end
+
+  def serialize
+    markdown = FamilyRecipes::RecipeSerializer.serialize(structure_params)
+    render json: { markdown: }
   end
 
   def show_markdown
@@ -89,6 +103,10 @@ class RecipesController < ApplicationController
       </body>
       </html>
     HTML
+  end
+
+  def structure_params
+    params[:structure].to_unsafe_h.deep_symbolize_keys
   end
 
   def update_response(result)

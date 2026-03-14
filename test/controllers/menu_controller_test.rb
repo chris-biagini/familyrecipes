@@ -383,6 +383,53 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test 'parse_quick_bites returns IR from content' do
+    log_in
+    content = "Snacks:\n- Apples and Honey: Apples, Honey"
+
+    post menu_parse_quick_bites_path(kitchen_slug: kitchen_slug),
+         params: { content: }, as: :json
+
+    assert_response :ok
+    body = response.parsed_body
+
+    assert_equal 1, body['categories'].size
+    assert_equal 'Snacks', body['categories'][0]['name']
+    assert_equal 'Apples and Honey', body['categories'][0]['items'][0]['name']
+  end
+
+  test 'serialize_quick_bites returns content from IR' do
+    log_in
+    ir = {
+      categories: [
+        { name: 'Snacks', items: [{ name: 'Apples', ingredients: %w[Apples] }] }
+      ]
+    }
+
+    post menu_serialize_quick_bites_path(kitchen_slug: kitchen_slug),
+         params: { structure: ir }, as: :json
+
+    assert_response :ok
+    assert_includes response.parsed_body['content'], 'Snacks:'
+    assert_includes response.parsed_body['content'], '- Apples'
+  end
+
+  test 'update_quick_bites with structure param uses structured path' do
+    log_in
+    ir = {
+      categories: [
+        { name: 'Snacks', items: [{ name: 'Crackers', ingredients: %w[Ritz] }] }
+      ]
+    }
+
+    patch menu_quick_bites_path(kitchen_slug: kitchen_slug),
+          params: { structure: ir }, as: :json
+
+    assert_response :ok
+    assert_includes @kitchen.reload.quick_bites_content, 'Snacks:'
+    assert_includes @kitchen.quick_bites_content, '- Crackers: Ritz'
+  end
+
   private
 
   def create_two_ingredient_recipe
