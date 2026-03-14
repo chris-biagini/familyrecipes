@@ -417,6 +417,26 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.parsed_body['content'], '- Apples'
   end
 
+  test 'update_quick_bites with structure rejects unexpected keys' do
+    log_in
+    ir = { categories: [], evil: 'payload' }
+
+    patch menu_quick_bites_path(kitchen_slug: kitchen_slug),
+          params: { structure: ir }, as: :json
+
+    assert_response :bad_request
+  end
+
+  test 'serialize_quick_bites rejects unexpected keys' do
+    log_in
+    ir = { categories: [], injected: true }
+
+    post menu_serialize_quick_bites_path(kitchen_slug: kitchen_slug),
+         params: { structure: ir }, as: :json
+
+    assert_response :bad_request
+  end
+
   test 'update_quick_bites with structure param uses structured path' do
     log_in
     ir = {

@@ -43,6 +43,16 @@ class TagsControllerTest < ActionDispatch::IntegrationTest
     assert_predicate body['errors'], :any?
   end
 
+  test 'update_tags rejects rename with overly long name' do
+    long_name = 'a' * 51
+
+    patch tags_update_path(kitchen_slug: kitchen_slug),
+          params: { renames: { 'vegan' => long_name }, deletes: [] },
+          as: :json
+
+    assert_response :bad_request
+  end
+
   test 'requires membership for update' do
     reset!
     patch tags_update_path(kitchen_slug: kitchen_slug),

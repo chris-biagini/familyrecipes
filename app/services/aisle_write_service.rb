@@ -30,7 +30,7 @@ class AisleWriteService
   def update_order(aisle_order:, renames:, deletes:)
     kitchen.aisle_order = aisle_order.to_s
 
-    errors = validate_order
+    errors = validate_order + validate_renames(renames, Kitchen::MAX_AISLE_NAME_LENGTH)
     return Result.new(success: false, errors:) if errors.any?
 
     kitchen.normalize_aisle_order!
@@ -80,6 +80,14 @@ class AisleWriteService
     dupes = items.group_by(&:downcase).select { |_, v| v.uniq.size > 1 }.values.map(&:first)
     dupes.each { |name| errors << "\"#{name}\" appears more than once (case-insensitive)." }
     errors
+  end
+
+  def validate_renames(renames, max)
+    return [] unless renames.is_a?(Hash) || renames.is_a?(ActionController::Parameters)
+
+    renames.values
+           .select { |name| name.size > max }
+           .map { |name| "\"#{name}\" exceeds maximum length of #{max} characters." }
   end
 
   def cascade_renames(renames)

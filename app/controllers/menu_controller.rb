@@ -9,6 +9,7 @@
 # - MealPlanActions: rescue_from for StaleObjectError
 class MenuController < ApplicationController
   include MealPlanActions
+  include StructureValidation
 
   before_action :require_membership
   before_action :prevent_html_caching, only: :show
@@ -54,9 +55,8 @@ class MenuController < ApplicationController
 
   def update_quick_bites
     result = if params[:structure]
-               structure = params[:structure].to_unsafe_h.deep_symbolize_keys
                QuickBitesWriteService.update_from_structure(
-                 kitchen: current_kitchen, structure:
+                 kitchen: current_kitchen, structure: validated_quick_bites_structure
                )
              else
                QuickBitesWriteService.update(
@@ -76,8 +76,7 @@ class MenuController < ApplicationController
   end
 
   def serialize_quick_bites
-    structure = params[:structure].to_unsafe_h.deep_symbolize_keys
-    content = FamilyRecipes::QuickBitesSerializer.serialize(structure)
+    content = FamilyRecipes::QuickBitesSerializer.serialize(validated_quick_bites_structure)
     render json: { content: }
   end
 

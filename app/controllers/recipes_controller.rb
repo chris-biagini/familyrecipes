@@ -7,6 +7,8 @@
 # links to these. All domain logic (import, broadcast, cleanup) lives in the
 # service.
 class RecipesController < ApplicationController
+  include StructureValidation
+
   before_action :require_membership, only: %i[content create update destroy parse serialize]
 
   def show
@@ -129,7 +131,7 @@ class RecipesController < ApplicationController
   end
 
   def structure_params
-    params[:structure].to_unsafe_h.deep_symbolize_keys
+    validated_recipe_structure
   end
 
   def update_response(result)

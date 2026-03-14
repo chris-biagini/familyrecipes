@@ -884,6 +884,32 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'Now with a description.', recipe.description
   end
 
+  test 'create with structure rejects unexpected top-level keys' do
+    log_in
+    ir = {
+      title: 'Bad Recipe', evil: 'payload',
+      steps: [{ tldr: 'Mix.', ingredients: [], instructions: 'Mix.', cross_reference: nil }],
+      description: nil, front_matter: {}, footer: nil
+    }
+
+    post recipes_path, params: { structure: ir }, as: :json
+
+    assert_response :bad_request
+  end
+
+  test 'update with structure rejects unexpected top-level keys' do
+    log_in
+    ir = {
+      title: 'Focaccia', injected: true,
+      steps: [{ tldr: 'Mix.', ingredients: [], instructions: 'Mix.', cross_reference: nil }],
+      description: nil, front_matter: {}, footer: nil
+    }
+
+    patch recipe_path('focaccia'), params: { structure: ir }, as: :json
+
+    assert_response :bad_request
+  end
+
   test 'show renders recipe with freeform quantity ingredient' do
     MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @bread)
       # Salad

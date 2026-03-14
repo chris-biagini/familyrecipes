@@ -74,6 +74,20 @@ class CategoryWriteServiceTest < ActiveSupport::TestCase
     assert_equal 'bread', @bread.reload.name
   end
 
+  # --- rename length validation ---
+
+  test 'rename rejects name exceeding MAX_NAME_LENGTH' do
+    long_name = 'a' * (CategoryWriteService::MAX_NAME_LENGTH + 1)
+
+    result = CategoryWriteService.update_order(
+      kitchen: @kitchen, names: %w[Bread Dessert],
+      renames: { 'Bread' => long_name }, deletes: []
+    )
+
+    assert_not result.success
+    assert(result.errors.any? { |e| e.include?('exceeds maximum length') })
+  end
+
   # --- deletes ---
 
   test 'update_order deletes category and reassigns recipes to Miscellaneous' do

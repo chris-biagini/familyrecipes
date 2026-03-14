@@ -8,6 +8,8 @@
 # - TagWriteService: handles rename/delete changeset
 # - Tag: queried for content listing
 class TagsController < ApplicationController
+  include StructureValidation
+
   before_action :require_membership, only: :update_tags
 
   def content
@@ -18,8 +20,8 @@ class TagsController < ApplicationController
   def update_tags
     result = TagWriteService.update(
       kitchen: current_kitchen,
-      renames: params.fetch(:renames, {}).to_unsafe_h,
-      deletes: params.fetch(:deletes, [])
+      renames: validated_tag_renames(params.fetch(:renames, {})),
+      deletes: Array(params.fetch(:deletes, []))
     )
 
     if result.success

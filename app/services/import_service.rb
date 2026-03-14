@@ -18,6 +18,8 @@ class ImportService # rubocop:disable Metrics/ClassLength
     end
   end
 
+  MAX_FILE_SIZE = 10.megabytes
+  MAX_ZIP_ENTRIES = 500
   RECIPE_EXTENSIONS = %w[.md .txt .text].freeze
   QUICK_BITES_PATTERN = /\Aquick[- ]?bites\z/i
 
@@ -35,6 +37,9 @@ class ImportService # rubocop:disable Metrics/ClassLength
   end
 
   def import
+    validate_file_sizes
+    return build_result if @errors.any?
+
     zip_file = files.find { |f| File.extname(f.original_filename).casecmp('.zip').zero? }
     Kitchen.batch_writes(kitchen) do
       zip_file ? import_zip(zip_file) : files.each { |f| import_recipe_file(f, 'Miscellaneous') }
@@ -45,6 +50,11 @@ class ImportService # rubocop:disable Metrics/ClassLength
   private
 
   attr_reader :kitchen, :files
+
+  def validate_file_sizes
+    files.select { |f| f.size > MAX_FILE_SIZE }
+         .each { |f| @errors << "#{f.original_filename}: exceeds #{MAX_FILE_SIZE / 1.megabyte} MB limit" }
+  end
 
   def build_result
     Result.new(recipes: @recipes_count, ingredients: @ingredients_count,
@@ -61,11 +71,15 @@ class ImportService # rubocop:disable Metrics/ClassLength
   def buffer_zip_entries(zip_file)
     entries = { aisle_order: nil, category_order: nil, catalog: nil,
                 quick_bites: nil, recipes: [] }
+    entry_count = 0
 
     Zip::InputStream.open(StringIO.new(zip_file.read)) do |zis|
       while (entry = zis.get_next_entry)
-        name = entry.name.force_encoding('UTF-8')
-        content = zis.read.force_encoding('UTF-8')
+        entry_count += 1
+        break @errors << "ZIP exceeds #{MAX_ZIP_ENTRIES} entry limit" if entry_count > MAX_ZIP_ENTRIES
+
+        name = sanitize_encoding(entry.name)
+        content = sanitize_encoding(zis.read)
         classify_entry(entries, name, content)
       end
     end
@@ -116,7 +130,7 @@ class ImportService # rubocop:disable Metrics/ClassLength
   def import_catalog(content)
     return if content.blank?
 
-    data = YAML.safe_load(content)
+    data = YAML.safe_load(content, permitted_classes: [], permitted_symbols: [], aliases: false)
     result = CatalogWriteService.bulk_import(kitchen:, entries_hash: data)
     @ingredients_count = result.persisted_count
     @errors.concat(result.errors)
@@ -180,6 +194,10 @@ class ImportService # rubocop:disable Metrics/ClassLength
   # --- Non-ZIP import (individual files) ---
 
   def import_recipe_file(file, category_name)
-    import_recipe_content(file.read.force_encoding('UTF-8'), category_name, file.original_filename)
+    import_recipe_content(sanitize_encoding(file.read), category_name, file.original_filename)
+  end
+
+  def sanitize_encoding(str)
+    str.encode('UTF-8', invalid: :replace, undef: :replace)
   end
 end

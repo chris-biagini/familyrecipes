@@ -21,7 +21,7 @@ class CategoryWriteService
   end
 
   def update_order(names:, renames:, deletes:)
-    errors = validate_order(names)
+    errors = validate_order(names) + validate_renames(renames, MAX_NAME_LENGTH)
     return Result.new(success: false, errors:) if errors.any?
 
     ActiveRecord::Base.transaction do
@@ -48,6 +48,14 @@ class CategoryWriteService
     dupes = names.group_by(&:downcase).select { |_, v| v.size > 1 }.values.map(&:first)
     dupes.each { |name| errors << "\"#{name}\" appears more than once (case-insensitive)." }
     errors
+  end
+
+  def validate_renames(renames, max)
+    return [] unless renames.is_a?(Hash) || renames.is_a?(ActionController::Parameters)
+
+    renames.values
+           .select { |name| name.size > max }
+           .map { |name| "\"#{name}\" exceeds maximum length of #{max} characters." }
   end
 
   def cascade_renames(renames)

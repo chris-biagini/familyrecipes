@@ -277,6 +277,45 @@ class ImportServiceTest < ActiveSupport::TestCase
     assert_predicate @kitchen.categories, :any?
   end
 
+  # --- File size limits ---
+
+  test 'rejects file exceeding MAX_FILE_SIZE' do
+    huge = 'x' * (ImportService::MAX_FILE_SIZE + 1)
+    result = import_files(uploaded_file('huge.md', huge))
+
+    assert_equal 0, result.recipes
+    assert(result.errors.any? { |e| e.include?('exceeds') })
+  end
+
+  test 'rejects oversized ZIP file' do
+    huge = 'x' * (ImportService::MAX_FILE_SIZE + 1)
+    result = import_files(uploaded_file('huge.zip', huge))
+
+    assert_equal 0, result.recipes
+    assert(result.errors.any? { |e| e.include?('exceeds') })
+  end
+
+  # --- ZIP entry count limits ---
+
+  test 'ZIP with too many entries reports error and stops' do
+    entries = (1..501).to_h { |i| ["Recipe#{i}.md", simple_recipe("Recipe #{i}")] }
+    zip = build_zip(entries)
+    result = import_files(uploaded_file('huge.zip', zip))
+
+    assert(result.errors.any? { |e| e.include?('entry limit') })
+    assert_operator @kitchen.recipes.count, :<=, ImportService::MAX_ZIP_ENTRIES
+  end
+
+  # --- Encoding ---
+
+  test 'handles non-UTF-8 content gracefully' do
+    # Latin-1 encoded string with a non-UTF-8 byte
+    content = simple_recipe('Cr\xe8me').dup.force_encoding('BINARY')
+    result = import_files(uploaded_file('recipe.md', content))
+
+    assert_equal 1, result.recipes
+  end
+
   # --- Batch broadcast ---
 
   test 'multi-recipe import produces exactly one broadcast' do

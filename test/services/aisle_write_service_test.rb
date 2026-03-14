@@ -84,6 +84,21 @@ class AisleWriteServiceTest < ActiveSupport::TestCase
     assert_equal 'Fruits', IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'Apples').aisle
   end
 
+  # --- update_order: cascade rename length validation ---
+
+  test 'update_order rejects rename target exceeding MAX_AISLE_NAME_LENGTH' do
+    IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Apples', aisle: 'Produce')
+    long_name = 'a' * (Kitchen::MAX_AISLE_NAME_LENGTH + 1)
+
+    result = AisleWriteService.update_order(
+      kitchen: @kitchen, aisle_order: 'Produce',
+      renames: { 'Produce' => long_name }, deletes: []
+    )
+
+    assert_not result.success
+    assert(result.errors.any? { |e| e.include?('exceeds maximum length') })
+  end
+
   # --- update_order: cascade deletes ---
 
   test 'update_order clears aisle from catalog entries on delete' do
