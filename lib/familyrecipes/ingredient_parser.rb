@@ -3,6 +3,10 @@
 # Parses a single ingredient bullet line into a structured hash with :name,
 # :quantity, and :prep_note keys. Called by RecipeBuilder for each :ingredient
 # token. Cross-references use CrossReferenceParser instead.
+#
+# Collaborators:
+# - RecipeBuilder: calls parse for each :ingredient token during assembly
+# - CrossReferenceParser: handles the complementary > @[Title] syntax
 module IngredientParser
   def self.parse(text)
     raise "Cross-references now use > @[...] syntax. Write: > #{text}" if text.start_with?('@[')

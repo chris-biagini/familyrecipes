@@ -5,6 +5,13 @@
 # steps, footer) that FamilyRecipes::Recipe uses to populate itself. Works as
 # a single-pass cursor over the token array — peek/advance/skip_blanks. Handles
 # both explicit steps (## headers) and implicit steps (ingredients without headers).
+#
+# Collaborators:
+# - LineClassifier: produces the LineToken stream this class consumes
+# - IngredientParser: parses individual :ingredient tokens into structured hashes
+# - CrossReferenceParser: parses :cross_reference_block tokens
+# - FamilyRecipes::Recipe: receives the assembled hash via .from_parsed
+# - MarkdownImporter: the entry point that wires LineClassifier → RecipeBuilder
 class RecipeBuilder # rubocop:disable Metrics/ClassLength
   def initialize(tokens)
     @tokens = tokens

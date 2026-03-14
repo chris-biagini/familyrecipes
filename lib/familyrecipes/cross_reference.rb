@@ -5,6 +5,11 @@ module FamilyRecipes
   # the target recipe title, its slugified form for lookup, an optional multiplier,
   # and an optional prep note. #expanded_ingredients resolves the reference against
   # a recipe_map to produce scaled ingredient quantities for aggregation.
+  #
+  # Collaborators:
+  # - CrossReferenceParser: parses > @[Title] lines into CrossReference instances
+  # - RecipeBuilder: embeds CrossReferences in step data during parse
+  # - IngredientAggregator: consumes expanded_ingredients for quantity merging
   class CrossReference
     attr_reader :target_title, :target_slug, :multiplier, :prep_note
 

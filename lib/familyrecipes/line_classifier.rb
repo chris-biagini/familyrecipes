@@ -2,8 +2,13 @@
 
 # First stage of the parser pipeline. Converts raw Markdown lines into typed
 # LineToken values (:title, :step_header, :ingredient, :cross_reference_block,
-# :front_matter, :divider, :blank, :prose) that RecipeBuilder consumes as a token stream. Pattern order
-# matters — more specific patterns must precede the :prose fallthrough.
+# :front_matter, :divider, :blank, :prose) that RecipeBuilder consumes as a
+# token stream. Pattern order matters — more specific patterns must precede
+# the :prose fallthrough.
+#
+# Collaborators:
+# - RecipeBuilder: consumes the LineToken array this module produces
+# - MarkdownImporter: calls classify to kick off the parse pipeline
 module LineClassifier
   LineToken = Data.define(:type, :content, :line_number)
 

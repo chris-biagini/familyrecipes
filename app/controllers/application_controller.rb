@@ -5,6 +5,11 @@
 # → set tenant from path. Public reads are allowed (allow_unauthenticated_access);
 # write paths and member-only pages call require_membership. Also manages the
 # optional kitchen_slug URL scope and cache headers for member-only pages.
+#
+# Collaborators:
+# - Authentication concern: session lifecycle (resume, start, terminate)
+# - Kitchen / acts_as_tenant: multi-tenant scoping via set_current_tenant
+# - User / Membership: trusted-header user lookup and auto-join
 class ApplicationController < ActionController::Base
   include Authentication
 
