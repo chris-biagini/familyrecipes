@@ -15,9 +15,10 @@
     <h2><%= title %></h2>
     <div class="editor-header-actions">
       <% if mode_toggle %>
+        <% toggle_controller = dialog_data[:extra_controllers] %>
         <button type="button" class="btn editor-mode-toggle"
-                data-action="click->recipe-editor#toggleMode"
-                data-recipe-editor-target="modeToggle"
+                data-action="click-><%= toggle_controller %>#toggleMode"
+                data-<%= toggle_controller %>-target="modeToggle"
                 title="Switch editor mode">&lt;/&gt;</button>
       <% end %>
       <button type="button" class="btn editor-close" data-editor-target="closeButton"

@@ -39,6 +39,7 @@
 <%= render layout: 'shared/editor_dialog',
     locals: { title: 'Edit QuickBites',
               id: 'quickbites-editor',
+              mode_toggle: true,
               dialog_data: { editor_open: '#edit-quick-bites-button',
                              editor_url: menu_quick_bites_path,
                              editor_method: 'PATCH',
@@ -46,7 +47,20 @@
                              editor_body_key: 'content',
                              editor_load_url: menu_quick_bites_content_path,
                              editor_load_key: 'content',
-                             extra_controllers: 'quickbites-editor' } } do %>
-  <textarea class="editor-textarea" data-editor-target="textarea" data-quickbites-editor-target="textarea" spellcheck="false" placeholder="Loading..."></textarea>
+                             extra_controllers: 'quickbites-editor' },
+              extra_data: {
+                'quickbites-editor-parse-url-value' => menu_parse_quick_bites_path,
+                'quickbites-editor-serialize-url-value' => menu_serialize_quick_bites_path
+              } } do %>
+  <div data-quickbites-editor-target="plaintextContainer">
+    <div data-controller="quickbites-plaintext">
+      <textarea class="editor-textarea" data-editor-target="textarea"
+                data-quickbites-plaintext-target="textarea" spellcheck="false"
+                placeholder="Loading..."></textarea>
+    </div>
+  </div>
+  <div data-quickbites-editor-target="graphicalContainer" hidden>
+    <%= render 'menu/quickbites_graphical_editor' %>
+  </div>
 <% end %>
 <% end %>

@@ -46,7 +46,10 @@ class MenuController < ApplicationController
   end
 
   def quick_bites_content
-    render json: { content: current_kitchen.quick_bites_content || '' }
+    content = current_kitchen.quick_bites_content || ''
+    result = FamilyRecipes.parse_quick_bites_content(content)
+    structure = FamilyRecipes::QuickBitesSerializer.to_ir(result.quick_bites)
+    render json: { content:, structure: }
   end
 
   def update_quick_bites
