@@ -18,11 +18,11 @@ Turbo. If not, document the trade-off.
 
 ### 1b. `to_unsafe_h` tightening
 
-`RecipesController` and `MenuController` call `.to_unsafe_h.deep_symbolize_keys`
-on structure params from graphical editors. Data flows through serializers and
-`MarkdownImporter` which validate structure, so risk is low — but we should add
-lightweight schema validation at the controller boundary (expected top-level
-keys, type checks) rather than relying on downstream code.
+`RecipesController`, `MenuController`, and `TagsController` call
+`.to_unsafe_h.deep_symbolize_keys` on structure params. Data flows through
+serializers and write services which validate structure, so risk is low — but we
+should add lightweight schema validation at the controller boundary (expected
+top-level keys, type checks) rather than relying on downstream code.
 
 ### 1c. `permit!` in NutritionEntriesController
 
@@ -67,6 +67,9 @@ updates, `TagWriteService` edge cases, and any service called outside
 indexed by ingredient name. Every recipe containing "salt" stores its full
 object. For the ingredients index page this means potentially all recipes held
 in memory. Store lightweight data (id, title, slug) instead of full AR objects.
+Note: the editor form view uses `source.title`, `source.slug`, and
+`source.is_a?(Recipe)` — the replacement must preserve those three attributes
+plus type discrimination.
 
 ### 3b. SearchDataHelper payload
 
@@ -123,3 +126,9 @@ conventions have changed.
 
 Each area gets one or more commits when complete. Tests must pass (`rake test`)
 and lint must be clean (`rake lint`) after each area.
+
+## Out of scope
+
+**Migration consolidation.** CLAUDE.md notes that all migrations should be
+consolidated into a single `001_create_schema.rb` for v1.0. That is a separate
+task from this audit and will be handled in its own pass.
