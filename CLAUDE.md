@@ -24,8 +24,13 @@ translated into Ruby syntax. Ruby code should read like English.
 ### Enumerable over imperative loops — this is non-negotiable
 
 NEVER build collections with `each` + an accumulator. Use the right Enumerable
-method: ```ruby # WRONG — Claude's default, and it's unacceptable result = []
-items.each { |item| result << item.name if item.active? } result
+method:
+
+```ruby
+# WRONG — Claude's default, and it's unacceptable
+result = []
+items.each { |item| result << item.name if item.active? }
+result
 
 # RIGHT — idiomatic Ruby
 items.select(&:active?).map(&:name)
@@ -36,8 +41,11 @@ Use `map`, `select`/`reject`, `flat_map`, `each_with_object`,
 (Symbol#to_proc) when the block just calls one method.
 
 When appending to an existing collection, use `concat` + `map` — not `each` +
-`<<`: ```ruby # WRONG custom.each { |item| list << { name: item, amounts: [] }
-}
+`<<`:
+
+```ruby
+# WRONG
+custom.each { |item| list << { name: item, amounts: [] } }
 
 # RIGHT
 list.concat(custom.map { |item| { name: item, amounts: [] } })
@@ -112,8 +120,8 @@ when adding new conventions or workflows.
 ## HTML & Security
 
 A strict CSP is enforced (`config/initializers/content_security_policy.rb`). No
-inline styles, no external resources. Update the CSP initializer before adding
-any.
+inline styles, no external resources (Google Fonts is the sole exception). Update
+the CSP initializer before adding any.
 
 - **Never** call `.html_safe` on a string that interpolates user content
   without first escaping via `ERB::Util.html_escape`.
