@@ -31,6 +31,12 @@ jobs:
       - name: Lint and test
         run: bundle exec rake
 
+      - name: Verify clean migration and seed
+        env:
+          RAILS_ENV: production
+          SECRET_KEY_BASE: placeholder
+        run: bin/rails db:create db:migrate db:seed
+
   build:
     needs: test
     runs-on: ubuntu-latest

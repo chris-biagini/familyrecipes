@@ -1,21 +1,24 @@
 # frozen_string_literal: true
 
-# Re-imports all recipes containing cross-references to rebuild step data
-# after the syntax change from >>> to >. Also rewrites any remaining >>>
-# syntax in markdown sources.
+# Rewrites cross-reference syntax from >>> to > in stored markdown sources.
+# Uses raw SQL — migrations must never call application code (models, services,
+# jobs) because they may depend on schema that doesn't exist yet.
 class MigrateCrossReferenceSyntax < ActiveRecord::Migration[8.0]
   def up
-    Kitchen.find_each do |kitchen|
-      ActsAsTenant.with_tenant(kitchen) do
-        Recipe.where("markdown_source LIKE '%@[%'").find_each do |recipe|
-          source = recipe.markdown_source.gsub('>>> @[', '> @[')
-          MarkdownImporter.import(source, kitchen: kitchen, category: recipe.category)
-        end
-      end
-    end
+    execute <<~SQL.squish
+      UPDATE recipes
+      SET markdown_source = REPLACE(markdown_source, '>>> @[', '> @['),
+          updated_at = CURRENT_TIMESTAMP
+      WHERE markdown_source LIKE '%>>> @[%'
+    SQL
   end
 
   def down
-    # No-op: re-importing with old parser would require reverting code first
+    execute <<~SQL.squish
+      UPDATE recipes
+      SET markdown_source = REPLACE(markdown_source, '> @[', '>>> @['),
+          updated_at = CURRENT_TIMESTAMP
+      WHERE markdown_source LIKE '%> @[%'
+    SQL
   end
 end

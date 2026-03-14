@@ -350,6 +350,13 @@ This changes commit SHAs, so `git branch -d` fails after fast-forward merges
 one-off rake tasks for backfills.  Migrations are numbered sequentially
 (`001_`, `002_`, …).  When it is time to ship v1.0, consolidate all
 migrations into a single `001_create_schema.rb` to keep things clean.
+- **Never call application models, services, or jobs from migrations.** Use raw
+  SQL or define bare model stubs inside the migration file. Application code
+  may depend on schema that doesn't exist yet, causing migration ordering bugs.
+- Schema migrations (create/alter table) must come before any data migrations
+  that depend on those tables.
+- CI verifies migrations from scratch (`db:create db:migrate db:seed`) before
+  building the Docker image.
 
 **Releases.** Tag pushes (`v0.2.5`) trigger Docker builds and set `:latest`.
 The `REVISION` build arg bakes the version into the image (read by
