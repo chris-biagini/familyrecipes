@@ -16,8 +16,9 @@ class TagsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     body = response.parsed_body
 
-    assert_includes body['items'], 'vegan'
-    assert_includes body['items'], 'quick'
+    names = body['items'].map { |i| i['name'] }
+    assert_includes names, 'vegan'
+    assert_includes names, 'quick'
   end
 
   test 'update_tags renames and deletes' do
