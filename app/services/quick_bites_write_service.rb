@@ -1,12 +1,14 @@
 # frozen_string_literal: true
 
-# Orchestrates quick bites content updates. Owns persistence to
-# Kitchen#quick_bites_content, parse validation (returning warnings),
-# meal plan reconciliation, and broadcast. Parallels RecipeWriteService
-# and CatalogWriteService — controllers call class methods, never
-# inline post-save logic.
+# Orchestrates quick bites content updates. Dual entry: `update` accepts raw
+# plaintext; `update_from_structure` accepts an IR hash and serializes via
+# QuickBitesSerializer. Owns persistence to Kitchen#quick_bites_content,
+# parse validation (returning warnings), meal plan reconciliation, and
+# broadcast. Parallels RecipeWriteService — controllers call class methods,
+# never inline post-save logic.
 #
-# - Kitchen#quick_bites_content: raw markdown storage
+# - QuickBitesSerializer: IR hash → plaintext (update_from_structure path)
+# - Kitchen#quick_bites_content: raw plaintext storage
 # - FamilyRecipes.parse_quick_bites_content: parser returning warnings
 # - MealPlan#reconcile!: prunes stale selections after content changes
 # - Kitchen#broadcast_update: page-refresh morph for all connected clients

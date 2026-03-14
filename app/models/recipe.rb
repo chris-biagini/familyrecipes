@@ -11,6 +11,7 @@
 # - RecipeNutritionJob / CascadeNutritionJob (async nutrition recomputation)
 # - RecipeBroadcaster (delete/rename notifications on per-recipe streams)
 # - IngredientAggregator (quantity merging for all_ingredients_with_quantities)
+# - Tag / RecipeTag (kitchen-scoped labels, synced by RecipeWriteService)
 class Recipe < ApplicationRecord
   acts_as_tenant :kitchen
   belongs_to :category

@@ -1,12 +1,15 @@
 # frozen_string_literal: true
 
-# Orchestrates recipe create/update/destroy. Owns the full post-write pipeline:
-# import via MarkdownImporter, handle renames (CrossReferenceUpdater), clean up
-# orphan categories, and reconcile stale meal plan entries. The `finalize` step
-# always cleans orphan categories but skips reconcile and broadcast when
+# Orchestrates recipe create/update/destroy. Dual entry: `create`/`update`
+# accept raw Markdown; `create_from_structure`/`update_from_structure` accept
+# IR hashes (from graphical editors) and serialize via MarkdownImporter. Owns
+# the full post-write pipeline: import, tag sync, rename cascades, orphan
+# cleanup (categories + tags), and meal plan reconciliation. The `finalize`
+# step always cleans orphans but skips reconcile and broadcast when
 # Kitchen.batching? is true (batch caller handles those once at the end).
 #
-# - MarkdownImporter: parses markdown into AR records
+# - MarkdownImporter: parses markdown / IR hashes into AR records
+# - Tag: created inline during sync; orphans cleaned in finalize
 # - Kitchen#broadcast_update: page-refresh morph for all connected clients
 # - RecipeBroadcaster: targeted delete notifications and rename redirects
 # - CrossReferenceUpdater: renames cross-references on title change
