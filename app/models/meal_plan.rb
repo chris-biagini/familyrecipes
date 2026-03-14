@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 
-# Singleton-per-kitchen record that stores shared meal planning state as a JSON
-# blob: selected recipes, selected quick bites, custom grocery items, and
-# checked-off items. Both the menu and groceries pages read and write this
-# model. Cross-device sync is handled by Kitchen#broadcast_update.
-# MealPlan#reconcile!(visible_names:) is the sole entry point for pruning stale
-# state — callers compute visible_names via ShoppingListBuilder#visible_names.
+# Singleton-per-kitchen JSON state record for shared meal planning: selected
+# recipes/quick bites, custom grocery items, checked-off items. Both menu and
+# groceries pages read/write this model.
+#
+# - .reconcile_kitchen!(kitchen) — canonical post-write reconciliation entry
+#   point (fetch plan, optimistic retry, compute visible names, prune stale).
+# - #reconcile!(visible_names:) — inner pruning for callers already holding
+#   the plan inside a retry block (e.g., MealPlanWriteService).
 class MealPlan < ApplicationRecord
   acts_as_tenant :kitchen
 
@@ -20,6 +22,14 @@ class MealPlan < ApplicationRecord
     find_or_create_by!(kitchen: kitchen)
   rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotUnique
     find_by!(kitchen: kitchen)
+  end
+
+  def self.reconcile_kitchen!(kitchen)
+    plan = for_kitchen(kitchen)
+    plan.with_optimistic_retry do
+      visible = ShoppingListBuilder.new(kitchen:, meal_plan: plan).visible_names
+      plan.reconcile!(visible_names: visible)
+    end
   end
 
   # Controller params arrive as strings; handle both "true"/true
@@ -76,7 +86,6 @@ class MealPlan < ApplicationRecord
 
   def with_optimistic_retry(max_attempts: MAX_RETRY_ATTEMPTS)
     attempts = 0
-
     begin
       attempts += 1
       yield
@@ -124,11 +133,11 @@ class MealPlan < ApplicationRecord
 
   def apply_select(type:, slug:, selected:, **)
     key = type == 'recipe' ? 'selected_recipes' : 'selected_quick_bites'
-    toggle_array(key, slug, truthy?(selected))
+    toggle_array(key, slug, self.class.truthy?(selected))
   end
 
   def apply_check(item:, checked:, **)
-    toggle_array('checked_off', item, truthy?(checked))
+    toggle_array('checked_off', item, self.class.truthy?(checked))
   end
 
   def apply_custom_items(item:, action:, **)
@@ -154,9 +163,5 @@ class MealPlan < ApplicationRecord
 
   def list_remove(key, list, value)
     CASE_INSENSITIVE_KEYS.include?(key) ? list.reject! { |v| v.casecmp?(value) } : list.delete(value)
-  end
-
-  def truthy?(value)
-    self.class.truthy?(value)
   end
 end

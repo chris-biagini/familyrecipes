@@ -97,15 +97,11 @@ class MarkdownImporter
     name = parsed[:front_matter][:category]
     return unless name
 
-    kitchen.categories.find_or_create_by!(name:)
+    Category.find_or_create_for(kitchen, name)
   end
 
   def default_category
-    slug = FamilyRecipes.slugify('Miscellaneous')
-    kitchen.categories.find_or_create_by!(slug:) do |cat|
-      cat.name = 'Miscellaneous'
-      cat.position = kitchen.categories.maximum(:position).to_i + 1
-    end
+    Category.miscellaneous(kitchen)
   end
 
   def replace_steps(recipe)

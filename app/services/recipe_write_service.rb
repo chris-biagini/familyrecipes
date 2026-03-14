@@ -94,11 +94,7 @@ class RecipeWriteService
   def find_or_create_category(name)
     return nil if name.blank?
 
-    slug = FamilyRecipes.slugify(name)
-    kitchen.categories.find_or_create_by!(slug:) do |cat|
-      cat.name = name
-      cat.position = kitchen.categories.maximum(:position).to_i + 1
-    end
+    Category.find_or_create_for(kitchen, name)
   end
 
   def import_and_timestamp(markdown, category:)
@@ -150,10 +146,6 @@ class RecipeWriteService
   end
 
   def prune_stale_meal_plan_items
-    plan = MealPlan.for_kitchen(kitchen)
-    plan.with_optimistic_retry do
-      visible = ShoppingListBuilder.new(kitchen:, meal_plan: plan).visible_names
-      plan.reconcile!(visible_names: visible)
-    end
+    MealPlan.reconcile_kitchen!(kitchen)
   end
 end

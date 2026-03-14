@@ -56,7 +56,7 @@ class MealPlanWriteService
   def reconcile
     return if Kitchen.batching?
 
-    mutate_plan { |plan| reconcile_plan(plan) }
+    MealPlan.reconcile_kitchen!(kitchen)
     kitchen.broadcast_update
   end
 

@@ -75,11 +75,7 @@ class CategoryWriteService
   end
 
   def find_or_create_miscellaneous
-    slug = FamilyRecipes.slugify('Miscellaneous')
-    kitchen.categories.find_or_create_by!(slug:) do |cat|
-      cat.name = 'Miscellaneous'
-      cat.position = kitchen.categories.maximum(:position).to_i + 1
-    end
+    Category.miscellaneous(kitchen)
   end
 
   def update_positions(names)
