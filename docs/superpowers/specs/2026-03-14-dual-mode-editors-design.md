@@ -33,8 +33,17 @@ both Ruby). No client-side markdown generation.
 
 ### Recipe IR Structure
 
-This is the hash `RecipeBuilder.build` already returns, extended with
-`category` and `tags`:
+This is a **normalized** version of the hash `RecipeBuilder.build` returns,
+extended with `category` and `tags`. Today's `RecipeBuilder` output is close
+but not identical — ingredient `quantity` is a raw string that
+`MarkdownImporter` splits into qty + unit via
+`FamilyRecipes::Ingredient.split_quantity`. Stage 2 formalizes this IR as
+the contract between both input paths and `MarkdownImporter`, keeping the
+qty/unit split inside the importer where it already lives.
+
+The graphical editor sends JSON matching this shape. The keys map 1:1 to
+`RecipeBuilder` output (`:title`, `:description`, `:front_matter`, `:steps`,
+`:tldr`, `:ingredients`, `:instructions`, `:cross_reference`, `:footer`).
 
 ```ruby
 {
@@ -73,6 +82,10 @@ This is the hash `RecipeBuilder.build` already returns, extended with
 
 ### Quick Bites IR Structure
 
+Anchored to `FamilyRecipes.parse_quick_bites_content`, which returns a
+`QuickBitesResult` containing an array of `FamilyRecipes::QuickBite` objects.
+The IR normalizes this into a hash for JSON transport:
+
 ```ruby
 {
   categories: [
@@ -86,6 +99,10 @@ This is the hash `RecipeBuilder.build` already returns, extended with
   ]
 }
 ```
+
+Each `QuickBite` has `category`, `title`, and `ingredients` attributes. The
+IR groups items by category and preserves ordering. The
+`QuickBitesSerializer` inverts this to produce the plaintext format.
 
 ## Front Matter Extension
 
@@ -142,7 +159,24 @@ structural equality.
   then imports
 
 Both paths converge on the same internal `save_recipe` / `replace_steps`
-logic. The controller dispatches based on content type or a param key.
+logic.
+
+`RecipeWriteService` gains parallel methods:
+
+- `create(markdown:, kitchen:, ...)` / `update(slug:, markdown:, ...)` —
+  existing, call `MarkdownImporter.import`
+- `create_from_structure(structure:, kitchen:, ...)` /
+  `update_from_structure(slug:, structure:, ...)` — new, extract `category`
+  and `tags` from `structure[:front_matter]`, call
+  `MarkdownImporter.import_from_structure`
+
+`RecipesController` dispatches based on the presence of a `structure` param
+key (JSON from graphical editor) vs `markdown_source` (string from plaintext
+editor). Same endpoint, same response format.
+
+Same pattern for Quick Bites: `QuickBitesWriteService` gains
+`update_from_structure(structure:, kitchen:)` alongside the existing
+`update(content:, kitchen:)`.
 
 ## Editor Controller Architecture
 
@@ -173,11 +207,17 @@ A small `</>` icon button in the editor dialog's header bar. Toggling:
 1. Active mode serializes its state (plaintext → markdown string, graphical →
    JSON structure)
 2. Coordinator stores that state
-3. For graphical → plaintext: coordinator fetches serialized markdown from the
-   server (Ruby serializer, one source of truth)
-4. For plaintext → graphical: coordinator sends markdown to server for parsing,
-   receives the IR, populates the form
+3. For graphical → plaintext: coordinator POSTs the JSON structure to
+   `POST /recipes/serialize` (or `POST /menu/serialize_quick_bites`), which
+   returns `{ markdown: "..." }`. Populates the textarea.
+4. For plaintext → graphical: coordinator POSTs the markdown string to
+   `POST /recipes/parse` (or `POST /menu/parse_quick_bites`), which returns
+   the IR as JSON. Populates the form.
 5. New mode becomes visible, old mode hides
+
+These are stateless utility endpoints on the existing controllers — no
+authentication or tenant scoping needed beyond what the controllers already
+enforce. They do not write to the database.
 
 ### Mode preference
 
@@ -200,7 +240,7 @@ Form-based editor inside the existing editor dialog:
 - Collapsible accordion cards, one per step
 - Collapsed: step name + ingredient count summary
 - Expanded: step name input, ingredient rows, instructions textarea
-- Ingredient rows: three fields per row — Name, Qty, Prep note. Drag handles
+- Ingredient rows: three fields per row — Name, Qty, Prep note. ↑↓ buttons
   for reordering. Add/remove buttons.
 - Step reordering via ↑↓ buttons on the card header
 - Add Step button at the bottom
@@ -227,12 +267,58 @@ Simpler two-level form:
 **Items** within each category:
 - Two fields per row: Name (text input) and Ingredients (comma-separated text
   input)
-- Drag handles for reordering within a category
+- ↑↓ buttons for reordering within a category
 - Add/remove items
+
+## Validation in Graphical Mode
+
+The graphical editor's structured form prevents most syntax errors by
+construction (no way to forget `## ` or `- `). Remaining validation:
+
+- **Title required** — client-side: disable Save when title is blank.
+  Server-side: `RecipeWriteService` already validates title presence.
+- **At least one step required** — client-side: prevent removing the last
+  step. Server-side: `MarkdownImporter` raises if steps are empty.
+- **Step name required** — client-side: highlight blank step names on save
+  attempt. Server-side: the parser requires step headers.
+- **Whitespace-only fields** — client-side: trim on collect. Server-side:
+  the parser and importer already handle blank strings.
+- **Tag format** — the existing `tag_input_controller` enforces `[a-zA-Z-]`
+  with hyphen normalization; reused in graphical mode.
+
+Server-side validation is unchanged — both paths produce the same IR, which
+goes through the same validation in `MarkdownImporter` and
+`RecipeWriteService`. The graphical path returns 422 with `{ errors: [...] }`
+just like the plaintext path, and the coordinator displays errors the same
+way.
+
+## Loading Existing Recipes in Graphical Mode
+
+When the editor opens in graphical mode for an existing recipe, the
+`content` endpoint (`GET /recipes/:slug/content`) returns the IR structure
+alongside the markdown source. This avoids a second round-trip to parse:
+
+```json
+{
+  "markdown_source": "# Scrambled Eggs\n...",
+  "category": "Basics",
+  "tags": ["breakfast", "quick"],
+  "structure": { "title": "...", "steps": [...], ... }
+}
+```
+
+The coordinator routes `markdown_source` to the plaintext controller and
+`structure` to the graphical controller. Only the active mode consumes its
+data; the other is available if the user toggles.
+
+For existing recipes whose `markdown_source` lacks `Category:` and `Tags:`
+front matter, the `content` endpoint uses the serializer to regenerate
+`markdown_source` from the DB record, which will include the front matter
+lines. This ensures plaintext mode always shows complete front matter.
 
 ## Staging
 
-Six stages, each independently shippable:
+Five stages, each independently shippable:
 
 ### Stage 1: Front matter extension
 - Parser accepts `Category:` and `Tags:` in front matter
@@ -260,15 +346,12 @@ Six stages, each independently shippable:
 - `recipe_plaintext_controller` extracted from existing code
 - Mode preference in localStorage
 - Cross-reference steps as read-only cards
+- "New Recipe" in graphical mode: empty form with one blank step pre-created
 
 ### Stage 5: Quick Bites graphical editor
 - Coordinator + plaintext + graphical controllers
 - `FamilyRecipes::QuickBitesSerializer`
 - Structured import path for Quick Bites
-
-### Stage 6: Recipe creation in graphical mode
-- "New Recipe" flow in graphical mode
-- Empty form with sensible defaults (empty step pre-created)
 
 ## Non-Goals
 
@@ -276,7 +359,7 @@ Six stages, each independently shippable:
   instruction textareas with a rich-text editor)
 - Cross-reference editing in graphical mode (read-only cards for now)
 - CodeMirror or other advanced plaintext editing (future possibility)
-- Drag-and-drop step reordering (↑↓ buttons are sufficient; drag-and-drop is
-  a polish item)
+- Drag-and-drop reordering (↑↓ buttons throughout; drag-and-drop is a future
+  polish item)
 - Mobile-specific layout changes (the form layout is responsive by default;
   the accordion pattern works on small screens)
