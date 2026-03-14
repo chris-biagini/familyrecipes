@@ -107,3 +107,4 @@ Rails/RefuteMethods:
     - test/vulgar_fractions_test.rb
     - test/usda_client_test.rb
     - test/usda_portion_classifier_test.rb
+    - test/recipe_serializer_test.rb
