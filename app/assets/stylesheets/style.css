@@ -3080,6 +3080,10 @@ a.recipe-link {
   gap: 1rem;
 }
 
+.graphical-step-body[hidden] {
+  display: none;
+}
+
 .graphical-step-toggle {
   opacity: 0.4;
   font-size: 0.8em;
