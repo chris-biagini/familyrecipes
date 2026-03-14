@@ -326,4 +326,34 @@ class RecipeWriteServiceTest < ActiveSupport::TestCase
 
     assert_not_includes plan.state['selected_recipes'], 'focaccia'
   end
+
+  test 'create uses front matter tags when tags param is nil' do
+    md = "# FM Tags\n\nTags: quick, breakfast\n\n## Step\n\n- Eggs, 2\n\nScramble."
+    result = RecipeWriteService.create(markdown: md, kitchen: @kitchen)
+
+    assert_equal %w[breakfast quick], result.recipe.tags.pluck(:name).sort
+  end
+
+  test 'explicit tags param overrides front matter tags' do
+    md = "# FM Tags Override\n\nTags: breakfast, quick\n\n## Step\n\n- Eggs, 2\n\nScramble."
+    result = RecipeWriteService.create(markdown: md, kitchen: @kitchen, tags: %w[dinner])
+
+    assert_equal %w[dinner], result.recipe.tags.pluck(:name)
+  end
+
+  test 'create uses front matter category when category_name is blank' do
+    md = "# FM Category\n\nCategory: Desserts\n\n## Step\n\n- Sugar, 1 cup\n\nMix."
+    result = RecipeWriteService.create(markdown: md, kitchen: @kitchen, category_name: '')
+
+    assert_equal 'Desserts', result.recipe.category.name
+  end
+
+  test 'update uses front matter tags when tags param is nil' do
+    md = "# FM Update Tags\n\nTags: lunch\n\n## Step\n\n- Bread, 2 slices\n\nToast."
+    RecipeWriteService.create(markdown: md, kitchen: @kitchen)
+    updated = "# FM Update Tags\n\nTags: dinner, fancy\n\n## Step\n\n- Bread, 2 slices\n\nToast."
+    result = RecipeWriteService.update(slug: 'fm-update-tags', markdown: updated, kitchen: @kitchen)
+
+    assert_equal %w[dinner fancy], result.recipe.tags.pluck(:name).sort
+  end
 end

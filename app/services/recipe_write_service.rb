@@ -14,11 +14,11 @@
 class RecipeWriteService
   Result = Data.define(:recipe, :updated_references)
 
-  def self.create(markdown:, kitchen:, category_name: 'Miscellaneous', tags: nil)
+  def self.create(markdown:, kitchen:, category_name: nil, tags: nil)
     new(kitchen:).create(markdown:, category_name:, tags:)
   end
 
-  def self.update(slug:, markdown:, kitchen:, category_name: 'Miscellaneous', tags: nil)
+  def self.update(slug:, markdown:, kitchen:, category_name: nil, tags: nil)
     new(kitchen:).update(slug:, markdown:, category_name:, tags:)
   end
 
@@ -30,19 +30,19 @@ class RecipeWriteService
     @kitchen = kitchen
   end
 
-  def create(markdown:, category_name:, tags: nil)
+  def create(markdown:, category_name: nil, tags: nil)
     category = find_or_create_category(category_name)
     recipe = import_and_timestamp(markdown, category:)
-    sync_tags(recipe, tags) if tags
+    sync_resolved_tags(recipe, tags)
     finalize
     Result.new(recipe:, updated_references: [])
   end
 
-  def update(slug:, markdown:, category_name:, tags: nil)
+  def update(slug:, markdown:, category_name: nil, tags: nil)
     old_recipe = kitchen.recipes.find_by!(slug:)
     category = find_or_create_category(category_name)
     recipe = import_and_timestamp(markdown, category:)
-    sync_tags(recipe, tags) if tags
+    sync_resolved_tags(recipe, tags)
     updated_references = rename_cross_references(old_recipe, recipe)
     handle_slug_change(old_recipe, recipe)
     finalize
@@ -62,7 +62,8 @@ class RecipeWriteService
   attr_reader :kitchen
 
   def find_or_create_category(name)
-    name = 'Miscellaneous' if name.blank?
+    return nil if name.blank?
+
     slug = FamilyRecipes.slugify(name)
     kitchen.categories.find_or_create_by!(slug:) do |cat|
       cat.name = name
@@ -71,9 +72,10 @@ class RecipeWriteService
   end
 
   def import_and_timestamp(markdown, category:)
-    recipe = MarkdownImporter.import(markdown, kitchen:, category:)
-    recipe.update!(edited_at: Time.current)
-    recipe
+    result = MarkdownImporter.import(markdown, kitchen:, category:)
+    result.recipe.update!(edited_at: Time.current)
+    @last_front_matter_tags = result.front_matter_tags
+    result.recipe
   end
 
   def rename_cross_references(old_recipe, new_recipe)
@@ -103,8 +105,11 @@ class RecipeWriteService
     kitchen.broadcast_update
   end
 
-  def sync_tags(recipe, tag_names)
-    desired = tag_names.map { |n| kitchen.tags.find_or_create_by!(name: n.downcase) }
+  def sync_resolved_tags(recipe, explicit_tags)
+    resolved = explicit_tags || @last_front_matter_tags
+    return unless resolved
+
+    desired = resolved.map { |n| kitchen.tags.find_or_create_by!(name: n.downcase) }
     recipe.tags = desired
   end
 

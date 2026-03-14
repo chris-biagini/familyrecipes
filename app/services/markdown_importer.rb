@@ -11,29 +11,33 @@
 # or instructions). The step-level :cross_reference key drives this branching.
 #
 # Kitchen-scoped (requires kitchen: keyword) and idempotent — db:seed calls
-# this repeatedly. Category is passed in as an AR object by the caller (typically
-# RecipeWriteService). After import, resolves pending cross-references, computes
-# nutrition synchronously (RecipeNutritionJob), and enqueues CascadeNutritionJob
-# async so parent recipes update without blocking the saving user.
+# this repeatedly. Returns an ImportResult (recipe + front_matter_tags) so
+# callers like RecipeWriteService can access parsed metadata without re-parsing.
+# Category resolves via: explicit argument → front matter → Miscellaneous default.
+# After import, resolves pending cross-references, computes nutrition synchronously
+# (RecipeNutritionJob), and enqueues CascadeNutritionJob async so parent recipes
+# update without blocking the saving user.
 class MarkdownImporter
   class SlugCollisionError < RuntimeError; end
 
+  ImportResult = Data.define(:recipe, :front_matter_tags)
+
   def self.import(markdown_source, kitchen:, category:)
-    new(markdown_source, kitchen: kitchen, category: category).import
+    new(markdown_source, kitchen:, category:).run
   end
 
-  def initialize(markdown_source, kitchen:, category:)
+  def initialize(markdown_source, kitchen:, category:, parsed: nil)
     @markdown_source = markdown_source
     @kitchen = kitchen
     @category = category
-    @parsed = parse_markdown
+    @parsed = parsed || parse_markdown
   end
 
-  def import
+  def run
     recipe = save_recipe
     CrossReference.resolve_pending(kitchen: kitchen)
     compute_nutrition(recipe)
-    recipe
+    ImportResult.new(recipe:, front_matter_tags: parsed.dig(:front_matter, :tags))
   end
 
   private
@@ -81,7 +85,7 @@ class MarkdownImporter
     recipe.assign_attributes(
       title: parsed[:title],
       description: parsed[:description],
-      category: category,
+      category: resolved_category,
       kitchen: kitchen,
       makes_quantity: makes_qty,
       makes_unit_noun: makes_unit,
@@ -89,6 +93,25 @@ class MarkdownImporter
       footer: parsed[:footer],
       markdown_source: markdown_source
     )
+  end
+
+  def resolved_category
+    category || resolve_front_matter_category || default_category
+  end
+
+  def resolve_front_matter_category
+    name = parsed[:front_matter][:category]
+    return unless name
+
+    kitchen.categories.find_or_create_by!(name:)
+  end
+
+  def default_category
+    slug = FamilyRecipes.slugify('Miscellaneous')
+    kitchen.categories.find_or_create_by!(slug:) do |cat|
+      cat.name = 'Miscellaneous'
+      cat.position = kitchen.categories.maximum(:position).to_i + 1
+    end
   end
 
   def replace_steps(recipe)

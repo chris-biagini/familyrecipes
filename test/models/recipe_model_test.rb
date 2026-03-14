@@ -154,7 +154,7 @@ class RecipeModelTest < ActiveSupport::TestCase
   # --- with_full_tree scope ---
 
   test 'with_full_tree eager loads steps, ingredients, and cross references' do
-    recipe = MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+    recipe = MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category).recipe
       # Poolish
 
       ## Mix (combine)

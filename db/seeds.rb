@@ -56,8 +56,8 @@ if Recipe.none?
       cat.position = kitchen.categories.maximum(:position).to_i + 1
     end
 
-    recipe = MarkdownImporter.import(File.read(path), kitchen: kitchen, category: category)
-    puts "  #{recipe.title} (#{recipe.category.name})"
+    result = MarkdownImporter.import(File.read(path), kitchen: kitchen, category: category)
+    puts "  #{result.recipe.title} (#{result.recipe.category.name})"
   end
 
   CrossReference.resolve_pending(kitchen: kitchen)
