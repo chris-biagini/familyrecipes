@@ -115,7 +115,8 @@ module FamilyRecipes
     def validate_makes_has_unit_noun
       return unless @makes && !makes_unit_noun
 
-      raise "Makes field for '#{@title}' requires a unit noun " \
+      raise FamilyRecipes::ParseError,
+            "Makes field for '#{@title}' requires a unit noun " \
             "(e.g., 'Makes: 12 pancakes', not 'Makes: 12')."
     end
 

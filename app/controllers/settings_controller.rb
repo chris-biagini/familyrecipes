@@ -20,6 +20,7 @@ class SettingsController < ApplicationController
 
   def update
     if current_kitchen.update(settings_params)
+      current_kitchen.broadcast_update
       render json: { status: 'ok' }
     else
       render json: { errors: current_kitchen.errors.full_messages }, status: :unprocessable_content

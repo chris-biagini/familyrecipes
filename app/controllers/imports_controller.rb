@@ -20,6 +20,10 @@ class ImportsController < ApplicationController
 
     result = ImportService.call(kitchen: current_kitchen, files:)
     render json: { message: import_summary(result) }
+  rescue Zip::Error => error
+    render json: { message: "Invalid ZIP file: #{error.message}" }, status: :unprocessable_content
+  rescue ActiveRecord::RecordInvalid => error
+    render json: { message: "Import failed: #{error.message}" }, status: :unprocessable_content
   end
 
   private

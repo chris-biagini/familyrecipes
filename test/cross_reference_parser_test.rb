@@ -43,13 +43,13 @@ class CrossReferenceParserTest < Minitest::Test
   end
 
   def test_raises_on_missing_reference_syntax
-    error = assert_raises(RuntimeError) { CrossReferenceParser.parse('Pizza Dough') }
+    error = assert_raises(FamilyRecipes::ParseError) { CrossReferenceParser.parse('Pizza Dough') }
 
     assert_match(/Invalid cross-reference/, error.message)
   end
 
   def test_raises_on_old_quantity_first_syntax
-    error = assert_raises(RuntimeError) { CrossReferenceParser.parse('2 @[Pizza Dough]') }
+    error = assert_raises(FamilyRecipes::ParseError) { CrossReferenceParser.parse('2 @[Pizza Dough]') }
 
     assert_match(/quantity/, error.message)
   end

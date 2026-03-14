@@ -54,7 +54,9 @@ class RecipeBuilder # rubocop:disable Metrics/ClassLength
     token = advance
     if token.nil? || token.type != :title
       line_num = token&.line_number || 1
-      raise "Invalid recipe format at line #{line_num}: The first line must be a level-one header (# Toasted Bread)."
+      raise FamilyRecipes::ParseError,
+            "Invalid recipe format at line #{line_num}: " \
+            'The first line must be a level-one header (# Toasted Bread).'
     end
 
     token.content[0]
@@ -150,7 +152,8 @@ class RecipeBuilder # rubocop:disable Metrics/ClassLength
   end
 
   def reject_implicit_cross_reference(token)
-    raise "Cross-reference (>) at line #{token.line_number} must appear inside " \
+    raise FamilyRecipes::ParseError,
+          "Cross-reference (>) at line #{token.line_number} must appear inside " \
           'an explicit step (## Step Name)'
   end
 
@@ -161,12 +164,14 @@ class RecipeBuilder # rubocop:disable Metrics/ClassLength
   end
 
   def raise_duplicate_cross_reference(token)
-    raise 'Only one cross-reference (>) is allowed per step ' \
+    raise FamilyRecipes::ParseError,
+          'Only one cross-reference (>) is allowed per step ' \
           "(line #{token.line_number})"
   end
 
   def raise_mixed_content_error(token, content_type)
-    raise "Cross-reference (>) at line #{token.line_number} " \
+    raise FamilyRecipes::ParseError,
+          "Cross-reference (>) at line #{token.line_number} " \
           "cannot be mixed with #{content_type} in the same step"
   end
 

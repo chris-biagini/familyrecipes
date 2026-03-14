@@ -9,22 +9,25 @@
 # - CrossReferenceParser: handles the complementary > @[Title] syntax
 module IngredientParser
   def self.parse(text)
-    raise "Cross-references now use > @[...] syntax. Write: > #{text}" if text.start_with?('@[')
+    reject_cross_reference_syntax!(text)
 
     parts = text.split(':', 2)
     left_side = parts[0]
-    prep_note = parts[1]&.strip
-    prep_note = nil if prep_note&.empty?
+    prep_note = parts[1]&.strip.presence
 
     left_parts = left_side.split(',', 2)
     name = left_parts[0].strip
-    quantity = left_parts[1]&.strip
-    quantity = nil if quantity&.empty?
+    quantity = left_parts[1]&.strip.presence
 
-    {
-      name: name,
-      quantity: quantity,
-      prep_note: prep_note
-    }
+    { name:, quantity:, prep_note: }
   end
+
+  def self.reject_cross_reference_syntax!(text)
+    return unless text.start_with?('@[')
+
+    raise FamilyRecipes::ParseError,
+          "Cross-references now use > @[...] syntax. Write: > #{text}"
+  end
+
+  private_class_method :reject_cross_reference_syntax!
 end

@@ -67,10 +67,12 @@ class MenuController < ApplicationController
     body = { status: 'ok' }
     body[:warnings] = result.warnings if result.warnings.any?
     render json: body
+  rescue ActiveRecord::RecordInvalid => error
+    render json: { errors: [error.message] }, status: :unprocessable_content
   end
 
   def parse_quick_bites
-    result = FamilyRecipes.parse_quick_bites_content(params[:content])
+    result = FamilyRecipes.parse_quick_bites_content(params[:content].to_s)
     ir = FamilyRecipes::QuickBitesSerializer.to_ir(result.quick_bites)
     render json: ir
   end

@@ -13,6 +13,11 @@ require 'yaml'
 # not through Zeitwerk. The Rails app module is Familyrecipes (lowercase r);
 # this module is FamilyRecipes (uppercase R) — different constants, no collision.
 module FamilyRecipes
+  # Raised by parser pipeline components (RecipeBuilder, IngredientParser,
+  # CrossReferenceParser) for structurally invalid input. Controllers rescue
+  # this specifically instead of broad RuntimeError.
+  class ParseError < RuntimeError; end
+
   CONFIG = {
     quick_bites_filename: 'Quick Bites.md',
     quick_bites_category: 'Quick Bites'

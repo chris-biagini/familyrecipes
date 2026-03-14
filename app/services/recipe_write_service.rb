@@ -42,47 +42,75 @@ class RecipeWriteService
   end
 
   def create(markdown:, category_name: nil, tags: nil)
-    category = find_or_create_category(category_name)
-    recipe, front_matter_tags = import_and_timestamp(markdown, category:)
-    sync_tags(recipe, tags || front_matter_tags)
+    recipe = nil
+    front_matter_tags = nil
+
+    ActiveRecord::Base.transaction do
+      category = find_or_create_category(category_name)
+      recipe, front_matter_tags = import_and_timestamp(markdown, category:)
+      sync_tags(recipe, tags || front_matter_tags)
+    end
+
     finalize
     Result.new(recipe:, updated_references: [])
   end
 
   def create_from_structure(structure:)
-    category = find_or_create_category(structure.dig(:front_matter, :category))
-    recipe = import_structure_and_timestamp(structure, category:)
-    sync_tags(recipe, structure.dig(:front_matter, :tags))
+    recipe = nil
+
+    ActiveRecord::Base.transaction do
+      category = find_or_create_category(structure.dig(:front_matter, :category))
+      recipe = import_structure_and_timestamp(structure, category:)
+      sync_tags(recipe, structure.dig(:front_matter, :tags))
+    end
+
     finalize
     Result.new(recipe:, updated_references: [])
   end
 
   def update(slug:, markdown:, category_name: nil, tags: nil)
-    old_recipe = kitchen.recipes.find_by!(slug:)
-    category = find_or_create_category(category_name)
-    recipe, front_matter_tags = import_and_timestamp(markdown, category:)
-    sync_tags(recipe, tags || front_matter_tags)
-    updated_references = rename_cross_references(old_recipe, recipe)
-    handle_slug_change(old_recipe, recipe)
+    updated_references = []
+    recipe = nil
+
+    ActiveRecord::Base.transaction do
+      old_recipe = kitchen.recipes.find_by!(slug:)
+      category = find_or_create_category(category_name)
+      recipe, front_matter_tags = import_and_timestamp(markdown, category:)
+      sync_tags(recipe, tags || front_matter_tags)
+      updated_references = rename_cross_references(old_recipe, recipe)
+      handle_slug_change(old_recipe, recipe)
+    end
+
     finalize
     Result.new(recipe:, updated_references:)
   end
 
   def update_from_structure(slug:, structure:)
-    old_recipe = kitchen.recipes.find_by!(slug:)
-    category = find_or_create_category(structure.dig(:front_matter, :category))
-    recipe = import_structure_and_timestamp(structure, category:)
-    sync_tags(recipe, structure.dig(:front_matter, :tags))
-    updated_references = rename_cross_references(old_recipe, recipe)
-    handle_slug_change(old_recipe, recipe)
+    updated_references = []
+    recipe = nil
+
+    ActiveRecord::Base.transaction do
+      old_recipe = kitchen.recipes.find_by!(slug:)
+      category = find_or_create_category(structure.dig(:front_matter, :category))
+      recipe = import_structure_and_timestamp(structure, category:)
+      sync_tags(recipe, structure.dig(:front_matter, :tags))
+      updated_references = rename_cross_references(old_recipe, recipe)
+      handle_slug_change(old_recipe, recipe)
+    end
+
     finalize
     Result.new(recipe:, updated_references:)
   end
 
   def destroy(slug:)
-    recipe = kitchen.recipes.find_by!(slug:)
-    RecipeBroadcaster.notify_recipe_deleted(recipe, recipe_title: recipe.title)
-    recipe.destroy!
+    recipe = nil
+
+    ActiveRecord::Base.transaction do
+      recipe = kitchen.recipes.find_by!(slug:)
+      RecipeBroadcaster.notify_recipe_deleted(recipe, recipe_title: recipe.title)
+      recipe.destroy!
+    end
+
     finalize
     Result.new(recipe:, updated_references: [])
   end

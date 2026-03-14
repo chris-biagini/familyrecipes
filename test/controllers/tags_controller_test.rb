@@ -61,4 +61,11 @@ class TagsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :forbidden
   end
+
+  test 'requires membership for content' do
+    reset!
+    get tags_content_path(kitchen_slug: kitchen_slug), as: :json
+
+    assert_response :forbidden
+  end
 end

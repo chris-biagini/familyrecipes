@@ -10,7 +10,7 @@
 class TagsController < ApplicationController
   include StructureValidation
 
-  before_action :require_membership, only: :update_tags
+  before_action :require_membership
 
   def content
     items = current_kitchen.tags.order(:name).map { |t| { name: t.name } }

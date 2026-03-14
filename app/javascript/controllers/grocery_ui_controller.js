@@ -30,11 +30,9 @@ export default class extends Controller {
   // --- Shopping list ---
 
   bindShoppingListEvents() {
-    const shoppingList = document.getElementById("shopping-list")
-
-    this.listeners.add(shoppingList, "change", (e) => {
+    this.listeners.add(this.element, "change", (e) => {
       const cb = e.target
-      if (!cb.matches('.check-off input[type="checkbox"]')) return
+      if (!cb.matches('#shopping-list .check-off input[type="checkbox"]')) return
 
       const name = cb.dataset.item
       if (!name) return
@@ -45,8 +43,8 @@ export default class extends Controller {
       sendAction(this.element.dataset.checkUrl, { item: name, checked: cb.checked })
     })
 
-    this.listeners.add(shoppingList, "toggle", (e) => {
-      if (e.target.matches("details.aisle")) this.saveAisleCollapse()
+    this.listeners.add(this.element, "toggle", (e) => {
+      if (e.target.matches("#shopping-list details.aisle")) this.saveAisleCollapse()
     }, true)
   }
 

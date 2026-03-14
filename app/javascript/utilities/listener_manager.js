@@ -13,16 +13,16 @@ export default class ListenerManager {
     this.entries = new Map()
   }
 
-  add(node, event, handler) {
-    node.addEventListener(event, handler)
+  add(node, event, handler, options) {
+    node.addEventListener(event, handler, options)
     if (!this.entries.has(node)) this.entries.set(node, [])
-    this.entries.get(node).push([event, handler])
+    this.entries.get(node).push([event, handler, options])
   }
 
   teardown() {
     for (const [node, handlers] of this.entries) {
-      for (const [event, handler] of handlers) {
-        node.removeEventListener(event, handler)
+      for (const [event, handler, options] of handlers) {
+        node.removeEventListener(event, handler, options)
       }
     }
     this.entries.clear()

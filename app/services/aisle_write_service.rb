@@ -46,22 +46,19 @@ class AisleWriteService
   end
 
   def sync_new_aisle(aisle:)
-    return if kitchen.parsed_aisle_order.any? { |a| a.casecmp?(aisle) }
-
-    existing = kitchen.aisle_order.to_s
-    kitchen.update!(aisle_order: [existing, aisle].reject(&:empty?).join("\n"))
+    kitchen.reload
+    current = kitchen.aisle_order.to_s.split("\n").reject(&:empty?)
+    current << aisle
+    kitchen.update!(aisle_order: current.uniq(&:downcase).join("\n"))
   end
 
   def sync_new_aisles(aisles:)
-    new_aisles = aisles.uniq
-    return if new_aisles.empty?
+    return if aisles.empty?
 
-    existing = kitchen.parsed_aisle_order.to_set(&:downcase)
-    additions = new_aisles.reject { |a| existing.include?(a.downcase) }
-    return if additions.empty?
-
-    combined = [kitchen.aisle_order.to_s, *additions].reject(&:empty?).join("\n")
-    kitchen.reload.update!(aisle_order: combined)
+    kitchen.reload
+    current = kitchen.aisle_order.to_s.split("\n").reject(&:empty?)
+    current.concat(aisles)
+    kitchen.update!(aisle_order: current.uniq(&:downcase).join("\n"))
   end
 
   private

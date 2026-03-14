@@ -58,7 +58,7 @@ class RecipesController < ApplicationController
   def create
     result = create_result
     render json: { redirect_url: recipe_path(result.recipe.slug) } unless performed?
-  rescue ActiveRecord::RecordInvalid, RuntimeError => error
+  rescue ActiveRecord::RecordInvalid, FamilyRecipes::ParseError, MarkdownImporter::SlugCollisionError => error
     render json: { errors: [error.message] }, status: :unprocessable_content
   end
 
@@ -66,7 +66,7 @@ class RecipesController < ApplicationController
     current_kitchen.recipes.find_by!(slug: params[:slug])
     result = update_result
     render json: update_response(result) unless performed?
-  rescue ActiveRecord::RecordInvalid, RuntimeError => error
+  rescue ActiveRecord::RecordInvalid, FamilyRecipes::ParseError, MarkdownImporter::SlugCollisionError => error
     render json: { errors: [error.message] }, status: :unprocessable_content
   end
 

@@ -8,7 +8,20 @@
 import { getCsrfToken } from "utilities/editor_utils"
 import { show as notifyShow } from "utilities/notify"
 
-class ServerError extends Error {}
+class ServerError extends Error {
+  constructor(message) {
+    super(message)
+  }
+}
+
+async function extractErrorMessage(response) {
+  try {
+    const body = await response.json()
+    if (body.error) return body.error
+    if (body.errors?.length) return body.errors.join(", ")
+  } catch { /* not JSON or no error key */ }
+  return "Something went wrong. Please try again."
+}
 
 export function sendAction(url, params, { method = "PATCH", retries = 3 } = {}) {
   return fetch(url, {
@@ -20,8 +33,8 @@ export function sendAction(url, params, { method = "PATCH", retries = 3 } = {}) 
     },
     body: JSON.stringify(params)
   })
-    .then(response => {
-      if (!response.ok) throw new ServerError()
+    .then(async response => {
+      if (!response.ok) throw new ServerError(await extractErrorMessage(response))
       if (response.status === 204) return
       return response.text().then(html => {
         if (html.includes("<turbo-stream")) Turbo.renderStreamMessage(html)
@@ -29,7 +42,7 @@ export function sendAction(url, params, { method = "PATCH", retries = 3 } = {}) 
     })
     .catch(error => {
       if (error instanceof ServerError) {
-        notifyShow("Something went wrong. Please try again.")
+        notifyShow(error.message)
         return
       }
       if (retries <= 0) {

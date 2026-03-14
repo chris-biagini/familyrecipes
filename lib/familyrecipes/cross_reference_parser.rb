@@ -11,7 +11,10 @@ module CrossReferenceParser
     reject_old_syntax!(text)
 
     match = text.match(PATTERN)
-    raise "Invalid cross-reference syntax: \"#{text}\". Expected @[Recipe Title]" unless match
+    unless match
+      raise FamilyRecipes::ParseError,
+            "Invalid cross-reference syntax: \"#{text}\". Expected @[Recipe Title]"
+    end
 
     title, multiplier_str, prep_note = match.captures
     {
@@ -24,7 +27,8 @@ module CrossReferenceParser
   def self.reject_old_syntax!(text)
     return unless text.match?(OLD_SYNTAX)
 
-    raise "Invalid cross-reference syntax: \"#{text}\". " \
+    raise FamilyRecipes::ParseError,
+          "Invalid cross-reference syntax: \"#{text}\". " \
           'Use @[Recipe Title], quantity (quantity after reference), not quantity before.'
   end
 
