@@ -70,7 +70,7 @@ export default class extends Controller {
     } else if (/^---\s*$/.test(line)) {
       this.inFooter = true
       this.appendSpan(fragment, line, "hl-divider")
-    } else if (/^(Makes|Serves):\s+.+$/.test(line)) {
+    } else if (/^(Makes|Serves|Category|Tags):\s+.+$/.test(line)) {
       this.appendSpan(fragment, line, "hl-front-matter")
     } else if (this.inFooter) {
       this.appendSpan(fragment, line, "hl-front-matter")
