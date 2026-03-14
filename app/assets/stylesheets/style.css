@@ -1651,6 +1651,7 @@ html:has(dialog[open]) {
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 
 .editor-textarea {
@@ -3028,6 +3029,7 @@ a.recipe-link {
   background: var(--ground);
   border: 1px solid var(--rule);
   border-radius: 4px;
+  max-height: 8rem;
   padding: 0.4rem 0.6rem;
   font-family: var(--font-body);
   font-size: 0.9rem;

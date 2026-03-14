@@ -52,14 +52,14 @@
                 'quickbites-editor-parse-url-value' => menu_parse_quick_bites_path,
                 'quickbites-editor-serialize-url-value' => menu_serialize_quick_bites_path
               } } do %>
-  <div data-quickbites-editor-target="plaintextContainer">
+  <div class="editor-body" data-quickbites-editor-target="plaintextContainer">
     <div data-controller="quickbites-plaintext">
       <textarea class="editor-textarea" data-editor-target="textarea"
                 data-quickbites-plaintext-target="textarea" spellcheck="false"
                 placeholder="Loading..."></textarea>
     </div>
   </div>
-  <div data-quickbites-editor-target="graphicalContainer" hidden>
+  <div class="editor-body" data-quickbites-editor-target="graphicalContainer" hidden>
     <%= render 'menu/quickbites_graphical_editor' %>
   </div>
 <% end %>

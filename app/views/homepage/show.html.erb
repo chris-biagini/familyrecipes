@@ -135,13 +135,13 @@
                 'recipe-editor-parse-url-value' => recipe_parse_path,
                 'recipe-editor-serialize-url-value' => recipe_serialize_path
               } } do %>
-  <div data-recipe-editor-target="plaintextContainer">
+  <div class="editor-body" data-recipe-editor-target="plaintextContainer">
     <div data-controller="recipe-plaintext">
       <textarea class="editor-textarea" data-editor-target="textarea"
                 data-recipe-plaintext-target="textarea" spellcheck="false"><%= "# Recipe Title\n\nOptional description.\n\nCategory: Miscellaneous\n\nMakes: 4 servings\nServes: 4\n\n## Step Name (short summary)\n\n- Ingredient, quantity: prep note\n\nInstructions here.\n\n---\n\nOptional notes or source." %></textarea>
     </div>
   </div>
-  <div data-recipe-editor-target="graphicalContainer" hidden>
+  <div class="editor-body" data-recipe-editor-target="graphicalContainer" hidden>
     <%= render 'recipes/graphical_editor' %>
   </div>
 <% end %>
