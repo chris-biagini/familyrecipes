@@ -115,8 +115,8 @@ Category: Basics
 Tags: breakfast, quick
 ```
 
-- `LineClassifier` already classifies `Key: Value` as `:front_matter` — no
-  change needed.
+- `LineClassifier` front matter regex extended from `(Makes|Serves)` to
+  `(Makes|Serves|Category|Tags)` so these lines tokenize as `:front_matter`.
 - `RecipeBuilder` extracts `category` and `tags` (comma-separated, trimmed,
   lowercased) from front matter.
 - Tags are normalized: whitespace within a tag becomes hyphens
