@@ -1,134 +1,171 @@
 # Codebase Audit — 1.0 Readiness Pass
 
 **Date:** 2026-03-14
-**Goal:** Systematic audit and fix pass across security, reliability, performance,
-and code quality. Fix-by-area approach: audit and fix within each area before
-moving to the next, committing after each.
+**Goal:** Thorough, systematic audit of the entire codebase for security,
+reliability, performance, and code quality. Each area is audited by reading
+every relevant file, documenting findings, then fixing what's found. The
+audit itself is the primary deliverable — the fix list emerges from the audit,
+not the other way around.
 
-## Area 1: Security
+**Approach:** Fix-by-area. For each area: read every file in scope, log
+findings, fix issues, commit. Tests must pass and lint must be clean after
+each area.
 
-### 1a. CSP nonce hardening
+## Area 1: Security Audit
 
-The nonce generator in `content_security_policy.rb` uses `request.session.id`,
-which is deterministic per session. Standard practice is a per-request random
-nonce, but Turbo Drive caches pages and replays snapshots — a per-request nonce
-would break cached pages (stale nonce vs. new CSP header). Investigate whether
-Rails' built-in `content_security_policy_nonce_generator` is compatible with
-Turbo. If not, document the trade-off.
+**Scope:** Every file that handles user input, renders output, or enforces
+access control.
 
-### 1b. `to_unsafe_h` tightening
+**Process:**
 
-`RecipesController`, `MenuController`, and `TagsController` call
-`.to_unsafe_h.deep_symbolize_keys` on structure params. Data flows through
-serializers and write services which validate structure, so risk is low — but we
-should add lightweight schema validation at the controller boundary (expected
-top-level keys, type checks) rather than relying on downstream code.
+1. **Input boundary audit.** Read every controller action that accepts params.
+   For each, trace the param from `params` through to its final use. Check:
+   - Are strong params properly applied? Any `permit!` or `to_unsafe_h`?
+   - Is user input validated before reaching models/services?
+   - Could a crafted payload cause unexpected behavior?
 
-### 1c. `permit!` in NutritionEntriesController
+2. **Output safety audit.** Read every view template (`.html.erb`) and every
+   helper that produces HTML. For each:
+   - Is user-supplied content properly escaped?
+   - Are `.html_safe` and `raw()` calls justified? Do they match the allowlist?
+   - Does the allowlist (`html_safe_allowlist.yml`) have accurate line numbers?
 
-The portions param uses `permit!` with manual regex validation. Replace with
-explicit permits or at minimum add a size cap on the hash to prevent abuse.
+3. **CSP audit.** Read `content_security_policy.rb` and every file that injects
+   scripts, styles, or external resources. Verify the policy is tight and
+   correctly enforced. Investigate the session-based nonce and whether a
+   per-request nonce is feasible with Turbo Drive.
 
-### 1d. html_safe allowlist sync
+4. **Access control audit.** Read every controller and verify that write actions
+   are gated behind `require_membership`. Check that multi-tenant scoping is
+   enforced everywhere — no unscoped model queries.
 
-Verify all `file:line_number` keys in `html_safe_allowlist.yml` still point to
-the correct lines. Line numbers drift as code is edited.
+5. **Secrets audit.** Check for any hardcoded credentials, API keys, or secrets
+   in source. Verify encrypted columns are properly configured.
 
-## Area 2: Reliability
+**Done when:** Every controller, view, and helper has been read and checked
+against the above criteria.
 
-### 2a. AisleWriteService TOCTOU race
+## Area 2: Reliability Audit
 
-`sync_new_aisle` and `sync_new_aisles` check whether an aisle exists, then
-append it — another request can insert between check and write, creating
-duplicates. Fix: deduplicate on write (e.g., split + uniq + rejoin) or wrap
-with reload + re-check inside a transaction. SQLite's single-writer constraint
-limits blast radius but the code should be correct regardless of database.
+**Scope:** Every write path, broadcast, and concurrent-access pattern.
 
-### 2b. `sync_new_aisles` reload pattern
+**Process:**
 
-Line 64 of `AisleWriteService` calls `kitchen.reload.update!`, discarding
-in-memory changes to the kitchen object. If called during a batch where other
-services have modified kitchen attributes, the reload could clobber those
-changes. Verify safety within `batch_writes` flow; if unsafe, restructure to
-reload only the `aisle_order` column.
+1. **Write path trace.** For every controller action that mutates data, trace
+   the full path: controller → service → model → broadcast. For each path,
+   check:
+   - Does the write trigger the correct broadcast(s)?
+   - Is the write wrapped in a transaction where needed?
+   - Can partial failures leave the system in an inconsistent state?
+   - Are side effects (reconciliation, cascade updates) properly triggered?
 
-### 2c. Broadcast coverage audit
+2. **Concurrency audit.** Read every service that modifies shared state
+   (Kitchen attributes, MealPlan, IngredientCatalog). For each:
+   - Are there TOCTOU races (check-then-act without atomicity)?
+   - Is optimistic locking used where concurrent writes are possible?
+   - Does `reload` discard in-memory changes from other services in the same
+     request?
 
-Walk every write path and confirm it triggers `Kitchen#broadcast_update`
-(directly or via `batch_writes`). Pay special attention to `SettingsController`
-updates, `TagWriteService` edge cases, and any service called outside
-`batch_writes`.
+3. **Broadcast completeness.** Map every write path to its expected broadcast.
+   Verify no path silently skips broadcasting. Check that `batch_writes`
+   correctly defers and then fires a single broadcast.
 
-## Area 3: Performance
+4. **Error recovery.** Read every controller's error handling. Check:
+   - Do validation failures return useful error messages?
+   - Do `StaleObjectError` rescues cover all relevant controllers?
+   - Can network failures or timeouts leave orphaned state?
 
-### 3a. IngredientRowBuilder memory
+5. **Turbo/morph resilience.** Read `application.js` and every Stimulus
+   controller that interacts with Turbo events. Verify:
+   - Open dialogs survive morphs
+   - UI state (checkboxes, collapsed sections, scroll position) is preserved
+   - Page caching doesn't serve stale content
 
-`compute_recipes_by_ingredient` stores full AR `Recipe` objects in a hash
-indexed by ingredient name. Every recipe containing "salt" stores its full
-object. For the ingredients index page this means potentially all recipes held
-in memory. Store lightweight data (id, title, slug) instead of full AR objects.
-Note: the editor form view uses `source.title`, `source.slug`, and
-`source.is_a?(Recipe)` — the replacement must preserve those three attributes
-plus type discrimination.
+**Done when:** Every write path has been traced end-to-end and every
+concurrent-access pattern has been verified.
 
-### 3b. SearchDataHelper payload
+## Area 3: Performance Audit
 
-Every page embeds a JSON blob with all recipes, tags, categories, and ingredient
-lists for client-side search. Fine at 40 recipes but grows linearly. Evaluate
-current payload size. If already non-trivial, consider lazy-loading on search
-overlay open rather than embedding in every page.
+**Scope:** Every database query, every page render, every data structure held
+in memory.
 
-### 3c. MealPlan reconciliation frequency
+**Process:**
 
-`prune_stale_selections` calls `kitchen.recipes.pluck(:slug)` on every
-reconciliation, which runs after every recipe CRUD, quick bites edit, catalog
-change, and deselect. Consider memoizing the slug set within a request, or only
-reconciling when the recipe/quick-bites set has actually changed.
+1. **Query audit.** Read every model scope, every `includes`/`preload` call,
+   and every controller that loads data. For each page:
+   - What queries does it execute? Are associations eager-loaded?
+   - Are there N+1 patterns hiding behind `each` loops?
+   - Spot-check with `strict_loading` where suspicion warrants it.
 
-### 3d. Eager loading audit
+2. **Memory audit.** Read every service and helper that builds in-memory data
+   structures. Check:
+   - Are full AR objects stored where lightweight data would suffice?
+   - Are large collections built eagerly when they could be streamed?
+   - Is memoization used appropriately (and not leaking across requests)?
 
-`Recipe.with_full_tree` does deep eager loading for the show page. Verify that
-collection pages (homepage, menu, ingredients) aren't triggering lazy loads on
-associations they don't preload. Spot-check with `strict_loading` to confirm.
+3. **Payload audit.** Check what data is embedded in HTML responses. Measure
+   the SearchDataHelper JSON blob size. Evaluate whether any embedded data
+   should be lazy-loaded instead.
 
-## Area 4: Code Quality
+4. **Reconciliation frequency.** Trace how often `MealPlan#reconcile!` runs
+   and what queries it triggers each time. Evaluate whether any work is
+   redundant or could be deferred.
 
-### 4a. Large Stimulus controllers
+5. **Index coverage.** Read `schema.rb` and cross-reference with actual query
+   patterns. Verify all frequently-queried columns and foreign keys are indexed.
 
-`nutrition_editor_controller` (682 lines) and `recipe_graphical_controller`
-(497 lines) are outliers. Evaluate whether either has extractable sub-concerns
-— e.g., the USDA search panel within nutrition_editor could be its own
-controller.
+**Done when:** Every page's query profile has been examined and every in-memory
+data structure has been reviewed for proportionality.
 
-### 4b. DRY audit
+## Area 4: Code Quality Audit
 
-Look for duplicated patterns across services and controllers. "Consistent" can
-mean "copy-pasted." Verify shared logic is actually shared, not just similar.
+**Scope:** Every Ruby and JavaScript file in the application.
 
-### 4c. Dead code sweep
+**Process:**
 
-After months of rapid development with refactors and feature removals (TUI
-retirement, etc.), there may be orphaned methods, unused helpers, routes without
-destinations, or views that aren't rendered. Systematic sweep to clean out.
+1. **Dead code sweep.** Systematically check for:
+   - Model methods not called anywhere
+   - Helper methods not referenced in views or controllers
+   - Routes that don't map to used controller actions
+   - Views/partials not rendered anywhere
+   - JavaScript functions/controllers not referenced in HTML
+   - Leftover references to removed features (TUI, etc.)
 
-### 4d. Stale comments and documentation
+2. **DRY audit.** Read through services and controllers looking for:
+   - Duplicated logic that should be extracted
+   - Similar-but-different patterns that could be unified
+   - Copy-pasted code blocks across files
 
-Architectural header comments may describe responsibilities that have shifted.
-Verify header comments match current reality. Update CLAUDE.md if any
-conventions have changed.
+3. **Complexity audit.** Read every file over 200 lines (Ruby) or 300 lines
+   (JavaScript). For each:
+   - Can it be decomposed into smaller, focused units?
+   - Are there methods longer than 5 lines that should be extracted?
+   - Is the abstraction level consistent within each file?
+
+4. **Convention consistency.** Verify the codebase follows its own rules:
+   - Enumerable over imperative loops (per CLAUDE.md)
+   - No narrating comments (per CLAUDE.md)
+   - Architectural header comments present and accurate on every class/module
+   - Service patterns consistent (class method factories, finalize steps, etc.)
+
+5. **Documentation currency.** Read every architectural header comment and
+   verify it matches the code it describes. Update CLAUDE.md if conventions
+   have drifted.
+
+**Done when:** Every file has been read and checked against quality criteria.
 
 ## Ordering
 
-1. Security (1a → 1d)
-2. Reliability (2a → 2c)
-3. Performance (3a → 3d)
-4. Code quality (4a → 4d)
-
-Each area gets one or more commits when complete. Tests must pass (`rake test`)
-and lint must be clean (`rake lint`) after each area.
+1. Security — highest stakes, fix first
+2. Reliability — correctness before speed
+3. Performance — optimize what's known-correct
+4. Code quality — clean up after substantive changes
 
 ## Out of scope
 
 **Migration consolidation.** CLAUDE.md notes that all migrations should be
 consolidated into a single `001_create_schema.rb` for v1.0. That is a separate
 task from this audit and will be handled in its own pass.
+
+**Feature work.** This audit fixes what exists. It does not add new features,
+new pages, or new capabilities.
