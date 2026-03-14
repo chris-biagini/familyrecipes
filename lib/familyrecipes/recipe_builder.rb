@@ -80,7 +80,12 @@ class RecipeBuilder # rubocop:disable Metrics/ClassLength
       fields[key] = token.content[1]
     end
 
+    fields[:tags] = normalize_tags(fields[:tags]) if fields[:tags]
     fields
+  end
+
+  def normalize_tags(raw)
+    raw.split(',').map { |t| t.strip.downcase.gsub(/\s+/, '-') }.reject(&:empty?)
   end
 
   def parse_steps

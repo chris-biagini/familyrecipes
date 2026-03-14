@@ -207,7 +207,7 @@ class RecipeBuilderTest < Minitest::Test
 
   # --- Front matter parsing ---
 
-  def test_category_line_parsed_as_prose
+  def test_category_line_parsed_as_front_matter
     text = <<~RECIPE
       # Cookies
 
@@ -220,8 +220,44 @@ class RecipeBuilderTest < Minitest::Test
 
     result = build_recipe(text)
 
-    assert_nil result[:front_matter][:category]
-    assert_equal 'Category: Dessert', result[:description]
+    assert_equal 'Dessert', result[:front_matter][:category]
+    assert_nil result[:description]
+  end
+
+  def test_parses_category_from_front_matter
+    markdown = "# Test\n\nCategory: Basics\n\n## Step\n\n- Flour\n\nMix."
+    recipe = build_recipe(markdown)
+
+    assert_equal 'Basics', recipe[:front_matter][:category]
+  end
+
+  def test_parses_tags_from_front_matter_as_array
+    markdown = "# Test\n\nTags: breakfast, quick\n\n## Step\n\n- Flour\n\nMix."
+    recipe = build_recipe(markdown)
+
+    assert_equal %w[breakfast quick], recipe[:front_matter][:tags]
+  end
+
+  def test_normalizes_tag_whitespace_to_hyphens
+    markdown = "# Test\n\nTags: vegan friendly, one pot\n\n## Step\n\n- Flour\n\nMix."
+    recipe = build_recipe(markdown)
+
+    assert_equal %w[vegan-friendly one-pot], recipe[:front_matter][:tags]
+  end
+
+  def test_lowercases_tags
+    markdown = "# Test\n\nTags: Breakfast, QUICK\n\n## Step\n\n- Flour\n\nMix."
+    recipe = build_recipe(markdown)
+
+    assert_equal %w[breakfast quick], recipe[:front_matter][:tags]
+  end
+
+  def test_omits_category_and_tags_when_absent
+    markdown = "# Test\n\nServes: 4\n\n## Step\n\n- Flour\n\nMix."
+    recipe = build_recipe(markdown)
+
+    assert_nil recipe[:front_matter][:category]
+    assert_nil recipe[:front_matter][:tags]
   end
 
   def test_parses_makes_with_unit_noun

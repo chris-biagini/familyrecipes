@@ -103,11 +103,11 @@ class LineClassifierTest < Minitest::Test
     assert_equal :prose, tokens[13].type
   end
 
-  def test_classifies_category_as_prose
+  def test_classifies_category_as_front_matter
     type, content = LineClassifier.classify_line('Category: Bread')
 
-    assert_equal :prose, type
-    assert_equal 'Category: Bread', content
+    assert_equal :front_matter, type
+    assert_equal %w[Category Bread], content
   end
 
   def test_classifies_makes_front_matter
