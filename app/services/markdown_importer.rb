@@ -1,22 +1,16 @@
 # frozen_string_literal: true
 
-# The sole write path for getting recipes into the database. Parses Markdown
-# through the FamilyRecipes parser pipeline (LineClassifier → RecipeBuilder),
-# then upserts the Recipe and its Steps, Ingredients, and CrossReferences in a
-# transaction. Also processes instructions through ScalableNumberPreprocessor
-# to generate the scalable-number HTML stored in Step#processed_instructions.
+# The sole write path for getting recipes into the database. Two entry points:
+# `import` parses Markdown via the parser pipeline, `import_from_structure`
+# accepts a pre-parsed IR hash and generates markdown via RecipeSerializer.
+# Both converge on `run`, which upserts the Recipe and its child records,
+# resolves pending cross-references, and computes nutrition.
 #
-# Steps come in two flavors: content steps (ingredients + instructions) and
-# cross-reference steps (> @[...] syntax, exactly one CrossReference, no ingredients
-# or instructions). The step-level :cross_reference key drives this branching.
-#
-# Kitchen-scoped (requires kitchen: keyword) and idempotent — db:seed calls
-# this repeatedly. Returns an ImportResult (recipe + front_matter_tags) so
-# callers like RecipeWriteService can access parsed metadata without re-parsing.
-# Category resolves via: explicit argument → front matter → Miscellaneous default.
-# After import, resolves pending cross-references, computes nutrition synchronously
-# (RecipeNutritionJob), and enqueues CascadeNutritionJob async so parent recipes
-# update without blocking the saving user.
+# Collaborators:
+# - LineClassifier, RecipeBuilder — parse pipeline (import path)
+# - RecipeSerializer — IR → Markdown (import_from_structure path)
+# - RecipeWriteService — primary caller for web operations
+# - RecipeNutritionJob, CascadeNutritionJob — post-import nutrition
 class MarkdownImporter
   class SlugCollisionError < RuntimeError; end
 
@@ -24,6 +18,11 @@ class MarkdownImporter
 
   def self.import(markdown_source, kitchen:, category:)
     new(markdown_source, kitchen:, category:).run
+  end
+
+  def self.import_from_structure(ir_hash, kitchen:, category:)
+    markdown_source = FamilyRecipes::RecipeSerializer.serialize(ir_hash)
+    new(markdown_source, kitchen:, category:, parsed: ir_hash).run
   end
 
   def initialize(markdown_source, kitchen:, category:, parsed: nil)
@@ -36,7 +35,8 @@ class MarkdownImporter
   def run
     recipe = save_recipe
     CrossReference.resolve_pending(kitchen: kitchen)
-    compute_nutrition(recipe)
+    RecipeNutritionJob.perform_now(recipe)
+    CascadeNutritionJob.perform_later(recipe)
     ImportResult.new(recipe:, front_matter_tags: parsed.dig(:front_matter, :tags))
   end
 
@@ -54,14 +54,8 @@ class MarkdownImporter
     end
   end
 
-  def compute_nutrition(recipe)
-    RecipeNutritionJob.perform_now(recipe)
-    CascadeNutritionJob.perform_later(recipe)
-  end
-
   def parse_markdown
-    tokens = LineClassifier.classify(markdown_source)
-    RecipeBuilder.new(tokens).build
+    RecipeBuilder.new(LineClassifier.classify(markdown_source)).build
   end
 
   def find_or_initialize_recipe
