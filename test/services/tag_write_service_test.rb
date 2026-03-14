@@ -29,7 +29,7 @@ class TagWriteServiceTest < ActiveSupport::TestCase
 
   test 'delete removes tag and associations' do
     recipe = MarkdownImporter.import("# Salad\n\n## Toss (do it)\n\n- Lettuce, 1 head\n\nToss.",
-                                     kitchen: @kitchen, category: @category)
+                                     kitchen: @kitchen, category: @category).recipe
     RecipeTag.create!(recipe:, tag: @vegan)
 
     TagWriteService.update(kitchen: @kitchen, renames: {}, deletes: ['vegan'])

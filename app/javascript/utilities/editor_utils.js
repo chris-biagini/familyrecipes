@@ -8,6 +8,10 @@ export function getCsrfToken() {
   return document.querySelector('meta[name="csrf-token"]')?.content
 }
 
+export function csrfHeaders() {
+  return { 'X-CSRF-Token': getCsrfToken() }
+}
+
 export function showErrors(container, errors) {
   const list = document.createElement('ul')
   errors.forEach(msg => {

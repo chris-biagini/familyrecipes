@@ -53,6 +53,10 @@ module ActiveSupport
       Membership.create!(kitchen: @kitchen, user: @user)
     end
 
+    def create_recipe(markdown, category_name: 'Miscellaneous', kitchen: @kitchen)
+      RecipeWriteService.create(markdown:, kitchen:, category_name:).recipe
+    end
+
     def with_multi_kitchen
       original = ENV.fetch('MULTI_KITCHEN', nil)
       ENV['MULTI_KITCHEN'] = 'true'

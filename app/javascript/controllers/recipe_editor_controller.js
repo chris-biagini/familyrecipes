@@ -1,222 +1,142 @@
 import { Controller } from "@hotwired/stimulus"
-import HighlightOverlay from "utilities/highlight_overlay"
+import { csrfHeaders } from "utilities/editor_utils"
 
 /**
- * Syntax-highlighting overlay, category dropdown, and tag input for the
- * recipe markdown textarea. Delegates overlay lifecycle, auto-dash, and
- * scroll sync to HighlightOverlay. This controller provides recipe-specific
- * line classification (titles, steps, ingredients, cross-refs, front matter)
- * and participates in editor:collect/editor:modified events to include
- * category and tags in the save payload and dirty checking.
+ * Coordinator for dual-mode recipe editing. Manages a mode toggle between
+ * plaintext (textarea + highlight overlay) and graphical (form-based) child
+ * controllers. Routes editor lifecycle events to the active child. Handles
+ * mode-switch serialization via server-side parse/serialize endpoints.
  *
- * - editor_controller: owns the dialog lifecycle; this controller is additive
- * - tag_input_controller: nested controller for tag pills and autocomplete
- * - highlight_overlay: overlay positioning, auto-dash, scroll sync
- * - style.css (.hl-*): highlight colors
+ * - editor_controller: dialog lifecycle (parent)
+ * - recipe_plaintext_controller: child, plaintext mode
+ * - recipe_graphical_controller: child, graphical mode
  */
 export default class extends Controller {
-  static targets = ["textarea", "categorySelect", "categoryInput", "mobilePillPreview"]
+  static targets = ["plaintextContainer", "graphicalContainer", "modeToggle"]
+  static values = {
+    parseUrl: String,
+    serializeUrl: String
+  }
 
   connect() {
+    this.mode = localStorage.getItem("editorMode") || "graphical"
+    this.originalContent = null
+    this.originalStructure = null
+
     this.boundCollect = (e) => this.handleCollect(e)
     this.boundModified = (e) => this.handleModified(e)
     this.boundContentLoaded = (e) => this.handleContentLoaded(e)
+
     this.element.addEventListener("editor:collect", this.boundCollect)
     this.element.addEventListener("editor:modified", this.boundModified)
     this.element.addEventListener("editor:content-loaded", this.boundContentLoaded)
   }
 
   disconnect() {
-    this.hlOverlay?.detach()
-    this.hlOverlay = null
-    if (this.boundCollect) this.element.removeEventListener("editor:collect", this.boundCollect)
-    if (this.boundModified) this.element.removeEventListener("editor:modified", this.boundModified)
-    if (this.boundContentLoaded) this.element.removeEventListener("editor:content-loaded", this.boundContentLoaded)
+    this.element.removeEventListener("editor:collect", this.boundCollect)
+    this.element.removeEventListener("editor:modified", this.boundModified)
+    this.element.removeEventListener("editor:content-loaded", this.boundContentLoaded)
   }
 
-  textareaTargetConnected(element) {
-    this.hlOverlay?.detach()
-    this.setPlaceholder(element)
-    this.hlOverlay = new HighlightOverlay(element, (text) => this.buildFragment(text))
-    this.hlOverlay.attach()
+  toggleMode() {
+    const newMode = this.mode === "plaintext" ? "graphical" : "plaintext"
+    this.switchTo(newMode)
   }
 
-  textareaTargetDisconnected() {
-    this.hlOverlay?.detach()
-    this.hlOverlay = null
-  }
+  async switchTo(newMode) {
+    if (newMode === this.mode) return
 
-  buildFragment(text) {
-    const fragment = document.createDocumentFragment()
-    this.inFooter = false
-
-    text.split("\n").forEach((line, i) => {
-      if (i > 0) fragment.appendChild(document.createTextNode("\n"))
-      this.classifyLine(line, fragment)
-    })
-
-    return fragment
-  }
-
-  classifyLine(line, fragment) {
-    if (/^# .+$/.test(line)) {
-      this.appendSpan(fragment, line, "hl-title")
-    } else if (/^## .+$/.test(line)) {
-      this.appendSpan(fragment, line, "hl-step-header")
-    } else if (/^- .+$/.test(line)) {
-      this.highlightIngredient(line, fragment)
-    } else if (/^\s*>\s*@\[.+$/.test(line)) {
-      this.appendSpan(fragment, line, "hl-cross-ref")
-    } else if (/^---\s*$/.test(line)) {
-      this.inFooter = true
-      this.appendSpan(fragment, line, "hl-divider")
-    } else if (/^(Makes|Serves):\s+.+$/.test(line)) {
-      this.appendSpan(fragment, line, "hl-front-matter")
-    } else if (this.inFooter) {
-      this.appendSpan(fragment, line, "hl-front-matter")
+    if (newMode === "plaintext") {
+      const structure = this.graphicalController.toStructure()
+      const response = await fetch(this.serializeUrlValue, {
+        method: "POST",
+        headers: { ...csrfHeaders(), "Content-Type": "application/json" },
+        body: JSON.stringify({ structure })
+      })
+      const { markdown } = await response.json()
+      this.plaintextController.content = markdown
     } else {
-      this.highlightProseLinks(line, fragment)
-    }
-  }
-
-  highlightIngredient(line, fragment) {
-    const colonIdx = line.indexOf(":", 2)
-    let left = colonIdx !== -1 ? line.slice(0, colonIdx) : line
-    const prep = colonIdx !== -1 ? line.slice(colonIdx) : null
-
-    const commaIdx = left.indexOf(",", 2)
-    const name = commaIdx !== -1 ? left.slice(0, commaIdx) : left
-    const qty = commaIdx !== -1 ? left.slice(commaIdx) : null
-
-    this.appendSpan(fragment, name, "hl-ingredient-name")
-    if (qty) this.appendSpan(fragment, qty, "hl-ingredient-qty")
-    if (prep) this.appendSpan(fragment, prep, "hl-ingredient-prep")
-  }
-
-  highlightProseLinks(line, fragment) {
-    const pattern = /@\[(.+?)\]/g
-    let lastIndex = 0
-    let match
-
-    while ((match = pattern.exec(line)) !== null) {
-      if (match.index > lastIndex) {
-        fragment.appendChild(document.createTextNode(line.slice(lastIndex, match.index)))
-      }
-      this.appendSpan(fragment, match[0], "hl-recipe-link")
-      lastIndex = pattern.lastIndex
+      const markdown = this.plaintextController.content
+      const response = await fetch(this.parseUrlValue, {
+        method: "POST",
+        headers: { ...csrfHeaders(), "Content-Type": "application/json" },
+        body: JSON.stringify({ markdown_source: markdown })
+      })
+      const ir = await response.json()
+      this.graphicalController.loadStructure(ir)
     }
 
-    if (lastIndex < line.length) {
-      fragment.appendChild(document.createTextNode(line.slice(lastIndex)))
-    } else if (lastIndex === 0) {
-      fragment.appendChild(document.createTextNode(line))
+    this.mode = newMode
+    localStorage.setItem("editorMode", newMode)
+    this.showActiveMode()
+  }
+
+  showActiveMode() {
+    const isPlaintext = this.mode === "plaintext"
+    if (this.hasPlaintextContainerTarget) {
+      this.plaintextContainerTarget.hidden = !isPlaintext
     }
-  }
-
-  appendSpan(fragment, text, className) {
-    const span = document.createElement("span")
-    span.classList.add(className)
-    span.textContent = text
-    fragment.appendChild(span)
-  }
-
-  get tagController() {
-    const el = this.element.querySelector("[data-controller~='tag-input']")
-    return el ? this.application.getControllerForElementAndIdentifier(el, "tag-input") : null
+    if (this.hasGraphicalContainerTarget) {
+      this.graphicalContainerTarget.hidden = isPlaintext
+    }
+    if (this.hasModeToggleTarget) {
+      this.modeToggleTarget.title = isPlaintext
+        ? "Switch to graphical editor"
+        : "Switch to plaintext editor"
+    }
   }
 
   handleCollect(event) {
     event.detail.handled = true
-    event.detail.data = {
-      markdown_source: this.hasTextareaTarget ? this.textareaTarget.value : null,
-      category: this.selectedCategory(),
-      tags: this.tagController?.tags || []
+    if (this.mode === "plaintext") {
+      event.detail.data = { markdown_source: this.plaintextController.content }
+    } else {
+      event.detail.data = { structure: this.graphicalController.toStructure() }
     }
   }
 
   handleModified(event) {
-    if (this.hasCategorySelectTarget && this.originalCategory !== undefined) {
-      if (this.selectedCategory() !== this.originalCategory) {
-        event.detail.handled = true
-        event.detail.modified = true
-      }
-    }
-    if (this.tagController?.modified) {
-      event.detail.handled = true
-      event.detail.modified = true
+    event.detail.handled = true
+    if (this.mode === "plaintext") {
+      event.detail.modified = this.plaintextController.isModified(this.originalContent)
+    } else {
+      event.detail.modified = this.graphicalController.isModified(this.originalStructure)
     }
   }
 
   handleContentLoaded(event) {
-    const { category, tags } = event.detail
-    if (category && this.hasCategorySelectTarget) {
-      this.categorySelectTarget.value = category
-      this.originalCategory = category
+    event.detail.handled = true
+    const data = event.detail
+
+    this.originalContent = data.markdown_source
+    this.originalStructure = data.structure
+
+    this.plaintextController.content = data.markdown_source
+    if (data.structure) {
+      this.graphicalController.loadStructure(data.structure)
     }
-    this.tagController?.loadTags(tags || [])
+
+    this.enableEditing()
+    this.showActiveMode()
   }
 
-  selectedCategory() {
-    if (!this.hasCategorySelectTarget) return null
-    const val = this.categorySelectTarget.value
-    if (val === "__new__") {
-      return this.hasCategoryInputTarget ? this.categoryInputTarget.value.trim() : null
+  enableEditing() {
+    const textarea = this.element.querySelector("[data-editor-target='textarea']")
+    if (textarea) {
+      textarea.disabled = false
+      textarea.placeholder = ""
     }
-    return val
+    const saveBtn = this.element.querySelector("[data-editor-target='saveButton']")
+    if (saveBtn) saveBtn.disabled = false
   }
 
-  categorySelectTargetConnected(element) {
-    this.originalCategory = element.value
-    element.addEventListener("change", () => this.handleCategoryChange())
+  get plaintextController() {
+    const el = this.plaintextContainerTarget.querySelector('[data-controller~="recipe-plaintext"]')
+    return this.application.getControllerForElementAndIdentifier(el, "recipe-plaintext")
   }
 
-  handleCategoryChange() {
-    if (!this.hasCategorySelectTarget || !this.hasCategoryInputTarget) return
-    if (this.categorySelectTarget.value === "__new__") {
-      this.categoryInputTarget.hidden = false
-      this.categorySelectTarget.hidden = true
-      this.categoryInputTarget.focus()
-    }
-  }
-
-  categoryInputTargetConnected(element) {
-    element.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") {
-        this.categoryInputTarget.hidden = true
-        this.categorySelectTarget.hidden = false
-        this.categorySelectTarget.value = this.originalCategory
-      }
-    })
-  }
-
-  toggleMobilePanel(event) {
-    const toggle = event.currentTarget
-    const panel = this.element.querySelector(".editor-side-panel")
-    toggle.classList.toggle("editor-mobile-meta--open")
-    panel.classList.toggle("editor-side-panel--mobile-open")
-  }
-
-  setPlaceholder(textarea) {
-    if (!textarea.getAttribute("data-placeholder-set")) {
-      textarea.placeholder = [
-        "# Recipe Title",
-        "",
-        "Serves: 4",
-        "",
-        "## First step.",
-        "",
-        "- Ingredient one, 1 cup: diced",
-        "- Ingredient two",
-        "",
-        "Instructions for this step.",
-        "",
-        "## Second step.",
-        "",
-        "- More ingredients",
-        "",
-        "More instructions."
-      ].join("\n")
-      textarea.setAttribute("data-placeholder-set", "true")
-    }
+  get graphicalController() {
+    const el = this.graphicalContainerTarget.querySelector('[data-controller~="recipe-graphical"]')
+    return this.application.getControllerForElementAndIdentifier(el, "recipe-graphical")
   }
 }

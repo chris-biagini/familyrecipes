@@ -61,7 +61,7 @@ class RecipeNutritionJobTest < ActiveSupport::TestCase
 
   test 'markdown importer triggers nutrition computation' do
     markdown = "# Auto Bread\n\nServes: 4\n\n## Mix\n\n- Flour, 120 g\n\nMix."
-    recipe = MarkdownImporter.import(markdown, kitchen: @kitchen, category: @category)
+    recipe = MarkdownImporter.import(markdown, kitchen: @kitchen, category: @category).recipe
 
     assert_predicate recipe.nutrition_data, :present?
     assert_predicate recipe.nutrition_data['totals']['calories'], :positive?
@@ -92,10 +92,10 @@ class RecipeNutritionJobTest < ActiveSupport::TestCase
   test 'cascade job recomputes nutrition for referencing recipes' do
     dough = MarkdownImporter.import(
       "# Dough\n\nServes: 2\n\n## Mix\n\n- Flour, 60 g\n\nMix.", kitchen: @kitchen, category: @category
-    )
+    ).recipe
     pizza_md = "# Pizza\n\nServes: 4\n\n" \
                "## Make dough.\n> @[Dough]\n\n## Build\n\n- Cheese, 1 oz\n\nBuild."
-    pizza = MarkdownImporter.import(pizza_md, kitchen: @kitchen, category: @category)
+    pizza = MarkdownImporter.import(pizza_md, kitchen: @kitchen, category: @category).recipe
 
     CascadeNutritionJob.perform_now(dough)
     pizza.reload
@@ -165,7 +165,7 @@ class RecipeNutritionJobTest < ActiveSupport::TestCase
   private
 
   def import_without_nutrition(markdown)
-    recipe = MarkdownImporter.import(markdown, kitchen: @kitchen, category: @category)
+    recipe = MarkdownImporter.import(markdown, kitchen: @kitchen, category: @category).recipe
     recipe.update_column(:nutrition_data, nil) # rubocop:disable Rails/SkipsModelValidations
     recipe
   end

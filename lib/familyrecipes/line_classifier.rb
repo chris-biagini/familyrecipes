@@ -18,7 +18,7 @@ module LineClassifier
     ingredient: /^- (.+)$/,
     cross_reference_block: /^\s*>\s*(@\[.+)$/,
     divider: /^---\s*$/,
-    front_matter: /^(Makes|Serves):\s+(.+)$/,
+    front_matter: /^(Makes|Serves|Category|Tags):\s+(.+)$/,
     blank: /^\s*$/
   }.freeze
 

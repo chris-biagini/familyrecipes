@@ -46,17 +46,39 @@ class MenuController < ApplicationController
   end
 
   def quick_bites_content
-    render json: { content: current_kitchen.quick_bites_content || '' }
+    content = current_kitchen.quick_bites_content || ''
+    result = FamilyRecipes.parse_quick_bites_content(content)
+    structure = FamilyRecipes::QuickBitesSerializer.to_ir(result.quick_bites)
+    render json: { content:, structure: }
   end
 
   def update_quick_bites
-    result = QuickBitesWriteService.update(
-      kitchen: current_kitchen, content: params[:content]
-    )
+    result = if params[:structure]
+               structure = params[:structure].to_unsafe_h.deep_symbolize_keys
+               QuickBitesWriteService.update_from_structure(
+                 kitchen: current_kitchen, structure:
+               )
+             else
+               QuickBitesWriteService.update(
+                 kitchen: current_kitchen, content: params[:content]
+               )
+             end
 
     body = { status: 'ok' }
     body[:warnings] = result.warnings if result.warnings.any?
     render json: body
+  end
+
+  def parse_quick_bites
+    result = FamilyRecipes.parse_quick_bites_content(params[:content])
+    ir = FamilyRecipes::QuickBitesSerializer.to_ir(result.quick_bites)
+    render json: ir
+  end
+
+  def serialize_quick_bites
+    structure = params[:structure].to_unsafe_h.deep_symbolize_keys
+    content = FamilyRecipes::QuickBitesSerializer.serialize(structure)
+    render json: { content: }
   end
 
   private

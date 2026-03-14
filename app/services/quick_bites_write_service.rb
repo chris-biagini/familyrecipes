@@ -17,6 +17,11 @@ class QuickBitesWriteService
     new(kitchen:).update(content:)
   end
 
+  def self.update_from_structure(kitchen:, structure:)
+    content = FamilyRecipes::QuickBitesSerializer.serialize(structure)
+    new(kitchen:).update(content:)
+  end
+
   def initialize(kitchen:)
     @kitchen = kitchen
   end

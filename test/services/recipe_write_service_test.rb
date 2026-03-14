@@ -326,4 +326,146 @@ class RecipeWriteServiceTest < ActiveSupport::TestCase
 
     assert_not_includes plan.state['selected_recipes'], 'focaccia'
   end
+
+  test 'create uses front matter tags when tags param is nil' do
+    md = "# FM Tags\n\nTags: quick, breakfast\n\n## Step\n\n- Eggs, 2\n\nScramble."
+    result = RecipeWriteService.create(markdown: md, kitchen: @kitchen)
+
+    assert_equal %w[breakfast quick], result.recipe.tags.pluck(:name).sort
+  end
+
+  test 'explicit tags param overrides front matter tags' do
+    md = "# FM Tags Override\n\nTags: breakfast, quick\n\n## Step\n\n- Eggs, 2\n\nScramble."
+    result = RecipeWriteService.create(markdown: md, kitchen: @kitchen, tags: %w[dinner])
+
+    assert_equal %w[dinner], result.recipe.tags.pluck(:name)
+  end
+
+  test 'create uses front matter category when category_name is blank' do
+    md = "# FM Category\n\nCategory: Desserts\n\n## Step\n\n- Sugar, 1 cup\n\nMix."
+    result = RecipeWriteService.create(markdown: md, kitchen: @kitchen, category_name: '')
+
+    assert_equal 'Desserts', result.recipe.category.name
+  end
+
+  test 'update uses front matter tags when tags param is nil' do
+    md = "# FM Update Tags\n\nTags: lunch\n\n## Step\n\n- Bread, 2 slices\n\nToast."
+    RecipeWriteService.create(markdown: md, kitchen: @kitchen)
+    updated = "# FM Update Tags\n\nTags: dinner, fancy\n\n## Step\n\n- Bread, 2 slices\n\nToast."
+    result = RecipeWriteService.update(slug: 'fm-update-tags', markdown: updated, kitchen: @kitchen)
+
+    assert_equal %w[dinner fancy], result.recipe.tags.pluck(:name).sort
+  end
+
+  test 'create_from_structure creates recipe from IR' do
+    ir = {
+      title: 'Structured Create',
+      description: nil,
+      front_matter: { category: 'Basics', tags: %w[test] },
+      steps: [{ tldr: 'Mix.', ingredients: [{ name: 'Flour', quantity: nil, prep_note: nil }],
+                instructions: 'Mix.', cross_reference: nil }],
+      footer: nil
+    }
+
+    result = RecipeWriteService.create_from_structure(structure: ir, kitchen: @kitchen)
+
+    assert_equal 'Structured Create', result.recipe.title
+    assert_equal 'Basics', result.recipe.category.name
+    assert_equal %w[test], result.recipe.tags.pluck(:name)
+    assert_not_nil result.recipe.edited_at
+    assert_empty result.updated_references
+  end
+
+  test 'create_from_structure defaults to Miscellaneous when no category' do
+    ir = {
+      title: 'No Category',
+      description: nil,
+      front_matter: {},
+      steps: [{ tldr: 'Do it.', ingredients: [{ name: 'Salt', quantity: nil, prep_note: nil }],
+                instructions: 'Do it.', cross_reference: nil }],
+      footer: nil
+    }
+
+    result = RecipeWriteService.create_from_structure(structure: ir, kitchen: @kitchen)
+
+    assert_equal 'Miscellaneous', result.recipe.category.name
+  end
+
+  test 'update_from_structure updates existing recipe' do
+    md = "# Original\n\n## Step\n\n- Flour\n\nMix."
+    original = RecipeWriteService.create(markdown: md, kitchen: @kitchen)
+
+    ir = {
+      title: 'Updated Title',
+      description: nil,
+      front_matter: { category: 'Desserts' },
+      steps: [{ tldr: 'Bake.', ingredients: [{ name: 'Sugar', quantity: nil, prep_note: nil }],
+                instructions: 'Bake.', cross_reference: nil }],
+      footer: nil
+    }
+
+    result = RecipeWriteService.update_from_structure(
+      slug: original.recipe.slug, structure: ir, kitchen: @kitchen
+    )
+
+    assert_equal 'Updated Title', result.recipe.title
+    assert_equal 'Desserts', result.recipe.category.name
+  end
+
+  test 'update_from_structure with rename returns updated_references' do
+    md = "# Focaccia Struct\n\n## Make (do it)\n\n- Flour, 3 cups\n\nMix."
+    RecipeWriteService.create(markdown: md, kitchen: @kitchen)
+
+    bread = @kitchen.categories.find_by!(slug: 'miscellaneous')
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: bread)
+      # Panzanella Struct
+
+      ## Make bread.
+      > @[Focaccia Struct], 1
+
+      ## Assemble (put it together)
+
+      - Tomatoes, 3
+
+      Tear bread and toss.
+    MD
+
+    ir = {
+      title: 'Rosemary Focaccia Struct',
+      description: nil,
+      front_matter: { category: 'Bread' },
+      steps: [{ tldr: 'Make dough.', ingredients: [{ name: 'Flour', quantity: '4 cups', prep_note: nil }],
+                instructions: 'Mix.', cross_reference: nil }],
+      footer: nil
+    }
+
+    result = RecipeWriteService.update_from_structure(
+      slug: 'focaccia-struct', structure: ir, kitchen: @kitchen
+    )
+
+    assert_includes result.updated_references, 'Panzanella Struct'
+    assert_equal 'rosemary-focaccia-struct', result.recipe.slug
+    assert_nil Recipe.find_by(slug: 'focaccia-struct')
+  end
+
+  test 'update_from_structure cleans up orphan categories' do
+    md = "# Struct Cleanup\n\n## Step\n\n- Flour\n\nMix."
+    RecipeWriteService.create(markdown: md, kitchen: @kitchen, category_name: 'OldCat')
+
+    ir = {
+      title: 'Struct Cleanup',
+      description: nil,
+      front_matter: { category: 'NewCat' },
+      steps: [{ tldr: 'Step.', ingredients: [{ name: 'Flour', quantity: nil, prep_note: nil }],
+                instructions: 'Mix.', cross_reference: nil }],
+      footer: nil
+    }
+
+    RecipeWriteService.update_from_structure(
+      slug: 'struct-cleanup', structure: ir, kitchen: @kitchen
+    )
+
+    assert_nil Category.find_by(slug: 'oldcat')
+    assert Category.find_by(slug: 'newcat')
+  end
 end

@@ -22,6 +22,8 @@ Rails.application.routes.draw do
     get 'recipes/:slug.md', to: 'recipes#show_markdown', as: :recipe_markdown, defaults: { format: 'text' }
     get 'recipes/:slug.html', to: 'recipes#show_html', as: :recipe_html, defaults: { format: 'html' }
     get 'recipes/:slug/content', to: 'recipes#content', as: :recipe_content
+    post 'recipes/parse', to: 'recipes#parse', as: :recipe_parse
+    post 'recipes/serialize', to: 'recipes#serialize', as: :recipe_serialize
     resources :recipes, only: %i[show create update destroy], param: :slug
     get 'ingredients', to: 'ingredients#index', as: :ingredients
     get 'ingredients/:ingredient_name/edit', to: 'ingredients#edit', as: :ingredient_edit
@@ -31,6 +33,8 @@ Rails.application.routes.draw do
     delete 'menu/clear', to: 'menu#clear', as: :menu_clear
     patch 'menu/quick_bites', to: 'menu#update_quick_bites', as: :menu_quick_bites
     get 'menu/quick_bites_content', to: 'menu#quick_bites_content', as: :menu_quick_bites_content
+    post 'menu/parse_quick_bites', to: 'menu#parse_quick_bites', as: :menu_parse_quick_bites
+    post 'menu/serialize_quick_bites', to: 'menu#serialize_quick_bites', as: :menu_serialize_quick_bites
     get 'groceries', to: 'groceries#show', as: :groceries
     patch 'groceries/check', to: 'groceries#check', as: :groceries_check
     patch 'groceries/custom_items', to: 'groceries#update_custom_items', as: :groceries_custom_items

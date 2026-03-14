@@ -1,39 +1,43 @@
 # frozen_string_literal: true
 
-# The sole write path for getting recipes into the database. Parses Markdown
-# through the FamilyRecipes parser pipeline (LineClassifier → RecipeBuilder),
-# then upserts the Recipe and its Steps, Ingredients, and CrossReferences in a
-# transaction. Also processes instructions through ScalableNumberPreprocessor
-# to generate the scalable-number HTML stored in Step#processed_instructions.
+# The sole write path for getting recipes into the database. Two entry points:
+# `import` parses Markdown via the parser pipeline, `import_from_structure`
+# accepts a pre-parsed IR hash and generates markdown via RecipeSerializer.
+# Both converge on `run`, which upserts the Recipe and its child records,
+# resolves pending cross-references, and computes nutrition.
 #
-# Steps come in two flavors: content steps (ingredients + instructions) and
-# cross-reference steps (> @[...] syntax, exactly one CrossReference, no ingredients
-# or instructions). The step-level :cross_reference key drives this branching.
-#
-# Kitchen-scoped (requires kitchen: keyword) and idempotent — db:seed calls
-# this repeatedly. Category is passed in as an AR object by the caller (typically
-# RecipeWriteService). After import, resolves pending cross-references, computes
-# nutrition synchronously (RecipeNutritionJob), and enqueues CascadeNutritionJob
-# async so parent recipes update without blocking the saving user.
+# Collaborators:
+# - LineClassifier, RecipeBuilder — parse pipeline (import path)
+# - RecipeSerializer — IR → Markdown (import_from_structure path)
+# - RecipeWriteService — primary caller for web operations
+# - RecipeNutritionJob, CascadeNutritionJob — post-import nutrition
 class MarkdownImporter
   class SlugCollisionError < RuntimeError; end
 
+  ImportResult = Data.define(:recipe, :front_matter_tags)
+
   def self.import(markdown_source, kitchen:, category:)
-    new(markdown_source, kitchen: kitchen, category: category).import
+    new(markdown_source, kitchen:, category:).run
   end
 
-  def initialize(markdown_source, kitchen:, category:)
+  def self.import_from_structure(ir_hash, kitchen:, category:)
+    markdown_source = FamilyRecipes::RecipeSerializer.serialize(ir_hash)
+    new(markdown_source, kitchen:, category:, parsed: ir_hash).run
+  end
+
+  def initialize(markdown_source, kitchen:, category:, parsed: nil)
     @markdown_source = markdown_source
     @kitchen = kitchen
     @category = category
-    @parsed = parse_markdown
+    @parsed = parsed || parse_markdown
   end
 
-  def import
+  def run
     recipe = save_recipe
     CrossReference.resolve_pending(kitchen: kitchen)
-    compute_nutrition(recipe)
-    recipe
+    RecipeNutritionJob.perform_now(recipe)
+    CascadeNutritionJob.perform_later(recipe)
+    ImportResult.new(recipe:, front_matter_tags: parsed.dig(:front_matter, :tags))
   end
 
   private
@@ -50,14 +54,8 @@ class MarkdownImporter
     end
   end
 
-  def compute_nutrition(recipe)
-    RecipeNutritionJob.perform_now(recipe)
-    CascadeNutritionJob.perform_later(recipe)
-  end
-
   def parse_markdown
-    tokens = LineClassifier.classify(markdown_source)
-    RecipeBuilder.new(tokens).build
+    RecipeBuilder.new(LineClassifier.classify(markdown_source)).build
   end
 
   def find_or_initialize_recipe
@@ -81,7 +79,7 @@ class MarkdownImporter
     recipe.assign_attributes(
       title: parsed[:title],
       description: parsed[:description],
-      category: category,
+      category: resolved_category,
       kitchen: kitchen,
       makes_quantity: makes_qty,
       makes_unit_noun: makes_unit,
@@ -89,6 +87,25 @@ class MarkdownImporter
       footer: parsed[:footer],
       markdown_source: markdown_source
     )
+  end
+
+  def resolved_category
+    category || resolve_front_matter_category || default_category
+  end
+
+  def resolve_front_matter_category
+    name = parsed[:front_matter][:category]
+    return unless name
+
+    kitchen.categories.find_or_create_by!(name:)
+  end
+
+  def default_category
+    slug = FamilyRecipes.slugify('Miscellaneous')
+    kitchen.categories.find_or_create_by!(slug:) do |cat|
+      cat.name = 'Miscellaneous'
+      cat.position = kitchen.categories.maximum(:position).to_i + 1
+    end
   end
 
   def replace_steps(recipe)

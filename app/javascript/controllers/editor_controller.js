@@ -9,9 +9,11 @@ import { show as notifyShow } from "utilities/notify"
  * Generic <dialog> lifecycle controller for editor modals. Handles open, save
  * (PATCH/POST via fetch), dirty-checking, close with confirmation, beforeunload
  * guards, and Turbo Drive navigation guards. Simple dialogs need zero custom
- * JS — just Stimulus data attributes on the <dialog>. Custom dialogs (nutrition
- * editor) hook in via lifecycle events: editor:collect, editor:save,
- * editor:modified, editor:reset.
+ * JS — just Stimulus data attributes on the <dialog>. Custom dialogs hook in
+ * via lifecycle events: editor:collect, editor:save, editor:modified,
+ * editor:reset, editor:content-loaded. Dual-mode editors (recipe editor) use a
+ * coordinator that sets `handled = true` on these events to override default
+ * textarea behavior.
  *
  * - editor_utils: CSRF tokens, error display, save requests, close-with-confirmation
  * - notify: toast notifications for save success/failure feedback
@@ -242,7 +244,8 @@ export default class extends Controller {
     })
       .then(r => r.json())
       .then(data => {
-        if (this.hasTextareaTarget) {
+        const loadResult = this.dispatchEditorEvent("editor:content-loaded", data)
+        if (!loadResult.handled && this.hasTextareaTarget) {
           this.textareaTarget.value = data[this.loadKeyValue] || ""
           this.originalContent = this.textareaTarget.value
           this.textareaTarget.disabled = false
@@ -250,9 +253,6 @@ export default class extends Controller {
           this.textareaTarget.focus()
         }
         if (this.hasSaveButtonTarget) this.saveButtonTarget.disabled = false
-        this.element.dispatchEvent(new CustomEvent("editor:content-loaded", {
-          detail: data, bubbles: false
-        }))
       })
       .catch(() => {
         if (this.hasTextareaTarget) {

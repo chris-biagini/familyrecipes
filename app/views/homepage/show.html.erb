@@ -124,48 +124,25 @@
 <%= render layout: 'shared/editor_dialog',
     locals: { title: 'New Recipe',
               id: 'recipe-editor',
+              mode_toggle: true,
               dialog_data: { editor_open: '#new-recipe-button',
                              editor_url: recipes_path,
                              editor_method: 'POST',
                              editor_on_success: 'redirect',
                              editor_body_key: 'markdown_source',
-                             extra_controllers: 'recipe-editor' } } do %>
-  <div class="editor-body-split">
-    <textarea class="editor-textarea" data-editor-target="textarea"
-              data-recipe-editor-target="textarea" spellcheck="false"><%= "# Recipe Title\n\nOptional description.\n\nMakes: 4 servings\nServes: 4\n\n## Step Name (short summary)\n\n- Ingredient, quantity: prep note\n\nInstructions here.\n\n---\n\nOptional notes or source." %></textarea>
-    <div class="editor-side-panel">
-      <div class="side-section">
-        <label for="new-recipe-category">Category</label>
-        <select id="new-recipe-category" class="category-select"
-                data-recipe-editor-target="categorySelect">
-          <% @all_categories.each do |cat| %>
-            <option value="<%= cat.name %>" <%= 'selected' if cat.name == 'Miscellaneous' %>><%= cat.name %></option>
-          <% end %>
-          <option disabled>&#x2500;&#x2500;&#x2500;</option>
-          <option value="__new__">New category&hellip;</option>
-        </select>
-        <input type="text" class="category-new-input" placeholder="New category name"
-               data-recipe-editor-target="categoryInput" hidden maxlength="50">
-      </div>
-      <div class="side-section" data-controller="tag-input"
-           data-tag-input-tags-value='<%= (local_assigns[:recipe] ? recipe.tags.pluck(:name) : []).to_json %>'
-           data-tag-input-all-tags-value='<%= current_kitchen.tags.left_joins(:recipe_tags).group(:id).order(:name).pluck(:name, Arel.sql("COUNT(recipe_tags.id)")).to_json %>'>
-        <label>Tags</label>
-        <div class="tag-pills-editor" data-tag-input-target="pills"></div>
-        <div class="tag-autocomplete-wrapper">
-          <input type="text" class="tag-text-input" placeholder="Add tag..."
-                 data-tag-input-target="input"
-                 data-action="input->tag-input#onInput keydown->tag-input#onKeydown"
-                 maxlength="30">
-          <div class="tag-autocomplete" data-tag-input-target="dropdown" hidden></div>
-        </div>
-      </div>
+                             extra_controllers: 'recipe-editor' },
+              extra_data: {
+                'recipe-editor-parse-url-value' => recipe_parse_path,
+                'recipe-editor-serialize-url-value' => recipe_serialize_path
+              } } do %>
+  <div class="editor-body" data-recipe-editor-target="plaintextContainer">
+    <div data-controller="recipe-plaintext">
+      <textarea class="editor-textarea" data-editor-target="textarea"
+                data-recipe-plaintext-target="textarea" spellcheck="false"><%= "# Recipe Title\n\nOptional description.\n\nCategory: Miscellaneous\n\nMakes: 4 servings\nServes: 4\n\n## Step Name (short summary)\n\n- Ingredient, quantity: prep note\n\nInstructions here.\n\n---\n\nOptional notes or source." %></textarea>
     </div>
   </div>
-  <div class="editor-mobile-meta" data-action="click->recipe-editor#toggleMobilePanel">
-    <span class="editor-mobile-meta__chevron">&#x25BC;</span>
-    <span>Category &amp; Tags</span>
-    <div class="editor-mobile-meta__preview" data-recipe-editor-target="mobilePillPreview"></div>
+  <div class="editor-body" data-recipe-editor-target="graphicalContainer" hidden>
+    <%= render 'recipes/graphical_editor' %>
   </div>
 <% end %>
 <% end %>

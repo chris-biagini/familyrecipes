@@ -285,7 +285,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
 
   # --- Quick Bites ---
 
-  test 'quick_bites_content returns current content' do
+  test 'quick_bites_content returns current content and structure' do
     @kitchen.update!(quick_bites_content: "Snacks:\n- Goldfish")
 
     log_in
@@ -295,9 +295,11 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     json = response.parsed_body
 
     assert_equal "Snacks:\n- Goldfish", json['content']
+    assert_equal 'Snacks', json['structure']['categories'].first['name']
+    assert_equal 'Goldfish', json['structure']['categories'].first['items'].first['name']
   end
 
-  test 'quick_bites_content returns empty string when no content' do
+  test 'quick_bites_content returns empty string and empty structure when no content' do
     log_in
     get menu_quick_bites_content_path(kitchen_slug: kitchen_slug), as: :json
 
@@ -305,6 +307,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     json = response.parsed_body
 
     assert_equal '', json['content']
+    assert_empty json['structure']['categories']
   end
 
   test 'update_quick_bites saves content' do
@@ -381,6 +384,53 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
             params: { content: "Snacks:\n- Goldfish" },
             as: :json
     end
+  end
+
+  test 'parse_quick_bites returns IR from content' do
+    log_in
+    content = "Snacks:\n- Apples and Honey: Apples, Honey"
+
+    post menu_parse_quick_bites_path(kitchen_slug: kitchen_slug),
+         params: { content: }, as: :json
+
+    assert_response :ok
+    body = response.parsed_body
+
+    assert_equal 1, body['categories'].size
+    assert_equal 'Snacks', body['categories'][0]['name']
+    assert_equal 'Apples and Honey', body['categories'][0]['items'][0]['name']
+  end
+
+  test 'serialize_quick_bites returns content from IR' do
+    log_in
+    ir = {
+      categories: [
+        { name: 'Snacks', items: [{ name: 'Apples', ingredients: %w[Apples] }] }
+      ]
+    }
+
+    post menu_serialize_quick_bites_path(kitchen_slug: kitchen_slug),
+         params: { structure: ir }, as: :json
+
+    assert_response :ok
+    assert_includes response.parsed_body['content'], 'Snacks:'
+    assert_includes response.parsed_body['content'], '- Apples'
+  end
+
+  test 'update_quick_bites with structure param uses structured path' do
+    log_in
+    ir = {
+      categories: [
+        { name: 'Snacks', items: [{ name: 'Crackers', ingredients: %w[Ritz] }] }
+      ]
+    }
+
+    patch menu_quick_bites_path(kitchen_slug: kitchen_slug),
+          params: { structure: ir }, as: :json
+
+    assert_response :ok
+    assert_includes @kitchen.reload.quick_bites_content, 'Snacks:'
+    assert_includes @kitchen.quick_bites_content, '- Crackers: Ritz'
   end
 
   private
