@@ -249,6 +249,10 @@ export default class extends Controller {
   buildStepHeader(index, stepData) {
     const header = document.createElement("div")
     header.className = "graphical-step-header"
+    header.addEventListener("click", (e) => {
+      if (e.target.closest(".graphical-step-actions")) return
+      this.toggleStep(index)
+    })
 
     header.appendChild(this.buildToggleButton(index))
     header.appendChild(this.buildStepTitle(index, stepData))

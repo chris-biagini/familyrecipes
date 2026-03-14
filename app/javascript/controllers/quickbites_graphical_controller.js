@@ -172,6 +172,10 @@ export default class extends Controller {
   buildCategoryHeader(index, catData) {
     const header = document.createElement("div")
     header.className = "graphical-step-header"
+    header.addEventListener("click", (e) => {
+      if (e.target.closest(".graphical-step-actions")) return
+      this.toggleCategory(index)
+    })
 
     header.appendChild(this.buildToggleButton(index))
     header.appendChild(this.buildCategoryTitle(index, catData))

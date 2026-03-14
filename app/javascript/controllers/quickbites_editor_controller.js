@@ -116,7 +116,18 @@ export default class extends Controller {
       this.graphicalController.loadStructure(data.structure)
     }
 
+    this.enableEditing()
     this.showActiveMode()
+  }
+
+  enableEditing() {
+    const textarea = this.element.querySelector("[data-editor-target='textarea']")
+    if (textarea) {
+      textarea.disabled = false
+      textarea.placeholder = ""
+    }
+    const saveBtn = this.element.querySelector("[data-editor-target='saveButton']")
+    if (saveBtn) saveBtn.disabled = false
   }
 
   get plaintextController() {
