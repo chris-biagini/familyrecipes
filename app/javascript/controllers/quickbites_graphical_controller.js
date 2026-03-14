@@ -173,7 +173,7 @@ export default class extends Controller {
     const header = document.createElement("div")
     header.className = "graphical-step-header"
     header.addEventListener("click", (e) => {
-      if (e.target.closest(".graphical-step-actions")) return
+      if (e.target.closest(".graphical-step-actions") || e.target.closest(".graphical-step-toggle")) return
       this.toggleCategory(index)
     })
 
