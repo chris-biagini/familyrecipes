@@ -11,7 +11,7 @@ class TagsController < ApplicationController
   before_action :require_membership, only: :update_tags
 
   def content
-    items = current_kitchen.tags.order(:name).pluck(:name)
+    items = current_kitchen.tags.order(:name).map { |t| { name: t.name } }
     render json: { items: }
   end
 
