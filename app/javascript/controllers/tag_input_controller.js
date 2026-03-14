@@ -41,6 +41,14 @@ export default class extends Controller {
     return JSON.stringify(this.currentTags.sort()) !== JSON.stringify(this.originalTags.sort())
   }
 
+  loadTags(tags) {
+    this.currentTags = [...tags]
+    this.originalTags = [...tags]
+    this.renderPills()
+    this.inputTarget.value = ""
+    this.hideDropdown()
+  }
+
   reset() {
     this.currentTags = [...this.originalTags]
     this.renderPills()

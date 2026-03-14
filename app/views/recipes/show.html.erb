@@ -61,7 +61,7 @@
                data-recipe-editor-target="categoryInput" hidden maxlength="50">
       </div>
       <div class="side-section" data-controller="tag-input"
-           data-tag-input-tags-value='<%= (local_assigns[:recipe] ? recipe.tags.pluck(:name) : []).to_json %>'
+           data-tag-input-tags-value='<%= @recipe.tags.pluck(:name).to_json %>'
            data-tag-input-all-tags-value='<%= current_kitchen.tags.left_joins(:recipe_tags).group(:id).order(:name).pluck(:name, Arel.sql("COUNT(recipe_tags.id)")).to_json %>'>
         <label>Tags</label>
         <div class="tag-pills-editor" data-tag-input-target="pills"></div>

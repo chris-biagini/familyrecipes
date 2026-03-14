@@ -20,8 +20,10 @@ export default class extends Controller {
   connect() {
     this.boundCollect = (e) => this.handleCollect(e)
     this.boundModified = (e) => this.handleModified(e)
+    this.boundContentLoaded = (e) => this.handleContentLoaded(e)
     this.element.addEventListener("editor:collect", this.boundCollect)
     this.element.addEventListener("editor:modified", this.boundModified)
+    this.element.addEventListener("editor:content-loaded", this.boundContentLoaded)
   }
 
   disconnect() {
@@ -29,6 +31,7 @@ export default class extends Controller {
     this.hlOverlay = null
     if (this.boundCollect) this.element.removeEventListener("editor:collect", this.boundCollect)
     if (this.boundModified) this.element.removeEventListener("editor:modified", this.boundModified)
+    if (this.boundContentLoaded) this.element.removeEventListener("editor:content-loaded", this.boundContentLoaded)
   }
 
   textareaTargetConnected(element) {
@@ -142,6 +145,15 @@ export default class extends Controller {
       event.detail.handled = true
       event.detail.modified = true
     }
+  }
+
+  handleContentLoaded(event) {
+    const { category, tags } = event.detail
+    if (category && this.hasCategorySelectTarget) {
+      this.categorySelectTarget.value = category
+      this.originalCategory = category
+    }
+    this.tagController?.loadTags(tags || [])
   }
 
   selectedCategory() {

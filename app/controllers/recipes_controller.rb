@@ -17,7 +17,11 @@ class RecipesController < ApplicationController
 
   def content
     recipe = current_kitchen.recipes.find_by!(slug: params[:slug])
-    render json: { markdown_source: recipe.markdown_source }
+    render json: {
+      markdown_source: recipe.markdown_source,
+      category: recipe.category&.name,
+      tags: recipe.tags.pluck(:name)
+    }
   end
 
   def show_markdown

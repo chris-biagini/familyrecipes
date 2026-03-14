@@ -250,6 +250,9 @@ export default class extends Controller {
           this.textareaTarget.focus()
         }
         if (this.hasSaveButtonTarget) this.saveButtonTarget.disabled = false
+        this.element.dispatchEvent(new CustomEvent("editor:content-loaded", {
+          detail: data, bubbles: false
+        }))
       })
       .catch(() => {
         if (this.hasTextareaTarget) {

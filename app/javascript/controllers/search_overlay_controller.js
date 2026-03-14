@@ -16,20 +16,27 @@ export default class extends Controller {
   static targets = ["dialog", "input", "results", "data", "pillArea", "inputWrapper"]
 
   connect() {
+    this.loadData()
+    this.activePills = []
+    this.selectedIndex = -1
+    this.boundKeydown = this.globalKeydown.bind(this)
+    this.boundReload = () => this.loadData()
+    document.addEventListener("keydown", this.boundKeydown)
+    document.addEventListener("turbo:morph", this.boundReload)
+  }
+
+  disconnect() {
+    document.removeEventListener("keydown", this.boundKeydown)
+    document.removeEventListener("turbo:morph", this.boundReload)
+  }
+
+  loadData() {
     const data = this.hasDataTarget
       ? JSON.parse(this.dataTarget.textContent || "{}")
       : {}
     this.recipes = data.recipes || []
     this.allTags = new Set((data.all_tags || []).map(t => t.toLowerCase()))
     this.allCategories = new Set((data.all_categories || []).map(c => c.toLowerCase()))
-    this.activePills = []
-    this.selectedIndex = -1
-    this.boundKeydown = this.globalKeydown.bind(this)
-    document.addEventListener("keydown", this.boundKeydown)
-  }
-
-  disconnect() {
-    document.removeEventListener("keydown", this.boundKeydown)
   }
 
   open() {
