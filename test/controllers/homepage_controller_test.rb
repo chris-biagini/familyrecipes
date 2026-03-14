@@ -104,11 +104,12 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
     assert_select 'turbo-cable-stream-source', count: 0
   end
 
-  test 'new recipe editor includes category dropdown' do
+  test 'new recipe editor includes textarea without side panel' do
     log_in
     get kitchen_root_path(kitchen_slug: kitchen_slug)
 
-    assert_select '#recipe-editor select.category-select'
+    assert_select '#recipe-editor textarea.editor-textarea'
+    assert_select '#recipe-editor select.category-select', count: 0
   end
 
   test 'homepage renders Edit Categories button for members' do

@@ -526,11 +526,12 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     assert_select 'article.embedded-recipe[data-base-multiplier="2.0"]'
   end
 
-  test 'recipe editor includes category dropdown' do
+  test 'recipe editor includes textarea without side panel' do
     log_in
     get recipe_path('focaccia', kitchen_slug: kitchen_slug)
 
-    assert_select '#recipe-editor select.category-select'
+    assert_select '#recipe-editor textarea.editor-textarea'
+    assert_select '#recipe-editor select.category-select', count: 0
   end
 
   test 'create returns 422 when slug collides with different title' do
