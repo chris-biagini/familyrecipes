@@ -16,7 +16,8 @@ class TagsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     body = response.parsed_body
 
-    names = body['items'].map { |i| i['name'] }
+    names = body['items'].pluck('name')
+
     assert_includes names, 'vegan'
     assert_includes names, 'quick'
   end
