@@ -99,14 +99,6 @@ class RecipesHelperTest < ActionView::TestCase
     assert_equal 100, percent_daily_value(:sodium, 2300.0)
   end
 
-  test 'format_quantity_display shows freeform quantity verbatim' do
-    item = Ingredient.new(name: 'Basil', quantity: 'a few', unit: 'leaves', position: 0)
-
-    result = format_quantity_display(item)
-
-    assert_equal 'a few leaves', result
-  end
-
   test 'scaled_quantity_display does not scale freeform quantity' do
     item = Ingredient.new(name: 'Basil', quantity: 'a few', unit: 'leaves', position: 0)
 

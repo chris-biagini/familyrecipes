@@ -55,8 +55,6 @@ module FamilyRecipes
       @prep_note = prep_note
     end
 
-    def normalized_name = @name
-
     def quantity_value
       return nil if quantity_blank?
 

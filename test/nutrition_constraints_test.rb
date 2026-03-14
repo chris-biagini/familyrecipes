@@ -5,39 +5,6 @@ require 'test_helper'
 class NutritionConstraintsTest < ActiveSupport::TestCase
   NC = FamilyRecipes::NutritionConstraints
 
-  # --- valid_basis_grams? ---
-
-  test 'valid_basis_grams? accepts positive number' do
-    valid, = NC.valid_basis_grams?(30)
-
-    assert valid
-  end
-
-  test 'valid_basis_grams? rejects zero' do
-    valid, msg = NC.valid_basis_grams?(0)
-
-    assert_not valid
-    assert_includes msg, 'greater than 0'
-  end
-
-  test 'valid_basis_grams? rejects negative' do
-    valid, = NC.valid_basis_grams?(-5)
-
-    assert_not valid
-  end
-
-  test 'valid_basis_grams? rejects nil' do
-    valid, = NC.valid_basis_grams?(nil)
-
-    assert_not valid
-  end
-
-  test 'valid_basis_grams? rejects non-numeric' do
-    valid, = NC.valid_basis_grams?('abc')
-
-    assert_not valid
-  end
-
   # --- valid_nutrient? ---
 
   test 'valid_nutrient? accepts zero' do
@@ -80,65 +47,6 @@ class NutritionConstraintsTest < ActiveSupport::TestCase
 
   test 'valid_nutrient? rejects non-numeric' do
     valid, = NC.valid_nutrient?('calories', 'abc')
-
-    assert_not valid
-  end
-
-  # --- density_complete? ---
-
-  test 'density_complete? accepts all three fields' do
-    valid, = NC.density_complete?({ 'grams' => 120, 'volume' => 1.0, 'unit' => 'cup' })
-
-    assert valid
-  end
-
-  test 'density_complete? accepts empty hash' do
-    valid, = NC.density_complete?({})
-
-    assert valid
-  end
-
-  test 'density_complete? accepts nil' do
-    valid, = NC.density_complete?(nil)
-
-    assert valid
-  end
-
-  test 'density_complete? rejects missing unit' do
-    valid, msg = NC.density_complete?({ 'grams' => 120, 'volume' => 1.0 })
-
-    assert_not valid
-    assert_includes msg, 'unit'
-  end
-
-  test 'density_complete? rejects missing grams' do
-    valid, msg = NC.density_complete?({ 'volume' => 1.0, 'unit' => 'cup' })
-
-    assert_not valid
-    assert_includes msg, 'grams'
-  end
-
-  test 'density_complete? rejects missing volume' do
-    valid, msg = NC.density_complete?({ 'grams' => 120, 'unit' => 'cup' })
-
-    assert_not valid
-    assert_includes msg, 'volume'
-  end
-
-  test 'density_complete? rejects non-positive grams' do
-    valid, = NC.density_complete?({ 'grams' => 0, 'volume' => 1.0, 'unit' => 'cup' })
-
-    assert_not valid
-  end
-
-  test 'density_complete? rejects non-positive volume' do
-    valid, = NC.density_complete?({ 'grams' => 120, 'volume' => -1, 'unit' => 'cup' })
-
-    assert_not valid
-  end
-
-  test 'density_complete? rejects blank unit' do
-    valid, = NC.density_complete?({ 'grams' => 120, 'volume' => 1.0, 'unit' => '' })
 
     assert_not valid
   end
@@ -188,26 +96,5 @@ class NutritionConstraintsTest < ActiveSupport::TestCase
   test 'NUTRIENT_KEYS starts with calories and ends with protein' do
     assert_equal :calories, NC::NUTRIENT_KEYS.first
     assert_equal :protein, NC::NUTRIENT_KEYS.last
-  end
-
-  # --- valid_aisle? ---
-
-  test 'valid_aisle? accepts string within limit' do
-    valid, = NC.valid_aisle?('Produce')
-
-    assert valid
-  end
-
-  test 'valid_aisle? accepts string at max length' do
-    valid, = NC.valid_aisle?('a' * 50)
-
-    assert valid
-  end
-
-  test 'valid_aisle? rejects string over max length' do
-    valid, msg = NC.valid_aisle?('a' * 51)
-
-    assert_not valid
-    assert_includes msg, '50'
   end
 end

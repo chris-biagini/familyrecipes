@@ -21,10 +21,6 @@ class MealPlanWriteService
     new(kitchen:).clear
   end
 
-  def self.reconcile(kitchen:)
-    new(kitchen:).reconcile
-  end
-
   def initialize(kitchen:)
     @kitchen = kitchen
   end

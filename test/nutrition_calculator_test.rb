@@ -156,7 +156,6 @@ class NutritionCalculatorTest < Minitest::Test
     result = @calculator.calculate(recipe, @recipe_map)
 
     assert_includes result.missing_ingredients, 'Unicorn dust'
-    refute_predicate result, :complete?
   end
 
   def test_unknown_unit_reported_as_partial
@@ -174,7 +173,6 @@ class NutritionCalculatorTest < Minitest::Test
     result = @calculator.calculate(recipe, @recipe_map)
 
     assert_includes result.partial_ingredients, 'Flour (all-purpose)'
-    refute_predicate result, :complete?
   end
 
   # --- Omit_From_List ingredients ---
@@ -273,8 +271,8 @@ class NutritionCalculatorTest < Minitest::Test
 
     result = @calculator.calculate(recipe, @recipe_map)
 
-    # Skipped (to-taste) ingredients don't make a recipe "incomplete"
-    assert_predicate result, :complete?
+    assert_empty result.missing_ingredients
+    assert_empty result.partial_ingredients
   end
 
   # --- Serving count from front matter ---
@@ -449,7 +447,8 @@ class NutritionCalculatorTest < Minitest::Test
 
     result = @calculator.calculate(recipe, @recipe_map)
 
-    assert_predicate result, :complete?
+    assert_empty result.missing_ingredients
+    assert_empty result.partial_ingredients
   end
 
   # --- Weight conversions (oz, lb, kg) ---
@@ -630,9 +629,7 @@ class NutritionCalculatorTest < Minitest::Test
 
     result = @calculator.calculate(recipe, @recipe_map)
 
-    # Flour has no ~unitless portion, so bare "4" should be partial
     assert_includes result.partial_ingredients, 'Flour (all-purpose)'
-    refute_predicate result, :complete?
   end
 
   def test_bare_count_not_resolvable_without_unitless

@@ -7,6 +7,8 @@
 # - Category: AR model with position column for homepage ordering
 # - Kitchen#broadcast_update: page-refresh morph after successful writes
 class CategoryWriteService
+  include RenameValidation
+
   Result = Data.define(:success, :errors)
 
   MAX_CATEGORIES = 50
@@ -43,19 +45,11 @@ class CategoryWriteService
     errors << "Too many items (maximum #{MAX_CATEGORIES})." if names.size > MAX_CATEGORIES
 
     long = names.select { |name| name.size > MAX_NAME_LENGTH }
-    long.each { |name| errors << "\"#{name}\" is too long (maximum #{MAX_NAME_LENGTH} characters)." }
+    errors.concat(long.map { |name| "\"#{name}\" is too long (maximum #{MAX_NAME_LENGTH} characters)." })
 
     dupes = names.group_by(&:downcase).select { |_, v| v.size > 1 }.values.map(&:first)
-    dupes.each { |name| errors << "\"#{name}\" appears more than once (case-insensitive)." }
+    errors.concat(dupes.map { |name| "\"#{name}\" appears more than once (case-insensitive)." })
     errors
-  end
-
-  def validate_renames(renames, max)
-    return [] unless renames.is_a?(Hash) || renames.is_a?(ActionController::Parameters)
-
-    renames.values
-           .select { |name| name.size > max }
-           .map { |name| "\"#{name}\" exceeds maximum length of #{max} characters." }
   end
 
   def cascade_renames(renames)

@@ -7,13 +7,13 @@ module FamilyRecipes
   # a Result with totals, per-serving, and per-unit breakdowns, plus lists of
   # missing and partially resolvable ingredients. Also owns the canonical unit
   # conversion tables (VOLUME_TO_ML, WEIGHT_CONVERSIONS) and their Inflector-
-  # expanded variants used by UsdaPortionClassifier and NutritionEntryHelpers.
+  # expanded variants used by UsdaPortionClassifier.
   #
   # Collaborators:
   # - RecipeNutritionJob: calls this at save time; Result stored as JSON on Recipe
   # - NutritionConstraints: defines NUTRIENT_KEYS consumed here
   # - IngredientCatalog: AR model whose accessors this class reads directly
-  # - UsdaPortionClassifier, NutritionEntryHelpers: consume EXPANDED_*_UNITS
+  # - UsdaPortionClassifier: consumes EXPANDED_*_UNITS
   class NutritionCalculator # rubocop:disable Metrics/ClassLength
     NUTRIENTS = NutritionConstraints::NUTRIENT_KEYS
 
@@ -32,8 +32,7 @@ module FamilyRecipes
     DENSITY_UNITS = ['cup', 'tbsp', 'tsp', 'fl oz', 'ml', 'l'].freeze
 
     # Base keys plus long-form abbreviations and plurals from Inflector.
-    # Used by UsdaPortionClassifier and NutritionEntryHelpers to recognize
-    # unit variants in USDA data and serving-size strings.
+    # Used by UsdaPortionClassifier to recognize unit variants in USDA data.
     EXPANDED_VOLUME_UNITS = begin
       units = VOLUME_TO_ML.keys.to_set
       Inflector::ABBREVIATIONS.each { |long, short| units << long if VOLUME_TO_ML.key?(short) }
@@ -54,10 +53,6 @@ module FamilyRecipes
       :units_per_serving, :total_weight_grams,
       :missing_ingredients, :partial_ingredients, :skipped_ingredients
     ) do
-      def complete?
-        missing_ingredients.empty? && partial_ingredients.empty?
-      end
-
       def as_json(_options = nil)
         to_h.transform_keys(&:to_s).tap do |h|
           %w[totals per_serving per_unit].each do |key|

@@ -152,20 +152,6 @@ class MealPlanWriteServiceTest < ActiveSupport::TestCase
     end
   end
 
-  # --- reconcile ---
-
-  test 'reconcile prunes stale selections and broadcasts' do
-    @plan.apply_action('select', type: 'quick_bite', slug: 'gone', selected: true)
-
-    assert_turbo_stream_broadcasts [@kitchen, :updates] do
-      MealPlanWriteService.reconcile(kitchen: @kitchen)
-    end
-
-    @plan.reload
-
-    assert_not_includes @plan.state['selected_quick_bites'], 'gone'
-  end
-
   private
 
   def create_focaccia_recipe

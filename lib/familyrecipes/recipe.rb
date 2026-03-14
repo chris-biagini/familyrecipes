@@ -10,7 +10,7 @@ module FamilyRecipes
   # the corresponding AR Recipe, Steps, Ingredients, and CrossReferences. Views
   # never see this class; they render from the database.
   class Recipe
-    attr_reader :title, :description, :makes, :serves, :steps, :footer, :source, :id, :version_hash
+    attr_reader :title, :description, :makes, :serves, :steps, :footer, :source, :id
 
     MARKDOWN = Redcarpet::Markdown.new(
       Redcarpet::Render::SmartyHTML.new(escape_html: true),
@@ -22,8 +22,6 @@ module FamilyRecipes
       @source = markdown_source
       @id = id
 
-      @version_hash = Digest::SHA256.hexdigest(@source)
-
       @title = nil
       @description = nil
       @makes = nil
@@ -32,10 +30,6 @@ module FamilyRecipes
       @footer = nil
 
       parse_recipe
-    end
-
-    def relative_url
-      @id
     end
 
     # Splits a makes string like "12 rolls" into ["12", "rolls"].

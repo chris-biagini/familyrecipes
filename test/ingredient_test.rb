@@ -176,11 +176,4 @@ class IngredientTest < Minitest::Test
 
     assert_nil ingredient.quantity_value
   end
-
-  # Normalized name tests
-  def test_normalized_name_returns_name
-    ingredient = FamilyRecipes::Ingredient.new(name: 'Flour')
-
-    assert_equal 'Flour', ingredient.normalized_name
-  end
 end

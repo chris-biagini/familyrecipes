@@ -2,7 +2,6 @@
 
 require 'erb'
 require 'redcarpet'
-require 'digest'
 require 'json'
 require 'yaml'
 
@@ -94,7 +93,6 @@ require_relative 'familyrecipes/quick_bite'
 require_relative 'familyrecipes/quick_bites_serializer'
 require_relative 'familyrecipes/nutrition_constraints'
 require_relative 'familyrecipes/nutrition_calculator'
-require_relative 'familyrecipes/nutrition_entry_helpers'
 require_relative 'familyrecipes/vulgar_fractions'
 require_relative 'familyrecipes/build_validator'
 require_relative 'familyrecipes/usda_client'

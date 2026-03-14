@@ -39,7 +39,6 @@ class IngredientCatalog < ApplicationRecord # rubocop:disable Metrics/ClassLengt
   scope :global, -> { where(kitchen_id: nil) }
   scope :for_kitchen, ->(kitchen) { where(kitchen_id: kitchen.id) }
 
-  def global? = kitchen_id.nil?
   def custom? = kitchen_id.present?
 
   def assign_from_params(nutrients:, density:, portions:, aisle:, sources:, aliases: nil, omit_from_shopping: false) # rubocop:disable Metrics/ParameterLists

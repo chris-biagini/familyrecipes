@@ -3,8 +3,8 @@
 module FamilyRecipes
   # Safe numeric string parser that handles integers, decimals, and fractions
   # (e.g., "3/4"). Used throughout the parser pipeline wherever user-authored
-  # quantity strings need to become floats — IngredientParser, ScalableNumberPreprocessor,
-  # and NutritionEntryHelpers.
+  # quantity strings need to become floats — IngredientParser and
+  # ScalableNumberPreprocessor.
   module NumericParsing
     VULGAR_GLYPHS = {
       '½' => 1 / 2r, '⅓' => 1 / 3r, '⅔' => 2 / 3r,

@@ -39,12 +39,6 @@ module FamilyRecipes
 
     module_function
 
-    def valid_basis_grams?(value)
-      return [false, 'Basis grams must be greater than 0'] unless value.is_a?(Numeric) && value.positive?
-
-      [true, nil]
-    end
-
     def valid_nutrient?(key, value)
       return [false, "#{key} must be a number"] unless value.is_a?(Numeric)
 
@@ -54,40 +48,10 @@ module FamilyRecipes
       [true, nil]
     end
 
-    def density_complete?(hash)
-      return [true, nil] if hash.blank?
-
-      missing = %w[grams volume unit].reject { |k| hash[k].present? }
-      return [false, "Density requires #{missing.join(', ')}"] if missing.any?
-
-      validate_density_values(hash)
-    end
-
     def valid_portion_value?(value)
       return [false, 'Portion value must be greater than 0'] unless value.is_a?(Numeric) && value.positive?
 
       [true, nil]
     end
-
-    def valid_aisle?(value)
-      return [true, nil] if value.nil?
-      return [false, "Aisle name must be #{AISLE_MAX_LENGTH} characters or fewer"] if value.to_s.size > AISLE_MAX_LENGTH
-
-      [true, nil]
-    end
-
-    def validate_density_values(hash)
-      grams = hash['grams']
-      return [false, 'Density grams must be greater than 0'] unless grams.is_a?(Numeric) && grams.positive?
-
-      volume = hash['volume']
-      return [false, 'Density volume must be greater than 0'] unless volume.is_a?(Numeric) && volume.positive?
-
-      return [false, 'Density unit must not be blank'] if hash['unit'].to_s.strip.empty?
-
-      [true, nil]
-    end
-
-    private_class_method :validate_density_values
   end
 end

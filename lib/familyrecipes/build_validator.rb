@@ -91,12 +91,9 @@ module FamilyRecipes
     end
 
     def build_ingredient_recipe_index
-      index = @recipes.each_with_object(Hash.new { |h, k| h[k] = [] }) do |recipe, idx|
-        recipe.all_ingredients.each { |i| idx[i.name] << recipe.title }
-      end
-      @quick_bites.each_with_object(index) do |qb, idx|
-        qb.ingredients.each { |name| idx[name] << qb.title }
-      end
+      pairs = @recipes.flat_map { |r| r.all_ingredients.map { |i| [i.name, r.title] } }
+      pairs.concat(@quick_bites.flat_map { |qb| qb.ingredients.map { |name| [name, qb.title] } })
+      pairs.group_by(&:first).transform_values { |vs| vs.map(&:last) }
     end
 
     def build_known_ingredient_set

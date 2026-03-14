@@ -29,17 +29,12 @@ class ShoppingListBuilder
 
   def visible_names
     names = Set.new
-
-    selected_recipes.flat_map { |r| r.all_ingredients_with_quantities.map(&:first) }
-                    .each { |name| names << canonical_name(name) }
-
-    selected_quick_bites.flat_map { |qb| qb.ingredients_with_quantities.map(&:first) }
-                        .each { |name| names << canonical_name(name) }
-
+    names.merge(selected_recipes.flat_map { |r| r.all_ingredients_with_quantities.map(&:first) }
+                                .map { |name| canonical_name(name) })
+    names.merge(selected_quick_bites.flat_map { |qb| qb.ingredients_with_quantities.map(&:first) }
+                                    .map { |name| canonical_name(name) })
     names.reject! { |name| @resolver.omitted?(name) }
-
-    @meal_plan.custom_items_list.each { |item| names << canonical_name(item) }
-
+    names.merge(@meal_plan.custom_items_list.map { |item| canonical_name(item) })
     names
   end
 

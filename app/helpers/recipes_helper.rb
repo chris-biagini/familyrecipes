@@ -163,10 +163,6 @@ module RecipesHelper # rubocop:disable Metrics/ModuleLength
     [formatted, item.unit].compact.join(' ')
   end
 
-  def format_quantity_display(item)
-    item.quantity_display
-  end
-
   def add_unit_plural_attr(attrs, unit)
     return unless unit
 

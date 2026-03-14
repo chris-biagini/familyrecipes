@@ -9,6 +9,8 @@
 # - Kitchen#broadcast_update: notifies clients after successful order changes
 # - CatalogWriteService: calls sync_new_aisle / sync_new_aisles after catalog writes
 class AisleWriteService
+  include RenameValidation
+
   Result = Data.define(:success, :errors)
 
   def self.update_order(kitchen:, aisle_order:, renames:, deletes:)
@@ -71,20 +73,12 @@ class AisleWriteService
     errors << "Too many items (maximum #{Kitchen::MAX_AISLES})." if items.size > Kitchen::MAX_AISLES
 
     long = items.select { |name| name.size > Kitchen::MAX_AISLE_NAME_LENGTH }
-    long.each { |name| errors << "\"#{name}\" is too long (maximum #{Kitchen::MAX_AISLE_NAME_LENGTH} characters)." }
+    errors.concat(long.map { |name| "\"#{name}\" is too long (maximum #{Kitchen::MAX_AISLE_NAME_LENGTH} characters)." })
 
     # Exact duplicates are silently normalized away; only flag mixed-case variants
     dupes = items.group_by(&:downcase).select { |_, v| v.uniq.size > 1 }.values.map(&:first)
-    dupes.each { |name| errors << "\"#{name}\" appears more than once (case-insensitive)." }
+    errors.concat(dupes.map { |name| "\"#{name}\" appears more than once (case-insensitive)." })
     errors
-  end
-
-  def validate_renames(renames, max)
-    return [] unless renames.is_a?(Hash) || renames.is_a?(ActionController::Parameters)
-
-    renames.values
-           .select { |name| name.size > max }
-           .map { |name| "\"#{name}\" exceeds maximum length of #{max} characters." }
   end
 
   def cascade_renames(renames)

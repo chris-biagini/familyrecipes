@@ -8,17 +8,15 @@ class IngredientCatalogTest < ActiveSupport::TestCase
     IngredientCatalog.where(kitchen_id: [@kitchen.id, nil]).delete_all
   end
 
-  test 'global? returns true when kitchen_id is nil' do
+  test 'custom? returns false when kitchen_id is nil' do
     entry = IngredientCatalog.create!(ingredient_name: 'Butter', basis_grams: 100)
 
-    assert_predicate entry, :global?
     assert_not_predicate entry, :custom?
   end
 
   test 'custom? returns true when kitchen_id is present' do
     entry = IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Butter', basis_grams: 100)
 
-    assert_not_predicate entry, :global?
     assert_predicate entry, :custom?
   end
 
@@ -28,7 +26,7 @@ class IngredientCatalogTest < ActiveSupport::TestCase
 
     assert_equal 2, result.size
     assert_in_delta 717, result['Butter'].calories.to_f
-    assert_predicate result['Butter'], :global?
+    assert_not_predicate result['Butter'], :custom?
   end
 
   test 'lookup_for returns kitchen override when it exists' do

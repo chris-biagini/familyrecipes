@@ -262,26 +262,6 @@ class RecipeTest < Minitest::Test
     assert_equal 3, names.size
   end
 
-  def test_relative_url_returns_id
-    recipe = make_recipe(full_recipe_markdown)
-
-    assert_equal 'test-recipe', recipe.relative_url
-  end
-
-  def test_version_hash_is_deterministic
-    recipe_a = make_recipe(full_recipe_markdown)
-    recipe_b = make_recipe(full_recipe_markdown)
-
-    assert_equal recipe_a.version_hash, recipe_b.version_hash
-  end
-
-  def test_version_hash_changes_when_source_changes
-    recipe_a = make_recipe(full_recipe_markdown)
-    recipe_b = make_recipe(full_recipe_markdown.sub('Protein!', 'Healthy!'))
-
-    refute_equal recipe_a.version_hash, recipe_b.version_hash
-  end
-
   def test_parses_implicit_step_recipe
     markdown = <<~MD
       # Nacho Cheese
