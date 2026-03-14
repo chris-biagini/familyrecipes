@@ -30,20 +30,32 @@ access control.
    - Are `.html_safe` and `raw()` calls justified? Do they match the allowlist?
    - Does the allowlist (`html_safe_allowlist.yml`) have accurate line numbers?
 
-3. **CSP audit.** Read `content_security_policy.rb` and every file that injects
-   scripts, styles, or external resources. Verify the policy is tight and
-   correctly enforced. Investigate the session-based nonce and whether a
-   per-request nonce is feasible with Turbo Drive.
+3. **JavaScript DOM injection audit.** Read every Stimulus controller and JS
+   utility. Verify no `innerHTML`, `outerHTML`, or `insertAdjacentHTML` usage
+   with user-supplied data. Pay particular attention to graphical editor
+   controllers that build DOM from recipe content.
 
-4. **Access control audit.** Read every controller and verify that write actions
+4. **CSP audit.** Read `content_security_policy.rb` and every file that injects
+   scripts, styles, or external resources. Verify the policy is tight and
+   correctly enforced. Investigate the session-based nonce — determine whether
+   a per-request nonce is feasible with Turbo Drive. Outcome: either implement
+   per-request nonces or document why session-based is the correct trade-off.
+
+5. **Access control audit.** Read every controller and verify that write actions
    are gated behind `require_membership`. Check that multi-tenant scoping is
    enforced everywhere — no unscoped model queries.
 
-5. **Secrets audit.** Check for any hardcoded credentials, API keys, or secrets
-   in source. Verify encrypted columns are properly configured.
+6. **Import path audit.** The import path accepts user-uploaded file content and
+   feeds it through the parser pipeline into the database. This is a
+   qualitatively different risk surface from form field params — trace it
+   separately and thoroughly.
 
-**Done when:** Every controller, view, and helper has been read and checked
-against the above criteria.
+7. **Secrets and dependency audit.** Check for hardcoded credentials, API keys,
+   or secrets in source. Verify encrypted columns are properly configured. Run
+   `bundle audit` (or equivalent) to check for known CVEs in gem dependencies.
+
+**Done when:** Every controller, view, helper, and JavaScript file has been read
+and checked against the above criteria.
 
 ## Area 2: Reliability Audit
 
@@ -80,6 +92,18 @@ against the above criteria.
    - Open dialogs survive morphs
    - UI state (checkboxes, collapsed sections, scroll position) is preserved
    - Page caching doesn't serve stale content
+
+6. **SQLite-specific resilience.** The app runs SQLite in production with
+   concurrent web requests and ActionCable broadcasts. Check:
+   - Is WAL mode enabled? (Critical for concurrent read/write.)
+   - Does the app handle `SQLITE_BUSY` errors from write contention?
+   - Are JSON column queries (meal_plans.state, ingredient_catalog.portions/
+     aliases) using appropriate access patterns?
+
+7. **Test coverage gaps.** While reading each write path, note whether it has
+   tests for: success, validation failure, unauthorized access, and tenant
+   isolation. Flag gaps for fixing but do not treat comprehensive test
+   expansion as in-scope — that is a separate effort.
 
 **Done when:** Every write path has been traced end-to-end and every
 concurrent-access pattern has been verified.
