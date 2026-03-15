@@ -28,6 +28,9 @@ class IngredientsController < ApplicationController
     render partial: 'ingredients/editor_form',
            locals: { ingredient_name:, entry:, available_aisles: aisles, sources:, needed_units:,
                      has_usda_key: current_kitchen.usda_api_key.present? }
+  rescue => error # rubocop:disable Style/RescueStandardError
+    logger.error "Ingredient edit failed for #{params[:ingredient_name]}: #{error.class} — #{error.message}"
+    render partial: 'ingredients/editor_error', locals: { message: error.message }
   end
 
   private

@@ -548,4 +548,25 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :forbidden
   end
+
+  test 'edit renders error partial when action raises' do
+    @category = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Focaccia
+
+      ## Mix (combine)
+
+      - Flour, 3 cups
+    MD
+
+    log_in
+    IngredientCatalog.stub(:resolver_for, ->(_) { raise 'test explosion' }) do
+      get ingredient_edit_path(ingredient_name: 'Flour', kitchen_slug: kitchen_slug),
+          headers: { 'Accept' => 'text/html' }
+    end
+
+    assert_response :success
+    assert_select 'turbo-frame#nutrition-editor-form'
+    assert_select '.editor-error-message', /test explosion/
+  end
 end
