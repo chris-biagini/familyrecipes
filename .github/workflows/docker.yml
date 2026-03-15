@@ -10,38 +10,7 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    env:
-      RAILS_ENV: test
-      CI: true
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.2'
-          bundler-cache: true
-
-      - name: Set up database
-        run: bin/rails db:create db:migrate
-
-      - name: Lint and test
-        run: bundle exec rake
-
-      - name: Verify clean migration and seed
-        env:
-          RAILS_ENV: production
-          SECRET_KEY_BASE: placeholder
-          ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY: ci-placeholder-key
-          ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY: ci-placeholder-key
-          ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT: ci-placeholder-salt
-        run: bin/rails db:create db:migrate db:seed
-
-  build:
-    needs: test
+  build-and-push:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -50,13 +19,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Compute version
         id: version
@@ -67,6 +29,48 @@ jobs:
             echo "value=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image for smoke test
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          build-args: REVISION=${{ steps.version.outputs.value }}
+          tags: familyrecipes:smoke-test
+
+      - name: Smoke test container
+        run: |
+          docker run -d --name smoke \
+            -p 3030:3030 \
+            -e SECRET_KEY_BASE=smoke-test-secret \
+            familyrecipes:smoke-test
+
+          echo "Waiting for /up to return 200..."
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:3030/up > /dev/null 2>&1; then
+              echo "Health check passed after ${i}s"
+              exit 0
+            fi
+            sleep 1
+          done
+
+          echo "Health check failed after 60s"
+          docker logs smoke
+          exit 1
+
+      - name: Cleanup smoke test container
+        if: always()
+        run: docker rm -f smoke 2>/dev/null || true
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
@@ -76,9 +80,6 @@ jobs:
             type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
             type=semver,pattern={{version}}
             type=sha,prefix=
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
 
       - name: Build and push
         uses: docker/build-push-action@v6

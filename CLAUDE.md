@@ -358,7 +358,9 @@ migrations into a single `001_create_schema.rb` to keep things clean.
 - CI verifies migrations from scratch (`db:create db:migrate db:seed`) before
   building the Docker image.
 
-**Releases.** Tag pushes (`v0.2.5`) trigger Docker builds and set `:latest`.
-The `REVISION` build arg bakes the version into the image (read by
-`ApplicationHelper#app_version`).  Only tag when code is known-good — in-between
-commits on main are not built.
+**Releases.** Tag pushes (`v0.2.5`) trigger `docker.yml`: build → smoke test
+(`/up` health check) → push to GHCR. No redundant test job — `test.yml` already
+ran on the push to main. The `REVISION` build arg bakes the version into the
+image (read by `ApplicationHelper#app_version`). Only tag when code is
+known-good — in-between commits on main are not built. The pre-push hook runs
+lint only (~5s); tests run exclusively in CI.
