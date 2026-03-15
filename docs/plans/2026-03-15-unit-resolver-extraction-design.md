@@ -5,7 +5,7 @@
 **Problem:** Unit conversion tables and resolution logic are trapped inside
 `NutritionCalculator`, forcing `UsdaPortionClassifier` and `IngredientRowBuilder`
 to depend on a calculator for non-calculation reasons. `IngredientRowBuilder`
-reimplements the resolution chain as booleans (~50 lines), creating silent
+reimplements the resolution chain as booleans (~40 lines), creating silent
 duplication that can drift.
 
 ## Context
@@ -58,7 +58,7 @@ module FamilyRecipes
     def self.volume_unit?(unit)
 
     # --- Instance: wraps one IngredientCatalog entry ---
-    def initialize(entry)
+    def initialize(entry)  # entry may be nil (nil-safe)
 
     def to_grams(value, unit)    # => Float or nil
     def resolvable?(value, unit) # => Boolean
@@ -66,6 +66,12 @@ module FamilyRecipes
   end
 end
 ```
+
+**Nil entry handling.** `UnitResolver.new(nil)` is valid. Weight units resolve
+without an entry (pure table lookup), so `to_grams(100, 'g', nil)` returns
+`100.0`. All other resolution paths return nil, and `resolvable?` returns false.
+This matches the current behavior in `IngredientRowBuilder#unit_resolvable?`
+where `entry&.basis_grams.blank?` guards the non-weight paths.
 
 The resolution chain in `to_grams` is identical to today's
 `NutritionCalculator#to_grams`: bare count → weight → named portion →
@@ -94,8 +100,7 @@ The class-length rubocop disable is removed.
 ### IngredientRowBuilder — deletes ~50 lines
 
 **Deletes:** `WEIGHT_UNITS`, `VOLUME_UNITS`, `unit_resolvable?`, `weight_unit?`,
-`volume_unit?`, `portion_defined?`, `density_defined?`, `unitless_method`,
-`volume_method`.
+`volume_unit?`, `portion_defined?`, `density_defined?`.
 
 Unit resolvability delegates to `UnitResolver`:
 
@@ -105,8 +110,20 @@ def unit_resolvable?(unit, entry)
 end
 ```
 
-`resolution_method` stays (presentation logic) but uses `UnitResolver` class
-methods for unit-type checks.
+`resolution_method` stays (presentation logic), along with its helpers
+`unitless_method` and `volume_method`. It uses `UnitResolver` class methods
+for unit-type checks instead of the deleted local constants:
+
+```ruby
+def resolution_method(unit, resolvable, entry)
+  return 'weight' if UnitResolver.weight_unit?(unit)
+  return 'no nutrition data' if entry&.basis_grams.blank?
+  return unitless_method(resolvable) if unit.nil?
+  return volume_method(resolvable) if UnitResolver.volume_unit?(unit)
+
+  resolvable ? "via #{unit}" : 'no portion'
+end
+```
 
 ### UsdaPortionClassifier — fixes semantic dependency
 
@@ -161,6 +178,7 @@ Plain `Minitest::Test` (no Rails), constructs `IngredientCatalog.new` directly.
 **New tests:**
 - `to_grams` directly: weight, volume+density, named portion, bare count, nil
 - `density` method: present, missing fields, zero volume
+- Nil entry: weight still resolves, everything else returns nil/false
 - Class predicates: `weight_unit?`, `volume_unit?`
 
 ### Slimmed: `nutrition_calculator_test.rb`
@@ -180,11 +198,12 @@ full pipeline and implicitly test the `UnitResolver` integration.
 |------|--------|
 | `lib/familyrecipes/unit_resolver.rb` | **New** — ~85 lines |
 | `lib/familyrecipes/nutrition_calculator.rb` | Remove constants + resolution (~70 lines removed) |
-| `app/services/ingredient_row_builder.rb` | Delete reimplemented logic (~50 lines removed) |
-| `lib/familyrecipes/usda_portion_classifier.rb` | Repoint 3 constant references |
+| `app/services/ingredient_row_builder.rb` | Delete reimplemented logic (~40 lines removed) |
+| `lib/familyrecipes/usda_portion_classifier.rb` | Repoint 3 constant references, update header comment |
 | `lib/familyrecipes/build_validator.rb` | Use `UnitResolver` for `resolvable?` |
 | `app/views/ingredients/_editor_form.html.erb` | Repoint 1 constant reference |
-| `config/initializers/familyrecipes.rb` | Add `require` for unit_resolver |
+| `lib/familyrecipes.rb` | Add `require_relative` for unit_resolver (before nutrition_calculator) |
+| `CLAUDE.md` | Update NutritionCalculator description, add UnitResolver bullet |
 | `test/unit_resolver_test.rb` | **New** — moved + new tests |
 | `test/nutrition_calculator_test.rb` | Remove 5 moved tests |
 
