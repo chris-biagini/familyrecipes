@@ -7,7 +7,6 @@
 # - Kitchen#site_title: manifest name resolved from the sole kitchen
 # - pwa/service_worker.js.erb: minimal PWA-install stub (no caching)
 class PwaController < ApplicationController
-  skip_forgery_protection
   skip_before_action :set_kitchen_from_path
 
   def manifest
