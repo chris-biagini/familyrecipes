@@ -212,7 +212,7 @@
 
 .aisle-count {
   font-weight: 400;
-  color: var(--rule);
+  color: var(--text-light);
   font-size: 0.75rem;
   transition: color 0.3s ease;
 }
