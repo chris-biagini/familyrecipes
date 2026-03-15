@@ -38,12 +38,12 @@ class CatalogWriteService
   end
 
   def upsert(params:)
-    entry = IngredientCatalog.find_or_initialize_by(kitchen:, ingredient_name:)
+    entry = find_or_initialize_with_variants
     entry.assign_from_params(**params, sources: WEB_SOURCE)
     return Result.new(entry:, persisted: false) unless entry.save
 
     AisleWriteService.sync_new_aisle(kitchen:, aisle: entry.aisle) if entry.aisle
-    recalculate_recipes_for(names: [ingredient_name]) if entry.basis_grams.present?
+    recalculate_recipes_for(names: [entry.ingredient_name]) if entry.basis_grams.present?
     finalize
 
     Result.new(entry:, persisted: true)
@@ -70,6 +70,24 @@ class CatalogWriteService
 
   attr_reader :kitchen, :ingredient_name
 
+  # Prefer an existing entry whose name is a singular/plural variant of the
+  # requested name. Prevents creating "Banana" when "Bananas" already exists.
+  def find_or_initialize_with_variants
+    exact = IngredientCatalog.find_by(kitchen:, ingredient_name:)
+    return exact if exact
+
+    variant_entry = find_variant_entry
+    return variant_entry if variant_entry
+
+    IngredientCatalog.new(kitchen:, ingredient_name:)
+  end
+
+  def find_variant_entry
+    FamilyRecipes::Inflector.ingredient_variants(ingredient_name).lazy.filter_map do |variant|
+      IngredientCatalog.find_by(kitchen:, ingredient_name: variant)
+    end.first
+  end
+
   def finalize
     return if Kitchen.batching?
 
@@ -94,10 +112,12 @@ class CatalogWriteService
   end
 
   def save_all_entries(entries_hash)
+    seen = {}
     saved, failed = entries_hash.each_with_object([[], []]) do |(name, entry), (ok, err)|
-      record = IngredientCatalog.find_or_initialize_by(kitchen:, ingredient_name: name)
+      record = find_bulk_entry(name, seen)
       record.assign_attributes(IngredientCatalog.attrs_from_yaml(entry))
       if record.save
+        seen[name.downcase] = record
         ok << record
       else
         err << "#{name}: #{record.errors.full_messages.join(', ')}"
@@ -105,6 +125,16 @@ class CatalogWriteService
     end
 
     [saved.size, failed]
+  end
+
+  def find_bulk_entry(name, seen)
+    existing = IngredientCatalog.find_by(kitchen:, ingredient_name: name)
+    return existing if existing
+
+    variant = FamilyRecipes::Inflector.ingredient_variants(name).find { |v| seen[v.downcase] }
+    return seen[variant.downcase] if variant
+
+    IngredientCatalog.find_or_initialize_by(kitchen:, ingredient_name: name)
   end
 
   def sync_bulk_aisles(entries_hash)

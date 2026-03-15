@@ -55,6 +55,42 @@ class CatalogWriteServiceTest < ActiveSupport::TestCase
     assert_predicate result.entry.errors, :any?
   end
 
+  # --- upsert variant dedup ---
+
+  test 'upsert updates existing variant entry instead of creating duplicate' do
+    IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Bananas', aisle: 'Produce')
+
+    result = upsert_entry('Banana', aisle: 'Produce', nutrients: VALID_NUTRIENTS)
+
+    assert_predicate result, :persisted
+    assert_equal 'Bananas', result.entry.ingredient_name
+    assert_in_delta 30.0, result.entry.basis_grams
+    assert_equal 1, IngredientCatalog.where(kitchen: @kitchen)
+                                     .where('LOWER(ingredient_name) LIKE ?', 'banana%').size
+  end
+
+  test 'upsert updates existing singular entry when saving plural form' do
+    IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Egg', aisle: 'Dairy')
+
+    result = upsert_entry('Eggs', aisle: 'Dairy', nutrients: VALID_NUTRIENTS)
+
+    assert_predicate result, :persisted
+    assert_equal 'Egg', result.entry.ingredient_name
+    assert_equal 1, IngredientCatalog.where(kitchen: @kitchen)
+                                     .where('LOWER(ingredient_name) LIKE ?', 'egg%').size
+  end
+
+  test 'upsert prefers exact match over variant' do
+    IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Banana', aisle: 'Produce')
+    IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Bananas', aisle: 'Produce')
+
+    result = upsert_entry('Banana', aisle: 'Snacks')
+
+    assert_equal 'Banana', result.entry.ingredient_name
+    assert_equal 'Snacks', result.entry.aisle
+    assert_equal 'Produce', IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'Bananas').aisle
+  end
+
   # --- upsert aisle sync ---
 
   test 'upsert syncs new aisle to kitchen aisle_order' do
@@ -401,6 +437,16 @@ class CatalogWriteServiceTest < ActiveSupport::TestCase
 
     assert_equal 0, result.persisted_count
     assert_empty result.errors
+  end
+
+  test 'bulk_import merges variant entries instead of creating duplicates' do
+    CatalogWriteService.bulk_import(kitchen: @kitchen, entries_hash: {
+                                      'Banana' => { 'aisle' => 'Produce' },
+                                      'Bananas' => { 'aisle' => 'Snacks' }
+                                    })
+
+    assert_equal 1, IngredientCatalog.where(kitchen: @kitchen)
+                                     .where('LOWER(ingredient_name) LIKE ?', 'banana%').size
   end
 
   test 'bulk_import does not broadcast' do
