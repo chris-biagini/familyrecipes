@@ -6,7 +6,7 @@ Inspired by the beautifully-designed [Paprika](https://www.paprikaapp.com) by Hi
 
 ## Features
 
-**Recipes** — Author recipes in Markdown with structured steps, ingredients, and metadata. Edit recipes in the browser. Cross-reference other recipes as ingredients (e.g., a bread recipe that uses your sourdough starter). Scale ingredient quantities up or down with a click.
+**Recipes** — Author recipes in Markdown with structured steps, ingredients, and metadata (see [`docs/recipe-syntax.md`](docs/recipe-syntax.md) for the full syntax specification). Edit recipes in the browser. Cross-reference other recipes as ingredients (e.g., a bread recipe that uses your sourdough starter). Scale ingredient quantities up or down with a click.
 
 **Grocery Lists** — Build shopping lists from selected recipes. Items are grouped by grocery aisle with customizable ordering. Check off items as you shop. Add custom items that aren't part of any recipe. Quick Bites provide lightweight grocery bundles for common shopping runs. Lists sync in real time across all open tabs and devices.
 

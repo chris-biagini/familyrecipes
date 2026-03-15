@@ -282,12 +282,13 @@ endpoint.
 
 ## Recipe & Data Formats
 
-Recipe source is Markdown with custom syntax — the parser pipeline is the
-authoritative spec. Read the header comments on `LineClassifier` (token types),
-`RecipeBuilder` (assembly), `IngredientParser` (ingredient bullets), and
-`CrossReferenceParser` (`> @[Title]` import syntax). Bare `@[Title]` in prose
-or the footer renders as a clickable link to that recipe (render-time only, no
-DB tracking). Seed files in `db/seeds/recipes/` are working examples.
+Recipe source is Markdown with custom syntax — see `docs/recipe-syntax.md` for
+the full syntax specification. The parser pipeline is the authoritative
+implementation; the spec is descriptive. Key parser classes: `LineClassifier`
+(token types), `RecipeBuilder` (assembly), `IngredientParser` (ingredient
+bullets), `CrossReferenceParser` (`> @[Title]` import syntax). Bare `@[Title]`
+in prose or the footer renders as a clickable link to that recipe (render-time
+only, no DB tracking). Seed files in `db/seeds/recipes/` are working examples.
 
 **Front matter.** Recipes support optional front matter lines before the first
 step: `Serves:`, `Makes:`, `Category:`, `Tags:`. Tags are comma-separated,
