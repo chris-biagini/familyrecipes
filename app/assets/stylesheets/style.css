@@ -2295,7 +2295,7 @@ button.aisle-name:hover {
 }
 
 .editor-collapse-header[open] + .editor-collapse-body > .editor-collapse-inner {
-  padding: 0 0.75rem 0.75rem;
+  padding: 0.75rem;
 }
 
 .editor-help {
