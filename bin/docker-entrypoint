@@ -17,6 +17,22 @@ if [ -z "$SECRET_KEY_BASE" ]; then
   export SECRET_KEY_BASE=$(cat storage/.secret_key_base)
 fi
 
+# Auto-generate Active Record Encryption keys when not provided.
+# Persists to storage volume so encrypted data survives container restarts.
+for var in ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY \
+           ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY \
+           ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT; do
+  if [ -z "${!var}" ]; then
+    keyfile="storage/.${var,,}"
+    if [ ! -f "$keyfile" ]; then
+      echo "Generating ${var}..."
+      ruby -rsecurerandom -e 'print SecureRandom.hex(32)' > "$keyfile"
+      chmod 600 "$keyfile"
+    fi
+    export "$var=$(cat "$keyfile")"
+  fi
+done
+
 echo "Preparing database..."
 bin/rails db:prepare
 

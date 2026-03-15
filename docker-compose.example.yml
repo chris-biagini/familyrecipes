@@ -7,7 +7,8 @@
 #   1. cp docker-compose.example.yml docker-compose.yml
 #   2. docker compose up -d
 #
-# SECRET_KEY_BASE is auto-generated and persisted in the storage volume.
+# SECRET_KEY_BASE and Active Record Encryption keys are auto-generated on
+# first boot and persisted in the storage volume.
 # To provide your own, create a .env file (see .env.example).
 
 services:
