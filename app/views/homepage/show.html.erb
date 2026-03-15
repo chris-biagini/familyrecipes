@@ -37,7 +37,7 @@
 
   <% if current_member? %>
   <div id="export-actions">
-    <button type="button" class="btn" data-controller="export" data-export-url-value="<%= export_path %>" data-action="export#download">Export All Data</button>
+    <a href="<%= export_path %>" download class="btn" data-controller="export" data-action="click->export#confirm" data-turbo="false">Export All Data</a>
     <span data-controller="import" data-import-url-value="<%= import_path %>">
       <input type="file" multiple accept=".zip,.md,.txt,.text" name="files[]"
              data-import-target="fileInput" data-action="change->import#submit" hidden>

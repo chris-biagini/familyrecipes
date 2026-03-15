@@ -123,8 +123,8 @@ class ExportServiceTest < ActiveSupport::TestCase
     assert_not_includes names, 'custom-ingredients.yaml'
   end
 
-  test 'filename uses kitchen slug and current date' do
-    expected = "#{@kitchen.slug}-#{Date.current.iso8601}.zip"
+  test 'filename uses kitchen slug with date and time' do
+    expected = "#{@kitchen.slug}-#{Time.current.strftime('%Y-%m-%d-%H%M')}.zip"
 
     assert_equal expected, ExportService.filename(kitchen: @kitchen)
   end

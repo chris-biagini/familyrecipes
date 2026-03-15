@@ -1,17 +1,16 @@
 import { Controller } from "@hotwired/stimulus"
 
 /**
- * Confirms and initiates a data export download. Reads the export URL from
- * a data attribute and navigates to it after user confirmation.
+ * Gates an export download link behind a confirmation dialog. The actual
+ * download is handled by the browser via an <a download> link — no
+ * navigation occurs, so this works identically in browser and PWA modes.
  *
- * - ExportsController: serves the ZIP at the configured URL
+ * - ExportsController: serves the ZIP at the link's href
  */
 export default class extends Controller {
-  static values = { url: String }
-
-  download() {
-    if (confirm("Export all recipes, Quick Bites, and custom ingredients?")) {
-      window.location = this.urlValue
+  confirm(event) {
+    if (!confirm("Export all recipes, Quick Bites, and custom ingredients?")) {
+      event.preventDefault()
     }
   }
 }

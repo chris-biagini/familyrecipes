@@ -15,7 +15,7 @@ class ExportService
   end
 
   def self.filename(kitchen:)
-    "#{kitchen.slug}-#{Date.current.iso8601}.zip"
+    "#{kitchen.slug}-#{Time.current.strftime('%Y-%m-%d-%H%M')}.zip"
   end
 
   def initialize(kitchen)
