@@ -275,7 +275,7 @@ class MealPlanTest < ActiveSupport::TestCase
   end
 
   test 'reconcile! removes deleted quick bite IDs from selections' do
-    @kitchen.update!(quick_bites_content: "Snacks:\n- Nachos: Chips\n")
+    @kitchen.update!(quick_bites_content: "## Snacks\n- Nachos: Chips\n")
 
     plan = MealPlan.for_kitchen(@kitchen)
     plan.apply_action('select', type: 'quick_bite', slug: 'nachos', selected: true)

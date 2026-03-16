@@ -34,7 +34,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
 
   test 'update_quick_bites requires membership' do
     patch menu_quick_bites_path(kitchen_slug: kitchen_slug),
-          params: { content: "Snacks:\n- Goldfish" },
+          params: { content: "## Snacks\n- Goldfish" },
           as: :json
 
     assert_response :forbidden
@@ -209,7 +209,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
 
   test 'select_all selects all recipes and quick bites' do
     log_in
-    @kitchen.update!(quick_bites_content: "Snacks:\n- Goldfish: Goldfish crackers")
+    @kitchen.update!(quick_bites_content: "## Snacks\n- Goldfish: Goldfish crackers")
 
     patch menu_select_all_path(kitchen_slug: kitchen_slug), as: :turbo_stream
 
@@ -286,7 +286,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
   # --- Quick Bites ---
 
   test 'quick_bites_content returns current content and structure' do
-    @kitchen.update!(quick_bites_content: "Snacks:\n- Goldfish")
+    @kitchen.update!(quick_bites_content: "## Snacks\n- Goldfish")
 
     log_in
     get menu_quick_bites_content_path(kitchen_slug: kitchen_slug), as: :json
@@ -294,7 +294,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     json = response.parsed_body
 
-    assert_equal "Snacks:\n- Goldfish", json['content']
+    assert_equal "## Snacks\n- Goldfish", json['content']
     assert_equal 'Snacks', json['structure']['categories'].first['name']
     assert_equal 'Goldfish', json['structure']['categories'].first['items'].first['name']
   end
@@ -313,11 +313,11 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
   test 'update_quick_bites saves content' do
     log_in
     patch menu_quick_bites_path(kitchen_slug: kitchen_slug),
-          params: { content: "Snacks:\n- Goldfish" },
+          params: { content: "## Snacks\n- Goldfish" },
           as: :json
 
     assert_response :success
-    assert_equal "Snacks:\n- Goldfish", @kitchen.reload.quick_bites_content
+    assert_equal "## Snacks\n- Goldfish", @kitchen.reload.quick_bites_content
   end
 
   test 'update_quick_bites clears content when blank' do
@@ -335,7 +335,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
   test 'update_quick_bites returns warnings for unrecognized lines' do
     log_in
     patch menu_quick_bites_path(kitchen_slug: kitchen_slug),
-          params: { content: "Snacks:\n- Goldfish\ngarbage line\n- Dried fruit" },
+          params: { content: "## Snacks\n- Goldfish\ngarbage line\n- Dried fruit" },
           as: :json
 
     assert_response :success
@@ -349,7 +349,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
   test 'update_quick_bites returns no warnings for clean content' do
     log_in
     patch menu_quick_bites_path(kitchen_slug: kitchen_slug),
-          params: { content: "Snacks:\n- Goldfish\n" },
+          params: { content: "## Snacks\n- Goldfish\n" },
           as: :json
 
     assert_response :success
@@ -360,7 +360,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'update_quick_bites prunes removed quick bite from selections' do
-    both = "Snacks:\n- Nachos: Chips\n- Pretzels: Pretzels\n"
+    both = "## Snacks\n- Nachos: Chips\n- Pretzels: Pretzels\n"
     @kitchen.update!(quick_bites_content: both)
     plan = MealPlan.for_kitchen(@kitchen)
     plan.apply_action('select', type: 'quick_bite', slug: 'nachos', selected: true)
@@ -368,7 +368,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
 
     log_in
     patch menu_quick_bites_path(kitchen_slug: kitchen_slug),
-          params: { content: "Snacks:\n- Nachos: Chips\n" },
+          params: { content: "## Snacks\n- Nachos: Chips\n" },
           as: :json
 
     plan.reload
@@ -381,14 +381,14 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     log_in
     assert_turbo_stream_broadcasts [@kitchen, :updates] do
       patch menu_quick_bites_path(kitchen_slug: kitchen_slug),
-            params: { content: "Snacks:\n- Goldfish" },
+            params: { content: "## Snacks\n- Goldfish" },
             as: :json
     end
   end
 
   test 'parse_quick_bites returns IR from content' do
     log_in
-    content = "Snacks:\n- Apples and Honey: Apples, Honey"
+    content = "## Snacks\n- Apples and Honey: Apples, Honey"
 
     post menu_parse_quick_bites_path(kitchen_slug: kitchen_slug),
          params: { content: }, as: :json
@@ -413,7 +413,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
          params: { structure: ir }, as: :json
 
     assert_response :ok
-    assert_includes response.parsed_body['content'], 'Snacks:'
+    assert_includes response.parsed_body['content'], '## Snacks'
     assert_includes response.parsed_body['content'], '- Apples'
   end
 
@@ -449,7 +449,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
           params: { structure: ir }, as: :json
 
     assert_response :ok
-    assert_includes @kitchen.reload.quick_bites_content, 'Snacks:'
+    assert_includes @kitchen.reload.quick_bites_content, '## Snacks'
     assert_includes @kitchen.quick_bites_content, '- Crackers: Ritz'
   end
 

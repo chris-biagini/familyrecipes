@@ -100,7 +100,7 @@ class KitchenTest < ActiveSupport::TestCase
   end
 
   test 'quick_bites_by_subsection groups parsed quick bites by stripped category' do
-    @kitchen.update!(quick_bites_content: "Snacks:\n- Chips\n- Pretzels\n\nDrinks:\n- Juice\n")
+    @kitchen.update!(quick_bites_content: "## Snacks\n- Chips\n- Pretzels\n\n## Drinks\n- Juice\n")
 
     result = @kitchen.quick_bites_by_subsection
 
@@ -122,7 +122,7 @@ class KitchenTest < ActiveSupport::TestCase
   end
 
   test 'parsed_quick_bites returns quick bites from new format' do
-    @kitchen.update!(quick_bites_content: "Snacks:\n- Goldfish\n- Dried fruit\n")
+    @kitchen.update!(quick_bites_content: "## Snacks\n- Goldfish\n- Dried fruit\n")
     qbs = @kitchen.parsed_quick_bites
 
     assert_equal 2, qbs.size

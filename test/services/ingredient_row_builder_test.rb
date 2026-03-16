@@ -262,7 +262,7 @@ class IngredientRowBuilderTest < ActiveSupport::TestCase
 
   test 'includes quick bite ingredients in rows' do
     @kitchen.update!(quick_bites_content: <<~MD)
-      Snacks:
+      ## Snacks
       - Hummus with Pretzels: Hummus, Pretzels
     MD
 
@@ -275,7 +275,7 @@ class IngredientRowBuilderTest < ActiveSupport::TestCase
 
   test 'quick bite sources count toward recipe_count' do
     @kitchen.update!(quick_bites_content: <<~MD)
-      Snacks:
+      ## Snacks
       - Toast: Flour, Butter
     MD
 
@@ -287,7 +287,7 @@ class IngredientRowBuilderTest < ActiveSupport::TestCase
 
   test 'quick bite sources appear as QuickBiteSource in recipes list' do
     @kitchen.update!(quick_bites_content: <<~MD)
-      Snacks:
+      ## Snacks
       - Hummus with Pretzels: Hummus, Pretzels
     MD
 
@@ -302,7 +302,7 @@ class IngredientRowBuilderTest < ActiveSupport::TestCase
   test 'quick bite ingredients are canonicalized through resolver' do
     create_catalog_entry('Eggs', basis_grams: 50)
     @kitchen.update!(quick_bites_content: <<~MD)
-      Breakfast:
+      ## Breakfast
       - Quick Eggs: Egg, Toast
     MD
 
@@ -466,7 +466,7 @@ class IngredientRowBuilderTest < ActiveSupport::TestCase
 
   test 'sources_for includes quick bite sources' do
     @kitchen.update!(quick_bites_content: <<~MD)
-      Snacks:
+      ## Snacks
       - Toast: Flour, Butter
     MD
 

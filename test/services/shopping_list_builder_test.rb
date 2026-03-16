@@ -180,7 +180,7 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
 
   test 'includes quick bite ingredients when selected' do
     @kitchen.update!(quick_bites_content: <<~MD)
-      Snacks:
+      ## Snacks
       - Hummus with Pretzels: Hummus, Pretzels
     MD
 
@@ -271,7 +271,7 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
 
   test 'quick bite ingredients include quick bite title as source' do
     @kitchen.update!(quick_bites_content: <<~MD)
-      Snacks:
+      ## Snacks
       - Hummus with Pretzels: Hummus, Pretzels
     MD
 

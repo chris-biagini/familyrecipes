@@ -119,7 +119,7 @@ class RecipeAvailabilityCalculatorTest < ActiveSupport::TestCase
 
   test 'includes quick bites when present' do
     @kitchen.update!(quick_bites_content: <<~MD)
-      Snacks:
+      ## Snacks
       - Nachos: Tortilla chips, Cheese
     MD
 
