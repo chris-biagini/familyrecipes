@@ -245,14 +245,15 @@ broadcast). Don't call `MarkdownImporter` directly for web operations.
 - `AisleWriteService` — reorder, rename/delete cascades to catalog rows,
   new-aisle sync, broadcast.
 - `CategoryWriteService` — ordering, renaming, deletion cascades, broadcast.
-- `Kitchen.batch_writes(kitchen)` — block scope that defers reconciliation
-  and broadcast to a single pass on block exit. Services check
-  `Kitchen.batching?` and skip their own finalize when true.
+- `Kitchen.finalize_writes(kitchen)` — single post-write entry point for
+  all write services: orphan cleanup (categories + tags), meal plan
+  reconciliation, and broadcast. Respects `Kitchen.batching?` guard.
+- `Kitchen.batch_writes(kitchen)` — block scope that defers finalization
+  to a single pass on block exit. Write services inside a batch call
+  `finalize_writes` as usual — it returns early, and the batch runs the
+  same pipeline once on exit.
 - `MealPlanActions` concern provides `rescue_from StaleObjectError` for
   controllers using `MealPlanWriteService`.
-- `MealPlan#reconcile!` is the single pruning entry point — removes stale
-  checked-off items and stale selections. Called after recipe CRUD, quick
-  bites edits, catalog changes, and deselects.
 
 **Settings.** Site branding and API keys live as columns on Kitchen (no
 separate settings table). `usda_api_key` is encrypted via Active Record

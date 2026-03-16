@@ -4,10 +4,11 @@
 # recipes/quick bites, custom grocery items, checked-off items. Both menu and
 # groceries pages read/write this model.
 #
-# - .reconcile_kitchen!(kitchen) — canonical post-write reconciliation entry
-#   point (fetch plan, optimistic retry, compute visible names, prune stale).
+# - .reconcile_kitchen!(kitchen) — computes visible ingredient names (via
+#   ShoppingListBuilder) and prunes stale checked-off/selection state.
+#   Called by Kitchen.run_finalization; not called directly by services.
 # - #reconcile!(visible_names:) — inner pruning for callers already holding
-#   the plan inside a retry block (e.g., MealPlanWriteService).
+#   the plan inside a retry block.
 class MealPlan < ApplicationRecord
   acts_as_tenant :kitchen
 
