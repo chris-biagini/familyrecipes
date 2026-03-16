@@ -251,9 +251,12 @@ via `Tag.cleanup_orphans(kitchen)`.
   within a request.
 - `NutritionConstraints` — single source of truth for nutrient definitions
   (`NutrientDef`, FDA daily values) and validation rules.
-- `NutritionCalculator` — consumes `IngredientCatalog` records directly. Owns
-  canonical unit conversion tables (`VOLUME_TO_ML`, `WEIGHT_CONVERSIONS`) and
-  Inflector-expanded variants — all unit recognition flows through these.
+- `UnitResolver` — wraps one `IngredientCatalog` entry, resolves quantities to
+  grams via weight → portion → density chain. Owns canonical unit conversion
+  tables (`VOLUME_TO_ML`, `WEIGHT_CONVERSIONS`) and Inflector-expanded variants.
+- `NutritionCalculator` — aggregates nutrient totals for a recipe, delegates
+  unit resolution to `UnitResolver`. Produces `Result` with totals, per-serving,
+  and per-unit breakdowns.
 - `RecipeNutritionJob` / `CascadeNutritionJob` — recompute nutrition; cascade
   fans out to cross-referencing recipes.
 - `RecipeAvailabilityCalculator` — catalog coverage badges on the menu page.
