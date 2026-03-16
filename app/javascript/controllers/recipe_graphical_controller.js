@@ -1,4 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
+import { buildButton, buildInput, buildFieldGroup, buildTextareaGroup } from "../utilities/dom_builders"
+import { toggleAccordionItem, expandAccordionItem, collapseAllAccordionItems, buildToggleButton } from "../utilities/accordion"
 
 /**
  * Form-based recipe editor: structured fields for title, description,
@@ -139,7 +141,7 @@ export default class extends Controller {
   loadSteps(stepsData) {
     this.steps = stepsData.map(s => ({ ...s }))
     this.rebuildSteps()
-    if (this.steps.length > 0) this.expandStep(0)
+    if (this.steps.length > 0) expandAccordionItem(this.stepsContainerTarget, 0)
   }
 
   removeStep(index) {
@@ -155,7 +157,7 @@ export default class extends Controller {
     const [moved] = this.steps.splice(index, 1)
     this.steps.splice(target, 0, moved)
     this.rebuildSteps()
-    this.expandStep(target)
+    expandAccordionItem(this.stepsContainerTarget, target)
   }
 
   rebuildSteps() {
@@ -166,33 +168,6 @@ export default class extends Controller {
   appendStepCard(index, stepData) {
     const card = this.buildStepCard(index, stepData)
     this.stepsContainerTarget.appendChild(card)
-  }
-
-  toggleStep(index) {
-    const card = this.stepsContainerTarget.children[index]
-    if (!card) return
-    const body = card.querySelector(".graphical-step-body")
-    const icon = card.querySelector(".graphical-step-toggle-icon")
-    if (!body) return
-
-    const isHidden = body.hidden
-    body.hidden = !isHidden
-    if (icon) icon.textContent = isHidden ? "\u25BC" : "\u25B6"
-  }
-
-  expandStep(index) {
-    this.collapseAllSteps()
-    this.toggleStep(index)
-  }
-
-  collapseAllSteps() {
-    const cards = this.stepsContainerTarget.children
-    for (let i = 0; i < cards.length; i++) {
-      const body = cards[i].querySelector(".graphical-step-body")
-      const icon = cards[i].querySelector(".graphical-step-toggle-icon")
-      if (body) body.hidden = true
-      if (icon) icon.textContent = "\u25B6"
-    }
   }
 
   findExpandedIndex() {
@@ -251,26 +226,14 @@ export default class extends Controller {
     header.className = "graphical-step-header"
     header.addEventListener("click", (e) => {
       if (e.target.closest(".graphical-step-actions") || e.target.closest(".graphical-step-toggle")) return
-      this.toggleStep(index)
+      toggleAccordionItem(this.stepsContainerTarget, index)
     })
 
-    header.appendChild(this.buildToggleButton(index))
+    header.appendChild(buildToggleButton(() => toggleAccordionItem(this.stepsContainerTarget, index)))
     header.appendChild(this.buildStepTitle(index, stepData))
     header.appendChild(this.buildIngredientSummary(stepData))
     header.appendChild(this.buildStepActions(index))
     return header
-  }
-
-  buildToggleButton(index) {
-    const btn = document.createElement("button")
-    btn.type = "button"
-    btn.className = "graphical-step-toggle"
-    const icon = document.createElement("span")
-    icon.className = "graphical-step-toggle-icon"
-    icon.textContent = "\u25B6"
-    btn.appendChild(icon)
-    btn.addEventListener("click", () => this.toggleStep(index))
-    return btn
   }
 
   buildStepTitle(index, stepData) {
@@ -292,9 +255,9 @@ export default class extends Controller {
     const actions = document.createElement("div")
     actions.className = "graphical-step-actions"
 
-    actions.appendChild(this.buildButton("\u2191", () => this.moveStep(index, -1), "graphical-btn--icon"))
-    actions.appendChild(this.buildButton("\u2193", () => this.moveStep(index, 1), "graphical-btn--icon"))
-    actions.appendChild(this.buildButton("\u00D7", () => this.removeStep(index), "graphical-btn--icon graphical-btn--danger"))
+    actions.appendChild(buildButton("\u2191", () => this.moveStep(index, -1), "graphical-btn--icon"))
+    actions.appendChild(buildButton("\u2193", () => this.moveStep(index, 1), "graphical-btn--icon"))
+    actions.appendChild(buildButton("\u00D7", () => this.removeStep(index), "graphical-btn--icon graphical-btn--danger"))
     return actions
   }
 
@@ -303,14 +266,14 @@ export default class extends Controller {
     body.className = "graphical-step-body"
     body.hidden = true
 
-    body.appendChild(this.buildFieldGroup("Step name", "text", stepData.tldr || "", (val) => {
+    body.appendChild(buildFieldGroup("Step name", "text", stepData.tldr || "", (val) => {
       this.steps[index].tldr = val
       this.updateStepTitleDisplay(index)
     }))
 
     body.appendChild(this.buildIngredientsSection(index, stepData.ingredients || []))
 
-    body.appendChild(this.buildTextareaGroup("Instructions", stepData.instructions || "", (val) => {
+    body.appendChild(buildTextareaGroup("Instructions", stepData.instructions || "", (val) => {
       this.steps[index].instructions = val
     }))
 
@@ -337,7 +300,7 @@ export default class extends Controller {
     label.textContent = "Ingredients"
     headerRow.appendChild(label)
 
-    headerRow.appendChild(this.buildButton("+ Add", () => this.addIngredient(stepIndex), "graphical-btn--small"))
+    headerRow.appendChild(buildButton("+ Add", () => this.addIngredient(stepIndex), "graphical-btn--small"))
 
     section.appendChild(headerRow)
 
@@ -356,23 +319,23 @@ export default class extends Controller {
     const row = document.createElement("div")
     row.className = "graphical-ingredient-row"
 
-    row.appendChild(this.buildInput("Name", ing.name || "", (val) => {
+    row.appendChild(buildInput("Name", ing.name || "", (val) => {
       this.steps[stepIndex].ingredients[ingIndex].name = val
     }, "graphical-input--name"))
 
-    row.appendChild(this.buildInput("Qty", ing.quantity || "", (val) => {
+    row.appendChild(buildInput("Qty", ing.quantity || "", (val) => {
       this.steps[stepIndex].ingredients[ingIndex].quantity = val
     }, "graphical-input--qty"))
 
-    row.appendChild(this.buildInput("Prep note", ing.prep_note || "", (val) => {
+    row.appendChild(buildInput("Prep note", ing.prep_note || "", (val) => {
       this.steps[stepIndex].ingredients[ingIndex].prep_note = val
     }, "graphical-input--prep"))
 
     const actions = document.createElement("div")
     actions.className = "graphical-ingredient-actions"
-    actions.appendChild(this.buildButton("\u2191", () => this.moveIngredient(stepIndex, ingIndex, -1), "graphical-btn--icon"))
-    actions.appendChild(this.buildButton("\u2193", () => this.moveIngredient(stepIndex, ingIndex, 1), "graphical-btn--icon"))
-    actions.appendChild(this.buildButton("\u00D7", () => this.removeIngredient(stepIndex, ingIndex), "graphical-btn--icon graphical-btn--danger"))
+    actions.appendChild(buildButton("\u2191", () => this.moveIngredient(stepIndex, ingIndex, -1), "graphical-btn--icon"))
+    actions.appendChild(buildButton("\u2193", () => this.moveIngredient(stepIndex, ingIndex, 1), "graphical-btn--icon"))
+    actions.appendChild(buildButton("\u00D7", () => this.removeIngredient(stepIndex, ingIndex), "graphical-btn--icon graphical-btn--danger"))
     row.appendChild(actions)
 
     return row
@@ -440,58 +403,5 @@ export default class extends Controller {
 
   emptyStep() {
     return { tldr: "", ingredients: [], instructions: "", cross_reference: null }
-  }
-
-  buildButton(text, onClick, className) {
-    const btn = document.createElement("button")
-    btn.type = "button"
-    if (className) btn.className = className
-    btn.textContent = text
-    btn.addEventListener("click", onClick)
-    return btn
-  }
-
-  buildInput(placeholder, value, onChange, className) {
-    const input = document.createElement("input")
-    input.type = "text"
-    input.placeholder = placeholder
-    input.value = value
-    if (className) input.className = className
-    input.addEventListener("input", () => onChange(input.value))
-    return input
-  }
-
-  buildFieldGroup(labelText, type, value, onChange) {
-    const group = document.createElement("div")
-    group.className = "graphical-field-group"
-
-    const label = document.createElement("label")
-    label.textContent = labelText
-    group.appendChild(label)
-
-    const input = document.createElement("input")
-    input.type = type
-    input.value = value
-    input.addEventListener("input", () => onChange(input.value))
-    group.appendChild(input)
-
-    return group
-  }
-
-  buildTextareaGroup(labelText, value, onChange) {
-    const group = document.createElement("div")
-    group.className = "graphical-field-group"
-
-    const label = document.createElement("label")
-    label.textContent = labelText
-    group.appendChild(label)
-
-    const textarea = document.createElement("textarea")
-    textarea.value = value
-    textarea.rows = 4
-    textarea.addEventListener("input", () => onChange(textarea.value))
-    group.appendChild(textarea)
-
-    return group
   }
 }
