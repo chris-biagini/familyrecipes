@@ -6,7 +6,7 @@ class RecipeTagTest < ActiveSupport::TestCase
   setup do
     setup_test_kitchen
     setup_test_category
-    @recipe = Recipe.create!(title: 'Test', slug: 'test', markdown_source: '# Test', category: @category)
+    @recipe = Recipe.create!(title: 'Test', slug: 'test', category: @category)
     @tag = Tag.create!(name: 'dinner')
   end
 

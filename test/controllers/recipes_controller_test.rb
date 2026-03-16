@@ -252,9 +252,10 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     assert_includes body['updated_references'], 'Panzanella'
 
     panzanella = Recipe.find_by!(slug: 'panzanella')
+    xref = panzanella.cross_references.find_by(target_title: 'Rosemary Focaccia')
 
-    assert_includes panzanella.markdown_source, '@[Rosemary Focaccia]'
-    assert_not_includes panzanella.markdown_source, '@[Focaccia]'
+    assert xref, 'cross-reference to Rosemary Focaccia should exist'
+    assert_nil panzanella.cross_references.find_by(target_title: 'Focaccia')
   end
 
   test 'create saves valid markdown and returns redirect URL' do
@@ -349,7 +350,6 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     MD
 
     panzanella = Recipe.find_by!(slug: 'panzanella')
-    original_source = panzanella.markdown_source
     xref_step = panzanella.steps.find_by!(title: 'Make bread.')
     xref = xref_step.cross_references.find_by!(target_title: 'Focaccia')
 
@@ -361,7 +361,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     xref.reload
 
     assert_nil xref.target_recipe_id
-    assert_equal original_source, panzanella.reload.markdown_source
+    assert_predicate xref, :persisted?
   end
 
   test 'show renders resolved cross-reference as embedded recipe card' do
@@ -474,10 +474,13 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
 
   test 'update broadcasts to kitchen updates stream' do
     log_in
+    focaccia = @kitchen.recipes.find_by!(slug: 'focaccia')
+    ir = FamilyRecipes::RecipeSerializer.from_record(focaccia)
+    focaccia_markdown = FamilyRecipes::RecipeSerializer.serialize(ir)
 
     assert_turbo_stream_broadcasts [@kitchen, :updates] do
       patch recipe_path('focaccia', kitchen_slug: kitchen_slug),
-            params: { markdown_source: @kitchen.recipes.find_by!(slug: 'focaccia').markdown_source },
+            params: { markdown_source: focaccia_markdown },
             as: :json
     end
   end
@@ -612,7 +615,12 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_equal 'text/plain; charset=utf-8', response.content_type
-    assert_equal @kitchen.recipes.find_by!(slug: 'focaccia').markdown_source, response.body
+
+    focaccia = @kitchen.recipes.find_by!(slug: 'focaccia')
+    ir = FamilyRecipes::RecipeSerializer.from_record(focaccia)
+    expected = FamilyRecipes::RecipeSerializer.serialize(ir)
+
+    assert_equal expected, response.body
   end
 
   test 'show_markdown returns 404 for unknown recipe' do
@@ -730,7 +738,9 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'update with tags syncs tags' do
-    focaccia_markdown = @kitchen.recipes.find_by!(slug: 'focaccia').markdown_source
+    focaccia = @kitchen.recipes.find_by!(slug: 'focaccia')
+    ir = FamilyRecipes::RecipeSerializer.from_record(focaccia)
+    focaccia_markdown = FamilyRecipes::RecipeSerializer.serialize(ir)
 
     log_in
     patch recipe_path('focaccia', kitchen_slug: kitchen_slug),

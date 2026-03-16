@@ -37,8 +37,6 @@ class StructuredImportTest < ActiveSupport::TestCase
     assert_equal 'Flour', recipe.steps.first.ingredients.first.name
     assert_equal '2', recipe.steps.first.ingredients.first.quantity
     assert_equal 'cups', recipe.steps.first.ingredients.first.unit
-    assert_includes recipe.markdown_source, '# Structured Recipe'
-    assert_includes recipe.markdown_source, '- Flour, 2 cups'
   end
 
   test 'import_from_structure resolves category from front matter' do
@@ -82,7 +80,7 @@ class StructuredImportTest < ActiveSupport::TestCase
     assert_equal 'Halve.', xref.prep_note
   end
 
-  test 'import_from_structure generates valid markdown_source' do
+  test 'import_from_structure stores correct front matter fields' do
     ir = {
       title: 'Round Trip',
       description: 'Test round-trip.',
@@ -95,14 +93,15 @@ class StructuredImportTest < ActiveSupport::TestCase
     }
 
     result = MarkdownImporter.import_from_structure(ir, kitchen: @kitchen, category: nil)
-    source = result.recipe.markdown_source
+    recipe = result.recipe
 
-    assert source.start_with?('# Round Trip')
-    assert_includes source, 'Makes: 12 rolls'
-    assert_includes source, 'Serves: 4'
-    assert_includes source, '## Mix.'
-    assert_includes source, '- Flour, 3 cups'
-    assert_includes source, '---'
-    assert_includes source, 'Notes here.'
+    assert_equal 'Round Trip', recipe.title
+    assert_equal 'Test round-trip.', recipe.description
+    assert_equal 4, recipe.serves
+    assert_in_delta 12.0, recipe.makes_quantity
+    assert_equal 'rolls', recipe.makes_unit_noun
+    assert_equal 'Notes here.', recipe.footer
+    assert_equal 1, recipe.steps.size
+    assert_equal 'Flour', recipe.steps.first.ingredients.first.name
   end
 end

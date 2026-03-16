@@ -11,7 +11,7 @@ class RecipeAggregationTest < ActiveSupport::TestCase
   test 'own_ingredients_aggregated groups by name and sums quantities' do
     recipe = Recipe.find_or_create_by!(
       title: 'Focaccia', slug: 'focaccia',
-      category: @category, markdown_source: 'placeholder'
+      category: @category
     )
     step1 = recipe.steps.find_or_create_by!(title: 'Mix', position: 1)
     step1.ingredients.find_or_create_by!(name: 'Flour', quantity: '2', unit: 'cups', position: 1)
@@ -31,7 +31,7 @@ class RecipeAggregationTest < ActiveSupport::TestCase
   test 'own_ingredients_aggregated handles unquantified ingredients' do
     recipe = Recipe.find_or_create_by!(
       title: 'Simple', slug: 'simple',
-      category: @category, markdown_source: 'placeholder'
+      category: @category
     )
     step = recipe.steps.find_or_create_by!(title: 'Mix', position: 1)
     step.ingredients.find_or_create_by!(name: 'Salt', position: 1)
@@ -45,14 +45,14 @@ class RecipeAggregationTest < ActiveSupport::TestCase
   test 'all_ingredients_with_quantities includes cross-reference ingredients' do
     target = Recipe.find_or_create_by!(
       title: 'Poolish', slug: 'poolish',
-      category: @category, markdown_source: 'placeholder'
+      category: @category
     )
     target_step = target.steps.find_or_create_by!(title: 'Mix', position: 1)
     target_step.ingredients.find_or_create_by!(name: 'Flour', quantity: '1', unit: 'cup', position: 1)
 
     recipe = Recipe.find_or_create_by!(
       title: 'Focaccia', slug: 'focaccia',
-      category: @category, markdown_source: 'placeholder'
+      category: @category
     )
     step = recipe.steps.find_or_create_by!(title: 'Dough', position: 1)
     step.ingredients.find_or_create_by!(name: 'Salt', quantity: '1', unit: 'tsp', position: 1)
@@ -74,14 +74,14 @@ class RecipeAggregationTest < ActiveSupport::TestCase
   test 'all_ingredients_with_quantities merges duplicate names from own and xref' do
     target = Recipe.find_or_create_by!(
       title: 'Poolish', slug: 'poolish',
-      category: @category, markdown_source: 'placeholder'
+      category: @category
     )
     target_step = target.steps.find_or_create_by!(title: 'Mix', position: 1)
     target_step.ingredients.find_or_create_by!(name: 'Flour', quantity: '2', unit: 'cups', position: 1)
 
     recipe = Recipe.find_or_create_by!(
       title: 'Focaccia', slug: 'focaccia',
-      category: @category, markdown_source: 'placeholder'
+      category: @category
     )
     step = recipe.steps.find_or_create_by!(title: 'Dough', position: 1)
     step.ingredients.find_or_create_by!(name: 'Flour', quantity: '3', unit: 'cups', position: 1)
@@ -102,7 +102,7 @@ class RecipeAggregationTest < ActiveSupport::TestCase
   test 'all_ingredients_with_quantities skips unresolved cross-references' do
     recipe = Recipe.find_or_create_by!(
       title: 'Bread', slug: 'bread',
-      category: @category, markdown_source: 'placeholder'
+      category: @category
     )
     step = recipe.steps.find_or_create_by!(title: 'Mix', position: 1)
     step.ingredients.find_or_create_by!(name: 'Flour', quantity: '1', unit: 'cup', position: 1)

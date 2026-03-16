@@ -95,7 +95,7 @@ class CategoryTest < ActiveSupport::TestCase
   test 'with_recipes excludes empty categories' do
     empty = Category.create!(name: 'Empty')
     populated = Category.create!(name: 'Populated')
-    Recipe.create!(title: 'Test', slug: 'test', markdown_source: '# Test', category: populated)
+    Recipe.create!(title: 'Test', slug: 'test', category: populated)
 
     results = Category.with_recipes
 
