@@ -155,8 +155,21 @@ module FamilyRecipes
     end
 
     def build_ingredient_ir(ing)
-      quantity = [ing.quantity, ing.unit].compact.join(' ')
-      { name: ing.name, quantity: quantity.empty? ? nil : quantity, prep_note: ing.prep_note }
+      { name: ing.name, quantity: serialize_ingredient_quantity(ing), prep_note: ing.prep_note }
+    end
+
+    def serialize_ingredient_quantity(ing)
+      return [ing.quantity, ing.unit].compact.join(' ').presence unless ing.quantity_low
+
+      parts = format_numeric_quantity(ing.quantity_low, ing.quantity_high)
+      [parts, ing.unit].compact.join(' ')
+    end
+
+    def format_numeric_quantity(low, high)
+      low_str = VulgarFractions.to_fraction_string(low.to_f)
+      return low_str unless high
+
+      "#{low_str}-#{VulgarFractions.to_fraction_string(high.to_f)}"
     end
 
     private_class_method :append_description, :append_front_matter, :format_front_matter_field,
@@ -164,6 +177,7 @@ module FamilyRecipes
                          :default_multiplier?, :format_multiplier, :append_ingredients,
                          :format_ingredient, :append_instructions, :append_footer,
                          :build_front_matter, :build_step_ir, :build_cross_reference_step,
-                         :build_ingredient_ir, :format_decimal
+                         :build_ingredient_ir, :serialize_ingredient_quantity,
+                         :format_numeric_quantity, :format_decimal
   end
 end
