@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 5) do
+ActiveRecord::Schema[8.1].define(version: 7) do
   create_table "categories", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "kitchen_id", null: false
@@ -77,6 +77,8 @@ ActiveRecord::Schema[8.1].define(version: 5) do
     t.integer "position", null: false
     t.string "prep_note"
     t.string "quantity"
+    t.decimal "quantity_high"
+    t.decimal "quantity_low"
     t.integer "step_id", null: false
     t.string "unit"
     t.datetime "updated_at", null: false
