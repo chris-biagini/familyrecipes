@@ -51,7 +51,7 @@ A range is defined as: `quantity_high` is present.
 
 New class method `parse_range(value_str)` → `[low, high]`:
 
-- Splits on hyphen or en-dash: `/[-–]/`
+- Splits on first hyphen or en-dash: `value_str.split(/[-–]/, 2)`
 - Parses each side through `NumericParsing.parse_fraction` to resolve fractions
   and vulgar glyphs to floats.
 - Returns `[low, nil]` for single values.
@@ -120,10 +120,27 @@ pre-applied server-side), `data-quantity-low` and `data-quantity-high` are
 both pre-multiplied by the cross-reference multiplier, matching the current
 behavior for `data-quantity-value`.
 
-**`scaled_quantity_display`** renders:
-- Range at 1×: `"2–3 cups"` (en-dash, vulgar fractions for each side)
+**`scaled_quantity_display`** handles ranges alongside the existing
+single-value path. When the ingredient has `quantity_high`:
+
+```ruby
+def scaled_quantity_display(item, scale_factor)
+  return item.quantity_display if !item.quantity_low || scale_factor == 1.0
+
+  if item.quantity_high
+    low = VulgarFractions.format(item.quantity_low * scale_factor, unit: item.quantity_unit)
+    high = VulgarFractions.format(item.quantity_high * scale_factor, unit: item.quantity_unit)
+    ["#{low}–#{high}", item.unit].compact.join(' ')
+  else
+    formatted = VulgarFractions.format(item.quantity_low * scale_factor, unit: item.quantity_unit)
+    [formatted, item.unit].compact.join(' ')
+  end
+end
+```
+
+- Range at 1×: falls through to `quantity_display` → `"2–3 cups"`
 - Range at 2×: `"4–6 cups"`
-- Non-range: same as today but reads from `quantity_low` column
+- Non-range: same as today but reads from `quantity_low`
 
 ### Client-side (`recipe_state_controller.js`)
 
@@ -159,36 +176,57 @@ Uses the same fraction table as the existing `VulgarFractions.format` (which
 maps to Unicode glyphs), but outputs ASCII. Values that don't match a known
 fraction round to two decimal places (e.g., 1.37 → `"1.37"`).
 
-Both the Ruby and JavaScript implementations need this method. The JS side
-is used by the serializer path in the graphical editor.
+Both the Ruby and JavaScript implementations need this method. Ruby:
+`VulgarFractions.to_fraction_string`. JS: `toFractionString` in
+`app/javascript/utilities/vulgar_fractions.js` (alongside the existing
+`formatVulgar` and `isVulgarSingular`). The JS side is used by the
+serializer path in the graphical editor.
 
 ### `RecipeSerializer#build_ingredient_ir`
 
-Reconstructs the `quantity` string from numeric columns:
-- If `quantity_low` and `quantity_high`: `"#{to_fraction(low)}-#{to_fraction(high)}"`
-- If `quantity_low` only: `"#{to_fraction(low)}"`
-- If neither (non-numeric): uses raw `quantity` as-is
+Reconstructs the full `quantity` string (including unit) for the IR hash,
+matching the existing convention where the IR's `quantity` field is a
+combined string like `"2-3 cups"`:
 
-The unit is joined separately (matching the existing IR format where
-`quantity` includes the unit string).
+- If `quantity_low` and `quantity_high`:
+  `"#{to_fraction(low)}-#{to_fraction(high)} #{unit}".strip`
+- If `quantity_low` only: `"#{to_fraction(low)} #{unit}".strip`
+- If neither (non-numeric): uses raw `quantity` and `unit` joined as today
 
 ### `AR Ingredient#quantity_display`
 
 Updated to render with en-dash for ranges, vulgar fractions for display:
+
+```ruby
+def quantity_display
+  return [quantity, unit].compact.join(' ').presence unless quantity_low
+
+  if quantity_high
+    low = VulgarFractions.format(quantity_low)
+    high = VulgarFractions.format(quantity_high)
+    ["#{low}–#{high}", unit].compact.join(' ')
+  else
+    [VulgarFractions.format(quantity_low), unit].compact.join(' ')
+  end
+end
+```
+
 - Range: `"½–1 stick"`
 - Non-range: `"½ cup"`
-
-Falls back to raw `quantity`/`unit` when `quantity_low` is nil.
+- Non-numeric: falls back to raw `quantity`/`unit`
 
 `VulgarFractions` remains range-unaware — callers assemble the en-dash
 string from two separate `format` calls.
 
 ## Nutrition
 
-`Ingredient#quantity_value` returns `quantity_high || quantity_low` (as a
-string, preserving the interface). This is a simplification of the current
-`FamilyRecipes::Ingredient.numeric_value` string parsing — the range
-extraction is now done at import time.
+`Ingredient#quantity_value` returns `(quantity_high || quantity_low)&.to_s`
+— a string like `"3"` or `"0.5"`, preserving the interface consumed by
+`IngredientAggregator` (which calls `Float()` on the result) and
+`UnitResolver`. Trailing `.0` is stripped for whole numbers (e.g.,
+`3.0.to_s` → `"3.0"` → stripped to `"3"`) to match the current behavior
+where `numeric_value` returns `"3"` not `"3.0"`. A helper like
+`format_decimal` handles this.
 
 `NutritionCalculator` and `UnitResolver` are unchanged — they consume
 `quantity_value` as before.
@@ -208,7 +246,10 @@ unchanged.
 Sequential migration adds `quantity_low` and `quantity_high` columns, then
 backfills from existing `quantity` strings using raw SQL with a lightweight
 Ruby parsing stub defined inside the migration class (no application model
-references per project conventions).
+references per project conventions). The migration stub must handle vulgar
+fraction glyphs in existing data (since normalization is being introduced
+in this same change — existing rows were stored with whatever the user
+typed).
 
 ## Edge Cases
 
