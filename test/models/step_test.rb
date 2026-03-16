@@ -3,14 +3,12 @@
 require 'test_helper'
 
 class StepModelTest < ActiveSupport::TestCase
-  BASIC_MD = "# Test\n\n## Step\n\n- Flour\n\nMix."
-
   setup do
     setup_test_kitchen
     setup_test_category
     @recipe = Recipe.find_or_create_by!(
       title: 'Test Recipe', slug: 'step-test-recipe',
-      category: @category, markdown_source: BASIC_MD
+      category: @category
     )
   end
 
@@ -53,8 +51,8 @@ class StepModelTest < ActiveSupport::TestCase
 
   test 'cross_references are ordered by position' do
     step = Step.create!(recipe: @recipe, title: 'Mix', position: 1)
-    target_a = Recipe.create!(title: 'Alpha', category: @category, markdown_source: BASIC_MD)
-    target_b = Recipe.create!(title: 'Beta', category: @category, markdown_source: BASIC_MD)
+    target_a = Recipe.create!(title: 'Alpha', category: @category)
+    target_b = Recipe.create!(title: 'Beta', category: @category)
     step.cross_references.create!(target_recipe: target_b, target_slug: 'beta', target_title: 'Beta', position: 2)
     step.cross_references.create!(target_recipe: target_a, target_slug: 'alpha', target_title: 'Alpha', position: 1)
 
@@ -72,7 +70,7 @@ class StepModelTest < ActiveSupport::TestCase
 
   test 'destroying step destroys associated cross_references' do
     step = Step.create!(recipe: @recipe, title: 'Mix', position: 1)
-    target = Recipe.create!(title: 'Poolish', category: @category, markdown_source: BASIC_MD)
+    target = Recipe.create!(title: 'Poolish', category: @category)
     step.cross_references.create!(target_recipe: target, target_slug: 'poolish', target_title: 'Poolish', position: 1)
 
     assert_difference 'CrossReference.count', -1 do

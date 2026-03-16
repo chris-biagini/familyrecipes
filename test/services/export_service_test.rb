@@ -40,12 +40,14 @@ class ExportServiceTest < ActiveSupport::TestCase
     assert_includes names, 'Desserts/Brownies.md'
   end
 
-  test 'recipe files contain markdown_source content' do
+  test 'recipe files contain serialized markdown content' do
     zip_data = ExportService.call(kitchen: @kitchen)
     content = zip_entry_content(zip_data, 'Bread/Focaccia.md')
     recipe = @kitchen.recipes.find_by!(title: 'Focaccia')
+    ir = FamilyRecipes::RecipeSerializer.from_record(recipe)
+    expected = FamilyRecipes::RecipeSerializer.serialize(ir)
 
-    assert_equal recipe.markdown_source, content
+    assert_equal expected, content
   end
 
   test 'includes quick bites when present' do

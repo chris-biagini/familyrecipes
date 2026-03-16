@@ -174,7 +174,9 @@ to editor lifecycle events.
   via server round-trips (`/parse` and `/serialize` endpoints).
 - `RecipeSerializer` and `QuickBitesSerializer` are pure-function modules that
   convert IR hashes ↔ Markdown/plaintext — the inverse of the parser pipeline.
-  Used by mode switching, structured writes, and content loading.
+  Used by mode switching, structured writes, content loading, export, and the
+  raw endpoint. `RecipeSerializer` is also the source for editor loading since
+  AR records are the sole source of truth (no stored `markdown_source`).
 - Graphical controllers build DOM entirely via `createElement`/`textContent`
   (strict CSP). Cross-reference steps render read-only in graphical mode.
 
@@ -216,8 +218,10 @@ broadcast). Don't call `MarkdownImporter` directly for web operations.
 - `QuickBitesWriteService` — quick bites content persistence, parse
   validation, reconciliation, broadcast. Also has `update_from_structure`.
 - `MarkdownImporter` has two entry points: `import` (markdown string) and
-  `import_from_structure` (IR hash → serializes to markdown internally).
-  Both converge on the same DB upsert + cross-ref resolution path.
+  `import_from_structure` (IR hash). Both converge on the same AR upsert +
+  cross-ref resolution path. AR records are the sole source of truth —
+  `RecipeSerializer` generates markdown on demand (export, editor loading,
+  raw endpoints).
 - `AisleWriteService` — reorder, rename/delete cascades to catalog rows,
   new-aisle sync, broadcast.
 - `CategoryWriteService` — ordering, renaming, deletion cascades, broadcast.

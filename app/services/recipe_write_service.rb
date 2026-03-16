@@ -1,12 +1,11 @@
 # frozen_string_literal: true
 
-# Orchestrates recipe create/update/destroy. Dual entry: `create`/`update`
-# accept raw Markdown; `create_from_structure`/`update_from_structure` accept
-# IR hashes (from graphical editors) and serialize via MarkdownImporter. Owns
-# the full post-write pipeline: import, tag sync, rename cascades, orphan
-# cleanup (categories + tags), and meal plan reconciliation. The `finalize`
-# step always cleans orphans but skips reconcile and broadcast when
-# Kitchen.batching? is true (batch caller handles those once at the end).
+# Orchestrates recipe create/update/destroy. Accepts either raw Markdown
+# (text editor, file import) or IR hashes (graphical editor) — both converge
+# on MarkdownImporter. `_from_structure` methods are thin normalizers that
+# extract front matter and delegate. Owns the full post-write pipeline:
+# import, tag sync, rename cascades, orphan cleanup (categories + tags),
+# and meal plan reconciliation.
 #
 # - MarkdownImporter: parses markdown / IR hashes into AR records
 # - Tag: created inline during sync; orphans cleaned in finalize
@@ -17,12 +16,12 @@
 class RecipeWriteService
   Result = Data.define(:recipe, :updated_references)
 
-  def self.create(markdown:, kitchen:, category_name: nil, tags: nil)
-    new(kitchen:).create(markdown:, category_name:, tags:)
+  def self.create(kitchen:, markdown: nil, structure: nil, category_name: nil, tags: nil)
+    new(kitchen:).create(markdown:, structure:, category_name:, tags:)
   end
 
-  def self.update(slug:, markdown:, kitchen:, category_name: nil, tags: nil)
-    new(kitchen:).update(slug:, markdown:, category_name:, tags:)
+  def self.update(slug:, kitchen:, markdown: nil, structure: nil, category_name: nil, tags: nil) # rubocop:disable Metrics/ParameterLists
+    new(kitchen:).update(slug:, markdown:, structure:, category_name:, tags:)
   end
 
   def self.create_from_structure(structure:, kitchen:)
@@ -41,13 +40,13 @@ class RecipeWriteService
     @kitchen = kitchen
   end
 
-  def create(markdown:, category_name: nil, tags: nil)
+  def create(markdown: nil, structure: nil, category_name: nil, tags: nil)
     recipe = nil
     front_matter_tags = nil
 
     ActiveRecord::Base.transaction do
       category = find_or_create_category(category_name)
-      recipe, front_matter_tags = import_and_timestamp(markdown, category:)
+      recipe, front_matter_tags = import_recipe(markdown:, structure:, category:)
       sync_tags(recipe, tags || front_matter_tags)
     end
 
@@ -56,26 +55,19 @@ class RecipeWriteService
   end
 
   def create_from_structure(structure:)
-    recipe = nil
-
-    ActiveRecord::Base.transaction do
-      category = find_or_create_category(structure.dig(:front_matter, :category))
-      recipe = import_structure_and_timestamp(structure, category:)
-      sync_tags(recipe, structure.dig(:front_matter, :tags))
-    end
-
-    finalize
-    Result.new(recipe:, updated_references: [])
+    create(markdown: nil, structure:,
+           category_name: structure.dig(:front_matter, :category),
+           tags: structure.dig(:front_matter, :tags))
   end
 
-  def update(slug:, markdown:, category_name: nil, tags: nil)
+  def update(slug:, markdown: nil, structure: nil, category_name: nil, tags: nil)
     updated_references = []
     recipe = nil
 
     ActiveRecord::Base.transaction do
       old_recipe = kitchen.recipes.find_by!(slug:)
       category = find_or_create_category(category_name)
-      recipe, front_matter_tags = import_and_timestamp(markdown, category:)
+      recipe, front_matter_tags = import_recipe(markdown:, structure:, category:)
       sync_tags(recipe, tags || front_matter_tags)
       updated_references = rename_cross_references(old_recipe, recipe)
       handle_slug_change(old_recipe, recipe)
@@ -86,20 +78,9 @@ class RecipeWriteService
   end
 
   def update_from_structure(slug:, structure:)
-    updated_references = []
-    recipe = nil
-
-    ActiveRecord::Base.transaction do
-      old_recipe = kitchen.recipes.find_by!(slug:)
-      category = find_or_create_category(structure.dig(:front_matter, :category))
-      recipe = import_structure_and_timestamp(structure, category:)
-      sync_tags(recipe, structure.dig(:front_matter, :tags))
-      updated_references = rename_cross_references(old_recipe, recipe)
-      handle_slug_change(old_recipe, recipe)
-    end
-
-    finalize
-    Result.new(recipe:, updated_references:)
+    update(slug:, markdown: nil, structure:,
+           category_name: structure.dig(:front_matter, :category),
+           tags: structure.dig(:front_matter, :tags))
   end
 
   def destroy(slug:)
@@ -125,16 +106,18 @@ class RecipeWriteService
     Category.find_or_create_for(kitchen, name)
   end
 
-  def import_and_timestamp(markdown, category:)
-    result = MarkdownImporter.import(markdown, kitchen:, category:)
+  def import_recipe(markdown:, structure:, category:)
+    result = structure ? import_structure(structure, category:) : import_markdown(markdown, category:)
     result.recipe.update!(edited_at: Time.current)
     [result.recipe, result.front_matter_tags]
   end
 
-  def import_structure_and_timestamp(structure, category:)
-    result = MarkdownImporter.import_from_structure(structure, kitchen:, category:)
-    result.recipe.update!(edited_at: Time.current)
-    result.recipe
+  def import_markdown(markdown, category:)
+    MarkdownImporter.import(markdown, kitchen:, category:)
+  end
+
+  def import_structure(structure, category:)
+    MarkdownImporter.import_from_structure(structure, kitchen:, category:)
   end
 
   def rename_cross_references(old_recipe, new_recipe)

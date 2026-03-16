@@ -8,7 +8,7 @@ class IngredientModelTest < ActiveSupport::TestCase
     setup_test_category
     @recipe = Recipe.find_or_create_by!(
       title: 'Test Recipe', slug: 'test-recipe',
-      category: @category, markdown_source: "# Test\n\n## Step\n\n- Flour\n\nMix."
+      category: @category
     )
     @step = @recipe.steps.find_or_create_by!(title: 'Step', position: 1)
   end

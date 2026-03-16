@@ -33,14 +33,15 @@ class CrossReferenceUpdaterTest < ActiveSupport::TestCase
     MD
   end
 
-  test 'rename_references updates @[Old] to @[New] in referencing recipes' do
+  test 'rename_references updates cross-reference target titles in referencing recipes' do
     CrossReferenceUpdater.rename_references(old_title: 'Pizza Dough', new_title: 'Neapolitan Dough',
                                             kitchen: @kitchen)
 
     @pizza.reload
+    xref = @pizza.cross_references.find_by(target_title: 'Neapolitan Dough')
 
-    assert_includes @pizza.markdown_source, '@[Neapolitan Dough]'
-    assert_not_includes @pizza.markdown_source, '@[Pizza Dough]'
+    assert xref, 'cross-reference to Neapolitan Dough should exist'
+    assert_nil @pizza.cross_references.find_by(target_title: 'Pizza Dough')
   end
 
   test 'rename_references returns titles of updated recipes' do

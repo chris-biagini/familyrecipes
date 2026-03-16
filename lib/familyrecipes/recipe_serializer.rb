@@ -127,7 +127,7 @@ module FamilyRecipes
       fm[:makes] = makes unless makes.empty?
       fm[:serves] = recipe.serves.to_s if recipe.serves
       fm[:category] = recipe.category.name if recipe.category
-      tags = recipe.tags.pluck(:name)
+      tags = recipe.tags.map(&:name)
       fm[:tags] = tags if tags.any?
       fm
     end

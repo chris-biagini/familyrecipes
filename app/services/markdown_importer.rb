@@ -2,13 +2,13 @@
 
 # The sole write path for getting recipes into the database. Two entry points:
 # `import` parses Markdown via the parser pipeline, `import_from_structure`
-# accepts a pre-parsed IR hash and generates markdown via RecipeSerializer.
-# Both converge on `run`, which upserts the Recipe and its child records,
-# resolves pending cross-references, and computes nutrition.
+# accepts a pre-parsed IR hash directly. Both converge on `run`, which upserts
+# the Recipe and its child records, resolves pending cross-references, and
+# computes nutrition. AR records are the sole source of truth — no markdown
+# is stored.
 #
 # Collaborators:
 # - LineClassifier, RecipeBuilder — parse pipeline (import path)
-# - RecipeSerializer — IR → Markdown (import_from_structure path)
 # - RecipeWriteService — primary caller for web operations
 # - RecipeNutritionJob, CascadeNutritionJob — post-import nutrition
 class MarkdownImporter
@@ -21,15 +21,13 @@ class MarkdownImporter
   end
 
   def self.import_from_structure(ir_hash, kitchen:, category:)
-    markdown_source = FamilyRecipes::RecipeSerializer.serialize(ir_hash)
-    new(markdown_source, kitchen:, category:, parsed: ir_hash).run
+    new(kitchen:, category:, parsed: ir_hash).run
   end
 
-  def initialize(markdown_source, kitchen:, category:, parsed: nil)
-    @markdown_source = markdown_source
+  def initialize(markdown_source = nil, kitchen:, category:, parsed: nil)
     @kitchen = kitchen
     @category = category
-    @parsed = parsed || parse_markdown
+    @parsed = parsed || parse_markdown(markdown_source)
   end
 
   def run
@@ -42,7 +40,7 @@ class MarkdownImporter
 
   private
 
-  attr_reader :markdown_source, :kitchen, :category, :parsed
+  attr_reader :kitchen, :category, :parsed
 
   def save_recipe
     ActiveRecord::Base.transaction do
@@ -54,7 +52,9 @@ class MarkdownImporter
     end
   end
 
-  def parse_markdown
+  def parse_markdown(markdown_source)
+    raise ArgumentError, 'markdown_source required when parsed IR not provided' unless markdown_source
+
     RecipeBuilder.new(LineClassifier.classify(markdown_source)).build
   end
 
@@ -84,8 +84,7 @@ class MarkdownImporter
       makes_quantity: makes_qty,
       makes_unit_noun: makes_unit,
       serves: parsed[:front_matter][:serves]&.to_i,
-      footer: parsed[:footer],
-      markdown_source: markdown_source
+      footer: parsed[:footer]
     )
   end
 

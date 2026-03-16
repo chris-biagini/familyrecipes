@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-# Cascading Markdown updates when a recipe is renamed. Rewrites
-# "@[Old Title]" → "@[New Title]" in all referencing recipes' Markdown source
-# and re-imports them. Returns the list of affected recipe titles so the
-# controller can report them. Recipe deletion relies on dependent: :nullify
-# on inbound_cross_references — no Markdown rewriting needed.
+# Cascading Markdown updates when a recipe is renamed. Generates markdown
+# from AR records via RecipeSerializer, rewrites "@[Old Title]" →
+# "@[New Title]", and re-imports. Returns affected recipe titles.
+# Recipe deletion relies on dependent: :nullify on
+# inbound_cross_references — no Markdown rewriting needed.
 class CrossReferenceUpdater
   def self.rename_references(old_title:, new_title:, kitchen:)
     slug = FamilyRecipes.slugify(old_title)
@@ -26,13 +26,20 @@ class CrossReferenceUpdater
   private
 
   def update_referencing_recipes
-    referencing = @recipe.referencing_recipes.includes(:category)
+    referencing = @recipe.referencing_recipes
+                         .includes(:category, :tags, steps: %i[ingredients cross_references])
     return [] if referencing.empty?
 
     referencing.map do |ref_recipe|
-      updated_source = yield(ref_recipe.markdown_source, @recipe.title)
-      MarkdownImporter.import(updated_source, kitchen: ref_recipe.kitchen, category: ref_recipe.category)
+      markdown = generate_markdown(ref_recipe)
+      updated_markdown = yield(markdown, @recipe.title)
+      MarkdownImporter.import(updated_markdown, kitchen: ref_recipe.kitchen, category: ref_recipe.category)
       ref_recipe.title
     end
+  end
+
+  def generate_markdown(recipe)
+    ir = FamilyRecipes::RecipeSerializer.from_record(recipe)
+    FamilyRecipes::RecipeSerializer.serialize(ir)
   end
 end

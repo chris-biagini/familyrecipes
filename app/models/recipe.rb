@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-# Persistent recipe record, populated by MarkdownImporter from parsed Markdown.
-# Stores the original markdown_source plus pre-computed data (nutrition_data JSON,
-# processed instructions with scalable number markup). Views render entirely from
-# this model and its associations — the parser is never invoked on the read path.
+# Persistent recipe record, populated by MarkdownImporter from parsed Markdown
+# or IR hashes. AR records are the sole source of truth — markdown is generated
+# on demand by RecipeSerializer for export and editor loading. Views render from
+# this model and its associations; the parser runs only on the write path.
 # Kitchen-scoped via acts_as_tenant.
 #
 # Collaborators:
@@ -32,7 +32,6 @@ class Recipe < ApplicationRecord
 
   validates :title, presence: true
   validates :slug, presence: true, uniqueness: { scope: :kitchen_id }
-  validates :markdown_source, presence: true
 
   scope :alphabetical, -> { order(:title) }
   scope :with_full_tree, lambda {

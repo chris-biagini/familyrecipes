@@ -9,7 +9,7 @@
 <article class="embedded-recipe"
          data-controller="recipe-state"
          data-recipe-state-recipe-id-value="xref-<%= cross_reference.target_slug %>"
-         data-recipe-state-version-hash-value="<%= Digest::SHA256.hexdigest(target.markdown_source) %>"
+         data-recipe-state-version-hash-value="<%= target.updated_at.to_i %>"
          data-recipe-state-embedded-value="true"
          data-base-multiplier="<%= cross_reference.multiplier %>">
   <header>

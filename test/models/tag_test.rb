@@ -90,7 +90,7 @@ class TagTest < ActiveSupport::TestCase
     setup_test_category
     orphan = Tag.create!(name: 'unused')
     kept = Tag.create!(name: 'used')
-    recipe = Recipe.create!(title: 'Test', slug: 'test', markdown_source: '# Test', category: @category)
+    recipe = Recipe.create!(title: 'Test', slug: 'test', category: @category)
     RecipeTag.create!(recipe: recipe, tag: kept)
 
     Tag.cleanup_orphans(@kitchen)
@@ -104,7 +104,7 @@ class TagTest < ActiveSupport::TestCase
   test 'destroying tag cascades to recipe_tags' do
     setup_test_category
     tag = Tag.create!(name: 'dinner')
-    recipe = Recipe.create!(title: 'Test', slug: 'test', markdown_source: '# Test', category: @category)
+    recipe = Recipe.create!(title: 'Test', slug: 'test', category: @category)
     RecipeTag.create!(recipe: recipe, tag: tag)
 
     assert_difference 'RecipeTag.count', -1 do

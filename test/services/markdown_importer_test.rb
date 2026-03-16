@@ -46,7 +46,6 @@ class MarkdownImporterTest < ActiveSupport::TestCase
     assert_equal 'A simple Italian flatbread.', recipe.description
     assert_equal @bread, recipe.category
     assert_equal 'Adapted from a classic Italian recipe.', recipe.footer
-    assert_equal BASIC_RECIPE, recipe.markdown_source
     assert_predicate recipe, :persisted?
   end
 

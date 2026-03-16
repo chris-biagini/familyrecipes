@@ -88,7 +88,6 @@ class SearchDataHelperTest < ActionView::TestCase
 
   def setup_tagged_recipe
     @recipe = Recipe.create!(title: 'Miso Soup', slug: 'miso-soup',
-                             markdown_source: "# Miso Soup\n\n## Step\n\n- Dashi, 4 cups\n\nHeat.",
                              category: @category)
     Tag.create!(name: 'vegan').tap { |t| RecipeTag.create!(recipe: @recipe, tag: t) }
     Tag.create!(name: 'quick').tap { |t| RecipeTag.create!(recipe: @recipe, tag: t) }
