@@ -1,6 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
-import { sendAction } from "utilities/turbo_fetch"
-import ListenerManager from "utilities/listener_manager"
+import { sendAction } from "../utilities/turbo_fetch"
+import ListenerManager from "../utilities/listener_manager"
 
 /**
  * Menu page recipe/quick-bite selection. Handles optimistic checkbox toggle,

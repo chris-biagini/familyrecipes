@@ -20,7 +20,7 @@
   <link rel="apple-touch-icon" sizes="180x180" href="<%= versioned_icon_path('apple-touch-icon.png') %>">
   <link rel="apple-touch-icon" sizes="180x180" href="<%= versioned_icon_path('apple-touch-icon-dark.png') %>" media="(prefers-color-scheme: dark)">
   <link rel="manifest" href="/manifest.json">
-  <%= javascript_importmap_tags %>
+  <%= javascript_include_tag "application", defer: true %>
   <%= yield :head %>
 </head>
 <body data-controller="search-overlay" data-search-overlay-base-path="<%= params[:kitchen_slug] ? "/kitchens/#{params[:kitchen_slug]}" : '' %>" <%= yield :body_attrs %>>

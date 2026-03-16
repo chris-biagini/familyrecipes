@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import HighlightOverlay from "utilities/highlight_overlay"
+import HighlightOverlay from "../utilities/highlight_overlay"
 
 /**
  * Plaintext Quick Bites editor: textarea with syntax-highlighting overlay.

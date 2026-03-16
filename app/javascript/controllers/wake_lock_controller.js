@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { show as notifyShow, dismiss as notifyDismiss } from "utilities/notify"
+import { show as notifyShow, dismiss as notifyDismiss } from "../utilities/notify"
 
 /**
  * Screen Wake Lock API for recipe pages — keeps the screen on while cooking.

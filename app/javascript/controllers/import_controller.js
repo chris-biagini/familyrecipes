@@ -1,6 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
-import { getCsrfToken } from "utilities/editor_utils"
-import { show as notifyShow } from "utilities/notify"
+import { getCsrfToken } from "../utilities/editor_utils"
+import { show as notifyShow } from "../utilities/notify"
 
 /**
  * Manages file selection, upload, and result notification for kitchen data

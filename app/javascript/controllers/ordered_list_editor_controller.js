@@ -2,11 +2,11 @@ import { Controller } from "@hotwired/stimulus"
 import {
   getCsrfToken, showErrors, clearErrors,
   closeWithConfirmation, saveRequest, guardBeforeUnload, handleSave
-} from "utilities/editor_utils"
+} from "../utilities/editor_utils"
 import {
   createItem, buildPayload, takeSnapshot, isModified, checkDuplicate,
   renderRows, startInlineRename, swapItems, animateSwap, updateButtonStates
-} from "utilities/ordered_list_editor_utils"
+} from "../utilities/ordered_list_editor_utils"
 
 /**
  * Generic ordered-list editor dialog for managing named items with reorder,

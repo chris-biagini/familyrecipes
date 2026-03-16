@@ -2,8 +2,8 @@ import { Controller } from "@hotwired/stimulus"
 import {
   getCsrfToken, showErrors, clearErrors,
   closeWithConfirmation, saveRequest, guardBeforeUnload, handleSave
-} from "utilities/editor_utils"
-import { show as notifyShow } from "utilities/notify"
+} from "../utilities/editor_utils"
+import { show as notifyShow } from "../utilities/notify"
 
 /**
  * Generic <dialog> lifecycle controller for editor modals. Handles open, save

@@ -1,11 +1,62 @@
 /**
- * JS entry point. Boots Turbo Drive + Stimulus (via controllers/index.js) and
- * registers the service worker. Also manages global Turbo lifecycle handlers:
- * morph protection for open dialogs (broadcast refresh) and pre-cache cleanup.
- * Pinned in config/importmap.rb as "application".
+ * Esbuild entry point. Boots Turbo Drive + Stimulus, explicitly registers all
+ * controllers, and manages global Turbo lifecycle handlers: morph protection
+ * for open dialogs and pre-cache cleanup. Also registers the service worker.
  */
 import { Turbo } from "@hotwired/turbo-rails"
-import "controllers"
+import { Application } from "@hotwired/stimulus"
+
+const application = Application.start()
+application.debug = false
+window.Stimulus = application
+
+import EditorController from "./controllers/editor_controller"
+import ExportController from "./controllers/export_controller"
+import GroceryUiController from "./controllers/grocery_ui_controller"
+import ImportController from "./controllers/import_controller"
+import IngredientTableController from "./controllers/ingredient_table_controller"
+import MenuController from "./controllers/menu_controller"
+import NavMenuController from "./controllers/nav_menu_controller"
+import NutritionEditorController from "./controllers/nutrition_editor_controller"
+import OrderedListEditorController from "./controllers/ordered_list_editor_controller"
+import QuickbitesEditorController from "./controllers/quickbites_editor_controller"
+import QuickbitesGraphicalController from "./controllers/quickbites_graphical_controller"
+import QuickbitesPlaintextController from "./controllers/quickbites_plaintext_controller"
+import RecipeEditorController from "./controllers/recipe_editor_controller"
+import RecipeGraphicalController from "./controllers/recipe_graphical_controller"
+import RecipePlaintextController from "./controllers/recipe_plaintext_controller"
+import RecipeStateController from "./controllers/recipe_state_controller"
+import RevealController from "./controllers/reveal_controller"
+import ScalePanelController from "./controllers/scale_panel_controller"
+import SearchOverlayController from "./controllers/search_overlay_controller"
+import SettingsEditorController from "./controllers/settings_editor_controller"
+import TagInputController from "./controllers/tag_input_controller"
+import ToastController from "./controllers/toast_controller"
+import WakeLockController from "./controllers/wake_lock_controller"
+
+application.register("editor", EditorController)
+application.register("export", ExportController)
+application.register("grocery-ui", GroceryUiController)
+application.register("import", ImportController)
+application.register("ingredient-table", IngredientTableController)
+application.register("menu", MenuController)
+application.register("nav-menu", NavMenuController)
+application.register("nutrition-editor", NutritionEditorController)
+application.register("ordered-list-editor", OrderedListEditorController)
+application.register("quickbites-editor", QuickbitesEditorController)
+application.register("quickbites-graphical", QuickbitesGraphicalController)
+application.register("quickbites-plaintext", QuickbitesPlaintextController)
+application.register("recipe-editor", RecipeEditorController)
+application.register("recipe-graphical", RecipeGraphicalController)
+application.register("recipe-plaintext", RecipePlaintextController)
+application.register("recipe-state", RecipeStateController)
+application.register("reveal", RevealController)
+application.register("scale-panel", ScalePanelController)
+application.register("search-overlay", SearchOverlayController)
+application.register("settings-editor", SettingsEditorController)
+application.register("tag-input", TagInputController)
+application.register("toast", ToastController)
+application.register("wake-lock", WakeLockController)
 
 Turbo.config.drive.progressBarDelay = 300
 

@@ -5,8 +5,8 @@
  * toast via notify.js when the server returns an error or retries are exhausted.
  * Used by grocery_ui_controller and menu_controller.
  */
-import { getCsrfToken } from "utilities/editor_utils"
-import { show as notifyShow } from "utilities/notify"
+import { getCsrfToken } from "./editor_utils"
+import { show as notifyShow } from "./notify"
 
 class ServerError extends Error {
   constructor(message) {

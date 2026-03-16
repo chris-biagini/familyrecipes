@@ -10,9 +10,6 @@ const config = {
   outdir: "app/assets/builds",
   publicPath: "/assets",
   logLevel: "info",
-  // Mark importmap-only specifiers as external until Task 2 rewrites the JS
-  // entry points to use npm-resolvable paths and explicit controller imports.
-  external: ["controllers", "controllers/*", "@hotwired/stimulus-loading"],
 }
 
 if (watch) {

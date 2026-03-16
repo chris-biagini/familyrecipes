@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { csrfHeaders } from "utilities/editor_utils"
+import { csrfHeaders } from "../utilities/editor_utils"
 
 /**
  * Coordinator for dual-mode recipe editing. Manages a mode toggle between

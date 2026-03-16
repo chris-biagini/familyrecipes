@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { show as notifyShow } from "utilities/notify"
+import { show as notifyShow } from "../utilities/notify"
 
 /**
  * Fire-and-forget toast notification. Shows a message on connect and immediately

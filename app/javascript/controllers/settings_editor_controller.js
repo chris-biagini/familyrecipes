@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { getCsrfToken, showErrors } from "utilities/editor_utils"
+import { getCsrfToken, showErrors } from "../utilities/editor_utils"
 
 /**
  * Companion controller for the settings editor dialog. Hooks into editor

@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { getCsrfToken } from "utilities/editor_utils"
+import { getCsrfToken } from "../utilities/editor_utils"
 
 /**
  * Companion controller for the nutrition editor dialog. Hooks into the shared

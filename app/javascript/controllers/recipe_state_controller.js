@@ -1,6 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
-import { formatVulgar, isVulgarSingular } from "utilities/vulgar_fractions"
-import ListenerManager from "utilities/listener_manager"
+import { formatVulgar, isVulgarSingular } from "../utilities/vulgar_fractions"
+import ListenerManager from "../utilities/listener_manager"
 
 /**
  * Recipe page progressive enhancement: cross-off (click to strike through
