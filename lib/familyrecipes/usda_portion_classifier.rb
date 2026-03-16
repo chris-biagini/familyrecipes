@@ -8,7 +8,7 @@ module FamilyRecipes
   #
   # Collaborators:
   # - UsdaClient (produces the raw portion hashes this class consumes)
-  # - NutritionCalculator (EXPANDED_VOLUME_UNITS, EXPANDED_WEIGHT_UNITS)
+  # - UnitResolver (EXPANDED_VOLUME_UNITS, EXPANDED_WEIGHT_UNITS, VOLUME_TO_ML)
   class UsdaPortionClassifier
     Result = Data.define(:density_candidates, :portion_candidates, :filtered)
 
@@ -34,7 +34,7 @@ module FamilyRecipes
       clean = modifier.to_s.downcase.sub(/\s*\(.*\)/, '').strip
       words = clean.split(/[\s,]+/)
       two_word = Inflector.normalize_unit(words.first(2).join(' '))
-      return two_word if NutritionCalculator::VOLUME_TO_ML.key?(two_word)
+      return two_word if UnitResolver::VOLUME_TO_ML.key?(two_word)
 
       Inflector.normalize_unit(words.first)
     end
@@ -44,11 +44,11 @@ module FamilyRecipes
     end
 
     def self.volume_modifier?(modifier)
-      unit_prefix_match?(modifier, NutritionCalculator::EXPANDED_VOLUME_UNITS)
+      unit_prefix_match?(modifier, UnitResolver::EXPANDED_VOLUME_UNITS)
     end
 
     def self.weight_modifier?(modifier)
-      unit_prefix_match?(modifier, NutritionCalculator::EXPANDED_WEIGHT_UNITS)
+      unit_prefix_match?(modifier, UnitResolver::EXPANDED_WEIGHT_UNITS)
     end
 
     def self.regulatory_modifier?(modifier)

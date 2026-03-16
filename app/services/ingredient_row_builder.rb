@@ -14,8 +14,6 @@
 # - FamilyRecipes::QuickBite (parsed from Kitchen#quick_bites_content)
 class IngredientRowBuilder # rubocop:disable Metrics/ClassLength
   QuickBiteSource = Data.define(:title)
-  WEIGHT_UNITS = FamilyRecipes::NutritionCalculator::WEIGHT_CONVERSIONS.keys.freeze
-  VOLUME_UNITS = FamilyRecipes::NutritionCalculator::VOLUME_TO_ML.keys.freeze
 
   def initialize(kitchen:, recipes: nil, resolver: nil)
     @kitchen = kitchen
@@ -185,37 +183,14 @@ class IngredientRowBuilder # rubocop:disable Metrics/ClassLength
   end
 
   def unit_resolvable?(unit, entry)
-    return true if weight_unit?(unit)
-    return false if entry&.basis_grams.blank?
-    return portion_defined?(entry, unit) if unit && !volume_unit?(unit)
-    return density_defined?(entry) if unit && volume_unit?(unit)
-
-    entry.portions&.key?('~unitless')
-  end
-
-  def volume_unit?(unit)
-    unit && VOLUME_UNITS.include?(unit.downcase)
-  end
-
-  def portion_defined?(entry, unit)
-    return false if entry.portions.blank?
-
-    entry.portions.any? { |k, _| k.casecmp(unit).zero? }
-  end
-
-  def density_defined?(entry)
-    entry.density_grams.present? && entry.density_volume.present? && entry.density_unit.present?
-  end
-
-  def weight_unit?(unit)
-    unit && WEIGHT_UNITS.include?(unit.downcase)
+    FamilyRecipes::UnitResolver.new(entry).resolvable?(1, unit)
   end
 
   def resolution_method(unit, resolvable, entry)
-    return 'weight' if weight_unit?(unit)
+    return 'weight' if FamilyRecipes::UnitResolver.weight_unit?(unit)
     return 'no nutrition data' if entry&.basis_grams.blank?
     return unitless_method(resolvable) if unit.nil?
-    return volume_method(resolvable) if VOLUME_UNITS.include?(unit.downcase)
+    return volume_method(resolvable) if FamilyRecipes::UnitResolver.volume_unit?(unit)
 
     resolvable ? "via #{unit}" : 'no portion'
   end

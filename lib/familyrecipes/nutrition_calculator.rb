@@ -14,38 +14,8 @@ module FamilyRecipes
   # - NutritionConstraints: defines NUTRIENT_KEYS consumed here
   # - IngredientCatalog: AR model whose accessors this class reads directly
   # - UsdaPortionClassifier: consumes EXPANDED_*_UNITS
-  class NutritionCalculator # rubocop:disable Metrics/ClassLength
+  class NutritionCalculator
     NUTRIENTS = NutritionConstraints::NUTRIENT_KEYS
-
-    WEIGHT_CONVERSIONS = {
-      'g' => 1, 'oz' => 28.3495, 'lb' => 453.592, 'kg' => 1000
-    }.freeze
-
-    VOLUME_TO_ML = {
-      'tsp' => 4.929, 'tbsp' => 14.787, 'fl oz' => 29.5735,
-      'cup' => 236.588, 'pt' => 473.176, 'qt' => 946.353,
-      'gal' => 3785.41, 'ml' => 1, 'l' => 1000
-    }.freeze
-
-    # Subset of VOLUME_TO_ML for the density editor dropdown — excludes bulk
-    # units (pt, qt, gal) that don't make sense for expressing ingredient density.
-    DENSITY_UNITS = ['cup', 'tbsp', 'tsp', 'fl oz', 'ml', 'l'].freeze
-
-    # Base keys plus long-form abbreviations and plurals from Inflector.
-    # Used by UsdaPortionClassifier to recognize unit variants in USDA data.
-    EXPANDED_VOLUME_UNITS = begin
-      units = VOLUME_TO_ML.keys.to_set
-      Inflector::ABBREVIATIONS.each { |long, short| units << long if VOLUME_TO_ML.key?(short) }
-      Inflector::KNOWN_PLURALS.each { |sing, pl| units << pl if units.include?(sing) }
-      units.freeze
-    end
-
-    EXPANDED_WEIGHT_UNITS = begin
-      units = WEIGHT_CONVERSIONS.keys.to_set
-      Inflector::ABBREVIATIONS.each { |long, short| units << long if WEIGHT_CONVERSIONS.key?(short) }
-      Inflector::KNOWN_PLURALS.each { |sing, pl| units << pl if units.include?(sing) }
-      units.freeze
-    end
 
     Result = Data.define(
       :totals, :serving_count, :per_serving, :per_unit,
@@ -91,10 +61,6 @@ module FamilyRecipes
       )
     end
 
-    def resolvable?(value, unit, entry)
-      !to_grams(value, unit, entry).nil?
-    end
-
     private
 
     def sum_totals(recipe, recipe_map)
@@ -128,7 +94,7 @@ module FamilyRecipes
       amounts.each do |amount|
         next if amount.nil? || amount.value.nil?
 
-        grams = to_grams(amount.value, amount.unit, entry)
+        grams = UnitResolver.new(entry).to_grams(amount.value, amount.unit)
         if grams.nil?
           partial << name unless partial.include?(name)
           next
@@ -159,49 +125,6 @@ module FamilyRecipes
 
     def nutrient_per_gram(entry, nutrient)
       (entry.public_send(nutrient) || 0) / entry.basis_grams.to_f
-    end
-
-    def to_grams(value, unit, entry) # rubocop:disable Metrics/MethodLength, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
-      portions = entry.portions || {}
-
-      # 1. Bare count with no unit (e.g. "Eggs, 3") — use ~unitless portion
-      if unit.nil?
-        grams_per_unit = portions['~unitless']
-        return grams_per_unit ? value * grams_per_unit : nil
-      end
-
-      unit_down = unit.downcase
-
-      # 2. Weight unit — direct conversion
-      weight_factor = WEIGHT_CONVERSIONS[unit_down]
-      return value * weight_factor if weight_factor
-
-      # 3. Named portion — explicit user-verified value from portions hash
-      grams_per_unit = portions[unit] || portions[unit_down] ||
-                       portions.find { |k, _| k.downcase == unit_down }&.last
-      return value * grams_per_unit if grams_per_unit
-
-      # 4. Volumetric with density — derive from serving block
-      ml_factor = VOLUME_TO_ML[unit_down]
-      if ml_factor
-        density = derive_density(entry)
-        return value * ml_factor * density if density
-      end
-
-      # 5. Can't resolve
-      nil
-    end # rubocop:enable Metrics/MethodLength, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
-
-    def derive_density(entry)
-      return nil unless entry.density_grams && entry.density_volume && entry.density_unit
-
-      ml_factor = VOLUME_TO_ML[entry.density_unit.downcase]
-      return nil unless ml_factor
-
-      volume_ml = entry.density_volume * ml_factor
-      return nil if volume_ml <= 0
-
-      entry.density_grams / volume_ml
     end
 
     def parse_serving_count(recipe)

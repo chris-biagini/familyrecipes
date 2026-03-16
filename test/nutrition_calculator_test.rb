@@ -561,33 +561,6 @@ class NutritionCalculatorTest < Minitest::Test
     assert_in_delta expected, result.totals[:saturated_fat], 0.5
   end
 
-  # --- Resolvable? API ---
-
-  def test_resolvable_with_known_unit
-    entry = @nutrition_data['Flour (all-purpose)']
-
-    assert @calculator.resolvable?(1, 'cup', entry)
-    assert @calculator.resolvable?(1, 'g', entry)
-  end
-
-  def test_resolvable_bare_count_with_unitless
-    entry = @nutrition_data['Eggs']
-
-    assert @calculator.resolvable?(1, nil, entry)
-  end
-
-  def test_not_resolvable_with_unknown_unit
-    entry = @nutrition_data['Flour (all-purpose)']
-
-    refute @calculator.resolvable?(1, 'bushel', entry)
-  end
-
-  def test_resolvable_with_density
-    entry = @nutrition_data['Olive oil']
-    # Olive oil has no 'cup' portion but has density info → resolvable via density
-    assert @calculator.resolvable?(1, 'cup', entry)
-  end
-
   # --- Case insensitive unit lookup ---
 
   def test_case_insensitive_unit_lookup
@@ -613,7 +586,7 @@ class NutritionCalculatorTest < Minitest::Test
     assert_empty result.partial_ingredients
   end
 
-  # --- Bare count without ~unitless (#2 fix) ---
+  # --- Bare count without ~unitless ---
 
   def test_bare_count_without_unitless_reported_as_partial
     recipe = make_recipe(<<~MD)
@@ -630,12 +603,6 @@ class NutritionCalculatorTest < Minitest::Test
     result = @calculator.calculate(recipe, @recipe_map)
 
     assert_includes result.partial_ingredients, 'Flour (all-purpose)'
-  end
-
-  def test_bare_count_not_resolvable_without_unitless
-    entry = @nutrition_data['Flour (all-purpose)']
-
-    refute @calculator.resolvable?(1, nil, entry)
   end
 
   # --- New nutrients (#9) ---

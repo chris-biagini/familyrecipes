@@ -152,7 +152,7 @@ module FamilyRecipes
     def check_amounts_resolvable(name, amounts, entry, unresolvable, recipe)
       amounts.each do |quantity|
         next if quantity.value.nil?
-        next if @nutrition_calculator.resolvable?(quantity.value, quantity.unit, entry)
+        next if UnitResolver.new(entry).resolvable?(quantity.value, quantity.unit)
 
         info = unresolvable[name]
         info[:units] << (quantity.unit || '(bare count)')
