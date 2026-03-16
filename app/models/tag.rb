@@ -7,7 +7,8 @@
 #
 # Collaborators:
 # - RecipeTag: join model linking tags to recipes
-# - RecipeWriteService: creates tags on recipe save, calls cleanup_orphans
+# - RecipeWriteService: creates tags on recipe save
+# - Kitchen.run_finalization: cleans up orphans after writes
 # - TagWriteService: bulk rename/delete from management dialog
 # - SearchDataHelper: includes tags in search JSON for pill recognition
 class Tag < ApplicationRecord

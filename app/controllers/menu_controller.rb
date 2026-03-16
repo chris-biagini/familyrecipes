@@ -4,7 +4,7 @@
 # bites) with checkboxes. Mutations delegate to write services and return
 # 204 No Content; broadcasts happen inside the services for cross-device sync.
 #
-# - MealPlanWriteService: select/deselect, select-all, clear, reconcile
+# - MealPlanWriteService: select/deselect, select-all, clear
 # - QuickBitesWriteService: quick bites content updates
 # - MealPlanActions: rescue_from for StaleObjectError
 class MenuController < ApplicationController
