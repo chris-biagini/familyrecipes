@@ -1,4 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
+import { buildButton, buildInput, buildFieldGroup } from "../utilities/dom_builders"
+import { toggleAccordionItem, expandAccordionItem, collapseAllAccordionItems, buildToggleButton } from "../utilities/accordion"
 
 /**
  * Form-based Quick Bites editor: structured fields for categories containing
@@ -23,7 +25,7 @@ export default class extends Controller {
       items: (cat.items || []).map(item => ({ ...item }))
     }))
     this.rebuildCategories()
-    if (this.categories.length > 0) this.expandCategory(0)
+    if (this.categories.length > 0) expandAccordionItem(this.categoriesContainerTarget, 0)
   }
 
   toStructure() {
@@ -37,7 +39,7 @@ export default class extends Controller {
   addCategory() {
     this.categories.push({ name: "", items: [] })
     this.appendCategoryCard(this.categories.length - 1, this.categories.at(-1))
-    this.expandCategory(this.categories.length - 1)
+    expandAccordionItem(this.categoriesContainerTarget, this.categories.length - 1)
   }
 
   // --- Category Management ---
@@ -54,7 +56,7 @@ export default class extends Controller {
     const [moved] = this.categories.splice(index, 1)
     this.categories.splice(target, 0, moved)
     this.rebuildCategories()
-    this.expandCategory(target)
+    expandAccordionItem(this.categoriesContainerTarget, target)
   }
 
   rebuildCategories() {
@@ -64,33 +66,6 @@ export default class extends Controller {
 
   appendCategoryCard(index, catData) {
     this.categoriesContainerTarget.appendChild(this.buildCategoryCard(index, catData))
-  }
-
-  toggleCategory(index) {
-    const card = this.categoriesContainerTarget.children[index]
-    if (!card) return
-    const body = card.querySelector(".graphical-step-body")
-    const icon = card.querySelector(".graphical-step-toggle-icon")
-    if (!body) return
-
-    const isHidden = body.hidden
-    body.hidden = !isHidden
-    if (icon) icon.textContent = isHidden ? "\u25BC" : "\u25B6"
-  }
-
-  expandCategory(index) {
-    this.collapseAllCategories()
-    this.toggleCategory(index)
-  }
-
-  collapseAllCategories() {
-    const cards = this.categoriesContainerTarget.children
-    for (let i = 0; i < cards.length; i++) {
-      const body = cards[i].querySelector(".graphical-step-body")
-      const icon = cards[i].querySelector(".graphical-step-toggle-icon")
-      if (body) body.hidden = true
-      if (icon) icon.textContent = "\u25B6"
-    }
   }
 
   // --- Item Management ---
@@ -174,26 +149,14 @@ export default class extends Controller {
     header.className = "graphical-step-header"
     header.addEventListener("click", (e) => {
       if (e.target.closest(".graphical-step-actions") || e.target.closest(".graphical-step-toggle")) return
-      this.toggleCategory(index)
+      toggleAccordionItem(this.categoriesContainerTarget, index)
     })
 
-    header.appendChild(this.buildToggleButton(index))
+    header.appendChild(buildToggleButton(() => toggleAccordionItem(this.categoriesContainerTarget, index)))
     header.appendChild(this.buildCategoryTitle(index, catData))
     header.appendChild(this.buildItemSummary(catData))
     header.appendChild(this.buildCategoryActions(index))
     return header
-  }
-
-  buildToggleButton(index) {
-    const btn = document.createElement("button")
-    btn.type = "button"
-    btn.className = "graphical-step-toggle"
-    const icon = document.createElement("span")
-    icon.className = "graphical-step-toggle-icon"
-    icon.textContent = "\u25B6"
-    btn.appendChild(icon)
-    btn.addEventListener("click", () => this.toggleCategory(index))
-    return btn
   }
 
   buildCategoryTitle(index, catData) {
@@ -215,9 +178,9 @@ export default class extends Controller {
     const actions = document.createElement("div")
     actions.className = "graphical-step-actions"
 
-    actions.appendChild(this.buildButton("\u2191", () => this.moveCategory(index, -1), "graphical-btn--icon"))
-    actions.appendChild(this.buildButton("\u2193", () => this.moveCategory(index, 1), "graphical-btn--icon"))
-    actions.appendChild(this.buildButton("\u00D7", () => this.removeCategory(index), "graphical-btn--icon graphical-btn--danger"))
+    actions.appendChild(buildButton("\u2191", () => this.moveCategory(index, -1), "graphical-btn--icon"))
+    actions.appendChild(buildButton("\u2193", () => this.moveCategory(index, 1), "graphical-btn--icon"))
+    actions.appendChild(buildButton("\u00D7", () => this.removeCategory(index), "graphical-btn--icon graphical-btn--danger"))
     return actions
   }
 
@@ -226,7 +189,7 @@ export default class extends Controller {
     body.className = "graphical-step-body"
     body.hidden = true
 
-    body.appendChild(this.buildFieldGroup("Category name", "text", catData.name || "", (val) => {
+    body.appendChild(buildFieldGroup("Category name", "text", catData.name || "", (val) => {
       this.categories[index].name = val
       this.updateCategoryTitleDisplay(index)
     }))
@@ -255,7 +218,7 @@ export default class extends Controller {
     label.textContent = "Items"
     headerRow.appendChild(label)
 
-    headerRow.appendChild(this.buildButton("+ Add", () => this.addItem(catIndex), "graphical-btn--small"))
+    headerRow.appendChild(buildButton("+ Add", () => this.addItem(catIndex), "graphical-btn--small"))
     section.appendChild(headerRow)
 
     const rowsContainer = document.createElement("div")
@@ -273,20 +236,20 @@ export default class extends Controller {
     const row = document.createElement("div")
     row.className = "graphical-ingredient-row"
 
-    row.appendChild(this.buildInput("Item name", item.name || "", (val) => {
+    row.appendChild(buildInput("Item name", item.name || "", (val) => {
       this.categories[catIndex].items[itemIndex].name = val
     }, "graphical-input--name"))
 
     const ingredientsText = this.ingredientsDisplayText(item)
-    row.appendChild(this.buildInput("Ingredients (comma-separated)", ingredientsText, (val) => {
+    row.appendChild(buildInput("Ingredients (comma-separated)", ingredientsText, (val) => {
       this.categories[catIndex].items[itemIndex].ingredientsText = val
     }, "graphical-input--prep"))
 
     const actions = document.createElement("div")
     actions.className = "graphical-ingredient-actions"
-    actions.appendChild(this.buildButton("\u2191", () => this.moveItem(catIndex, itemIndex, -1), "graphical-btn--icon"))
-    actions.appendChild(this.buildButton("\u2193", () => this.moveItem(catIndex, itemIndex, 1), "graphical-btn--icon"))
-    actions.appendChild(this.buildButton("\u00D7", () => this.removeItem(catIndex, itemIndex), "graphical-btn--icon graphical-btn--danger"))
+    actions.appendChild(buildButton("\u2191", () => this.moveItem(catIndex, itemIndex, -1), "graphical-btn--icon"))
+    actions.appendChild(buildButton("\u2193", () => this.moveItem(catIndex, itemIndex, 1), "graphical-btn--icon"))
+    actions.appendChild(buildButton("\u00D7", () => this.removeItem(catIndex, itemIndex), "graphical-btn--icon graphical-btn--danger"))
     row.appendChild(actions)
 
     return row
@@ -297,43 +260,5 @@ export default class extends Controller {
     if (!item.ingredients || item.ingredients.length === 0) return ""
     if (item.ingredients.length === 1 && item.ingredients[0] === item.name) return ""
     return item.ingredients.join(", ")
-  }
-
-  // --- DOM Builder Helpers ---
-
-  buildButton(text, onClick, className) {
-    const btn = document.createElement("button")
-    btn.type = "button"
-    if (className) btn.className = className
-    btn.textContent = text
-    btn.addEventListener("click", onClick)
-    return btn
-  }
-
-  buildInput(placeholder, value, onChange, className) {
-    const input = document.createElement("input")
-    input.type = "text"
-    input.placeholder = placeholder
-    input.value = value
-    if (className) input.className = className
-    input.addEventListener("input", () => onChange(input.value))
-    return input
-  }
-
-  buildFieldGroup(labelText, type, value, onChange) {
-    const group = document.createElement("div")
-    group.className = "graphical-field-group"
-
-    const label = document.createElement("label")
-    label.textContent = labelText
-    group.appendChild(label)
-
-    const input = document.createElement("input")
-    input.type = type
-    input.value = value
-    input.addEventListener("input", () => onChange(input.value))
-    group.appendChild(input)
-
-    return group
   }
 }
