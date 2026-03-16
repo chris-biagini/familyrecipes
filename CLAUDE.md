@@ -166,6 +166,9 @@ to editor lifecycle events.
   recipes and Quick Bites. `ViewPlugin` classifiers in
   `app/javascript/codemirror/` apply `.hl-*` CSS decorations.
   `foldService` provides step block and front matter folding for recipes.
+- To add a new plaintext editor type: create a classifier ViewPlugin in
+  `codemirror/`, register it in `codemirror/registry.js`, then use
+  `plaintext-editor` controller with the registry key as the `classifier` value.
 - `ordered_list_editor_controller` is a single parameterized controller for
   both aisle and category list editors.
 - **Dual-mode editors** (recipe + Quick Bites) use a coordinator/child pattern:
