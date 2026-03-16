@@ -163,20 +163,27 @@ export default class extends Controller {
 
   applyScale(factor) {
     this.element
-      .querySelectorAll('li[data-quantity-value]')
+      .querySelectorAll('li[data-quantity-low]')
       .forEach(li => {
-        const orig = parseFloat(li.dataset.quantityValue)
+        const low = parseFloat(li.dataset.quantityLow)
+        const high = li.dataset.quantityHigh ? parseFloat(li.dataset.quantityHigh) : null
         const unitSingular = li.dataset.quantityUnit || ''
         const unitPlural = li.dataset.quantityUnitPlural || unitSingular
-        const scaled = orig * factor
-        const unit = isVulgarSingular(scaled) ? unitSingular : unitPlural
-        const pretty = formatVulgar(scaled, unitSingular)
+        const scaledLow = low * factor
+        const scaledHigh = high ? high * factor : null
+        const displayValue = scaledHigh || scaledLow
+        const unit = isVulgarSingular(displayValue) ? unitSingular : unitPlural
+
+        const pretty = scaledHigh
+          ? `${formatVulgar(scaledLow, unitSingular)}\u2013${formatVulgar(scaledHigh, unitSingular)}`
+          : formatVulgar(scaledLow, unitSingular)
+
         const span = li.querySelector('.quantity')
         if (span) span.textContent = pretty + (unit ? ` ${unit}` : '')
 
         const nameEl = li.querySelector('.ingredient-name')
         if (nameEl && li.dataset.nameSingular) {
-          nameEl.textContent = isVulgarSingular(scaled)
+          nameEl.textContent = isVulgarSingular(displayValue)
             ? li.dataset.nameSingular
             : li.dataset.namePlural
         }
