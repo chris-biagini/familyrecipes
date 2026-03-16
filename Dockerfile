@@ -4,7 +4,9 @@
 FROM ruby:3.2-slim AS builder
 
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential libsqlite3-dev libyaml-dev && \
+    apt-get install --no-install-recommends -y build-essential libsqlite3-dev libyaml-dev curl && \
+    curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
+    apt-get install --no-install-recommends -y nodejs && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -15,6 +17,8 @@ RUN bundle config set --local without "development test" && \
     rm -rf ~/.bundle/cache /usr/local/bundle/cache
 
 COPY . .
+
+RUN npm ci && npm run build
 
 RUN SECRET_KEY_BASE=placeholder bin/rails assets:precompile
 

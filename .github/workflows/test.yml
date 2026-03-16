@@ -28,6 +28,18 @@ jobs:
           ruby-version: '3.2'
           bundler-cache: true
 
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install JS dependencies
+        run: npm ci
+
+      - name: Build JS
+        run: npm run build
+
       - name: Set up database
         run: bin/rails db:create db:migrate
 
