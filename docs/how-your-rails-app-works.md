@@ -375,7 +375,7 @@ At the end of Journey 1, the browser received the recipe page. If you're logged 
 <% if current_kitchen.member?(current_user) %>
 <%= render 'editor_dialog',
            mode: :edit,
-           content: @recipe.markdown_source,
+           content: RecipeSerializer.serialize(@recipe),
            action_url: recipe_path(@recipe.slug),
            recipe: @recipe %>
 <% end %>
@@ -409,7 +409,7 @@ This is a native HTML **`<dialog>`** element — no framework, no custom modal. 
 - **`data-editor-url`** — where to send the save request (`/kitchens/test-kitchen/recipes/focaccia`)
 - **`data-editor-method`** — HTTP method: `PATCH` for editing, `POST` for creating
 - **`data-editor-on-success`** — what to do after a successful save (`redirect` navigates to the recipe)
-- **`data-editor-body-key`** — the JSON key to wrap the textarea content in (`markdown_source`)
+- **`data-editor-body-key`** — the JSON key to wrap the textarea content in (`markdown_source`, the HTTP param name the controller expects)
 
 The JavaScript (`app/assets/javascripts/editor-framework.js`) is generic. On page load, it finds every `.editor-dialog` on the page and wires each one up by reading its data attributes. There's no per-dialog JavaScript — the same code handles the recipe editor, the Quick Bites editor on the groceries page, and the aisle editor. Want a new editor dialog? Add a `<dialog>` with the right data attributes. No JS changes needed.
 
@@ -624,8 +624,7 @@ def update_recipe_attributes(recipe)
     makes_quantity: makes_qty,
     makes_unit_noun: makes_unit,
     serves: parsed[:front_matter][:serves]&.to_i,
-    footer: parsed[:footer],
-    markdown_source: markdown_source
+    footer: parsed[:footer]
   )
 end
 ```
@@ -666,7 +665,7 @@ end
 
 `RecipeNutritionJob` calculates this recipe's nutrition facts from its ingredients. `CascadeNutritionJob` recalculates any recipe that references *this* recipe (via cross-references), since their nutrition totals may have changed. Both run inline (`perform_now`) — no background queue.
 
-After the importer returns, the database is the source of truth. The Markdown has been decomposed into rows across five tables (recipes, steps, ingredients, cross_references, recipe_dependencies), the raw source has been stored in `markdown_source`, and nutrition data has been computed and stored as jsonb. The parser won't run again until the next edit.
+After the importer returns, the database is the source of truth. The Markdown has been decomposed into rows across five tables (recipes, steps, ingredients, cross_references, recipe_dependencies), and nutrition data has been computed and stored as jsonb. The parser won't run again until the next edit. When Markdown is needed — for the editor, export, or the raw endpoint — `RecipeSerializer` regenerates it from the AR records on demand.
 
 ### Stop 5: The Response and Redirect
 
