@@ -367,4 +367,4 @@ migrations into a single `001_create_schema.rb` to keep things clean.
 ran on the push to main. The `REVISION` build arg bakes the version into the
 image (read by `ApplicationHelper#app_version`). Only tag when code is
 known-good — in-between commits on main are not built. The pre-push hook runs
-lint only (~5s); tests run exclusively in CI.
+lint on all files (~5s); tests run exclusively in CI.
