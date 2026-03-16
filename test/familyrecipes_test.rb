@@ -30,11 +30,11 @@ class FamilyRecipesTest < Minitest::Test
 
   def test_parse_quick_bites_content_new_format
     content = <<~TXT
-      Snacks:
+      ## Snacks
       - Peanut Butter on Bread: Peanut butter, Bread
       - Goldfish
 
-      Breakfast:
+      ## Breakfast
       - Cereal with Milk: Cereal, Milk
     TXT
 
@@ -52,7 +52,7 @@ class FamilyRecipesTest < Minitest::Test
 
   def test_parse_quick_bites_warns_on_unrecognized_lines
     content = <<~TXT
-      Snacks:
+      ## Snacks
       - Goldfish
       this line is garbage
       - Dried fruit
@@ -67,7 +67,7 @@ class FamilyRecipesTest < Minitest::Test
 
   def test_parse_quick_bites_ignores_blank_lines
     content = <<~TXT
-      Snacks:
+      ## Snacks
 
       - Goldfish
 
@@ -87,7 +87,7 @@ class FamilyRecipesTest < Minitest::Test
   end
 
   def test_parse_quick_bites_category_with_apostrophe
-    content = "Kids' Lunches:\n- RXBARs\n"
+    content = "## Kids' Lunches\n- RXBARs\n"
     result = FamilyRecipes.parse_quick_bites_content(content)
 
     assert_equal "Quick Bites: Kids' Lunches", result.quick_bites.first.category

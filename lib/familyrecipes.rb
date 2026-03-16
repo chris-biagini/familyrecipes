@@ -59,7 +59,7 @@ module FamilyRecipes
       when /^\s*-\s+(.*)/
         category = [CONFIG[:quick_bites_category], current_subcat].compact.join(': ')
         quick_bites << QuickBite.new(text_source: ::Regexp.last_match(1).strip, category: category)
-      when /^([^-].+):\s*$/
+      when /^##\s+(.+)$/
         current_subcat = ::Regexp.last_match(1).strip
       else
         warnings << "Line #{line_number} not recognized"
