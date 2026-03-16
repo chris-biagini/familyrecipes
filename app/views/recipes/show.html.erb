@@ -1,7 +1,7 @@
 <% content_for(:title) { "#{current_kitchen.name}: #{@recipe.title}" } %>
 
 <% content_for(:body_attrs) do %>
-  data-recipe-id="<%= @recipe.slug %>" data-version-hash="<%= Digest::SHA256.hexdigest(@recipe.markdown_source) %>"
+  data-recipe-id="<%= @recipe.slug %>" data-version-hash="<%= @recipe.updated_at.to_i %>"
 <% end %>
 
 <% if current_member? %>

@@ -45,13 +45,13 @@ class RecipesController < ApplicationController
   end
 
   def show_markdown
-    recipe = current_kitchen.recipes.find_by!(slug: params[:slug])
-    render plain: recipe.markdown_source, content_type: 'text/plain; charset=utf-8'
+    recipe = current_kitchen.recipes.with_full_tree.find_by!(slug: params[:slug])
+    render plain: generate_markdown(recipe), content_type: 'text/plain; charset=utf-8'
   end
 
   def show_html
-    recipe = current_kitchen.recipes.find_by!(slug: params[:slug])
-    body = FamilyRecipes::Recipe::MARKDOWN.render(recipe.markdown_source)
+    recipe = current_kitchen.recipes.with_full_tree.find_by!(slug: params[:slug])
+    body = FamilyRecipes::Recipe::MARKDOWN.render(generate_markdown(recipe))
     render html: minimal_html_document(title: recipe.title, body:), layout: false
   end
 
@@ -83,6 +83,11 @@ class RecipesController < ApplicationController
 
   def render_validation_errors
     render json: { errors: @validation_errors }, status: :unprocessable_content
+  end
+
+  def generate_markdown(recipe)
+    ir = FamilyRecipes::RecipeSerializer.from_record(recipe)
+    FamilyRecipes::RecipeSerializer.serialize(ir)
   end
 
   def minimal_html_document(title:, body:)
