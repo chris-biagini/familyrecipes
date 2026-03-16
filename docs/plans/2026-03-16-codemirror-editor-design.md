@@ -190,14 +190,15 @@ revisit if users miss the detailed example.
 ### CSP compatibility
 
 CodeMirror's `EditorView.theme()` injects `<style>` elements into the document
-head at runtime. The current CSP has `style-src: self` with no nonce, which
-blocks dynamically injected styles.
+head at runtime via `document.createElement("style")`. The current CSP has
+`style-src: self` with no nonce, which blocks dynamically injected styles.
 
-Fix: extend the existing session-based nonce generator (already used for
-`script-src`) to include `style-src`. This is a one-line change in
-`content_security_policy.rb` — add `:style_src` to
-`content_security_policy_nonce_directives`. CodeMirror will then be able to
-inject its theme styles with the page nonce.
+Fix: two-part approach. (1) Extend `content_security_policy_nonce_directives`
+to include `style-src` so Rails emits the nonce in the CSP header and in a
+`<meta name="csp-nonce">` tag. (2) Use CodeMirror's built-in
+`EditorView.cspNonce.of(nonce)` facet — this attaches the nonce attribute to
+all `<style>` tags CodeMirror creates. The editor setup reads the nonce from
+the meta tag at initialization time.
 
 ### Theme strategy
 
