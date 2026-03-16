@@ -36,7 +36,7 @@ class ExportService
   private
 
   def add_recipes(zos)
-    @kitchen.recipes.includes(:category, :tags, steps: [:ingredients, :cross_references]).find_each do |recipe|
+    @kitchen.recipes.includes(:category, :tags, steps: %i[ingredients cross_references]).find_each do |recipe|
       zos.put_next_entry("#{recipe.category.name}/#{recipe.title}.md")
       ir = FamilyRecipes::RecipeSerializer.from_record(recipe)
       zos.write(FamilyRecipes::RecipeSerializer.serialize(ir))

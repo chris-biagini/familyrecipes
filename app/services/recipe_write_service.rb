@@ -16,11 +16,11 @@
 class RecipeWriteService
   Result = Data.define(:recipe, :updated_references)
 
-  def self.create(markdown: nil, structure: nil, kitchen:, category_name: nil, tags: nil)
+  def self.create(kitchen:, markdown: nil, structure: nil, category_name: nil, tags: nil)
     new(kitchen:).create(markdown:, structure:, category_name:, tags:)
   end
 
-  def self.update(slug:, markdown: nil, structure: nil, kitchen:, category_name: nil, tags: nil)
+  def self.update(slug:, kitchen:, markdown: nil, structure: nil, category_name: nil, tags: nil) # rubocop:disable Metrics/ParameterLists
     new(kitchen:).update(slug:, markdown:, structure:, category_name:, tags:)
   end
 

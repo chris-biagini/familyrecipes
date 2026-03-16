@@ -26,8 +26,8 @@ class CrossReferenceUpdater
   private
 
   def update_referencing_recipes
-    referencing = @recipe.referencing_recipes.includes(:category, :tags,
-                                                      steps: [:ingredients, :cross_references])
+    referencing = @recipe.referencing_recipes
+                         .includes(:category, :tags, steps: %i[ingredients cross_references])
     return [] if referencing.empty?
 
     referencing.map do |ref_recipe|
