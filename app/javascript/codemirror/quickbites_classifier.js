@@ -10,7 +10,7 @@
 import { ViewPlugin, Decoration } from "@codemirror/view"
 import { RangeSetBuilder } from "@codemirror/state"
 
-const CATEGORY_RE = /^[^-].+:\s*$/
+const CATEGORY_RE = /^##\s+.+$/
 const ITEM_RE = /^\s*-\s+/
 
 // Returns an array of {from, to, class} span descriptors for a single line of

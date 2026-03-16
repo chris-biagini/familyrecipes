@@ -4,14 +4,14 @@ import { classifyQuickBitesLine } from "../../app/javascript/codemirror/quickbit
 
 // Category header
 test("classifies category header", () => {
-  const spans = classifyQuickBitesLine("Snacks:")
-  assert.deepEqual(spans, [{ from: 0, to: 7, class: "hl-category" }])
+  const spans = classifyQuickBitesLine("## Snacks")
+  assert.deepEqual(spans, [{ from: 0, to: 9, class: "hl-category" }])
 })
 
 // Category header with trailing whitespace
 test("classifies category header with trailing space", () => {
-  const spans = classifyQuickBitesLine("Breakfast:  ")
-  assert.deepEqual(spans, [{ from: 0, to: 12, class: "hl-category" }])
+  const spans = classifyQuickBitesLine("## Breakfast  ")
+  assert.deepEqual(spans, [{ from: 0, to: 14, class: "hl-category" }])
 })
 
 // Item without ingredients
