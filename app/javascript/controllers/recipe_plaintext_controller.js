@@ -1,152 +1,86 @@
-import { Controller } from "@hotwired/stimulus"
-import HighlightOverlay from "../utilities/highlight_overlay"
-
 /**
- * Plaintext recipe editor: textarea with syntax-highlighting overlay.
- * Handles only the textarea view in plaintext mode. The parent
- * recipe_editor_controller (coordinator) manages mode toggling and routes
- * lifecycle events to the active child.
+ * Plaintext recipe editor backed by CodeMirror 6. Replaces the former
+ * textarea + HighlightOverlay with a proper editor featuring syntax
+ * decorations, step/front-matter folding, and an auto-dash keymap for
+ * ingredient entry.
  *
- * - recipe_editor_controller: coordinator, routes lifecycle events
- * - HighlightOverlay: overlay positioning, auto-dash, scroll sync
- * - style.css (.hl-*): highlight colors
+ * - recipe_editor_controller: coordinator, calls .content and .isModified()
+ * - editor_setup.js: shared CodeMirror factory
+ * - recipe_classifier.js: syntax decoration ViewPlugin
+ * - recipe_fold.js: step and front-matter fold service
  */
-export default class extends Controller {
-  static targets = ["textarea"]
+import { Controller } from "@hotwired/stimulus"
+import { keymap } from "@codemirror/view"
+import { createEditor } from "../codemirror/editor_setup"
+import { recipeClassifier } from "../codemirror/recipe_classifier"
+import { recipeFoldService } from "../codemirror/recipe_fold"
 
-  textareaTargetConnected(element) {
-    this.hlOverlay?.detach()
-    this.setPlaceholder(element)
-    this.hlOverlay = new HighlightOverlay(element, (text) => this.buildFragment(text))
-    this.hlOverlay.attach()
+const autoDashKeymap = keymap.of([{
+  key: "Enter",
+  run(view) {
+    const { state } = view
+    const { head } = state.selection.main
+    const line = state.doc.lineAt(head)
+
+    if (head !== line.to) return false
+
+    if (line.text === "- ") {
+      view.dispatch({ changes: { from: line.from, to: line.to, insert: "" } })
+      return true
+    }
+
+    if (/^- .+$/.test(line.text)) {
+      view.dispatch({
+        changes: { from: head, insert: "\n- " },
+        selection: { anchor: head + 3 }
+      })
+      return true
+    }
+
+    return false
+  }
+}])
+
+export default class extends Controller {
+  static targets = ["mount"]
+
+  mountTargetConnected(element) {
+    this.editorView?.destroy()
+    element.classList.remove("cm-loading")
+
+    this.editorView = createEditor({
+      parent: element,
+      doc: "",
+      classifier: recipeClassifier,
+      foldService: recipeFoldService,
+      placeholder: "Paste or type a recipe\u2026",
+      extraExtensions: [autoDashKeymap]
+    })
   }
 
-  textareaTargetDisconnected() {
-    this.hlOverlay?.detach()
-    this.hlOverlay = null
+  mountTargetDisconnected() {
+    this.editorView?.destroy()
+    this.editorView = null
   }
 
   disconnect() {
-    this.hlOverlay?.detach()
-    this.hlOverlay = null
+    this.editorView?.destroy()
+    this.editorView = null
   }
 
   get content() {
-    return this.textareaTarget.value
+    return this.editorView?.state.doc.toString() || ""
   }
 
   set content(markdown) {
-    this.textareaTarget.value = markdown
-    this.ensureOverlay()
-    this.hlOverlay.highlight()
-  }
+    if (!this.editorView) return
 
-  ensureOverlay() {
-    if (this.hlOverlay) return
-
-    this.hlOverlay = new HighlightOverlay(this.textareaTarget, (text) => this.buildFragment(text))
-    this.hlOverlay.attach()
+    this.editorView.dispatch({
+      changes: { from: 0, to: this.editorView.state.doc.length, insert: markdown }
+    })
   }
 
   isModified(originalContent) {
-    return this.textareaTarget.value !== originalContent
-  }
-
-  buildFragment(text) {
-    const fragment = document.createDocumentFragment()
-    this.inFooter = false
-
-    text.split("\n").forEach((line, i) => {
-      if (i > 0) fragment.appendChild(document.createTextNode("\n"))
-      this.classifyLine(line, fragment)
-    })
-
-    return fragment
-  }
-
-  classifyLine(line, fragment) {
-    if (/^# .+$/.test(line)) {
-      this.appendSpan(fragment, line, "hl-title")
-    } else if (/^## .+$/.test(line)) {
-      this.appendSpan(fragment, line, "hl-step-header")
-    } else if (/^- .+$/.test(line)) {
-      this.highlightIngredient(line, fragment)
-    } else if (/^\s*>\s*@\[.+$/.test(line)) {
-      this.appendSpan(fragment, line, "hl-cross-ref")
-    } else if (/^---\s*$/.test(line)) {
-      this.inFooter = true
-      this.appendSpan(fragment, line, "hl-divider")
-    } else if (/^(Makes|Serves|Category|Tags):\s+.+$/.test(line)) {
-      this.appendSpan(fragment, line, "hl-front-matter")
-    } else if (this.inFooter) {
-      this.appendSpan(fragment, line, "hl-front-matter")
-    } else {
-      this.highlightProseLinks(line, fragment)
-    }
-  }
-
-  highlightIngredient(line, fragment) {
-    const colonIdx = line.indexOf(":", 2)
-    let left = colonIdx !== -1 ? line.slice(0, colonIdx) : line
-    const prep = colonIdx !== -1 ? line.slice(colonIdx) : null
-
-    const commaIdx = left.indexOf(",", 2)
-    const name = commaIdx !== -1 ? left.slice(0, commaIdx) : left
-    const qty = commaIdx !== -1 ? left.slice(commaIdx) : null
-
-    this.appendSpan(fragment, name, "hl-ingredient-name")
-    if (qty) this.appendSpan(fragment, qty, "hl-ingredient-qty")
-    if (prep) this.appendSpan(fragment, prep, "hl-ingredient-prep")
-  }
-
-  highlightProseLinks(line, fragment) {
-    const pattern = /@\[(.+?)\]/g
-    let lastIndex = 0
-    let match
-
-    while ((match = pattern.exec(line)) !== null) {
-      if (match.index > lastIndex) {
-        fragment.appendChild(document.createTextNode(line.slice(lastIndex, match.index)))
-      }
-      this.appendSpan(fragment, match[0], "hl-recipe-link")
-      lastIndex = pattern.lastIndex
-    }
-
-    if (lastIndex < line.length) {
-      fragment.appendChild(document.createTextNode(line.slice(lastIndex)))
-    } else if (lastIndex === 0) {
-      fragment.appendChild(document.createTextNode(line))
-    }
-  }
-
-  appendSpan(fragment, text, className) {
-    const span = document.createElement("span")
-    span.classList.add(className)
-    span.textContent = text
-    fragment.appendChild(span)
-  }
-
-  setPlaceholder(textarea) {
-    if (!textarea.getAttribute("data-placeholder-set")) {
-      textarea.placeholder = [
-        "# Recipe Title",
-        "",
-        "Serves: 4",
-        "",
-        "## First step.",
-        "",
-        "- Ingredient one, 1 cup: diced",
-        "- Ingredient two",
-        "",
-        "Instructions for this step.",
-        "",
-        "## Second step.",
-        "",
-        "- More ingredients",
-        "",
-        "More instructions."
-      ].join("\n")
-      textarea.setAttribute("data-placeholder-set", "true")
-    }
+    return this.content !== originalContent
   }
 }

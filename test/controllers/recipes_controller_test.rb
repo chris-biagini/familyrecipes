@@ -74,7 +74,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
 
     assert_select '#recipe-editor[data-editor-load-url-value]'
     assert_select '#recipe-editor[data-editor-load-key-value="markdown_source"]'
-    assert_select '.editor-textarea'
+    assert_select '.cm-mount'
   end
 
   test 'renders scale bar with toggle and presets' do
@@ -529,11 +529,11 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     assert_select 'article.embedded-recipe[data-base-multiplier="2.0"]'
   end
 
-  test 'recipe editor includes textarea without side panel' do
+  test 'recipe editor includes CodeMirror mount without side panel' do
     log_in
     get recipe_path('focaccia', kitchen_slug: kitchen_slug)
 
-    assert_select '#recipe-editor textarea.editor-textarea'
+    assert_select '#recipe-editor .cm-mount'
     assert_select '#recipe-editor select.category-select', count: 0
   end
 

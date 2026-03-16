@@ -1831,6 +1831,34 @@ html:has(dialog[open]) {
   color: var(--text-light);
 }
 
+/* CodeMirror mount container */
+
+.cm-mount {
+  flex: 1;
+  display: flex;
+  min-height: 60vh;
+}
+
+.cm-mount .cm-editor {
+  flex: 1;
+}
+
+.cm-mount.cm-loading {
+  align-items: center;
+  justify-content: center;
+}
+
+.cm-mount.cm-loading::before {
+  content: "Loading\2026";
+  color: var(--text-soft);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+}
+
+.cm-mount.cm-loading .cm-editor {
+  display: none;
+}
+
 /* Syntax-highlighting overlay (shared) */
 
 .hl-wrap {
