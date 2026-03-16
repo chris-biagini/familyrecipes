@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 4) do
+ActiveRecord::Schema[8.1].define(version: 5) do
   create_table "categories", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "kitchen_id", null: false
@@ -137,7 +137,6 @@ ActiveRecord::Schema[8.1].define(version: 4) do
     t.integer "kitchen_id", null: false
     t.decimal "makes_quantity"
     t.string "makes_unit_noun"
-    t.text "markdown_source", null: false
     t.json "nutrition_data"
     t.integer "serves"
     t.string "slug", null: false
