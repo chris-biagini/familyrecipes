@@ -2,16 +2,15 @@
 
 # Orchestrates quick bites content updates. Dual entry: `update` accepts raw
 # plaintext; `update_from_structure` accepts an IR hash and serializes via
-# QuickBitesSerializer. Owns persistence to Kitchen#quick_bites_content,
-# parse validation (returning warnings), meal plan reconciliation, and
-# broadcast. Parallels RecipeWriteService — controllers call class methods,
-# never inline post-save logic.
+# QuickBitesSerializer. Owns persistence to Kitchen#quick_bites_content and
+# parse validation (returning warnings). Delegates post-write finalization
+# to Kitchen.finalize_writes. Parallels RecipeWriteService — controllers
+# call class methods, never inline post-save logic.
 #
 # - QuickBitesSerializer: IR hash → plaintext (update_from_structure path)
 # - Kitchen#quick_bites_content: raw plaintext storage
 # - FamilyRecipes.parse_quick_bites_content: parser returning warnings
-# - MealPlan#reconcile!: prunes stale selections after content changes
-# - Kitchen#broadcast_update: page-refresh morph for all connected clients
+# - Kitchen.finalize_writes: centralized post-write pipeline
 class QuickBitesWriteService
   Result = Data.define(:warnings)
 
@@ -47,9 +46,6 @@ class QuickBitesWriteService
   end
 
   def finalize
-    return if Kitchen.batching?
-
-    MealPlan.reconcile_kitchen!(kitchen)
-    kitchen.broadcast_update
+    Kitchen.finalize_writes(kitchen)
   end
 end

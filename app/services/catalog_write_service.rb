@@ -2,18 +2,16 @@
 
 # Orchestrates IngredientCatalog create/update/destroy with post-write side
 # effects: syncing new aisles to the kitchen's aisle_order, recalculating
-# nutrition for affected recipes, reconciling stale meal plan state, and
-# broadcasting a page-refresh morph. Mirrors RecipeWriteService — controllers
-# call class methods, never inline post-save logic. Also provides bulk_import
-# for ImportService: batch save with single-pass aisle sync and nutrition
-# recalc, no per-entry broadcast or reconciliation.
+# nutrition for affected recipes, and delegating post-write finalization to
+# Kitchen.finalize_writes. Mirrors RecipeWriteService — controllers call class
+# methods, never inline post-save logic. Also provides bulk_import for
+# ImportService: batch save with single-pass aisle sync and nutrition recalc.
 #
 # - IngredientCatalog: overlay model for ingredient metadata
 # - IngredientResolver: variant-aware name resolution for affected-recipe queries
 # - RecipeNutritionJob: recalculates recipe nutrition_data
 # - AisleWriteService: aisle sync after catalog saves
-# - MealPlan#reconcile!: prunes stale selections and checked-off items
-# - Kitchen#broadcast_update: page-refresh morph for all connected clients
+# - Kitchen.finalize_writes: centralized post-write pipeline
 class CatalogWriteService
   Result = Data.define(:entry, :persisted)
   BulkResult = Data.define(:persisted_count, :errors)
@@ -89,14 +87,7 @@ class CatalogWriteService
   end
 
   def finalize
-    return if Kitchen.batching?
-
-    reconcile_meal_plan
-    kitchen.broadcast_update
-  end
-
-  def reconcile_meal_plan
-    MealPlan.reconcile_kitchen!(kitchen)
+    Kitchen.finalize_writes(kitchen)
   end
 
   def recalculate_recipes_for(names:)

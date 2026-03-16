@@ -3,16 +3,14 @@
 # Orchestrates recipe create/update/destroy. Accepts either raw Markdown
 # (text editor, file import) or IR hashes (graphical editor) — both converge
 # on MarkdownImporter. `_from_structure` methods are thin normalizers that
-# extract front matter and delegate. Owns the full post-write pipeline:
-# import, tag sync, rename cascades, orphan cleanup (categories + tags),
-# and meal plan reconciliation.
+# extract front matter and delegate. Delegates post-write finalization
+# (orphan cleanup, reconciliation, broadcast) to Kitchen.finalize_writes.
 #
 # - MarkdownImporter: parses markdown / IR hashes into AR records
 # - Tag: created inline during sync; orphans cleaned in finalize
-# - Kitchen#broadcast_update: page-refresh morph for all connected clients
+# - Kitchen.finalize_writes: centralized post-write pipeline
 # - RecipeBroadcaster: targeted delete notifications and rename redirects
 # - CrossReferenceUpdater: renames cross-references on title change
-# - MealPlan#reconcile!: prunes stale selections and checked-off items
 class RecipeWriteService
   Result = Data.define(:recipe, :updated_references)
 
@@ -139,12 +137,7 @@ class RecipeWriteService
   end
 
   def finalize
-    Category.cleanup_orphans(kitchen)
-    Tag.cleanup_orphans(kitchen)
-    return if Kitchen.batching?
-
-    prune_stale_meal_plan_items
-    kitchen.broadcast_update
+    Kitchen.finalize_writes(kitchen)
   end
 
   def sync_tags(recipe, tags)
@@ -152,9 +145,5 @@ class RecipeWriteService
 
     desired = tags.map { |n| kitchen.tags.find_or_create_by!(name: n.downcase) }
     recipe.tags = desired
-  end
-
-  def prune_stale_meal_plan_items
-    MealPlan.reconcile_kitchen!(kitchen)
   end
 end
