@@ -35,26 +35,31 @@ class UnitResolverTest < Minitest::Test
 
   def test_grams_passthrough
     resolver = FamilyRecipes::UnitResolver.new(@flour)
+
     assert_in_delta 500.0, resolver.to_grams(500, 'g')
   end
 
   def test_oz_conversion
     resolver = FamilyRecipes::UnitResolver.new(@butter)
+
     assert_in_delta 113.398, resolver.to_grams(4, 'oz'), 0.01
   end
 
   def test_lb_conversion
     resolver = FamilyRecipes::UnitResolver.new(@flour)
+
     assert_in_delta 453.592, resolver.to_grams(1, 'lb'), 0.01
   end
 
   def test_kg_conversion
     resolver = FamilyRecipes::UnitResolver.new(@flour)
+
     assert_in_delta 1000.0, resolver.to_grams(1, 'kg')
   end
 
   def test_weight_unit_case_insensitive
     resolver = FamilyRecipes::UnitResolver.new(@flour)
+
     assert_in_delta 500.0, resolver.to_grams(500, 'G')
   end
 
@@ -62,11 +67,13 @@ class UnitResolverTest < Minitest::Test
 
   def test_bare_count_with_unitless_portion
     resolver = FamilyRecipes::UnitResolver.new(@eggs)
+
     assert_in_delta 150.0, resolver.to_grams(3, nil)
   end
 
   def test_bare_count_without_unitless_portion
     resolver = FamilyRecipes::UnitResolver.new(@flour)
+
     assert_nil resolver.to_grams(4, nil)
   end
 
@@ -74,11 +81,13 @@ class UnitResolverTest < Minitest::Test
 
   def test_named_portion
     resolver = FamilyRecipes::UnitResolver.new(@butter)
+
     assert_in_delta 113.0, resolver.to_grams(1, 'stick')
   end
 
   def test_named_portion_case_insensitive
     resolver = FamilyRecipes::UnitResolver.new(@butter)
+
     assert_in_delta 113.0, resolver.to_grams(1, 'Stick')
   end
 
@@ -87,12 +96,14 @@ class UnitResolverTest < Minitest::Test
   def test_volume_with_density
     resolver = FamilyRecipes::UnitResolver.new(@flour)
     expected = 236.588 * (125.0 / 236.588)
+
     assert_in_delta expected, resolver.to_grams(1, 'cup'), 0.1
   end
 
   def test_volume_tbsp_with_density
     resolver = FamilyRecipes::UnitResolver.new(@olive_oil)
     expected = 2 * 14.787 * (14.0 / 14.787)
+
     assert_in_delta expected, resolver.to_grams(2, 'tbsp'), 0.1
   end
 
@@ -101,6 +112,7 @@ class UnitResolverTest < Minitest::Test
       ingredient_name: 'NoDensity', basis_grams: 100, calories: 50
     )
     resolver = FamilyRecipes::UnitResolver.new(entry)
+
     assert_nil resolver.to_grams(1, 'cup')
   end
 
@@ -108,6 +120,7 @@ class UnitResolverTest < Minitest::Test
 
   def test_unknown_unit_returns_nil
     resolver = FamilyRecipes::UnitResolver.new(@flour)
+
     assert_nil resolver.to_grams(2, 'bushels')
   end
 
@@ -115,27 +128,32 @@ class UnitResolverTest < Minitest::Test
 
   def test_resolvable_with_weight_unit
     resolver = FamilyRecipes::UnitResolver.new(@flour)
+
     assert resolver.resolvable?(1, 'g')
     assert resolver.resolvable?(1, 'cup')
   end
 
   def test_resolvable_bare_count_with_unitless
     resolver = FamilyRecipes::UnitResolver.new(@eggs)
+
     assert resolver.resolvable?(1, nil)
   end
 
   def test_not_resolvable_with_unknown_unit
     resolver = FamilyRecipes::UnitResolver.new(@flour)
+
     refute resolver.resolvable?(1, 'bushel')
   end
 
   def test_resolvable_with_density
     resolver = FamilyRecipes::UnitResolver.new(@olive_oil)
+
     assert resolver.resolvable?(1, 'cup')
   end
 
   def test_bare_count_not_resolvable_without_unitless
     resolver = FamilyRecipes::UnitResolver.new(@flour)
+
     refute resolver.resolvable?(1, nil)
   end
 
@@ -143,11 +161,13 @@ class UnitResolverTest < Minitest::Test
 
   def test_density_returns_grams_per_ml
     resolver = FamilyRecipes::UnitResolver.new(@flour)
+
     assert_in_delta 125.0 / 236.588, resolver.density, 0.001
   end
 
   def test_density_nil_without_density_fields
     resolver = FamilyRecipes::UnitResolver.new(@eggs)
+
     assert_nil resolver.density
   end
 
@@ -157,6 +177,7 @@ class UnitResolverTest < Minitest::Test
       density_grams: 100, density_volume: 0, density_unit: 'cup'
     )
     resolver = FamilyRecipes::UnitResolver.new(entry)
+
     assert_nil resolver.density
   end
 
@@ -164,11 +185,13 @@ class UnitResolverTest < Minitest::Test
 
   def test_nil_entry_weight_still_resolves
     resolver = FamilyRecipes::UnitResolver.new(nil)
+
     assert_in_delta 500.0, resolver.to_grams(500, 'g')
   end
 
   def test_nil_entry_non_weight_returns_nil
     resolver = FamilyRecipes::UnitResolver.new(nil)
+
     assert_nil resolver.to_grams(1, 'cup')
     assert_nil resolver.to_grams(1, nil)
     assert_nil resolver.to_grams(1, 'stick')
@@ -176,6 +199,7 @@ class UnitResolverTest < Minitest::Test
 
   def test_nil_entry_resolvable_only_for_weight
     resolver = FamilyRecipes::UnitResolver.new(nil)
+
     assert resolver.resolvable?(1, 'g')
     refute resolver.resolvable?(1, 'cup')
     refute resolver.resolvable?(1, nil)
@@ -183,6 +207,7 @@ class UnitResolverTest < Minitest::Test
 
   def test_nil_entry_density_is_nil
     resolver = FamilyRecipes::UnitResolver.new(nil)
+
     assert_nil resolver.density
   end
 

@@ -105,3 +105,4 @@ Rails/RefuteMethods:
     - test/usda_client_test.rb
     - test/usda_portion_classifier_test.rb
     - test/recipe_serializer_test.rb
+    - test/unit_resolver_test.rb
