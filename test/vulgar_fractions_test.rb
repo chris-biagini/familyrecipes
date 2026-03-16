@@ -156,4 +156,54 @@ class VulgarFractionsTest < Minitest::Test
   def test_backward_compatible_without_unit
     assert_equal "\u00BD", FamilyRecipes::VulgarFractions.format(0.5)
   end
+
+  # --- to_fraction_string ---
+
+  def test_to_fraction_string_integer
+    assert_equal '2', FamilyRecipes::VulgarFractions.to_fraction_string(2.0)
+  end
+
+  def test_to_fraction_string_half
+    assert_equal '1/2', FamilyRecipes::VulgarFractions.to_fraction_string(0.5)
+  end
+
+  def test_to_fraction_string_third
+    assert_equal '1/3', FamilyRecipes::VulgarFractions.to_fraction_string(1.0 / 3)
+  end
+
+  def test_to_fraction_string_two_thirds
+    assert_equal '2/3', FamilyRecipes::VulgarFractions.to_fraction_string(2.0 / 3)
+  end
+
+  def test_to_fraction_string_quarter
+    assert_equal '1/4', FamilyRecipes::VulgarFractions.to_fraction_string(0.25)
+  end
+
+  def test_to_fraction_string_three_quarters
+    assert_equal '3/4', FamilyRecipes::VulgarFractions.to_fraction_string(0.75)
+  end
+
+  def test_to_fraction_string_eighth
+    assert_equal '1/8', FamilyRecipes::VulgarFractions.to_fraction_string(0.125)
+  end
+
+  def test_to_fraction_string_mixed_half
+    assert_equal '1 1/2', FamilyRecipes::VulgarFractions.to_fraction_string(1.5)
+  end
+
+  def test_to_fraction_string_mixed_quarter
+    assert_equal '2 1/4', FamilyRecipes::VulgarFractions.to_fraction_string(2.25)
+  end
+
+  def test_to_fraction_string_mixed_three_quarters
+    assert_equal '1 3/4', FamilyRecipes::VulgarFractions.to_fraction_string(1.75)
+  end
+
+  def test_to_fraction_string_non_matching_decimal
+    assert_equal '1.37', FamilyRecipes::VulgarFractions.to_fraction_string(1.37)
+  end
+
+  def test_to_fraction_string_zero
+    assert_equal '0', FamilyRecipes::VulgarFractions.to_fraction_string(0.0)
+  end
 end
