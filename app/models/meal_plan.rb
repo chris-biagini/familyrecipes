@@ -33,11 +33,6 @@ class MealPlan < ApplicationRecord
     end
   end
 
-  # Controller params arrive as strings; handle both "true"/true
-  def self.truthy?(value)
-    [true, 'true'].include?(value)
-  end
-
   def checked_off_set
     state.fetch('checked_off', []).to_set
   end
@@ -134,11 +129,11 @@ class MealPlan < ApplicationRecord
 
   def apply_select(type:, slug:, selected:, **)
     key = type == 'recipe' ? 'selected_recipes' : 'selected_quick_bites'
-    toggle_array(key, slug, self.class.truthy?(selected))
+    toggle_array(key, slug, selected)
   end
 
   def apply_check(item:, checked:, **)
-    toggle_array('checked_off', item, self.class.truthy?(checked))
+    toggle_array('checked_off', item, checked)
   end
 
   def apply_custom_items(item:, action:, **)

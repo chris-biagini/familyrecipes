@@ -14,10 +14,10 @@ class MealPlanWriteServiceTest < ActiveSupport::TestCase
 
   # --- apply_action ---
 
-  test 'apply_action persists the mutation' do
+  test 'apply_action persists the mutation and returns success' do
     create_focaccia_recipe
 
-    MealPlanWriteService.apply_action(
+    result = MealPlanWriteService.apply_action(
       kitchen: @kitchen, action_type: 'select',
       type: 'recipe', slug: 'focaccia', selected: true
     )
@@ -25,6 +25,8 @@ class MealPlanWriteServiceTest < ActiveSupport::TestCase
     @plan.reload
 
     assert_includes @plan.state['selected_recipes'], 'focaccia'
+    assert_predicate result, :success
+    assert_empty result.errors
   end
 
   test 'apply_action reconciles stale selections' do
@@ -84,18 +86,40 @@ class MealPlanWriteServiceTest < ActiveSupport::TestCase
     assert_equal 0, broadcast_count
   end
 
+  test 'apply_action validates custom item length' do
+    result = MealPlanWriteService.apply_action(
+      kitchen: @kitchen, action_type: 'custom_items',
+      item: 'a' * 101, action: 'add'
+    )
+
+    assert_not_predicate result, :success
+    assert_includes result.errors.first, 'too long'
+    assert_empty MealPlan.for_kitchen(@kitchen).custom_items_list
+  end
+
+  test 'apply_action accepts custom item at max length' do
+    result = MealPlanWriteService.apply_action(
+      kitchen: @kitchen, action_type: 'custom_items',
+      item: 'a' * 100, action: 'add'
+    )
+
+    assert_predicate result, :success
+    assert_includes MealPlan.for_kitchen(@kitchen).custom_items_list, 'a' * 100
+  end
+
   # --- select_all ---
 
   test 'select_all selects all provided slugs' do
     create_focaccia_recipe
 
-    MealPlanWriteService.select_all(
+    result = MealPlanWriteService.select_all(
       kitchen: @kitchen, recipe_slugs: %w[focaccia], quick_bite_slugs: []
     )
 
     @plan.reload
 
     assert_equal %w[focaccia], @plan.state['selected_recipes']
+    assert_predicate result, :success
   end
 
   test 'select_all reconciles stale checked-off items' do
@@ -126,12 +150,13 @@ class MealPlanWriteServiceTest < ActiveSupport::TestCase
     @plan.apply_action('select', type: 'recipe', slug: 'x', selected: true)
     @plan.apply_action('check', item: 'flour', checked: true)
 
-    MealPlanWriteService.clear(kitchen: @kitchen)
+    result = MealPlanWriteService.clear(kitchen: @kitchen)
 
     @plan.reload
 
     assert_empty @plan.state['selected_recipes']
     assert_empty @plan.state['checked_off']
+    assert_predicate result, :success
   end
 
   test 'clear reconciles stale checked-off items' do

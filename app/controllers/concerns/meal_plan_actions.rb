@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-# Provides StaleObjectError handling for controllers whose write paths pass
-# through MealPlanWriteService. The service uses optimistic-locking retry
-# internally, but if retries are exhausted the exception bubbles up here.
+# Shared helpers for controllers whose write paths pass through
+# MealPlanWriteService: param coercion (truthy_param?) and
+# StaleObjectError rescue when optimistic-locking retries are exhausted.
 # Used by MenuController and GroceriesController.
 module MealPlanActions
   extend ActiveSupport::Concern
@@ -12,6 +12,10 @@ module MealPlanActions
   end
 
   private
+
+  def truthy_param?(value)
+    [true, 'true'].include?(value)
+  end
 
   def handle_stale_record
     render json: { error: 'Meal plan was modified by another request. Please refresh.' },

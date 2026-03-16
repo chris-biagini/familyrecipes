@@ -94,28 +94,6 @@ class MealPlanTest < ActiveSupport::TestCase
     assert_not_includes list.state['custom_items'], 'birthday candles'
   end
 
-  test 'apply_action handles string selected param' do
-    list = MealPlan.for_kitchen(@kitchen)
-    list.apply_action('select', type: 'recipe', slug: 'pizza-dough', selected: 'true')
-
-    assert_includes list.state['selected_recipes'], 'pizza-dough'
-
-    list.apply_action('select', type: 'recipe', slug: 'pizza-dough', selected: 'false')
-
-    assert_not_includes list.state['selected_recipes'], 'pizza-dough'
-  end
-
-  test 'apply_action handles string checked param' do
-    list = MealPlan.for_kitchen(@kitchen)
-    list.apply_action('check', item: 'milk', checked: 'true')
-
-    assert_includes list.state['checked_off'], 'milk'
-
-    list.apply_action('check', item: 'milk', checked: 'false')
-
-    assert_not_includes list.state['checked_off'], 'milk'
-  end
-
   test 'clear resets state and bumps version' do
     list = MealPlan.for_kitchen(@kitchen)
     list.apply_action('select', type: 'recipe', slug: 'pizza-dough', selected: true)
@@ -364,13 +342,5 @@ class MealPlanTest < ActiveSupport::TestCase
 
     assert_empty list.state['custom_items']
     assert_empty list.state['checked_off']
-  end
-
-  test 'truthy? class method recognizes true and string true' do
-    assert MealPlan.truthy?(true)
-    assert MealPlan.truthy?('true')
-    assert_not MealPlan.truthy?(false)
-    assert_not MealPlan.truthy?('false')
-    assert_not MealPlan.truthy?(nil)
   end
 end

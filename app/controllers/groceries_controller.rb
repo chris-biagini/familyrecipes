@@ -6,7 +6,7 @@
 #
 # - MealPlanWriteService: check-off and custom item mutations
 # - AisleWriteService: aisle order mutations
-# - MealPlanActions: rescue_from for StaleObjectError
+# - MealPlanActions: param coercion and StaleObjectError rescue
 # - ShoppingListBuilder: computes the shopping list for rendering
 class GroceriesController < ApplicationController
   include MealPlanActions
@@ -24,23 +24,18 @@ class GroceriesController < ApplicationController
   def check
     MealPlanWriteService.apply_action(
       kitchen: current_kitchen, action_type: 'check',
-      item: params[:item], checked: params[:checked]
+      item: params[:item], checked: truthy_param?(params[:checked])
     )
     head :no_content
   end
 
   def update_custom_items
-    item = params[:item].to_s
-    max = MealPlan::MAX_CUSTOM_ITEM_LENGTH
-    if item.size > max
-      return render json: { errors: ["Custom item name is too long (max #{max} characters)"] },
-                    status: :unprocessable_content
-    end
-
-    MealPlanWriteService.apply_action(
+    result = MealPlanWriteService.apply_action(
       kitchen: current_kitchen, action_type: 'custom_items',
-      item: item, action: params[:action_type]
+      item: params[:item].to_s, action: params[:action_type]
     )
+    return render json: { errors: result.errors }, status: :unprocessable_content if result.errors.any?
+
     head :no_content
   end
 

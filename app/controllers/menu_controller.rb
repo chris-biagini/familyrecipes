@@ -6,7 +6,7 @@
 #
 # - MealPlanWriteService: select/deselect, select-all, clear
 # - QuickBitesWriteService: quick bites content updates
-# - MealPlanActions: rescue_from for StaleObjectError
+# - MealPlanActions: param coercion and StaleObjectError rescue
 class MenuController < ApplicationController
   include MealPlanActions
   include StructureValidation
@@ -28,7 +28,7 @@ class MenuController < ApplicationController
   def select
     MealPlanWriteService.apply_action(
       kitchen: current_kitchen, action_type: 'select',
-      type: params[:type], slug: params[:slug], selected: params[:selected]
+      type: params[:type], slug: params[:slug], selected: truthy_param?(params[:selected])
     )
     head :no_content
   end
