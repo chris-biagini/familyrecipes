@@ -66,6 +66,7 @@ export default class extends Controller {
     } else {
       if (this.hasTextareaTarget) this.originalContent = this.textareaTarget.value
       this.element.showModal()
+      this.dispatchEditorEvent("editor:opened")
     }
   }
 

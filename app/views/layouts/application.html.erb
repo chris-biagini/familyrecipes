@@ -12,6 +12,7 @@
   <meta name="theme-color" content="#1e1b18" media="(prefers-color-scheme: dark)">
   <title><%= content_for?(:title) ? content_for(:title) : current_kitchen&.site_title || 'Family Recipes' %></title>
   <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
   <%= action_cable_meta_tag %>
   <%= stylesheet_link_tag 'style', "data-turbo-track": "reload" %>
   <link rel="icon" type="image/svg+xml" href="<%= asset_path('favicon.svg') %>">

@@ -1831,19 +1831,16 @@ html:has(dialog[open]) {
   color: var(--text-light);
 }
 
-/* CodeMirror mount container */
+/* CodeMirror mount — sized by the editor-body flex parent.
+   CM's own injected styles (via CSP nonce) handle internal flexbox layout.
+   We only need to give .cm-mount a height so CM fills it. */
 
 .cm-mount {
-  flex: 1;
-  display: flex;
-  min-height: 60vh;
-}
-
-.cm-mount .cm-editor {
-  flex: 1;
+  height: 100%;
 }
 
 .cm-mount.cm-loading {
+  display: flex;
   align-items: center;
   justify-content: center;
 }
