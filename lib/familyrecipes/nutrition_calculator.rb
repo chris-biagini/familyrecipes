@@ -1,19 +1,16 @@
 # frozen_string_literal: true
 
 module FamilyRecipes
-  # Computes FDA-label nutrition facts for a recipe from IngredientCatalog
-  # entries. Resolves ingredient quantities to grams via a priority chain:
-  # weight units → named portions → density-derived volume conversions. Produces
-  # a Result with totals, per-serving, and per-unit breakdowns, plus lists of
-  # missing and partially resolvable ingredients. Also owns the canonical unit
-  # conversion tables (VOLUME_TO_ML, WEIGHT_CONVERSIONS) and their Inflector-
-  # expanded variants used by UsdaPortionClassifier.
+  # Aggregates nutrient totals for a recipe from IngredientCatalog entries.
+  # Delegates quantity-to-grams resolution to UnitResolver, then sums nutrients
+  # proportionally. Produces a Result with totals, per-serving, and per-unit
+  # breakdowns, plus lists of missing and partially resolvable ingredients.
   #
   # Collaborators:
   # - RecipeNutritionJob: calls this at save time; Result stored as JSON on Recipe
   # - NutritionConstraints: defines NUTRIENT_KEYS consumed here
   # - IngredientCatalog: AR model whose accessors this class reads directly
-  # - UsdaPortionClassifier: consumes EXPANDED_*_UNITS
+  # - UnitResolver: resolves ingredient quantities to grams
   class NutritionCalculator
     NUTRIENTS = NutritionConstraints::NUTRIENT_KEYS
 
