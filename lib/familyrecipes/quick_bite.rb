@@ -2,7 +2,7 @@
 
 module FamilyRecipes
   # A "grocery bundle" — a simple name + ingredient list that isn't a full recipe.
-  # Parsed from the Quick Bites format ("Category:\n- Name: Ing1, Ing2"). Lives on
+  # Parsed from the Quick Bites format ("## Category\n- Name: Ing1, Ing2"). Lives on
   # the menu page, not the homepage. Responds to the same #ingredients_with_quantities
   # duck type as Recipe so ShoppingListBuilder can treat both uniformly.
   class QuickBite
