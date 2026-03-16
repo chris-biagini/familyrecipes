@@ -169,8 +169,8 @@ to editor lifecycle events.
 - `ordered_list_editor_controller` is a single parameterized controller for
   both aisle and category list editors.
 - **Dual-mode editors** (recipe + Quick Bites) use a coordinator/child pattern:
-  `editor_controller` (dialog lifecycle) → coordinator (`recipe_editor_controller`
-  / `quickbites_editor_controller`) → plaintext or graphical child controller.
+  `editor_controller` (dialog lifecycle) → `dual_mode_editor_controller`
+  (coordinator) → `plaintext_editor_controller` or graphical child controller.
   Coordinator manages mode toggle (persisted in `localStorage`), routes
   lifecycle events to the active child, and handles mode-switch serialization
   via server round-trips (`/parse` and `/serialize` endpoints).
@@ -195,10 +195,12 @@ jsbundling-rails + esbuild for JS bundling.
   be imported and registered in `app/javascript/application.js`.
 - `npm run build` bundles JS to `app/assets/builds/`; `bin/dev` runs
   both Puma and esbuild watcher via foreman.
-- CSP requires a nonce for the bundled `<script>` tag — the nonce generator
-  uses `request.session.id` (see `content_security_policy.rb`). CodeMirror
-  injects editor styles at runtime; the CSP `style-src` must allow `'unsafe-inline'`
-  for the editor to render correctly.
+- CSP requires a nonce for both `<script>` and `<style>` tags — the nonce
+  generator uses `request.session.id` (see `content_security_policy.rb`).
+  The layout includes `<%= csp_meta_tag %>` which exposes the nonce via
+  `<meta name="csp-nonce">` so JS libraries (CodeMirror) can read it at
+  runtime for injected `<style>` tags. Without this meta tag, CodeMirror's
+  layout styles are blocked by CSP and the editor breaks silently.
 - Turbo's progress bar styles live in `style.css` (not Turbo's dynamic
   `<style>` injection) to satisfy strict CSP — the harmless console error
   from Turbo's blocked injection is expected.

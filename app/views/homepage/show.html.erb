@@ -130,18 +130,41 @@
                              editor_method: 'POST',
                              editor_on_success: 'redirect',
                              editor_body_key: 'markdown_source',
-                             extra_controllers: 'recipe-editor' },
+                             extra_controllers: 'dual-mode-editor' },
               extra_data: {
-                'recipe-editor-parse-url-value' => recipe_parse_path,
-                'recipe-editor-serialize-url-value' => recipe_serialize_path
+                'dual-mode-editor-parse-url-value' => recipe_parse_path,
+                'dual-mode-editor-serialize-url-value' => recipe_serialize_path,
+                'dual-mode-editor-content-key-value' => 'markdown_source',
+                'dual-mode-editor-graphical-id-value' => 'recipe-graphical'
               } } do %>
-  <div class="editor-body" data-recipe-editor-target="plaintextContainer">
-    <div data-controller="recipe-plaintext">
-      <textarea class="editor-textarea" data-editor-target="textarea"
-                data-recipe-plaintext-target="textarea" spellcheck="false"><%= "# Recipe Title\n\nOptional description.\n\nCategory: Miscellaneous\n\nMakes: 4 servings\nServes: 4\n\n## Step Name (short summary)\n\n- Ingredient, quantity: prep note\n\nInstructions here.\n\n---\n\nOptional notes or source." %></textarea>
+  <div class="editor-body" data-dual-mode-editor-target="plaintextContainer">
+    <% template = "# Recipe Title
+
+Optional description.
+
+Category: Miscellaneous
+
+Makes: 4 servings
+Serves: 4
+
+## Step Name (short summary)
+
+- Ingredient, quantity: prep note
+
+Instructions here.
+
+---
+
+Optional notes or source." %>
+    <div data-controller="plaintext-editor"
+         data-plaintext-editor-classifier-value="recipe"
+         data-plaintext-editor-fold-service-value="recipe"
+         data-plaintext-editor-placeholder-value="Paste or type a recipe…"
+         data-plaintext-editor-initial-value="<%= template %>">
+      <div class="cm-mount cm-loading" data-plaintext-editor-target="mount"></div>
     </div>
   </div>
-  <div class="editor-body" data-recipe-editor-target="graphicalContainer" hidden>
+  <div class="editor-body" data-dual-mode-editor-target="graphicalContainer" hidden>
     <%= render 'recipes/graphical_editor' %>
   </div>
 <% end %>

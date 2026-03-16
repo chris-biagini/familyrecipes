@@ -4,8 +4,7 @@
  * text, producing Decoration ranges consumed by the editor overlay.
  *
  * - editor_setup.js: consumes quickbitesClassifier as a classifier extension
- * - quickbites_plaintext_controller.js: mirrors classification logic for the
- *   legacy textarea overlay (kept until the CM swap lands)
+ * - plaintext_editor_controller.js: consumes quickbitesClassifier via registry
  * - style.css (.hl-category, .hl-item, .hl-ingredients): decoration styles
  */
 import { ViewPlugin, Decoration } from "@codemirror/view"

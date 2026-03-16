@@ -6,7 +6,7 @@ import { Controller } from "@hotwired/stimulus"
  * hash matching RecipeBuilder output for the structured import path.
  * Cross-reference steps render as read-only cards.
  *
- * - recipe_editor_controller: coordinator, routes lifecycle events
+ * - dual_mode_editor_controller: coordinator, routes lifecycle events
  * - tag_input_controller: nested, tag pill management
  * - editor_controller: dialog lifecycle
  */

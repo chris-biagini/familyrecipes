@@ -7,7 +7,7 @@ import { Controller } from "@hotwired/stimulus"
  * the structured save path. Simpler than the recipe graphical editor — only
  * two levels (categories with items, no steps/instructions).
  *
- * - quickbites_editor_controller: coordinator, routes lifecycle events
+ * - dual_mode_editor_controller: coordinator, routes lifecycle events
  * - editor_controller: dialog lifecycle
  */
 export default class extends Controller {

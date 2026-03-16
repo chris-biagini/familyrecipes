@@ -47,17 +47,21 @@
                              editor_body_key: 'content',
                              editor_load_url: menu_quick_bites_content_path,
                              editor_load_key: 'content',
-                             extra_controllers: 'quickbites-editor' },
+                             extra_controllers: 'dual-mode-editor' },
               extra_data: {
-                'quickbites-editor-parse-url-value' => menu_parse_quick_bites_path,
-                'quickbites-editor-serialize-url-value' => menu_serialize_quick_bites_path
+                'dual-mode-editor-parse-url-value' => menu_parse_quick_bites_path,
+                'dual-mode-editor-serialize-url-value' => menu_serialize_quick_bites_path,
+                'dual-mode-editor-content-key-value' => 'content',
+                'dual-mode-editor-graphical-id-value' => 'quickbites-graphical'
               } } do %>
-  <div class="editor-body" data-quickbites-editor-target="plaintextContainer">
-    <div data-controller="quickbites-plaintext">
-      <div class="cm-mount cm-loading" data-quickbites-plaintext-target="mount"></div>
+  <div class="editor-body" data-dual-mode-editor-target="plaintextContainer">
+    <div data-controller="plaintext-editor"
+         data-plaintext-editor-classifier-value="quickbites"
+         data-plaintext-editor-placeholder-value="Snacks:&#10;- Hummus with Pretzels: Hummus, Pretzels">
+      <div class="cm-mount cm-loading" data-plaintext-editor-target="mount"></div>
     </div>
   </div>
-  <div class="editor-body" data-quickbites-editor-target="graphicalContainer" hidden>
+  <div class="editor-body" data-dual-mode-editor-target="graphicalContainer" hidden>
     <%= render 'menu/quickbites_graphical_editor' %>
   </div>
 <% end %>
