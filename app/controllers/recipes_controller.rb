@@ -40,8 +40,8 @@ class RecipesController < ApplicationController
   end
 
   def serialize
-    markdown = FamilyRecipes::RecipeSerializer.serialize(structure_params)
-    render json: { markdown: }
+    markdown_source = FamilyRecipes::RecipeSerializer.serialize(structure_params)
+    render json: { markdown_source: }
   end
 
   def show_markdown

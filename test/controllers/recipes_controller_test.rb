@@ -840,9 +840,9 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     assert_response :ok
     body = response.parsed_body
 
-    assert_includes body['markdown'], '# Test'
-    assert_includes body['markdown'], '## Mix.'
-    assert_includes body['markdown'], '- Flour'
+    assert_includes body['markdown_source'], '# Test'
+    assert_includes body['markdown_source'], '## Mix.'
+    assert_includes body['markdown_source'], '- Flour'
   end
 
   test 'create with structure param uses structured path' do
