@@ -351,6 +351,14 @@ assertions (`Minitest/EmptyLineBeforeAssertionMethods`).
 
 ## Workflow
 
+**Git hygiene.** Always commit after finishing up edits to a file. When
+completing work on a GitHub issue, reference it in the commit message so that
+it will close on push (e.g., "Resolves #nn" or "Resolves #nn1, resolves #nn2,
+resolves #nn3")
+
+**Worktrees.** Most projects can be completed on main. For major projects, ask
+me whether I want to move to a worktree.
+
 **Worktree cleanup.** Never run `git worktree remove` directly — it deletes the
 CWD and bricks the Bash tool. Use the wrapper: ```bash bin/worktree-remove
 <name> ```
