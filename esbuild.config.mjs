@@ -6,7 +6,7 @@ const config = {
   entryPoints: ["app/javascript/application.js"],
   bundle: true,
   sourcemap: true,
-  format: "esm",
+  format: "iife",
   outdir: "app/assets/builds",
   publicPath: "/assets",
   logLevel: "info",
