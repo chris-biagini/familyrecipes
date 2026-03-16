@@ -136,11 +136,15 @@ class MarkdownImporter
   end
 
   def import_ingredient(step, data, position)
-    qty, unit = FamilyRecipes::Ingredient.split_quantity(data[:quantity])
+    normalized = FamilyRecipes::Ingredient.normalize_quantity(data[:quantity])
+    qty, unit = FamilyRecipes::Ingredient.split_quantity(normalized)
+    low, high = FamilyRecipes::Ingredient.parse_range(qty)
 
     step.ingredients.create!(
       name: data[:name],
       quantity: qty,
+      quantity_low: low,
+      quantity_high: high,
       unit: unit,
       prep_note: data[:prep_note],
       position: position

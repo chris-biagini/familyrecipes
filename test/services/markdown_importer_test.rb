@@ -535,4 +535,46 @@ class MarkdownImporterTest < ActiveSupport::TestCase
 
     assert_nil result.front_matter_tags
   end
+
+  test 'imports ingredient with range quantity' do
+    markdown = "# Test\n\n## Step\n\n- Eggs, 2-3\n\nScramble them."
+    result = MarkdownImporter.import(markdown, kitchen: @kitchen, category: @bread)
+    ingredient = result.recipe.steps.first.ingredients.first
+
+    assert_equal 'Eggs', ingredient.name
+    assert_equal '2-3', ingredient.quantity
+    assert_in_delta 2.0, ingredient.quantity_low
+    assert_in_delta 3.0, ingredient.quantity_high
+    assert_nil ingredient.unit
+  end
+
+  test 'imports ingredient with fractional range' do
+    markdown = "# Test\n\n## Step\n\n- Butter, 1/2-1 stick\n\nMelt it."
+    result = MarkdownImporter.import(markdown, kitchen: @kitchen, category: @bread)
+    ingredient = result.recipe.steps.first.ingredients.first
+
+    assert_in_delta 0.5, ingredient.quantity_low
+    assert_in_delta 1.0, ingredient.quantity_high
+    assert_equal 'stick', ingredient.unit
+  end
+
+  test 'normalizes vulgar fractions on import' do
+    markdown = "# Test\n\n## Step\n\n- Butter, \u00bd cup\n\nMelt it."
+    result = MarkdownImporter.import(markdown, kitchen: @kitchen, category: @bread)
+    ingredient = result.recipe.steps.first.ingredients.first
+
+    assert_equal '1/2', ingredient.quantity
+    assert_in_delta 0.5, ingredient.quantity_low
+    assert_nil ingredient.quantity_high
+  end
+
+  test 'imports non-numeric quantity with nil range columns' do
+    markdown = "# Test\n\n## Step\n\n- Basil, a few leaves\n\nAdd."
+    result = MarkdownImporter.import(markdown, kitchen: @kitchen, category: @bread)
+    ingredient = result.recipe.steps.first.ingredients.first
+
+    assert_equal 'a few leaves', ingredient.quantity
+    assert_nil ingredient.quantity_low
+    assert_nil ingredient.quantity_high
+  end
 end
