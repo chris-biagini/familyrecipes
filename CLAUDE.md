@@ -301,9 +301,8 @@ endpoint.
 
 ## Recipe & Data Formats
 
-Recipe source is Markdown with custom syntax — see `docs/recipe-syntax.md` for
-the full syntax specification. The parser pipeline is the authoritative
-implementation; the spec is descriptive. Key parser classes: `LineClassifier`
+Recipe source is Markdown with custom syntax. The parser pipeline is the
+authoritative implementation. Key parser classes: `LineClassifier`
 (token types), `RecipeBuilder` (assembly), `IngredientParser` (ingredient
 bullets), `CrossReferenceParser` (`> @[Title]` import syntax). Bare `@[Title]`
 in prose or the footer renders as a clickable link to that recipe (render-time
