@@ -8,9 +8,9 @@
 # (user-customized grocery aisle sequence), site branding (site_title,
 # homepage_heading, homepage_subtitle), and encrypted API keys (usda_api_key).
 #
-# Kitchen.batch_writes wraps a block so that reconciliation and broadcast happen
-# exactly once at the end, regardless of how many write services run inside.
-# Write services check Kitchen.batching? to skip their own finalization.
+# Kitchen.finalize_writes(kitchen) is the single post-write entry point for
+# all write services: orphan cleanup, meal plan reconciliation, broadcast.
+# Kitchen.batch_writes defers finalization to block exit via the same pipeline.
 class Kitchen < ApplicationRecord
   has_many :memberships, dependent: :destroy
   has_many :users, through: :memberships
@@ -26,23 +26,31 @@ class Kitchen < ApplicationRecord
   MAX_AISLE_NAME_LENGTH = FamilyRecipes::NutritionConstraints::AISLE_MAX_LENGTH
   MAX_AISLES = 50
 
+  def self.finalize_writes(kitchen)
+    return if batching?
+
+    run_finalization(kitchen)
+  end
+
   def self.batch_writes(kitchen)
     Current.batching_kitchen = kitchen
     yield
   ensure
     Current.batching_kitchen = nil
-    finalize_batch(kitchen)
+    run_finalization(kitchen)
   end
 
   def self.batching?
     Current.batching_kitchen.present?
   end
 
-  def self.finalize_batch(kitchen)
+  def self.run_finalization(kitchen)
+    Category.cleanup_orphans(kitchen)
+    Tag.cleanup_orphans(kitchen)
     MealPlan.reconcile_kitchen!(kitchen)
     kitchen.broadcast_update
   end
-  private_class_method :finalize_batch
+  private_class_method :run_finalization
 
   validates :name, presence: true
   validates :slug, presence: true, uniqueness: true
