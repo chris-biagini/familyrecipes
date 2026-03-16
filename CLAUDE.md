@@ -210,8 +210,9 @@ in views.
 response rendering. Services own all post-write side effects (reconcile,
 broadcast). Don't call `MarkdownImporter` directly for web operations.
 - `RecipeWriteService` — recipe mutations, cross-reference cascades, category
-  cleanup, tag sync, meal plan pruning, broadcast. Dual entry: `create`/`update`
-  (markdown) and `create_from_structure`/`update_from_structure` (IR hash).
+  cleanup, tag sync, meal plan pruning, broadcast. `create`/`update` accept
+  either markdown or IR hash; `_from_structure` variants are thin normalizers
+  that extract front matter and delegate.
 - `CatalogWriteService` — `IngredientCatalog` mutations, aisle sync, nutrition
   recalculation, broadcast.
 - `MealPlanWriteService` — select/deselect, select-all, clear, reconciliation.
