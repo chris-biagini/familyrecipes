@@ -19,6 +19,10 @@ import { syntaxHighlighting, defaultHighlightStyle, foldGutter,
          bracketMatching } from "@codemirror/language"
 import { markdown } from "@codemirror/lang-markdown"
 
+function getCspNonce() {
+  return document.querySelector('meta[name="csp-nonce"]')?.content || ""
+}
+
 const baseTheme = EditorView.theme({
   "&": {
     fontSize: "0.85rem",
@@ -59,6 +63,7 @@ const baseTheme = EditorView.theme({
 export function createEditor({ parent, doc, classifier, foldService: foldSvc,
                                 placeholder, onUpdate, extraExtensions }) {
   const extensions = [
+    EditorView.cspNonce.of(getCspNonce()),
     baseTheme,
     highlightActiveLine(),
     highlightSpecialChars(),
