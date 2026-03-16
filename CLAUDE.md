@@ -384,9 +384,6 @@ The esbuild watcher (`bin/dev`) auto-rebuilds on file changes.
 
 **Skills.** Always use the superpowers skill when getting ready to write code.
 
-**Subagents.** Unless otherwise indicated BY THE USER, ALWAYS USE OPUS FOR
-SUBAGENTS THAT PERFORM CODING TASKS. 
-
 **Commit timestamps.** A post-commit hook rewrites timestamps for privacy.
 This changes commit SHAs, so `git branch -d` fails after fast-forward merges
 — use `git branch -D` when you've verified the content is merged.
