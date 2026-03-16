@@ -1,96 +1,82 @@
-import { Controller } from "@hotwired/stimulus"
-import HighlightOverlay from "../utilities/highlight_overlay"
-
 /**
- * Plaintext Quick Bites editor: textarea with syntax-highlighting overlay.
- * Handles only the textarea view in plaintext mode. The parent
- * quickbites_editor_controller (coordinator) manages mode toggling and routes
- * lifecycle events to the active child.
+ * Plaintext Quick Bites editor backed by CodeMirror 6. Replaces the former
+ * textarea + HighlightOverlay with a proper editor featuring syntax
+ * decorations and an auto-dash keymap for item entry.
  *
- * - quickbites_editor_controller: coordinator, routes lifecycle events
- * - HighlightOverlay: overlay positioning, auto-dash, scroll sync
- * - style.css (.hl-*): highlight colors
+ * - quickbites_editor_controller: coordinator, calls .content and .isModified()
+ * - editor_setup.js: shared CodeMirror factory
+ * - quickbites_classifier.js: syntax decoration ViewPlugin
  */
-export default class extends Controller {
-  static targets = ["textarea"]
+import { Controller } from "@hotwired/stimulus"
+import { keymap } from "@codemirror/view"
+import { createEditor } from "../codemirror/editor_setup"
+import { quickbitesClassifier } from "../codemirror/quickbites_classifier"
 
-  textareaTargetConnected(element) {
-    this.hlOverlay?.detach()
-    this.setPlaceholder(element)
-    this.hlOverlay = new HighlightOverlay(element, (text) => this.buildFragment(text))
-    this.hlOverlay.attach()
+const autoDashKeymap = keymap.of([{
+  key: "Enter",
+  run(view) {
+    const { state } = view
+    const { head } = state.selection.main
+    const line = state.doc.lineAt(head)
+
+    if (head !== line.to) return false
+
+    if (line.text === "- ") {
+      view.dispatch({ changes: { from: line.from, to: line.to, insert: "" } })
+      return true
+    }
+
+    if (/^- .+$/.test(line.text)) {
+      view.dispatch({
+        changes: { from: head, insert: "\n- " },
+        selection: { anchor: head + 3 }
+      })
+      return true
+    }
+
+    return false
+  }
+}])
+
+export default class extends Controller {
+  static targets = ["mount"]
+
+  mountTargetConnected(element) {
+    this.editorView?.destroy()
+    element.classList.remove("cm-loading")
+
+    this.editorView = createEditor({
+      parent: element,
+      doc: "",
+      classifier: quickbitesClassifier,
+      placeholder: "Snacks:\n- Hummus with Pretzels: Hummus, Pretzels",
+      extraExtensions: [autoDashKeymap]
+    })
   }
 
-  textareaTargetDisconnected() {
-    this.hlOverlay?.detach()
-    this.hlOverlay = null
+  mountTargetDisconnected() {
+    this.editorView?.destroy()
+    this.editorView = null
   }
 
   disconnect() {
-    this.hlOverlay?.detach()
-    this.hlOverlay = null
+    this.editorView?.destroy()
+    this.editorView = null
   }
 
   get content() {
-    return this.textareaTarget.value
+    return this.editorView?.state.doc.toString() || ""
   }
 
   set content(text) {
-    this.textareaTarget.value = text
-    this.ensureOverlay()
-    this.hlOverlay.highlight()
-  }
+    if (!this.editorView) return
 
-  ensureOverlay() {
-    if (this.hlOverlay) return
-
-    this.hlOverlay = new HighlightOverlay(this.textareaTarget, (text) => this.buildFragment(text))
-    this.hlOverlay.attach()
+    this.editorView.dispatch({
+      changes: { from: 0, to: this.editorView.state.doc.length, insert: text }
+    })
   }
 
   isModified(originalContent) {
-    return this.textareaTarget.value !== originalContent
-  }
-
-  buildFragment(text) {
-    const fragment = document.createDocumentFragment()
-
-    text.split("\n").forEach((line, i) => {
-      if (i > 0) fragment.appendChild(document.createTextNode("\n"))
-
-      if (/^[^-].+:\s*$/.test(line)) {
-        this.appendSpan(fragment, line, "hl-category")
-      } else if (/^\s*-\s+/.test(line)) {
-        this.highlightItem(line, fragment)
-      } else {
-        fragment.appendChild(document.createTextNode(line))
-      }
-    })
-
-    return fragment
-  }
-
-  highlightItem(line, fragment) {
-    const colonIdx = line.indexOf(":", line.indexOf("-") + 2)
-    if (colonIdx !== -1) {
-      this.appendSpan(fragment, line.slice(0, colonIdx), "hl-item")
-      this.appendSpan(fragment, line.slice(colonIdx), "hl-ingredients")
-    } else {
-      this.appendSpan(fragment, line, "hl-item")
-    }
-  }
-
-  appendSpan(fragment, text, className) {
-    const span = document.createElement("span")
-    span.classList.add(className)
-    span.textContent = text
-    fragment.appendChild(span)
-  }
-
-  setPlaceholder(textarea) {
-    if (!textarea.getAttribute("data-placeholder-set")) {
-      textarea.placeholder = "Snacks:\n- Hummus with Pretzels: Hummus, Pretzels\n- String cheese\n\nBreakfast:\n- Cereal with Milk: Cereal, Milk"
-      textarea.setAttribute("data-placeholder-set", "true")
-    }
+    return this.content !== originalContent
   }
 }

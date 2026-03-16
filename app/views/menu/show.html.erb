@@ -54,9 +54,7 @@
               } } do %>
   <div class="editor-body" data-quickbites-editor-target="plaintextContainer">
     <div data-controller="quickbites-plaintext">
-      <textarea class="editor-textarea" data-editor-target="textarea"
-                data-quickbites-plaintext-target="textarea" spellcheck="false"
-                placeholder="Loading..."></textarea>
+      <div class="cm-mount cm-loading" data-quickbites-plaintext-target="mount"></div>
     </div>
   </div>
   <div class="editor-body" data-quickbites-editor-target="graphicalContainer" hidden>
