@@ -1859,49 +1859,6 @@ html:has(dialog[open]) {
   display: none;
 }
 
-/* Syntax-highlighting overlay (shared) */
-
-.hl-wrap {
-  position: relative;
-  flex: 1;
-  display: flex;
-  min-height: 60vh;
-  overflow: hidden;
-}
-
-.hl-overlay {
-  position: absolute;
-  inset: 0;
-  padding: 1.5rem;
-  margin: 0;
-  font-family: var(--font-mono);
-  font-size: 0.85rem;
-  line-height: 1.6;
-  white-space: pre-wrap;
-  overflow-wrap: break-word;
-  overflow: hidden;
-  pointer-events: none;
-  color: var(--text);
-  background: transparent;
-  border: none;
-}
-
-.hl-input {
-  color: transparent !important;
-  caret-color: var(--text);
-  background: transparent !important;
-  position: relative;
-  z-index: 1;
-}
-
-.hl-input::selection {
-  background: rgba(128, 128, 128, 0.3);
-  color: transparent;
-}
-
-.hl-input::placeholder {
-  color: var(--text-light);
-}
 
 .hl-category {
   font-weight: 700;
@@ -2790,20 +2747,11 @@ button.aisle-name:hover {
   }
 
   /* Textarea editors: tighter padding, smaller font, word wrap */
-  .editor-textarea,
-  .hl-overlay,
-  .hl-input {
+  .editor-textarea {
     padding: 0.75rem;
     font-size: 0.8rem;
     overflow-wrap: break-word;
     word-break: break-word;
-  }
-
-  .editor-textarea {
-    min-height: 0;
-  }
-
-  .hl-wrap {
     min-height: 0;
   }
 
