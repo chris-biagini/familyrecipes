@@ -160,4 +160,62 @@ class RecipesHelperTest < ActionView::TestCase
     assert_includes result, 'simple-tomato-sauce'
     assert_includes result, '>Simple Tomato Sauce</a>'
   end
+
+  test 'ingredient_data_attrs emits quantity-low for non-range' do
+    ingredient = Ingredient.new(name: 'Flour', quantity_low: 2.0, unit: 'cup')
+    attrs = ingredient_data_attrs(ingredient)
+
+    assert_includes attrs, 'data-quantity-low'
+    assert_not_includes attrs, 'data-quantity-high'
+  end
+
+  test 'ingredient_data_attrs emits both low and high for range' do
+    ingredient = Ingredient.new(name: 'Eggs', quantity_low: 2.0, quantity_high: 3.0)
+    attrs = ingredient_data_attrs(ingredient)
+
+    assert_includes attrs, 'data-quantity-low'
+    assert_includes attrs, 'data-quantity-high'
+  end
+
+  test 'ingredient_data_attrs pre-multiplies by scale_factor' do
+    ingredient = Ingredient.new(name: 'Eggs', quantity_low: 2.0, quantity_high: 3.0)
+    attrs = ingredient_data_attrs(ingredient, scale_factor: 2.0)
+
+    assert_includes attrs, '4.0'
+    assert_includes attrs, '6.0'
+  end
+
+  test 'ingredient_data_attrs returns empty for non-numeric' do
+    ingredient = Ingredient.new(name: 'Salt', quantity: 'a pinch')
+    attrs = ingredient_data_attrs(ingredient)
+
+    assert_not_includes attrs, 'data-quantity-low'
+  end
+
+  test 'scaled_quantity_display for range at 1x shows quantity_display' do
+    ingredient = Ingredient.new(name: 'Eggs', quantity_low: 2.0, quantity_high: 3.0)
+
+    assert_equal ingredient.quantity_display, scaled_quantity_display(ingredient, 1.0)
+  end
+
+  test 'scaled_quantity_display for range at 2x' do
+    ingredient = Ingredient.new(name: 'Flour', quantity_low: 2.0, quantity_high: 3.0, unit: 'cup')
+    display = scaled_quantity_display(ingredient, 2.0)
+
+    assert_equal "4\u20136 cups", display
+  end
+
+  test 'scaled_quantity_display for non-range at 2x' do
+    ingredient = Ingredient.new(name: 'Flour', quantity_low: 2.0, unit: 'cup')
+    display = scaled_quantity_display(ingredient, 2.0)
+
+    assert_equal '4 cups', display
+  end
+
+  test 'scaled_quantity_display for non-numeric returns quantity_display' do
+    ingredient = Ingredient.new(name: 'Salt', quantity: 'a pinch')
+    display = scaled_quantity_display(ingredient, 2.0)
+
+    assert_equal 'a pinch', display
+  end
 end

@@ -99,9 +99,10 @@ module RecipesHelper # rubocop:disable Metrics/ModuleLength
 
   def ingredient_data_attrs(item, scale_factor: 1.0)
     attrs = {}
-    return tag.attributes(attrs) unless item.quantity_value
+    return tag.attributes(attrs) unless item.quantity_low
 
-    attrs[:'data-quantity-value'] = item.quantity_value.to_f * scale_factor
+    attrs[:'data-quantity-low'] = item.quantity_low.to_f * scale_factor
+    attrs[:'data-quantity-high'] = item.quantity_high.to_f * scale_factor if item.quantity_high
     attrs[:'data-quantity-unit'] = item.quantity_unit if item.quantity_unit
     add_unit_plural_attr(attrs, item.quantity_unit)
     add_name_inflection_attrs(attrs, item) unless item.quantity_unit
@@ -156,11 +157,31 @@ module RecipesHelper # rubocop:disable Metrics/ModuleLength
   end
 
   def scaled_quantity_display(item, scale_factor)
-    return item.quantity_display if !item.quantity_value || scale_factor == 1.0 # rubocop:disable Lint/FloatComparison
+    return item.quantity_display if !item.quantity_low || scale_factor == 1.0 # rubocop:disable Lint/FloatComparison
 
-    scaled = item.quantity_value.to_f * scale_factor
-    formatted = FamilyRecipes::VulgarFractions.format(scaled, unit: item.quantity_unit)
-    [formatted, item.unit].compact.join(' ')
+    display_value = (item.quantity_high || item.quantity_low).to_f * scale_factor
+    unit_str = scaled_unit_display(item, display_value)
+    quantity_str = scaled_quantity_str(item, scale_factor)
+
+    [quantity_str, unit_str].compact.join(' ')
+  end
+
+  def scaled_quantity_str(item, scale_factor)
+    low = format_scaled_value(item.quantity_low, scale_factor, item.quantity_unit)
+    return low unless item.quantity_high
+
+    high = format_scaled_value(item.quantity_high, scale_factor, item.quantity_unit)
+    "#{low}\u2013#{high}"
+  end
+
+  def format_scaled_value(value, scale_factor, unit)
+    FamilyRecipes::VulgarFractions.format(value.to_f * scale_factor, unit: unit)
+  end
+
+  def scaled_unit_display(item, display_value)
+    return unless item.quantity_unit
+
+    FamilyRecipes::Inflector.unit_display(item.quantity_unit, display_value)
   end
 
   def add_unit_plural_attr(attrs, unit)
