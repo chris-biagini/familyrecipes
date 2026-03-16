@@ -360,8 +360,8 @@ resolves #nn3")
 me whether I want to move to a worktree.
 
 **Worktree cleanup.** Never run `git worktree remove` directly — it deletes the
-CWD and bricks the Bash tool. Use the wrapper: ```bash bin/worktree-remove
-<name> ```
+CWD and bricks the Bash tool. Use the wrapper: `bash bin/worktree-remove
+<name>`
 
 **Screenshots.** Save to `~/screenshots/`, not inside the repo.
 
@@ -383,6 +383,8 @@ Stimulus controllers requires registering them in `application.js`.
 The esbuild watcher (`bin/dev`) auto-rebuilds on file changes.
 
 **Skills.** Always use the superpowers skill when getting ready to write code.
+
+**Subagents.** ALWAYS use Opus subagents for coding tasks.
 
 **Commit timestamps.** A post-commit hook rewrites timestamps for privacy.
 This changes commit SHAs, so `git branch -d` fails after fast-forward merges
