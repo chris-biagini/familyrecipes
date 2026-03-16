@@ -15,7 +15,7 @@ gem 'sqlite3'
 gem 'acts_as_tenant'
 gem 'solid_cable'
 
-gem 'importmap-rails'
+gem 'jsbundling-rails'
 gem 'stimulus-rails'
 gem 'turbo-rails'
 

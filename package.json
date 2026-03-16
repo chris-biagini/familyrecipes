@@ -1,0 +1,21 @@
+{
+  "name": "familyrecipes",
+  "private": true,
+  "scripts": {
+    "build": "node esbuild.config.mjs",
+    "build:watch": "node esbuild.config.mjs --watch"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  },
+  "dependencies": {
+    "@hotwired/stimulus": "^3.2.0",
+    "@hotwired/turbo-rails": "^8.0.0",
+    "@rails/actioncable": "^8.0.0",
+    "@codemirror/view": "^6.36.0",
+    "@codemirror/state": "^6.5.0",
+    "@codemirror/language": "^6.10.0",
+    "@codemirror/commands": "^6.8.0",
+    "@codemirror/lang-markdown": "^6.3.0"
+  }
+}

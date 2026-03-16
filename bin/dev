@@ -2,9 +2,7 @@
 # frozen_string_literal: true
 
 #
-# Starts the Rails dev server on port 3030.
-# Binds 0.0.0.0 (LAN-accessible) via config/boot.rb.
-#
+# Starts the Rails dev server and esbuild watcher via foreman.
 # Kills any stale Puma process first so a leftover PID file
 # doesn't block startup.
 #
@@ -22,4 +20,4 @@ if File.exist?(pid_file)
   File.delete(pid_file) if File.exist?(pid_file)
 end
 
-exec 'bin/rails', 'server', '-p', '3030'
+exec 'foreman', 'start', '-f', 'Procfile.dev'
