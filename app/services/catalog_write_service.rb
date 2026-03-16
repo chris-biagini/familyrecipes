@@ -42,7 +42,7 @@ class CatalogWriteService
     entry.assign_from_params(**params, sources: WEB_SOURCE)
     return Result.new(entry:, persisted: false) unless entry.save
 
-    AisleWriteService.sync_new_aisle(kitchen:, aisle: entry.aisle) if entry.aisle
+    AisleWriteService.sync_new_aisles(kitchen:, aisles: [entry.aisle]) if entry.aisle
     recalculate_recipes_for(names: [entry.ingredient_name]) if entry.basis_grams.present?
     finalize
 

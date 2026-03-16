@@ -7,7 +7,7 @@
 # - Category: AR model with position column for homepage ordering
 # - Kitchen#broadcast_update: page-refresh morph after successful writes
 class CategoryWriteService
-  include RenameValidation
+  include OrderedListValidation
 
   Result = Data.define(:success, :errors)
 
@@ -23,7 +23,8 @@ class CategoryWriteService
   end
 
   def update_order(names:, renames:, deletes:)
-    errors = validate_order(names) + validate_renames(renames, MAX_NAME_LENGTH)
+    errors = validate_order(names, max_items: MAX_CATEGORIES, max_name_length: MAX_NAME_LENGTH) +
+             validate_renames(renames, MAX_NAME_LENGTH)
     return Result.new(success: false, errors:) if errors.any?
 
     ActiveRecord::Base.transaction do
@@ -39,18 +40,6 @@ class CategoryWriteService
   private
 
   attr_reader :kitchen
-
-  def validate_order(names)
-    errors = []
-    errors << "Too many items (maximum #{MAX_CATEGORIES})." if names.size > MAX_CATEGORIES
-
-    long = names.select { |name| name.size > MAX_NAME_LENGTH }
-    errors.concat(long.map { |name| "\"#{name}\" is too long (maximum #{MAX_NAME_LENGTH} characters)." })
-
-    dupes = names.group_by(&:downcase).select { |_, v| v.size > 1 }.values.map(&:first)
-    errors.concat(dupes.map { |name| "\"#{name}\" appears more than once (case-insensitive)." })
-    errors
-  end
 
   def cascade_renames(renames)
     return unless renames.is_a?(Hash) || renames.is_a?(ActionController::Parameters)
