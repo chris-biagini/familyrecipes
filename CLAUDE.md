@@ -323,6 +323,11 @@ bin/dev            # Puma on port 3030
 
 The default `rake` task runs both lint and test.
 
+**Test conventions.** Plain `Minitest::Test` files (parser-layer tests in
+`test/`) must be added to the `Rails/RefuteMethods` exclusion in `.rubocop.yml`
+— they don't have `assert_not`. RuboCop also enforces blank lines before
+assertions (`Minitest/EmptyLineBeforeAssertionMethods`).
+
 ## Workflow
 
 **Worktree cleanup.** Never run `git worktree remove` directly — it deletes the
