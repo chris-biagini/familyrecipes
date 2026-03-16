@@ -1,9 +1,11 @@
 {
   "name": "familyrecipes",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "node esbuild.config.mjs",
-    "build:watch": "node esbuild.config.mjs --watch"
+    "build:watch": "node esbuild.config.mjs --watch",
+    "test": "node --test test/javascript/*.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.25.0"

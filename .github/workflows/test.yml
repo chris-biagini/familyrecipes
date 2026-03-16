@@ -40,6 +40,9 @@ jobs:
       - name: Build JS
         run: npm run build
 
+      - name: JS tests
+        run: npm test
+
       - name: Set up database
         run: bin/rails db:create db:migrate
 
