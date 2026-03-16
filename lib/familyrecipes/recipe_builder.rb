@@ -16,16 +16,17 @@ class RecipeBuilder # rubocop:disable Metrics/ClassLength
   def initialize(tokens)
     @tokens = tokens
     @position = 0
+    @description = nil
   end
 
   def build
-    {
-      title: parse_title,
-      description: parse_description,
-      front_matter: parse_front_matter,
-      steps: parse_steps,
-      footer: parse_footer
-    }
+    title = parse_title
+    parse_description
+    front_matter = parse_front_matter
+    steps = parse_steps
+    footer = parse_footer
+
+    { title:, description: @description, front_matter:, steps:, footer: }
   end
 
   private
@@ -64,12 +65,9 @@ class RecipeBuilder # rubocop:disable Metrics/ClassLength
 
   def parse_description
     skip_blanks
+    return if at_end? || peek.type == :step_header || peek.type == :front_matter
 
-    return nil if at_end?
-    return nil if peek.type == :step_header
-    return nil if peek.type == :front_matter
-
-    advance.content if peek.type == :prose
+    @description = advance.content if peek.type == :prose
   end
 
   def parse_front_matter
@@ -93,6 +91,11 @@ class RecipeBuilder # rubocop:disable Metrics/ClassLength
   def parse_steps
     skip_blanks
 
+    if step_headers_ahead?
+      absorb_stray_into_description
+      return parse_explicit_steps
+    end
+
     if !at_end? && peek.type != :step_header && peek.type != :divider
       reject_implicit_cross_reference(peek) if peek.type == :cross_reference_block
       step = parse_implicit_step
@@ -102,6 +105,17 @@ class RecipeBuilder # rubocop:disable Metrics/ClassLength
     parse_explicit_steps
   end
 
+  def step_headers_ahead?
+    @tokens[@position..].any? { |t| t.type == :step_header }
+  end
+
+  def absorb_stray_into_description
+    until at_end? || peek.type == :step_header || peek.type == :divider
+      append_to_description(advance)
+      skip_blanks
+    end
+  end
+
   def parse_explicit_steps
     steps = []
 
@@ -109,7 +123,7 @@ class RecipeBuilder # rubocop:disable Metrics/ClassLength
       if peek.type == :step_header
         steps << parse_step
       else
-        advance
+        append_to_description(advance)
       end
       skip_blanks
     end
@@ -117,30 +131,40 @@ class RecipeBuilder # rubocop:disable Metrics/ClassLength
     steps
   end
 
-  def collect_step_body(stop_at: %i[divider], implicit: false) # rubocop:disable Metrics/MethodLength
+  def collect_step_body(stop_at: %i[divider], implicit: false)
     ingredients = []
     instruction_lines = []
     cross_reference = nil
 
     until at_end? || stop_at.include?(peek.type)
       token = advance
-
-      case token.type
-      when :cross_reference_block
-        reject_implicit_cross_reference(token) if implicit
-        validate_cross_reference_placement(token, ingredients, instruction_lines, cross_reference)
-        cross_reference = CrossReferenceParser.parse(token.content[0])
-      when :ingredient
-        raise_mixed_content_error(token, 'ingredients') if cross_reference
-        ingredients << IngredientParser.parse(token.content[0])
-      when :prose
-        raise_mixed_content_error(token, 'instructions') if cross_reference
-        instruction_lines << token.content
-      end
+      cross_reference = process_step_token(token, ingredients, instruction_lines, cross_reference,
+                                           implicit:)
     end
 
-    { tldr: nil, ingredients: ingredients, instructions: instruction_lines.join("\n\n"),
-      cross_reference: cross_reference }
+    { tldr: nil, ingredients:, instructions: instruction_lines.join("\n\n"), cross_reference: }
+  end
+
+  def process_step_token(token, ingredients, instruction_lines, cross_reference, implicit:) # rubocop:disable Metrics/MethodLength
+    case token.type
+    when :cross_reference_block
+      reject_implicit_cross_reference(token) if implicit
+      validate_cross_reference_placement(token, ingredients, instruction_lines, cross_reference)
+      CrossReferenceParser.parse(token.content[0])
+    when :ingredient
+      raise_mixed_content_error(token, 'ingredients') if cross_reference
+      ingredients << IngredientParser.parse(token.content[0])
+      cross_reference
+    when :prose
+      raise_mixed_content_error(token, 'instructions') if cross_reference
+      instruction_lines << token.content
+      cross_reference
+    when :blank then cross_reference
+    else
+      raise_mixed_content_error(token, 'instructions') if cross_reference
+      instruction_lines << token_as_text(token)
+      cross_reference
+    end
   end # rubocop:enable Metrics/MethodLength
 
   def parse_implicit_step = collect_step_body(implicit: true)
@@ -149,6 +173,24 @@ class RecipeBuilder # rubocop:disable Metrics/ClassLength
     tldr = advance.content[0]
     skip_blanks
     collect_step_body(stop_at: %i[step_header divider]).merge(tldr: tldr)
+  end
+
+  def token_as_text(token)
+    case token.type
+    when :prose then token.content
+    when :ingredient then "- #{token.content[0]}"
+    when :front_matter then "#{token.content[0]}: #{token.content[1]}"
+    when :title then "# #{token.content[0]}"
+    when :step_header then "## #{token.content[0]}"
+    else Array(token.content).join(' ')
+    end
+  end
+
+  def append_to_description(token)
+    return if token.type == :blank
+
+    text = token_as_text(token)
+    @description = @description ? "#{@description}\n\n#{text}" : text
   end
 
   def reject_implicit_cross_reference(token)

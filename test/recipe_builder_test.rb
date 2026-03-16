@@ -577,4 +577,103 @@ class RecipeBuilderTest < Minitest::Test
     error = assert_raises(StandardError) { build_recipe(text) }
     assert_includes error.message, 'Only one cross-reference'
   end
+
+  def test_prose_between_front_matter_and_first_step_goes_to_description
+    text = <<~RECIPE
+      # Pancakes
+
+      A weekend favorite.
+
+      Serves: 4
+
+      This is my grandmother's recipe.
+
+      ## Make Batter
+
+      Mix well.
+    RECIPE
+
+    result = build_recipe(text)
+
+    assert_equal "A weekend favorite.\n\nThis is my grandmother's recipe.", result[:description]
+    assert_equal '4', result[:front_matter][:serves]
+    assert_equal 1, result[:steps].size
+  end
+
+  def test_ingredient_before_first_step_goes_to_description
+    text = <<~RECIPE
+      # Soup
+
+      Serves: 4
+
+      - Butter, 2 tbsp
+
+      ## Cook
+
+      Cook it.
+    RECIPE
+
+    result = build_recipe(text)
+
+    assert_includes result[:description], '- Butter, 2 tbsp'
+    assert_equal 1, result[:steps].size
+  end
+
+  def test_front_matter_inside_step_body_becomes_prose
+    text = <<~RECIPE
+      # Soup
+
+      ## Cook
+
+      Heat the pot.
+
+      Serves: 4
+
+      Stir well.
+    RECIPE
+
+    result = build_recipe(text)
+
+    assert_includes result[:steps][0][:instructions], 'Serves: 4'
+    assert_includes result[:steps][0][:instructions], 'Heat the pot.'
+    assert_includes result[:steps][0][:instructions], 'Stir well.'
+  end
+
+  def test_stray_content_without_description_creates_description
+    text = <<~RECIPE
+      # Soup
+
+      Serves: 4
+
+      A family classic.
+
+      ## Cook
+
+      Cook it.
+    RECIPE
+
+    result = build_recipe(text)
+
+    assert_equal 'A family classic.', result[:description]
+  end
+
+  def test_multiple_stray_lines_joined_in_description
+    text = <<~RECIPE
+      # Soup
+
+      Serves: 4
+
+      Line one.
+
+      Line two.
+
+      ## Cook
+
+      Cook it.
+    RECIPE
+
+    result = build_recipe(text)
+
+    assert_equal "Line one.\n\nLine two.", result[:description]
+  end
 end
