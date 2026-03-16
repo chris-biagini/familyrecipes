@@ -162,8 +162,10 @@ to editor lifecycle events.
   `turbo:before-morph-element` in `application.js`.
 - `turbo:before-cache` closes all open dialogs before page snapshots.
 - Do NOT use `data-turbo-permanent` on dialogs.
-- `HighlightOverlay` (shared utility) powers syntax-colored overlays for both
-  Quick Bites and recipe plaintext editors.
+- CodeMirror 6 powers syntax-highlighted plaintext editors for both
+  recipes and Quick Bites. `ViewPlugin` classifiers in
+  `app/javascript/codemirror/` apply `.hl-*` CSS decorations.
+  `foldService` provides step block and front matter folding for recipes.
 - `ordered_list_editor_controller` is a single parameterized controller for
   both aisle and category list editors.
 - **Dual-mode editors** (recipe + Quick Bites) use a coordinator/child pattern:
@@ -188,11 +190,15 @@ connection: event-based (`recipe-state:restored`) with attribute fallback
 `data-base-multiplier` — effective scale = base × user factor.
 
 **Hotwire stack.** Turbo Drive + Turbo Streams, Stimulus controllers,
-importmap-rails for ES modules.
-- New JS modules must be pinned in `config/importmap.rb`; new Stimulus
-  controllers auto-register via `pin_all_from`.
-- CSP requires nonces for importmap's inline `<script>` — the nonce generator
-  uses `request.session.id` (see `content_security_policy.rb`).
+jsbundling-rails + esbuild for JS bundling.
+- New JS modules go in `app/javascript/`; new Stimulus controllers must
+  be imported and registered in `app/javascript/application.js`.
+- `npm run build` bundles JS to `app/assets/builds/`; `bin/dev` runs
+  both Puma and esbuild watcher via foreman.
+- CSP requires a nonce for the bundled `<script>` tag — the nonce generator
+  uses `request.session.id` (see `content_security_policy.rb`). CodeMirror
+  injects editor styles at runtime; the CSP `style-src` must allow `'unsafe-inline'`
+  for the editor to render correctly.
 - Turbo's progress bar styles live in `style.css` (not Turbo's dynamic
   `<style>` injection) to satisfy strict CSP — the harmless console error
   from Turbo's blocked injection is expected.
@@ -326,6 +332,12 @@ bin/dev            # Puma on port 3030
 # test helpers: create_kitchen_and_user, log_in, kitchen_slug (see test/test_helper.rb)
 ```
 
+```bash
+npm install                # install JS dependencies
+npm run build              # bundle JS (esbuild)
+npm test                   # run JS classifier tests
+```
+
 The default `rake` task runs both lint and test.
 
 **Test conventions.** Plain `Minitest::Test` files (parser-layer tests in
@@ -353,6 +365,10 @@ at boot — they do not hot-reload.
 (requires `rsvg-convert`/`librsvg2-bin`). Service worker
 (`app/views/pwa/service_worker.js.erb`) is a minimal PWA-install stub — no
 caching, no fetch interception. The browser handles all requests normally.
+
+**JS changes.** Adding npm packages requires `npm install`. Adding new
+Stimulus controllers requires registering them in `application.js`.
+The esbuild watcher (`bin/dev`) auto-rebuilds on file changes.
 
 **Skills.** Always use the superpowers skill when getting ready to write code.
 
