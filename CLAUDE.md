@@ -192,6 +192,14 @@ connection: event-based (`recipe-state:restored`) with attribute fallback
 (`data-restored-scale-factor`). Embedded cross-reference recipes carry
 `data-base-multiplier` — effective scale = base × user factor.
 
+**Ingredient quantities.** AR `Ingredient` has `quantity_low`/`quantity_high`
+decimal columns (populated at import) alongside the raw `quantity` string
+(fallback for non-numeric values like "a pinch"). Ranges: both columns set;
+non-ranges: only `quantity_low`. `quantity_value` returns the high end (for
+nutrition). Display uses vulgar fractions + en-dash (`½–1`); storage and
+serialization use ASCII fractions + hyphen (`1/2-1`). Normalization
+(vulgar→ASCII, en-dash→hyphen) happens in `MarkdownImporter#import_ingredient`.
+
 **Hotwire stack.** Turbo Drive + Turbo Streams, Stimulus controllers,
 jsbundling-rails + esbuild for JS bundling.
 - New JS modules go in `app/javascript/`; new Stimulus controllers must
