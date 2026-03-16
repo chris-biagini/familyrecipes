@@ -176,4 +176,93 @@ class IngredientTest < Minitest::Test
 
     assert_nil ingredient.quantity_value
   end
+
+  # normalize_quantity tests
+
+  def test_normalize_quantity_vulgar_half
+    assert_equal '1/2 cup', FamilyRecipes::Ingredient.normalize_quantity('½ cup')
+  end
+
+  def test_normalize_quantity_vulgar_quarter
+    assert_equal '1/4 cup', FamilyRecipes::Ingredient.normalize_quantity('¼ cup')
+  end
+
+  def test_normalize_quantity_mixed_vulgar
+    assert_equal '2 1/2 cups', FamilyRecipes::Ingredient.normalize_quantity('2½ cups')
+  end
+
+  def test_normalize_quantity_en_dash_to_hyphen
+    assert_equal '2-3 cups', FamilyRecipes::Ingredient.normalize_quantity('2–3 cups')
+  end
+
+  def test_normalize_quantity_vulgar_and_en_dash
+    assert_equal '1/2-1 sticks', FamilyRecipes::Ingredient.normalize_quantity('½–1 sticks')
+  end
+
+  def test_normalize_quantity_already_ascii
+    assert_equal '2-3 cups', FamilyRecipes::Ingredient.normalize_quantity('2-3 cups')
+  end
+
+  def test_normalize_quantity_nil
+    assert_nil FamilyRecipes::Ingredient.normalize_quantity(nil)
+  end
+
+  def test_normalize_quantity_blank
+    assert_nil FamilyRecipes::Ingredient.normalize_quantity('  ')
+  end
+
+  def test_normalize_quantity_freeform
+    assert_equal 'a pinch', FamilyRecipes::Ingredient.normalize_quantity('a pinch')
+  end
+
+  # parse_range tests
+
+  def test_parse_range_simple
+    assert_equal [2.0, 3.0], FamilyRecipes::Ingredient.parse_range('2-3')
+  end
+
+  def test_parse_range_fractions
+    low, high = FamilyRecipes::Ingredient.parse_range('1/2-1')
+
+    assert_in_delta 0.5, low
+    assert_in_delta 1.0, high
+  end
+
+  def test_parse_range_single_value
+    assert_equal [2.0, nil], FamilyRecipes::Ingredient.parse_range('2')
+  end
+
+  def test_parse_range_single_fraction
+    low, high = FamilyRecipes::Ingredient.parse_range('1/2')
+
+    assert_in_delta 0.5, low
+    assert_nil high
+  end
+
+  def test_parse_range_low_greater_than_high
+    assert_equal [nil, nil], FamilyRecipes::Ingredient.parse_range('1-1/2')
+  end
+
+  def test_parse_range_nil
+    assert_equal [nil, nil], FamilyRecipes::Ingredient.parse_range(nil)
+  end
+
+  def test_parse_range_blank
+    assert_equal [nil, nil], FamilyRecipes::Ingredient.parse_range('  ')
+  end
+
+  def test_parse_range_non_numeric
+    assert_equal [nil, nil], FamilyRecipes::Ingredient.parse_range('a pinch')
+  end
+
+  def test_parse_range_equal_endpoints
+    assert_equal [2.0, nil], FamilyRecipes::Ingredient.parse_range('2-2')
+  end
+
+  def test_parse_range_mixed_number_high
+    low, high = FamilyRecipes::Ingredient.parse_range('3/4-1 1/2')
+
+    assert_in_delta 0.75, low
+    assert_in_delta 1.5, high
+  end
 end

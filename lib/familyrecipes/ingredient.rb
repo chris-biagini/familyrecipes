@@ -8,6 +8,51 @@ module FamilyRecipes
   class Ingredient
     attr_reader :name, :quantity, :prep_note
 
+    VULGAR_TO_ASCII = NumericParsing::VULGAR_GLYPHS.transform_values do |r|
+      "#{r.numerator}/#{r.denominator}"
+    end.freeze
+
+    VULGAR_REPLACE_PATTERN = /(\d*)\s*(#{NumericParsing::VULGAR_PATTERN})/
+
+    def self.normalize_quantity(raw)
+      return nil if raw.nil? || raw.strip.empty?
+
+      result = raw.strip.gsub(VULGAR_REPLACE_PATTERN) do
+        prefix = Regexp.last_match(1)
+        ascii = VULGAR_TO_ASCII[Regexp.last_match(2)]
+        prefix.empty? ? ascii : "#{prefix} #{ascii}"
+      end
+      result.tr("\u2013", '-')
+    end
+
+    def self.parse_range(value_str)
+      return [nil, nil] if value_str.nil? || value_str.strip.empty?
+
+      parts = value_str.strip.split(/[-–]/, 2)
+
+      return parse_single_value(parts[0].strip) unless parts.size == 2
+
+      low = safe_parse(parts[0].strip)
+      high = safe_parse(parts[1].strip)
+      return [nil, nil] unless low && high
+      return [low, nil] if (low - high).abs < 0.0001
+
+      low > high ? [nil, nil] : [low, high]
+    end
+
+    def self.parse_single_value(str)
+      value = safe_parse(str)
+      value ? [value, nil] : [nil, nil]
+    end
+
+    def self.safe_parse(str)
+      NumericParsing.parse_fraction(str)
+    rescue ArgumentError
+      nil
+    end
+
+    private_class_method :parse_single_value, :safe_parse
+
     # Resolves fractions and ranges (takes high end) to a numeric string.
     def self.numeric_value(raw)
       return nil if raw.nil? || raw.strip.empty?
