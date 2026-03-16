@@ -8,6 +8,10 @@ class TagsControllerTest < ActionDispatch::IntegrationTest
     log_in
     @vegan = Tag.create!(name: 'vegan', kitchen: @kitchen)
     @quick = Tag.create!(name: 'quick', kitchen: @kitchen)
+    category = Category.create!(name: 'Test', slug: 'test', kitchen: @kitchen)
+    recipe = @kitchen.recipes.create!(title: 'Salad', slug: 'salad', category:)
+    RecipeTag.create!(recipe:, tag: @vegan)
+    RecipeTag.create!(recipe:, tag: @quick)
   end
 
   test 'tags_content returns tag names as JSON' do

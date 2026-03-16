@@ -12,6 +12,9 @@ class TagWriteServiceTest < ActiveSupport::TestCase
     Tag.destroy_all
     @vegan = Tag.create!(name: 'vegan', kitchen: @kitchen)
     @quick = Tag.create!(name: 'quick', kitchen: @kitchen)
+    recipe = @kitchen.recipes.create!(title: 'Salad', slug: 'salad', category: @category)
+    RecipeTag.create!(recipe:, tag: @vegan)
+    RecipeTag.create!(recipe:, tag: @quick)
   end
 
   test 'rename updates tag name' do
@@ -28,10 +31,6 @@ class TagWriteServiceTest < ActiveSupport::TestCase
   end
 
   test 'delete removes tag and associations' do
-    recipe = MarkdownImporter.import("# Salad\n\n## Toss (do it)\n\n- Lettuce, 1 head\n\nToss.",
-                                     kitchen: @kitchen, category: @category).recipe
-    RecipeTag.create!(recipe:, tag: @vegan)
-
     TagWriteService.update(kitchen: @kitchen, renames: {}, deletes: ['vegan'])
 
     assert_nil Tag.find_by(name: 'vegan')

@@ -10,6 +10,8 @@ class CategoriesControllerTest < ActionDispatch::IntegrationTest
     create_kitchen_and_user
     @bread = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
     @dessert = Category.create!(name: 'Dessert', slug: 'dessert', position: 1, kitchen: @kitchen)
+    @kitchen.recipes.create!(title: 'Bagels', slug: 'bagels', category: @bread)
+    @kitchen.recipes.create!(title: 'Cake', slug: 'cake', category: @dessert)
   end
 
   test 'order_content returns categories as JSON' do

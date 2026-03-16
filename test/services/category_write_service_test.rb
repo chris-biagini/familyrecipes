@@ -11,6 +11,8 @@ class CategoryWriteServiceTest < ActiveSupport::TestCase
     Category.destroy_all
     @bread = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
     @dessert = Category.create!(name: 'Dessert', slug: 'dessert', position: 1, kitchen: @kitchen)
+    @kitchen.recipes.create!(title: 'Bagels', slug: 'bagels', category: @bread)
+    @kitchen.recipes.create!(title: 'Cake', slug: 'cake', category: @dessert)
   end
 
   # --- validation ---

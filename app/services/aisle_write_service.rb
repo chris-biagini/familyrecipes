@@ -6,7 +6,7 @@
 #
 # - Kitchen#aisle_order: newline-delimited string of user-ordered aisle names
 # - IngredientCatalog: cascade target for rename/delete operations
-# - Kitchen#broadcast_update: notifies clients after successful order changes
+# - Kitchen.finalize_writes: centralized post-write finalization
 # - CatalogWriteService: calls sync_new_aisles after catalog writes
 class AisleWriteService
   include OrderedListValidation
@@ -44,7 +44,7 @@ class AisleWriteService
       kitchen.save!
     end
 
-    kitchen.broadcast_update
+    Kitchen.finalize_writes(kitchen)
     Result.new(success: true, errors: [])
   end
 

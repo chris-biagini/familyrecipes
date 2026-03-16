@@ -7,7 +7,7 @@
 # Collaborators:
 # - Tag: the model being mutated
 # - TagsController: thin controller that delegates here
-# - Kitchen#broadcast_update: notifies clients after changes
+# - Kitchen.finalize_writes: centralized post-write finalization
 class TagWriteService
   Result = Data.define(:success, :errors)
 
@@ -20,7 +20,7 @@ class TagWriteService
       apply_deletes(kitchen, deletes)
     end
 
-    kitchen.broadcast_update
+    Kitchen.finalize_writes(kitchen)
     Result.new(success: true, errors: [])
   end
 

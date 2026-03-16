@@ -5,7 +5,7 @@
 # Categories dialog changeset.
 #
 # - Category: AR model with position column for homepage ordering
-# - Kitchen#broadcast_update: page-refresh morph after successful writes
+# - Kitchen.finalize_writes: centralized post-write finalization
 class CategoryWriteService
   include OrderedListValidation
 
@@ -33,7 +33,7 @@ class CategoryWriteService
       update_positions(names)
     end
 
-    kitchen.broadcast_update
+    Kitchen.finalize_writes(kitchen)
     Result.new(success: true, errors: [])
   end
 
