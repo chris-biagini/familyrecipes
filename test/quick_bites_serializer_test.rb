@@ -10,11 +10,11 @@ class QuickBitesSerializerTest < Minitest::Test
 
   def test_round_trip_preserves_content
     content = <<~TXT
-      Snacks:
+      ## Snacks
       - Apples and Honey: Apples, Honey
       - Goldfish
 
-      Breakfast:
+      ## Breakfast
       - Cereal with Milk: Cereal, Milk
     TXT
 
@@ -39,7 +39,7 @@ class QuickBitesSerializerTest < Minitest::Test
 
     output = FamilyRecipes::QuickBitesSerializer.serialize(ir)
 
-    assert_equal "Snacks:\n- Banana\n", output
+    assert_equal "## Snacks\n- Banana\n", output
   end
 
   def test_empty_categories_produces_empty_output
@@ -73,7 +73,7 @@ class QuickBitesSerializerTest < Minitest::Test
 
     output = FamilyRecipes::QuickBitesSerializer.serialize(ir)
 
-    assert_equal "Snacks:\n- Chips\n\nDrinks:\n- Lemonade: Lemons, Sugar, Water\n", output
+    assert_equal "## Snacks\n- Chips\n\n## Drinks\n- Lemonade: Lemons, Sugar, Water\n", output
   end
 
   def test_serialize_item_with_explicit_ingredients
@@ -90,12 +90,12 @@ class QuickBitesSerializerTest < Minitest::Test
 
     output = FamilyRecipes::QuickBitesSerializer.serialize(ir)
 
-    assert_equal "Lunch:\n- PB&J: Peanut butter, Jelly, Bread\n", output
+    assert_equal "## Lunch\n- PB&J: Peanut butter, Jelly, Bread\n", output
   end
 
   def test_to_ir_extracts_subcategory_name
     content = <<~TXT
-      Kids' Lunches:
+      ## Kids' Lunches
       - RXBARs
     TXT
 
@@ -106,7 +106,7 @@ class QuickBitesSerializerTest < Minitest::Test
 
   def test_to_ir_maps_item_fields
     content = <<~TXT
-      Snacks:
+      ## Snacks
       - Trail Mix: Nuts, Raisins, Chocolate chips
     TXT
 

@@ -31,7 +31,7 @@ module FamilyRecipes
 
     def serialize_category(category)
       lines = category[:items].map { |item| serialize_item(item) }
-      "#{category[:name]}:\n#{lines.join("\n")}\n"
+      "## #{category[:name]}\n#{lines.join("\n")}\n"
     end
 
     def serialize_item(item)
