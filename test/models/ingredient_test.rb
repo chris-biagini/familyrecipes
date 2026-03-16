@@ -64,19 +64,21 @@ class IngredientModelTest < ActiveSupport::TestCase
   # --- quantity_value ---
 
   test 'quantity_value for simple integer' do
-    ingredient = Ingredient.new(step: @step, name: 'Eggs', quantity: '4', position: 1)
+    ingredient = Ingredient.new(step: @step, name: 'Eggs', quantity: '4', quantity_low: 4.0, position: 1)
 
     assert_equal '4', ingredient.quantity_value
   end
 
   test 'quantity_value for decimal' do
-    ingredient = Ingredient.new(step: @step, name: 'Salt', quantity: '3.5', unit: 'g', position: 1)
+    ingredient = Ingredient.new(step: @step, name: 'Salt', quantity: '3.5', quantity_low: 3.5, unit: 'g', position: 1)
 
     assert_equal '3.5', ingredient.quantity_value
   end
 
   test 'quantity_value for fraction' do
-    ingredient = Ingredient.new(step: @step, name: 'Butter', quantity: '1/2', unit: 'cup', position: 1)
+    ingredient = Ingredient.new(
+      step: @step, name: 'Butter', quantity: '1/2', quantity_low: 0.5, unit: 'cup', position: 1
+    )
 
     assert_equal '0.5', ingredient.quantity_value
   end
@@ -105,6 +107,74 @@ class IngredientModelTest < ActiveSupport::TestCase
     ingredient = Ingredient.new(step: @step, name: 'Eggs', quantity: '4', position: 1)
 
     assert_nil ingredient.quantity_unit
+  end
+
+  # --- quantity_value with quantity_low/quantity_high ---
+
+  test 'quantity_value returns high end for range' do
+    ingredient = Ingredient.new(step: @step, position: 1, name: 'Eggs', quantity_low: 2.0, quantity_high: 3.0)
+
+    assert_equal '3', ingredient.quantity_value
+  end
+
+  test 'quantity_value returns low for non-range' do
+    ingredient = Ingredient.new(step: @step, position: 1, name: 'Flour', quantity_low: 2.0)
+
+    assert_equal '2', ingredient.quantity_value
+  end
+
+  test 'quantity_value returns nil when no numeric quantity' do
+    ingredient = Ingredient.new(step: @step, position: 1, name: 'Salt', quantity: 'a pinch')
+
+    assert_nil ingredient.quantity_value
+  end
+
+  test 'quantity_value strips trailing .0' do
+    ingredient = Ingredient.new(step: @step, position: 1, name: 'Eggs', quantity_low: 3.0)
+
+    assert_equal '3', ingredient.quantity_value
+  end
+
+  test 'quantity_value preserves decimals' do
+    ingredient = Ingredient.new(step: @step, position: 1, name: 'Salt', quantity_low: 0.5)
+
+    assert_equal '0.5', ingredient.quantity_value
+  end
+
+  # --- quantity_display with quantity_low/quantity_high ---
+
+  test 'quantity_display for range with unit' do
+    ingredient = Ingredient.new(
+      step: @step, position: 1, name: 'Flour', quantity_low: 2.0, quantity_high: 3.0, unit: 'cup'
+    )
+
+    assert_equal "2\u20133 cups", ingredient.quantity_display
+  end
+
+  test 'quantity_display for fractional range' do
+    ingredient = Ingredient.new(
+      step: @step, position: 1, name: 'Butter', quantity_low: 0.5, quantity_high: 1.0, unit: 'stick'
+    )
+
+    assert_equal "\u00BD\u20131 stick", ingredient.quantity_display
+  end
+
+  test 'quantity_display for non-range with vulgar fraction' do
+    ingredient = Ingredient.new(step: @step, position: 1, name: 'Butter', quantity_low: 0.5, unit: 'cup')
+
+    assert_equal "\u00BD cup", ingredient.quantity_display
+  end
+
+  test 'quantity_display for non-numeric falls back to raw' do
+    ingredient = Ingredient.new(step: @step, position: 1, name: 'Basil', quantity: 'a few leaves')
+
+    assert_equal 'a few leaves', ingredient.quantity_display
+  end
+
+  test 'quantity_display for unitless range' do
+    ingredient = Ingredient.new(step: @step, position: 1, name: 'Eggs', quantity_low: 2.0, quantity_high: 3.0)
+
+    assert_equal "2\u20133", ingredient.quantity_display
   end
 
   # --- prep_note ---
