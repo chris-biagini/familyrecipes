@@ -329,8 +329,12 @@ class CrossReferenceExpandedIngredientsTest < ActiveSupport::TestCase
       category: @category
     )
     target_step = @target.steps.find_or_create_by!(title: 'Mix', position: 1)
-    target_step.ingredients.find_or_create_by!(name: 'Flour', quantity: '2', unit: 'cups', position: 1)
-    target_step.ingredients.find_or_create_by!(name: 'Water', quantity: '1', unit: 'cup', position: 2)
+    target_step.ingredients.find_or_create_by!(
+      name: 'Flour', quantity: '2', quantity_low: 2.0, unit: 'cups', position: 1
+    )
+    target_step.ingredients.find_or_create_by!(
+      name: 'Water', quantity: '1', quantity_low: 1.0, unit: 'cup', position: 2
+    )
 
     # Parent recipe with a cross-reference to Poolish
     @recipe = Recipe.find_or_create_by!(

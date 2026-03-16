@@ -11,7 +11,7 @@ Makes: 12 pancakes
 - Baking powder, 2 tsp
 - Salt, 0.5 tsp
 - Milk, 240 g
-- Eggs, 1
+- Eggs, 1-2
 - Butter, 2 tbsp: Melted.
 
 Whisk dry ingredients together. In a separate bowl, whisk milk, egg, and melted butter. Pour wet into dry and stir until just combined — lumps are fine.

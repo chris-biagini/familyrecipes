@@ -14,10 +14,16 @@ class RecipeAggregationTest < ActiveSupport::TestCase
       category: @category
     )
     step1 = recipe.steps.find_or_create_by!(title: 'Mix', position: 1)
-    step1.ingredients.find_or_create_by!(name: 'Flour', quantity: '2', unit: 'cups', position: 1)
+    step1.ingredients.find_or_create_by!(
+      name: 'Flour', quantity: '2', quantity_low: 2.0, unit: 'cups', position: 1
+    )
     step2 = recipe.steps.find_or_create_by!(title: 'Knead', position: 2)
-    step2.ingredients.find_or_create_by!(name: 'Flour', quantity: '1', unit: 'cup', position: 1)
-    step2.ingredients.find_or_create_by!(name: 'Salt', quantity: '1', unit: 'tsp', position: 2)
+    step2.ingredients.find_or_create_by!(
+      name: 'Flour', quantity: '1', quantity_low: 1.0, unit: 'cup', position: 1
+    )
+    step2.ingredients.find_or_create_by!(
+      name: 'Salt', quantity: '1', quantity_low: 1.0, unit: 'tsp', position: 2
+    )
 
     result = recipe.own_ingredients_aggregated
 
@@ -48,14 +54,18 @@ class RecipeAggregationTest < ActiveSupport::TestCase
       category: @category
     )
     target_step = target.steps.find_or_create_by!(title: 'Mix', position: 1)
-    target_step.ingredients.find_or_create_by!(name: 'Flour', quantity: '1', unit: 'cup', position: 1)
+    target_step.ingredients.find_or_create_by!(
+      name: 'Flour', quantity: '1', quantity_low: 1.0, unit: 'cup', position: 1
+    )
 
     recipe = Recipe.find_or_create_by!(
       title: 'Focaccia', slug: 'focaccia',
       category: @category
     )
     step = recipe.steps.find_or_create_by!(title: 'Dough', position: 1)
-    step.ingredients.find_or_create_by!(name: 'Salt', quantity: '1', unit: 'tsp', position: 1)
+    step.ingredients.find_or_create_by!(
+      name: 'Salt', quantity: '1', quantity_low: 1.0, unit: 'tsp', position: 1
+    )
     step.cross_references.find_or_create_by!(
       target_recipe: target, target_slug: 'poolish', target_title: 'Poolish',
       position: 2
@@ -77,14 +87,18 @@ class RecipeAggregationTest < ActiveSupport::TestCase
       category: @category
     )
     target_step = target.steps.find_or_create_by!(title: 'Mix', position: 1)
-    target_step.ingredients.find_or_create_by!(name: 'Flour', quantity: '2', unit: 'cups', position: 1)
+    target_step.ingredients.find_or_create_by!(
+      name: 'Flour', quantity: '2', quantity_low: 2.0, unit: 'cups', position: 1
+    )
 
     recipe = Recipe.find_or_create_by!(
       title: 'Focaccia', slug: 'focaccia',
       category: @category
     )
     step = recipe.steps.find_or_create_by!(title: 'Dough', position: 1)
-    step.ingredients.find_or_create_by!(name: 'Flour', quantity: '3', unit: 'cups', position: 1)
+    step.ingredients.find_or_create_by!(
+      name: 'Flour', quantity: '3', quantity_low: 3.0, unit: 'cups', position: 1
+    )
     step.cross_references.find_or_create_by!(
       target_recipe: target, target_slug: 'poolish', target_title: 'Poolish',
       position: 2
@@ -105,7 +119,9 @@ class RecipeAggregationTest < ActiveSupport::TestCase
       category: @category
     )
     step = recipe.steps.find_or_create_by!(title: 'Mix', position: 1)
-    step.ingredients.find_or_create_by!(name: 'Flour', quantity: '1', unit: 'cup', position: 1)
+    step.ingredients.find_or_create_by!(
+      name: 'Flour', quantity: '1', quantity_low: 1.0, unit: 'cup', position: 1
+    )
     step.cross_references.find_or_create_by!(
       target_slug: 'nonexistent', target_title: 'Nonexistent',
       position: 2

@@ -88,7 +88,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
   test 'renders ingredient data attributes for scaling' do
     get recipe_path('focaccia', kitchen_slug: kitchen_slug)
 
-    assert_match(/data-quantity-value=/, response.body)
+    assert_match(/data-quantity-low=/, response.body)
   end
 
   test 'recipe page includes turbo stream subscription for members' do
