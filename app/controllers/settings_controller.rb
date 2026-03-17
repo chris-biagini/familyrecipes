@@ -14,7 +14,8 @@ class SettingsController < ApplicationController
       site_title: current_kitchen.site_title,
       homepage_heading: current_kitchen.homepage_heading,
       homepage_subtitle: current_kitchen.homepage_subtitle,
-      usda_api_key: current_kitchen.usda_api_key
+      usda_api_key: current_kitchen.usda_api_key,
+      show_nutrition: current_kitchen.show_nutrition
     }
   end
 
@@ -30,6 +31,6 @@ class SettingsController < ApplicationController
   private
 
   def settings_params
-    params.expect(kitchen: %i[site_title homepage_heading homepage_subtitle usda_api_key])
+    params.expect(kitchen: %i[site_title homepage_heading homepage_subtitle usda_api_key show_nutrition])
   end
 end

@@ -72,6 +72,26 @@ class SettingsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'nav button.nav-settings-link', count: 0
   end
 
+  test 'show returns show_nutrition setting' do
+    log_in
+    get settings_path(kitchen_slug: kitchen_slug), as: :json
+
+    data = response.parsed_body
+
+    assert_equal false, data['show_nutrition']
+  end
+
+  test 'updates show_nutrition via JSON' do
+    log_in
+    patch settings_path(kitchen_slug: kitchen_slug),
+          params: { kitchen: { show_nutrition: true } }, as: :json
+
+    assert_response :success
+    @kitchen.reload
+
+    assert @kitchen.show_nutrition
+  end
+
   test 'rejects unpermitted params' do
     log_in
     patch settings_path(kitchen_slug: kitchen_slug),
