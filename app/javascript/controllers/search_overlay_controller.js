@@ -1,5 +1,11 @@
 import { Controller } from "@hotwired/stimulus"
 
+function normalizeForSearch(str) {
+  return (str || "")
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201C\u201D]/g, '"')
+}
+
 /**
  * Spotlight-style recipe search overlay with pill-based tag/category filtering.
  * Opens on "/" keypress or nav button click, searches a pre-embedded JSON blob
@@ -34,9 +40,16 @@ export default class extends Controller {
     const data = this.hasDataTarget
       ? JSON.parse(this.dataTarget.textContent || "{}")
       : {}
-    this.recipes = data.recipes || []
-    this.allTags = new Set((data.all_tags || []).map(t => t.toLowerCase()))
-    this.allCategories = new Set((data.all_categories || []).map(c => c.toLowerCase()))
+    this.recipes = (data.recipes || []).map(r => ({
+      ...r,
+      _title: normalizeForSearch(r.title).toLowerCase(),
+      _description: normalizeForSearch(r.description).toLowerCase(),
+      _ingredients: r.ingredients.map(i => normalizeForSearch(i).toLowerCase()),
+      _tags: r.tags?.map(t => normalizeForSearch(t).toLowerCase()),
+      _category: normalizeForSearch(r.category).toLowerCase()
+    }))
+    this.allTags = new Set((data.all_tags || []).map(t => normalizeForSearch(t).toLowerCase()))
+    this.allCategories = new Set((data.all_categories || []).map(c => normalizeForSearch(c).toLowerCase()))
   }
 
   open() {
@@ -117,7 +130,7 @@ export default class extends Controller {
     const word = value.trimEnd()
     if (!word || value.slice(-1) !== " ") return
 
-    const lower = word.toLowerCase()
+    const lower = normalizeForSearch(word).toLowerCase()
     const type = this.allTags.has(lower) ? "tag" : this.allCategories.has(lower) ? "category" : null
     if (!type) return
 
@@ -161,13 +174,13 @@ export default class extends Controller {
   }
 
   updateHint() {
-    const word = this.inputTarget.value.trim().toLowerCase()
+    const word = normalizeForSearch(this.inputTarget.value).trim().toLowerCase()
     const matches = word && (this.allTags.has(word) || this.allCategories.has(word))
     this.inputTarget.classList.toggle("search-input--hinted", matches)
   }
 
   performSearch() {
-    const query = this.inputTarget.value.toLowerCase().trim()
+    const query = normalizeForSearch(this.inputTarget.value).toLowerCase().trim()
     if (!query && this.activePills.length === 0) {
       this.resultsTarget.replaceChildren()
       this.selectedIndex = -1
@@ -187,18 +200,18 @@ export default class extends Controller {
   matchesPill(recipe, pill) {
     const text = pill.text
     if (pill.type === "tag") {
-      return recipe.tags?.some(t => t.toLowerCase() === text) || this.textContains(recipe, text)
+      return recipe._tags?.some(t => t === text) || this.textContains(recipe, text)
     }
     if (pill.type === "category") {
-      return recipe.category.toLowerCase() === text || this.textContains(recipe, text)
+      return recipe._category === text || this.textContains(recipe, text)
     }
     return false
   }
 
   textContains(recipe, text) {
-    return recipe.title.toLowerCase().includes(text) ||
-      recipe.description.toLowerCase().includes(text) ||
-      recipe.ingredients.some(i => i.toLowerCase().includes(text))
+    return recipe._title.includes(text) ||
+      recipe._description.includes(text) ||
+      recipe._ingredients.some(i => i.includes(text))
   }
 
   rankResults(query, candidates = this.recipes) {
@@ -218,11 +231,11 @@ export default class extends Controller {
   }
 
   matchTier(recipe, query) {
-    if (recipe.title.toLowerCase().includes(query)) return 0
-    if (recipe.description.toLowerCase().includes(query)) return 1
-    if (recipe.category.toLowerCase().includes(query)) return 2
-    if (recipe.tags?.some(t => t.toLowerCase().includes(query))) return 3
-    if (recipe.ingredients.some(i => i.toLowerCase().includes(query))) return 4
+    if (recipe._title.includes(query)) return 0
+    if (recipe._description.includes(query)) return 1
+    if (recipe._category.includes(query)) return 2
+    if (recipe._tags?.some(t => t.includes(query))) return 3
+    if (recipe._ingredients.some(i => i.includes(query))) return 4
     return 5
   }
 
