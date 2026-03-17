@@ -22,13 +22,13 @@ module FamilyRecipes
         ascii = VULGAR_TO_ASCII[Regexp.last_match(2)]
         prefix.empty? ? ascii : "#{prefix} #{ascii}"
       end
-      result.tr("\u2013", '-')
+      result.tr("\u2013\u2014", '--')
     end
 
     def self.parse_range(value_str)
       return [nil, nil] if value_str.nil? || value_str.strip.empty?
 
-      parts = value_str.strip.split(/[-–]/, 2)
+      parts = value_str.strip.split(/[-–—]/, 2)
 
       return parse_single_value(parts[0].strip) unless parts.size == 2
 
@@ -58,7 +58,7 @@ module FamilyRecipes
       return nil if raw.nil? || raw.strip.empty?
 
       value_str = raw.strip
-      value_str = value_str.split(/[-–]/).last.strip if value_str.match?(/[-–]/)
+      value_str = value_str.split(/[-–—]/).last.strip if value_str.match?(/[-–—]/)
 
       if value_str.match?(%r{/}o) || value_str.match?(NumericParsing::VULGAR_PATTERN)
         return NumericParsing.parse_fraction(value_str).to_s

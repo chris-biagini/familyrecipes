@@ -203,6 +203,20 @@ class IngredientTest < Minitest::Test
     assert_equal '2-3 cups', FamilyRecipes::Ingredient.normalize_quantity('2-3 cups')
   end
 
+  def test_normalize_quantity_em_dash_to_hyphen
+    assert_equal '2-3 cups', FamilyRecipes::Ingredient.normalize_quantity("2\u20143 cups")
+  end
+
+  def test_parse_range_em_dash
+    assert_equal [2.0, 3.0], FamilyRecipes::Ingredient.parse_range("2\u20143")
+  end
+
+  def test_numeric_value_em_dash_range
+    ingredient = FamilyRecipes::Ingredient.new(name: 'Eggs', quantity: "2\u20143")
+
+    assert_equal '3', ingredient.quantity_value
+  end
+
   def test_normalize_quantity_nil
     assert_nil FamilyRecipes::Ingredient.normalize_quantity(nil)
   end
