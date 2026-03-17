@@ -92,11 +92,15 @@ non-slug string comparisons only.
 
 **File:** `app/services/ingredient_resolver.rb`
 
-Normalize keys when building both `@lookup` and `@ci_lookup` in `initialize`,
-and normalize the query in `find_entry`. This ensures "baker's chocolate"
-(curled) matches "baker's chocolate" (straight) regardless of which side has
-which variant. The same normalization must apply when building keys via alias
-and variant expansion in `IngredientCatalog.lookup_for`.
+Normalize keys when building `@ci_lookup` in `initialize`, and normalize the
+query in `find_entry`. This ensures "baker's chocolate" (curled) matches
+"baker's chocolate" (straight) regardless of which side has which variant.
+
+Normalization in `IngredientCatalog.lookup_for` is unnecessary — catalog keys
+are author-controlled (typically ASCII), and the resolver's `@ci_lookup`
+fallback with `normalize_key` catches any mismatch. Modifying the catalog's
+hash-building logic is more invasive and would also affect alias collision
+detection.
 
 **Test file:** `test/services/ingredient_resolver_test.rb` — add tests that
 lookup succeeds with curled apostrophe when catalog has straight, and vice
