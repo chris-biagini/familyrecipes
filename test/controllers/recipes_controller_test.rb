@@ -942,9 +942,9 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
   test 'hides nutrition table when show_nutrition is false' do
     recipe = @kitchen.recipes.find_by!(slug: 'focaccia')
     recipe.update_column(:nutrition_data, { # rubocop:disable Rails/SkipsModelValidations
-      'totals' => { 'calories' => 200 },
-      'per_serving' => { 'calories' => 25 }
-    })
+                           'totals' => { 'calories' => 200 },
+                           'per_serving' => { 'calories' => 25 }
+                         })
 
     get recipe_path('focaccia', kitchen_slug: kitchen_slug)
 
@@ -956,9 +956,9 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     @kitchen.update!(show_nutrition: true)
     recipe = @kitchen.recipes.find_by!(slug: 'focaccia')
     recipe.update_column(:nutrition_data, { # rubocop:disable Rails/SkipsModelValidations
-      'totals' => { 'calories' => 200 },
-      'per_serving' => { 'calories' => 25 }
-    })
+                           'totals' => { 'calories' => 200 },
+                           'per_serving' => { 'calories' => 25 }
+                         })
 
     get recipe_path('focaccia', kitchen_slug: kitchen_slug)
 

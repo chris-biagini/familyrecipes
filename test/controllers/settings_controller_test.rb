@@ -78,7 +78,7 @@ class SettingsControllerTest < ActionDispatch::IntegrationTest
 
     data = response.parsed_body
 
-    assert_equal false, data['show_nutrition']
+    assert_not data['show_nutrition']
   end
 
   test 'updates show_nutrition via JSON' do
