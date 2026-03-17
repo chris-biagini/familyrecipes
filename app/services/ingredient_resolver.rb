@@ -17,7 +17,7 @@ class IngredientResolver
 
   def initialize(lookup)
     @lookup = lookup
-    @ci_lookup = lookup.each_with_object({}) { |(k, v), h| h[k.downcase] ||= v }
+    @ci_lookup = lookup.each_with_object({}) { |(k, v), h| h[normalize_key(k)] ||= v }
     @uncataloged = {}
   end
 
@@ -55,31 +55,35 @@ class IngredientResolver
   private
 
   def find_entry(name)
-    @lookup[name] || @ci_lookup[name.downcase]
+    @lookup[name] || @ci_lookup[normalize_key(name)]
   end
 
   def resolve_uncataloged(name)
     return name if name.blank?
 
-    downcased = name.downcase
-    return @uncataloged[downcased] if @uncataloged.key?(downcased)
+    normalized = normalize_key(name)
+    return @uncataloged[normalized] if @uncataloged.key?(normalized)
 
-    existing = find_variant_match(name)
+    existing = find_variant_match(name, normalized)
     return existing if existing
 
-    @uncataloged[downcased] = name
+    @uncataloged[normalized] = name
   end
 
-  def find_variant_match(name)
+  def find_variant_match(name, normalized_name = normalize_key(name))
     FamilyRecipes::Inflector.ingredient_variants(name).each do |variant|
-      canonical = @uncataloged[variant.downcase]
-      return register_alias(name, canonical) if canonical
+      canonical = @uncataloged[normalize_key(variant)]
+      return register_alias(normalized_name, canonical) if canonical
     end
     nil
   end
 
-  def register_alias(name, canonical)
-    @uncataloged[name.downcase] = canonical
+  def register_alias(normalized_name, canonical)
+    @uncataloged[normalized_name] = canonical
     canonical
+  end
+
+  def normalize_key(str)
+    FamilyRecipes.normalize_for_comparison(str).downcase
   end
 end

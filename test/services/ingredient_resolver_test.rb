@@ -180,6 +180,29 @@ class IngredientResolverTest < ActiveSupport::TestCase
     assert_same resolver.omit_set, resolver.omit_set
   end
 
+  # --- smart punctuation ---
+
+  test 'resolves curly apostrophe when catalog has straight' do
+    catalog = { "baker's chocolate" => FakeEntry.new(ingredient_name: "baker's chocolate") }
+    resolver = IngredientResolver.new(catalog)
+
+    assert_equal "baker's chocolate", resolver.resolve("baker\u2019s chocolate")
+  end
+
+  test 'resolves straight apostrophe when catalog has curly' do
+    catalog = { "baker\u2019s chocolate" => FakeEntry.new(ingredient_name: "baker\u2019s chocolate") }
+    resolver = IngredientResolver.new(catalog)
+
+    assert_equal "baker\u2019s chocolate", resolver.resolve("baker's chocolate")
+  end
+
+  test 'cataloged? matches across apostrophe styles' do
+    catalog = { "baker's chocolate" => FakeEntry.new(ingredient_name: "baker's chocolate") }
+    resolver = IngredientResolver.new(catalog)
+
+    assert resolver.cataloged?("baker\u2019s chocolate")
+  end
+
   # --- factory ---
 
   test 'IngredientCatalog.resolver_for returns an IngredientResolver' do
