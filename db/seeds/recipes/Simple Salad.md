@@ -1,5 +1,7 @@
 # Simple Salad
 
+Category: Sample
+Tags: sample
 Serves: 2
 
 - Salad greens, 150 g

@@ -2,6 +2,8 @@
 
 Chewy oatmeal cookies with a hint of cinnamon. Great for lunch boxes.
 
+Category: Sample
+Tags: sample
 Makes: 24 cookies
 
 ## Make the dough.

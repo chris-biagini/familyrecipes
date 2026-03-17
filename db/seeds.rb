@@ -10,6 +10,13 @@
 # - catalog:sync rake task — reused here so catalog exists before recipe import
 # - db/seeds/recipes/ — sample Markdown files including Quick Bites.md
 # - db/seeds/resources/ — aisle-order.txt and ingredient-catalog.yaml
+def sync_front_matter_tags(kitchen, result)
+  return unless result.front_matter_tags
+
+  tags = result.front_matter_tags.map { |n| kitchen.tags.find_or_create_by!(name: n.downcase) }
+  result.recipe.tags = tags
+end
+
 kitchen = Kitchen.find_or_create_by!(slug: 'our-kitchen') do |k|
   k.name = 'Our Kitchen'
 end
@@ -42,21 +49,15 @@ if Recipe.none?
   recipes_dir = seeds_dir.join('recipes')
   quick_bites_filename = 'Quick Bites.md'
 
-  recipe_files = Dir.glob(recipes_dir.join('**', '*.md')).reject do |path|
+  recipe_files = Dir.glob(recipes_dir.join('*.md')).reject do |path|
     File.basename(path) == quick_bites_filename
   end
 
   puts "Importing #{recipe_files.size} sample recipes..."
 
   recipe_files.each do |path|
-    category_name = File.basename(File.dirname(path))
-    category_slug = FamilyRecipes.slugify(category_name)
-    category = kitchen.categories.find_or_create_by!(slug: category_slug) do |cat|
-      cat.name = category_name
-      cat.position = kitchen.categories.maximum(:position).to_i + 1
-    end
-
-    result = MarkdownImporter.import(File.read(path), kitchen: kitchen, category: category)
+    result = MarkdownImporter.import(File.read(path), kitchen: kitchen, category: nil)
+    sync_front_matter_tags(kitchen, result)
     puts "  #{result.recipe.title} (#{result.recipe.category.name})"
   end
 

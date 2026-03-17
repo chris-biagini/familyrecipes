@@ -2,6 +2,8 @@
 
 A breakfast staple. Low and slow is the key to creamy eggs.
 
+Category: Sample
+Tags: sample
 Serves: 2
 
 ## Prep the eggs.

@@ -2,6 +2,8 @@
 
 Fluffy weekend pancakes. Double the batch and freeze extras for weekday breakfasts.
 
+Category: Sample
+Tags: sample
 Makes: 12 pancakes
 
 ## Mix the batter.

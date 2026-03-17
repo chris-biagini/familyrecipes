@@ -2,6 +2,8 @@
 
 The weeknight classic. This recipe uses a cross-reference to pull in the sauce ingredients automatically.
 
+Category: Sample
+Tags: sample
 Serves: 4
 
 ## Make the sauce.

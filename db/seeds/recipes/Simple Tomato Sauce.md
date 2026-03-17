@@ -2,6 +2,8 @@
 
 A versatile base sauce. Make a double batch and freeze half for busy weeknights.
 
+Category: Sample
+Tags: sample
 Makes: 4 servings
 
 ## Cook the sauce.

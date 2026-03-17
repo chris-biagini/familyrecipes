@@ -2,6 +2,8 @@
 
 A simple weeknight pizza using pantry staples.
 
+Category: Sample
+Tags: sample
 Makes: 2 pizzas
 Serves: 4
 
