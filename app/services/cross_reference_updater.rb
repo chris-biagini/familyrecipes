@@ -19,8 +19,13 @@ class CrossReferenceUpdater
   end
 
   def rename_references(new_title)
-    old_title = @recipe.title
-    update_referencing_recipes { |source, _| source.gsub("@[#{old_title}]", "@[#{new_title}]") }
+    normalized_old = FamilyRecipes.normalize_for_comparison(@recipe.title)
+    update_referencing_recipes do |source, _|
+      source.gsub(/@\[([^\]]+)\]/) do |match|
+        ref_title = Regexp.last_match(1)
+        FamilyRecipes.normalize_for_comparison(ref_title) == normalized_old ? "@[#{new_title}]" : match
+      end
+    end
   end
 
   private
