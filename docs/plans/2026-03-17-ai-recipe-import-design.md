@@ -4,21 +4,21 @@
 
 Adding recipes from external sources (websites, cookbooks, handwritten cards)
 requires manually reformatting into the app's Markdown syntax. An AI-powered
-import would accept pasted text or a photo and produce correctly formatted
-recipe Markdown, dramatically reducing friction.
+import would accept pasted text and produce correctly formatted recipe
+Markdown, dramatically reducing friction.
 
 ## Overview
 
-A new "Import with AI" flow on the homepage. The user pastes recipe text and/or
-uploads an image, the server calls the Anthropic API with a detailed system
-prompt, and the generated Markdown lands in the existing recipe editor for
-review and editing. A "try again" option lets the user refine the result with
-feedback before saving.
+A new "Import with AI" flow on the homepage. The user pastes recipe text,
+the server calls the Anthropic API with a detailed system prompt, and the
+generated Markdown lands in the existing recipe editor for review and
+editing. A "try again" option lets the user refine the result with feedback
+before saving.
 
 ## Design Decisions
 
-- **Paste + image input, no URL fetching.** Many sites block automated access.
-  Users paste from a print view or photograph a cookbook page.
+- **Text-only input, no URL fetching.** Many sites block automated access.
+  Users paste from a print view. Image support deferred to v2.
 - **Server-side API call.** API key never leaves the server. Follows the
   existing `UsdaSearchController` pattern.
 - **Synchronous request.** No streaming, no background jobs. A 5-15 second
@@ -27,45 +27,41 @@ feedback before saving.
   pre-filled with result. Recipe doesn't hit the DB until the user saves.
 - **Try-again via multi-turn conversation.** Previous result + user feedback
   sent as a follow-up turn. Lightweight refinement without a chat UI.
-- **User-configurable model.** Dropdown in Settings alongside the API key.
-  Hardcoded list of model IDs (no dynamic API fetching).
+- **Hardcoded model.** Always uses `claude-sonnet-4-6`. No model picker —
+  keeps Settings simple. Upgrade the constant when better models ship.
 
 ## Section 1: Settings
 
-### New Kitchen Columns
+### New Kitchen Column
 
 | Column | Type | Notes |
 |---|---|---|
 | `anthropic_api_key` | string (encrypted) | Same pattern as `usda_api_key` |
-| `ai_model` | string | Default: `"claude-sonnet-4-6"` |
 
-`Kitchen` gains `encrypts :anthropic_api_key` and an `AI_MODELS` constant
-mapping display names to model ID strings. The constant is the single source
-of truth for the model dropdown.
+`Kitchen` gains `encrypts :anthropic_api_key`. Model is hardcoded as a
+constant (`AI_MODEL = 'claude-sonnet-4-6'`) — no database column needed.
 
 ### Settings UI
 
-Two new fields in the existing settings form:
+One new field in the existing settings form:
 - Password-type input for the API key (new Stimulus target:
   `anthropicApiKey`)
-- `<select>` dropdown for the model (new Stimulus target: `aiModel`),
-  populated from `Kitchen::AI_MODELS`
 
 Changes required in `settings_editor_controller.js`:
-- Add `anthropicApiKey` and `aiModel` to `static targets`
-- Include both in the `collect` event handler's `kitchen` hash
-- Populate both in the `openDialog` content-loaded flow
+- Add `anthropicApiKey` to `static targets`
+- Include in the `collect` event handler's `kitchen` hash
+- Populate in the `openDialog` content-loaded flow
 
 Changes required in `SettingsController`:
-- Add `:anthropic_api_key` and `:ai_model` to `settings_params`
-- Include both in the `show` JSON response
+- Add `:anthropic_api_key` to `settings_params`
+- Include in the `show` JSON response
 
 No eager validation of the API key — validated when used. Bad key → clear
 error at import time.
 
 ### Migration
 
-One migration adding both columns to `kitchens`.
+One migration adding the column to `kitchens`.
 
 ## Section 2: Backend
 
@@ -76,7 +72,6 @@ Pure-function service. No database interaction, no side effects.
 ```ruby
 AiImportService.call(
   text:,
-  image: nil,          # { data: "base64...", media_type: "image/jpeg" }
   kitchen:,
   previous_result: nil,
   feedback: nil
@@ -85,9 +80,9 @@ AiImportService.call(
 ```
 
 Responsibilities:
-- Read API key + model from `kitchen`
-- Assemble message array (system prompt + user content blocks + optional
-  multi-turn for try-again)
+- Read API key from `kitchen`, use hardcoded model constant
+- Assemble message array (system prompt + user text + optional multi-turn
+  for try-again)
 - Call Anthropic API via the `anthropic` Ruby gem (official SDK,
   `github.com/anthropics/anthropic-sdk-ruby`, v1.24+)
 - Light output cleanup (strip code fences if present)
@@ -112,7 +107,8 @@ Exception classes used by the service:
 Stored in `lib/familyrecipes/ai_import_prompt.md` as a standalone file. Read
 once at boot (consistent with other `lib/familyrecipes/` files — server
 restart required for prompt changes). Contains the full recipe format
-specification with examples, rules, and common mistakes.
+specification with examples, rules, and common mistakes. The prompt
+references for image and URL input should be removed for v1 (text-only).
 
 ### `AiImportController`
 
@@ -120,8 +116,7 @@ Thin JSON controller, one action:
 
 ```
 POST /ai_import   (inside the (/kitchens/:kitchen_slug) scope)
-Body: { text: "...", image: "data:image/jpeg;base64,...",
-        previous_result: "...", feedback: "..." }
+Body: { text: "...", previous_result: "...", feedback: "..." }
 Response: { markdown: "# Recipe Title\n..." }
 Error: { error: "message" }
 ```
@@ -138,7 +133,7 @@ Error: { error: "message" }
 ```
 system: [system prompt]
 messages: [
-  { role: "user", content: [text block, optional image block] }
+  { role: "user", content: "pasted recipe text" }
 ]
 ```
 
@@ -146,33 +141,31 @@ messages: [
 ```
 system: [system prompt]
 messages: [
-  { role: "user", content: [text block, optional image block] },
-  { role: "assistant", content: [previous markdown result] },
-  { role: "user", content: [feedback text] }
+  { role: "user", content: "pasted recipe text" },
+  { role: "assistant", content: "previous markdown result" },
+  { role: "user", content: "user feedback" }
 ]
 ```
 
-Image is only sent in the first user message. `max_tokens` set to 8192
+Model: `claude-sonnet-4-6` (hardcoded constant). `max_tokens` set to 8192
 (complex multi-step recipes with detailed front matter can exceed 4K tokens).
 
 ## Section 3: Frontend
 
 ### "Import with AI" Button
 
-Always rendered on the homepage next to "New Recipe" (no conditional
-visibility — avoids chicken-and-egg discoverability problem). If clicked
-without an API key configured, the import dialog opens and shows a
-helpful message directing the user to Settings, similar to how USDA search
-handles `{ error: "no_api_key" }`.
+Only rendered when `current_kitchen.anthropic_api_key.present?` — same
+pattern as `has_usda_key` in the ingredients controller. When no key is
+configured, the button simply doesn't appear. Users discover the feature
+by adding their API key in Settings.
+
+The button uses a sparkle icon (SVG) to signal AI functionality, placed
+next to the existing "New Recipe" button.
 
 ### Import Dialog
 
 Uses `shared/editor_dialog` layout with custom content:
 - `<textarea>` for pasting recipe text (primary input, large)
-- File input for image upload (jpeg, png, webp, gif)
-- Selected filename displayed as text next to the file input (no image
-  preview thumbnail — avoids CSP `img-src` complications with blob/data
-  URIs, keeps it simple)
 - Feedback text field — hidden initially, shown after first successful import
 - Submit button: "Import" initially, "Try again" after first attempt
 
@@ -180,8 +173,7 @@ Uses `shared/editor_dialog` layout with custom content:
 
 Manages the import dialog lifecycle:
 
-1. **Submit:** Read textarea + optional file (base64 via FileReader). POST to
-   `/ai_import`.
+1. **Submit:** Read textarea value. POST to `/ai_import`.
 2. **Loading state:** Disable inputs, show "Importing..." spinner.
 3. **Success:** Close import dialog, programmatically open recipe editor
    dialog, set textarea content to returned markdown. Reveal feedback field
@@ -208,7 +200,7 @@ controller's event dispatching.
 ### Try-Again Flow
 
 - After success, the import dialog retains its state in Stimulus controller
-  instance variables (pasted text, last result, previous image). This works
+  instance variables (pasted text, last result). This works
   because `<dialog>` elements remain in the DOM when closed — the Stimulus
   controller stays connected and state survives.
 - **Turbo morph protection:** The existing `turbo:before-morph-element`
@@ -219,12 +211,6 @@ controller's event dispatching.
 - Feedback field accepts free-text refinement instructions
 - Service builds multi-turn conversation from original input + previous result
   + feedback
-
-### Image Upload Size
-
-Client-side check: reject files over 10 MB with a clear message. The
-Anthropic API accepts up to 20 MB base64, but 10 MB is generous for a
-recipe photo and keeps the POST body reasonable.
 
 ## Section 4: Error Handling
 
@@ -247,7 +233,7 @@ No client-side timeout — spinner until server responds.
 
 ### `AiImportService` Unit Tests
 - Mock Anthropic client
-- Message assembly: text-only, text+image, text+feedback+previous_result
+- Message assembly: text-only, text+feedback+previous_result
 - Each error case (auth, rate limit, network, unexpected)
 - Code fence stripping and output cleanup
 
@@ -277,11 +263,11 @@ No automated tests for prompt quality — validated by hand.
 
 ### Modified Files
 - `Gemfile` — add `anthropic` gem
-- `app/models/kitchen.rb` — `encrypts :anthropic_api_key`, `AI_MODELS` constant
-- `app/controllers/settings_controller.rb` — permit new params, include in JSON
-- `app/javascript/controllers/settings_editor_controller.js` — new targets + collect/load
-- `app/views/homepage/show.html.erb` — import button + dialog partial
-- Settings views — API key field + model dropdown
+- `app/models/kitchen.rb` — `encrypts :anthropic_api_key`, `AI_MODEL` constant
+- `app/controllers/settings_controller.rb` — permit new param, include in JSON
+- `app/javascript/controllers/settings_editor_controller.js` — new target + collect/load
+- `app/views/homepage/show.html.erb` — import button (with sparkle icon) + dialog
+- Settings views — API key field
 - `app/javascript/application.js` — register `ai_import_controller`
 - `config/routes.rb` — `post 'ai_import'` inside kitchen scope
 - `CLAUDE.md` — brief entry for AI import pipeline in Architecture section
