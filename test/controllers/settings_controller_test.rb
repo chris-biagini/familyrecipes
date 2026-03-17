@@ -92,6 +92,27 @@ class SettingsControllerTest < ActionDispatch::IntegrationTest
     assert @kitchen.show_nutrition
   end
 
+  test 'show includes anthropic_api_key' do
+    log_in
+
+    get settings_path(kitchen_slug: kitchen_slug), as: :json
+
+    assert_response :success
+    assert response.parsed_body.key?('anthropic_api_key')
+  end
+
+  test 'update persists anthropic_api_key' do
+    log_in
+
+    patch settings_path(kitchen_slug: kitchen_slug),
+          params: { kitchen: { anthropic_api_key: 'sk-ant-secret' } }, as: :json
+
+    assert_response :success
+
+    @kitchen.reload
+    assert_equal 'sk-ant-secret', @kitchen.anthropic_api_key
+  end
+
   test 'rejects unpermitted params' do
     log_in
     patch settings_path(kitchen_slug: kitchen_slug),

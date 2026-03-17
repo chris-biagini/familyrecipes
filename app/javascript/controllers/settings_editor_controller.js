@@ -12,7 +12,7 @@ import { getCsrfToken, showErrors } from "../utilities/editor_utils"
  * - editor_utils: CSRF tokens, error display
  */
 export default class extends Controller {
-  static targets = ["siteTitle", "homepageHeading", "homepageSubtitle", "usdaApiKey", "showNutrition"]
+  static targets = ["siteTitle", "homepageHeading", "homepageSubtitle", "usdaApiKey", "anthropicApiKey", "showNutrition"]
   static values = { loadUrl: String, saveUrl: String }
 
   connect() {
@@ -53,6 +53,7 @@ export default class extends Controller {
         this.homepageHeadingTarget.value = data.homepage_heading || ""
         this.homepageSubtitleTarget.value = data.homepage_subtitle || ""
         this.usdaApiKeyTarget.value = data.usda_api_key || ""
+        this.anthropicApiKeyTarget.value = data.anthropic_api_key || ""
         this.showNutritionTarget.checked = !!data.show_nutrition
         this.storeOriginals()
         this.disableFields(false)
@@ -72,6 +73,7 @@ export default class extends Controller {
         homepage_heading: this.homepageHeadingTarget.value,
         homepage_subtitle: this.homepageSubtitleTarget.value,
         usda_api_key: this.usdaApiKeyTarget.value,
+        anthropic_api_key: this.anthropicApiKeyTarget.value,
         show_nutrition: this.showNutritionTarget.checked
       }
     }
@@ -91,6 +93,7 @@ export default class extends Controller {
           homepage_heading: this.homepageHeadingTarget.value,
           homepage_subtitle: this.homepageSubtitleTarget.value,
           usda_api_key: this.usdaApiKeyTarget.value,
+          anthropic_api_key: this.anthropicApiKeyTarget.value,
           show_nutrition: this.showNutritionTarget.checked
         }
       })
@@ -104,6 +107,7 @@ export default class extends Controller {
       this.homepageHeadingTarget.value !== this.originals.homepageHeading ||
       this.homepageSubtitleTarget.value !== this.originals.homepageSubtitle ||
       this.usdaApiKeyTarget.value !== this.originals.usdaApiKey ||
+      this.anthropicApiKeyTarget.value !== this.originals.anthropicApiKey ||
       this.showNutritionTarget.checked !== this.originals.showNutrition
   }
 
@@ -113,6 +117,7 @@ export default class extends Controller {
     this.homepageHeadingTarget.value = this.originals.homepageHeading
     this.homepageSubtitleTarget.value = this.originals.homepageSubtitle
     this.usdaApiKeyTarget.value = this.originals.usdaApiKey
+    this.anthropicApiKeyTarget.value = this.originals.anthropicApiKey
     this.showNutritionTarget.checked = this.originals.showNutrition
   }
 
@@ -122,6 +127,7 @@ export default class extends Controller {
       homepageHeading: this.homepageHeadingTarget.value,
       homepageSubtitle: this.homepageSubtitleTarget.value,
       usdaApiKey: this.usdaApiKeyTarget.value,
+      anthropicApiKey: this.anthropicApiKeyTarget.value,
       showNutrition: this.showNutritionTarget.checked
     }
   }
@@ -129,6 +135,6 @@ export default class extends Controller {
   disableFields(disabled) {
     ;[this.siteTitleTarget, this.homepageHeadingTarget,
       this.homepageSubtitleTarget, this.usdaApiKeyTarget,
-      this.showNutritionTarget].forEach(f => f.disabled = disabled)
+      this.anthropicApiKeyTarget, this.showNutritionTarget].forEach(f => f.disabled = disabled)
   }
 }

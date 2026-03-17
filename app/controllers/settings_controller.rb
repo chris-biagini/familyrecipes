@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Manages kitchen-scoped settings: site branding (title, heading, subtitle)
-# and API keys (USDA). JSON-only controller — the settings dialog fetches
+# and API keys (USDA, Anthropic). JSON-only controller — the settings dialog fetches
 # and saves via fetch requests.
 #
 # - Kitchen: settings live as columns on the tenant model
@@ -15,6 +15,7 @@ class SettingsController < ApplicationController
       homepage_heading: current_kitchen.homepage_heading,
       homepage_subtitle: current_kitchen.homepage_subtitle,
       usda_api_key: current_kitchen.usda_api_key,
+      anthropic_api_key: current_kitchen.anthropic_api_key,
       show_nutrition: current_kitchen.show_nutrition
     }
   end
@@ -31,6 +32,6 @@ class SettingsController < ApplicationController
   private
 
   def settings_params
-    params.expect(kitchen: %i[site_title homepage_heading homepage_subtitle usda_api_key show_nutrition])
+    params.expect(kitchen: %i[site_title homepage_heading homepage_subtitle usda_api_key anthropic_api_key show_nutrition])
   end
 end
