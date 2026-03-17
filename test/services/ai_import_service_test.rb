@@ -59,6 +59,30 @@ class AiImportServiceTest < ActiveSupport::TestCase
     assert_includes captured_messages[2][:content], 'Fix the ingredient amounts'
   end
 
+  test 'ignores previous_result when feedback is nil' do
+    captured_messages = nil
+    mock_response = MockResponse.new([MockContent.new('text', '# Simple')])
+
+    mock_messages = Object.new
+    mock_messages.define_singleton_method(:create) do |**kwargs|
+      captured_messages = kwargs[:messages]
+      mock_response
+    end
+
+    mock_client = Object.new
+    mock_client.define_singleton_method(:messages) { mock_messages }
+
+    Anthropic::Client.stub :new, mock_client do
+      AiImportService.call(
+        text: 'some recipe', kitchen: @kitchen,
+        previous_result: '# Old Output', feedback: nil
+      )
+    end
+
+    assert_equal 1, captured_messages.size
+    assert_equal 'user', captured_messages[0][:role]
+  end
+
   test 'strips code fences from response' do
     result = with_anthropic_response("```markdown\n# Bagels\n\n- 3 cups flour\n```") do
       AiImportService.call(text: 'recipe for bagels', kitchen: @kitchen)

@@ -47,12 +47,12 @@ class AiImportService
       system: SYSTEM_PROMPT,
       messages: build_messages(text:, previous_result:, feedback:)
     )
-    response.content.first.text
+    response.content.find { |block| block.type == 'text' }&.text || ''
   end
 
   def build_messages(text:, previous_result:, feedback:)
     messages = [{ role: 'user', content: text }]
-    return messages unless previous_result
+    return messages unless previous_result && feedback
 
     messages << { role: 'assistant', content: previous_result }
     messages << { role: 'user', content: feedback }
