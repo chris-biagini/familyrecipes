@@ -6,7 +6,8 @@
 # ingredient catalog entries, a single MealPlan, and its member Users via
 # Memberships. Also holds quick_bites_content (web-editable), aisle_order
 # (user-customized grocery aisle sequence), site branding (site_title,
-# homepage_heading, homepage_subtitle), and encrypted API keys (usda_api_key).
+# homepage_heading, homepage_subtitle), display preferences (show_nutrition),
+# and encrypted API keys (usda_api_key).
 #
 # Kitchen.finalize_writes(kitchen) is the single post-write entry point for
 # all write services: orphan cleanup, meal plan reconciliation, broadcast.

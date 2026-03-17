@@ -255,7 +255,7 @@ broadcast). Don't call `MarkdownImporter` directly for web operations.
 - `MealPlanActions` concern provides `rescue_from StaleObjectError` for
   controllers using `MealPlanWriteService`.
 
-**Settings.** Site branding and API keys live as columns on Kitchen (no
+**Settings.** Site branding, display preferences, and API keys live as columns on Kitchen (no
 separate settings table). `usda_api_key` is encrypted via Active Record
 Encryption. `SettingsController` is a thin show/update — no write service.
 The `multi_kitchen` flag is an env var (`MULTI_KITCHEN=true`), not a database
