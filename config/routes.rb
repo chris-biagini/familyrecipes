@@ -48,6 +48,7 @@ Rails.application.routes.draw do
     post 'import', to: 'imports#create', as: :import
     get 'settings', to: 'settings#show', as: :settings
     patch 'settings', to: 'settings#update'
+    post 'ai_import', to: 'ai_import#create', as: :ai_import
     post 'nutrition/:ingredient_name', to: 'nutrition_entries#upsert', as: :nutrition_entry_upsert
     delete 'nutrition/:ingredient_name', to: 'nutrition_entries#destroy', as: :nutrition_entry_destroy
     get 'usda/search', to: 'usda_search#search', as: :usda_search
