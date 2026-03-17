@@ -938,4 +938,31 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     assert_select 'b.ingredient-name', text: 'Basil'
     assert_select 'li', text: /a few leaves/
   end
+
+  test 'hides nutrition table when show_nutrition is false' do
+    recipe = @kitchen.recipes.find_by!(slug: 'focaccia')
+    recipe.update_column(:nutrition_data, { # rubocop:disable Rails/SkipsModelValidations
+      'totals' => { 'calories' => 200 },
+      'per_serving' => { 'calories' => 25 }
+    })
+
+    get recipe_path('focaccia', kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select '.nutrition-label', count: 0
+  end
+
+  test 'shows nutrition table when show_nutrition is true' do
+    @kitchen.update!(show_nutrition: true)
+    recipe = @kitchen.recipes.find_by!(slug: 'focaccia')
+    recipe.update_column(:nutrition_data, { # rubocop:disable Rails/SkipsModelValidations
+      'totals' => { 'calories' => 200 },
+      'per_serving' => { 'calories' => 25 }
+    })
+
+    get recipe_path('focaccia', kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select '.nutrition-label'
+  end
 end

@@ -63,7 +63,7 @@
     </footer>
     <%- end -%>
 
-    <%- if nutrition && nutrition['totals']&.values&.any? { |v| v.to_f > 0 } -%>
+    <%- if current_kitchen.show_nutrition && nutrition && nutrition['totals']&.values&.any? { |v| v.to_f > 0 } -%>
       <%= render 'recipes/nutrition_table', nutrition: nutrition %>
     <%- end -%>
   </article>
