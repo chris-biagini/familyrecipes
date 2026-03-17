@@ -29,6 +29,13 @@
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Add Recipe
       </button>
+      <% if current_kitchen.anthropic_api_key.present? %>
+        <span class="recipe-actions-dot">&middot;</span>
+        <button type="button" id="ai-import-button" class="edit-toggle">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5z"/><path d="M19 13l.75 2.25L22 16l-2.25.75L19 19l-.75-2.25L16 16l2.25-.75z"/></svg>
+          AI Import
+        </button>
+      <% end %>
     </div>
     <%- end -%>
   </header>
@@ -168,4 +175,35 @@ Optional notes or source." %>
     <%= render 'recipes/graphical_editor' %>
   </div>
 <% end %>
+<% end %>
+
+<% if current_member? && current_kitchen.anthropic_api_key.present? %>
+<dialog id="ai-import-editor" class="editor-dialog"
+        data-controller="ai-import"
+        data-ai-import-url-value="<%= ai_import_path %>"
+        data-ai-import-editor-dialog-id-value="recipe-editor">
+  <div class="editor-header">
+    <h2>Import with AI</h2>
+    <button type="button" class="btn editor-close" data-action="click->ai-import#close" aria-label="Close">&times;</button>
+  </div>
+  <div class="editor-errors" data-ai-import-target="errors" hidden></div>
+  <div class="editor-body">
+    <textarea class="editor-textarea"
+              data-ai-import-target="textarea"
+              placeholder="Paste a recipe from any source&#x2026;"
+              rows="16"></textarea>
+    <div class="settings-field" data-ai-import-target="feedbackField" hidden>
+      <label for="ai-import-feedback">Feedback for refinement</label>
+      <input type="text" id="ai-import-feedback" class="settings-input"
+             data-ai-import-target="feedback"
+             placeholder="e.g., Make the steps more detailed">
+    </div>
+  </div>
+  <div class="editor-footer">
+    <button type="button" class="btn editor-cancel" data-action="click->ai-import#close">Cancel</button>
+    <button type="button" class="btn btn-primary editor-save"
+            data-ai-import-target="submitButton"
+            data-action="click->ai-import#submit">Import</button>
+  </div>
+</dialog>
 <% end %>

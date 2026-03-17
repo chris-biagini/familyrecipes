@@ -10,6 +10,7 @@ const application = Application.start()
 application.debug = false
 window.Stimulus = application
 
+import AiImportController from "./controllers/ai_import_controller"
 import DualModeEditorController from "./controllers/dual_mode_editor_controller"
 import EditorController from "./controllers/editor_controller"
 import ExportController from "./controllers/export_controller"
@@ -32,6 +33,7 @@ import TagInputController from "./controllers/tag_input_controller"
 import ToastController from "./controllers/toast_controller"
 import WakeLockController from "./controllers/wake_lock_controller"
 
+application.register("ai-import", AiImportController)
 application.register("dual-mode-editor", DualModeEditorController)
 application.register("editor", EditorController)
 application.register("export", ExportController)
