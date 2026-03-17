@@ -92,4 +92,28 @@ class FamilyRecipesTest < Minitest::Test
 
     assert_equal "Quick Bites: Kids' Lunches", result.quick_bites.first.category
   end
+
+  def test_normalize_for_comparison_curly_single_quotes
+    assert_equal "Grandma's Cookies", FamilyRecipes.normalize_for_comparison("Grandma\u2019s Cookies")
+  end
+
+  def test_normalize_for_comparison_left_single_quote
+    assert_equal "'quoted'", FamilyRecipes.normalize_for_comparison("\u2018quoted\u2019")
+  end
+
+  def test_normalize_for_comparison_curly_double_quotes
+    assert_equal '"hello"', FamilyRecipes.normalize_for_comparison("\u201Chello\u201D")
+  end
+
+  def test_normalize_for_comparison_mixed
+    assert_equal "Baker's \"Best\" Rolls", FamilyRecipes.normalize_for_comparison("Baker\u2019s \u201CBest\u201D Rolls")
+  end
+
+  def test_normalize_for_comparison_no_change
+    assert_equal "plain text", FamilyRecipes.normalize_for_comparison("plain text")
+  end
+
+  def test_normalize_for_comparison_nil
+    assert_equal "", FamilyRecipes.normalize_for_comparison(nil)
+  end
 end

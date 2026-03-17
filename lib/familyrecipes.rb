@@ -30,6 +30,12 @@ module FamilyRecipes
       .gsub(/[^a-z0-9-]/, '')
   end
 
+  def self.normalize_for_comparison(str)
+    return '' if str.nil?
+
+    str.tr("\u2018\u2019\u201C\u201D", "''\"\"")
+  end
+
   def self.parse_recipes(recipes_dir)
     quick_bites_filename = CONFIG[:quick_bites_filename]
 
