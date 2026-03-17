@@ -110,10 +110,10 @@ class FamilyRecipesTest < Minitest::Test
   end
 
   def test_normalize_for_comparison_no_change
-    assert_equal "plain text", FamilyRecipes.normalize_for_comparison("plain text")
+    assert_equal 'plain text', FamilyRecipes.normalize_for_comparison('plain text')
   end
 
   def test_normalize_for_comparison_nil
-    assert_equal "", FamilyRecipes.normalize_for_comparison(nil)
+    assert_equal '', FamilyRecipes.normalize_for_comparison(nil)
   end
 end

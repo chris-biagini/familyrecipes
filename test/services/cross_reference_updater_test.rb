@@ -79,13 +79,14 @@ class CrossReferenceUpdaterTest < ActiveSupport::TestCase
     MD
 
     xref = pizza.steps.flat_map(&:cross_references).first
-    xref.update_column(:target_title, "Grandma\u2019s Dough")
+    xref.update_column(:target_title, "Grandma\u2019s Dough") # rubocop:disable Rails/SkipsModelValidations
 
     CrossReferenceUpdater.rename_references(old_title: "Grandma's Dough",
                                             new_title: "Nana's Dough",
                                             kitchen: @kitchen)
 
     pizza.reload
+
     assert pizza.cross_references.find_by(target_title: "Nana's Dough"),
            'cross-reference should be updated despite apostrophe mismatch'
   end
@@ -115,7 +116,7 @@ class CrossReferenceUpdaterTest < ActiveSupport::TestCase
     MD
 
     xref = pizza.steps.flat_map(&:cross_references).first
-    xref.update_column(:target_title, "Grandma\u2019s Dough")
+    xref.update_column(:target_title, "Grandma\u2019s Dough") # rubocop:disable Rails/SkipsModelValidations
 
     CrossReferenceUpdater.rename_references(old_title: "Grandma's Dough",
                                             new_title: "Nana's Dough",
@@ -123,6 +124,7 @@ class CrossReferenceUpdaterTest < ActiveSupport::TestCase
 
     pizza.reload
     step = pizza.steps.find_by(title: 'Assemble')
+
     assert_includes step.instructions, "\u2019",
                     'curly apostrophe in prose should be preserved'
   end
