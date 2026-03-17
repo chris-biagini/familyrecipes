@@ -23,7 +23,7 @@ class AiImportControllerTest < ActionDispatch::IntegrationTest
 
   test 'create passes through try-again params' do
     captured_args = nil
-    mock_call = ->(**kwargs) {
+    mock_call = lambda { |**kwargs|
       captured_args = kwargs
       AiImportService::Result.new(markdown: '# Revised', error: nil)
     }
@@ -53,7 +53,8 @@ class AiImportControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'create returns 422 on invalid API key' do
-    mock_result = AiImportService::Result.new(markdown: nil, error: 'Invalid Anthropic API key. Check your key in Settings.')
+    mock_result = AiImportService::Result.new(markdown: nil,
+                                              error: 'Invalid Anthropic API key. Check your key in Settings.')
 
     AiImportService.stub :call, mock_result do
       post ai_import_path(kitchen_slug: kitchen_slug),

@@ -110,6 +110,7 @@ class SettingsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
 
     @kitchen.reload
+
     assert_equal 'sk-ant-secret', @kitchen.anthropic_api_key
   end
 

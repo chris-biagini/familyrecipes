@@ -14,7 +14,7 @@ class AiImportController < ApplicationController
 
   def create
     text = params[:text].to_s.strip
-    return render json: { error: 'Text is required' }, status: :unprocessable_entity if text.blank?
+    return render json: { error: 'Text is required' }, status: :unprocessable_content if text.blank?
 
     result = AiImportService.call(
       text:,
@@ -26,7 +26,7 @@ class AiImportController < ApplicationController
     if result.markdown
       render json: { markdown: result.markdown }
     elsif result.error == 'no_api_key' || result.error&.include?('API key')
-      render json: { error: result.error }, status: :unprocessable_entity
+      render json: { error: result.error }, status: :unprocessable_content
     else
       render json: { error: result.error }, status: :service_unavailable
     end

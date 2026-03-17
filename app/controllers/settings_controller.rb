@@ -32,6 +32,7 @@ class SettingsController < ApplicationController
   private
 
   def settings_params
-    params.expect(kitchen: %i[site_title homepage_heading homepage_subtitle usda_api_key anthropic_api_key show_nutrition])
+    params.expect(kitchen: %i[site_title homepage_heading homepage_subtitle usda_api_key anthropic_api_key
+                              show_nutrition])
   end
 end
