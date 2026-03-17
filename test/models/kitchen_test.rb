@@ -171,6 +171,20 @@ class KitchenTest < ActiveSupport::TestCase
     assert_not_equal 'test-api-key-123', raw
   end
 
+  test 'encrypts anthropic_api_key at rest' do
+    ActsAsTenant.without_tenant do
+      @kitchen.update!(anthropic_api_key: 'sk-ant-test-key-123')
+    end
+
+    assert_equal 'sk-ant-test-key-123', @kitchen.anthropic_api_key
+
+    raw = ActiveRecord::Base.connection.select_value(
+      "SELECT anthropic_api_key FROM kitchens WHERE id = #{@kitchen.id}"
+    )
+
+    assert_not_equal 'sk-ant-test-key-123', raw
+  end
+
   test 'all_aisles prefers kitchen catalog entries over global' do
     IngredientCatalog.create!(kitchen_id: nil, ingredient_name: 'Flour', aisle: 'Baking', basis_grams: 30)
     IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Flour', aisle: 'Pantry', basis_grams: 30)

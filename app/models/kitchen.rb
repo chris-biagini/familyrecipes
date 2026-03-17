@@ -7,7 +7,7 @@
 # Memberships. Also holds quick_bites_content (web-editable), aisle_order
 # (user-customized grocery aisle sequence), site branding (site_title,
 # homepage_heading, homepage_subtitle), display preferences (show_nutrition),
-# and encrypted API keys (usda_api_key).
+# and encrypted API keys (usda_api_key, anthropic_api_key).
 #
 # Kitchen.finalize_writes(kitchen) is the single post-write entry point for
 # all write services: orphan cleanup, meal plan reconciliation, broadcast.
@@ -23,9 +23,11 @@ class Kitchen < ApplicationRecord
   has_one :meal_plan, dependent: :destroy
 
   encrypts :usda_api_key
+  encrypts :anthropic_api_key
 
   MAX_AISLE_NAME_LENGTH = FamilyRecipes::NutritionConstraints::AISLE_MAX_LENGTH
   MAX_AISLES = 50
+  AI_MODEL = 'claude-sonnet-4-6'
 
   def self.finalize_writes(kitchen)
     return if batching?
