@@ -255,6 +255,14 @@ broadcast). Don't call `MarkdownImporter` directly for web operations.
 - `MealPlanActions` concern provides `rescue_from StaleObjectError` for
   controllers using `MealPlanWriteService`.
 
+**AI import.** `AiImportService` calls the Anthropic API (`anthropic` gem)
+with a system prompt (`lib/familyrecipes/ai_import_prompt.md`) to convert
+pasted recipe text into the app's Markdown format. `AiImportController` is a
+thin JSON adapter (`POST /ai_import`). The Stimulus `ai_import_controller`
+manages the import dialog and hands off generated Markdown to the recipe
+editor. API key stored encrypted on Kitchen (`anthropic_api_key`); model
+hardcoded as `Kitchen::AI_MODEL`. Button hidden when no key configured.
+
 **Settings.** Site branding, display preferences, and API keys live as columns on Kitchen (no
 separate settings table). `usda_api_key` is encrypted via Active Record
 Encryption. `SettingsController` is a thin show/update — no write service.
