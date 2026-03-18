@@ -31,7 +31,7 @@ class AiImportServiceTest < ActiveSupport::TestCase
 
   test 'builds multi-turn messages for try-again' do
     captured_messages = nil
-    mock_response = MockResponse.new([MockContent.new('text', '# Fixed')])
+    mock_response = MockResponse.new([MockContent.new(:text, '# Fixed')])
 
     mock_messages = Object.new
     mock_messages.define_singleton_method(:create) do |**kwargs|
@@ -61,7 +61,7 @@ class AiImportServiceTest < ActiveSupport::TestCase
 
   test 'ignores previous_result when feedback is nil' do
     captured_messages = nil
-    mock_response = MockResponse.new([MockContent.new('text', '# Simple')])
+    mock_response = MockResponse.new([MockContent.new(:text, '# Simple')])
 
     mock_messages = Object.new
     mock_messages.define_singleton_method(:create) do |**kwargs|
@@ -138,7 +138,7 @@ class AiImportServiceTest < ActiveSupport::TestCase
   private
 
   def with_anthropic_response(text, &)
-    mock_response = MockResponse.new([MockContent.new('text', text)])
+    mock_response = MockResponse.new([MockContent.new(:text, text)])
 
     mock_messages = Object.new
     mock_messages.define_singleton_method(:create) { |**_kwargs| mock_response }

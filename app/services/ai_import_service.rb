@@ -47,7 +47,7 @@ class AiImportService
       system: SYSTEM_PROMPT,
       messages: build_messages(text:, previous_result:, feedback:)
     )
-    response.content.find { |block| block.type == 'text' }&.text || ''
+    response.content.find { |block| block.type == :text }&.text || ''
   end
 
   def build_messages(text:, previous_result:, feedback:)
