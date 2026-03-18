@@ -420,6 +420,10 @@ caching, no fetch interception. The browser handles all requests normally.
 Stimulus controllers requires registering them in `application.js`.
 The esbuild watcher (`bin/dev`) auto-rebuilds on file changes.
 
+**Visual companion.** The brainstorming visual companion server must bind to
+`0.0.0.0` (`--host 0.0.0.0`) — the default `127.0.0.1` is unreachable from
+the user's browser in this remote setup.
+
 **Skills.** Always use the superpowers skill when getting ready to write code.
 
 **Subagents.** ALWAYS use Opus subagents for coding tasks.
