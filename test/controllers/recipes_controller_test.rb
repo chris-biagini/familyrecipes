@@ -767,7 +767,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     get recipe_path(recipe.slug, kitchen_slug: kitchen_slug)
 
     assert_response :success
-    assert_select '.recipe-tag-pill', 'vegan'
+    assert_select '.recipe-tag-pill', /vegan/
   end
 
   test 'full tag lifecycle: create, update, display, remove' do

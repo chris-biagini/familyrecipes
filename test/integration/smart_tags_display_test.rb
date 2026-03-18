@@ -12,7 +12,9 @@ class SmartTagsDisplayTest < ActionDispatch::IntegrationTest
 
     get recipe_path(result.recipe.slug, kitchen_slug:)
 
-    assert_select "button.tag-pill--green[data-smart-emoji='🌿']", text: 'vegetarian'
+    assert_select 'button.tag-pill--green' do
+      assert_select '.smart-icon', text: '🌿'
+    end
   end
 
   test 'recipe page renders neutral pills when decorations disabled' do

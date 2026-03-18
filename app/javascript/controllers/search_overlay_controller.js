@@ -166,15 +166,18 @@ export default class extends Controller {
     this.activePills.forEach((pill, index) => {
       const span = document.createElement("span")
       span.className = `tag-pill tag-pill--${pill.type}`
+      span.textContent = pill.text
       if (this.smartTags && pill.type === "tag") {
         const entry = this.smartTags[pill.text]
         if (entry) {
           span.classList.add(`tag-pill--${entry.color}`)
-          if (entry.style === "crossout") span.classList.add("tag-pill--crossout")
-          span.dataset.smartEmoji = entry.emoji
+          const icon = document.createElement("span")
+          icon.className = "smart-icon"
+          if (entry.style === "crossout") icon.classList.add("smart-icon--crossout")
+          icon.textContent = entry.emoji
+          span.prepend(icon)
         }
       }
-      span.textContent = pill.text
 
       const btn = document.createElement("button")
       btn.className = "tag-pill__remove"

@@ -20,8 +20,7 @@
             <button type="button"
                     class="recipe-tag-pill tag-pill tag-pill--tag <%= smart.dig(:class)&.join(' ') %>"
                     data-action="click->recipe-state#searchTag"
-                    data-tag="<%= tag.name %>"
-                    <% if smart.dig(:data, :smart_emoji) %>data-smart-emoji="<%= smart.dig(:data, :smart_emoji) %>"<% end %>><%= tag.name %></button>
+                    data-tag="<%= tag.name %>"><% if smart.dig(:data, :smart_emoji) %><span class="smart-icon<%= ' smart-icon--crossout' if smart.dig(:class)&.include?('tag-pill--crossout') %>"><%= smart.dig(:data, :smart_emoji) %></span><% end %><%= tag.name %></button>
           <% end %>
         </p>
       <% end %>

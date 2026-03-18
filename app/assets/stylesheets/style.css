@@ -1335,6 +1335,16 @@ footer small {
   .usda-result-item { border-bottom-color: var(--text); }
   .density-candidates { border-color: var(--text); }
   nav::before { background-color: rgba(30, 27, 24, 0.82); }
+  .smart-icon--crossout::after {
+    border-color: rgba(220, 80, 80, 0.85);
+    background: linear-gradient(
+      to top left,
+      transparent calc(50% - 1px),
+      rgba(220, 80, 80, 0.85) calc(50% - 1px),
+      rgba(220, 80, 80, 0.85) calc(50% + 1px),
+      transparent calc(50% + 1px)
+    );
+  }
 }
 
 /******************************************************/
@@ -1527,36 +1537,37 @@ html:has(dialog[open]) {
 .tag-pill--tag { background: var(--tag-bg); color: var(--tag-text); }
 .tag-pill--category { background: var(--cat-bg); color: var(--cat-text); }
 
-/* Smart tag color variants + --pill-bg for crossout halo */
-.tag-pill--green   { background: var(--smart-green-bg);   color: var(--smart-green-text);   --pill-bg: var(--smart-green-bg); }
-.tag-pill--amber   { background: var(--smart-amber-bg);   color: var(--smart-amber-text);   --pill-bg: var(--smart-amber-bg); }
-.tag-pill--blue    { background: var(--smart-blue-bg);     color: var(--smart-blue-text);    --pill-bg: var(--smart-blue-bg); }
-.tag-pill--purple  { background: var(--smart-purple-bg);   color: var(--smart-purple-text);  --pill-bg: var(--smart-purple-bg); }
-.tag-pill--cuisine { background: var(--smart-cuisine-bg);  color: var(--smart-cuisine-text); --pill-bg: var(--smart-cuisine-bg); }
+/* Smart tag color variants */
+.tag-pill--green   { background: var(--smart-green-bg);   color: var(--smart-green-text); }
+.tag-pill--amber   { background: var(--smart-amber-bg);   color: var(--smart-amber-text); }
+.tag-pill--blue    { background: var(--smart-blue-bg);     color: var(--smart-blue-text); }
+.tag-pill--purple  { background: var(--smart-purple-bg);   color: var(--smart-purple-text); }
+.tag-pill--cuisine { background: var(--smart-cuisine-bg);  color: var(--smart-cuisine-text); }
 
-/* Emoji prefix via data attribute */
-.tag-pill[data-smart-emoji]::before {
-  content: attr(data-smart-emoji);
+/* Smart tag icon wrapper */
+.smart-icon {
+  position: relative;
   margin-right: 0.3em;
   font-size: 0.85em;
+  display: inline-flex;
+  align-items: center;
 }
 
-/* Crossout ✕ badge */
-.tag-pill--crossout { position: relative; }
-.tag-pill--crossout::after {
-  content: "✕";
+/* Crossout circle+slash overlay on the icon */
+.smart-icon--crossout::after {
+  content: "";
   position: absolute;
-  bottom: -0.15em;
-  right: -0.3em;
-  font-size: 0.7em;
-  font-weight: 900;
-  color: #c44;
-  line-height: 1;
-  text-shadow:
-    -1px -1px 0 var(--pill-bg),
-     1px -1px 0 var(--pill-bg),
-    -1px  1px 0 var(--pill-bg),
-     1px  1px 0 var(--pill-bg);
+  inset: -1px;
+  border: 1.5px solid rgba(180, 40, 40, 0.85);
+  border-radius: 50%;
+  background: linear-gradient(
+    to top left,
+    transparent calc(50% - 1px),
+    rgba(180, 40, 40, 0.85) calc(50% - 1px),
+    rgba(180, 40, 40, 0.85) calc(50% + 1px),
+    transparent calc(50% + 1px)
+  );
+  pointer-events: none;
 }
 
 .tag-pill__remove {

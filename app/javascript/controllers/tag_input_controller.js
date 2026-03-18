@@ -128,8 +128,11 @@ export default class extends Controller {
         const entry = this.smartTags[name]
         if (entry) {
           pill.classList.add(`tag-pill--${entry.color}`)
-          if (entry.style === "crossout") pill.classList.add("tag-pill--crossout")
-          pill.dataset.smartEmoji = entry.emoji
+          const icon = document.createElement("span")
+          icon.className = "smart-icon"
+          if (entry.style === "crossout") icon.classList.add("smart-icon--crossout")
+          icon.textContent = entry.emoji
+          pill.prepend(icon)
         }
       }
 
