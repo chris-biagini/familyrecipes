@@ -16,9 +16,12 @@
       <% if recipe.tags.any? %>
         <p class="recipe-tags">
           <% recipe.tags.sort_by(&:name).each do |tag| %>
-            <button type="button" class="recipe-tag-pill tag-pill tag-pill--tag"
+            <% smart = smart_tag_pill_attrs(tag.name) %>
+            <button type="button"
+                    class="recipe-tag-pill tag-pill tag-pill--tag <%= smart.dig(:class)&.join(' ') %>"
                     data-action="click->recipe-state#searchTag"
-                    data-tag="<%= tag.name %>"><%= tag.name %></button>
+                    data-tag="<%= tag.name %>"
+                    <% if smart.dig(:data, :smart_emoji) %>data-smart-emoji="<%= smart.dig(:data, :smart_emoji) %>"<% end %>><%= tag.name %></button>
           <% end %>
         </p>
       <% end %>
