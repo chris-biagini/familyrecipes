@@ -27,3 +27,6 @@
 
 # _search_overlay.html.erb — JSON inside <script type="application/json"> (not executed as JS)
 - "app/views/shared/_search_overlay.html.erb:2"
+
+# application.html.erb — smart_tags_json returns JSON from a frozen Ruby constant (no user content)
+- "app/views/layouts/application.html.erb:36"

@@ -23,6 +23,7 @@ export default class extends Controller {
 
   connect() {
     this.loadData()
+    this.loadSmartTags()
     this.activePills = []
     this.selectedIndex = -1
     this.boundKeydown = this.globalKeydown.bind(this)
@@ -34,6 +35,11 @@ export default class extends Controller {
   disconnect() {
     document.removeEventListener("keydown", this.boundKeydown)
     document.removeEventListener("turbo:morph", this.boundReload)
+  }
+
+  loadSmartTags() {
+    const el = document.querySelector('script[data-smart-tags]')
+    this.smartTags = el ? JSON.parse(el.textContent) : null
   }
 
   loadData() {
@@ -160,6 +166,14 @@ export default class extends Controller {
     this.activePills.forEach((pill, index) => {
       const span = document.createElement("span")
       span.className = `tag-pill tag-pill--${pill.type}`
+      if (this.smartTags && pill.type === "tag") {
+        const entry = this.smartTags[pill.text]
+        if (entry) {
+          span.classList.add(`tag-pill--${entry.color}`)
+          if (entry.style === "crossout") span.classList.add("tag-pill--crossout")
+          span.dataset.smartEmoji = entry.emoji
+        }
+      }
       span.textContent = pill.text
 
       const btn = document.createElement("button")

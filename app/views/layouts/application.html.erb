@@ -32,6 +32,9 @@
   <div id="notifications"></div>
   <footer class="app-version">v<%= app_version %></footer>
   <%= render 'shared/search_overlay' %>
+  <% if current_kitchen&.decorate_tags %>
+    <script type="application/json" nonce="<%= content_security_policy_nonce %>" data-smart-tags><%= smart_tags_json.html_safe %></script>
+  <% end %>
   <%= render 'settings/dialog' if logged_in? %>
 </body>
 </html>
