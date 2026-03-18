@@ -952,6 +952,31 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     assert_select '.nutrition-label', count: 0
   end
 
+  test 'show renders ingredient tooltip title when nutrition data present' do
+    recipe = @kitchen.recipes.find_by!(slug: 'focaccia')
+    ingredient_name = recipe.steps.first.ingredients.first.name.downcase
+    recipe.update_column(:nutrition_data, { # rubocop:disable Rails/SkipsModelValidations
+                           'ingredient_details' => {
+                             ingredient_name => {
+                               'grams' => 250.0,
+                               'nutrients' => {
+                                 'calories' => 820.0, 'protein' => 12.0, 'fat' => 2.0,
+                                 'carbs' => 170.0, 'sodium' => 5.0, 'fiber' => 4.0
+                               }
+                             }
+                           },
+                           'missing_ingredients' => [],
+                           'partial_ingredients' => [],
+                           'skipped_ingredients' => [],
+                           'totals' => { 'calories' => 820.0 }
+                         })
+
+    get recipe_path('focaccia', kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select '.ingredients li[title]'
+  end
+
   test 'shows nutrition table when show_nutrition is true' do
     @kitchen.update!(show_nutrition: true)
     recipe = @kitchen.recipes.find_by!(slug: 'focaccia')
