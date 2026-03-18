@@ -30,11 +30,13 @@ export default class extends Controller {
     this.boundModified = (e) => this.handleModified(e)
     this.boundContentLoaded = (e) => this.handleContentLoaded(e)
     this.boundOpened = (e) => this.handleOpened(e)
+    this.boundReset = (e) => this.handleReset(e)
 
     this.element.addEventListener("editor:collect", this.boundCollect)
     this.element.addEventListener("editor:modified", this.boundModified)
     this.element.addEventListener("editor:content-loaded", this.boundContentLoaded)
     this.element.addEventListener("editor:opened", this.boundOpened)
+    this.element.addEventListener("editor:reset", this.boundReset)
   }
 
   disconnect() {
@@ -42,6 +44,7 @@ export default class extends Controller {
     this.element.removeEventListener("editor:modified", this.boundModified)
     this.element.removeEventListener("editor:content-loaded", this.boundContentLoaded)
     this.element.removeEventListener("editor:opened", this.boundOpened)
+    this.element.removeEventListener("editor:reset", this.boundReset)
   }
 
   toggleMode() {
@@ -115,6 +118,15 @@ export default class extends Controller {
     if (this.originalContent !== null) return
     this.originalContent = this.plaintextController.content
     this.showActiveMode()
+  }
+
+  handleReset(event) {
+    event.detail.handled = true
+    if (this.originalContent !== null) {
+      this.plaintextController.content = this.originalContent
+    }
+    this.originalContent = null
+    this.originalStructure = null
   }
 
   handleContentLoaded(event) {

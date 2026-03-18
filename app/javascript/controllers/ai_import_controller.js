@@ -4,11 +4,13 @@ import { getCsrfToken, showErrors } from "../utilities/editor_utils"
 /**
  * Manages the AI recipe import dialog. Posts pasted recipe text to the
  * server-side Anthropic endpoint, then hands off the generated Markdown to
- * the recipe editor dialog. Supports a try-again flow with user feedback.
+ * the recipe editor via editor_controller.openWithContent(), which dispatches
+ * editor:content-loaded for proper dual-mode editor integration. Supports a
+ * try-again flow with user feedback.
  *
  * Collaborators:
- * - editor_controller (recipe editor dialog lifecycle)
- * - plaintext_editor_controller (sets editor content via .content setter)
+ * - editor_controller (openWithContent for dialog lifecycle + content handoff)
+ * - dual_mode_editor_controller (handles editor:content-loaded to populate editor)
  * - editor_utils (CSRF tokens, error display)
  */
 export default class extends Controller {
@@ -81,24 +83,13 @@ export default class extends Controller {
     const editorDialog = document.getElementById(this.editorDialogIdValue)
     if (!editorDialog) return
 
-    const setContent = () => {
-      editorDialog.removeEventListener("editor:opened", setContent)
-      requestAnimationFrame(() => {
-        const plaintextEl = editorDialog.querySelector('[data-controller~="plaintext-editor"]')
-        if (plaintextEl) {
-          const ctrl = this.application.getControllerForElementAndIdentifier(plaintextEl, "plaintext-editor")
-          if (ctrl) {
-            ctrl.content = markdown
-            return
-          }
-        }
-        const textarea = editorDialog.querySelector('textarea')
-        if (textarea) textarea.value = markdown
-      })
-    }
+    const editorCtrl = this.application.getControllerForElementAndIdentifier(editorDialog, "editor")
+    if (!editorCtrl) return
 
-    editorDialog.addEventListener("editor:opened", setContent)
-    document.getElementById("new-recipe-button")?.click()
+    const dualCtrl = this.application.getControllerForElementAndIdentifier(editorDialog, "dual-mode-editor")
+    if (dualCtrl) dualCtrl.mode = "plaintext"
+
+    editorCtrl.openWithContent({ markdown_source: markdown })
   }
 
   showFeedbackField() {

@@ -13,7 +13,9 @@ import { show as notifyShow } from "../utilities/notify"
  * via lifecycle events: editor:collect, editor:save, editor:modified,
  * editor:reset, editor:content-loaded. Dual-mode editors (recipe editor) use a
  * coordinator that sets `handled = true` on these events to override default
- * textarea behavior.
+ * textarea behavior. Three open modes: open() for new content from template,
+ * openWithRemoteContent() for server-fetched content, openWithContent(data)
+ * for caller-provided content (e.g. AI import).
  *
  * - editor_utils: CSRF tokens, error display, save requests, close-with-confirmation
  * - notify: toast notifications for save success/failure feedback
@@ -68,6 +70,13 @@ export default class extends Controller {
       this.element.showModal()
       this.dispatchEditorEvent("editor:opened")
     }
+  }
+
+  openWithContent(data) {
+    this.clearErrorDisplay()
+    this.resetSaveButton()
+    this.element.showModal()
+    this.dispatchEditorEvent("editor:content-loaded", data)
   }
 
   close() {
