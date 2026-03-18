@@ -241,7 +241,7 @@ broadcast). Don't call `MarkdownImporter` directly for web operations.
   that extract front matter and delegate.
 - `CatalogWriteService` — `IngredientCatalog` mutations, aisle sync, nutrition
   recalculation, broadcast.
-- `MealPlanWriteService` — select/deselect, select-all, clear, reconciliation.
+- `MealPlanWriteService` — select/deselect, reconciliation.
 - `QuickBitesWriteService` — quick bites content persistence, parse
   validation, reconciliation, broadcast. Also has `update_from_structure`.
 - `MarkdownImporter` has two entry points: `import` (markdown string) and

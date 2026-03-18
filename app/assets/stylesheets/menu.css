@@ -290,28 +290,6 @@
   cursor: pointer;
 }
 
-/* Menu Actions */
-#menu-actions {
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--rule);
-  text-align: center;
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-}
-
-.btn-clear {
-  color: var(--danger-color);
-  border-color: var(--danger-color);
-}
-
-.btn-clear:hover {
-  background: var(--danger-color);
-  color: white;
-  border-color: var(--danger-color);
-}
-
 /* Desktop layout */
 @media (min-width: 840px) {
   #recipe-selector {
@@ -333,10 +311,6 @@
 @media print {
   @page {
     margin: 0.5in 0.6in;
-  }
-
-  #menu-actions {
-    display: none;
   }
 
   #menu-header p {
