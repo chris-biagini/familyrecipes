@@ -3,10 +3,9 @@ import { sendAction } from "../utilities/turbo_fetch"
 import ListenerManager from "../utilities/listener_manager"
 
 /**
- * Menu page recipe/quick-bite selection. Handles optimistic checkbox toggle,
- * select-all, and clear-all actions. All rendering (checkboxes, availability
- * badges) is server-side via Turbo Stream morphs. Preserves expanded
- * availability details across morph refreshes.
+ * Menu page recipe/quick-bite selection. Handles optimistic checkbox toggle.
+ * All rendering (checkboxes, availability badges) is server-side via Turbo
+ * Stream morphs. Preserves expanded availability details across morph refreshes.
  *
  * - turbo_fetch (sendAction): fire-and-forget mutations with retry and error toast
  * - ListenerManager: tracks event listeners for clean teardown on disconnect
@@ -51,11 +50,4 @@ export default class extends Controller {
     }
   }
 
-  selectAll() {
-    sendAction(this.element.dataset.selectAllUrl, {})
-  }
-
-  clear() {
-    sendAction(this.element.dataset.clearUrl, {}, { method: "DELETE" })
-  }
 }

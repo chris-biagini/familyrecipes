@@ -94,45 +94,6 @@ class MealPlanTest < ActiveSupport::TestCase
     assert_not_includes list.state['custom_items'], 'birthday candles'
   end
 
-  test 'clear resets state and bumps version' do
-    list = MealPlan.for_kitchen(@kitchen)
-    list.apply_action('select', type: 'recipe', slug: 'pizza-dough', selected: true)
-    old_version = list.lock_version
-
-    list.clear!
-
-    assert_empty list.state
-    assert_operator list.lock_version, :>, old_version
-  end
-
-  test 'select_all sets all recipes and quick bites while preserving custom items' do
-    list = MealPlan.for_kitchen(@kitchen)
-    list.apply_action('custom_items', item: 'birthday candles', action: 'add')
-    list.apply_action('check', item: 'milk', checked: true)
-
-    list.select_all!(%w[focaccia bagels], %w[goldfish nachos])
-
-    assert_equal %w[focaccia bagels], list.state['selected_recipes']
-    assert_equal %w[goldfish nachos], list.state['selected_quick_bites']
-    assert_includes list.state['custom_items'], 'birthday candles'
-    assert_includes list.state['checked_off'], 'milk'
-  end
-
-  test 'clear_selections resets selections and checked off but preserves custom items' do
-    list = MealPlan.for_kitchen(@kitchen)
-    list.apply_action('select', type: 'recipe', slug: 'pizza-dough', selected: true)
-    list.apply_action('select', type: 'quick_bite', slug: 'nachos', selected: true)
-    list.apply_action('custom_items', item: 'birthday candles', action: 'add')
-    list.apply_action('check', item: 'milk', checked: true)
-
-    list.clear_selections!
-
-    assert_empty list.state['selected_recipes']
-    assert_empty list.state['selected_quick_bites']
-    assert_includes list.state['custom_items'], 'birthday candles'
-    assert_empty list.state['checked_off']
-  end
-
   test 'apply_action bumps version' do
     list = MealPlan.for_kitchen(@kitchen)
     old_version = list.lock_version

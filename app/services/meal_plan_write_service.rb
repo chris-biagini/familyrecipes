@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
 # Orchestrates all direct MealPlan mutations: action application (select,
-# check, custom items), select-all, and clear. Validates input (e.g. custom
-# item length) before mutating. Owns optimistic-locking retry for MealPlan
-# state changes. Post-write finalization (reconciliation, broadcast) is
-# handled by Kitchen.finalize_writes.
+# check, custom items). Validates input (e.g. custom item length) before
+# mutating. Owns optimistic-locking retry for MealPlan state changes.
+# Post-write finalization (reconciliation, broadcast) is handled by
+# Kitchen.finalize_writes.
 #
 # - MealPlan: singleton-per-kitchen JSON state record
 # - Kitchen.finalize_writes: centralized post-write finalization
@@ -13,14 +13,6 @@ class MealPlanWriteService
 
   def self.apply_action(kitchen:, action_type:, **params)
     new(kitchen:).apply_action(action_type:, **params)
-  end
-
-  def self.select_all(kitchen:, recipe_slugs:, quick_bite_slugs:)
-    new(kitchen:).select_all(recipe_slugs:, quick_bite_slugs:)
-  end
-
-  def self.clear(kitchen:)
-    new(kitchen:).clear
   end
 
   def initialize(kitchen:)
@@ -32,18 +24,6 @@ class MealPlanWriteService
     return Result.new(success: false, errors:) if errors.any?
 
     mutate_plan { |plan| plan.apply_action(action_type, **params) }
-    Kitchen.finalize_writes(kitchen)
-    Result.new(success: true, errors: [])
-  end
-
-  def select_all(recipe_slugs:, quick_bite_slugs:)
-    mutate_plan { |plan| plan.select_all!(recipe_slugs, quick_bite_slugs) }
-    Kitchen.finalize_writes(kitchen)
-    Result.new(success: true, errors: [])
-  end
-
-  def clear
-    mutate_plan(&:clear_selections!)
     Kitchen.finalize_writes(kitchen)
     Result.new(success: true, errors: [])
   end

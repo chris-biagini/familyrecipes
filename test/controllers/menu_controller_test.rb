@@ -26,12 +26,6 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     assert_response :forbidden
   end
 
-  test 'clear requires membership' do
-    delete menu_clear_path(kitchen_slug: kitchen_slug), as: :json
-
-    assert_response :forbidden
-  end
-
   test 'update_quick_bites requires membership' do
     patch menu_quick_bites_path(kitchen_slug: kitchen_slug),
           params: { content: "## Snacks\n- Goldfish" },
@@ -197,90 +191,6 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     json = response.parsed_body
 
     assert_equal 'Meal plan was modified by another request. Please refresh.', json['error']
-  end
-
-  # --- Select All ---
-
-  test 'select_all requires membership' do
-    patch menu_select_all_path(kitchen_slug: kitchen_slug), as: :json
-
-    assert_response :forbidden
-  end
-
-  test 'select_all selects all recipes and quick bites' do
-    log_in
-    @kitchen.update!(quick_bites_content: "## Snacks\n- Goldfish: Goldfish crackers")
-
-    patch menu_select_all_path(kitchen_slug: kitchen_slug), as: :turbo_stream
-
-    assert_response :no_content
-
-    plan = MealPlan.for_kitchen(@kitchen)
-    recipe_slugs = @kitchen.recipes.pluck(:slug)
-
-    assert_equal recipe_slugs.sort, plan.state['selected_recipes'].sort
-    assert_includes plan.state['selected_quick_bites'], 'goldfish'
-  end
-
-  test 'select_all preserves custom items and checked off' do
-    create_focaccia_recipe
-    log_in
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('custom_items', item: 'birthday candles', action: 'add')
-    plan.apply_action('check', item: 'Flour', checked: true)
-
-    patch menu_select_all_path(kitchen_slug: kitchen_slug), as: :turbo_stream
-
-    plan.reload
-
-    assert_includes plan.state['custom_items'], 'birthday candles'
-    assert_includes plan.state['checked_off'], 'Flour'
-  end
-
-  test 'select_all broadcasts meal plan refresh' do
-    log_in
-    assert_turbo_stream_broadcasts [@kitchen, :updates] do
-      patch menu_select_all_path(kitchen_slug: kitchen_slug), as: :turbo_stream
-    end
-  end
-
-  # --- Clear ---
-
-  test 'clear resets selections and checked off' do
-    log_in
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
-    plan.apply_action('custom_items', item: 'birthday candles', action: 'add')
-    plan.apply_action('check', item: 'flour', checked: true)
-
-    delete menu_clear_path(kitchen_slug: kitchen_slug), as: :turbo_stream
-
-    assert_response :no_content
-
-    plan.reload
-
-    assert_empty plan.state['selected_recipes']
-    assert_empty plan.state['selected_quick_bites']
-    assert_includes plan.state['custom_items'], 'birthday candles'
-    assert_empty plan.state['checked_off']
-  end
-
-  test 'clear broadcasts meal plan refresh' do
-    log_in
-    assert_turbo_stream_broadcasts [@kitchen, :updates] do
-      delete menu_clear_path(kitchen_slug: kitchen_slug), as: :turbo_stream
-    end
-  end
-
-  test 'clear returns 409 when retry exhausted' do
-    log_in
-    stale_plan = build_stale_plan(:clear_selections!)
-
-    MealPlan.stub(:for_kitchen, stale_plan) do
-      delete menu_clear_path(kitchen_slug: kitchen_slug), as: :turbo_stream
-    end
-
-    assert_response :conflict
   end
 
   # --- Quick Bites ---

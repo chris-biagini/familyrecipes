@@ -60,26 +60,6 @@ class MealPlan < ApplicationRecord
     end
   end
 
-  def clear!
-    self.state = {}
-    save!
-  end
-
-  def select_all!(recipe_slugs, quick_bite_slugs)
-    ensure_state_keys
-    state['selected_recipes'] = recipe_slugs
-    state['selected_quick_bites'] = quick_bite_slugs
-    save!
-  end
-
-  def clear_selections!
-    ensure_state_keys
-    state['selected_recipes'] = []
-    state['selected_quick_bites'] = []
-    state['checked_off'] = []
-    save!
-  end
-
   def with_optimistic_retry(max_attempts: MAX_RETRY_ATTEMPTS)
     attempts = 0
     begin

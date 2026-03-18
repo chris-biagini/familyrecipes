@@ -4,7 +4,7 @@
 # bites) with checkboxes. Mutations delegate to write services and return
 # 204 No Content; broadcasts happen inside the services for cross-device sync.
 #
-# - MealPlanWriteService: select/deselect, select-all, clear
+# - MealPlanWriteService: select/deselect
 # - QuickBitesWriteService: quick bites content updates
 # - MealPlanActions: param coercion and StaleObjectError rescue
 class MenuController < ApplicationController
@@ -30,20 +30,6 @@ class MenuController < ApplicationController
       kitchen: current_kitchen, action_type: 'select',
       type: params[:type], slug: params[:slug], selected: truthy_param?(params[:selected])
     )
-    head :no_content
-  end
-
-  def select_all
-    MealPlanWriteService.select_all(
-      kitchen: current_kitchen,
-      recipe_slugs: all_recipe_slugs,
-      quick_bite_slugs: all_quick_bite_slugs
-    )
-    head :no_content
-  end
-
-  def clear
-    MealPlanWriteService.clear(kitchen: current_kitchen)
     head :no_content
   end
 
@@ -89,13 +75,5 @@ class MenuController < ApplicationController
     current_kitchen.categories.ordered.includes(
       recipes: { steps: [:ingredients, { cross_references: { target_recipe: { steps: :ingredients } } }] }
     )
-  end
-
-  def all_recipe_slugs
-    current_kitchen.recipes.pluck(:slug)
-  end
-
-  def all_quick_bite_slugs
-    current_kitchen.parsed_quick_bites.map(&:id)
   end
 end
