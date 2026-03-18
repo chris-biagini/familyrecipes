@@ -282,4 +282,23 @@ class RecipesHelperTest < ActionView::TestCase
 
     assert_not_includes attrs, 'title='
   end
+
+  test 'ingredient_data_attrs title omits conversion line when unit is grams' do
+    ingredient = Ingredient.new(name: 'Flour', quantity_low: 500.0, unit: 'g')
+    info = {
+      'ingredient_details' => {
+        'flour' => { 'grams' => 500.0, 'nutrients' => {
+          'calories' => 1820.0, 'protein' => 52.0, 'fat' => 5.0,
+          'carbs' => 382.0, 'sodium' => 10.0, 'fiber' => 14.0
+        } }
+      },
+      'missing_ingredients' => [],
+      'partial_ingredients' => []
+    }
+    attrs = ingredient_data_attrs(ingredient, ingredient_info: info)
+
+    assert_not_includes attrs, "\u2192"
+    assert_includes attrs, 'Cal 1820'
+    assert_includes attrs, 'based on original quantities'
+  end
 end
