@@ -308,6 +308,208 @@
   }
 }
 
+/* -- Dinner Picker -- */
+
+.dinner-picker-trigger {
+  background: var(--link);
+  color: white;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.dinner-picker-trigger:hover {
+  opacity: 0.85;
+}
+
+#dinner-picker-dialog {
+  max-width: 28rem;
+  width: 90vw;
+  border: 1px solid var(--rule-faint);
+  border-radius: 8px;
+  padding: 1.5rem;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+#dinner-picker-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.dinner-picker-subtitle {
+  color: var(--fg-muted);
+  font-size: 0.85rem;
+  margin: 0.3rem 0 1rem;
+}
+
+.dinner-picker-tag-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  justify-content: center;
+  margin-bottom: 1.2rem;
+}
+
+.dinner-picker-tag {
+  padding: 0.3rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 0.15s, color 0.15s;
+}
+
+.dinner-picker-tag.tag-neutral {
+  background: var(--bg-offset);
+  color: var(--fg-muted);
+}
+
+.dinner-picker-tag.tag-up {
+  background: var(--tag-green-bg, #065f46);
+  color: var(--tag-green-fg, #6ee7b7);
+}
+
+.dinner-picker-tag.tag-down {
+  background: var(--tag-red-bg, #7f1d1d);
+  color: var(--tag-red-fg, #fca5a5);
+}
+
+.dinner-picker-spin-btn {
+  display: block;
+  margin: 0 auto;
+  background: var(--link);
+  color: white;
+  border: none;
+  padding: 0.6rem 1.8rem;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  min-width: 200px;
+}
+
+.dinner-picker-spin-btn:hover {
+  opacity: 0.85;
+}
+
+.dinner-picker-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 14rem;
+  text-align: center;
+}
+
+.slot-emoji {
+  font-size: 2rem;
+  margin-bottom: 0.8rem;
+}
+
+.slot-window {
+  background: var(--bg-offset);
+  border-radius: 8px;
+  padding: 0.8rem 2rem;
+  width: 85%;
+  overflow: hidden;
+}
+
+.slot-name {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--link);
+  transition: transform 0.2s ease;
+}
+
+.slot-name.slot-landed {
+  transform: scale(1.15);
+}
+
+.result-label {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--fg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.result-title {
+  text-align: center;
+  margin: 0.3rem 0;
+}
+
+.result-description {
+  text-align: center;
+  color: var(--fg-muted);
+  font-size: 0.85rem;
+  margin: 0.4rem 0 0.8rem;
+}
+
+.result-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.result-tag-pill {
+  background: var(--bg-offset);
+  color: var(--fg-muted);
+  padding: 0.2rem 0.5rem;
+  border-radius: 10px;
+  font-size: 0.75rem;
+}
+
+.result-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-bottom: 0.6rem;
+}
+
+.result-accept-btn {
+  background: var(--tag-green-bg, #065f46);
+  color: var(--tag-green-fg, #6ee7b7);
+  border: none;
+  padding: 0.5rem 1.2rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.result-accept-btn:hover {
+  opacity: 0.85;
+}
+
+.result-retry-btn {
+  background: transparent;
+  border: 1px solid var(--rule-faint);
+  color: var(--fg-muted);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.result-retry-btn:hover {
+  border-color: var(--fg-muted);
+}
+
+.result-view-link {
+  display: block;
+  text-align: center;
+  color: var(--fg-muted);
+  font-size: 0.8rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slot-name {
+    transition: none;
+  }
+}
+
 @media print {
   @page {
     margin: 0.5in 0.6in;
@@ -373,6 +575,11 @@
   .availability-single,
   .availability-detail,
   .availability-ingredients {
+    display: none;
+  }
+
+  #dinner-picker-dialog,
+  .dinner-picker-trigger {
     display: none;
   }
 }
