@@ -128,14 +128,9 @@ end
 ```
 
 The helper returns CSS classes and a `data-smart-emoji` attribute. The
-`::before` pseudo-element reads the emoji from the data attribute via
-`attr()` — or, since `attr()` for `content` beyond strings has limited
-support, the emoji is set directly as `content` in per-tag CSS rules generated
-from the registry.
-
-**Implementation note:** Since CSS `content: attr(data-smart-emoji)` works
-for string values in `::before`, this is the cleanest approach — one CSS rule
-for all smart tags rather than per-tag rules.
+`::before` pseudo-element reads the emoji via `content: attr(data-smart-emoji)`
+— one CSS rule for all smart tags rather than per-tag rules. This is
+well-supported in all modern browsers (CSS2.1 `attr()` for `content`).
 
 ### Touch Points
 
@@ -158,16 +153,21 @@ Four places render tag pills:
 
 ### JS Registry Access
 
-Embed the registry as a JSON blob in the layout (or search overlay partial),
-gated on `decorate_tags`:
+Embed the registry as a JSON `<script>` tag in the application layout (inside
+the same block that renders `_search_overlay.html.erb`), gated on
+`decorate_tags`. This makes the data available to all JS controllers on every
+page.
 
 ```erb
 <% if current_kitchen.decorate_tags %>
-  <script type="application/json" data-smart-tags>
+  <script type="application/json" data-smart-tags nonce="<%= content_security_policy_nonce %>">
     <%= FamilyRecipes::SmartTagRegistry::TAGS.to_json.html_safe %>
   </script>
 <% end %>
 ```
+
+The `.html_safe` call is safe because the registry is a hardcoded frozen
+constant (no user content). Add to `config/html_safe_allowlist.yml`.
 
 JS controllers read this on connect. When absent (decorations off), they
 render neutral pills.
@@ -208,6 +208,17 @@ render neutral pills.
   font-size: 0.85em;
 }
 
+/* Crossout: pill must set --pill-bg for the halo */
+.tag-pill--green   { --pill-bg: var(--smart-green-bg); }
+.tag-pill--amber   { --pill-bg: var(--smart-amber-bg); }
+.tag-pill--blue    { --pill-bg: var(--smart-blue-bg); }
+.tag-pill--purple  { --pill-bg: var(--smart-purple-bg); }
+.tag-pill--cuisine { --pill-bg: var(--smart-cuisine-bg); }
+
+.tag-pill--crossout {
+  position: relative;
+}
+
 /* Crossout ✕ overlay */
 .tag-pill--crossout::after {
   content: "✕";
@@ -219,24 +230,46 @@ render neutral pills.
   color: #c44;
   line-height: 1;
   text-shadow:
-    -1px -1px 0 var(--smart-amber-bg),
-     1px -1px 0 var(--smart-amber-bg),
-    -1px  1px 0 var(--smart-amber-bg),
-     1px  1px 0 var(--smart-amber-bg);
+    -1px -1px 0 var(--pill-bg),
+     1px -1px 0 var(--pill-bg),
+    -1px  1px 0 var(--pill-bg),
+     1px  1px 0 var(--pill-bg);
 }
 ```
 
-The crossout text-shadow uses the pill's own background color for the halo,
-ensuring contrast in both light and dark modes. The `.tag-pill--crossout`
-elements need `position: relative` on the pill.
+Each color class sets `--pill-bg` so the crossout halo matches the pill's
+background in both light and dark modes. Crossout is not restricted to amber —
+any color group can use it.
 
 ## Settings
 
-- Add checkbox to the Recipes section of `_dialog.html.erb`
-- Label: "Decorate special tags" (with sublabel: "Show emoji and colors for
-  dietary, cuisine, and other recognized tags")
-- Wire through `SettingsController` permitted params
-- `Kitchen#broadcast_update` on save handles live refresh
+Five touch points:
+
+1. **Migration** — `decorate_tags` boolean column (see above)
+2. **Settings dialog HTML** (`_dialog.html.erb`) — checkbox in Recipes section.
+   Label: "Decorate special tags" (sublabel: "Show emoji and colors for
+   dietary, cuisine, and other recognized tags")
+3. **`SettingsController#show`** — include `decorate_tags` in JSON response
+4. **`SettingsController#settings_params`** — add to permit list
+5. **`settings_editor_controller.js`** — add target, wire into `collect`,
+   `checkModified`, `reset`, `storeOriginals`, and `disableFields` methods
+
+`Kitchen#broadcast_update` on save handles live refresh.
+
+## Loading
+
+`smart_tag_registry.rb` must be required in
+`config/initializers/familyrecipes.rb` (domain classes in `lib/` are loaded
+once at boot, not via Zeitwerk).
+
+## CSS Location
+
+All new CSS goes in `style.css`:
+- Light mode custom properties in the existing `:root` block (alongside
+  `--tag-bg` / `--tag-text`)
+- Dark mode overrides in the existing
+  `@media (prefers-color-scheme: dark) { :root { ... } }` block
+- Classes after the existing `.tag-pill` rules
 
 ## Testing
 
