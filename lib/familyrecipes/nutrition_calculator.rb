@@ -14,19 +14,26 @@ module FamilyRecipes
   class NutritionCalculator
     NUTRIENTS = NutritionConstraints::NUTRIENT_KEYS
 
+    IngredientDetail = Data.define(:grams, :nutrients)
+
     Result = Data.define(
       :totals, :serving_count, :per_serving, :per_unit,
       :makes_quantity, :makes_unit_singular, :makes_unit_plural,
       :units_per_serving, :total_weight_grams,
-      :missing_ingredients, :partial_ingredients, :skipped_ingredients
+      :missing_ingredients, :partial_ingredients, :skipped_ingredients,
+      :ingredient_details
     ) do
-      def as_json(_options = nil)
+      def as_json(_options = nil) # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
         to_h.transform_keys(&:to_s).tap do |h|
           %w[totals per_serving per_unit].each do |key|
             h[key] = h[key]&.transform_keys(&:to_s)&.transform_values(&:to_f)
           end
           %w[total_weight_grams serving_count makes_quantity units_per_serving].each do |key|
             h[key] = h[key]&.to_f
+          end
+          h['ingredient_details'] = h['ingredient_details']&.transform_values do |detail|
+            { 'grams' => detail.grams.to_f,
+              'nutrients' => detail.nutrients.transform_keys(&:to_s).transform_values(&:to_f) }
           end
         end
       end
@@ -43,7 +50,7 @@ module FamilyRecipes
     end
 
     def calculate(recipe, recipe_map)
-      totals, total_weight, missing, partial, skipped = sum_totals(recipe, recipe_map)
+      totals, total_weight, missing, partial, skipped, details = sum_totals(recipe, recipe_map)
       serving_count = parse_serving_count(recipe)
 
       Result.new(
@@ -54,7 +61,8 @@ module FamilyRecipes
         **per_unit_metadata(recipe, totals, serving_count),
         missing_ingredients: missing,
         partial_ingredients: partial,
-        skipped_ingredients: skipped
+        skipped_ingredients: skipped,
+        ingredient_details: details
       )
     end
 
@@ -67,16 +75,17 @@ module FamilyRecipes
 
       totals = NUTRIENTS.index_with { |_n| 0.0 }
       weight = { grams: 0.0 }
-      missing, partial, skipped = partition_ingredients(totals, weight, known, unknown)
-      [totals, weight[:grams], missing, partial, skipped]
+      details = {}
+      missing, partial, skipped = partition_ingredients(totals, weight, details, known, unknown)
+      [totals, weight[:grams], missing, partial, skipped, details]
     end
 
-    def partition_ingredients(totals, weight, known, unknown)
+    def partition_ingredients(totals, weight, details, known, unknown)
       known_quantified, known_skipped = split_by_quantified(known)
       unknown_quantified, unknown_skipped = split_by_quantified(unknown)
 
       partial = known_quantified.each_with_object([]) do |(name, amounts), partials|
-        accumulate_amounts(totals, weight, partials, name, amounts, @nutrition_data[name])
+        accumulate_amounts(totals, weight, details, partials, name, amounts, @nutrition_data[name])
       end
 
       skipped = known_skipped.map(&:first).concat(unknown_skipped.map(&:first))
@@ -87,7 +96,10 @@ module FamilyRecipes
       ingredients.partition { |_, amounts| amounts.any? { |a| !a.nil? } }
     end
 
-    def accumulate_amounts(totals, weight, partial, name, amounts, entry) # rubocop:disable Metrics/ParameterLists
+    def accumulate_amounts(totals, weight, details, partial, name, amounts, entry) # rubocop:disable Metrics/MethodLength, Metrics/ParameterLists
+      ingredient_grams = 0.0
+      ingredient_nutrients = NUTRIENTS.index_with { |_n| 0.0 }
+
       amounts.each do |amount|
         next if amount.nil? || amount.value.nil?
 
@@ -98,8 +110,17 @@ module FamilyRecipes
         end
 
         weight[:grams] += grams
-        NUTRIENTS.each { |nutrient| totals[nutrient] += nutrient_per_gram(entry, nutrient) * grams }
+        ingredient_grams += grams
+        NUTRIENTS.each do |nutrient|
+          contribution = nutrient_per_gram(entry, nutrient) * grams
+          totals[nutrient] += contribution
+          ingredient_nutrients[nutrient] += contribution
+        end
       end
+
+      return unless ingredient_grams.positive?
+
+      details[name] = IngredientDetail.new(grams: ingredient_grams, nutrients: ingredient_nutrients)
     end
 
     def divide_nutrients(totals, divisor)

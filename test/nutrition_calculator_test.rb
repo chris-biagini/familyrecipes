@@ -941,6 +941,100 @@ class NutritionCalculatorTest < Minitest::Test
     assert_in_delta 0, result.total_weight_grams, 0.01
   end
 
+  # --- Per-ingredient details ---
+
+  def test_ingredient_details_for_resolved_ingredient
+    recipe = make_recipe(<<~MD)
+      # Test
+
+
+      ## Mix (combine)
+
+      - Flour (all-purpose), 500 g
+
+      Mix.
+    MD
+
+    result = @calculator.calculate(recipe, @recipe_map)
+
+    detail = result.ingredient_details['Flour (all-purpose)']
+
+    refute_nil detail
+    assert_in_delta 500, detail.grams, 0.1
+    assert_in_delta 1820, detail.nutrients[:calories], 1
+    assert_in_delta 51.65, detail.nutrients[:protein], 0.1
+  end
+
+  def test_ingredient_details_excludes_unresolved
+    recipe = make_recipe(<<~MD)
+      # Test
+
+
+      ## Mix (combine)
+
+      - Unicorn dust, 50 g
+      - Flour (all-purpose), 2 bushels
+      - Olive oil
+
+      Mix.
+    MD
+
+    result = @calculator.calculate(recipe, @recipe_map)
+
+    assert_nil result.ingredient_details['Unicorn dust']
+    assert_nil result.ingredient_details['Flour (all-purpose)']
+    assert_nil result.ingredient_details['Olive oil']
+  end
+
+  def test_ingredient_details_aggregates_across_steps
+    recipe = make_recipe(<<~MD)
+      # Test
+
+
+      ## Step 1 (first)
+
+      - Butter, 50 g
+
+      First.
+
+      ## Step 2 (second)
+
+      - Butter, 100 g
+
+      Second.
+    MD
+
+    result = @calculator.calculate(recipe, @recipe_map)
+
+    detail = result.ingredient_details['Butter']
+
+    refute_nil detail
+    assert_in_delta 150, detail.grams, 0.1
+    assert_in_delta 1075.5, detail.nutrients[:calories], 1
+  end
+
+  def test_as_json_includes_ingredient_details
+    recipe = make_recipe(<<~MD)
+      # Test
+
+
+      ## Mix (combine)
+
+      - Flour (all-purpose), 100 g
+
+      Mix.
+    MD
+
+    result = @calculator.calculate(recipe, @recipe_map)
+    json = result.as_json
+
+    detail = json['ingredient_details']['Flour (all-purpose)']
+
+    refute_nil detail
+    assert_instance_of Float, detail['grams']
+    assert_instance_of Float, detail['nutrients']['calories']
+  end
+
   def test_as_json_coerces_numeric_scalars_to_float
     result = FamilyRecipes::NutritionCalculator::Result.new(
       totals: { calories: BigDecimal('100') },
@@ -954,7 +1048,8 @@ class NutritionCalculatorTest < Minitest::Test
       total_weight_grams: BigDecimal('592.5'),
       missing_ingredients: [],
       partial_ingredients: [],
-      skipped_ingredients: []
+      skipped_ingredients: [],
+      ingredient_details: {}
     )
 
     json = result.as_json
