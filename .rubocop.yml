@@ -106,3 +106,4 @@ Rails/RefuteMethods:
     - test/usda_portion_classifier_test.rb
     - test/recipe_serializer_test.rb
     - test/unit_resolver_test.rb
+    - test/smart_tag_registry_test.rb
