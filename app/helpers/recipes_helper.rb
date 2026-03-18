@@ -83,6 +83,15 @@ module RecipesHelper # rubocop:disable Metrics/ModuleLength
     nutrition['skipped_ingredients'] || []
   end
 
+  TOOLTIP_NUTRIENTS = [
+    [:calories, 'Cal', ''],
+    [:protein, 'Pro', 'g'],
+    [:fat, 'Fat', 'g'],
+    [:carbs, 'Carb', 'g'],
+    [:sodium, 'Sodium', 'mg'],
+    [:fiber, 'Fiber', 'g']
+  ].freeze
+
   RECIPE_REF_PATTERN = /@\[(.+?)\]/
 
   def linkify_recipe_references(html)
@@ -97,8 +106,9 @@ module RecipesHelper # rubocop:disable Metrics/ModuleLength
     end
   end
 
-  def ingredient_data_attrs(item, scale_factor: 1.0)
+  def ingredient_data_attrs(item, scale_factor: 1.0, ingredient_info: nil)
     attrs = {}
+    attrs[:title] = ingredient_tooltip(item, ingredient_info) if ingredient_info
     return tag.attributes(attrs) unless item.quantity_low
 
     attrs[:'data-quantity-low'] = item.quantity_low.to_f * scale_factor
@@ -198,5 +208,29 @@ module RecipesHelper # rubocop:disable Metrics/ModuleLength
 
     attrs[:'data-name-singular'] = singular
     attrs[:'data-name-plural'] = plural
+  end
+
+  def ingredient_tooltip(item, info)
+    name_key = item.name.downcase
+    detail = info['ingredient_details']&.dig(name_key)
+
+    return resolved_tooltip(item, detail) if detail
+    return 'Not in ingredient catalog' if info['missing_ingredients']&.include?(item.name)
+    return "In catalog, but can't convert this unit" if info['partial_ingredients']&.include?(item.name)
+
+    nil
+  end
+
+  def resolved_tooltip(item, detail)
+    grams = detail['grams'].round
+    lines = ["#{item.quantity_display} \u2192 #{grams}g"]
+    lines << tooltip_nutrient_line(detail['nutrients'], TOOLTIP_NUTRIENTS[0..3])
+    lines << tooltip_nutrient_line(detail['nutrients'], TOOLTIP_NUTRIENTS[4..5])
+    lines << '(based on original quantities)'
+    lines.join("\n")
+  end
+
+  def tooltip_nutrient_line(nutrients, defs)
+    defs.map { |key, label, unit| "#{label} #{nutrients[key.to_s].round}#{unit}" }.join(' | ')
   end
 end

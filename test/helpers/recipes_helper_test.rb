@@ -218,4 +218,68 @@ class RecipesHelperTest < ActionView::TestCase
 
     assert_equal 'a pinch', display
   end
+
+  test 'ingredient_data_attrs includes title for resolved ingredient' do
+    ingredient = Ingredient.new(name: 'Flour', quantity_low: 2.0, unit: 'cup')
+    info = {
+      'ingredient_details' => {
+        'flour' => { 'grams' => 250.0, 'nutrients' => {
+          'calories' => 820.0, 'protein' => 12.0, 'fat' => 2.0,
+          'carbs' => 170.0, 'sodium' => 5.0, 'fiber' => 4.0
+        } }
+      },
+      'missing_ingredients' => [],
+      'partial_ingredients' => []
+    }
+    attrs = ingredient_data_attrs(ingredient, ingredient_info: info)
+
+    assert_includes attrs, 'title='
+    assert_includes attrs, '250g'
+    assert_includes attrs, 'Cal 820'
+    assert_includes attrs, 'Pro 12g'
+    assert_includes attrs, 'based on original quantities'
+  end
+
+  test 'ingredient_data_attrs title for missing ingredient' do
+    ingredient = Ingredient.new(name: 'Unicorn dust', quantity_low: 1.0, unit: 'cup')
+    info = {
+      'ingredient_details' => {},
+      'missing_ingredients' => ['Unicorn dust'],
+      'partial_ingredients' => []
+    }
+    attrs = ingredient_data_attrs(ingredient, ingredient_info: info)
+
+    assert_includes attrs, 'Not in ingredient catalog'
+  end
+
+  test 'ingredient_data_attrs title for partial ingredient' do
+    ingredient = Ingredient.new(name: 'Flour', quantity_low: 2.0, unit: 'bushel')
+    info = {
+      'ingredient_details' => {},
+      'missing_ingredients' => [],
+      'partial_ingredients' => ['Flour']
+    }
+    attrs = ingredient_data_attrs(ingredient, ingredient_info: info)
+
+    assert_includes attrs, 'can&#39;t convert this unit'
+  end
+
+  test 'ingredient_data_attrs omits title when ingredient_info is nil' do
+    ingredient = Ingredient.new(name: 'Flour', quantity_low: 2.0, unit: 'cup')
+    attrs = ingredient_data_attrs(ingredient)
+
+    assert_not_includes attrs, 'title='
+  end
+
+  test 'ingredient_data_attrs omits title for skipped ingredient' do
+    ingredient = Ingredient.new(name: 'Olive oil', quantity: nil)
+    info = {
+      'ingredient_details' => {},
+      'missing_ingredients' => [],
+      'partial_ingredients' => []
+    }
+    attrs = ingredient_data_attrs(ingredient, ingredient_info: info)
+
+    assert_not_includes attrs, 'title='
+  end
 end
