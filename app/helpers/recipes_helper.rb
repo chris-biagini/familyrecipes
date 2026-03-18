@@ -223,11 +223,11 @@ module RecipesHelper # rubocop:disable Metrics/ModuleLength
 
   def resolved_tooltip(item, detail)
     grams = detail['grams'].round
-    lines = ["#{item.quantity_display} \u2192 #{grams}g"]
-    lines << tooltip_nutrient_line(detail['nutrients'], TOOLTIP_NUTRIENTS[0..3])
-    lines << tooltip_nutrient_line(detail['nutrients'], TOOLTIP_NUTRIENTS[4..5])
-    lines << '(based on original quantities)'
-    lines.join("\n")
+    nutrients = detail['nutrients']
+    ["#{item.quantity_display} \u2192 #{grams}g",
+     tooltip_nutrient_line(nutrients, TOOLTIP_NUTRIENTS[0..3]),
+     tooltip_nutrient_line(nutrients, TOOLTIP_NUTRIENTS[4..5]),
+     '(based on original quantities)'].join("\n")
   end
 
   def tooltip_nutrient_line(nutrients, defs)

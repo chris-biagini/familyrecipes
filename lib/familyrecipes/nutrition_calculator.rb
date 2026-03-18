@@ -96,7 +96,7 @@ module FamilyRecipes
       ingredients.partition { |_, amounts| amounts.any? { |a| !a.nil? } }
     end
 
-    def accumulate_amounts(totals, weight, details, partial, name, amounts, entry) # rubocop:disable Metrics/MethodLength, Metrics/ParameterLists
+    def accumulate_amounts(totals, weight, details, partial, name, amounts, entry) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength, Metrics/ParameterLists
       ingredient_grams = 0.0
       ingredient_nutrients = NUTRIENTS.index_with { |_n| 0.0 }
 
@@ -120,7 +120,7 @@ module FamilyRecipes
 
       return unless ingredient_grams.positive?
 
-      details[name] = IngredientDetail.new(grams: ingredient_grams, nutrients: ingredient_nutrients)
+      details[name.downcase] = IngredientDetail.new(grams: ingredient_grams, nutrients: ingredient_nutrients)
     end
 
     def divide_nutrients(totals, divisor)

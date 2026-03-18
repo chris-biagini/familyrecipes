@@ -957,7 +957,7 @@ class NutritionCalculatorTest < Minitest::Test
 
     result = @calculator.calculate(recipe, @recipe_map)
 
-    detail = result.ingredient_details['Flour (all-purpose)']
+    detail = result.ingredient_details['flour (all-purpose)']
 
     refute_nil detail
     assert_in_delta 500, detail.grams, 0.1
@@ -981,9 +981,9 @@ class NutritionCalculatorTest < Minitest::Test
 
     result = @calculator.calculate(recipe, @recipe_map)
 
-    assert_nil result.ingredient_details['Unicorn dust']
-    assert_nil result.ingredient_details['Flour (all-purpose)']
-    assert_nil result.ingredient_details['Olive oil']
+    assert_nil result.ingredient_details['unicorn dust']
+    assert_nil result.ingredient_details['flour (all-purpose)']
+    assert_nil result.ingredient_details['olive oil']
   end
 
   def test_ingredient_details_aggregates_across_steps
@@ -1006,7 +1006,7 @@ class NutritionCalculatorTest < Minitest::Test
 
     result = @calculator.calculate(recipe, @recipe_map)
 
-    detail = result.ingredient_details['Butter']
+    detail = result.ingredient_details['butter']
 
     refute_nil detail
     assert_in_delta 150, detail.grams, 0.1
@@ -1028,7 +1028,7 @@ class NutritionCalculatorTest < Minitest::Test
     result = @calculator.calculate(recipe, @recipe_map)
     json = result.as_json
 
-    detail = json['ingredient_details']['Flour (all-purpose)']
+    detail = json['ingredient_details']['flour (all-purpose)']
 
     refute_nil detail
     assert_instance_of Float, detail['grams']
