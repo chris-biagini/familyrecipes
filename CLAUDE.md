@@ -200,6 +200,13 @@ nutrition). Display uses vulgar fractions + en-dash (`½–1`); storage and
 serialization use ASCII fractions + hyphen (`1/2-1`). Normalization
 (vulgar→ASCII, en-dash→hyphen) happens in `MarkdownImporter#import_ingredient`.
 
+**Ingredient tooltips.** Native browser `title` attributes on ingredient `<li>`
+elements show per-line gram conversion and compact nutrition (6 nutrients).
+Data flows: `NutritionCalculator` stores `ingredient_details` in
+`Recipe#nutrition_data` JSON → `_recipe_content` extracts `ingredient_info` →
+`_step` passes to `ingredient_data_attrs` helper → `title` attribute. Embedded
+cross-reference recipes get no tooltips (nil ingredient_info).
+
 **Hotwire stack.** Turbo Drive + Turbo Streams, Stimulus controllers,
 jsbundling-rails + esbuild for JS bundling.
 - New JS modules go in `app/javascript/`; new Stimulus controllers must
@@ -289,7 +296,9 @@ via `Tag.cleanup_orphans(kitchen)`.
   tables (`VOLUME_TO_ML`, `WEIGHT_CONVERSIONS`) and Inflector-expanded variants.
 - `NutritionCalculator` — aggregates nutrient totals for a recipe, delegates
   unit resolution to `UnitResolver`. Produces `Result` with totals, per-serving,
-  and per-unit breakdowns.
+  per-unit breakdowns, and per-ingredient detail (`nutrients_per_gram` rates +
+  `grams_per_unit` conversion factors — NOT aggregated totals, so the view can
+  compute per-line values when an ingredient appears in multiple steps).
 - `RecipeNutritionJob` / `CascadeNutritionJob` — recompute nutrition; cascade
   fans out to cross-referencing recipes.
 - `RecipeAvailabilityCalculator` — catalog coverage badges on the menu page.
@@ -384,6 +393,10 @@ CWD and bricks the Bash tool. Use the wrapper: `bash bin/worktree-remove
 
 **`Data.define` + Rails JSON.** Classes with custom `to_json` must also define
 `as_json` — see `Quantity` in `lib/familyrecipes/quantity.rb`.
+
+**`rails runner` + multi-tenancy.** `ActsAsTenant` scoping applies outside web
+requests too. Wrap all `rails runner` model queries in
+`ActsAsTenant.with_tenant(kitchen) { ... }`.
 
 **Server restart.** Adding gems, new concerns, or modifying
 `lib/familyrecipes/` requires restarting Puma (`pkill -f puma; rm -f
