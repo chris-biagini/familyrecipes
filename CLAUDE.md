@@ -242,6 +242,8 @@ broadcast). Don't call `MarkdownImporter` directly for web operations.
 - `CatalogWriteService` — `IngredientCatalog` mutations, aisle sync, nutrition
   recalculation, broadcast.
 - `MealPlanWriteService` — select/deselect, reconciliation.
+- `MealPlan#apply_select` records cook history (slug + timestamp) on recipe
+  deselect. `CookHistoryWeighter` converts history to recency weights.
 - `QuickBitesWriteService` — quick bites content persistence, parse
   validation, reconciliation, broadcast. Also has `update_from_structure`.
 - `MarkdownImporter` has two entry points: `import` (markdown string) and
@@ -332,6 +334,13 @@ slug, description, category, tags, ingredients; plus `all_tags` and
 `all_categories` lists); `search_overlay_controller` does client-side substring
 matching with tiered ranking and pill-based tag/category filtering. No server
 endpoint.
+
+**Dinner picker.** `dinner_picker_controller` provides a weighted random
+recipe suggestion dialog on the menu page. Reads recipes from
+`SearchDataHelper` JSON and recency weights from `CookHistoryWeighter`
+(data attribute). Per-session tag preferences and decline penalties are
+ephemeral. `dinner_picker_logic.js` holds the pure weight computation
+and selection functions.
 
 ## Recipe & Data Formats
 
