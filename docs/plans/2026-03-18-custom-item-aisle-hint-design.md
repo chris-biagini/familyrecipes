@@ -17,12 +17,12 @@ Add an `@ Aisle` hint syntax to custom item strings:
 ```
 "Shaving cream @ Personal care"  → name: "Shaving cream", aisle: "Personal care"
 "Foo @ Bar @ Baz"                → name: "Foo @ Bar",     aisle: "Baz"
+"foo@bar"                        → name: "foo",           aisle: "bar"
 "Just milk"                      → name: "Just milk",     aisle: (catalog lookup)
-"foo@bar"                        → name: "foo@bar",       aisle: (catalog lookup)
 ```
 
-Parse on last ` @ ` (space-at-space) via `String#rpartition`. No-space `@` is
-not treated as a separator.
+Parse on last `@` via `String#rpartition`, then strip whitespace from both
+parts. Spaces around `@` are optional.
 
 ## Storage
 
@@ -32,7 +32,7 @@ items without `@` continue to work identically.
 
 ## Parsing
 
-The parse logic is a one-liner (`rpartition(' @ ')`), defined independently
+The parse logic is a one-liner (`rpartition('@')` + `strip`), defined independently
 in both `ShoppingListBuilder` (private method) and `GroceriesHelper` (view
 helper). Both return `[name, aisle_hint_or_nil]`. Extracting a shared module
 for a single `rpartition` call would be premature abstraction.
