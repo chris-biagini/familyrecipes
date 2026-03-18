@@ -117,10 +117,6 @@
   margin-left: 0.25rem;
 }
 
-.custom-item-aisle::before {
-  content: '\b7\a0';
-}
-
 /* Shopping List */
 #shopping-list {
   padding-top: 0;
