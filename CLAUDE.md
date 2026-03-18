@@ -270,9 +270,12 @@ manages the import dialog and hands off generated Markdown to the recipe
 editor. API key stored encrypted on Kitchen (`anthropic_api_key`); model
 hardcoded as `Kitchen::AI_MODEL`. Button hidden when no key configured.
 
-**Settings.** Site branding, display preferences, and API keys live as columns on Kitchen (no
-separate settings table). `usda_api_key` is encrypted via Active Record
-Encryption. `SettingsController` is a thin show/update — no write service.
+**Settings.** Site branding, display preferences, and API keys live as columns
+on Kitchen (no separate settings table). `usda_api_key` is encrypted via
+Active Record Encryption. `SettingsController` is a thin show/update — no
+write service. Adding a new setting requires 5 touch points: migration,
+dialog HTML, `SettingsController` (show JSON + params), and
+`settings_editor_controller.js` (targets + all 7 methods).
 The `multi_kitchen` flag is an env var (`MULTI_KITCHEN=true`), not a database
 setting.
 
@@ -280,7 +283,12 @@ setting.
 `Tag` + `RecipeTag` join table. `RecipeWriteService` handles tag sync on
 recipe save; `TagWriteService` handles bulk rename/delete from the management
 dialog. Tags are single-word (`[a-zA-Z-]`), stored lowercase. Orphan cleanup
-via `Tag.cleanup_orphans(kitchen)`.
+via `Tag.cleanup_orphans(kitchen)`. Smart tag decorations (emoji + color
+pills) are driven by `FamilyRecipes::SmartTagRegistry` — a frozen constant
+in `lib/familyrecipes/smart_tag_registry.rb`. `SmartTagHelper` bridges the
+registry to views; JS controllers read a JSON embed from the layout.
+`Kitchen#decorate_tags` toggle disables decorations. Crossout "-free" tags
+use a `<span class="smart-icon">` wrapper with CSS circle+slash overlay.
 
 **Nutrition pipeline.** Key classes (read their header comments for details):
 - `IngredientCatalog` — overlay model: global seed entries + per-kitchen
