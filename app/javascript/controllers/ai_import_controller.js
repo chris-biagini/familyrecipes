@@ -5,8 +5,7 @@ import { getCsrfToken, showErrors } from "../utilities/editor_utils"
  * Manages the AI recipe import dialog. Posts pasted recipe text to the
  * server-side Anthropic endpoint, then hands off the generated Markdown to
  * the recipe editor via editor_controller.openWithContent(), which dispatches
- * editor:content-loaded for proper dual-mode editor integration. Supports a
- * try-again flow with user feedback.
+ * editor:content-loaded for proper dual-mode editor integration.
  *
  * Collaborators:
  * - editor_controller (openWithContent for dialog lifecycle + content handoff)
@@ -14,11 +13,10 @@ import { getCsrfToken, showErrors } from "../utilities/editor_utils"
  * - editor_utils (CSRF tokens, error display)
  */
 export default class extends Controller {
-  static targets = ["textarea", "feedback", "feedbackField", "errors", "submitButton"]
+  static targets = ["textarea", "errors", "submitButton"]
   static values = { url: String, editorDialogId: String }
 
   connect() {
-    this.previousResult = null
     this.boundOpenClick = (e) => {
       if (e.target.closest('#ai-import-button')) this.open()
     }
@@ -46,12 +44,6 @@ export default class extends Controller {
     this.setLoading(true)
     this.clearErrors()
 
-    const body = { text }
-    if (this.previousResult && this.hasFeedbackTarget && this.feedbackTarget.value.trim()) {
-      body.previous_result = this.previousResult
-      body.feedback = this.feedbackTarget.value.trim()
-    }
-
     try {
       const response = await fetch(this.urlValue, {
         method: "POST",
@@ -59,7 +51,7 @@ export default class extends Controller {
           "Content-Type": "application/json",
           "X-CSRF-Token": getCsrfToken()
         },
-        body: JSON.stringify(body)
+        body: JSON.stringify({ text })
       })
       const data = await response.json()
 
@@ -68,8 +60,6 @@ export default class extends Controller {
         return
       }
 
-      this.previousResult = data.markdown
-      this.showFeedbackField()
       this.element.close()
       this.openRecipeEditor(data.markdown)
     } catch {
@@ -92,20 +82,10 @@ export default class extends Controller {
     editorCtrl.openWithContent({ markdown_source: markdown })
   }
 
-  showFeedbackField() {
-    if (this.hasFeedbackFieldTarget) {
-      this.feedbackFieldTarget.hidden = false
-    }
-    this.submitButtonTarget.textContent = "Try Again"
-  }
-
   setLoading(loading) {
     this.submitButtonTarget.disabled = loading
-    this.submitButtonTarget.textContent = loading
-      ? "Importing\u2026"
-      : (this.previousResult ? "Try Again" : "Import")
+    this.submitButtonTarget.textContent = loading ? "Importing\u2026" : "Import"
     this.textareaTarget.disabled = loading
-    if (this.hasFeedbackTarget) this.feedbackTarget.disabled = loading
   }
 
   showError(message) {

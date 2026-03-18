@@ -1669,6 +1669,8 @@ html:has(dialog[open]) {
 
 .editor-textarea {
   flex: 1;
+  width: 100%;
+  box-sizing: border-box;
   min-height: 60vh;
   padding: 1.5rem;
   border: none;

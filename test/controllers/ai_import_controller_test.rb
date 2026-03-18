@@ -21,25 +21,6 @@ class AiImportControllerTest < ActionDispatch::IntegrationTest
     assert_equal '# Pancakes', response.parsed_body['markdown']
   end
 
-  test 'create passes through try-again params' do
-    captured_args = nil
-    mock_call = lambda { |**kwargs|
-      captured_args = kwargs
-      AiImportService::Result.new(markdown: '# Revised', error: nil)
-    }
-
-    AiImportService.stub :call, mock_call do
-      post ai_import_path(kitchen_slug: kitchen_slug),
-           params: { text: 'recipe', previous_result: '# First', feedback: 'shorter steps' },
-           as: :json
-    end
-
-    assert_response :success
-    assert_equal 'recipe', captured_args[:text]
-    assert_equal '# First', captured_args[:previous_result]
-    assert_equal 'shorter steps', captured_args[:feedback]
-  end
-
   test 'create returns 422 when no API key' do
     mock_result = AiImportService::Result.new(markdown: nil, error: 'no_api_key')
 
