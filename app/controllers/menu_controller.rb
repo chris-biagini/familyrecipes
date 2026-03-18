@@ -23,6 +23,7 @@ class MenuController < ApplicationController
     checked_off = plan.state.fetch('checked_off', [])
     recipes = @categories.flat_map(&:recipes)
     @availability = RecipeAvailabilityCalculator.new(kitchen: current_kitchen, checked_off:, recipes:).call
+    @cook_weights = CookHistoryWeighter.call(plan.cook_history)
   end
 
   def select

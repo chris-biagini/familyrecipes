@@ -121,6 +121,22 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     assert_select 'details.availability-detail.all-on-hand summary', text: %r{2/2}
   end
 
+  test 'show embeds cook history weights' do
+    log_in
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.state['cook_history'] = [
+      { 'slug' => 'focaccia', 'at' => 1.day.ago.iso8601 }
+    ]
+    plan.save!
+
+    get menu_path(kitchen_slug:)
+
+    assert_response :ok
+    assert_select '[data-controller*="dinner-picker"]' do
+      assert_select '[data-dinner-picker-weights-value]'
+    end
+  end
+
   test 'show renders have and missing ingredient lists in detail' do
     log_in
     create_two_ingredient_recipe

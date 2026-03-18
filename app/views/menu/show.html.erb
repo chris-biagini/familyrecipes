@@ -11,6 +11,11 @@
   <p>Selected items will be tracked in <%= link_to 'Groceries', groceries_path %>.</p>
   <%- if current_member? -%>
   <div class="recipe-actions">
+    <% if current_kitchen.recipes.any? %>
+    <button type="button" id="dinner-picker-button" class="dinner-picker-trigger">
+      🎰 What's for Dinner?
+    </button>
+    <% end %>
     <button type="button" id="edit-quick-bites-button" class="edit-toggle">
       <svg width="12" height="12" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 4l6 6-16 16H6v-6z"/><line x1="18" y1="8" x2="24" y2="14"/></svg>
       Edit QuickBites
@@ -58,4 +63,16 @@
     <%= render 'menu/quickbites_graphical_editor' %>
   </div>
 <% end %>
+
+<div data-controller="dinner-picker"
+     data-dinner-picker-weights-value="<%= @cook_weights.to_json %>"
+     data-dinner-picker-recipe-base-path-value="<%= recipes_path %>/">
+  <dialog id="dinner-picker-dialog" data-dinner-picker-target="dialog">
+    <div class="dinner-picker-content">
+      <div data-dinner-picker-target="tagState" class="dinner-picker-tags"></div>
+      <div data-dinner-picker-target="slotDisplay" class="dinner-picker-slot" hidden></div>
+      <div data-dinner-picker-target="resultArea" class="dinner-picker-result" hidden></div>
+    </div>
+  </dialog>
+</div>
 <% end %>

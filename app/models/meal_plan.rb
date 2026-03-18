@@ -113,8 +113,8 @@ class MealPlan < ApplicationRecord
   end
 
   def apply_select(type:, slug:, selected:, **)
-    record_cook_event(slug) if !selected && type == 'recipe'
     key = type == 'recipe' ? 'selected_recipes' : 'selected_quick_bites'
+    record_cook_event(slug) if !selected && type == 'recipe' && state[key]&.include?(slug)
     toggle_array(key, slug, selected)
   end
 

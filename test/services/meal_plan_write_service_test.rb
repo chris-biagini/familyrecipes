@@ -86,6 +86,24 @@ class MealPlanWriteServiceTest < ActiveSupport::TestCase
     assert_equal 0, broadcast_count
   end
 
+  test 'deselecting a recipe records cook history' do
+    create_focaccia_recipe
+    MealPlanWriteService.apply_action(
+      kitchen: @kitchen, action_type: 'select',
+      type: 'recipe', slug: 'focaccia', selected: true
+    )
+    MealPlanWriteService.apply_action(
+      kitchen: @kitchen, action_type: 'select',
+      type: 'recipe', slug: 'focaccia', selected: false
+    )
+
+    plan = MealPlan.for_kitchen(@kitchen)
+    history = plan.cook_history
+
+    assert_equal 1, history.size
+    assert_equal 'focaccia', history.first['slug']
+  end
+
   test 'apply_action validates custom item length' do
     result = MealPlanWriteService.apply_action(
       kitchen: @kitchen, action_type: 'custom_items',
