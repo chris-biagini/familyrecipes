@@ -50,6 +50,13 @@
   --tag-text: #4a4540;
   --cat-bg: #dde7d8;
   --cat-text: #3a4a35;
+
+  /* Smart tag color groups */
+  --smart-green-bg: #d4edda;    --smart-green-text: #1b5e20;
+  --smart-amber-bg: #fff3cd;    --smart-amber-text: #7a5d00;
+  --smart-blue-bg: #d6eaf8;     --smart-blue-text: #1a4a6e;
+  --smart-purple-bg: #e8daf5;   --smart-purple-text: #4a2080;
+  --smart-cuisine-bg: #f5ddd0;  --smart-cuisine-text: #6e3a22;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -97,6 +104,13 @@
     --tag-text: #c8c0b5;
     --cat-bg: #2e3a2b;
     --cat-text: #a8c8a0;
+
+    /* Smart tag color groups */
+    --smart-green-bg: #1a3a1e;    --smart-green-text: #a8d8a0;
+    --smart-amber-bg: #3a3018;    --smart-amber-text: #d8c070;
+    --smart-blue-bg: #1a2e3e;     --smart-blue-text: #90c0e0;
+    --smart-purple-bg: #2a1e3a;   --smart-purple-text: #c0a8e0;
+    --smart-cuisine-bg: #3a2820;  --smart-cuisine-text: #d8b0a0;
   }
 }
 
@@ -1019,6 +1033,14 @@ section:first-of-type h2 {
   cursor: pointer;
 }
 
+.settings-field-hint {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--text-soft);
+  margin-top: 0.1rem;
+  padding-left: 1.45rem;
+}
+
 .settings-input {
   width: 100%;
   font-size: 1rem;
@@ -1504,6 +1526,38 @@ html:has(dialog[open]) {
 }
 .tag-pill--tag { background: var(--tag-bg); color: var(--tag-text); }
 .tag-pill--category { background: var(--cat-bg); color: var(--cat-text); }
+
+/* Smart tag color variants + --pill-bg for crossout halo */
+.tag-pill--green   { background: var(--smart-green-bg);   color: var(--smart-green-text);   --pill-bg: var(--smart-green-bg); }
+.tag-pill--amber   { background: var(--smart-amber-bg);   color: var(--smart-amber-text);   --pill-bg: var(--smart-amber-bg); }
+.tag-pill--blue    { background: var(--smart-blue-bg);     color: var(--smart-blue-text);    --pill-bg: var(--smart-blue-bg); }
+.tag-pill--purple  { background: var(--smart-purple-bg);   color: var(--smart-purple-text);  --pill-bg: var(--smart-purple-bg); }
+.tag-pill--cuisine { background: var(--smart-cuisine-bg);  color: var(--smart-cuisine-text); --pill-bg: var(--smart-cuisine-bg); }
+
+/* Emoji prefix via data attribute */
+.tag-pill[data-smart-emoji]::before {
+  content: attr(data-smart-emoji);
+  margin-right: 0.3em;
+  font-size: 0.85em;
+}
+
+/* Crossout ✕ badge */
+.tag-pill--crossout { position: relative; }
+.tag-pill--crossout::after {
+  content: "✕";
+  position: absolute;
+  bottom: -0.15em;
+  right: -0.3em;
+  font-size: 0.7em;
+  font-weight: 900;
+  color: #c44;
+  line-height: 1;
+  text-shadow:
+    -1px -1px 0 var(--pill-bg),
+     1px -1px 0 var(--pill-bg),
+    -1px  1px 0 var(--pill-bg),
+     1px  1px 0 var(--pill-bg);
+}
 
 .tag-pill__remove {
   font-size: 0.6rem;
