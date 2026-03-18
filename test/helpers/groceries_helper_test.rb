@@ -85,4 +85,46 @@ class GroceriesHelperTest < ActionView::TestCase
 
     assert_equal '1 item', shopping_list_count_text(shopping_list, Set.new)
   end
+
+  test 'parse_custom_item splits on last @' do
+    name, aisle = parse_custom_item('Shaving cream @ Personal care')
+
+    assert_equal 'Shaving cream', name
+    assert_equal 'Personal care', aisle
+  end
+
+  test 'parse_custom_item returns nil aisle when no @' do
+    name, aisle = parse_custom_item('Just milk')
+
+    assert_equal 'Just milk', name
+    assert_nil aisle
+  end
+
+  test 'parse_custom_item strips whitespace from both parts' do
+    name, aisle = parse_custom_item('  soap  @  Health  ')
+
+    assert_equal 'soap', name
+    assert_equal 'Health', aisle
+  end
+
+  test 'parse_custom_item handles no spaces around @' do
+    name, aisle = parse_custom_item('foo@bar')
+
+    assert_equal 'foo', name
+    assert_equal 'bar', aisle
+  end
+
+  test 'parse_custom_item with multiple @ uses last' do
+    name, aisle = parse_custom_item('foo @ bar @ Baz')
+
+    assert_equal 'foo @ bar', name
+    assert_equal 'Baz', aisle
+  end
+
+  test 'parse_custom_item with trailing @ returns nil aisle' do
+    name, aisle = parse_custom_item('foo @ ')
+
+    assert_equal 'foo', name
+    assert_nil aisle
+  end
 end

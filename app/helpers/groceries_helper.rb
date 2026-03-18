@@ -36,6 +36,16 @@ module GroceriesHelper
     checked.positive? ? "#{remaining} of #{total} items needed" : "#{total} #{'item'.pluralize(total)}"
   end
 
+  def parse_custom_item(text)
+    prefix, separator, hint = text.rpartition('@')
+    return [text.strip, nil] if separator.empty?
+
+    stripped_hint = hint.strip
+    return [prefix.strip, nil] if stripped_hint.empty?
+
+    [prefix.strip, stripped_hint]
+  end
+
   private
 
   def format_amount_part(value, unit)
