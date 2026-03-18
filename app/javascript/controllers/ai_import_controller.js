@@ -81,20 +81,24 @@ export default class extends Controller {
     const editorDialog = document.getElementById(this.editorDialogIdValue)
     if (!editorDialog) return
 
-    editorDialog.showModal()
-
-    requestAnimationFrame(() => {
-      const plaintextEl = editorDialog.querySelector('[data-controller~="plaintext-editor"]')
-      if (plaintextEl) {
-        const ctrl = this.application.getControllerForElementAndIdentifier(plaintextEl, "plaintext-editor")
-        if (ctrl) {
-          ctrl.content = markdown
-          return
+    const setContent = () => {
+      editorDialog.removeEventListener("editor:opened", setContent)
+      requestAnimationFrame(() => {
+        const plaintextEl = editorDialog.querySelector('[data-controller~="plaintext-editor"]')
+        if (plaintextEl) {
+          const ctrl = this.application.getControllerForElementAndIdentifier(plaintextEl, "plaintext-editor")
+          if (ctrl) {
+            ctrl.content = markdown
+            return
+          }
         }
-      }
-      const textarea = editorDialog.querySelector('textarea')
-      if (textarea) textarea.value = markdown
-    })
+        const textarea = editorDialog.querySelector('textarea')
+        if (textarea) textarea.value = markdown
+      })
+    }
+
+    editorDialog.addEventListener("editor:opened", setContent)
+    document.getElementById("new-recipe-button")?.click()
   }
 
   showFeedbackField() {
