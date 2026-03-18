@@ -954,15 +954,16 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
 
   test 'show renders ingredient tooltip title when nutrition data present' do
     recipe = @kitchen.recipes.find_by!(slug: 'focaccia')
-    ingredient_name = recipe.steps.first.ingredients.first.name.downcase
+    first = recipe.steps.first.ingredients.first
+    unit_key = FamilyRecipes::Inflector.normalize_unit(first.unit) || '~unitless'
     recipe.update_column(:nutrition_data, { # rubocop:disable Rails/SkipsModelValidations
                            'ingredient_details' => {
-                             ingredient_name => {
-                               'grams' => 250.0,
-                               'nutrients' => {
-                                 'calories' => 820.0, 'protein' => 12.0, 'fat' => 2.0,
-                                 'carbs' => 170.0, 'sodium' => 5.0, 'fiber' => 4.0
-                               }
+                             first.name.downcase => {
+                               'nutrients_per_gram' => {
+                                 'calories' => 3.0, 'protein' => 0.1, 'fat' => 0.01,
+                                 'carbs' => 0.8, 'sodium' => 0.02, 'fiber' => 0.03
+                               },
+                               'grams_per_unit' => { unit_key => 1.0 }
                              }
                            },
                            'missing_ingredients' => [],

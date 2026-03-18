@@ -223,10 +223,13 @@ class RecipesHelperTest < ActionView::TestCase
     ingredient = Ingredient.new(name: 'Flour', quantity_low: 2.0, unit: 'cup')
     info = {
       'ingredient_details' => {
-        'flour' => { 'grams' => 250.0, 'nutrients' => {
-          'calories' => 820.0, 'protein' => 12.0, 'fat' => 2.0,
-          'carbs' => 170.0, 'sodium' => 5.0, 'fiber' => 4.0
-        } }
+        'flour' => {
+          'nutrients_per_gram' => {
+            'calories' => 3.64, 'protein' => 0.1033, 'fat' => 0.0098,
+            'carbs' => 0.7631, 'sodium' => 0.02, 'fiber' => 0.027
+          },
+          'grams_per_unit' => { 'cup' => 125.0 }
+        }
       },
       'missing_ingredients' => [],
       'partial_ingredients' => []
@@ -235,8 +238,7 @@ class RecipesHelperTest < ActionView::TestCase
 
     assert_includes attrs, 'title='
     assert_includes attrs, '250g'
-    assert_includes attrs, 'Cal 820'
-    assert_includes attrs, 'Pro 12g'
+    assert_includes attrs, 'Cal 910'
     assert_includes attrs, 'based on original quantities'
   end
 
@@ -287,10 +289,13 @@ class RecipesHelperTest < ActionView::TestCase
     ingredient = Ingredient.new(name: 'Flour', quantity_low: 500.0, unit: 'g')
     info = {
       'ingredient_details' => {
-        'flour' => { 'grams' => 500.0, 'nutrients' => {
-          'calories' => 1820.0, 'protein' => 52.0, 'fat' => 5.0,
-          'carbs' => 382.0, 'sodium' => 10.0, 'fiber' => 14.0
-        } }
+        'flour' => {
+          'nutrients_per_gram' => {
+            'calories' => 3.64, 'protein' => 0.1033, 'fat' => 0.0098,
+            'carbs' => 0.7631, 'sodium' => 0.02, 'fiber' => 0.027
+          },
+          'grams_per_unit' => { 'g' => 1.0 }
+        }
       },
       'missing_ingredients' => [],
       'partial_ingredients' => []

@@ -960,9 +960,9 @@ class NutritionCalculatorTest < Minitest::Test
     detail = result.ingredient_details['flour (all-purpose)']
 
     refute_nil detail
-    assert_in_delta 500, detail.grams, 0.1
-    assert_in_delta 1820, detail.nutrients[:calories], 1
-    assert_in_delta 51.65, detail.nutrients[:protein], 0.1
+    assert_in_delta 1.0, detail.grams_per_unit['g'], 0.01
+    assert_in_delta 109.2 / 30.0, detail.nutrients_per_gram[:calories], 0.01
+    assert_in_delta 3.099 / 30.0, detail.nutrients_per_gram[:protein], 0.001
   end
 
   def test_ingredient_details_excludes_unresolved
@@ -986,7 +986,7 @@ class NutritionCalculatorTest < Minitest::Test
     assert_nil result.ingredient_details['olive oil']
   end
 
-  def test_ingredient_details_aggregates_across_steps
+  def test_ingredient_details_with_multiple_units
     recipe = make_recipe(<<~MD)
       # Test
 
@@ -999,7 +999,7 @@ class NutritionCalculatorTest < Minitest::Test
 
       ## Step 2 (second)
 
-      - Butter, 100 g
+      - Butter, 1 stick
 
       Second.
     MD
@@ -1009,8 +1009,8 @@ class NutritionCalculatorTest < Minitest::Test
     detail = result.ingredient_details['butter']
 
     refute_nil detail
-    assert_in_delta 150, detail.grams, 0.1
-    assert_in_delta 1075.5, detail.nutrients[:calories], 1
+    assert_in_delta 1.0, detail.grams_per_unit['g'], 0.01
+    assert_in_delta 113.0, detail.grams_per_unit['stick'], 0.1
   end
 
   def test_as_json_includes_ingredient_details
@@ -1031,8 +1031,8 @@ class NutritionCalculatorTest < Minitest::Test
     detail = json['ingredient_details']['flour (all-purpose)']
 
     refute_nil detail
-    assert_instance_of Float, detail['grams']
-    assert_instance_of Float, detail['nutrients']['calories']
+    assert_instance_of Float, detail['nutrients_per_gram']['calories']
+    assert_instance_of Float, detail['grams_per_unit']['g']
   end
 
   def test_as_json_coerces_numeric_scalars_to_float

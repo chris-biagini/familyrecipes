@@ -14,7 +14,7 @@ module FamilyRecipes
   class NutritionCalculator
     NUTRIENTS = NutritionConstraints::NUTRIENT_KEYS
 
-    IngredientDetail = Data.define(:grams, :nutrients)
+    IngredientDetail = Data.define(:nutrients_per_gram, :grams_per_unit)
 
     Result = Data.define(
       :totals, :serving_count, :per_serving, :per_unit,
@@ -32,8 +32,8 @@ module FamilyRecipes
             h[key] = h[key]&.to_f
           end
           h['ingredient_details'] = h['ingredient_details']&.transform_values do |detail|
-            { 'grams' => detail.grams.to_f,
-              'nutrients' => detail.nutrients.transform_keys(&:to_s).transform_values(&:to_f) }
+            { 'nutrients_per_gram' => detail.nutrients_per_gram.transform_keys(&:to_s).transform_values(&:to_f),
+              'grams_per_unit' => detail.grams_per_unit.transform_values(&:to_f) }
           end
         end
       end
@@ -97,30 +97,27 @@ module FamilyRecipes
     end
 
     def accumulate_amounts(totals, weight, details, partial, name, amounts, entry) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength, Metrics/ParameterLists
-      ingredient_grams = 0.0
-      ingredient_nutrients = NUTRIENTS.index_with { |_n| 0.0 }
+      resolver = UnitResolver.new(entry)
+      grams_per_unit = {}
 
       amounts.each do |amount|
         next if amount.nil? || amount.value.nil?
 
-        grams = UnitResolver.new(entry).to_grams(amount.value, amount.unit)
+        grams = resolver.to_grams(amount.value, amount.unit)
         if grams.nil?
           partial << name unless partial.include?(name)
           next
         end
 
         weight[:grams] += grams
-        ingredient_grams += grams
-        NUTRIENTS.each do |nutrient|
-          contribution = nutrient_per_gram(entry, nutrient) * grams
-          totals[nutrient] += contribution
-          ingredient_nutrients[nutrient] += contribution
-        end
+        NUTRIENTS.each { |nutrient| totals[nutrient] += nutrient_per_gram(entry, nutrient) * grams }
+        grams_per_unit[amount.unit || '~unitless'] = grams / amount.value
       end
 
-      return unless ingredient_grams.positive?
+      return if grams_per_unit.empty?
 
-      details[name.downcase] = IngredientDetail.new(grams: ingredient_grams, nutrients: ingredient_nutrients)
+      rates = NUTRIENTS.index_with { |n| nutrient_per_gram(entry, n) }
+      details[name.downcase] = IngredientDetail.new(nutrients_per_gram: rates, grams_per_unit: grams_per_unit)
     end
 
     def divide_nutrients(totals, divisor)

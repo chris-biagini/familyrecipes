@@ -214,7 +214,13 @@ module RecipesHelper # rubocop:disable Metrics/ModuleLength
     name_key = item.name.downcase
     detail = info['ingredient_details']&.dig(name_key)
 
-    return resolved_tooltip(item, detail) if detail
+    if detail
+      tooltip = resolved_tooltip(item, detail)
+      return tooltip if tooltip
+
+      return "In catalog, but can't convert this unit"
+    end
+
     return 'Not in ingredient catalog' if info['missing_ingredients']&.include?(item.name)
     return "In catalog, but can't convert this unit" if info['partial_ingredients']&.include?(item.name)
 
@@ -222,17 +228,22 @@ module RecipesHelper # rubocop:disable Metrics/ModuleLength
   end
 
   def resolved_tooltip(item, detail)
-    grams = detail['grams'].round
-    nutrients = detail['nutrients']
+    unit_key = item.quantity_unit || '~unitless'
+    factor = detail.dig('grams_per_unit', unit_key)
+    return nil unless factor
+
+    qty = (item.quantity_high || item.quantity_low).to_f
+    grams = (qty * factor).round
+    rates = detail['nutrients_per_gram']
     lines = []
     lines << "#{item.quantity_display} \u2192 #{grams}g" unless item.quantity_unit == 'g'
-    lines << tooltip_nutrient_line(nutrients, TOOLTIP_NUTRIENTS[0..3])
-    lines << tooltip_nutrient_line(nutrients, TOOLTIP_NUTRIENTS[4..5])
+    lines << tooltip_nutrient_line(rates, grams, TOOLTIP_NUTRIENTS[0..3])
+    lines << tooltip_nutrient_line(rates, grams, TOOLTIP_NUTRIENTS[4..5])
     lines << '(based on original quantities)'
     lines.join("\n")
   end
 
-  def tooltip_nutrient_line(nutrients, defs)
-    defs.map { |key, label, unit| "#{label} #{nutrients[key.to_s].round}#{unit}" }.join(' | ')
+  def tooltip_nutrient_line(rates, grams, defs)
+    defs.map { |key, label, unit| "#{label} #{(rates[key.to_s] * grams).round}#{unit}" }.join(' | ')
   end
 end
