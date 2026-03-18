@@ -304,4 +304,65 @@ class MealPlanTest < ActiveSupport::TestCase
     assert_empty list.state['custom_items']
     assert_empty list.state['checked_off']
   end
+
+  # -- Cook History --
+
+  test 'recipe deselect appends cook history entry' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: false)
+
+    history = plan.cook_history
+
+    assert_equal 1, history.size
+    assert_equal 'focaccia', history.first['slug']
+    assert_predicate history.first['at'], :present?
+  end
+
+  test 'quick bite deselect does not append cook history' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('select', type: 'quick_bite', slug: 'nachos', selected: true)
+    plan.apply_action('select', type: 'quick_bite', slug: 'nachos', selected: false)
+
+    assert_empty plan.cook_history
+  end
+
+  test 'cook history accumulates multiple entries for same recipe' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: false)
+    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: false)
+
+    assert_equal 2, plan.cook_history.size
+  end
+
+  test 'cook history prunes entries older than 90 days' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    # Seed state with two entries: one stale, one fresh
+    plan.state['cook_history'] = [
+      { 'slug' => 'old-recipe', 'at' => 91.days.ago.iso8601 },
+      { 'slug' => 'fresh-recipe', 'at' => 10.days.ago.iso8601 }
+    ]
+    plan.save!
+
+    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: false)
+
+    slugs = plan.cook_history.pluck('slug')
+
+    assert_not_includes slugs, 'old-recipe'
+    assert_includes slugs, 'fresh-recipe'
+    assert_includes slugs, 'focaccia'
+  end
+
+  test 'cook history is preserved across other state changes' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: false)
+    plan.apply_action('check', item: 'milk', checked: true)
+
+    assert_equal 1, plan.cook_history.size
+    assert_equal 'focaccia', plan.cook_history.first['slug']
+  end
 end

@@ -18,6 +18,7 @@ class MealPlan < ApplicationRecord
   CASE_INSENSITIVE_KEYS = %w[custom_items checked_off].freeze
   MAX_RETRY_ATTEMPTS = 3
   MAX_CUSTOM_ITEM_LENGTH = 100
+  COOK_HISTORY_WINDOW = 90
 
   def self.for_kitchen(kitchen)
     find_or_create_by!(kitchen: kitchen)
@@ -47,6 +48,10 @@ class MealPlan < ApplicationRecord
 
   def selected_quick_bites_set
     state.fetch('selected_quick_bites', []).to_set
+  end
+
+  def cook_history
+    state.fetch('cook_history', [])
   end
 
   def apply_action(action_type, **params)
@@ -108,6 +113,7 @@ class MealPlan < ApplicationRecord
   end
 
   def apply_select(type:, slug:, selected:, **)
+    record_cook_event(slug) if !selected && type == 'recipe'
     key = type == 'recipe' ? 'selected_recipes' : 'selected_quick_bites'
     toggle_array(key, slug, selected)
   end
@@ -139,5 +145,12 @@ class MealPlan < ApplicationRecord
 
   def list_remove(key, list, value)
     CASE_INSENSITIVE_KEYS.include?(key) ? list.reject! { |v| v.casecmp?(value) } : list.delete(value)
+  end
+
+  def record_cook_event(slug)
+    history = state['cook_history'] ||= []
+    history << { 'slug' => slug, 'at' => Time.current.iso8601 }
+    cutoff = COOK_HISTORY_WINDOW.days.ago
+    history.reject! { |e| Time.zone.parse(e['at']) < cutoff }
   end
 end
