@@ -12,7 +12,7 @@ import { getCsrfToken, showErrors } from "../utilities/editor_utils"
  * - editor_utils: CSRF tokens, error display
  */
 export default class extends Controller {
-  static targets = ["siteTitle", "homepageHeading", "homepageSubtitle", "usdaApiKey", "anthropicApiKey", "showNutrition"]
+  static targets = ["siteTitle", "homepageHeading", "homepageSubtitle", "usdaApiKey", "anthropicApiKey", "showNutrition", "decorateTags"]
   static values = { loadUrl: String, saveUrl: String }
 
   connect() {
@@ -55,6 +55,7 @@ export default class extends Controller {
         this.usdaApiKeyTarget.value = data.usda_api_key || ""
         this.anthropicApiKeyTarget.value = data.anthropic_api_key || ""
         this.showNutritionTarget.checked = !!data.show_nutrition
+        this.decorateTagsTarget.checked = !!data.decorate_tags
         this.storeOriginals()
         this.disableFields(false)
         this.siteTitleTarget.focus()
@@ -74,7 +75,8 @@ export default class extends Controller {
         homepage_subtitle: this.homepageSubtitleTarget.value,
         usda_api_key: this.usdaApiKeyTarget.value,
         anthropic_api_key: this.anthropicApiKeyTarget.value,
-        show_nutrition: this.showNutritionTarget.checked
+        show_nutrition: this.showNutritionTarget.checked,
+        decorate_tags: this.decorateTagsTarget.checked
       }
     }
   }
@@ -94,7 +96,8 @@ export default class extends Controller {
           homepage_subtitle: this.homepageSubtitleTarget.value,
           usda_api_key: this.usdaApiKeyTarget.value,
           anthropic_api_key: this.anthropicApiKeyTarget.value,
-          show_nutrition: this.showNutritionTarget.checked
+          show_nutrition: this.showNutritionTarget.checked,
+          decorate_tags: this.decorateTagsTarget.checked
         }
       })
     })
@@ -108,7 +111,8 @@ export default class extends Controller {
       this.homepageSubtitleTarget.value !== this.originals.homepageSubtitle ||
       this.usdaApiKeyTarget.value !== this.originals.usdaApiKey ||
       this.anthropicApiKeyTarget.value !== this.originals.anthropicApiKey ||
-      this.showNutritionTarget.checked !== this.originals.showNutrition
+      this.showNutritionTarget.checked !== this.originals.showNutrition ||
+      this.decorateTagsTarget.checked !== this.originals.decorateTags
   }
 
   reset = (event) => {
@@ -119,6 +123,7 @@ export default class extends Controller {
     this.usdaApiKeyTarget.value = this.originals.usdaApiKey
     this.anthropicApiKeyTarget.value = this.originals.anthropicApiKey
     this.showNutritionTarget.checked = this.originals.showNutrition
+    this.decorateTagsTarget.checked = this.originals.decorateTags
   }
 
   storeOriginals() {
@@ -128,13 +133,15 @@ export default class extends Controller {
       homepageSubtitle: this.homepageSubtitleTarget.value,
       usdaApiKey: this.usdaApiKeyTarget.value,
       anthropicApiKey: this.anthropicApiKeyTarget.value,
-      showNutrition: this.showNutritionTarget.checked
+      showNutrition: this.showNutritionTarget.checked,
+      decorateTags: this.decorateTagsTarget.checked
     }
   }
 
   disableFields(disabled) {
     ;[this.siteTitleTarget, this.homepageHeadingTarget,
       this.homepageSubtitleTarget, this.usdaApiKeyTarget,
-      this.anthropicApiKeyTarget, this.showNutritionTarget].forEach(f => f.disabled = disabled)
+      this.anthropicApiKeyTarget, this.showNutritionTarget,
+      this.decorateTagsTarget].forEach(f => f.disabled = disabled)
   }
 }
