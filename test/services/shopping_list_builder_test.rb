@@ -581,4 +581,116 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
 
     assert_empty names
   end
+
+  test 'custom item with aisle hint routes to hinted aisle' do
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('custom_items', item: 'Shaving cream @ Personal', action: 'add')
+
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
+
+    assert result.key?('Personal'), "Expected 'Personal' aisle"
+    item = result['Personal'].find { |i| i[:name] == 'Shaving cream' }
+
+    assert item, 'Expected "Shaving cream" (without hint) in Personal aisle'
+    assert_empty item[:amounts]
+  end
+
+  test 'trailing @ with empty hint falls back to catalog lookup' do
+    create_catalog_entry('Butter', basis_grams: 14, aisle: 'Dairy')
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('custom_items', item: 'Butter @ ', action: 'add')
+
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
+
+    assert result.key?('Dairy'), 'Empty hint should fall back to catalog aisle'
+    butter = result['Dairy'].find { |i| i[:name] == 'Butter' }
+
+    assert butter
+  end
+
+  test 'custom item with no spaces around @ still parses hint' do
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('custom_items', item: 'soap@Personal', action: 'add')
+
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
+
+    assert result.key?('Personal')
+    item = result['Personal'].find { |i| i[:name] == 'soap' }
+
+    assert item, 'Expected "soap" in Personal aisle'
+  end
+
+  test 'custom item with multiple @ splits on last one' do
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('custom_items', item: 'foo @ bar @ Baking', action: 'add')
+
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
+
+    assert result.key?('Baking')
+    item = result['Baking'].find { |i| i[:name] == 'foo @ bar' }
+
+    assert item, 'Expected "foo @ bar" with last @ used as separator'
+  end
+
+  test 'aisle hint matches existing aisle case-insensitively' do
+    @kitchen.update!(aisle_order: "Spices\nBaking")
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+    list.apply_action('custom_items', item: 'cinnamon sticks @ spices', action: 'add')
+
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
+
+    assert result.key?('Spices'), 'Expected canonical "Spices" aisle, not lowercase'
+    item = result['Spices'].find { |i| i[:name] == 'cinnamon sticks' }
+
+    assert item, 'Expected item in existing Spices aisle via case-insensitive match'
+  end
+
+  test 'aisle hint overrides catalog aisle for known ingredient' do
+    create_catalog_entry('Butter', basis_grams: 14, aisle: 'Dairy')
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('custom_items', item: 'Butter @ Baking', action: 'add')
+
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
+
+    assert result.key?('Baking'), 'Hint should override catalog aisle'
+    butter = result['Baking'].find { |i| i[:name] == 'Butter' }
+
+    assert butter
+  end
+
+  test 'hinted custom item deduped against recipe ingredient by parsed name' do
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+    list.apply_action('custom_items', item: 'Flour @ Pantry', action: 'add')
+
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
+    all_names = result.values.flatten.pluck(:name)
+
+    assert_equal 1, all_names.count { |n| n.casecmp('flour').zero? },
+                 'Hinted custom item should dedup against recipe Flour'
+  end
+
+  test 'visible_names parses hint from custom items' do
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('custom_items', item: 'Shaving cream @ Personal', action: 'add')
+
+    names = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).visible_names
+
+    assert_includes names, 'Shaving cream'
+    assert_not_includes names, 'Shaving cream @ Personal'
+  end
+
+  test 'hinted custom item aisle respects kitchen sort order' do
+    @kitchen.update!(aisle_order: "Personal\nBaking")
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+    list.apply_action('custom_items', item: 'Shaving cream @ Personal', action: 'add')
+
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
+    aisle_names = result.keys
+
+    assert_operator aisle_names.index('Personal'), :<, aisle_names.index('Baking'),
+                    'Personal should sort before Baking per aisle_order'
+  end
 end

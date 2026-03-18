@@ -34,7 +34,7 @@ class ShoppingListBuilder
     names.merge(selected_quick_bites.flat_map { |qb| qb.ingredients_with_quantities.map(&:first) }
                                     .map { |name| canonical_name(name) })
     names.reject! { |name| @resolver.omitted?(name) }
-    names.merge(@meal_plan.custom_items_list.map { |item| canonical_name(item) })
+    names.merge(@meal_plan.custom_items_list.map { |item| canonical_name(parse_custom_item(item).first) })
     names
   end
 
@@ -127,15 +127,38 @@ class ShoppingListBuilder
     return if custom.empty?
 
     existing = existing_canonical_names(organized)
-    novel = custom.reject { |item| existing.include?(canonical_name(item)) }
-    return if novel.empty?
+    new_items = custom.filter_map { |raw| custom_item_entry(raw, organized, existing) }
+    return if new_items.empty?
 
-    novel.each do |item|
-      name = canonical_name(item)
-      aisle = aisle_for(name)
-      organized[aisle] ||= []
-      organized[aisle] << { name: name, amounts: [], sources: [] }
-    end
+    new_items.each { |aisle, item| (organized[aisle] ||= []) << item }
+    organized.replace(sort_aisles(organized))
+  end
+
+  def custom_item_entry(raw_item, organized, existing)
+    name, aisle_hint = parse_custom_item(raw_item)
+    canonical = canonical_name(name)
+    return if existing.include?(canonical)
+
+    aisle = aisle_hint ? resolve_aisle_hint(aisle_hint, organized) : aisle_for(canonical)
+    [aisle, { name: canonical, amounts: [], sources: [] }]
+  end
+
+  def parse_custom_item(text)
+    prefix, separator, hint = text.rpartition('@')
+    return [text.strip, nil] if separator.empty?
+
+    stripped_hint = hint.strip
+    return [prefix.strip, nil] if stripped_hint.empty?
+
+    [prefix.strip, stripped_hint]
+  end
+
+  def resolve_aisle_hint(hint, organized)
+    match = organized.keys.find { |k| k.casecmp(hint).zero? }
+    return match if match
+
+    order_match = @kitchen.parsed_aisle_order.find { |a| a.casecmp(hint).zero? }
+    order_match || hint
   end
 
   def existing_canonical_names(organized)
