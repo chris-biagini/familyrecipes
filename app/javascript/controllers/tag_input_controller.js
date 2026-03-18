@@ -23,6 +23,7 @@ export default class extends Controller {
     this.highlightedIndex = -1
     this.tagCounts = new Map(this.allTagsValue.map(([name, count]) => [name, count]))
     this.tagNames = this.allTagsValue.map(([name]) => name)
+    this.loadSmartTags()
     this.renderPills()
 
     this.handleReset = () => { this.reset() }
@@ -39,6 +40,11 @@ export default class extends Controller {
 
   get modified() {
     return JSON.stringify(this.currentTags.sort()) !== JSON.stringify(this.originalTags.sort())
+  }
+
+  loadSmartTags() {
+    const el = document.querySelector('script[data-smart-tags]')
+    this.smartTags = el ? JSON.parse(el.textContent) : null
   }
 
   loadTags(tags) {
@@ -118,6 +124,14 @@ export default class extends Controller {
       const pill = document.createElement("span")
       pill.className = "tag-pill tag-pill--tag"
       pill.textContent = name
+      if (this.smartTags) {
+        const entry = this.smartTags[name]
+        if (entry) {
+          pill.classList.add(`tag-pill--${entry.color}`)
+          if (entry.style === "crossout") pill.classList.add("tag-pill--crossout")
+          pill.dataset.smartEmoji = entry.emoji
+        }
+      }
 
       const btn = document.createElement("button")
       btn.className = "tag-pill__remove"
@@ -149,6 +163,10 @@ export default class extends Controller {
 
       const nameSpan = document.createElement("span")
       nameSpan.textContent = tag
+      if (this.smartTags) {
+        const entry = this.smartTags[tag]
+        if (entry) nameSpan.textContent = `${entry.emoji} ${tag}`
+      }
       item.appendChild(nameSpan)
 
       const count = this.tagCounts.get(tag) || 0
