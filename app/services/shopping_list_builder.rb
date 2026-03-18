@@ -11,7 +11,7 @@
 # - IngredientResolver — name canonicalization and catalog lookups
 # - IngredientAggregator — quantity merging
 # - IngredientCatalog.resolver_for — factory for resolver
-class ShoppingListBuilder
+class ShoppingListBuilder # rubocop:disable Metrics/ClassLength
   AISLE_SORT_PRIORITY = { ordered: 0, unordered: 1, miscellaneous: 2 }.freeze
 
   def initialize(kitchen:, meal_plan:, resolver: nil)
@@ -28,17 +28,22 @@ class ShoppingListBuilder
   end
 
   def visible_names
-    names = Set.new
-    names.merge(selected_recipes.flat_map { |r| r.all_ingredients_with_quantities.map(&:first) }
-                                .map { |name| canonical_name(name) })
-    names.merge(selected_quick_bites.flat_map { |qb| qb.ingredients_with_quantities.map(&:first) }
-                                    .map { |name| canonical_name(name) })
-    names.reject! { |name| @resolver.omitted?(name) }
-    names.merge(@meal_plan.custom_items_list.map { |item| canonical_name(parse_custom_item(item).first) })
-    names
+    custom = @meal_plan.custom_items_list.map { |item| canonical_name(parse_custom_item(item).first) }
+    (canonical_recipe_names + canonical_quick_bite_names + custom)
+      .reject { |name| @resolver.omitted?(name) }.to_set
   end
 
   private
+
+  def canonical_recipe_names
+    selected_recipes.flat_map { |r| r.all_ingredients_with_quantities.map(&:first) }
+                    .map { |name| canonical_name(name) }
+  end
+
+  def canonical_quick_bite_names
+    selected_quick_bites.flat_map { |qb| qb.ingredients_with_quantities.map(&:first) }
+                        .map { |name| canonical_name(name) }
+  end
 
   def merge_all_ingredients
     recipe_ingredients = aggregate_recipe_ingredients
