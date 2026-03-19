@@ -681,6 +681,194 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
     assert_not_includes names, 'Shaving cream @ Personal'
   end
 
+  test 'tracks uncounted when recipe ingredient has no quantity' do
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Salad
+
+      ## Toss (combine)
+
+      - Olive oil
+      - Salt, 1 tsp
+
+      Toss.
+    MD
+
+    create_catalog_entry('Olive oil', basis_grams: 14, aisle: 'Oils')
+
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'recipe', slug: 'salad', selected: true)
+
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
+    oil = result['Oils'].find { |i| i[:name] == 'Olive oil' }
+
+    assert_equal 1, oil[:uncounted]
+    assert_empty oil[:amounts]
+  end
+
+  test 'mixed counted and uncounted from two recipes' do
+    create_catalog_entry('Red bell pepper', basis_grams: 150, aisle: 'Produce')
+
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Stuffed Peppers
+
+      ## Prep (slice)
+
+      - Red bell pepper, 1
+
+      Prep.
+    MD
+
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Stir Fry
+
+      ## Cook (stir-fry)
+
+      - Red bell pepper
+
+      Cook.
+    MD
+
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'recipe', slug: 'stuffed-peppers', selected: true)
+    list.apply_action('select', type: 'recipe', slug: 'stir-fry', selected: true)
+
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
+    pepper = result['Produce'].find { |i| i[:name] == 'Red bell pepper' }
+
+    assert_equal [[1.0, nil]], pepper[:amounts]
+    assert_equal 1, pepper[:uncounted]
+  end
+
+  test 'multiple uncounted sources tracked separately' do
+    create_catalog_entry('Garlic', basis_grams: 5, aisle: 'Produce')
+
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Pasta
+
+      ## Cook (boil)
+
+      - Garlic
+
+      Cook.
+    MD
+
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Stir Fry
+
+      ## Cook (stir-fry)
+
+      - Garlic
+
+      Cook.
+    MD
+
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Soup
+
+      ## Cook (simmer)
+
+      - Garlic
+
+      Cook.
+    MD
+
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'recipe', slug: 'pasta', selected: true)
+    list.apply_action('select', type: 'recipe', slug: 'stir-fry', selected: true)
+    list.apply_action('select', type: 'recipe', slug: 'soup', selected: true)
+
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
+    garlic = result['Produce'].find { |i| i[:name] == 'Garlic' }
+
+    assert_equal 3, garlic[:uncounted]
+    assert_empty garlic[:amounts]
+  end
+
+  test 'fully counted ingredients have zero uncounted' do
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
+    flour = result['Baking'].find { |i| i[:name] == 'Flour' }
+
+    assert_equal 0, flour[:uncounted]
+  end
+
+  test 'quick bite merged with counted recipe ingredient increments uncounted' do
+    create_catalog_entry('Hummus', basis_grams: 30, aisle: 'Deli')
+
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Veggie Plate
+
+      ## Assemble (plate)
+
+      - Hummus, 1 cup
+
+      Arrange.
+    MD
+
+    @kitchen.update!(quick_bites_content: <<~MD)
+      ## Snacks
+      - Hummus with Pretzels: Hummus, Pretzels
+    MD
+
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'recipe', slug: 'veggie-plate', selected: true)
+    list.apply_action('select', type: 'quick_bite', slug: 'hummus-with-pretzels', selected: true)
+
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
+    hummus = result['Deli'].find { |i| i[:name] == 'Hummus' }
+
+    assert_equal [[1.0, 'cup']], hummus[:amounts]
+    assert_equal 1, hummus[:uncounted]
+  end
+
+  test 'custom items have zero uncounted' do
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('custom_items', item: 'birthday candles', action: 'add')
+
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
+    custom = result['Miscellaneous'].find { |i| i[:name] == 'birthday candles' }
+
+    assert_equal 0, custom[:uncounted]
+  end
+
+  test 'cross-reference uncounted ingredient tracked in parent recipe' do
+    create_catalog_entry('Garlic', basis_grams: 5, aisle: 'Produce')
+
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Garlic Butter
+
+      ## Melt (combine)
+
+      - Garlic
+
+      Melt.
+    MD
+
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Garlic Bread
+
+      ## Prep.
+      > @[Garlic Butter]
+
+      ## Toast (bake)
+
+      - Garlic, 2 cloves
+
+      Toast.
+    MD
+
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'recipe', slug: 'garlic-bread', selected: true)
+
+    result = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list).build
+    garlic = result['Produce'].find { |i| i[:name] == 'Garlic' }
+
+    assert_equal [[2.0, 'cloves']], garlic[:amounts]
+    assert_equal 1, garlic[:uncounted]
+  end
+
   test 'hinted custom item aisle respects kitchen sort order' do
     @kitchen.update!(aisle_order: "Personal\nBaking")
     list = MealPlan.for_kitchen(@kitchen)

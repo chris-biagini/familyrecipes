@@ -56,8 +56,9 @@ class ShoppingListBuilder # rubocop:disable Metrics/ClassLength
 
   def merge_entries(existing, incoming)
     {
-      amounts: IngredientAggregator.merge_amounts(existing[:amounts], incoming[:amounts]),
-      sources: (existing[:sources] + incoming[:sources]).uniq
+      amounts: merge_clean_amounts(existing[:amounts], incoming[:amounts]),
+      sources: (existing[:sources] + incoming[:sources]).uniq,
+      uncounted: existing[:uncounted] + incoming[:uncounted]
     }
   end
 
@@ -91,8 +92,27 @@ class ShoppingListBuilder # rubocop:disable Metrics/ClassLength
 
   def merge_ingredient(merged, name, amounts, source:)
     key = canonical_name(name)
-    entry = { amounts: amounts, sources: [source] }
-    merged[key] = merged.key?(key) ? merge_entries(merged[key], entry) : entry
+    uncounted = amounts.count(nil)
+    clean = amounts.compact
+
+    if merged.key?(key)
+      merge_into_existing(merged[key], clean, uncounted, source)
+    else
+      merged[key] = { amounts: clean, sources: [source], uncounted: uncounted }
+    end
+  end
+
+  def merge_into_existing(entry, clean_amounts, uncounted, source)
+    entry[:amounts] = merge_clean_amounts(entry[:amounts], clean_amounts)
+    entry[:sources] = (entry[:sources] + [source]).uniq
+    entry[:uncounted] += uncounted
+  end
+
+  def merge_clean_amounts(existing, incoming)
+    return existing if incoming.empty?
+    return incoming if existing.empty?
+
+    IngredientAggregator.merge_amounts(existing, incoming)
   end
 
   def canonical_name(name)
@@ -102,7 +122,10 @@ class ShoppingListBuilder # rubocop:disable Metrics/ClassLength
   def organize_by_aisle(ingredients)
     visible = ingredients.reject { |name, _| @resolver.omitted?(name) }
     grouped = visible.each_with_object(Hash.new { |h, k| h[k] = [] }) do |(name, entry), result|
-      result[aisle_for(name)] << { name: name, amounts: serialize_amounts(entry[:amounts]), sources: entry[:sources] }
+      result[aisle_for(name)] << {
+        name: name, amounts: serialize_amounts(entry[:amounts]),
+        sources: entry[:sources], uncounted: entry[:uncounted]
+      }
     end
 
     sort_aisles(grouped)
@@ -145,7 +168,7 @@ class ShoppingListBuilder # rubocop:disable Metrics/ClassLength
     return if existing.include?(canonical)
 
     aisle = aisle_hint ? resolve_aisle_hint(aisle_hint, organized) : aisle_for(canonical)
-    [aisle, { name: canonical, amounts: [], sources: [] }]
+    [aisle, { name: canonical, amounts: [], sources: [], uncounted: 0 }]
   end
 
   def parse_custom_item(text)
@@ -171,7 +194,7 @@ class ShoppingListBuilder # rubocop:disable Metrics/ClassLength
   end
 
   def serialize_amounts(amounts)
-    amounts.compact.map { |q| [q.value.to_f, display_unit(q)] }
+    amounts.map { |q| [q.value.to_f, display_unit(q)] }
   end
 
   def display_unit(quantity)
