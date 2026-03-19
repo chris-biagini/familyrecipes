@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { getCsrfToken, saveRequest, showErrors } from "../utilities/editor_utils"
+import ListenerManager from "../utilities/listener_manager"
 
 /**
  * Companion controller for the settings editor dialog. Hooks into editor
@@ -10,6 +11,7 @@ import { getCsrfToken, saveRequest, showErrors } from "../utilities/editor_utils
  * - editor_controller: open/close/save lifecycle, dirty guards
  * - reveal_controller: API key show/hide toggle (nested)
  * - editor_utils: CSRF tokens, error display
+ * - ListenerManager: clean event listener teardown
  */
 export default class extends Controller {
   static targets = ["siteTitle", "homepageHeading", "homepageSubtitle", "usdaApiKey", "anthropicApiKey", "showNutrition", "decorateTags"]
@@ -17,24 +19,19 @@ export default class extends Controller {
 
   connect() {
     this.originals = {}
+    this.listeners = new ListenerManager()
 
-    this.element.addEventListener("editor:collect", this.collect)
-    this.element.addEventListener("editor:save", this.provideSaveFn)
-    this.element.addEventListener("editor:modified", this.checkModified)
-    this.element.addEventListener("editor:reset", this.reset)
-
-    this.boundOpenClick = (e) => {
+    this.listeners.add(this.element, "editor:collect", this.collect)
+    this.listeners.add(this.element, "editor:save", this.provideSaveFn)
+    this.listeners.add(this.element, "editor:modified", this.checkModified)
+    this.listeners.add(this.element, "editor:reset", this.reset)
+    this.listeners.add(document, 'click', (e) => {
       if (e.target.closest('#settings-button')) this.openDialog()
-    }
-    document.addEventListener('click', this.boundOpenClick)
+    })
   }
 
   disconnect() {
-    this.element.removeEventListener("editor:collect", this.collect)
-    this.element.removeEventListener("editor:save", this.provideSaveFn)
-    this.element.removeEventListener("editor:modified", this.checkModified)
-    this.element.removeEventListener("editor:reset", this.reset)
-    document.removeEventListener('click', this.boundOpenClick)
+    this.listeners.teardown()
   }
 
   openDialog() {

@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { getCsrfToken, saveRequest } from "../utilities/editor_utils"
+import ListenerManager from "../utilities/listener_manager"
 
 /**
  * Companion controller for the nutrition editor dialog. Hooks into the shared
@@ -11,6 +12,7 @@ import { getCsrfToken, saveRequest } from "../utilities/editor_utils"
  * - editor_utils: CSRF tokens
  * - NutritionEntriesController: JSON save endpoint and Turbo Frame edit partial
  * - CatalogWriteService (server): orchestrates upsert, aisle sync, and broadcast
+ * - ListenerManager: clean event listener teardown
  */
 export default class extends Controller {
   static targets = [
@@ -34,49 +36,31 @@ export default class extends Controller {
   connect() {
     this.currentIngredient = null
     this.originalSnapshot = null
+    this.listeners = new ListenerManager()
 
-    this.boundEditClick = (event) => {
+    this.listeners.add(document, "click", (event) => {
       const btn = event.target.closest("[data-open-editor]")
       if (btn) this.openForIngredient(btn)
-    }
-
-    this.boundResetClick = (event) => {
+    })
+    this.listeners.add(document, "click", (event) => {
       const btn = event.target.closest("[data-reset-ingredient]")
       if (btn) this.resetIngredient(btn)
-    }
-
-    this.boundPrefetch = (event) => {
+    })
+    this.listeners.add(document, "pointerenter", (event) => {
       if (!event.target.closest) return
       const row = event.target.closest("[data-open-editor]")
       if (row) this.prefetch(row.dataset.ingredientName)
-    }
+    }, true)
 
-    this.boundFrameLoad = () => this.onFrameLoad()
-    this.boundCollect = (e) => this.handleCollect(e)
-    this.boundSave = (e) => this.handleSave(e)
-    this.boundModified = (e) => this.handleModified(e)
-    this.boundReset = (e) => this.handleReset(e)
-
-    document.addEventListener("click", this.boundEditClick)
-    document.addEventListener("click", this.boundResetClick)
-    document.addEventListener("pointerenter", this.boundPrefetch, true)
-
-    this.turboFrame.addEventListener("turbo:frame-load", this.boundFrameLoad)
-    this.element.addEventListener("editor:collect", this.boundCollect)
-    this.element.addEventListener("editor:save", this.boundSave)
-    this.element.addEventListener("editor:modified", this.boundModified)
-    this.element.addEventListener("editor:reset", this.boundReset)
+    this.listeners.add(this.turboFrame, "turbo:frame-load", () => this.onFrameLoad())
+    this.listeners.add(this.element, "editor:collect", (e) => this.handleCollect(e))
+    this.listeners.add(this.element, "editor:save", (e) => this.handleSave(e))
+    this.listeners.add(this.element, "editor:modified", (e) => this.handleModified(e))
+    this.listeners.add(this.element, "editor:reset", (e) => this.handleReset(e))
   }
 
   disconnect() {
-    document.removeEventListener("click", this.boundEditClick)
-    document.removeEventListener("click", this.boundResetClick)
-    document.removeEventListener("pointerenter", this.boundPrefetch, true)
-    this.turboFrame.removeEventListener("turbo:frame-load", this.boundFrameLoad)
-    this.element.removeEventListener("editor:collect", this.boundCollect)
-    this.element.removeEventListener("editor:save", this.boundSave)
-    this.element.removeEventListener("editor:modified", this.boundModified)
-    this.element.removeEventListener("editor:reset", this.boundReset)
+    this.listeners.teardown()
   }
 
   // Open flow

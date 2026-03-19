@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { loadSmartTagData } from "../utilities/search_data"
+import ListenerManager from "../utilities/listener_manager"
 
 function normalizeForSearch(str) {
   return (str || "")
@@ -18,6 +19,7 @@ function normalizeForSearch(str) {
  * - SearchDataHelper (server-side, provides the JSON data blob)
  * - shared/_search_overlay.html.erb (dialog markup and data script tag)
  * - application.js (turbo:before-cache closes open dialogs)
+ * - ListenerManager: clean event listener teardown
  */
 export default class extends Controller {
   static targets = ["dialog", "input", "results", "data", "pillArea", "inputWrapper"]
@@ -27,15 +29,13 @@ export default class extends Controller {
     this.loadSmartTags()
     this.activePills = []
     this.selectedIndex = -1
-    this.boundKeydown = this.globalKeydown.bind(this)
-    this.boundReload = () => this.loadData()
-    document.addEventListener("keydown", this.boundKeydown)
-    document.addEventListener("turbo:morph", this.boundReload)
+    this.listeners = new ListenerManager()
+    this.listeners.add(document, "keydown", this.globalKeydown.bind(this))
+    this.listeners.add(document, "turbo:morph", () => this.loadData())
   }
 
   disconnect() {
-    document.removeEventListener("keydown", this.boundKeydown)
-    document.removeEventListener("turbo:morph", this.boundReload)
+    this.listeners.teardown()
   }
 
   loadSmartTags() {

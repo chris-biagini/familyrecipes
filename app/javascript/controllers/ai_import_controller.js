@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { saveRequest, showErrors } from "../utilities/editor_utils"
+import ListenerManager from "../utilities/listener_manager"
 
 /**
  * Manages the AI recipe import dialog. Posts pasted recipe text to the
@@ -11,20 +12,21 @@ import { saveRequest, showErrors } from "../utilities/editor_utils"
  * - editor_controller (openWithContent for dialog lifecycle + content handoff)
  * - dual_mode_editor_controller (handles editor:content-loaded to populate editor)
  * - editor_utils (CSRF tokens, error display)
+ * - ListenerManager: clean event listener teardown
  */
 export default class extends Controller {
   static targets = ["textarea", "errors", "submitButton"]
   static values = { url: String, editorDialogId: String }
 
   connect() {
-    this.boundOpenClick = (e) => {
+    this.listeners = new ListenerManager()
+    this.listeners.add(document, 'click', (e) => {
       if (e.target.closest('#ai-import-button')) this.open()
-    }
-    document.addEventListener('click', this.boundOpenClick)
+    })
   }
 
   disconnect() {
-    document.removeEventListener('click', this.boundOpenClick)
+    this.listeners.teardown()
   }
 
   open() {
