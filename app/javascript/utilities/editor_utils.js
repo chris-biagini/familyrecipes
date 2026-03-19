@@ -88,3 +88,7 @@ export async function handleSave(saveBtn, errorsDiv, saveFn, onSuccess) {
     saveBtn.textContent = 'Save'
   }
 }
+
+export function structureChanged(current, original) {
+  return JSON.stringify(current) !== JSON.stringify(original)
+}

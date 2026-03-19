@@ -1,6 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { buildButton, buildInput, buildFieldGroup } from "../utilities/dom_builders"
-import { toggleAccordionItem, expandAccordionItem, collapseAllAccordionItems, buildToggleButton } from "../utilities/accordion"
+import { toggleAccordionItem, expandAccordionItem, buildToggleButton } from "../utilities/accordion"
+import { structureChanged } from "../utilities/editor_utils"
 
 /**
  * Form-based Quick Bites editor: structured fields for categories containing
@@ -33,7 +34,7 @@ export default class extends Controller {
   }
 
   isModified(original) {
-    return JSON.stringify(this.toStructure()) !== JSON.stringify(original)
+    return structureChanged(this.toStructure(), original)
   }
 
   addCategory() {

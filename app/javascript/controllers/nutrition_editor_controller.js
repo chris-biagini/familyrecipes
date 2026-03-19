@@ -78,7 +78,7 @@ export default class extends Controller {
     if (this.prefetchedName === name) return
 
     this.prefetchedName = name
-    fetch(this.editUrlFor(name), { headers: { Accept: "text/html" } })
+    fetch(this.editUrlFor(name), { headers: { Accept: "text/html" } }).catch(() => {})
   }
 
   // Editor lifecycle event handlers

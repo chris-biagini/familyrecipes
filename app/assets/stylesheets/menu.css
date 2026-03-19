@@ -76,13 +76,13 @@
   border: 1px solid var(--red);
   border-radius: 6px;
   color: var(--red);
-  transition: opacity 0.15s ease;
+  transition: opacity var(--duration-fast) ease;
 }
 
 .availability-detail {
   flex-shrink: 0;
   margin-left: auto;
-  transition: opacity 0.15s ease;
+  transition: opacity var(--duration-fast) ease;
 }
 
 .availability-detail summary {
@@ -114,7 +114,7 @@
   border-style: solid;
   border-width: 0.25rem 0 0.25rem 0.35rem;
   border-color: transparent transparent transparent var(--red);
-  transition: transform 0.15s ease;
+  transition: transform var(--duration-fast) ease;
 }
 
 .availability-detail[open] summary::before {
@@ -332,7 +332,7 @@
   font-size: 0.8rem;
   cursor: pointer;
   border: 1px solid transparent;
-  transition: background 0.15s, color 0.15s;
+  transition: background var(--duration-fast), color var(--duration-fast);
 }
 
 .dinner-picker-tag.tag-neutral {
@@ -474,7 +474,7 @@
 }
 
 .result-retry-btn:hover {
-  border-color: var(--fg-muted);
+  border-color: var(--text-light);
 }
 
 .result-view-link {

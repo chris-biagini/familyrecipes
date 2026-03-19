@@ -111,7 +111,7 @@
 #item-count {
   font-size: 0.9rem;
   font-style: italic;
-  transition: color 0.3s ease;
+  transition: color var(--duration-slow) ease;
 }
 
 #grocery-preview-empty {
@@ -175,7 +175,7 @@
 
 .on-hand-arrow {
   font-size: 0.6rem;
-  transition: transform 0.15s ease;
+  transition: transform var(--duration-fast) ease;
 }
 
 .on-hand-divider[aria-expanded="true"] .on-hand-arrow {
@@ -250,7 +250,7 @@
 .check-off input[type="checkbox"]:checked + .item-text {
   text-decoration: line-through;
   opacity: 0.4;
-  transition: opacity 0.15s ease;
+  transition: opacity var(--duration-fast) ease;
 }
 
 .item-amount {
@@ -325,7 +325,7 @@
     -webkit-appearance: none;
     appearance: none;
     background: none !important;
-    border: 1.5px solid #333 !important;
+    border: 1.5px solid var(--text) !important;
     border-radius: 2px;
     width: 0.85rem;
     height: 0.85rem;

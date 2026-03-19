@@ -479,7 +479,7 @@ nav a:focus-visible {
 
 .hamburger-icon rect {
   transform-origin: 12px 12px;
-  transition: transform 0.3s ease, opacity var(--duration-normal) ease;
+  transition: transform var(--duration-slow) ease, opacity var(--duration-normal) ease;
 }
 
 .hamburger-top {
@@ -530,7 +530,7 @@ nav a:focus-visible {
 .nav-hamburger .nav-drawer {
   display: grid;
   grid-template-rows: 0fr;
-  transition: grid-template-rows 0.3s ease;
+  transition: grid-template-rows var(--duration-slow) ease;
   position: absolute;
   left: 0;
   right: 0;
@@ -718,7 +718,7 @@ header .recipe-meta a:hover {
   border-style: solid;
   border-width: 0.3rem 0 0.3rem 0.45rem;
   border-color: transparent transparent transparent currentColor;
-  transition: transform 0.15s ease;
+  transition: transform var(--duration-fast) ease;
 }
 
 .scale-bar.open .scale-toggle::before {
@@ -913,7 +913,7 @@ header > .recipe-actions {
   background: none;
   color: var(--text-light);
   cursor: pointer;
-  transition: color var(--duration-fast) ease, opacity 0.15s ease;
+  transition: color var(--duration-fast) ease, opacity var(--duration-fast) ease;
 }
 
 .scale-reset[hidden] {
@@ -975,7 +975,7 @@ header::after {
   font-size: 0.84rem;
   color: var(--text-light);
   text-decoration: none;
-  transition: color 0.2s;
+  transition: color var(--duration-normal);
 }
 
 .toc_nav ul li a:hover {
@@ -1005,7 +1005,7 @@ section > ul li a {
   text-decoration: none;
   font-size: 0.95rem;
   font-weight: 400;
-  transition: color 0.2s;
+  transition: color var(--duration-normal);
 }
 
 section > ul li a:hover {
@@ -1083,7 +1083,7 @@ section:first-of-type h2 {
   background: transparent;
   font-size: 0.85rem;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  transition: background var(--duration-fast), color var(--duration-fast), border-color var(--duration-fast);
 }
 .filter-pill:hover { background: var(--hover-bg); border-color: var(--red); }
 .filter-pill.active {
@@ -1982,7 +1982,7 @@ html:has(dialog[open]) {
 
 .editor-mobile-meta__chevron {
   font-size: 0.55rem;
-  transition: transform 200ms;
+  transition: transform var(--duration-normal);
   color: var(--text-light);
 }
 
@@ -2193,7 +2193,7 @@ html:has(dialog[open]) {
   background: var(--surface-alt);
   border: 1px solid var(--aisle-row-border);
   border-radius: 6px;
-  transition: background 200ms ease, border-color 200ms ease, opacity 200ms ease;
+  transition: background var(--duration-normal) ease, border-color var(--duration-normal) ease, opacity var(--duration-normal) ease;
 }
 
 .aisle-row--renamed {
@@ -2295,7 +2295,7 @@ button.aisle-name:hover {
 .aisle-btn:disabled {
   opacity: 0.3;
   cursor: default;
-  transition: opacity 150ms ease;
+  transition: opacity var(--duration-fast) ease;
 }
 
 .aisle-btn--delete:hover:not(:disabled) {
@@ -2377,7 +2377,7 @@ button.aisle-name:hover {
   color: var(--text);
   transform: translateY(100%);
   opacity: 0;
-  transition: transform 0.3s ease, opacity 0.3s ease;
+  transition: transform var(--duration-slow) ease, opacity var(--duration-slow) ease;
 }
 
 @keyframes slide-up-bounce {
@@ -2491,7 +2491,7 @@ button.aisle-name:hover {
   border-style: solid;
   border-width: 0.3rem 0 0.3rem 0.45rem;
   border-color: transparent transparent transparent var(--rule);
-  transition: transform 0.15s ease;
+  transition: transform var(--duration-fast) ease;
   flex-shrink: 0;
 }
 
@@ -2609,7 +2609,7 @@ button.aisle-name:hover {
   padding: 0.25rem;
   flex-shrink: 0;
   border-radius: 3px;
-  transition: color 0.15s ease;
+  transition: color var(--duration-fast) ease;
 }
 .usda-import-btn:hover {
   color: var(--red);
@@ -3113,7 +3113,7 @@ a.recipe-link {
   font-size: 0.85rem;
   text-decoration: none;
   color: var(--text-light);
-  transition: color 0.2s;
+  transition: color var(--duration-normal);
   margin-left: auto;
 }
 
@@ -3236,7 +3236,7 @@ a.recipe-link {
   color: var(--text);
   line-height: 1.5;
   outline: none;
-  transition: border-color 0.15s ease;
+  transition: border-color var(--duration-fast) ease;
 }
 
 .graphical-input:focus {
@@ -3254,7 +3254,7 @@ a.recipe-link {
   color: var(--text);
   line-height: 1.5;
   outline: none;
-  transition: border-color 0.15s ease;
+  transition: border-color var(--duration-fast) ease;
   min-height: 60px;
   resize: vertical;
 }
@@ -3405,7 +3405,7 @@ a.recipe-link {
   background: transparent;
   color: inherit;
   cursor: pointer;
-  transition: opacity 0.15s ease, border-color 0.15s ease;
+  transition: opacity var(--duration-fast) ease, border-color var(--duration-fast) ease;
 }
 
 .editor-mode-toggle:hover {
