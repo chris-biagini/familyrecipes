@@ -37,7 +37,7 @@ class RecipeNutritionJobTest < ActiveSupport::TestCase
     assert_predicate recipe.nutrition_data['per_serving']['calories'], :positive?
   end
 
-  test 'handles recipe with no nutrition entries gracefully' do
+  test 'writes valid result when catalog is empty' do
     IngredientCatalog.destroy_all
 
     markdown = "# Salad\n\n\n## Toss\n\n- Lettuce, 1 head\n\nToss."
@@ -46,7 +46,9 @@ class RecipeNutritionJobTest < ActiveSupport::TestCase
     RecipeNutritionJob.perform_now(recipe)
     recipe.reload
 
-    assert_nil recipe.nutrition_data
+    assert_predicate recipe.nutrition_data, :present?
+    assert_equal 0, recipe.nutrition_data['totals']['calories']
+    assert_includes recipe.nutrition_data['missing_ingredients'], 'Lettuce'
   end
 
   test 'records missing ingredients' do
