@@ -31,47 +31,20 @@ class GroceriesHelperTest < ActionView::TestCase
     assert_equal '', format_amounts(nil)
   end
 
-  test 'aisle_count_tag shows remaining count when some unchecked' do
-    items = [{ name: 'Milk' }, { name: 'Eggs' }]
-    result = aisle_count_tag(items, Set.new(%w[Milk]))
-
-    assert_equal '<span class="aisle-count">(1)</span>', result
-  end
-
-  test 'aisle_count_tag shows checkmark when all checked off' do
-    items = [{ name: 'Milk' }, { name: 'Eggs' }]
-    result = aisle_count_tag(items, Set.new(%w[Milk Eggs]))
-
-    assert_equal "<span class=\"aisle-count aisle-done\">\u2713</span>", result
-  end
-
-  test 'aisle_count_tag shows total when none checked' do
-    items = [{ name: 'Milk' }, { name: 'Eggs' }]
-    result = aisle_count_tag(items, Set.new)
-
-    assert_equal '<span class="aisle-count">(2)</span>', result
-  end
-
-  test 'aisle_count_tag shows zero for empty aisle' do
-    result = aisle_count_tag([], Set.new)
-
-    assert_equal '<span class="aisle-count">(0)</span>', result
-  end
-
   test 'shopping_list_count_text with no items returns empty string' do
     assert_equal '', shopping_list_count_text({}, Set.new)
   end
 
-  test 'shopping_list_count_text with no checked items shows total' do
+  test 'shopping_list_count_text with no checked items shows total to buy' do
     shopping_list = { 'Dairy' => [{ name: 'Milk' }, { name: 'Eggs' }] }
 
-    assert_equal '2 items', shopping_list_count_text(shopping_list, Set.new)
+    assert_equal '2 items to buy', shopping_list_count_text(shopping_list, Set.new)
   end
 
-  test 'shopping_list_count_text with some checked shows remaining of total' do
+  test 'shopping_list_count_text with some checked shows unchecked count' do
     shopping_list = { 'Dairy' => [{ name: 'Milk' }, { name: 'Eggs' }] }
 
-    assert_equal '1 of 2 items needed', shopping_list_count_text(shopping_list, Set.new(%w[Milk]))
+    assert_equal '1 item to buy', shopping_list_count_text(shopping_list, Set.new(%w[Milk]))
   end
 
   test 'shopping_list_count_text with all checked shows done' do
@@ -83,7 +56,7 @@ class GroceriesHelperTest < ActionView::TestCase
   test 'shopping_list_count_text with single item uses singular' do
     shopping_list = { 'Dairy' => [{ name: 'Milk' }] }
 
-    assert_equal '1 item', shopping_list_count_text(shopping_list, Set.new)
+    assert_equal '1 item to buy', shopping_list_count_text(shopping_list, Set.new)
   end
 
   test 'parse_custom_item splits on last @' do
