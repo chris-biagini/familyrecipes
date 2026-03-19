@@ -33,14 +33,15 @@ for var in ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY \
   fi
 done
 
+# db:prepare handles migrations + first-boot seeding (which includes
+# catalog:sync). The standalone catalog:sync covers subsequent boots where
+# db:prepare skips the seed. This avoids booting Rails three separate times,
+# which caused flaky CI timeouts.
 echo "Preparing database..."
 bin/rails db:prepare
 
 echo "Syncing ingredient catalog..."
 bin/rails catalog:sync
-
-echo "Seeding data..."
-bin/rails db:seed
 
 echo "Starting server..."
 exec "$@"
