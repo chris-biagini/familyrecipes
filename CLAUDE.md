@@ -179,50 +179,19 @@ to editor lifecycle events.
   `turbo:before-morph-element` in `application.js`.
 - `turbo:before-cache` closes all open dialogs before page snapshots.
 - Do NOT use `data-turbo-permanent` on dialogs.
-- CodeMirror 6 powers syntax-highlighted plaintext editors for both
-  recipes and Quick Bites. `ViewPlugin` classifiers in
-  `app/javascript/codemirror/` apply `.hl-*` CSS decorations.
-  `foldService` provides step block and front matter folding for recipes.
 - To add a new plaintext editor type: create a classifier ViewPlugin in
   `codemirror/`, register it in `codemirror/registry.js`, then use
   `plaintext-editor` controller with the registry key as the `classifier` value.
 - `ordered_list_editor_controller` is a single parameterized controller for
   both aisle and category list editors.
 - **Dual-mode editors** (recipe + Quick Bites) use a coordinator/child pattern:
-  `editor_controller` (dialog lifecycle) → `dual_mode_editor_controller`
-  (coordinator) → `plaintext_editor_controller` or graphical child controller.
-  Coordinator manages mode toggle (persisted in `localStorage`), routes
-  lifecycle events to the active child, and handles mode-switch serialization
-  via server round-trips (`/parse` and `/serialize` endpoints).
-- `RecipeSerializer` and `QuickBitesSerializer` are pure-function modules that
-  convert IR hashes ↔ Markdown/plaintext — the inverse of the parser pipeline.
-  Used by mode switching, structured writes, content loading, export, and the
-  raw endpoint. `RecipeSerializer` is also the source for editor loading since
-  AR records are the sole source of truth (no stored `markdown_source`).
-- Graphical controllers build DOM entirely via `createElement`/`textContent`
-  (strict CSP). Cross-reference steps render read-only in graphical mode.
-
-**Scale panel.** `scale_panel_controller` provides inline recipe scaling
-(presets + free-form input), dispatching `scale-panel:change` events consumed
-by `recipe_state_controller`. Uses dual-restoration for async Stimulus
-connection: event-based (`recipe-state:restored`) with attribute fallback
-(`data-restored-scale-factor`). Embedded cross-reference recipes carry
-`data-base-multiplier` — effective scale = base × user factor.
-
-**Ingredient quantities.** AR `Ingredient` has `quantity_low`/`quantity_high`
-decimal columns (populated at import) alongside the raw `quantity` string
-(fallback for non-numeric values like "a pinch"). Ranges: both columns set;
-non-ranges: only `quantity_low`. `quantity_value` returns the high end (for
-nutrition). Display uses vulgar fractions + en-dash (`½–1`); storage and
-serialization use ASCII fractions + hyphen (`1/2-1`). Normalization
-(vulgar→ASCII, en-dash→hyphen) happens in `MarkdownImporter#import_ingredient`.
-
-**Ingredient tooltips.** Native browser `title` attributes on ingredient `<li>`
-elements show per-line gram conversion and compact nutrition (6 nutrients).
-Data flows: `NutritionCalculator` stores `ingredient_details` in
-`Recipe#nutrition_data` JSON → `_recipe_content` extracts `ingredient_info` →
-`_step` passes to `ingredient_data_attrs` helper → `title` attribute. Embedded
-cross-reference recipes get no tooltips (nil ingredient_info).
+  `editor_controller` → `dual_mode_editor_controller` → child controller.
+  Coordinator manages mode toggle, routes lifecycle events, handles
+  mode-switch serialization via `/parse` and `/serialize` endpoints.
+- `RecipeSerializer` and `QuickBitesSerializer` convert IR hashes ↔
+  Markdown/plaintext. AR records are the sole source of truth — no stored
+  `markdown_source`. Graphical controllers build DOM via
+  `createElement`/`textContent` (strict CSP).
 
 **Hotwire stack.** Turbo Drive + Turbo Streams, Stimulus controllers,
 jsbundling-rails + esbuild for JS bundling.
@@ -240,124 +209,37 @@ jsbundling-rails + esbuild for JS bundling.
   `<style>` injection) to satisfy strict CSP — the harmless console error
   from Turbo's blocked injection is expected.
 
-**ActionCable.** Turbo Streams over Solid Cable, using `turbo_stream_from` tags
-in views.
-- Kitchen-wide stream `[kitchen, :updates]` powers all page-refresh morphs via
-  `Kitchen#broadcast_update` — each client re-fetches its own page and Turbo
-  morphs the result.
-- `RecipeBroadcaster` is retained only for delete/rename targeted notifications
-  on per-recipe `[recipe, "content"]` streams.
-- No async job needed — `broadcast_refresh_to` is cheap enough to run inline.
+**ActionCable.** Kitchen-wide stream `[kitchen, :updates]` powers all
+page-refresh morphs via `Kitchen#broadcast_update`. `RecipeBroadcaster`
+handles only delete/rename targeted notifications. No async jobs needed.
 
 **Write path.** Controllers are thin adapters: param parsing → service call →
 response rendering. Services own all post-write side effects (reconcile,
 broadcast). Don't call `MarkdownImporter` directly for web operations.
-- `RecipeWriteService` — recipe mutations, cross-reference cascades, category
-  cleanup, tag sync, meal plan pruning, broadcast. `create`/`update` accept
-  either markdown or IR hash; `_from_structure` variants are thin normalizers
-  that extract front matter and delegate.
-- `CatalogWriteService` — `IngredientCatalog` mutations, aisle sync, nutrition
-  recalculation, broadcast.
-- `MealPlanWriteService` — select/deselect, reconciliation.
-- `MealPlan#apply_select` records cook history (slug + timestamp) on recipe
-  deselect. `CookHistoryWeighter` converts history to recency weights.
-- `QuickBitesWriteService` — quick bites content persistence, parse
-  validation, reconciliation, broadcast. Also has `update_from_structure`.
+- Write services: `RecipeWriteService`, `CatalogWriteService`,
+  `MealPlanWriteService`, `QuickBitesWriteService`, `AisleWriteService`,
+  `CategoryWriteService`, `TagWriteService`. Read their header comments.
 - `MarkdownImporter` has two entry points: `import` (markdown string) and
-  `import_from_structure` (IR hash). Both converge on the same AR upsert +
-  cross-ref resolution path. AR records are the sole source of truth —
-  `RecipeSerializer` generates markdown on demand (export, editor loading,
-  raw endpoints).
-- `AisleWriteService` — reorder, rename/delete cascades to catalog rows,
-  new-aisle sync, broadcast.
-- `CategoryWriteService` — ordering, renaming, deletion cascades, broadcast.
-- `Kitchen.finalize_writes(kitchen)` — single post-write entry point for
-  all write services: orphan cleanup (categories + tags), meal plan
-  reconciliation, and broadcast. Respects `Kitchen.batching?` guard.
-- `Kitchen.batch_writes(kitchen)` — block scope that defers finalization
-  to a single pass on block exit. Write services inside a batch call
-  `finalize_writes` as usual — it returns early, and the batch runs the
-  same pipeline once on exit.
-- `MealPlanActions` concern provides `rescue_from StaleObjectError` for
-  controllers using `MealPlanWriteService`.
+  `import_from_structure` (IR hash). AR records are the sole source of truth.
+- `Kitchen.finalize_writes(kitchen)` — single post-write entry point:
+  orphan cleanup, meal plan reconciliation, broadcast.
+- `Kitchen.batch_writes(kitchen)` — defers finalization to one pass on
+  block exit.
+- `MealPlanActions` concern provides `rescue_from StaleObjectError`.
 
-**AI import.** `AiImportService` calls the Anthropic API (`anthropic` gem)
-with a system prompt (`lib/familyrecipes/ai_import_prompt.md`) to convert
-pasted recipe text into the app's Markdown format. `AiImportController` is a
-thin JSON adapter (`POST /ai_import`). The Stimulus `ai_import_controller`
-manages the import dialog and hands off generated Markdown to the recipe
-editor. API key stored encrypted on Kitchen (`anthropic_api_key`); model
-hardcoded as `Kitchen::AI_MODEL`. Button hidden when no key configured.
+**Adding a new setting.** 5 touch points: migration, dialog HTML,
+`SettingsController` (show JSON + params), `settings_editor_controller.js`
+(targets + all 7 methods). `multi_kitchen` is an env var, not a DB setting.
 
-**Settings.** Site branding, display preferences, and API keys live as columns
-on Kitchen (no separate settings table). `usda_api_key` is encrypted via
-Active Record Encryption. `SettingsController` is a thin show/update — no
-write service. Adding a new setting requires 5 touch points: migration,
-dialog HTML, `SettingsController` (show JSON + params), and
-`settings_editor_controller.js` (targets + all 7 methods).
-The `multi_kitchen` flag is an env var (`MULTI_KITCHEN=true`), not a database
-setting.
+**Tags.** Single-word (`[a-zA-Z-]`), stored lowercase. Smart tag decorations
+driven by `FamilyRecipes::SmartTagRegistry` in `lib/familyrecipes/`.
 
-**Tags.** Kitchen-scoped labels for cross-cutting recipe classification.
-`Tag` + `RecipeTag` join table. `RecipeWriteService` handles tag sync on
-recipe save; `TagWriteService` handles bulk rename/delete from the management
-dialog. Tags are single-word (`[a-zA-Z-]`), stored lowercase. Orphan cleanup
-via `Tag.cleanup_orphans(kitchen)`. Smart tag decorations (emoji + color
-pills) are driven by `FamilyRecipes::SmartTagRegistry` — a frozen constant
-in `lib/familyrecipes/smart_tag_registry.rb`. `SmartTagHelper` bridges the
-registry to views; JS controllers read a JSON embed from the layout.
-`Kitchen#decorate_tags` toggle disables decorations. Crossout "-free" tags
-use a `<span class="smart-icon">` wrapper with CSS circle+slash overlay.
+**Nutrition pipeline.** `IngredientCatalog` → `IngredientResolver` →
+`UnitResolver` → `NutritionCalculator`. Read their header comments for
+details. `rake catalog:sync` pushes YAML seed changes into the database.
 
-**Nutrition pipeline.** Key classes (read their header comments for details):
-- `IngredientCatalog` — overlay model: global seed entries + per-kitchen
-  overrides, merged by `lookup_for` with Inflector variant matching and
-  `aliases` column.  `resolver_for(kitchen)` builds an `IngredientResolver`.
-- `IngredientResolver` — single resolution point for ingredient names
-  (case-insensitive fallback, variant collapsing). Shared across services
-  within a request.
-- `NutritionConstraints` — single source of truth for nutrient definitions
-  (`NutrientDef`, FDA daily values) and validation rules.
-- `UnitResolver` — wraps one `IngredientCatalog` entry, resolves quantities to
-  grams via weight → portion → density chain. Owns canonical unit conversion
-  tables (`VOLUME_TO_ML`, `WEIGHT_CONVERSIONS`) and Inflector-expanded variants.
-- `NutritionCalculator` — aggregates nutrient totals for a recipe, delegates
-  unit resolution to `UnitResolver`. Produces `Result` with totals, per-serving,
-  per-unit breakdowns, and per-ingredient detail (`nutrients_per_gram` rates +
-  `grams_per_unit` conversion factors — NOT aggregated totals, so the view can
-  compute per-line values when an ingredient appears in multiple steps).
-- `RecipeNutritionJob` / `CascadeNutritionJob` — recompute nutrition; cascade
-  fans out to cross-referencing recipes.
-- `RecipeAvailabilityCalculator` — catalog coverage badges on the menu page.
-- `rake catalog:sync` pushes YAML seed changes into the database.
-
-**Ingredient editor.** `IngredientsController` shows a searchable, filterable
-table with coverage stats. Clicking a row opens the `nutrition_editor_controller`
-dialog.
-- `IngredientRowBuilder` — row data, `needed_units`, `sources_for`, aggregate
-  `coverage`.
-- Editor form: nutrients, density, portions, aisle, aliases, USDA search panel.
-- Inline USDA search (`UsdaSearchController` JSON endpoints) — click a result
-  to auto-populate fields via `UsdaImportService`. Density candidate picker
-  lets users choose among USDA volume-based portions.
-- `NutritionEntriesController` handles upsert/destroy; `CatalogWriteService`
-  orchestrates persistence.
-- `UsdaClient` is the HTTP adapter; `UsdaPortionClassifier` classifies portions
-  into density/portion/filtered buckets.
-
-**Search overlay.** Spotlight-style `<dialog>` on every page, triggered by `/`
-key or nav icon. `SearchDataHelper` embeds a JSON blob (recipes with title,
-slug, description, category, tags, ingredients; plus `all_tags` and
-`all_categories` lists); `search_overlay_controller` does client-side substring
-matching with tiered ranking and pill-based tag/category filtering. No server
-endpoint.
-
-**Dinner picker.** `dinner_picker_controller` provides a weighted random
-recipe suggestion dialog on the menu page. Reads recipes from
-`SearchDataHelper` JSON and recency weights from `CookHistoryWeighter`
-(data attribute). Per-session tag preferences and decline penalties are
-ephemeral. `dinner_picker_logic.js` holds the pure weight computation
-and selection functions.
+**AI import.** `AiImportService` + `AiImportController`. API key stored
+encrypted on Kitchen (`anthropic_api_key`); button hidden when no key set.
 
 ## Recipe & Data Formats
 
