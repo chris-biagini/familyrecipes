@@ -115,7 +115,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     log_in
     get groceries_path(kitchen_slug: kitchen_slug)
 
-    assert_select 'details.aisle[data-aisle="Baking"]'
+    assert_select 'section.aisle-group[data-aisle="Baking"]'
     assert_select 'li[data-item="Flour"]'
     assert_select 'input[type="checkbox"][data-item="Flour"]'
   end
@@ -146,6 +146,74 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     get groceries_path(kitchen_slug: kitchen_slug)
 
     assert_select 'input[type="checkbox"][data-item="Flour"][checked]'
+  end
+
+  test 'show renders all-checked aisle as collapsed summary' do
+    @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Focaccia
+
+
+      ## Mix (combine)
+
+      - Flour, 3 cups
+
+      Mix well.
+    MD
+
+    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Flour') do |p|
+      p.basis_grams = 30
+      p.aisle = 'Baking'
+    end
+
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+    plan.apply_action('check', item: 'Flour', checked: true)
+
+    log_in
+    get groceries_path(kitchen_slug: kitchen_slug)
+
+    assert_select 'section.aisle-complete[data-aisle="Baking"]' do
+      assert_select '.aisle-complete-header'
+      assert_select '.on-hand-items[hidden]'
+    end
+  end
+
+  test 'show renders on-hand divider in mixed aisle' do
+    @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Focaccia
+
+
+      ## Mix (combine)
+
+      - Flour, 3 cups
+      - Yeast, 1 tsp
+
+      Mix well.
+    MD
+
+    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Flour') do |p|
+      p.basis_grams = 30
+      p.aisle = 'Baking'
+    end
+    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Yeast') do |p|
+      p.basis_grams = 4
+      p.aisle = 'Baking'
+    end
+
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+    plan.apply_action('check', item: 'Flour', checked: true)
+
+    log_in
+    get groceries_path(kitchen_slug: kitchen_slug)
+
+    assert_select 'section.aisle-group[data-aisle="Baking"]' do
+      assert_select '.to-buy-items li[data-item="Yeast"]'
+      assert_select '.on-hand-divider'
+      assert_select '.on-hand-items li[data-item="Flour"]'
+    end
   end
 
   test 'show renders custom items' do
