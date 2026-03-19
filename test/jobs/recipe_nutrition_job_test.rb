@@ -142,6 +142,22 @@ class RecipeNutritionJobTest < ActiveSupport::TestCase
     assert_nil recipe.nutrition_data['serving_count']
   end
 
+  test 'rescues and re-raises computation errors in test' do
+    markdown = "# Bread\n\nServes: 2\n\n## Mix\n\n- Flour, 60 g\n\nMix."
+    recipe = import_without_nutrition(markdown)
+    recipe.update_column(:nutrition_data, { 'previous' => true }) # rubocop:disable Rails/SkipsModelValidations
+
+    boom_resolver = Object.new
+    boom_resolver.define_singleton_method(:lookup) { raise StandardError, 'calculator boom' }
+
+    assert_raises(StandardError) do
+      RecipeNutritionJob.perform_now(recipe, resolver: boom_resolver)
+    end
+
+    assert recipe.reload.nutrition_data['previous'],
+           'previous nutrition_data should be retained on failure'
+  end
+
   test 'accepts a pre-built resolver and skips redundant catalog query' do
     markdown = "# Bread\n\nServes: 2\n\n## Mix\n\n- Flour, 60 g\n\nMix."
     recipe = import_without_nutrition(markdown)
