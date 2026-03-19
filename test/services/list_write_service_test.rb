@@ -90,6 +90,20 @@ class ListWriteServiceTest < ActiveSupport::TestCase
     end
   end
 
+  test 'transaction rolls back if a hook raises' do
+    category = Category.create!(name: 'Doomed', slug: 'doomed', position: 0, kitchen: @kitchen)
+
+    klass = Class.new(ListWriteService) do
+      define_method(:validate_changeset) { |**| [] }
+      define_method(:apply_renames) { |_| category.update!(name: 'Renamed') }
+      define_method(:apply_deletes) { |_| raise 'boom' }
+    end
+
+    assert_raises(RuntimeError) { klass.update(kitchen: @kitchen) }
+
+    assert_equal 'Doomed', category.reload.name
+  end
+
   # --- shared validation helpers ---
 
   test 'validate_order flags too many items' do
