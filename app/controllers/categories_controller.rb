@@ -16,7 +16,7 @@ class CategoriesController < ApplicationController
   end
 
   def update_order
-    result = CategoryWriteService.update_order(
+    result = CategoryWriteService.update(
       kitchen: current_kitchen,
       names: Array(params[:category_order]),
       renames: params[:renames],

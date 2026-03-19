@@ -17,17 +17,17 @@ class CategoryWriteServiceTest < ActiveSupport::TestCase
 
   # --- validation ---
 
-  test 'update_order returns errors for too many categories' do
+  test 'update returns errors for too many categories' do
     names = (1..51).map { |i| "Cat #{i}" }
 
-    result = CategoryWriteService.update_order(kitchen: @kitchen, names:, renames: {}, deletes: [])
+    result = CategoryWriteService.update(kitchen: @kitchen, names:, renames: {}, deletes: [])
 
     assert_not result.success
     assert(result.errors.any? { |e| e.include?('Too many') })
   end
 
-  test 'update_order returns errors for name too long' do
-    result = CategoryWriteService.update_order(
+  test 'update returns errors for name too long' do
+    result = CategoryWriteService.update(
       kitchen: @kitchen, names: ['a' * 51], renames: {}, deletes: []
     )
 
@@ -35,8 +35,8 @@ class CategoryWriteServiceTest < ActiveSupport::TestCase
     assert(result.errors.any? { |e| e.include?('too long') })
   end
 
-  test 'update_order returns errors for case-insensitive duplicates' do
-    result = CategoryWriteService.update_order(
+  test 'update returns errors for case-insensitive duplicates' do
+    result = CategoryWriteService.update(
       kitchen: @kitchen, names: %w[Bread bread Dessert], renames: {}, deletes: []
     )
 
@@ -46,8 +46,8 @@ class CategoryWriteServiceTest < ActiveSupport::TestCase
 
   # --- renames ---
 
-  test 'update_order renames a category' do
-    CategoryWriteService.update_order(
+  test 'update renames a category' do
+    CategoryWriteService.update(
       kitchen: @kitchen, names: ['Artisan Bread', 'Dessert'],
       renames: { 'Bread' => 'Artisan Bread' }, deletes: []
     )
@@ -58,8 +58,8 @@ class CategoryWriteServiceTest < ActiveSupport::TestCase
     assert_equal 'artisan-bread', @bread.slug
   end
 
-  test 'update_order renames with case mismatch' do
-    CategoryWriteService.update_order(
+  test 'update renames with case mismatch' do
+    CategoryWriteService.update(
       kitchen: @kitchen, names: ['Artisan Bread', 'Dessert'],
       renames: { 'bread' => 'Artisan Bread' }, deletes: []
     )
@@ -67,8 +67,8 @@ class CategoryWriteServiceTest < ActiveSupport::TestCase
     assert_equal 'Artisan Bread', @bread.reload.name
   end
 
-  test 'update_order handles case-only rename' do
-    CategoryWriteService.update_order(
+  test 'update handles case-only rename' do
+    CategoryWriteService.update(
       kitchen: @kitchen, names: %w[bread Dessert],
       renames: { 'Bread' => 'bread' }, deletes: []
     )
@@ -81,7 +81,7 @@ class CategoryWriteServiceTest < ActiveSupport::TestCase
   test 'rename rejects name exceeding MAX_NAME_LENGTH' do
     long_name = 'a' * (CategoryWriteService::MAX_NAME_LENGTH + 1)
 
-    result = CategoryWriteService.update_order(
+    result = CategoryWriteService.update(
       kitchen: @kitchen, names: %w[Bread Dessert],
       renames: { 'Bread' => long_name }, deletes: []
     )
@@ -92,11 +92,11 @@ class CategoryWriteServiceTest < ActiveSupport::TestCase
 
   # --- deletes ---
 
-  test 'update_order deletes category and reassigns recipes to Miscellaneous' do
+  test 'update deletes category and reassigns recipes to Miscellaneous' do
     MarkdownImporter.import("# Rolls\n\n## Mix (do it)\n\n- Flour, 1 cup\n\nMix.",
                             kitchen: @kitchen, category: @bread)
 
-    CategoryWriteService.update_order(
+    CategoryWriteService.update(
       kitchen: @kitchen, names: ['Dessert'],
       renames: {}, deletes: ['Bread']
     )
@@ -105,8 +105,8 @@ class CategoryWriteServiceTest < ActiveSupport::TestCase
     assert_equal 'Miscellaneous', Recipe.find_by!(slug: 'rolls').category.name
   end
 
-  test 'update_order deletes with case mismatch' do
-    CategoryWriteService.update_order(
+  test 'update deletes with case mismatch' do
+    CategoryWriteService.update(
       kitchen: @kitchen, names: ['Dessert'],
       renames: {}, deletes: ['bread']
     )
@@ -116,8 +116,8 @@ class CategoryWriteServiceTest < ActiveSupport::TestCase
 
   # --- reordering ---
 
-  test 'update_order reorders categories by position' do
-    CategoryWriteService.update_order(
+  test 'update reorders categories by position' do
+    CategoryWriteService.update(
       kitchen: @kitchen, names: %w[Dessert Bread],
       renames: {}, deletes: []
     )
@@ -126,8 +126,8 @@ class CategoryWriteServiceTest < ActiveSupport::TestCase
     assert_equal 1, @bread.reload.position
   end
 
-  test 'update_order reorders with case mismatch' do
-    CategoryWriteService.update_order(
+  test 'update reorders with case mismatch' do
+    CategoryWriteService.update(
       kitchen: @kitchen, names: %w[dessert bread],
       renames: {}, deletes: []
     )
@@ -138,17 +138,17 @@ class CategoryWriteServiceTest < ActiveSupport::TestCase
 
   # --- broadcasts ---
 
-  test 'update_order broadcasts to kitchen updates stream' do
+  test 'update broadcasts to kitchen updates stream' do
     assert_turbo_stream_broadcasts [@kitchen, :updates] do
-      CategoryWriteService.update_order(
+      CategoryWriteService.update(
         kitchen: @kitchen, names: %w[Bread Dessert], renames: {}, deletes: []
       )
     end
   end
 
-  test 'update_order does not broadcast on validation failure' do
+  test 'update does not broadcast on validation failure' do
     assert_no_turbo_stream_broadcasts [@kitchen, :updates] do
-      CategoryWriteService.update_order(
+      CategoryWriteService.update(
         kitchen: @kitchen, names: (1..51).map { |i| "Cat #{i}" }, renames: {}, deletes: []
       )
     end
@@ -156,8 +156,8 @@ class CategoryWriteServiceTest < ActiveSupport::TestCase
 
   # --- success result ---
 
-  test 'update_order returns success on valid input' do
-    result = CategoryWriteService.update_order(
+  test 'update returns success on valid input' do
+    result = CategoryWriteService.update(
       kitchen: @kitchen, names: %w[Bread Dessert],
       renames: {}, deletes: []
     )
