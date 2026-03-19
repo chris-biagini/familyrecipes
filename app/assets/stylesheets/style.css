@@ -64,9 +64,7 @@
   --gingham-gap: 1.5rem;
   --gingham-stripe-width: 75px;
   --gingham-tile: calc(var(--gingham-stripe-width) * 2 * 1.41421356);
-  --weave-color: rgba(150, 150, 150, 0.04);
-  --weave-width: 1.5px;
-  --content-card-bg: rgba(255, 252, 249, 0.88);
+  --content-card-bg: rgb(255, 252, 249);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -125,8 +123,7 @@
     /* Gingham — muted for dark mode */
     --gingham-base: #1e1b18;
     --gingham-stripe: rgba(200, 55, 60, 0.35);
-    --weave-color: rgba(255, 255, 255, 0.02);
-    --content-card-bg: rgba(30, 27, 24, 0.88);
+    --content-card-bg: rgb(30, 27, 24);
   }
 }
 
@@ -141,13 +138,15 @@ html {
      resize. background-attachment: fixed keeps it stationary on scroll. */
   background-color: var(--gingham-base);
   background-attachment: fixed;
+  background-blend-mode: soft-light, normal, normal, normal;
   background-size:
-    var(--gingham-tile) var(--gingham-tile),
-    var(--gingham-tile) var(--gingham-tile),
+    auto,
     var(--gingham-tile) var(--gingham-tile),
     var(--gingham-tile) var(--gingham-tile),
     auto;
   background-image:
+    /* Fabric weave texture — tiled PNG with soft-light blend */
+    url("fabric-weave.png"),
     repeating-linear-gradient(
       135deg,
       var(--gingham-stripe) 0,
@@ -160,18 +159,6 @@ html {
       var(--gingham-stripe) var(--gingham-stripe-width),
       transparent var(--gingham-stripe-width),
       transparent calc(2 * var(--gingham-stripe-width))),
-    repeating-linear-gradient(
-      135deg,
-      var(--weave-color) 0,
-      var(--weave-color) var(--weave-width),
-      transparent var(--weave-width),
-      transparent calc(2 * var(--weave-width))),
-    repeating-linear-gradient(
-      45deg,
-      var(--weave-color) 0,
-      var(--weave-color) var(--weave-width),
-      transparent var(--weave-width),
-      transparent calc(2 * var(--weave-width))),
     linear-gradient(var(--gingham-base), var(--gingham-base));
 }
 
@@ -535,14 +522,31 @@ main a:focus-visible {
 }
 
 main {
+  position: relative;
   max-width: 35rem;
   margin: var(--gingham-gap) auto;
   padding: 3rem 2.5rem 5rem;
   background: var(--content-card-bg);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
   border: 1px solid var(--rule-faint);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.07),
+    0 4px 8px rgba(0, 0, 0, 0.05),
+    3px 8px 14px rgba(0, 0, 0, 0.08);
   min-height: calc(100vh - 2 * var(--gingham-gap) - 3rem);
+}
+
+main::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("paper-noise.png");
+  background-size: 200px 200px;
+  opacity: 0.05;
+  pointer-events: none;
+}
+
+main > * {
+  position: relative;
 }
 
 header {
