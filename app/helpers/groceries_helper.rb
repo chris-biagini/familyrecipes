@@ -7,11 +7,13 @@
 # - _shopping_list.html.erb — partial that calls these helpers
 # - ShoppingListBuilder — produces the amount arrays this helper formats
 module GroceriesHelper
-  def format_amounts(amounts)
-    return '' if amounts.blank?
+  def format_amounts(amounts, uncounted: 0)
+    return uncounted_only_text(uncounted) if amounts.blank?
 
     parts = amounts.map { |value, unit| format_amount_part(value, unit) }
-    "(#{parts.join(' + ')})"
+    inner = parts.join(' + ')
+    inner += " +#{format_uncounted(uncounted)}" if uncounted.positive?
+    "(#{inner})"
   end
 
   def shopping_list_count_text(shopping_list, checked_off)
@@ -36,6 +38,16 @@ module GroceriesHelper
   end
 
   private
+
+  def uncounted_only_text(count)
+    return '' if count <= 1
+
+    "(#{count}\u00a0uses)"
+  end
+
+  def format_uncounted(count)
+    "#{count}\u00a0more"
+  end
 
   def format_amount_part(value, unit)
     formatted = format_number(value)

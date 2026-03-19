@@ -59,6 +59,30 @@ class GroceriesHelperTest < ActionView::TestCase
     assert_equal '1 item to buy', shopping_list_count_text(shopping_list, Set.new)
   end
 
+  test 'format_amounts with uncounted appends +N more' do
+    assert_equal "(1 +1\u00a0more)", format_amounts([[1.0, nil]], uncounted: 1)
+  end
+
+  test 'format_amounts with multiple uncounted appends +N more' do
+    assert_equal "(3\u00a0Tbsp +2\u00a0more)", format_amounts([[3.0, 'Tbsp']], uncounted: 2)
+  end
+
+  test 'format_amounts all uncounted with multiple uses shows count' do
+    assert_equal "(3\u00a0uses)", format_amounts([], uncounted: 3)
+  end
+
+  test 'format_amounts single uncounted returns empty string' do
+    assert_equal '', format_amounts([], uncounted: 1)
+  end
+
+  test 'format_amounts zero uncounted preserves existing behavior' do
+    assert_equal '(2)', format_amounts([[2.0, nil]], uncounted: 0)
+  end
+
+  test 'format_amounts defaults uncounted to zero' do
+    assert_equal '(2)', format_amounts([[2.0, nil]])
+  end
+
   test 'parse_custom_item splits on last @' do
     name, aisle = parse_custom_item('Shaving cream @ Personal care')
 
