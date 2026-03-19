@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { getCsrfToken, showErrors } from "../utilities/editor_utils"
+import { saveRequest, showErrors } from "../utilities/editor_utils"
 
 /**
  * Manages the AI recipe import dialog. Posts pasted recipe text to the
@@ -45,14 +45,7 @@ export default class extends Controller {
     this.clearErrors()
 
     try {
-      const response = await fetch(this.urlValue, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRF-Token": getCsrfToken()
-        },
-        body: JSON.stringify({ text })
-      })
+      const response = await saveRequest(this.urlValue, "POST", { text })
       const data = await response.json()
 
       if (!response.ok) {

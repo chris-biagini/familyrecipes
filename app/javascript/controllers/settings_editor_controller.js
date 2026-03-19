@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { getCsrfToken, showErrors } from "../utilities/editor_utils"
+import { getCsrfToken, saveRequest, showErrors } from "../utilities/editor_utils"
 
 /**
  * Companion controller for the settings editor dialog. Hooks into editor
@@ -83,23 +83,16 @@ export default class extends Controller {
 
   provideSaveFn = (event) => {
     event.detail.handled = true
-    event.detail.saveFn = () => fetch(this.saveUrlValue, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRF-Token": getCsrfToken()
-      },
-      body: JSON.stringify({
-        kitchen: {
-          site_title: this.siteTitleTarget.value,
-          homepage_heading: this.homepageHeadingTarget.value,
-          homepage_subtitle: this.homepageSubtitleTarget.value,
-          usda_api_key: this.usdaApiKeyTarget.value,
-          anthropic_api_key: this.anthropicApiKeyTarget.value,
-          show_nutrition: this.showNutritionTarget.checked,
-          decorate_tags: this.decorateTagsTarget.checked
-        }
-      })
+    event.detail.saveFn = () => saveRequest(this.saveUrlValue, "PATCH", {
+      kitchen: {
+        site_title: this.siteTitleTarget.value,
+        homepage_heading: this.homepageHeadingTarget.value,
+        homepage_subtitle: this.homepageSubtitleTarget.value,
+        usda_api_key: this.usdaApiKeyTarget.value,
+        anthropic_api_key: this.anthropicApiKeyTarget.value,
+        show_nutrition: this.showNutritionTarget.checked,
+        decorate_tags: this.decorateTagsTarget.checked
+      }
     })
   }
 

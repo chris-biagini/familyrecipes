@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { getCsrfToken } from "../utilities/editor_utils"
+import { getCsrfToken, saveRequest } from "../utilities/editor_utils"
 
 /**
  * Companion controller for the nutrition editor dialog. Hooks into the shared
@@ -115,14 +115,7 @@ export default class extends Controller {
           headers: { "Content-Type": "application/json" }
         })
       }
-      return fetch(this.nutritionUrl(this.currentIngredient), {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRF-Token": getCsrfToken()
-        },
-        body: JSON.stringify(data)
-      })
+      return saveRequest(this.nutritionUrl(this.currentIngredient), "POST", data)
     }
   }
 
