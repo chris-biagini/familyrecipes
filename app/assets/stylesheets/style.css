@@ -342,6 +342,37 @@ nav > div:not(:first-child):not(.nav-drawer) {
   height: 1.1rem;
 }
 
+/* Custom checkbox — shared base for menu and grocery pages */
+.custom-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 1rem;
+  height: 1rem;
+  border: 1.5px solid var(--rule);
+  border-radius: 2px;
+  cursor: pointer;
+  flex-shrink: 0;
+  position: relative;
+  transition: background-color 0.12s ease, border-color 0.12s ease;
+}
+
+.custom-checkbox:checked {
+  background-color: var(--red);
+  border-color: var(--red);
+  animation: check-box-pop 250ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.custom-checkbox:checked::after {
+  content: '\2713';
+  color: white;
+  font-size: 0.75rem;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: check-mark-pop 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
 /* Buttons — the one shared interactive style across the site */
 .btn {
   appearance: none;

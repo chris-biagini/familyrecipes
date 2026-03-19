@@ -22,7 +22,7 @@
             <% checked.each do |item| %>
               <li data-item="<%= item[:name] %>"<%= " title=\"Needed for: #{h item[:sources].join(', ')}\"".html_safe if item[:sources].present? %>>
                 <label class="check-off">
-                  <input type="checkbox" data-item="<%= item[:name] %>" checked>
+                  <input class="custom-checkbox" type="checkbox" data-item="<%= item[:name] %>" checked>
                   <span class="item-text"><%= item[:name] %><% amount_str = format_amounts(item[:amounts], uncounted: item[:uncounted]) %><% if amount_str.present? %> <span class="item-amount"><%= amount_str %></span><% end %></span>
                 </label>
               </li>
@@ -37,7 +37,7 @@
           <% unchecked.each do |item| %>
             <li data-item="<%= item[:name] %>"<%= " title=\"Needed for: #{h item[:sources].join(', ')}\"".html_safe if item[:sources].present? %>>
               <label class="check-off">
-                <input type="checkbox" data-item="<%= item[:name] %>">
+                <input class="custom-checkbox" type="checkbox" data-item="<%= item[:name] %>">
                 <span class="item-text"><%= item[:name] %><% amount_str = format_amounts(item[:amounts], uncounted: item[:uncounted]) %><% if amount_str.present? %> <span class="item-amount"><%= amount_str %></span><% end %></span>
               </label>
             </li>
@@ -54,7 +54,7 @@
               <% checked.each do |item| %>
                 <li data-item="<%= item[:name] %>"<%= " title=\"Needed for: #{h item[:sources].join(', ')}\"".html_safe if item[:sources].present? %>>
                   <label class="check-off">
-                    <input type="checkbox" data-item="<%= item[:name] %>" checked>
+                    <input class="custom-checkbox" type="checkbox" data-item="<%= item[:name] %>" checked>
                     <span class="item-text"><%= item[:name] %><% amount_str = format_amounts(item[:amounts], uncounted: item[:uncounted]) %><% if amount_str.present? %> <span class="item-amount"><%= amount_str %></span><% end %></span>
                   </label>
                 </li>

@@ -7,7 +7,7 @@
     <ul>
     <%- category.recipes.sort_by(&:title).each do |recipe| -%>
       <li>
-        <input type="checkbox" id="<%= recipe.slug %>-checkbox" data-slug="<%= recipe.slug %>" data-title="<%= h recipe.title %>" <%= 'checked' if selected_recipes.include?(recipe.slug) %>>
+        <input class="custom-checkbox" type="checkbox" id="<%= recipe.slug %>-checkbox" data-slug="<%= recipe.slug %>" data-title="<%= h recipe.title %>" <%= 'checked' if selected_recipes.include?(recipe.slug) %>>
         <label for="<%= recipe.slug %>-checkbox"><%= recipe.title %></label>
         <% info = availability[recipe.slug] %>
         <% if info %>
@@ -48,7 +48,7 @@
         <ul>
         <%- items.each do |item| -%>
           <li>
-            <input type="checkbox" id="<%= item.id %>-checkbox" data-slug="<%= item.id %>" data-title="<%= h item.title %>" <%= 'checked' if selected_quick_bites.include?(item.id) %>>
+            <input class="custom-checkbox" type="checkbox" id="<%= item.id %>-checkbox" data-slug="<%= item.id %>" data-title="<%= h item.title %>" <%= 'checked' if selected_quick_bites.include?(item.id) %>>
             <label for="<%= item.id %>-checkbox"><%= item.title %></label>
             <% info = availability[item.id] %>
             <% if info %>
