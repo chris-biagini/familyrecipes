@@ -9,6 +9,7 @@
  * - SearchDataHelper: provides allTags data via embedded JSON attribute
  */
 import { Controller } from "@hotwired/stimulus"
+import ListenerManager from "../utilities/listener_manager"
 
 export default class extends Controller {
   static targets = ["pills", "input", "dropdown"]
@@ -26,14 +27,13 @@ export default class extends Controller {
     this.loadSmartTags()
     this.renderPills()
 
-    this.handleReset = () => { this.reset() }
-    this.element.closest("[data-controller~='editor']")
-      ?.addEventListener("editor:reset", this.handleReset)
+    this.listeners = new ListenerManager()
+    const editor = this.element.closest("[data-controller~='editor']")
+    if (editor) this.listeners.add(editor, "editor:reset", () => this.reset())
   }
 
   disconnect() {
-    this.element.closest("[data-controller~='editor']")
-      ?.removeEventListener("editor:reset", this.handleReset)
+    this.listeners.teardown()
   }
 
   get tags() { return [...this.currentTags] }

@@ -4,6 +4,7 @@ import {
   closeWithConfirmation, saveRequest, guardBeforeUnload, handleSave
 } from "../utilities/editor_utils"
 import { show as notifyShow } from "../utilities/notify"
+import ListenerManager from "../utilities/listener_manager"
 
 /**
  * Generic <dialog> lifecycle controller for editor modals. Handles open, save
@@ -35,28 +36,23 @@ export default class extends Controller {
 
   connect() {
     this.originalContent = ""
+    this.listeners = new ListenerManager()
 
     if (this.hasOpenSelectorValue) {
-      this.boundOpen = (event) => {
+      this.listeners.add(document, "click", (event) => {
         if (event.target.closest(this.openSelectorValue)) this.open()
-      }
-      document.addEventListener("click", this.boundOpen)
+      })
     }
 
     this.guard = guardBeforeUnload(this.element, () => this.isModified())
 
-    this.boundCancel = this.handleCancel.bind(this)
-    this.element.addEventListener("cancel", this.boundCancel)
-
-    this.boundBeforeVisit = this.handleBeforeVisit.bind(this)
-    document.addEventListener("turbo:before-visit", this.boundBeforeVisit)
+    this.listeners.add(this.element, "cancel", (e) => this.handleCancel(e))
+    this.listeners.add(document, "turbo:before-visit", (e) => this.handleBeforeVisit(e))
   }
 
   disconnect() {
-    if (this.boundOpen) document.removeEventListener("click", this.boundOpen)
+    this.listeners.teardown()
     if (this.guard) this.guard.remove()
-    this.element.removeEventListener("cancel", this.boundCancel)
-    if (this.boundBeforeVisit) document.removeEventListener("turbo:before-visit", this.boundBeforeVisit)
   }
 
   open() {

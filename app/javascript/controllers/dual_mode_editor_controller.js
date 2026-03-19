@@ -11,6 +11,7 @@
  */
 import { Controller } from "@hotwired/stimulus"
 import { csrfHeaders } from "../utilities/editor_utils"
+import ListenerManager from "../utilities/listener_manager"
 
 export default class extends Controller {
   static targets = ["plaintextContainer", "graphicalContainer", "modeToggle"]
@@ -26,25 +27,16 @@ export default class extends Controller {
     this.originalContent = null
     this.originalStructure = null
 
-    this.boundCollect = (e) => this.handleCollect(e)
-    this.boundModified = (e) => this.handleModified(e)
-    this.boundContentLoaded = (e) => this.handleContentLoaded(e)
-    this.boundOpened = (e) => this.handleOpened(e)
-    this.boundReset = (e) => this.handleReset(e)
-
-    this.element.addEventListener("editor:collect", this.boundCollect)
-    this.element.addEventListener("editor:modified", this.boundModified)
-    this.element.addEventListener("editor:content-loaded", this.boundContentLoaded)
-    this.element.addEventListener("editor:opened", this.boundOpened)
-    this.element.addEventListener("editor:reset", this.boundReset)
+    this.listeners = new ListenerManager()
+    this.listeners.add(this.element, "editor:collect", (e) => this.handleCollect(e))
+    this.listeners.add(this.element, "editor:modified", (e) => this.handleModified(e))
+    this.listeners.add(this.element, "editor:content-loaded", (e) => this.handleContentLoaded(e))
+    this.listeners.add(this.element, "editor:opened", (e) => this.handleOpened(e))
+    this.listeners.add(this.element, "editor:reset", (e) => this.handleReset(e))
   }
 
   disconnect() {
-    this.element.removeEventListener("editor:collect", this.boundCollect)
-    this.element.removeEventListener("editor:modified", this.boundModified)
-    this.element.removeEventListener("editor:content-loaded", this.boundContentLoaded)
-    this.element.removeEventListener("editor:opened", this.boundOpened)
-    this.element.removeEventListener("editor:reset", this.boundReset)
+    this.listeners.teardown()
   }
 
   toggleMode() {
@@ -56,29 +48,37 @@ export default class extends Controller {
     if (newMode === this.mode) return
     const key = this.contentKeyValue
 
-    if (newMode === "plaintext") {
-      const structure = this.graphicalController.toStructure()
-      const response = await fetch(this.serializeUrlValue, {
-        method: "POST",
-        headers: { ...csrfHeaders(), "Content-Type": "application/json" },
-        body: JSON.stringify({ structure })
-      })
-      const data = await response.json()
-      this.plaintextController.content = data[key]
-    } else {
-      const content = this.plaintextController.content
-      const response = await fetch(this.parseUrlValue, {
-        method: "POST",
-        headers: { ...csrfHeaders(), "Content-Type": "application/json" },
-        body: JSON.stringify({ [key]: content })
-      })
-      const ir = await response.json()
-      this.graphicalController.loadStructure(ir)
-    }
+    try {
+      if (newMode === "plaintext") {
+        const structure = this.graphicalController.toStructure()
+        const response = await fetch(this.serializeUrlValue, {
+          method: "POST",
+          headers: { ...csrfHeaders(), "Content-Type": "application/json" },
+          body: JSON.stringify({ structure })
+        })
+        const data = await response.json()
+        this.plaintextController.content = data[key]
+      } else {
+        const content = this.plaintextController.content
+        const response = await fetch(this.parseUrlValue, {
+          method: "POST",
+          headers: { ...csrfHeaders(), "Content-Type": "application/json" },
+          body: JSON.stringify({ [key]: content })
+        })
+        const ir = await response.json()
+        this.graphicalController.loadStructure(ir)
+      }
 
-    this.mode = newMode
-    localStorage.setItem("editorMode", newMode)
-    this.showActiveMode()
+      this.mode = newMode
+      localStorage.setItem("editorMode", newMode)
+      this.showActiveMode()
+    } catch {
+      const errorsEl = this.element.querySelector("[data-editor-target='errors']")
+      if (errorsEl) {
+        errorsEl.textContent = "Failed to switch editor mode. Please try again."
+        errorsEl.hidden = false
+      }
+    }
   }
 
   showActiveMode() {
