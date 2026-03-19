@@ -86,7 +86,7 @@ class NutritionEntriesControllerTest < ActionDispatch::IntegrationTest
   test 'upsert recalculates affected recipes' do
     recipe = import_recipe_with_flour
 
-    assert_nil recipe.reload.nutrition_data
+    assert_equal 0, recipe.reload.nutrition_data.dig('totals', 'calories')
 
     post nutrition_entry_upsert_path('Flour', kitchen_slug: kitchen_slug),
          params: { nutrients: VALID_NUTRIENTS, density: { volume: 0.25, unit: 'cup', grams: 30 },
