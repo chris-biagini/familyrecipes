@@ -53,7 +53,11 @@ the log line makes the empty-catalog condition visible.
 Wrap the computation in a `rescue StandardError` that logs the error. On
 failure, don't write a garbage marker — let `nutrition_data` retain its
 previous value. The critical improvement is the log line: the failure is no
-longer invisible.
+longer invisible. Re-raise in test so failures surface immediately rather
+than hiding behind log lines. The rescue covers the full method body
+(including `eager_load_recipe` and resolver construction), which is
+intentional — any failure in the nutrition path should be contained in
+production.
 
 The combined flow:
 
@@ -66,11 +70,12 @@ def perform(recipe, resolver: nil)
     Rails.logger.warn { "Nutrition: empty catalog for kitchen #{loaded.kitchen_id}, recipe #{recipe.id}" }
   end
 
-  calculator = NutritionCalculator.new(resolver.lookup, omit_set: resolver.omit_set)
+  calculator = FamilyRecipes::NutritionCalculator.new(resolver.lookup, omit_set: resolver.omit_set)
   result = calculator.calculate(loaded, {})
-  recipe.update_column(:nutrition_data, result.as_json)
+  recipe.update_column(:nutrition_data, result.as_json) # rubocop:disable Rails/SkipsModelValidations
 rescue StandardError => e
   Rails.logger.error { "Nutrition failed for recipe #{recipe.id}: #{e.message}" }
+  raise if Rails.env.test?
 end
 ```
 
@@ -84,12 +89,13 @@ With the rescue now inside `RecipeNutritionJob#perform`, each parent's failure
 is self-contained. One bad parent won't abort the cascade. No changes needed
 to `CascadeNutritionJob` itself.
 
-### Rake task: Already done
+### Rake task: Update for consistency
 
-`rake nutrition:recompute` was added earlier in this session. It bulk-
-recomputes nutrition for all recipes across all kitchens, sharing one resolver
-per kitchen for efficiency. This handles the rare "we intentionally
-invalidated everything" case (migrations, algorithm changes).
+`rake nutrition:recompute` was added earlier in this session. It currently
+has its own `resolver.lookup.empty?` guard that skips entire kitchens. Update
+it to match the job's new behavior: remove the skip, let the job handle
+empty catalogs gracefully (log + write zero-total result). The task should
+only skip kitchens with zero recipes.
 
 ## What we're NOT doing
 
@@ -108,7 +114,7 @@ invalidated everything" case (migrations, algorithm changes).
 
 - `app/jobs/recipe_nutrition_job.rb` — remove early return, add rescue +
   logging
-- `lib/tasks/nutrition.rake` — already added (bulk recompute tool)
+- `lib/tasks/nutrition.rake` — remove empty-catalog skip for consistency
 
 ## Testing
 
