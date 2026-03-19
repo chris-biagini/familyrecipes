@@ -42,8 +42,16 @@ export default class extends Controller {
       const name = cb.dataset.item
       if (!name) return
 
-      this.updateItemCount()
+      const li = cb.closest("li[data-item]")
+      const aisle = cb.closest(".aisle-group")
 
+      if (cb.checked) {
+        this.animateCheck(li, aisle)
+      } else {
+        this.animateUncheck(li, aisle)
+      }
+
+      this.updateItemCount()
       sendAction(this.element.dataset.checkUrl, { item: name, checked: cb.checked })
     })
   }
@@ -52,23 +60,145 @@ export default class extends Controller {
     const countEl = document.getElementById("item-count")
     if (!countEl) return
 
-    const items = document.querySelectorAll("#shopping-list li[data-item]")
-    const total = items.length
-    const checked = Array.from(items).filter(li => {
+    const allItems = document.querySelectorAll("#shopping-list li[data-item]")
+    const total = allItems.length
+    const unchecked = Array.from(allItems).filter(li => {
       const cb = li.querySelector('input[type="checkbox"]')
-      return cb && cb.checked
+      return cb && !cb.checked
     }).length
-    const remaining = total - checked
 
     if (total === 0) {
       countEl.textContent = ""
-    } else if (remaining === 0) {
+    } else if (unchecked === 0) {
       countEl.textContent = "\u2713 All done!"
-    } else if (checked > 0) {
-      countEl.textContent = `${remaining} of ${total} items needed`
     } else {
-      countEl.textContent = `${total} ${total === 1 ? "item" : "items"}`
+      countEl.textContent = `${unchecked} ${unchecked === 1 ? "item" : "items"} to buy`
     }
+  }
+
+  // --- Check/uncheck animations ---
+
+  animateCheck(li, aisle) {
+    if (!li || !aisle) return
+
+    const timerId = setTimeout(() => {
+      this.pendingTimers = this.pendingTimers.filter(id => id !== timerId)
+      li.classList.add("item-checking")
+      li.addEventListener("animationend", () => {
+        this.moveToOnHand(li, aisle)
+      }, { once: true })
+    }, 400)
+    this.pendingTimers.push(timerId)
+  }
+
+  moveToOnHand(li, aisle) {
+    let onHandList = aisle.querySelector(".on-hand-items ul")
+    let divider = aisle.querySelector(".on-hand-divider")
+
+    if (!onHandList) {
+      const toBuyList = aisle.querySelector(".to-buy-items")
+      const idx = Array.from(document.querySelectorAll(".aisle-group")).indexOf(aisle)
+
+      divider = document.createElement("button")
+      divider.className = "on-hand-divider"
+      divider.type = "button"
+      divider.setAttribute("aria-expanded", "false")
+      divider.setAttribute("aria-controls", `on-hand-${idx}`)
+
+      const countSpan = document.createElement("span")
+      countSpan.className = "on-hand-count"
+      countSpan.textContent = "0 on hand"
+      divider.appendChild(countSpan)
+
+      const arrowSpan = document.createElement("span")
+      arrowSpan.className = "on-hand-arrow"
+      arrowSpan.textContent = "\u25B8"
+      divider.appendChild(arrowSpan)
+
+      const onHandDiv = document.createElement("div")
+      onHandDiv.id = `on-hand-${idx}`
+      onHandDiv.className = "on-hand-items"
+      onHandDiv.hidden = true
+
+      const ul = document.createElement("ul")
+      onHandDiv.appendChild(ul)
+
+      if (toBuyList) {
+        toBuyList.after(divider, onHandDiv)
+      } else {
+        aisle.appendChild(divider)
+        aisle.appendChild(onHandDiv)
+      }
+      onHandList = ul
+    }
+
+    li.classList.remove("item-checking")
+    li.classList.add("item-appearing")
+    onHandList.appendChild(li)
+    li.addEventListener("animationend", () => {
+      li.classList.remove("item-appearing")
+    }, { once: true })
+
+    this.updateOnHandCount(divider, aisle)
+
+    const toBuyList = aisle.querySelector(".to-buy-items")
+    if (toBuyList && toBuyList.children.length === 0) {
+      this.collapseCompleteAisle(aisle)
+    }
+  }
+
+  animateUncheck(li, aisle) {
+    if (!li || !aisle) return
+
+    let toBuyList = aisle.querySelector(".to-buy-items")
+
+    if (!toBuyList) {
+      const header = aisle.querySelector(".aisle-complete-header")
+      const aisleName = aisle.dataset.aisle
+
+      const h3 = document.createElement("h3")
+      h3.className = "aisle-header"
+      h3.textContent = aisleName
+
+      toBuyList = document.createElement("ul")
+      toBuyList.className = "to-buy-items"
+
+      const divider = aisle.querySelector(".on-hand-divider")
+      if (divider) {
+        aisle.insertBefore(toBuyList, divider)
+        aisle.insertBefore(h3, toBuyList)
+      } else if (header) {
+        header.after(h3, toBuyList)
+      }
+      aisle.classList.remove("aisle-complete")
+    }
+
+    li.classList.add("item-appearing")
+    toBuyList.appendChild(li)
+    li.addEventListener("animationend", () => {
+      li.classList.remove("item-appearing")
+    }, { once: true })
+
+    const divider = aisle.querySelector(".on-hand-divider")
+    this.updateOnHandCount(divider, aisle)
+
+    const onHandList = aisle.querySelector(".on-hand-items ul")
+    if (onHandList && onHandList.children.length === 0) {
+      const onHandSection = aisle.querySelector(".on-hand-items")
+      if (divider) divider.remove()
+      if (onHandSection) onHandSection.remove()
+    }
+  }
+
+  updateOnHandCount(divider, aisle) {
+    if (!divider) return
+    const count = aisle.querySelectorAll(".on-hand-items li[data-item]").length
+    const countSpan = divider.querySelector(".on-hand-count")
+    if (countSpan) countSpan.textContent = `${count} on hand`
+  }
+
+  collapseCompleteAisle(aisle) {
+    aisle.classList.add("aisle-complete")
   }
 
   // --- Custom items (delegated from controller root to survive morphs) ---
@@ -168,6 +298,12 @@ export default class extends Controller {
 
   preserveOnHandStateOnRefresh(event) {
     if (!event.detail.render) return
+
+    this.element.querySelectorAll(".item-checking, .item-appearing").forEach(el => {
+      el.classList.remove("item-checking", "item-appearing")
+      el.style.animation = "none"
+    })
+
     this.saveOnHandState()
     const originalRender = event.detail.render
     event.detail.render = async (...args) => {
