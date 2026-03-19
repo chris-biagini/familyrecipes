@@ -11,26 +11,26 @@ class AisleWriteServiceTest < ActiveSupport::TestCase
     IngredientCatalog.where(kitchen: @kitchen).delete_all
   end
 
-  # --- update_order: validation ---
+  # --- update: validation ---
 
-  test 'update_order returns errors for too many aisles' do
+  test 'update returns errors for too many aisles' do
     order = (1..51).map { |i| "Aisle #{i}" }.join("\n")
 
-    result = AisleWriteService.update_order(kitchen: @kitchen, aisle_order: order, renames: {}, deletes: [])
+    result = AisleWriteService.update(kitchen: @kitchen, aisle_order: order, renames: {}, deletes: [])
 
     assert_not result.success
     assert(result.errors.any? { |e| e.include?('Too many') })
   end
 
-  test 'update_order returns errors for aisle name too long' do
-    result = AisleWriteService.update_order(kitchen: @kitchen, aisle_order: 'a' * 51, renames: {}, deletes: [])
+  test 'update returns errors for aisle name too long' do
+    result = AisleWriteService.update(kitchen: @kitchen, aisle_order: 'a' * 51, renames: {}, deletes: [])
 
     assert_not result.success
     assert(result.errors.any? { |e| e.include?('too long') })
   end
 
-  test 'update_order returns errors for case-insensitive duplicates' do
-    result = AisleWriteService.update_order(
+  test 'update returns errors for case-insensitive duplicates' do
+    result = AisleWriteService.update(
       kitchen: @kitchen, aisle_order: "Produce\nproduce", renames: {}, deletes: []
     )
 
@@ -38,10 +38,10 @@ class AisleWriteServiceTest < ActiveSupport::TestCase
     assert(result.errors.any? { |e| e.include?('more than once') })
   end
 
-  # --- update_order: saves and normalizes ---
+  # --- update: saves and normalizes ---
 
-  test 'update_order saves normalized aisle_order' do
-    result = AisleWriteService.update_order(
+  test 'update saves normalized aisle_order' do
+    result = AisleWriteService.update(
       kitchen: @kitchen, aisle_order: "Produce\n  Baking\nProduce\n\nFrozen", renames: {}, deletes: []
     )
 
@@ -49,22 +49,22 @@ class AisleWriteServiceTest < ActiveSupport::TestCase
     assert_equal "Produce\nBaking\nFrozen", @kitchen.reload.aisle_order
   end
 
-  test 'update_order clears aisle_order when empty' do
+  test 'update clears aisle_order when empty' do
     @kitchen.update!(aisle_order: "Produce\nBaking")
 
-    result = AisleWriteService.update_order(kitchen: @kitchen, aisle_order: '', renames: {}, deletes: [])
+    result = AisleWriteService.update(kitchen: @kitchen, aisle_order: '', renames: {}, deletes: [])
 
     assert result.success
     assert_nil @kitchen.reload.aisle_order
   end
 
-  # --- update_order: cascade renames ---
+  # --- update: cascade renames ---
 
-  test 'update_order cascades renames to catalog entries' do
+  test 'update cascades renames to catalog entries' do
     IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Apples', aisle: 'Produce')
     IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Milk', aisle: 'Dairy')
 
-    AisleWriteService.update_order(
+    AisleWriteService.update(
       kitchen: @kitchen, aisle_order: "Fruits\nDairy",
       renames: { 'Produce' => 'Fruits' }, deletes: []
     )
@@ -73,10 +73,10 @@ class AisleWriteServiceTest < ActiveSupport::TestCase
     assert_equal 'Dairy', IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'Milk').aisle
   end
 
-  test 'update_order cascades renames case-insensitively' do
+  test 'update cascades renames case-insensitively' do
     IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Apples', aisle: 'produce')
 
-    AisleWriteService.update_order(
+    AisleWriteService.update(
       kitchen: @kitchen, aisle_order: 'Fruits',
       renames: { 'Produce' => 'Fruits' }, deletes: []
     )
@@ -84,13 +84,13 @@ class AisleWriteServiceTest < ActiveSupport::TestCase
     assert_equal 'Fruits', IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'Apples').aisle
   end
 
-  # --- update_order: cascade rename length validation ---
+  # --- update: cascade rename length validation ---
 
-  test 'update_order rejects rename target exceeding MAX_AISLE_NAME_LENGTH' do
+  test 'update rejects rename target exceeding MAX_AISLE_NAME_LENGTH' do
     IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Apples', aisle: 'Produce')
     long_name = 'a' * (Kitchen::MAX_AISLE_NAME_LENGTH + 1)
 
-    result = AisleWriteService.update_order(
+    result = AisleWriteService.update(
       kitchen: @kitchen, aisle_order: 'Produce',
       renames: { 'Produce' => long_name }, deletes: []
     )
@@ -99,13 +99,13 @@ class AisleWriteServiceTest < ActiveSupport::TestCase
     assert(result.errors.any? { |e| e.include?('exceeds maximum length') })
   end
 
-  # --- update_order: cascade deletes ---
+  # --- update: cascade deletes ---
 
-  test 'update_order clears aisle from catalog entries on delete' do
+  test 'update clears aisle from catalog entries on delete' do
     IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Apples', aisle: 'Produce')
     IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Milk', aisle: 'Dairy')
 
-    AisleWriteService.update_order(
+    AisleWriteService.update(
       kitchen: @kitchen, aisle_order: 'Dairy',
       renames: {}, deletes: ['Produce']
     )
@@ -114,10 +114,10 @@ class AisleWriteServiceTest < ActiveSupport::TestCase
     assert_equal 'Dairy', IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'Milk').aisle
   end
 
-  test 'update_order cascades deletes case-insensitively' do
+  test 'update cascades deletes case-insensitively' do
     IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Apples', aisle: 'produce')
 
-    AisleWriteService.update_order(
+    AisleWriteService.update(
       kitchen: @kitchen, aisle_order: '',
       renames: {}, deletes: ['Produce']
     )
@@ -125,13 +125,13 @@ class AisleWriteServiceTest < ActiveSupport::TestCase
     assert_nil IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'Apples').aisle
   end
 
-  # --- update_order: renames + deletes together ---
+  # --- update: renames + deletes together ---
 
-  test 'update_order handles renames and deletes in one call' do
+  test 'update handles renames and deletes in one call' do
     IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Apples', aisle: 'Produce')
     IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Bread', aisle: 'Bakery')
 
-    AisleWriteService.update_order(
+    AisleWriteService.update(
       kitchen: @kitchen, aisle_order: 'Fruits',
       renames: { 'Produce' => 'Fruits' }, deletes: ['Bakery']
     )
@@ -140,9 +140,9 @@ class AisleWriteServiceTest < ActiveSupport::TestCase
     assert_nil IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'Bread').aisle
   end
 
-  # --- update_order: tenant isolation ---
+  # --- update: tenant isolation ---
 
-  test 'update_order does not affect other kitchens' do
+  test 'update does not affect other kitchens' do
     other_kitchen = nil
     with_multi_kitchen do
       other_kitchen = Kitchen.create!(name: 'Other', slug: 'other')
@@ -150,7 +150,7 @@ class AisleWriteServiceTest < ActiveSupport::TestCase
     IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Apples', aisle: 'Produce')
     IngredientCatalog.create!(kitchen: other_kitchen, ingredient_name: 'Apples', aisle: 'Produce')
 
-    AisleWriteService.update_order(
+    AisleWriteService.update(
       kitchen: @kitchen, aisle_order: 'Fruits',
       renames: { 'Produce' => 'Fruits' }, deletes: []
     )
@@ -158,10 +158,10 @@ class AisleWriteServiceTest < ActiveSupport::TestCase
     assert_equal 'Produce', IngredientCatalog.find_by(kitchen: other_kitchen, ingredient_name: 'Apples').aisle
   end
 
-  # --- update_order: ignores nil/non-hash renames and non-array deletes ---
+  # --- update: ignores nil/non-hash renames and non-array deletes ---
 
-  test 'update_order tolerates nil renames and deletes' do
-    result = AisleWriteService.update_order(
+  test 'update tolerates nil renames and deletes' do
+    result = AisleWriteService.update(
       kitchen: @kitchen, aisle_order: 'Produce', renames: nil, deletes: nil
     )
 
@@ -169,19 +169,19 @@ class AisleWriteServiceTest < ActiveSupport::TestCase
     assert_equal 'Produce', @kitchen.reload.aisle_order
   end
 
-  # --- update_order: broadcasts ---
+  # --- update: broadcasts ---
 
-  test 'update_order broadcasts to kitchen updates stream' do
+  test 'update broadcasts to kitchen updates stream' do
     assert_turbo_stream_broadcasts [@kitchen, :updates] do
-      AisleWriteService.update_order(
+      AisleWriteService.update(
         kitchen: @kitchen, aisle_order: 'Produce', renames: {}, deletes: []
       )
     end
   end
 
-  test 'update_order does not broadcast on validation failure' do
+  test 'update does not broadcast on validation failure' do
     assert_no_turbo_stream_broadcasts [@kitchen, :updates] do
-      AisleWriteService.update_order(
+      AisleWriteService.update(
         kitchen: @kitchen, aisle_order: 'a' * 51, renames: {}, deletes: []
       )
     end

@@ -40,7 +40,7 @@ class GroceriesController < ApplicationController
   end
 
   def update_aisle_order
-    result = AisleWriteService.update_order(
+    result = AisleWriteService.update(
       kitchen: current_kitchen,
       aisle_order: params[:aisle_order].to_s,
       renames: params[:renames],
