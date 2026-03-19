@@ -236,6 +236,78 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     assert_select 'dialog[data-controller="ordered-list-editor"]'
   end
 
+  # --- Uncounted indicators ---
+
+  test 'shopping list shows uncounted indicator for mixed quantities' do
+    @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    create_catalog_entry('Red bell pepper', basis_grams: 150, aisle: 'Produce')
+
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Stuffed Peppers
+
+      ## Prep (slice)
+
+      - Red bell pepper, 1
+
+      Prep.
+    MD
+
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Stir Fry
+
+      ## Cook (stir-fry)
+
+      - Red bell pepper
+
+      Cook.
+    MD
+
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'recipe', slug: 'stuffed-peppers', selected: true)
+    list.apply_action('select', type: 'recipe', slug: 'stir-fry', selected: true)
+
+    log_in
+    get groceries_path(kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select '.item-amount', text: /\+1.more/
+  end
+
+  test 'shopping list shows uses indicator for all-uncounted multi-source' do
+    @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    create_catalog_entry('Garlic', basis_grams: 5, aisle: 'Produce')
+
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Pasta
+
+      ## Cook (boil)
+
+      - Garlic
+
+      Cook.
+    MD
+
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Stir Fry
+
+      ## Cook (stir-fry)
+
+      - Garlic
+
+      Cook.
+    MD
+
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('select', type: 'recipe', slug: 'pasta', selected: true)
+    list.apply_action('select', type: 'recipe', slug: 'stir-fry', selected: true)
+
+    log_in
+    get groceries_path(kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select '.item-amount', text: /2.uses/
+  end
+
   # --- Mutation tests ---
 
   test 'check marks item as checked' do
