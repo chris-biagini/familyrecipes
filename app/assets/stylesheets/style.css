@@ -324,7 +324,7 @@ nav > div:not(:first-child):not(.nav-drawer) {
   border: none;
   cursor: pointer;
   color: var(--text);
-  padding: 0.5rem 0.6rem !important;
+  padding: 0.5rem 0.6rem;
   flex-shrink: 0;
   display: flex;
   align-items: center;
