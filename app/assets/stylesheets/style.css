@@ -57,6 +57,16 @@
   --smart-blue-bg: #d6eaf8;     --smart-blue-text: #1a4a6e;
   --smart-purple-bg: #e8daf5;   --smart-purple-text: #4a2080;
   --smart-cuisine-bg: #f5ddd0;  --smart-cuisine-text: #6e3a22;
+
+  /* Gingham tablecloth background */
+  --gingham-base: rgb(249, 246, 243);
+  --gingham-stripe: rgba(190, 12, 30, 0.5);
+  --gingham-gap: 1.5rem;
+  --gingham-stripe-width: 75px;
+  --gingham-tile: calc(var(--gingham-stripe-width) * 2 * 1.41421356);
+  --weave-color: rgba(150, 150, 150, 0.04);
+  --weave-width: 1.5px;
+  --content-card-bg: rgba(255, 252, 249, 0.88);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -111,6 +121,12 @@
     --smart-blue-bg: #1a2e3e;     --smart-blue-text: #90c0e0;
     --smart-purple-bg: #2a1e3a;   --smart-purple-text: #c0a8e0;
     --smart-cuisine-bg: #3a2820;  --smart-cuisine-text: #d8b0a0;
+
+    /* Gingham — muted for dark mode */
+    --gingham-base: #1e1b18;
+    --gingham-stripe: rgba(200, 55, 60, 0.35);
+    --weave-color: rgba(255, 255, 255, 0.02);
+    --content-card-bg: rgba(30, 27, 24, 0.88);
   }
 }
 
@@ -119,7 +135,44 @@ html {
   font-size: 18px;
   touch-action: manipulation;
   scrollbar-gutter: stable;
-  background-color: var(--ground);
+
+  /* Gingham tablecloth — 4-layer repeating gradient tiled in a fixed-size
+     box (stripe-width × 2 × √2) so the pattern never shifts on viewport
+     resize. background-attachment: fixed keeps it stationary on scroll. */
+  background-color: var(--gingham-base);
+  background-attachment: fixed;
+  background-size:
+    var(--gingham-tile) var(--gingham-tile),
+    var(--gingham-tile) var(--gingham-tile),
+    var(--gingham-tile) var(--gingham-tile),
+    var(--gingham-tile) var(--gingham-tile),
+    auto;
+  background-image:
+    repeating-linear-gradient(
+      135deg,
+      var(--gingham-stripe) 0,
+      var(--gingham-stripe) var(--gingham-stripe-width),
+      transparent var(--gingham-stripe-width),
+      transparent calc(2 * var(--gingham-stripe-width))),
+    repeating-linear-gradient(
+      45deg,
+      var(--gingham-stripe) 0,
+      var(--gingham-stripe) var(--gingham-stripe-width),
+      transparent var(--gingham-stripe-width),
+      transparent calc(2 * var(--gingham-stripe-width))),
+    repeating-linear-gradient(
+      135deg,
+      var(--weave-color) 0,
+      var(--weave-color) var(--weave-width),
+      transparent var(--weave-width),
+      transparent calc(2 * var(--weave-width))),
+    repeating-linear-gradient(
+      45deg,
+      var(--weave-color) 0,
+      var(--weave-color) var(--weave-width),
+      transparent var(--weave-width),
+      transparent calc(2 * var(--weave-width))),
+    linear-gradient(var(--gingham-base), var(--gingham-base));
 }
 
 /* Turbo Drive progress bar — base styles defined here because Turbo's
@@ -144,7 +197,7 @@ html {
 }
 
 body {
-  padding: env(safe-area-inset-top, 0px) 0 0;
+  padding: env(safe-area-inset-top, 0px) var(--gingham-gap) 0;
   font-family: var(--font-body);
   color: var(--text);
   line-height: 1.65;
@@ -164,7 +217,7 @@ body {
 }
 
 nav {
-  margin: 0;
+  margin: 0 calc(-1 * var(--gingham-gap));
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
@@ -483,8 +536,13 @@ main a:focus-visible {
 
 main {
   max-width: 35rem;
-  margin: 0 auto;
-  padding: 3rem 1.5rem 5rem;
+  margin: var(--gingham-gap) auto;
+  padding: 3rem 2.5rem 5rem;
+  background: var(--content-card-bg);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid var(--rule-faint);
+  min-height: calc(100vh - 2 * var(--gingham-gap) - 3rem);
 }
 
 header {
@@ -1387,6 +1445,10 @@ footer small {
 
 /* anything with a narrow window */
 @media screen and (max-width: 720px) {
+  :root {
+    --gingham-gap: 0.75rem;
+  }
+
   main {
     padding: 1.5rem 1rem 3rem;
   }
@@ -3332,7 +3394,9 @@ a.recipe-link {
 
 .app-version {
   text-align: center;
-  padding: 1.5rem 0 0.75rem;
+  margin: -0.75rem auto 0;
+  padding: 0 0 0.25rem;
+  max-width: 35rem;
   font-size: 0.7rem;
   font-style: normal;
   color: var(--text);
