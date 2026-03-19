@@ -133,6 +133,23 @@ the CSP initializer before adding any.
 - Use semantic HTML. Recipes are **documents first** — marked-up text, not an
   app that happens to contain text.
 
+**CSS color tokens.** The canonical tokens are defined in `style.css` `:root`.
+Key names: `--ground` (background), `--text`, `--text-soft`, `--text-light`
+(foreground), `--surface-alt` (offset bg), `--rule`/`--rule-faint` (borders),
+`--red` (accent/links), `--dialog-backdrop`, `--shadow-dialog`. Never invent
+generic names like `--bg`, `--fg`, `--fg-muted` — always check `:root` first.
+
+**Embedded JSON blobs.** `SearchDataHelper` and smart tag data are embedded as
+`<script type="application/json">` tags read via `el.textContent`, not as
+`data-` attributes. Search data target: `[data-search-overlay-target="data"]`.
+Smart tags: `[data-smart-tags]`. Always check the actual partial before
+assuming how data is embedded.
+
+**`hidden` attribute gotcha.** Explicit CSS `display` values (flex, grid)
+override the `[hidden]` user-agent style. When using `el.hidden = true` on
+elements with explicit display rules, add `selector[hidden] { display: none }`
+to the stylesheet.
+
 ## Architecture
 
 Every class has an architectural header comment — read them first. This section

@@ -34,9 +34,11 @@ export default class extends Controller {
     this.listeners = new ListenerManager()
     this.tagPreferences = {}
     this.declinePenalties = {}
+    this.animationTimer = null
 
-    this.recipes = this.loadRecipes()
-    this.allTags = this.loadTags()
+    const searchData = this.loadSearchData()
+    this.recipes = searchData.recipes || []
+    this.allTags = searchData.all_tags || []
 
     const btn = document.getElementById("dinner-picker-button")
     if (btn) {
@@ -58,20 +60,40 @@ export default class extends Controller {
   }
 
   reset() {
+    this.cancelAnimation()
     this.tagPreferences = {}
     this.declinePenalties = {}
   }
 
+  cancelAnimation() {
+    if (this.animationTimer) {
+      clearTimeout(this.animationTimer)
+      this.animationTimer = null
+    }
+  }
+
   showTagState() {
+    this.cancelAnimation()
     this.tagStateTarget.hidden = false
     this.slotDisplayTarget.hidden = true
     this.resultAreaTarget.hidden = true
     this.renderTagUI()
   }
 
+  renderCloseButton(container) {
+    const btn = document.createElement("button")
+    btn.className = "dinner-picker-close"
+    btn.textContent = "\u00D7"
+    btn.setAttribute("aria-label", "Close")
+    btn.addEventListener("click", () => this.dialogTarget.close())
+    container.appendChild(btn)
+  }
+
   renderTagUI() {
     const container = this.tagStateTarget
     container.textContent = ""
+
+    this.renderCloseButton(container)
 
     const heading = document.createElement("h2")
     heading.textContent = "What are you in the mood for?"
@@ -178,12 +200,12 @@ export default class extends Controller {
           : winner
         nameEl.textContent = randomRecipe.title
         i++
-        setTimeout(animate, 80 + i * (isReroll ? 20 : 15))
+        this.animationTimer = setTimeout(animate, 80 + i * (isReroll ? 20 : 15))
       } else {
         nameEl.textContent = winner.title
         nameEl.classList.add("slot-landed")
         emoji.textContent = "\u{1F389}"
-        setTimeout(() => this.showResult(winner), 400)
+        this.animationTimer = setTimeout(() => this.showResult(winner), 400)
       }
     }
     animate()
@@ -196,6 +218,8 @@ export default class extends Controller {
 
     const container = this.resultAreaTarget
     container.textContent = ""
+
+    this.renderCloseButton(container)
 
     const label = document.createElement("div")
     label.className = "result-label"
@@ -270,27 +294,15 @@ export default class extends Controller {
     return "\u{1F3B0} " + QUIPS[Math.floor(Math.random() * QUIPS.length)]
   }
 
-  loadRecipes() {
-    const el = document.querySelector("[data-search-data]")
-    if (!el) return []
-    try {
-      const data = JSON.parse(el.dataset.searchData)
-      return data.recipes || []
-    } catch { return [] }
-  }
-
-  loadTags() {
-    const el = document.querySelector("[data-search-data]")
-    if (!el) return []
-    try {
-      const data = JSON.parse(el.dataset.searchData)
-      return data.all_tags || []
-    } catch { return [] }
+  loadSearchData() {
+    const el = document.querySelector("[data-search-overlay-target='data']")
+    if (!el) return {}
+    try { return JSON.parse(el.textContent || "{}") } catch { return {} }
   }
 
   loadSmartTagData() {
     const el = document.querySelector("[data-smart-tags]")
     if (!el) return {}
-    try { return JSON.parse(el.dataset.smartTags) } catch { return {} }
+    try { return JSON.parse(el.textContent || "{}") } catch { return {} }
   }
 }
