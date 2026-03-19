@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { loadSmartTagData } from "../utilities/search_data"
 
 function normalizeForSearch(str) {
   return (str || "")
@@ -38,8 +39,8 @@ export default class extends Controller {
   }
 
   loadSmartTags() {
-    const el = document.querySelector('script[data-smart-tags]')
-    this.smartTags = el ? JSON.parse(el.textContent) : null
+    const data = loadSmartTagData()
+    this.smartTags = Object.keys(data).length > 0 ? data : null
   }
 
   loadData() {

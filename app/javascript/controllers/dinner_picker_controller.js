@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { computeFinalWeights, weightedRandomPick } from "../utilities/dinner_picker_logic"
+import { loadSearchData, loadSmartTagData } from "../utilities/search_data"
 import ListenerManager from "../utilities/listener_manager"
 
 /**
@@ -36,9 +37,9 @@ export default class extends Controller {
     this.declinePenalties = {}
     this.animationTimer = null
 
-    const searchData = this.loadSearchData()
-    this.recipes = searchData.recipes || []
-    this.allTags = searchData.all_tags || []
+    const data = loadSearchData()
+    this.recipes = data.recipes || []
+    this.allTags = data.all_tags || []
 
     const btn = document.getElementById("dinner-picker-button")
     if (btn) {
@@ -117,7 +118,7 @@ export default class extends Controller {
   }
 
   buildTagPills(container) {
-    const smartTags = this.loadSmartTagData()
+    const smartTags = loadSmartTagData()
 
     for (const tag of this.allTags) {
       const pill = document.createElement("button")
@@ -292,17 +293,5 @@ export default class extends Controller {
 
   randomQuip() {
     return "\u{1F3B0} " + QUIPS[Math.floor(Math.random() * QUIPS.length)]
-  }
-
-  loadSearchData() {
-    const el = document.querySelector("[data-search-overlay-target='data']")
-    if (!el) return {}
-    try { return JSON.parse(el.textContent || "{}") } catch { return {} }
-  }
-
-  loadSmartTagData() {
-    const el = document.querySelector("[data-smart-tags]")
-    if (!el) return {}
-    try { return JSON.parse(el.textContent || "{}") } catch { return {} }
   }
 }
