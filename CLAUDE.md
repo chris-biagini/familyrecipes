@@ -219,6 +219,10 @@ broadcast). Don't call `MarkdownImporter` directly for web operations.
 - Write services: `RecipeWriteService`, `CatalogWriteService`,
   `MealPlanWriteService`, `QuickBitesWriteService`, `AisleWriteService`,
   `CategoryWriteService`, `TagWriteService`. Read their header comments.
+- `ListWriteService` is the template method base class for
+  `AisleWriteService`, `CategoryWriteService`, and `TagWriteService`.
+  Subclasses override `validate_changeset`, `apply_renames`,
+  `apply_deletes`, and `apply_ordering` hooks.
 - `MarkdownImporter` has two entry points: `import` (markdown string) and
   `import_from_structure` (IR hash). AR records are the sole source of truth.
 - `Kitchen.finalize_writes(kitchen)` — single post-write entry point:

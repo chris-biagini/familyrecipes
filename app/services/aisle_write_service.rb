@@ -49,7 +49,7 @@ class AisleWriteService < ListWriteService
     end
   end
 
-  def apply_ordering(aisle_order:, **)
+  def apply_ordering(**)
     kitchen.normalize_aisle_order!
     kitchen.save!
   end
