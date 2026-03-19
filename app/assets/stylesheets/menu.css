@@ -31,7 +31,7 @@
   padding: 0.35rem 0.5rem;
   margin: 0 -0.5rem;
   cursor: pointer;
-  transition: background-color 0.12s ease, border-color 0.12s ease;
+  transition: background-color var(--duration-fast) ease, border-color var(--duration-fast) ease;
   border-left: 2px solid transparent;
 }
 
@@ -54,7 +54,7 @@
   text-decoration: none;
   font-size: 0.9rem;
   padding-left: 0.5rem;
-  transition: color 0.12s ease;
+  transition: color var(--duration-fast) ease;
 }
 
 #recipe-selector .category .recipe-link:hover {
@@ -143,7 +143,7 @@
 .availability-ingredients {
   display: grid;
   grid-template-rows: 0fr;
-  transition: grid-template-rows 0.2s ease;
+  transition: grid-template-rows var(--duration-normal) ease;
   flex-basis: 100%;
 }
 
@@ -161,7 +161,7 @@
   padding-left: calc(1.6rem + 4px);
   padding-top: 0;
   padding-bottom: 0;
-  transition: padding 0.2s ease;
+  transition: padding var(--duration-normal) ease;
 }
 
 .availability-detail[open] ~ .availability-ingredients > .availability-ingredients-inner {
@@ -241,7 +241,7 @@
   margin: 0 -0.5rem;
   font-size: 0.95rem;
   cursor: pointer;
-  transition: background-color 0.12s ease, border-color 0.12s ease;
+  transition: background-color var(--duration-fast) ease, border-color var(--duration-fast) ease;
   border-left: 2px solid transparent;
 }
 
@@ -399,7 +399,7 @@
   font-size: 1.2rem;
   font-weight: 600;
   color: var(--red);
-  transition: transform 0.2s ease;
+  transition: transform var(--duration-normal) ease;
 }
 
 .slot-name.slot-landed {

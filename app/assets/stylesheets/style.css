@@ -58,6 +58,11 @@
   --smart-purple-bg: #e8daf5;   --smart-purple-text: #4a2080;
   --smart-cuisine-bg: #f5ddd0;  --smart-cuisine-text: #6e3a22;
 
+  /* Transition timing — use these instead of bare durations */
+  --duration-fast: 0.12s;
+  --duration-normal: 0.2s;
+  --duration-slow: 0.35s;
+
   /* Gingham tablecloth background */
   --gingham-base: rgb(249, 246, 243);
   --gingham-stripe: rgba(190, 12, 30, 0.5);
@@ -269,7 +274,7 @@ nav a {
   line-height: 1.5;
   color: var(--text);
   border-radius: 0.4rem;
-  transition: color 0.2s ease, background-color 0.35s ease-out;
+  transition: color var(--duration-normal) ease, background-color var(--duration-slow) ease-out;
 }
 
 nav a:hover {
@@ -329,7 +334,7 @@ nav > div:not(:first-child):not(.nav-drawer) {
   display: flex;
   align-items: center;
   border-radius: 0.4rem;
-  transition: color 0.2s ease, background-color 0.35s ease-out;
+  transition: color var(--duration-normal) ease, background-color var(--duration-slow) ease-out;
 }
 
 .nav-settings-link:hover {
@@ -353,7 +358,7 @@ nav > div:not(:first-child):not(.nav-drawer) {
   cursor: pointer;
   flex-shrink: 0;
   position: relative;
-  transition: background-color 0.12s ease, border-color 0.12s ease;
+  transition: background-color var(--duration-fast) ease, border-color var(--duration-fast) ease;
 }
 
 .custom-checkbox:checked {
@@ -387,7 +392,7 @@ nav > div:not(:first-child):not(.nav-drawer) {
   cursor: pointer;
   text-decoration: none;
   line-height: 1.5;
-  transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease, box-shadow 0.12s ease;
+  transition: background-color var(--duration-fast) ease, border-color var(--duration-fast) ease, color var(--duration-fast) ease, box-shadow var(--duration-fast) ease;
 }
 
 .btn:hover {
@@ -452,7 +457,7 @@ nav a:focus-visible {
   padding: 0.5rem 0.9rem;
   color: var(--text);
   border-radius: 0.4rem;
-  transition: color 0.2s ease, background-color 0.35s ease-out;
+  transition: color var(--duration-normal) ease, background-color var(--duration-slow) ease-out;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -474,7 +479,7 @@ nav a:focus-visible {
 
 .hamburger-icon rect {
   transform-origin: 12px 12px;
-  transition: transform 0.3s ease, opacity 0.2s ease;
+  transition: transform 0.3s ease, opacity var(--duration-normal) ease;
 }
 
 .hamburger-top {
@@ -557,7 +562,7 @@ main a {
   text-decoration-color: var(--rule-faint);
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
-  transition: color 0.2s ease, text-decoration-color 0.2s ease;
+  transition: color var(--duration-normal) ease, text-decoration-color var(--duration-normal) ease;
 }
 
 main a:hover {
@@ -697,7 +702,7 @@ header .recipe-meta a:hover {
   padding: 0.3rem 0.6rem;
   border-radius: 0.4rem;
   user-select: none;
-  transition: color 0.2s ease, background-color 0.35s ease-out;
+  transition: color var(--duration-normal) ease, background-color var(--duration-slow) ease-out;
 }
 
 .scale-toggle:hover {
@@ -773,7 +778,7 @@ header > .recipe-actions {
   font-family: var(--font-body);
   font-size: 0.85rem;
   border-radius: 0.4rem;
-  transition: color 0.2s ease, background-color 0.35s ease-out;
+  transition: color var(--duration-normal) ease, background-color var(--duration-slow) ease-out;
 }
 
 .edit-toggle:hover {
@@ -791,7 +796,7 @@ header > .recipe-actions {
   display: grid;
   grid-template-rows: 0fr;
   overflow: hidden;
-  transition: grid-template-rows 0.2s ease;
+  transition: grid-template-rows var(--duration-normal) ease;
 }
 
 .scale-bar.open .scale-controls {
@@ -844,7 +849,7 @@ header > .recipe-actions {
   background: var(--ground);
   color: var(--text);
   cursor: pointer;
-  transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+  transition: background-color var(--duration-fast) ease, border-color var(--duration-fast) ease, color var(--duration-fast) ease;
   line-height: 1;
 }
 
@@ -908,7 +913,7 @@ header > .recipe-actions {
   background: none;
   color: var(--text-light);
   cursor: pointer;
-  transition: color 0.12s ease, opacity 0.15s ease;
+  transition: color var(--duration-fast) ease, opacity 0.15s ease;
 }
 
 .scale-reset[hidden] {
@@ -1106,7 +1111,7 @@ section:first-of-type h2 {
 
 .ingredient-row {
   cursor: pointer;
-  transition: background-color 0.12s ease;
+  transition: background-color var(--duration-fast) ease;
 }
 .ingredient-row:hover {
   background-color: var(--hover-bg);
@@ -1828,7 +1833,7 @@ html:has(dialog[open]) {
   display: flex;
   align-items: center;
   border-radius: 0.4rem;
-  transition: color 0.2s ease, background-color 0.35s ease-out;
+  transition: color var(--duration-normal) ease, background-color var(--duration-slow) ease-out;
 }
 
 .nav-search-btn:hover {
@@ -2497,7 +2502,7 @@ button.aisle-name:hover {
 .editor-collapse-body {
   display: grid;
   grid-template-rows: 0fr;
-  transition: grid-template-rows 0.2s ease;
+  transition: grid-template-rows var(--duration-normal) ease;
 }
 
 .editor-collapse-header[open] + .editor-collapse-body {
@@ -2508,7 +2513,7 @@ button.aisle-name:hover {
   min-height: 0;
   overflow: hidden;
   padding: 0;
-  transition: padding 0.2s ease;
+  transition: padding var(--duration-normal) ease;
 }
 
 .editor-collapse-header[open] + .editor-collapse-body > .editor-collapse-inner {
@@ -3368,7 +3373,7 @@ a.recipe-link {
   cursor: pointer;
   color: inherit;
   line-height: 1.5;
-  transition: border-color 0.12s ease, color 0.12s ease;
+  transition: border-color var(--duration-fast) ease, color var(--duration-fast) ease;
 }
 
 .graphical-btn:hover {
