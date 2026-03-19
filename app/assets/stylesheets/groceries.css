@@ -150,7 +150,7 @@
   padding: 2rem;
 }
 
-/* Collapsible Aisles */
+/* Aisle Groups */
 #shopping-list .aisle-group {
   margin-bottom: 0.75rem;
   background: var(--surface-alt);
@@ -159,78 +159,133 @@
   overflow: hidden;
 }
 
-#shopping-list details.aisle > summary {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+/* Aisle header (always visible, non-interactive) */
+.aisle-header {
   padding: 0.6rem 0.75rem;
+  margin: 0;
   font-family: var(--font-body);
   font-size: 0.8rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  cursor: pointer;
+  color: var(--text);
+}
+
+/* To-buy items list */
+.to-buy-items {
   list-style: none;
-  user-select: none;
+  margin: 0;
+  padding: 0 0.75rem 0.5rem;
 }
 
-#shopping-list details.aisle > summary::-webkit-details-marker {
-  display: none;
+.to-buy-items li {
+  padding: 0.3rem 0;
 }
 
-#shopping-list details.aisle > summary::before {
-  content: '';
-  display: inline-block;
-  width: 0;
-  height: 0;
-  border-style: solid;
-  border-width: 0.3rem 0 0.3rem 0.45rem;
-  border-color: transparent transparent transparent var(--rule);
+/* On-hand divider button */
+.on-hand-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.4rem 0.75rem;
+  border: none;
+  border-top: 1px solid var(--rule-faint);
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  color: var(--text-light);
+  text-align: left;
+}
+
+.on-hand-divider:hover {
+  color: var(--text-soft);
+}
+
+.on-hand-arrow {
+  font-size: 0.6rem;
   transition: transform 0.15s ease;
 }
 
-#shopping-list details.aisle[open] > summary::before {
+.on-hand-divider[aria-expanded="true"] .on-hand-arrow {
   transform: rotate(90deg);
 }
 
-/* Animated expand/collapse — content lives outside <details> as a sibling */
-#shopping-list .aisle-items {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 0.2s ease;
+/* On-hand items container */
+.on-hand-items {
+  padding: 0 0.75rem 0.5rem;
 }
 
-#shopping-list details.aisle[open] + .aisle-items {
-  grid-template-rows: 1fr;
+.on-hand-items[hidden] {
+  display: none;
 }
 
-#shopping-list .aisle-items > ul {
-  min-height: 0;
-  overflow: hidden;
-  padding-top: 0;
-  padding-bottom: 0;
-  transition: padding 0.2s ease;
-}
-
-#shopping-list details.aisle[open] + .aisle-items > ul {
-  padding-bottom: 0.5rem;
-}
-
-.aisle-count {
-  font-weight: 400;
-  color: var(--text-light);
-  font-size: 0.75rem;
-  transition: color 0.3s ease;
-}
-
-#shopping-list .aisle-items ul {
+.on-hand-items ul {
   list-style: none;
   margin: 0;
-  padding: 0 0.75rem;
+  padding: 0;
 }
 
-#shopping-list .aisle-items li {
+.on-hand-items li {
   padding: 0.3rem 0;
+}
+
+/* Fully-checked aisle */
+.aisle-complete .aisle-complete-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  text-align: left;
+  color: var(--text-light);
+}
+
+.aisle-complete .aisle-complete-header:hover {
+  color: var(--text-soft);
+}
+
+.aisle-complete-check {
+  color: var(--text-light);
+  font-size: 0.75rem;
+}
+
+.aisle-complete .aisle-name {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.aisle-complete-detail {
+  margin-left: auto;
+  font-size: 0.75rem;
+}
+
+/* Item slide animation when checking off */
+@keyframes check-slide-down {
+  from { opacity: 1; max-height: 2.5rem; }
+  to   { opacity: 0; max-height: 0; padding: 0; }
+}
+
+.item-checking {
+  animation: check-slide-down 0.3s ease forwards;
+  overflow: hidden;
+}
+
+/* Item appearing in on-hand section */
+@keyframes check-slide-in {
+  from { opacity: 0; max-height: 0; }
+  to   { opacity: 1; max-height: 2.5rem; }
+}
+
+.item-appearing {
+  animation: check-slide-in 0.2s ease forwards;
 }
 
 /* Check-off Items */
@@ -294,26 +349,16 @@
     overflow: visible;
   }
 
-  /* Force aisle items visible in print */
-  #shopping-list .aisle-items {
-    grid-template-rows: 1fr !important;
+  /* Hide on-hand sections, dividers, and fully-checked aisles */
+  .on-hand-divider,
+  .on-hand-items,
+  .aisle-complete {
+    display: none !important;
   }
 
-  /* Summary as simple bold header */
-  #shopping-list details.aisle > summary {
+  /* Aisle header in print */
+  .aisle-header {
     padding: 0.2rem 0;
-    cursor: default;
-    user-select: auto;
-  }
-
-  /* Hide the triangle arrow indicator */
-  #shopping-list details.aisle > summary::before {
-    display: none;
-  }
-
-  /* Hide aisle item count badges */
-  .aisle-count {
-    display: none;
   }
 
   /* Exclude checked-off items from print */
@@ -321,8 +366,8 @@
     display: none;
   }
 
-  /* Hide aisles where all items are either hidden or checked off */
-  #shopping-list .aisle-group:not(:has(li:not([hidden]) .check-off input:not(:checked))) {
+  /* Hide aisle groups that have no to-buy items */
+  #shopping-list .aisle-group:not(:has(.to-buy-items li)) {
     display: none;
   }
 
@@ -348,11 +393,11 @@
   }
 
   /* Tighten grocery item spacing for print */
-  #shopping-list .aisle-items ul {
+  .to-buy-items {
     padding: 0 0 0.25rem 0.25rem;
   }
 
-  #shopping-list .aisle-items li {
+  .to-buy-items li {
     padding: 0.15rem 0;
   }
 
