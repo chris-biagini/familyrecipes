@@ -354,6 +354,7 @@ nav > div:not(:first-child):not(.nav-drawer) {
   padding: 0.3rem 0.75rem;
   color: var(--text);
   cursor: pointer;
+  text-decoration: none;
   line-height: 1.5;
   transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease, box-shadow 0.12s ease;
 }
@@ -597,6 +598,27 @@ header .recipe-meta {
   text-transform: uppercase;
   margin-top: 1rem;
   color: var(--text-light);
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: baseline;
+  gap: 0 0.35em;
+}
+
+header .recipe-meta > :first-child { justify-self: end; }
+header .recipe-meta > :last-child  { justify-self: start; }
+
+header .recipe-meta > :only-child {
+  grid-column: 1 / -1;
+  justify-self: center;
+}
+
+/* 5+ children: item · item · item */
+header .recipe-meta:has(> :nth-child(4)) {
+  grid-template-columns: 1fr auto auto auto 1fr;
+}
+
+header .recipe-meta:has(> :nth-child(6)) {
+  grid-template-columns: 1fr auto auto auto auto auto 1fr;
 }
 
 header .recipe-meta a {
@@ -686,6 +708,15 @@ header .recipe-meta a:hover {
 .recipe-actions > :only-child {
   grid-column: 1 / -1;
   justify-self: center;
+}
+
+/* Homepage has multiple action buttons — flex wraps gracefully */
+.homepage .recipe-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.15rem;
 }
 
 header > .recipe-actions {
@@ -1491,6 +1522,14 @@ footer small {
   }
 
   header h1 { font-size: 2.6rem; }
+
+  /* Flex fallback for recipe-meta on narrow screens (grid doesn't wrap) */
+  header .recipe-meta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0 0.35em;
+  }
 
   .instructions {
     border-left: none;
@@ -2383,6 +2422,10 @@ button.aisle-name:hover {
   border-bottom: none;
 }
 
+.editor-collapse-header:not([open]) > summary {
+  padding-bottom: 0.5rem;
+}
+
 .editor-collapse-header > summary {
   display: flex;
   align-items: center;
@@ -3034,6 +3077,7 @@ a.recipe-link {
   text-decoration: none;
   color: var(--text-light);
   transition: color 0.2s;
+  margin-left: auto;
 }
 
 .embedded-recipe-link:hover {
@@ -3059,7 +3103,6 @@ a.recipe-link {
 .embedded-multiplier {
   font-size: 0.9rem;
   color: var(--text-soft);
-  margin-left: 0.5rem;
 }
 
 .embedded-prep-note {

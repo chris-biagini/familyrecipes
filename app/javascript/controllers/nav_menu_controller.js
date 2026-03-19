@@ -23,6 +23,7 @@ export default class extends Controller {
     this.drawerObserver.observe(this.drawerTarget)
 
     this.updateLayout()
+    document.fonts.ready.then(() => this.updateLayout())
   }
 
   disconnect() {

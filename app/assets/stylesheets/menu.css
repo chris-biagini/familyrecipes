@@ -310,20 +310,6 @@
 
 /* -- Dinner Picker -- */
 
-.dinner-picker-trigger {
-  background: var(--red);
-  color: white;
-  border: none;
-  padding: 0.4rem 0.8rem;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  cursor: pointer;
-}
-
-.dinner-picker-trigger:hover {
-  opacity: 0.85;
-}
-
 #dinner-picker-dialog {
   position: relative;
   max-width: 28rem;
@@ -604,7 +590,7 @@
   }
 
   #dinner-picker-dialog,
-  .dinner-picker-trigger {
+  #dinner-picker-button {
     display: none;
   }
 }
