@@ -269,7 +269,7 @@ export default class extends Controller {
 
     const viewLink = document.createElement("a")
     viewLink.className = "result-view-link"
-    viewLink.href = this.recipeBasePathValue + recipe.slug
+    viewLink.href = this.recipeBasePathValue + encodeURIComponent(recipe.slug)
     viewLink.textContent = "View Recipe"
     container.appendChild(viewLink)
   }
