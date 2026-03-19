@@ -4,26 +4,31 @@ import ListenerManager from "../utilities/listener_manager"
 
 /**
  * Groceries page interaction — optimistic checkbox toggle, custom item input,
- * aisle collapse persistence. All rendering is server-side via Turbo page-refresh
- * morphs; this controller only handles user interactions and preserves local
- * state (aisle collapse) across morphs.
+ * on-hand section collapse persistence. All rendering is server-side via Turbo
+ * page-refresh morphs; this controller handles user interactions and preserves
+ * local state (on-hand expand/collapse) across morphs.
  *
  * - turbo_fetch (sendAction): fire-and-forget mutations with retry and error toast
  * - ListenerManager: tracks event listeners for clean teardown on disconnect
  */
 export default class extends Controller {
   connect() {
-    this.aisleCollapseKey = `grocery-aisles-${this.element.dataset.kitchenSlug}`
+    this.onHandKey = `grocery-on-hand-${this.element.dataset.kitchenSlug}`
     this.listeners = new ListenerManager()
+    this.pendingTimers = []
 
+    this.cleanupOldStorage()
     this.bindShoppingListEvents()
     this.bindCustomItemInput()
-    this.restoreAisleCollapse()
+    this.bindOnHandToggle()
+    this.restoreOnHandState()
 
-    this.listeners.add(document, "turbo:before-render", (e) => this.preserveAisleStateOnRefresh(e))
+    this.listeners.add(document, "turbo:before-render", (e) => this.preserveOnHandStateOnRefresh(e))
   }
 
   disconnect() {
+    this.pendingTimers.forEach(id => clearTimeout(id))
+    this.pendingTimers = []
     this.listeners.teardown()
   }
 
@@ -37,34 +42,10 @@ export default class extends Controller {
       const name = cb.dataset.item
       if (!name) return
 
-      this.updateAisleCount(cb.closest(".aisle-group"))
       this.updateItemCount()
 
       sendAction(this.element.dataset.checkUrl, { item: name, checked: cb.checked })
     })
-
-    this.listeners.add(this.element, "toggle", (e) => {
-      if (e.target.matches("#shopping-list details.aisle")) this.saveAisleCollapse()
-    }, true)
-  }
-
-  updateAisleCount(details) {
-    if (!details) return
-    const checkboxes = details.querySelectorAll('li[data-item] input[type="checkbox"]')
-    const total = checkboxes.length
-    const checked = Array.from(checkboxes).filter(cb => cb.checked).length
-    const remaining = total - checked
-
-    const countSpan = details.querySelector(".aisle-count")
-    if (!countSpan) return
-
-    if (remaining === 0 && total > 0) {
-      countSpan.textContent = "\u2713"
-      countSpan.classList.add("aisle-done")
-    } else {
-      countSpan.textContent = `(${remaining})`
-      countSpan.classList.remove("aisle-done")
-    }
   }
 
   updateItemCount() {
@@ -124,42 +105,74 @@ export default class extends Controller {
     input.focus()
   }
 
-  // --- Aisle collapse ---
+  // --- On-hand section collapse ---
 
-  saveAisleCollapse() {
-    const collapsed = Array.from(document.querySelectorAll("#shopping-list details.aisle"))
-      .filter(d => !d.open)
-      .map(d => d.dataset.aisle)
-
+  cleanupOldStorage() {
     try {
-      localStorage.setItem(this.aisleCollapseKey, JSON.stringify(collapsed))
-    } catch { /* localStorage full */ }
+      localStorage.removeItem(`grocery-aisles-${this.element.dataset.kitchenSlug}`)
+    } catch { /* ignore */ }
   }
 
-  restoreAisleCollapse() {
-    const collapsed = this.loadCollapsedAisles()
-    collapsed.forEach(aisle => {
-      const details = document.querySelector(`#shopping-list details.aisle[data-aisle="${CSS.escape(aisle)}"]`)
-      if (details) details.open = false
+  bindOnHandToggle() {
+    this.listeners.add(this.element, "click", (e) => {
+      const btn = e.target.closest(".on-hand-divider, .aisle-complete-header")
+      if (!btn) return
+
+      const targetId = btn.getAttribute("aria-controls")
+      const target = document.getElementById(targetId)
+      if (!target) return
+
+      const expanding = target.hidden
+      target.hidden = !expanding
+      btn.setAttribute("aria-expanded", String(expanding))
+
+      this.saveOnHandState()
     })
   }
 
-  loadCollapsedAisles() {
+  saveOnHandState() {
+    const expanded = {}
+    this.element.querySelectorAll("[aria-controls^='on-hand-']").forEach(btn => {
+      const aisle = btn.closest(".aisle-group")?.dataset.aisle
+      if (aisle) expanded[aisle] = btn.getAttribute("aria-expanded") === "true"
+    })
+
     try {
-      const raw = localStorage.getItem(this.aisleCollapseKey)
-      return raw ? JSON.parse(raw) : []
+      localStorage.setItem(this.onHandKey, JSON.stringify(expanded))
+    } catch { /* localStorage full */ }
+  }
+
+  restoreOnHandState() {
+    const state = this.loadOnHandState()
+    this.element.querySelectorAll("[aria-controls^='on-hand-']").forEach(btn => {
+      const aisle = btn.closest(".aisle-group")?.dataset.aisle
+      if (!aisle || !state[aisle]) return
+
+      const targetId = btn.getAttribute("aria-controls")
+      const target = document.getElementById(targetId)
+      if (!target) return
+
+      target.hidden = false
+      btn.setAttribute("aria-expanded", "true")
+    })
+  }
+
+  loadOnHandState() {
+    try {
+      const raw = localStorage.getItem(this.onHandKey)
+      return raw ? JSON.parse(raw) : {}
     } catch {
-      return []
+      return {}
     }
   }
 
-  preserveAisleStateOnRefresh(event) {
+  preserveOnHandStateOnRefresh(event) {
     if (!event.detail.render) return
-    this.saveAisleCollapse()
+    this.saveOnHandState()
     const originalRender = event.detail.render
     event.detail.render = async (...args) => {
       await originalRender(...args)
-      this.restoreAisleCollapse()
+      this.restoreOnHandState()
     }
   }
 }
