@@ -7,9 +7,7 @@
       editor_method_value: dialog_data[:editor_method] || 'PATCH',
       editor_on_success_value: dialog_data[:editor_on_success] || 'redirect',
       editor_body_key_value: dialog_data[:editor_body_key] || 'markdown_source',
-      editor_open_selector_value: dialog_data[:editor_open],
-      editor_load_url_value: dialog_data[:editor_load_url],
-      editor_load_key_value: dialog_data[:editor_load_key]
+      editor_open_selector_value: dialog_data[:editor_open]
     }.compact.merge(extra_data) do %>
   <div class="editor-header">
     <h2><%= title %></h2>

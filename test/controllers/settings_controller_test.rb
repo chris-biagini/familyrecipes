@@ -114,6 +114,39 @@ class SettingsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'sk-ant-secret', @kitchen.anthropic_api_key
   end
 
+  test 'editor_frame returns turbo frame with form values' do
+    log_in
+    @kitchen.update!(site_title: 'Test Kitchen Title', homepage_heading: 'Welcome Home')
+
+    get settings_editor_frame_path(kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select 'turbo-frame#settings-editor-frame'
+    assert_select "input[data-settings-editor-target='siteTitle']" do |inputs|
+      assert_equal 'Test Kitchen Title', inputs.first['value']
+    end
+    assert_select "input[data-settings-editor-target='homepageHeading']" do |inputs|
+      assert_equal 'Welcome Home', inputs.first['value']
+    end
+  end
+
+  test 'editor_frame requires membership' do
+    get settings_editor_frame_path(kitchen_slug: kitchen_slug)
+
+    assert_response :forbidden
+  end
+
+  test 'editor_frame includes checkbox fields' do
+    log_in
+    @kitchen.update!(show_nutrition: true, decorate_tags: false)
+
+    get settings_editor_frame_path(kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select "input[data-settings-editor-target='showNutrition'][checked]"
+    assert_select "input[data-settings-editor-target='decorateTags']:not([checked])"
+  end
+
   test 'rejects unpermitted params' do
     log_in
     patch settings_path(kitchen_slug: kitchen_slug),

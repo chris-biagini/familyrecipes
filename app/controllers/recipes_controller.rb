@@ -9,7 +9,7 @@
 class RecipesController < ApplicationController
   include StructureValidation
 
-  before_action :require_membership, only: %i[content create update destroy parse serialize]
+  before_action :require_membership, only: %i[content editor_frame create update destroy parse serialize]
 
   def show
     @recipe = current_kitchen.recipes.with_full_tree.find_by!(slug: params[:slug])
@@ -28,6 +28,18 @@ class RecipesController < ApplicationController
       tags: recipe.tags.pluck(:name),
       structure: ir
     }
+  end
+
+  def editor_frame
+    recipe = current_kitchen.recipes.with_full_tree.find_by!(slug: params[:slug])
+    ir = FamilyRecipes::RecipeSerializer.from_record(recipe)
+    markdown = FamilyRecipes::RecipeSerializer.serialize(ir)
+
+    render partial: 'recipes/editor_frame', locals: {
+      recipe: recipe,
+      markdown_source: markdown,
+      structure: ir
+    }, layout: false
   end
 
   def parse

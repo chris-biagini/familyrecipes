@@ -14,16 +14,23 @@ class TagsControllerTest < ActionDispatch::IntegrationTest
     RecipeTag.create!(recipe:, tag: @quick)
   end
 
-  test 'tags_content returns tag names as JSON' do
-    get tags_content_path(kitchen_slug: kitchen_slug), as: :json
+  test 'content returns turbo frame with tag rows' do
+    get tags_content_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
-    body = response.parsed_body
+    assert_select 'turbo-frame#tag-order-frame'
+    assert_select "[data-ordered-list-editor-target='list']"
+    assert_select '.aisle-row[data-name="quick"]'
+    assert_select '.aisle-row[data-name="vegan"]'
+  end
 
-    names = body['items'].pluck('name')
+  test 'content frame orders tags alphabetically' do
+    get tags_content_path(kitchen_slug: kitchen_slug)
 
-    assert_includes names, 'vegan'
-    assert_includes names, 'quick'
+    rows = css_select('.aisle-row')
+
+    assert_equal 'quick', rows[0]['data-name']
+    assert_equal 'vegan', rows[1]['data-name']
   end
 
   test 'update_tags renames and deletes' do
@@ -68,7 +75,7 @@ class TagsControllerTest < ActionDispatch::IntegrationTest
 
   test 'requires membership for content' do
     reset!
-    get tags_content_path(kitchen_slug: kitchen_slug), as: :json
+    get tags_content_path(kitchen_slug: kitchen_slug)
 
     assert_response :forbidden
   end

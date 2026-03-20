@@ -40,6 +40,62 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     assert_response :forbidden
   end
 
+  test 'quickbites_editor_frame requires membership' do
+    get menu_quickbites_editor_frame_path(kitchen_slug: kitchen_slug)
+
+    assert_response :forbidden
+  end
+
+  # --- Quick Bites Editor Frame ---
+
+  test 'quickbites_editor_frame returns turbo frame with correct ID' do
+    log_in
+    get menu_quickbites_editor_frame_path(kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select 'turbo-frame#quickbites-editor-content'
+  end
+
+  test 'quickbites_editor_frame contains embedded content JSON' do
+    @kitchen.update!(quick_bites_content: "## Snacks\n- Goldfish")
+
+    log_in
+    get menu_quickbites_editor_frame_path(kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select 'script[type="application/json"][data-editor-markdown]' do |scripts|
+      json = JSON.parse(scripts.first.text)
+
+      assert_equal "## Snacks\n- Goldfish", json['plaintext']
+    end
+  end
+
+  test 'quickbites_editor_frame renders category cards' do
+    @kitchen.update!(quick_bites_content: "## Snacks\n- Goldfish\n- Hummus with Pretzels: Hummus, Pretzels")
+
+    log_in
+    get menu_quickbites_editor_frame_path(kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select '.graphical-step-card', count: 1
+    assert_select '.graphical-step-title', text: 'Snacks'
+    assert_select '.graphical-ingredient-summary', text: '2 items'
+    assert_select '.graphical-ingredient-row', count: 2
+  end
+
+  test 'quickbites_editor_frame renders empty state when no content' do
+    log_in
+    get menu_quickbites_editor_frame_path(kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select '.graphical-step-card', count: 0
+    assert_select 'script[type="application/json"][data-editor-markdown]' do |scripts|
+      json = JSON.parse(scripts.first.text)
+
+      assert_equal '', json['plaintext']
+    end
+  end
+
   # --- Show page ---
 
   test 'show renders successfully when logged in' do

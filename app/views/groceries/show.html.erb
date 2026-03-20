@@ -34,21 +34,23 @@
 </div>
 
 <% if current_member? %>
-<dialog id="aisle-order-editor" class="editor-dialog"
-        data-controller="ordered-list-editor"
-        data-ordered-list-editor-load-url-value="<%= groceries_aisle_order_content_path %>"
-        data-ordered-list-editor-save-url-value="<%= groceries_aisle_order_path %>"
-        data-ordered-list-editor-payload-key-value="aisle_order"
-        data-ordered-list-editor-join-with-value="<%= "\n" %>"
-        data-ordered-list-editor-load-key-value="aisle_order"
-        data-ordered-list-editor-open-selector-value="#edit-aisle-order-button">
-  <div class="editor-header">
-    <h2>Aisles</h2>
-    <button type="button" class="btn editor-close" data-action="click->ordered-list-editor#close" aria-label="Close">&times;</button>
-  </div>
-  <div class="editor-errors" data-ordered-list-editor-target="errors" hidden></div>
-  <div class="aisle-order-body">
-    <div class="aisle-list" data-ordered-list-editor-target="list"></div>
+<%= render layout: 'shared/editor_dialog',
+    locals: { title: 'Aisles',
+              id: 'aisle-order-editor',
+              dialog_data: { extra_controllers: 'ordered-list-editor',
+                             editor_on_success: 'reload',
+                             editor_open: '#edit-aisle-order-button' },
+              extra_data: {
+                'ordered-list-editor-save-url-value' => groceries_aisle_order_path,
+                'ordered-list-editor-payload-key-value' => 'aisle_order',
+                'ordered-list-editor-join-with-value' => "\n"
+              } } do %>
+  <div class="editor-body aisle-order-body">
+    <turbo-frame id="aisle-order-frame"
+                 src="<%= groceries_aisle_order_content_path %>"
+                 data-editor-target="frame">
+      <p class="loading-placeholder">Loading&hellip;</p>
+    </turbo-frame>
     <div class="aisle-add-row">
       <label for="new-aisle-input" class="sr-only">New aisle name</label>
       <input type="text" id="new-aisle-input" class="aisle-add-input" placeholder="Add an aisle..."
@@ -64,9 +66,5 @@
       </button>
     </div>
   </div>
-  <div class="editor-footer">
-    <button type="button" class="btn editor-cancel" data-action="click->ordered-list-editor#close">Cancel</button>
-    <button type="button" class="btn btn-primary editor-save" data-ordered-list-editor-target="saveButton" data-action="click->ordered-list-editor#save">Save</button>
-  </div>
-</dialog>
+<% end %>
 <% end %>

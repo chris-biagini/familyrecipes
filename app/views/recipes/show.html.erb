@@ -39,8 +39,6 @@
                              editor_method: 'PATCH',
                              editor_on_success: 'close',
                              editor_body_key: 'markdown_source',
-                             editor_load_url: recipe_content_path(@recipe.slug),
-                             editor_load_key: 'markdown_source',
                              extra_controllers: 'dual-mode-editor' },
               extra_data: {
                 'dual-mode-editor-parse-url-value' => recipe_parse_path,
@@ -49,16 +47,10 @@
                 'dual-mode-editor-graphical-id-value' => 'recipe-graphical'
               },
               footer_extra: render('recipes/editor_delete_button', recipe: @recipe) } do %>
-  <div class="editor-body" data-dual-mode-editor-target="plaintextContainer">
-    <div data-controller="plaintext-editor"
-         data-plaintext-editor-classifier-value="recipe"
-         data-plaintext-editor-fold-service-value="recipe"
-         data-plaintext-editor-placeholder-value="Paste or type a recipe…">
-      <div class="cm-mount cm-loading" data-plaintext-editor-target="mount"></div>
-    </div>
-  </div>
-  <div class="editor-body" data-dual-mode-editor-target="graphicalContainer" hidden>
-    <%= render 'recipes/graphical_editor' %>
-  </div>
+  <turbo-frame id="recipe-editor-content"
+               src="<%= recipe_editor_frame_path(@recipe.slug) %>"
+               data-editor-target="frame">
+    <p class="loading-placeholder">Loading&hellip;</p>
+  </turbo-frame>
 <% end %>
 <% end %>

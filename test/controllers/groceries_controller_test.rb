@@ -19,7 +19,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'aisle_order_content requires membership' do
-    get groceries_aisle_order_content_path(kitchen_slug: kitchen_slug), as: :json
+    get groceries_aisle_order_content_path(kitchen_slug: kitchen_slug)
 
     assert_response :forbidden
   end
@@ -233,7 +233,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select '#edit-aisle-order-button', 'Edit Aisles'
-    assert_select 'dialog[data-controller="ordered-list-editor"]'
+    assert_select 'dialog[data-controller="editor ordered-list-editor"]'
   end
 
   # --- Uncounted indicators ---
@@ -375,7 +375,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     assert_nil @kitchen.reload.aisle_order
   end
 
-  test 'aisle_order_content returns current aisles for editor' do
+  test 'aisle_order_content returns turbo frame with rows' do
     IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Flour') do |p|
       p.basis_grams = 30
       p.aisle = 'Baking'
@@ -386,16 +386,16 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     end
 
     log_in
-    get groceries_aisle_order_content_path(kitchen_slug: kitchen_slug), as: :json
+    get groceries_aisle_order_content_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
-    json = response.parsed_body
-
-    assert_includes json['aisle_order'], 'Baking'
-    assert_includes json['aisle_order'], 'Spices'
+    assert_select 'turbo-frame#aisle-order-frame'
+    assert_select "[data-ordered-list-editor-target='list']"
+    assert_select '.aisle-row[data-name="Baking"]'
+    assert_select '.aisle-row[data-name="Spices"]'
   end
 
-  test 'aisle_order_content merges saved order with catalog aisles' do
+  test 'aisle_order_content frame respects saved order' do
     IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Flour') do |p|
       p.basis_grams = 30
       p.aisle = 'Baking'
@@ -404,18 +404,17 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
       p.basis_grams = 6
       p.aisle = 'Spices'
     end
-
     @kitchen.update!(aisle_order: "Spices\nProduce")
 
     log_in
-    get groceries_aisle_order_content_path(kitchen_slug: kitchen_slug), as: :json
+    get groceries_aisle_order_content_path(kitchen_slug: kitchen_slug)
 
-    json = response.parsed_body
-    lines = json['aisle_order'].lines.map(&:strip)
+    assert_response :success
+    rows = css_select('.aisle-row')
 
-    assert_equal 'Spices', lines[0]
-    assert_equal 'Produce', lines[1]
-    assert_includes lines, 'Baking'
+    assert_equal 'Spices', rows[0]['data-name']
+    assert_equal 'Produce', rows[1]['data-name']
+    assert_equal 'Baking', rows[2]['data-name']
   end
 
   # --- Length limits ---

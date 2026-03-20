@@ -52,6 +52,8 @@ class GroceriesController < ApplicationController
   end
 
   def aisle_order_content
-    render json: { aisle_order: current_kitchen.all_aisles.join("\n") }
+    render partial: 'groceries/aisle_order_frame',
+           locals: { items: current_kitchen.all_aisles },
+           layout: false
   end
 end

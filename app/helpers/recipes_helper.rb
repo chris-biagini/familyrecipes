@@ -83,6 +83,19 @@ module RecipesHelper # rubocop:disable Metrics/ModuleLength
     nutrition['skipped_ingredients'] || []
   end
 
+  def cross_ref_label(xref)
+    label = "Imports from #{xref[:target_title]}"
+    label += " \u00D7#{xref[:multiplier]}" if xref[:multiplier] && (xref[:multiplier].to_f - 1.0).abs > 0.0001
+    label
+  end
+
+  def ingredient_summary(ingredients)
+    count = (ingredients || []).size
+    return '' if count.zero?
+
+    pluralize(count, 'ingredient')
+  end
+
   TOOLTIP_NUTRIENTS = [
     [:calories, 'Cal', ''],
     [:protein, 'Pro', 'g'],

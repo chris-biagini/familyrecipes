@@ -1,0 +1,35 @@
+<%# locals: (content:, structure:) %>
+<%# Turbo Frame delivering both editor modes for the Quick Bites editor dialog.
+    Plaintext mode: embedded JSON with content string for CodeMirror.
+    Graphical mode: server-rendered form with pre-populated category cards.
+    Loaded lazily when the editor dialog opens. %>
+<turbo-frame id="quickbites-editor-content">
+  <script type="application/json" data-editor-markdown><%= { plaintext: content }.to_json.html_safe %></script>
+
+  <div class="editor-body" data-dual-mode-editor-target="plaintextContainer">
+    <div data-controller="plaintext-editor"
+         data-plaintext-editor-classifier-value="quickbites"
+         data-plaintext-editor-placeholder-value="## Snacks&#10;- Hummus with Pretzels: Hummus, Pretzels">
+      <div class="cm-mount" data-plaintext-editor-target="mount"></div>
+    </div>
+  </div>
+
+  <div class="editor-body" data-dual-mode-editor-target="graphicalContainer" hidden>
+    <div data-controller="quickbites-graphical">
+      <div class="graphical-form">
+        <div class="graphical-field-group">
+          <div class="graphical-section-header">
+            <span class="graphical-label">Categories</span>
+            <button type="button" class="graphical-btn--add-step"
+                    data-action="click->quickbites-graphical#addCategory">+ Add Category</button>
+          </div>
+          <div data-quickbites-graphical-target="categoriesContainer">
+            <% (structure[:categories] || []).each_with_index do |category, index| %>
+              <%= render 'menu/quickbites_category_card', category: category, index: index %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</turbo-frame>

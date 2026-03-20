@@ -22,6 +22,7 @@ Rails.application.routes.draw do
     get 'recipes/:slug.md', to: 'recipes#show_markdown', as: :recipe_markdown, defaults: { format: 'text' }
     get 'recipes/:slug.html', to: 'recipes#show_html', as: :recipe_html, defaults: { format: 'html' }
     get 'recipes/:slug/content', to: 'recipes#content', as: :recipe_content
+    get 'recipes/:slug/editor_frame', to: 'recipes#editor_frame', as: :recipe_editor_frame
     post 'recipes/parse', to: 'recipes#parse', as: :recipe_parse
     post 'recipes/serialize', to: 'recipes#serialize', as: :recipe_serialize
     resources :recipes, only: %i[show create update destroy], param: :slug
@@ -31,6 +32,7 @@ Rails.application.routes.draw do
     patch 'menu/select', to: 'menu#select', as: :menu_select
     patch 'menu/quick_bites', to: 'menu#update_quick_bites', as: :menu_quick_bites
     get 'menu/quick_bites_content', to: 'menu#quick_bites_content', as: :menu_quick_bites_content
+    get 'menu/quickbites_editor_frame', to: 'menu#quickbites_editor_frame', as: :menu_quickbites_editor_frame
     post 'menu/parse_quick_bites', to: 'menu#parse_quick_bites', as: :menu_parse_quick_bites
     post 'menu/serialize_quick_bites', to: 'menu#serialize_quick_bites', as: :menu_serialize_quick_bites
     get 'groceries', to: 'groceries#show', as: :groceries
@@ -46,6 +48,7 @@ Rails.application.routes.draw do
     post 'import', to: 'imports#create', as: :import
     get 'settings', to: 'settings#show', as: :settings
     patch 'settings', to: 'settings#update'
+    get 'settings/editor_frame', to: 'settings#editor_frame', as: :settings_editor_frame
     post 'ai_import', to: 'ai_import#create', as: :ai_import
     post 'nutrition/:ingredient_name', to: 'nutrition_entries#upsert', as: :nutrition_entry_upsert
     delete 'nutrition/:ingredient_name', to: 'nutrition_entries#destroy', as: :nutrition_entry_destroy

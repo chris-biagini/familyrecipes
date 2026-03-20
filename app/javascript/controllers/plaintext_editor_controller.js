@@ -25,11 +25,22 @@ export default class extends Controller {
 
   mountTargetConnected(element) {
     this.editorView?.destroy()
-    element.classList.remove("cm-loading")
+
+    let doc = ""
+    if (this.hasInitialValue) {
+      doc = this.initialValue
+    } else {
+      const jsonEl = this.element.closest("turbo-frame")
+        ?.querySelector("script[data-editor-markdown]")
+      if (jsonEl) {
+        const data = JSON.parse(jsonEl.textContent)
+        doc = data.plaintext || ""
+      }
+    }
 
     this.editorView = createEditor({
       parent: element,
-      doc: this.hasInitialValue ? this.initialValue : "",
+      doc,
       classifier: classifiers[this.classifierValue],
       foldService: this.hasFoldServiceValue ? foldServices[this.foldServiceValue] : null,
       placeholder: this.hasPlaceholderValue ? this.placeholderValue : "",

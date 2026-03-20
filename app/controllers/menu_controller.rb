@@ -41,6 +41,16 @@ class MenuController < ApplicationController
     render json: { content:, structure: }
   end
 
+  def quickbites_editor_frame
+    content = current_kitchen.quick_bites_content || ''
+    result = FamilyRecipes.parse_quick_bites_content(content)
+    structure = FamilyRecipes::QuickBitesSerializer.to_ir(result.quick_bites)
+
+    render partial: 'menu/quickbites_editor_frame', locals: {
+      content:, structure:
+    }, layout: false
+  end
+
   def update_quick_bites
     result = if params[:structure]
                QuickBitesWriteService.update_from_structure(

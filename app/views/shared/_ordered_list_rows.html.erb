@@ -1,0 +1,10 @@
+<%# locals: (items:) %>
+<div class="aisle-list" data-ordered-list-editor-target="list">
+  <% items.each do |name| %>
+    <div class="aisle-row" data-name="<%= name %>">
+      <div class="aisle-name-area">
+        <span class="aisle-name"><%= name %></span>
+      </div>
+    </div>
+  <% end %>
+</div>

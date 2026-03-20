@@ -1,110 +1,89 @@
 import { Controller } from "@hotwired/stimulus"
-import {
-  getCsrfToken, showErrors, clearErrors,
-  closeWithConfirmation, saveRequest, guardBeforeUnload, handleSave
-} from "../utilities/editor_utils"
+import { showErrors, clearErrors, saveRequest } from "../utilities/editor_utils"
 import {
   createItem, buildPayload, takeSnapshot, isModified, checkDuplicate,
   renderRows, startInlineRename, swapItems, animateSwap, updateButtonStates
 } from "../utilities/ordered_list_editor_utils"
+import ListenerManager from "../utilities/listener_manager"
 
 /**
- * Generic ordered-list editor dialog for managing named items with reorder,
- * rename, add, and delete. Parameterized via Stimulus values so one controller
- * handles grocery aisles, recipe categories, and tags. The `orderable` value
- * suppresses up/down reorder buttons for unordered lists like tags.
+ * Companion controller for ordered-list editor dialogs (aisles, categories,
+ * tags). Lives on the same element as editor_controller via extra_controllers.
+ * Responds to editor lifecycle events to manage list state: reads server-
+ * rendered rows on content-loaded, provides save/modified/reset handlers.
+ * The `orderable` value suppresses up/down reorder buttons for unordered
+ * lists like tags.
  *
+ * - editor_controller: open/close/save lifecycle, dirty guards, frame readiness
  * - ordered_list_editor_utils: changeset, row rendering, animation, payload
- * - editor_utils: CSRF tokens, error display, save/close helpers
- * - GroceriesController / CategoriesController / TagsController: backend endpoints
+ * - editor_utils: save requests, error display
+ * - ListenerManager: clean event listener teardown
  */
 export default class extends Controller {
-  static targets = ["list", "saveButton", "errors", "newItemName"]
+  static targets = ["list", "newItemName"]
 
   static values = {
-    loadUrl: String,
     saveUrl: String,
     payloadKey: { type: String, default: "order" },
     joinWith: String,
-    loadKey: { type: String, default: "items" },
-    openSelector: String,
     orderable: { type: Boolean, default: true }
   }
 
   connect() {
     this.items = []
     this.initialSnapshot = null
+    this.listeners = new ListenerManager()
 
-    if (this.hasOpenSelectorValue) {
-      this.openButton = document.querySelector(this.openSelectorValue)
-      if (this.openButton) {
-        this.boundOpen = this.open.bind(this)
-        this.openButton.addEventListener("click", this.boundOpen)
-      }
-    }
-
-    this.guard = guardBeforeUnload(this.element, () => isModified(this.items, this.initialSnapshot))
-
-    this.boundCancel = this.handleCancel.bind(this)
-    this.element.addEventListener("cancel", this.boundCancel)
-
-    this.boundBeforeVisit = this.handleBeforeVisit.bind(this)
-    document.addEventListener("turbo:before-visit", this.boundBeforeVisit)
+    this.listeners.add(this.element, "editor:content-loaded", this.handleContentLoaded)
+    this.listeners.add(this.element, "editor:collect", this.handleCollect)
+    this.listeners.add(this.element, "editor:save", this.handleSave)
+    this.listeners.add(this.element, "editor:modified", this.handleModified)
+    this.listeners.add(this.element, "editor:reset", this.handleReset)
   }
 
   disconnect() {
-    if (this.openButton && this.boundOpen) {
-      this.openButton.removeEventListener("click", this.boundOpen)
-    }
-    if (this.guard) this.guard.remove()
-    this.element.removeEventListener("cancel", this.boundCancel)
-    if (this.boundBeforeVisit) document.removeEventListener("turbo:before-visit", this.boundBeforeVisit)
+    this.listeners.teardown()
   }
 
-  open() {
-    this.listTarget.replaceChildren()
-    clearErrors(this.errorsTarget)
-    this.resetSaveButton()
-    if (this.hasNewItemNameTarget) this.newItemNameTarget.value = ""
-    this.element.showModal()
-    this.loadItems()
+  handleContentLoaded = () => {
+    const rows = this.listTarget.querySelectorAll(".aisle-row")
+    this.items = Array.from(rows).map(row => createItem(row.dataset.name))
+    this.initialSnapshot = takeSnapshot(this.items)
+    this.render()
   }
 
-  close() {
-    closeWithConfirmation(this.element, () => isModified(this.items, this.initialSnapshot), () => this.reset())
+  handleCollect = (event) => {
+    event.detail.handled = true
+    event.detail.data = this.buildItemPayload()
   }
 
-  save() {
-    this.guard.markSaving()
-    handleSave(
-      this.saveButtonTarget,
-      this.errorsTarget,
-      () => saveRequest(this.saveUrlValue, "PATCH", this.buildItemPayload()),
-      () => {
-        this.element.close()
-        window.location.reload()
-      }
-    )
+  handleSave = (event) => {
+    event.detail.handled = true
+    event.detail.saveFn = () => saveRequest(this.saveUrlValue, "PATCH", this.buildItemPayload())
   }
 
-  moveUp(index) {
-    this.move(index, -1, "up")
+  handleModified = (event) => {
+    event.detail.handled = true
+    event.detail.modified = isModified(this.items, this.initialSnapshot)
   }
 
-  moveDown(index) {
-    this.move(index, 1, "down")
+  handleReset = (event) => {
+    event.detail.handled = true
+    this.items = []
+    this.initialSnapshot = null
   }
 
   addItem() {
     const name = this.newItemNameTarget.value.trim()
     if (!name) return
 
+    const errorsEl = this.element.querySelector("[data-editor-target='errors']")
     if (checkDuplicate(this.items, name)) {
-      showErrors(this.errorsTarget, [`"${name}" already exists.`])
+      if (errorsEl) showErrors(errorsEl, [`"${name}" already exists.`])
       return
     }
 
-    clearErrors(this.errorsTarget)
+    if (errorsEl) clearErrors(errorsEl)
     this.items.push(createItem(null, name))
     this.newItemNameTarget.value = ""
     this.render()
@@ -118,49 +97,15 @@ export default class extends Controller {
     }
   }
 
+  moveUp(index) {
+    this.move(index, -1, "up")
+  }
+
+  moveDown(index) {
+    this.move(index, 1, "down")
+  }
+
   // Private
-
-  handleCancel(event) {
-    if (isModified(this.items, this.initialSnapshot)) {
-      event.preventDefault()
-      this.close()
-    }
-  }
-
-  handleBeforeVisit(event) {
-    if (!this.element.open) return
-    if (isModified(this.items, this.initialSnapshot)) {
-      event.preventDefault()
-      this.close()
-    } else {
-      this.element.close()
-    }
-  }
-
-  loadItems() {
-    this.saveButtonTarget.disabled = true
-
-    fetch(this.loadUrlValue, {
-      headers: { "Accept": "application/json", "X-CSRF-Token": getCsrfToken() }
-    })
-      .then(r => r.json())
-      .then(data => {
-        this.items = this.parseLoadedItems(data)
-        this.initialSnapshot = takeSnapshot(this.items)
-        this.render()
-        this.saveButtonTarget.disabled = false
-      })
-      .catch(() => {
-        showErrors(this.errorsTarget, ["Failed to load items. Close and try again."])
-      })
-  }
-
-  parseLoadedItems(data) {
-    const raw = data[this.loadKeyValue]
-    if (Array.isArray(raw)) return raw.map(item => createItem(item.name))
-    if (typeof raw === "string") return raw.split("\n").filter(Boolean).map(name => createItem(name))
-    return []
-  }
 
   render() {
     renderRows(this.listTarget, this.items, this.rowCallbacks(), this.orderableValue)
@@ -221,16 +166,5 @@ export default class extends Controller {
       payload[this.payloadKeyValue] = payload[this.payloadKeyValue].join(this.joinWithValue)
     }
     return payload
-  }
-
-  reset() {
-    this.items = []
-    this.initialSnapshot = null
-    clearErrors(this.errorsTarget)
-  }
-
-  resetSaveButton() {
-    this.saveButtonTarget.disabled = false
-    this.saveButtonTarget.textContent = "Save"
   }
 }
