@@ -11,28 +11,23 @@
     <%- if current_member? -%>
     <div class="recipe-actions">
       <button type="button" id="edit-categories-button" class="btn-ghost">
-        <svg width="12" height="12" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 4l6 6-16 16H6v-6z"/><line x1="18" y1="8" x2="24" y2="14"/></svg>
+        <%= icon(:edit, size: 12) %>
         Edit Categories
       </button>
       <span class="recipe-actions-dot">&middot;</span>
       <button type="button" id="edit-tags-button" class="btn-ghost">
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-             stroke-linejoin="round">
-          <path d="M12 2H2v10l9.29 9.29a1 1 0 0 0 1.42 0l6.58-6.58a1 1 0 0 0 0-1.42L12 2Z"/>
-          <path d="M7 7h.01"/>
-        </svg>
+        <%= icon(:tag, size: 14) %>
         Edit Tags
       </button>
       <span class="recipe-actions-dot">&middot;</span>
       <button type="button" id="new-recipe-button" class="btn-ghost">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <%= icon(:plus, size: 12, 'stroke-width': '2.5') %>
         Add Recipe
       </button>
       <% if current_kitchen.anthropic_api_key.present? %>
         <span class="recipe-actions-dot">&middot;</span>
         <button type="button" id="ai-import-button" class="btn-ghost">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5z"/><path d="M19 13l.75 2.25L22 16l-2.25.75L19 19l-.75-2.25L16 16l2.25-.75z"/></svg>
+          <%= icon(:sparkle, size: 14) %>
           AI Import
         </button>
       <% end %>
@@ -80,10 +75,7 @@
              maxlength="50">
       <button type="button" class="btn-icon-round btn-icon-round-lg btn-primary" aria-label="Add category"
               data-action="click->ordered-list-editor#addItem">
-        <svg viewBox="0 0 24 24" width="18" height="18">
-          <line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          <line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
+        <%= icon(:plus, size: 18) %>
       </button>
     </div>
   </div>
@@ -113,10 +105,7 @@
              maxlength="30">
       <button type="button" class="btn-icon-round btn-icon-round-lg btn-primary" aria-label="Add tag"
               data-action="click->ordered-list-editor#addItem">
-        <svg viewBox="0 0 24 24" width="18" height="18">
-          <line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          <line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
+        <%= icon(:plus, size: 18) %>
       </button>
     </div>
   </div>
