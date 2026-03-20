@@ -112,7 +112,7 @@ class MealPlanWriteServiceTest < ActiveSupport::TestCase
 
     assert_not_predicate result, :success
     assert_includes result.errors.first, 'too long'
-    assert_empty MealPlan.for_kitchen(@kitchen).custom_items_list
+    assert_empty MealPlan.for_kitchen(@kitchen).custom_items
   end
 
   test 'apply_action accepts custom item at max length' do
@@ -122,7 +122,7 @@ class MealPlanWriteServiceTest < ActiveSupport::TestCase
     )
 
     assert_predicate result, :success
-    assert_includes MealPlan.for_kitchen(@kitchen).custom_items_list, 'a' * 100
+    assert_includes MealPlan.for_kitchen(@kitchen).custom_items, 'a' * 100
   end
 
   private

@@ -48,7 +48,7 @@ class IngredientResolverRegressionTest < ActiveSupport::TestCase
                     'Expected canonical catalog name, not lowercase variant'
 
     plan.apply_action('check', item: 'Parmesan', checked: true)
-    checked_off = plan.state.fetch('checked_off', [])
+    checked_off = plan.checked_off
 
     availability = RecipeAvailabilityCalculator.new(
       kitchen: @kitchen, checked_off:, resolver:

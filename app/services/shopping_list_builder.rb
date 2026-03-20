@@ -28,7 +28,7 @@ class ShoppingListBuilder # rubocop:disable Metrics/ClassLength
   end
 
   def visible_names
-    custom = @meal_plan.custom_items_list.map { |item| canonical_name(parse_custom_item(item).first) }
+    custom = @meal_plan.custom_items.map { |item| canonical_name(parse_custom_item(item).first) }
     (canonical_recipe_names + canonical_quick_bite_names + custom)
       .reject { |name| @resolver.omitted?(name) }.to_set
   end
@@ -63,15 +63,14 @@ class ShoppingListBuilder # rubocop:disable Metrics/ClassLength
   end
 
   def selected_recipes
-    slugs = @meal_plan.state.fetch('selected_recipes', [])
-    @kitchen.recipes.with_full_tree.where(slug: slugs)
+    @kitchen.recipes.with_full_tree.where(slug: @meal_plan.selected_recipes)
   end
 
   def selected_quick_bites
-    slugs = @meal_plan.state.fetch('selected_quick_bites', [])
-    return [] if slugs.empty?
+    ids = @meal_plan.selected_quick_bites
+    return [] if ids.empty?
 
-    @kitchen.parsed_quick_bites.select { |qb| slugs.include?(qb.id) }
+    @kitchen.parsed_quick_bites.select { |qb| ids.include?(qb.id) }
   end
 
   def aggregate_recipe_ingredients
@@ -151,7 +150,7 @@ class ShoppingListBuilder # rubocop:disable Metrics/ClassLength
   end
 
   def add_custom_items(organized)
-    custom = @meal_plan.state.fetch('custom_items', [])
+    custom = @meal_plan.custom_items
     return if custom.empty?
 
     existing = existing_canonical_names(organized)

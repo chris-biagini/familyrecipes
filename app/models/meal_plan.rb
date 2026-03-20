@@ -34,20 +34,20 @@ class MealPlan < ApplicationRecord
     end
   end
 
-  def checked_off_set
-    state.fetch('checked_off', []).to_set
+  def checked_off
+    state.fetch('checked_off', [])
   end
 
-  def custom_items_list
+  def custom_items
     state.fetch('custom_items', [])
   end
 
-  def selected_recipes_set
-    state.fetch('selected_recipes', []).to_set
+  def selected_recipes
+    state.fetch('selected_recipes', [])
   end
 
-  def selected_quick_bites_set
-    state.fetch('selected_quick_bites', []).to_set
+  def selected_quick_bites
+    state.fetch('selected_quick_bites', [])
   end
 
   def cook_history
