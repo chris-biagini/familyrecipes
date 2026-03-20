@@ -2076,7 +2076,6 @@ html:has(dialog[open]) {
   height: 100%;
 }
 
-
 .hl-category {
   font-weight: 700;
   color: var(--red);
