@@ -1,6 +1,12 @@
 import { Controller } from "@hotwired/stimulus"
 import { buildButton, buildInput, buildFieldGroup, buildTextareaGroup } from "../utilities/dom_builders"
 import { structureChanged } from "../utilities/editor_utils"
+import {
+  expandItem, toggleItem,
+  removeFromList, moveInList, rebuildContainer,
+  buildCardShell, buildCardDetails, buildCardTitle, buildCountSummary,
+  buildCardActions, buildCollapseBody, buildRowsSection, updateTitleDisplay
+} from "../utilities/graphical_editor_utils"
 
 /**
  * Form-based recipe editor: structured fields for title, description,
@@ -21,16 +27,14 @@ export default class extends Controller {
 
   connect() {
     this.steps = []
-    if (this.stepsContainerTarget.children.length > 0) {
-      this.initFromRenderedDOM()
-    }
+    if (this.stepsContainerTarget.children.length > 0) this.initFromRenderedDOM()
   }
 
   initFromRenderedDOM() {
     const cards = this.stepsContainerTarget.children
     this.steps = Array.from(cards).map(card => this.readStepFromCard(card))
     this.rebuildSteps()
-    if (this.steps.length > 0) this.expandItem(this.stepsContainerTarget, 0)
+    if (this.steps.length > 0) expandItem(this.stepsContainerTarget, 0)
   }
 
   readStepFromCard(card) {
@@ -181,33 +185,24 @@ export default class extends Controller {
   loadSteps(stepsData) {
     this.steps = stepsData.map(s => ({ ...s }))
     this.rebuildSteps()
-    if (this.steps.length > 0) this.expandItem(this.stepsContainerTarget, 0)
+    if (this.steps.length > 0) expandItem(this.stepsContainerTarget, 0)
   }
 
   removeStep(index) {
     if (this.steps.length <= 1) return
-    this.steps.splice(index, 1)
-    this.rebuildSteps()
+    removeFromList(this.steps, index, () => this.rebuildSteps())
   }
 
   moveStep(index, direction) {
-    const target = index + direction
-    if (target < 0 || target >= this.steps.length) return
-
-    const [moved] = this.steps.splice(index, 1)
-    this.steps.splice(target, 0, moved)
-    this.rebuildSteps()
-    this.expandItem(this.stepsContainerTarget, target)
+    moveInList(this.steps, index, direction, this.stepsContainerTarget, () => this.rebuildSteps())
   }
 
   rebuildSteps() {
-    this.stepsContainerTarget.replaceChildren()
-    this.steps.forEach((step, i) => this.appendStepCard(i, step))
+    rebuildContainer(this.stepsContainerTarget, this.steps, (i, step) => this.buildStepCard(i, step))
   }
 
   appendStepCard(index, stepData) {
-    const card = this.buildStepCard(index, stepData)
-    this.stepsContainerTarget.appendChild(card)
+    this.stepsContainerTarget.appendChild(this.buildStepCard(index, stepData))
   }
 
   findExpandedIndex() {
@@ -219,37 +214,15 @@ export default class extends Controller {
     return -1
   }
 
-  // --- Accordion helpers ---
-
-  collapseAll(container) {
-    container.querySelectorAll("details.collapse-header[open]").forEach(d => { d.open = false })
-  }
-
-  expandItem(container, index) {
-    this.collapseAll(container)
-    const card = container.children[index]
-    if (!card) return
-    const details = card.querySelector("details.collapse-header")
-    if (details) details.open = true
-  }
-
-  toggleItem(container, index) {
-    const card = container.children[index]
-    if (!card) return
-    const details = card.querySelector("details.collapse-header")
-    if (details) details.open = !details.open
-  }
-
   // --- Step Card DOM Builder ---
 
   buildStepCard(index, stepData) {
     if (stepData.cross_reference) return this.buildCrossRefCard(index, stepData)
 
-    const card = document.createElement("div")
-    card.className = "graphical-step-card"
-    card.appendChild(this.buildStepDetails(index, stepData))
-    card.appendChild(this.buildStepCollapseBody(index, stepData))
-    return card
+    return buildCardShell(
+      this.buildStepDetails(index, stepData),
+      this.buildStepCollapseBody(index, stepData)
+    )
   }
 
   buildCrossRefCard(index, stepData) {
@@ -269,7 +242,7 @@ export default class extends Controller {
     hint.textContent = "edit in </> mode"
     header.appendChild(hint)
 
-    header.appendChild(this.buildStepActions(index))
+    header.appendChild(buildCardActions(index, (i, dir) => this.moveStep(i, dir), (i) => this.removeStep(i)))
     card.appendChild(header)
     return card
   }
@@ -283,100 +256,38 @@ export default class extends Controller {
   }
 
   buildStepDetails(index, stepData) {
-    const details = document.createElement("details")
-    details.className = "collapse-header"
-
-    const summary = document.createElement("summary")
-    summary.className = "graphical-step-header"
-
-    summary.appendChild(this.buildStepTitle(index, stepData))
-    summary.appendChild(this.buildIngredientSummary(stepData))
-    summary.appendChild(this.buildStepActions(index))
-
-    details.appendChild(summary)
-    return details
-  }
-
-  buildStepTitle(index, stepData) {
-    const span = document.createElement("span")
-    span.className = "graphical-step-title"
-    span.textContent = stepData.tldr || `Step ${index + 1}`
-    return span
-  }
-
-  buildIngredientSummary(stepData) {
-    const span = document.createElement("span")
-    span.className = "graphical-ingredient-summary"
-    const count = (stepData.ingredients || []).length
-    span.textContent = count === 0 ? "" : `${count} ingredient${count === 1 ? "" : "s"}`
-    return span
-  }
-
-  buildStepActions(index) {
-    const actions = document.createElement("div")
-    actions.className = "graphical-step-actions"
-
-    actions.appendChild(buildButton("\u2191", () => this.moveStep(index, -1), "graphical-btn--icon"))
-    actions.appendChild(buildButton("\u2193", () => this.moveStep(index, 1), "graphical-btn--icon"))
-    actions.appendChild(buildButton("\u00D7", () => this.removeStep(index), "graphical-btn--icon graphical-btn--danger"))
-    return actions
+    return buildCardDetails(
+      buildCardTitle(stepData.tldr, `Step ${index + 1}`),
+      buildCountSummary((stepData.ingredients || []).length, "ingredient", "ingredients"),
+      buildCardActions(index, (i, dir) => this.moveStep(i, dir), (i) => this.removeStep(i))
+    )
   }
 
   buildStepCollapseBody(index, stepData) {
-    const wrapper = document.createElement("div")
-    wrapper.className = "collapse-body"
+    return buildCollapseBody(inner => {
+      inner.appendChild(buildFieldGroup("Step name", "text", stepData.tldr || "", (val) => {
+        this.steps[index].tldr = val
+        updateTitleDisplay(this.stepsContainerTarget, index, val, `Step ${index + 1}`)
+      }))
 
-    const inner = document.createElement("div")
-    inner.className = "collapse-inner graphical-step-body"
+      inner.appendChild(this.buildIngredientsSection(index, stepData.ingredients || []))
 
-    inner.appendChild(buildFieldGroup("Step name", "text", stepData.tldr || "", (val) => {
-      this.steps[index].tldr = val
-      this.updateStepTitleDisplay(index)
-    }))
-
-    inner.appendChild(this.buildIngredientsSection(index, stepData.ingredients || []))
-
-    inner.appendChild(buildTextareaGroup("Instructions", stepData.instructions || "", (val) => {
-      this.steps[index].instructions = val
-    }))
-
-    wrapper.appendChild(inner)
-    return wrapper
-  }
-
-  updateStepTitleDisplay(index) {
-    const card = this.stepsContainerTarget.children[index]
-    if (!card) return
-    const titleEl = card.querySelector(".graphical-step-title")
-    if (titleEl) titleEl.textContent = this.steps[index].tldr || `Step ${index + 1}`
+      inner.appendChild(buildTextareaGroup("Instructions", stepData.instructions || "", (val) => {
+        this.steps[index].instructions = val
+      }))
+    })
   }
 
   // --- Ingredient Rows ---
 
   buildIngredientsSection(stepIndex, ingredients) {
-    const section = document.createElement("div")
-    section.className = "graphical-ingredients-section"
-
-    const headerRow = document.createElement("div")
-    headerRow.className = "graphical-ingredients-header"
-
-    const label = document.createElement("span")
-    label.textContent = "Ingredients"
-    headerRow.appendChild(label)
-
-    headerRow.appendChild(buildButton("+ Add", () => this.addIngredient(stepIndex), "graphical-btn--small"))
-
-    section.appendChild(headerRow)
-
-    const rowsContainer = document.createElement("div")
-    rowsContainer.className = "graphical-ingredient-rows"
-    rowsContainer.dataset.stepIndex = stepIndex
-    ingredients.forEach((ing, i) => {
-      rowsContainer.appendChild(this.buildIngredientRow(stepIndex, i, ing))
-    })
-    section.appendChild(rowsContainer)
-
-    return section
+    return buildRowsSection(
+      "Ingredients",
+      ingredients,
+      () => this.addIngredient(stepIndex),
+      (i, ing) => this.buildIngredientRow(stepIndex, i, ing),
+      { stepIndex }
+    )
   }
 
   buildIngredientRow(stepIndex, ingIndex, ing) {
@@ -412,30 +323,19 @@ export default class extends Controller {
   }
 
   removeIngredient(stepIndex, ingIndex) {
-    this.steps[stepIndex].ingredients.splice(ingIndex, 1)
-    this.rebuildIngredientRows(stepIndex)
+    removeFromList(this.steps[stepIndex].ingredients, ingIndex, () => this.rebuildIngredientRows(stepIndex))
   }
 
   moveIngredient(stepIndex, ingIndex, direction) {
-    const ings = this.steps[stepIndex].ingredients
-    const target = ingIndex + direction
-    if (target < 0 || target >= ings.length) return
-
-    const [moved] = ings.splice(ingIndex, 1)
-    ings.splice(target, 0, moved)
-    this.rebuildIngredientRows(stepIndex)
+    moveInList(this.steps[stepIndex].ingredients, ingIndex, direction, null, () => this.rebuildIngredientRows(stepIndex))
   }
 
   rebuildIngredientRows(stepIndex) {
     const container = this.stepsContainerTarget
       .querySelector(`.graphical-ingredient-rows[data-step-index="${stepIndex}"]`)
     if (!container) return
-
-    container.replaceChildren()
-    const ings = this.steps[stepIndex].ingredients || []
-    ings.forEach((ing, i) => {
-      container.appendChild(this.buildIngredientRow(stepIndex, i, ing))
-    })
+    rebuildContainer(container, this.steps[stepIndex].ingredients || [],
+      (i, ing) => this.buildIngredientRow(stepIndex, i, ing))
   }
 
   // --- Serialization ---
@@ -462,8 +362,6 @@ export default class extends Controller {
         prep_note: ing.prep_note?.trim() || null
       }))
   }
-
-  // --- DOM Builder Helpers ---
 
   emptyStep() {
     return { tldr: "", ingredients: [], instructions: "", cross_reference: null }
