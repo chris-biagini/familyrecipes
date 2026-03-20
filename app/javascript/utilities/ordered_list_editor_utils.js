@@ -6,8 +6,11 @@
  * Supports an `orderable` flag to suppress up/down buttons for unordered lists.
  *
  * - ordered_list_editor_controller: unified controller for aisles, categories, tags
+ * - icons.js: SVG icon builder (chevron, delete, undo)
  * - editor.css (.aisle-row, .btn-icon-round): shared row and button styles
  */
+
+import { buildIcon } from './icons'
 
 // --- Data / State ---
 
@@ -212,20 +215,22 @@ function buildControls(item, index, liveItems, callbacks, orderable = true) {
   const livePos = liveItems.indexOf(index)
 
   if (orderable) {
-    const upBtn = buildIconButton(chevronSvg(), "btn-move-up", "Move up", index)
+    const upBtn = buildIconButton(buildIcon('chevron', 14), "btn-move-up", "Move up", index)
     upBtn.addEventListener("click", () => callbacks.onMoveUp(index))
     if (item.deleted || livePos === 0) upBtn.disabled = true
     controls.appendChild(upBtn)
 
-    const downBtn = buildIconButton(chevronSvg(true), "btn-move-down", "Move down", index)
+    const downSvg = buildIcon('chevron', 14)
+    downSvg.classList.add('aisle-icon--flipped')
+    const downBtn = buildIconButton(downSvg, "btn-move-down", "Move down", index)
     downBtn.addEventListener("click", () => callbacks.onMoveDown(index))
     if (item.deleted || livePos === liveItems.length - 1) downBtn.disabled = true
     controls.appendChild(downBtn)
   }
 
   const toggleBtn = item.deleted
-    ? buildIconButton(undoSvg(), "btn-primary", "Undo delete", index)
-    : buildIconButton(deleteSvg(), "btn-danger", "Delete", index)
+    ? buildIconButton(buildIcon('undo', 14), "btn-primary", "Undo delete", index)
+    : buildIconButton(buildIcon('delete', 14), "btn-danger", "Delete", index)
   toggleBtn.addEventListener("click", () => {
     if (item.deleted) {
       callbacks.onUndo(index)
@@ -246,67 +251,4 @@ function buildIconButton(svgElement, className, label, index) {
   btn.dataset.index = index
   btn.appendChild(svgElement)
   return btn
-}
-
-function chevronSvg(flipped = false) {
-  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg")
-  svg.setAttribute("viewBox", "0 0 24 24")
-  svg.setAttribute("width", "14")
-  svg.setAttribute("height", "14")
-  svg.setAttribute("fill", "none")
-  if (flipped) svg.classList.add("aisle-icon--flipped")
-  const path = document.createElementNS("http://www.w3.org/2000/svg", "polyline")
-  path.setAttribute("points", "6 15 12 9 18 15")
-  path.setAttribute("stroke", "currentColor")
-  path.setAttribute("stroke-width", "2")
-  path.setAttribute("stroke-linecap", "round")
-  path.setAttribute("stroke-linejoin", "round")
-  svg.appendChild(path)
-  return svg
-}
-
-function deleteSvg() {
-  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg")
-  svg.setAttribute("viewBox", "0 0 24 24")
-  svg.setAttribute("width", "14")
-  svg.setAttribute("height", "14")
-  svg.setAttribute("fill", "none")
-  const l1 = document.createElementNS("http://www.w3.org/2000/svg", "line")
-  l1.setAttribute("x1", "6"); l1.setAttribute("y1", "6")
-  l1.setAttribute("x2", "18"); l1.setAttribute("y2", "18")
-  l1.setAttribute("stroke", "currentColor")
-  l1.setAttribute("stroke-width", "2")
-  l1.setAttribute("stroke-linecap", "round")
-  const l2 = document.createElementNS("http://www.w3.org/2000/svg", "line")
-  l2.setAttribute("x1", "18"); l2.setAttribute("y1", "6")
-  l2.setAttribute("x2", "6"); l2.setAttribute("y2", "18")
-  l2.setAttribute("stroke", "currentColor")
-  l2.setAttribute("stroke-width", "2")
-  l2.setAttribute("stroke-linecap", "round")
-  svg.appendChild(l1)
-  svg.appendChild(l2)
-  return svg
-}
-
-function undoSvg() {
-  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg")
-  svg.setAttribute("viewBox", "0 0 24 24")
-  svg.setAttribute("width", "14")
-  svg.setAttribute("height", "14")
-  svg.setAttribute("fill", "none")
-  const path = document.createElementNS("http://www.w3.org/2000/svg", "path")
-  path.setAttribute("d", "M4 9h11a4 4 0 0 1 0 8H11")
-  path.setAttribute("stroke", "currentColor")
-  path.setAttribute("stroke-width", "2")
-  path.setAttribute("stroke-linecap", "round")
-  path.setAttribute("stroke-linejoin", "round")
-  const arrow = document.createElementNS("http://www.w3.org/2000/svg", "polyline")
-  arrow.setAttribute("points", "7 5 4 9 7 13")
-  arrow.setAttribute("stroke", "currentColor")
-  arrow.setAttribute("stroke-width", "2")
-  arrow.setAttribute("stroke-linecap", "round")
-  arrow.setAttribute("stroke-linejoin", "round")
-  svg.appendChild(path)
-  svg.appendChild(arrow)
-  return svg
 }
