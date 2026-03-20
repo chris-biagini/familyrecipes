@@ -18,6 +18,32 @@ export default class extends Controller {
 
   connect() {
     this.categories = []
+    if (this.categoriesContainerTarget.children.length > 0) {
+      this.initFromRenderedDOM()
+    }
+  }
+
+  initFromRenderedDOM() {
+    const cards = this.categoriesContainerTarget.children
+    this.categories = Array.from(cards).map(card => this.readCategoryFromCard(card))
+    this.rebuildCategories()
+    if (this.categories.length > 0) expandAccordionItem(this.categoriesContainerTarget, 0)
+  }
+
+  readCategoryFromCard(card) {
+    const body = card.querySelector(".graphical-step-body")
+    return {
+      name: body?.querySelector("[data-field='name']")?.value || "",
+      items: this.readItemsFromCard(card)
+    }
+  }
+
+  readItemsFromCard(card) {
+    const rows = card.querySelectorAll(".graphical-ingredient-row")
+    return Array.from(rows).map(row => ({
+      name: row.querySelector("[data-field='item-name']")?.value || "",
+      ingredientsText: row.querySelector("[data-field='ingredients-text']")?.value || ""
+    }))
   }
 
   loadStructure(ir) {

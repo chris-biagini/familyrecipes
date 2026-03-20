@@ -44,8 +44,6 @@
                              editor_method: 'PATCH',
                              editor_on_success: 'close',
                              editor_body_key: 'content',
-                             editor_load_url: menu_quick_bites_content_path,
-                             editor_load_key: 'content',
                              extra_controllers: 'dual-mode-editor' },
               extra_data: {
                 'dual-mode-editor-parse-url-value' => menu_parse_quick_bites_path,
@@ -53,16 +51,11 @@
                 'dual-mode-editor-content-key-value' => 'content',
                 'dual-mode-editor-graphical-id-value' => 'quickbites-graphical'
               } } do %>
-  <div class="editor-body" data-dual-mode-editor-target="plaintextContainer">
-    <div data-controller="plaintext-editor"
-         data-plaintext-editor-classifier-value="quickbites"
-         data-plaintext-editor-placeholder-value="## Snacks&#10;- Hummus with Pretzels: Hummus, Pretzels">
-      <div class="cm-mount cm-loading" data-plaintext-editor-target="mount"></div>
-    </div>
-  </div>
-  <div class="editor-body" data-dual-mode-editor-target="graphicalContainer" hidden>
-    <%= render 'menu/quickbites_graphical_editor' %>
-  </div>
+  <turbo-frame id="quickbites-editor-content"
+               src="<%= menu_quickbites_editor_frame_path %>"
+               data-editor-target="frame">
+    <p class="loading-placeholder">Loading&hellip;</p>
+  </turbo-frame>
 <% end %>
 
 <div data-controller="dinner-picker"

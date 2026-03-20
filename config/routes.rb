@@ -32,6 +32,7 @@ Rails.application.routes.draw do
     patch 'menu/select', to: 'menu#select', as: :menu_select
     patch 'menu/quick_bites', to: 'menu#update_quick_bites', as: :menu_quick_bites
     get 'menu/quick_bites_content', to: 'menu#quick_bites_content', as: :menu_quick_bites_content
+    get 'menu/quickbites_editor_frame', to: 'menu#quickbites_editor_frame', as: :menu_quickbites_editor_frame
     post 'menu/parse_quick_bites', to: 'menu#parse_quick_bites', as: :menu_parse_quick_bites
     post 'menu/serialize_quick_bites', to: 'menu#serialize_quick_bites', as: :menu_serialize_quick_bites
     get 'groceries', to: 'groceries#show', as: :groceries
