@@ -93,7 +93,7 @@ module RecipesHelper # rubocop:disable Metrics/ModuleLength
     count = (ingredients || []).size
     return '' if count.zero?
 
-    "#{count} ingredient#{'s' unless count == 1}"
+    pluralize(count, 'ingredient')
   end
 
   TOOLTIP_NUTRIENTS = [

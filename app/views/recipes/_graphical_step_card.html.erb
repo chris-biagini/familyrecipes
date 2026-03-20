@@ -23,7 +23,7 @@
     <div class="graphical-step-body" hidden>
       <div class="graphical-field-group">
         <label>Step name</label>
-        <input type="text" value="<%= step[:tldr] %>">
+        <input type="text" value="<%= step[:tldr] %>" data-field="tldr">
       </div>
       <div class="graphical-ingredients-section">
         <div class="graphical-ingredients-header">
@@ -41,7 +41,7 @@
       </div>
       <div class="graphical-field-group">
         <label>Instructions</label>
-        <textarea rows="4"><%= step[:instructions] %></textarea>
+        <textarea rows="4" data-field="instructions"><%= step[:instructions] %></textarea>
       </div>
     </div>
   </div>

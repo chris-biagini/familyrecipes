@@ -999,7 +999,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     get recipe_editor_frame_path('focaccia', kitchen_slug: kitchen_slug)
 
     assert_response :success
-    assert_select 'turbo-frame#recipe-editor-frame'
+    assert_select 'turbo-frame#recipe-editor-content'
   end
 
   test 'editor_frame contains embedded markdown JSON' do

@@ -3,7 +3,8 @@
     Plaintext mode: embedded JSON with markdown string for CodeMirror.
     Graphical mode: server-rendered form with pre-populated fields and step cards.
     Loaded lazily when the editor dialog opens. %>
-<turbo-frame id="recipe-editor-frame">
+<% categories = current_kitchen.categories.ordered %>
+<turbo-frame id="recipe-editor-content">
   <script type="application/json" data-editor-markdown><%= { markdown_source: markdown_source }.to_json.html_safe %></script>
 
   <div class="editor-body" data-dual-mode-editor-target="plaintextContainer">
@@ -17,7 +18,7 @@
 
   <div class="editor-body" data-dual-mode-editor-target="graphicalContainer" hidden>
     <div data-controller="recipe-graphical"
-         data-recipe-graphical-categories-value="<%= current_kitchen.categories.ordered.pluck(:name).to_json %>">
+         data-recipe-graphical-categories-value="<%= categories.pluck(:name).to_json %>">
       <div class="graphical-form">
         <div class="graphical-field-group">
           <label class="graphical-label" for="graphical-title">Title</label>
@@ -57,7 +58,7 @@
                     data-recipe-graphical-target="categorySelect"
                     data-action="change->recipe-graphical#categoryChanged">
               <option value="">None</option>
-              <% current_kitchen.categories.ordered.each do |cat| %>
+              <% categories.each do |cat| %>
                 <option value="<%= cat.name %>"
                   <%= 'selected' if structure.dig(:front_matter, :category) == cat.name %>><%= cat.name %></option>
               <% end %>
