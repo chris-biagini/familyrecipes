@@ -30,7 +30,15 @@ controllers are eliminated; error display conventions are documented.
 
 CSS: `.collapse-body` uses `grid-template-rows: 0fr` transitioning to `1fr` on
 `details[open] + .collapse-body` with `--duration-normal`. Inner div has
-`min-height: 0; overflow: hidden`.
+`min-height: 0; overflow: hidden`. Use the adjacent sibling combinator (`+`)
+when the `<details>` and `.collapse-body` are direct siblings. Use the general
+sibling combinator (`~`) when intervening elements sit between them (e.g., the
+menu availability pattern has a link between `<details>` and the ingredient
+list).
+
+**Why a sibling pattern?** Content placed inside `<details>` cannot be animated
+with `grid-template-rows` — the browser toggles it instantly. Placing the
+animated body as a sibling and selecting via `details[open]` is the workaround.
 
 Arrow indicator: `summary::before` CSS triangle, rotates 90° on `[open]`.
 
@@ -41,7 +49,11 @@ Arrow indicator: `summary::before` CSS triangle, rotates 90° on `[open]`.
 - `.on-hand-items` wraps in `.collapse-body > .collapse-inner`
 - `grocery_ui_controller` still manages localStorage persistence and
   `aria-expanded`, but collapse/expand is CSS-driven via toggling the `open`
-  attribute instead of `hidden`
+  attribute on `<details>` instead of `hidden` on the target div
+- localStorage key format (`grocery-on-hand-{slug}`) and data shape
+  (`{aisle: boolean}`) stay the same — only the DOM manipulation changes
+  (set/read `details.open` instead of `target.hidden`)
+- `preserveOnHandStateOnRefresh()` adapts to read/write `open` attr
 - Aisle-complete headers (`.aisle-complete-header`) follow the same migration
 
 **Graphical editor accordion** (currently `accordion.js` toggling `hidden`):
@@ -58,6 +70,11 @@ Arrow indicator: `summary::before` CSS triangle, rotates 90° on `[open]`.
 - `.editor-collapse-inner` → `.collapse-inner`
 - `.availability-detail` → `.collapse-header`
 - `.availability-ingredients` → `.collapse-body`
+
+**JS references to update:** `menu_controller.js` queries
+`details.availability-detail` for morph state preservation (lines ~38, ~47).
+Update these selectors to `details.collapse-header` and update corresponding
+assertions in `test/controllers/menu_controller_test.rb`.
 
 ### Keep As-Is
 
@@ -111,7 +128,10 @@ Arrow indicator: `summary::before` CSS triangle, rotates 90° on `[open]`.
 | Old class | New class(es) | Notes |
 |-----------|---------------|-------|
 | `.graphical-input` | `.input-base` | |
+| `.graphical-input-title` | `.input-base .input-title` | Larger font-size + weight for title field |
+| `.graphical-input--short` | `.input-base .input-short` | Narrow width variant |
 | `.graphical-textarea` | `.input-base` | Add `resize: vertical`, `min-height`, `max-height` |
+| `.graphical-select` | `.input-base` | Selects share the same base |
 | `.settings-input` | `.input-base .input-lg` | |
 | `.ingredients-search` | `.input-base .input-lg` | |
 | `.usda-search-input` | `.input-base .input-lg` | |
@@ -123,11 +143,18 @@ Arrow indicator: `summary::before` CSS triangle, rotates 90° on `[open]`.
 | `.aisle-input` | `.input-base .input-inline` | |
 | `.field-unit-select` | `.input-base` | Selects share the same base |
 | `.aisle-select` | `.input-base .input-inline` | |
-| `#custom-input` | `.input-base .input-lg` | Keep `font-size: 16px` for iOS zoom prevention |
+| `#custom-input` | `.input-base .input-lg` | Keep explicit `font-size: 16px` (not `1rem`) for iOS zoom prevention |
 
 **Exception**: `.editor-textarea` stays unique — it's the CodeMirror mount
 with `min-height: 60vh`, no border, monospace font. Too different to share
 `.input-base`.
+
+**JS touch point:** `dom_builders.js` creates inputs programmatically via
+`buildInput()` and `buildTextareaGroup()`. These factories need to inject
+`.input-base` alongside any modifier classes. Currently `buildInput` takes a
+single `className` parameter — update it to prepend `input-base` automatically,
+so callers pass only the modifier (e.g., `"input-sm"` instead of
+`"input-base input-sm"`).
 
 ## 3. Button Consolidation
 
@@ -153,8 +180,8 @@ Base `.btn` stays as-is. Formalized modifiers:
 | `.btn-small` | `.btn-sm` | Standard naming |
 | `.btn-inline-link` | `.btn-link` | Shorter, clearer |
 | `.edit-toggle` | `.btn-ghost` | Same visual behavior |
-| `.scale-preset` | `.btn-sm` | Keeps pop animation as scale-specific styles |
-| `.scale-reset` | `.btn-ghost .btn-sm` | |
+| `.scale-preset` | `.btn-sm` | Keep pop animation + `.active` filled state as `.scale-preset` overrides |
+| `.scale-reset` | `.btn-ghost .btn-sm` | Preserve `[hidden]` layout-reservation override (visibility: hidden, display: block) to prevent layout shift |
 | `.aisle-btn` | `.btn-icon-round` | Variants use contextual modifiers |
 | `.aisle-btn--delete` | `.btn-icon-round` + danger hover | |
 | `.aisle-btn--undo` | `.btn-icon-round` + accent hover | |
@@ -162,7 +189,7 @@ Base `.btn` stays as-is. Formalized modifiers:
 | `.filter-pill` | `.btn-pill` | Rename + unify |
 | `#custom-add` | `.btn-icon-round` | Circular add on groceries |
 | `.dinner-picker-spin-btn` | `.btn .btn-primary` | Standard primary action |
-| `.result-accept-btn` | `.btn .btn-primary` | Drop custom green palette |
+| `.result-accept-btn` | `.btn .btn-primary` | Intentional visual change: green → red (placeholder styling) |
 | `.result-retry-btn` | `.btn` | Standard secondary |
 
 ### CSS Organization
@@ -174,9 +201,9 @@ base → color modifiers → size modifiers → shape modifiers → state modifi
 
 ### Delete: `export_controller.js`
 
-Replace with `data-turbo-confirm` attribute on the export link in
-`homepage/show.html.erb`. Turbo's built-in confirmation does exactly what
-this 17-line controller does. Remove registration from `application.js`.
+The export link has `data-turbo="false"` (file download), so `data-turbo-confirm`
+will not fire. Replace with `onclick="return confirm('...')"` on the link in
+`homepage/show.html.erb`. Remove registration from `application.js`.
 
 ### Delete: `accordion.js`
 
@@ -218,7 +245,7 @@ to use which pattern.
       `.btn-ghost`, `.btn-pill`)
 - [ ] One-off button classes migrated to modifier combinations
 - [ ] Dinner picker buttons use standard `.btn` / `.btn-primary`
-- [ ] `export_controller.js` deleted, replaced with `data-turbo-confirm`
+- [ ] `export_controller.js` deleted, replaced with `onclick` confirm
 - [ ] Error display conventions documented in `editor_utils.js` and `notify.js`
 - [ ] All existing tests pass
 - [ ] No visual regressions (manually verify: recipe, menu, groceries,
