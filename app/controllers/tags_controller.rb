@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-# Thin controller for the tag management dialog. Provides content
-# loading (list of tag names) and bulk update (renames + deletes).
-# Delegates all business logic to TagWriteService.
+# Thin controller for the tag management dialog. Provides the Turbo Frame
+# for tag listing and bulk update (renames + deletes). Delegates all
+# business logic to TagWriteService.
 #
 # Collaborators:
 # - TagWriteService: handles rename/delete changeset
@@ -14,11 +14,7 @@ class TagsController < ApplicationController
 
   def content
     tag_names = current_kitchen.tags.order(:name).pluck(:name)
-
-    respond_to do |format|
-      format.html { render partial: 'tags/content_frame', locals: { items: tag_names }, layout: false }
-      format.json { render json: { items: tag_names.map { |name| { name: } } } }
-    end
+    render partial: 'tags/content_frame', locals: { items: tag_names }, layout: false
   end
 
   def update_tags

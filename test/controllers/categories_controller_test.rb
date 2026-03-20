@@ -33,17 +33,6 @@ class CategoriesControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'Dessert', rows[1]['data-name']
   end
 
-  test 'order_content returns categories as JSON' do
-    log_in
-    get categories_order_content_path(kitchen_slug: kitchen_slug), as: :json
-
-    assert_response :success
-    body = response.parsed_body
-
-    assert_equal 2, body['categories'].size
-    assert_equal 'Bread', body['categories'][0]['name']
-  end
-
   test 'update_order renames a category' do
     log_in
     patch categories_order_path(kitchen_slug: kitchen_slug),

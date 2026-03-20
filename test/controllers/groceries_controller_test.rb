@@ -19,7 +19,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'aisle_order_content requires membership' do
-    get groceries_aisle_order_content_path(kitchen_slug: kitchen_slug), as: :json
+    get groceries_aisle_order_content_path(kitchen_slug: kitchen_slug)
 
     assert_response :forbidden
   end
@@ -415,49 +415,6 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'Spices', rows[0]['data-name']
     assert_equal 'Produce', rows[1]['data-name']
     assert_equal 'Baking', rows[2]['data-name']
-  end
-
-  test 'aisle_order_content returns current aisles for editor' do
-    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Flour') do |p|
-      p.basis_grams = 30
-      p.aisle = 'Baking'
-    end
-    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Salt') do |p|
-      p.basis_grams = 6
-      p.aisle = 'Spices'
-    end
-
-    log_in
-    get groceries_aisle_order_content_path(kitchen_slug: kitchen_slug), as: :json
-
-    assert_response :success
-    json = response.parsed_body
-
-    assert_includes json['aisle_order'], 'Baking'
-    assert_includes json['aisle_order'], 'Spices'
-  end
-
-  test 'aisle_order_content merges saved order with catalog aisles' do
-    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Flour') do |p|
-      p.basis_grams = 30
-      p.aisle = 'Baking'
-    end
-    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Salt') do |p|
-      p.basis_grams = 6
-      p.aisle = 'Spices'
-    end
-
-    @kitchen.update!(aisle_order: "Spices\nProduce")
-
-    log_in
-    get groceries_aisle_order_content_path(kitchen_slug: kitchen_slug), as: :json
-
-    json = response.parsed_body
-    lines = json['aisle_order'].lines.map(&:strip)
-
-    assert_equal 'Spices', lines[0]
-    assert_equal 'Produce', lines[1]
-    assert_includes lines, 'Baking'
   end
 
   # --- Length limits ---

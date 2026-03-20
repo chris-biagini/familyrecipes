@@ -25,7 +25,6 @@ export default class extends Controller {
 
   mountTargetConnected(element) {
     this.editorView?.destroy()
-    element.classList.remove("cm-loading")
 
     let doc = ""
     if (this.hasInitialValue) {

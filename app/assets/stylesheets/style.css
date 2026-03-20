@@ -1147,7 +1147,8 @@ section:first-of-type h2 {
 .loading-placeholder {
   color: var(--text-soft);
   font-style: italic;
-  padding: 0.5rem 0;
+  padding: 2rem;
+  text-align: center;
 }
 
 .editor-error-message {
@@ -2073,23 +2074,6 @@ html:has(dialog[open]) {
 
 .cm-mount {
   height: 100%;
-}
-
-.cm-mount.cm-loading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.cm-mount.cm-loading::before {
-  content: "Loading\2026";
-  color: var(--text-soft);
-  font-family: var(--font-mono);
-  font-size: 0.85rem;
-}
-
-.cm-mount.cm-loading .cm-editor {
-  display: none;
 }
 
 

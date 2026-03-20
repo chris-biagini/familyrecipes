@@ -33,18 +33,6 @@ class TagsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'vegan', rows[1]['data-name']
   end
 
-  test 'tags_content returns tag names as JSON' do
-    get tags_content_path(kitchen_slug: kitchen_slug), as: :json
-
-    assert_response :success
-    body = response.parsed_body
-
-    names = body['items'].pluck('name')
-
-    assert_includes names, 'vegan'
-    assert_includes names, 'quick'
-  end
-
   test 'update_tags renames and deletes' do
     patch tags_update_path(kitchen_slug: kitchen_slug),
           params: { renames: { 'vegan' => 'plant-based' }, deletes: ['quick'] },
@@ -87,7 +75,7 @@ class TagsControllerTest < ActionDispatch::IntegrationTest
 
   test 'requires membership for content' do
     reset!
-    get tags_content_path(kitchen_slug: kitchen_slug), as: :json
+    get tags_content_path(kitchen_slug: kitchen_slug)
 
     assert_response :forbidden
   end

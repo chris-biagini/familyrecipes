@@ -14,10 +14,10 @@ import ListenerManager from "../utilities/listener_manager"
  * via lifecycle events: editor:collect, editor:save, editor:modified,
  * editor:reset, editor:content-loaded. Dual-mode editors (recipe editor) use a
  * coordinator that sets `handled = true` on these events to override default
- * textarea behavior. Four open modes: open() for inline/frame content,
- * openWithRemoteContent() for legacy JSON-fetched content, openWithContent(data)
- * for caller-provided content (e.g. AI import), and Turbo Frame–based loading
- * (via `frameTarget`) which disables Save until the frame loads.
+ * textarea behavior. Three open modes: open() for inline/frame content,
+ * openWithContent(data) for caller-provided content (e.g. AI import), and Turbo
+ * Frame–based loading (via `frameTarget`) which disables Save until the frame
+ * loads.
  *
  * - editor_utils: CSRF tokens, error display, save requests, close-with-confirmation
  * - notify: toast notifications for save success/failure feedback
@@ -30,9 +30,7 @@ export default class extends Controller {
     method: { type: String, default: "PATCH" },
     onSuccess: { type: String, default: "redirect" },
     bodyKey: { type: String, default: "markdown_source" },
-    openSelector: String,
-    loadUrl: String,
-    loadKey: { type: String, default: "content" }
+    openSelector: String
   }
 
   connect() {
@@ -70,9 +68,7 @@ export default class extends Controller {
     this.clearErrorDisplay()
     this.resetSaveButton()
 
-    if (this.hasLoadUrlValue) {
-      this.openWithRemoteContent()
-    } else if (this.hasFrameTarget && !this.frameLoaded) {
+    if (this.hasFrameTarget && !this.frameLoaded) {
       if (this.hasSaveButtonTarget) this.saveButtonTarget.disabled = true
       this.element.showModal()
       this.frameTarget.addEventListener("turbo:frame-load", () => {
@@ -271,39 +267,5 @@ export default class extends Controller {
     }
     showErrors(this.errorsTarget, messages)
     this.errorsTarget.classList.add("editor-warnings")
-  }
-
-  openWithRemoteContent() {
-    if (this.hasTextareaTarget) {
-      this.textareaTarget.value = ""
-      this.textareaTarget.disabled = true
-      this.textareaTarget.placeholder = "Loading\u2026"
-    }
-    if (this.hasSaveButtonTarget) this.saveButtonTarget.disabled = true
-    this.element.showModal()
-
-    fetch(this.loadUrlValue, {
-      headers: { "Accept": "application/json", "X-CSRF-Token": getCsrfToken() }
-    })
-      .then(r => r.json())
-      .then(data => {
-        const loadResult = this.dispatchEditorEvent("editor:content-loaded", data)
-        if (!loadResult.handled && this.hasTextareaTarget) {
-          this.textareaTarget.value = data[this.loadKeyValue] || ""
-          this.originalContent = this.textareaTarget.value
-          this.textareaTarget.disabled = false
-          this.textareaTarget.placeholder = ""
-          this.textareaTarget.focus()
-        }
-        if (this.hasSaveButtonTarget) this.saveButtonTarget.disabled = false
-      })
-      .catch(() => {
-        if (this.hasTextareaTarget) {
-          this.textareaTarget.value = ""
-          this.textareaTarget.disabled = false
-          this.textareaTarget.placeholder = ""
-        }
-        showErrors(this.errorsTarget, ["Failed to load content. Close and try again."])
-      })
   }
 }
