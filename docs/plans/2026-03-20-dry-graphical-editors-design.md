@@ -40,13 +40,16 @@ Three groups of pure functions:
 
 Pure array + DOM operations. Controller passes its array and rebuild callback.
 
-- `removeItem(list, index, rebuildFn)` — splice + rebuild
+- `removeItem(list, index, rebuildFn)` — splice + rebuild. Callers handle
+  their own guards (e.g. recipe enforces minimum one step before calling).
 - `moveItem(list, index, direction, rebuildFn, expandFn)` — bounds check,
   swap, rebuild, expand target
 - `rebuildItems(container, list, buildFn)` — clear container, call buildFn for
   each item
-- `addItem(list, emptyFactory, rebuildFn, expandFn)` — push new item, rebuild,
-  expand last
+- `addItem(list, item, appendFn, expandFn)` — push item to list, call
+  appendFn to add a single card (not a full rebuild), expand last. Caller
+  provides the item object directly (recipe passes `emptyStep()`, QB passes
+  `{ name: '', items: [] }`).
 
 ### Card DOM builders (~60 lines)
 
@@ -54,15 +57,17 @@ Pure element creation. Callers provide content via config objects/callbacks.
 
 - `buildCard(index, { detailsFn, bodyFn })` — wrapper div + details + collapse
   body
-- `buildDetails(index, { titleFn, summaryFn, actionsFn, onToggle })` —
+- `buildDetails(index, { titleFn, summaryFn, actionsFn })` —
   `<details>` with summary containing title, summary text, and action buttons
 - `buildTitle(text, fallback, className)` — span with title or fallback text
 - `buildSummary(count, singular, plural)` — "3 ingredients" / "1 item" text
 - `buildActions(index, { onMove, onRemove })` — up/down/delete buttons using
   `buildButton` from `dom_builders.js`
 - `buildCollapseBody(innerContent)` — collapse-body + collapse-inner wrapper
-- `buildRowsSection(label, rows, { onAdd, buildRowFn })` — section header with
-  add button + rows container
+- `buildRowsSection(label, rows, { onAdd, buildRowFn, containerAttrs })` —
+  section header with add button + rows container. `containerAttrs` is an
+  optional object of `{ name: value }` pairs set as data attributes on the
+  rows container (recipe uses `data-step-index`, QB uses `data-cat-index`).
 
 ## What stays in each controller
 
