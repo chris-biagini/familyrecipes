@@ -150,6 +150,11 @@ Update the CSP initializer before adding any.
   `.editor-alias-chip`).
 
 **CSS interaction patterns.** Shared base classes for common UI elements:
+- **Icons**: `IconHelper#icon(name, size:, **attrs)` renders inline SVGs from
+  a frozen registry. Use `<%= icon(:edit, size: 12) %>` — never paste raw SVG
+  markup. `size: nil` omits width/height for CSS-sized icons. Pass
+  `'aria-hidden': nil` + `'aria-label'` for non-decorative icons. JS-side:
+  `buildIcon(name, size)` from `utilities/icons.js`.
 - **Inputs**: `.input-base` + modifiers (`.input-lg`, `.input-sm`, `.input-inline`,
   `.input-title`, `.input-short`). `dom_builders.js` auto-prepends `input-base`.
 - **Buttons**: `.btn` + modifiers (`.btn-primary`, `.btn-danger`, `.btn-sm`,
