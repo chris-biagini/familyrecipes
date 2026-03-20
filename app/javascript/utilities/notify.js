@@ -3,6 +3,9 @@
  * after 5 seconds (or stays persistent with options.persistent). Supports an
  * optional action button (e.g., "Stay awake" for wake_lock_controller). Used
  * by toast_controller for server-pushed notifications.
+ *
+ * Toast notifications are for page-level mutations — ephemeral, auto-dismiss.
+ * Dialog validation uses inline errors (editor_utils.js showErrors/clearErrors) instead.
  */
 let container = null
 let timer = null

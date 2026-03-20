@@ -3,6 +3,10 @@
  * close-with-confirmation, beforeunload guard, and a generic save-request handler.
  * Used by editor_controller and nutrition_editor_controller to avoid duplicating
  * fetch boilerplate and UI state management.
+ *
+ * Inline errors (showErrors/clearErrors) are for dialog/form validation — contextual,
+ * displayed inside the dialog, cleared on re-open. Page-level mutations use toast
+ * notifications (notify.js) instead.
  */
 export function getCsrfToken() {
   return document.querySelector('meta[name="csrf-token"]')?.content
