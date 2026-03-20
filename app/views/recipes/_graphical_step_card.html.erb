@@ -1,0 +1,48 @@
+<%# locals: (step:, index:) %>
+<%# Server-rendered step card matching the DOM structure built by
+    recipe_graphical_controller.js's buildStepCard(). Action buttons
+    (move/remove/add ingredient) are omitted — the JS controller adds
+    them when it hydrates. Cross-reference steps render as header-only
+    read-only cards. %>
+<% if step[:cross_reference] %>
+  <div class="graphical-step-card graphical-step-card--crossref">
+    <div class="graphical-step-header">
+      <span class="graphical-crossref-label"><%= cross_ref_label(step[:cross_reference]) %></span>
+      <span class="graphical-crossref-hint">edit in &lt;/&gt; mode</span>
+    </div>
+  </div>
+<% else %>
+  <div class="graphical-step-card">
+    <div class="graphical-step-header">
+      <button type="button" class="graphical-step-toggle">
+        <span class="graphical-step-toggle-icon">&#x25B6;</span>
+      </button>
+      <span class="graphical-step-title"><%= step[:tldr] || "Step #{index + 1}" %></span>
+      <span class="graphical-ingredient-summary"><%= ingredient_summary(step[:ingredients]) %></span>
+    </div>
+    <div class="graphical-step-body" hidden>
+      <div class="graphical-field-group">
+        <label>Step name</label>
+        <input type="text" value="<%= step[:tldr] %>">
+      </div>
+      <div class="graphical-ingredients-section">
+        <div class="graphical-ingredients-header">
+          <span>Ingredients</span>
+        </div>
+        <div class="graphical-ingredient-rows" data-step-index="<%= index %>">
+          <% (step[:ingredients] || []).each do |ing| %>
+            <div class="graphical-ingredient-row">
+              <input type="text" placeholder="Name" value="<%= ing[:name] %>" class="graphical-input--name" data-field="name">
+              <input type="text" placeholder="Qty" value="<%= ing[:quantity] %>" class="graphical-input--qty" data-field="quantity">
+              <input type="text" placeholder="Prep note" value="<%= ing[:prep_note] %>" class="graphical-input--prep" data-field="prep_note">
+            </div>
+          <% end %>
+        </div>
+      </div>
+      <div class="graphical-field-group">
+        <label>Instructions</label>
+        <textarea rows="4"><%= step[:instructions] %></textarea>
+      </div>
+    </div>
+  </div>
+<% end %>

@@ -22,6 +22,7 @@ Rails.application.routes.draw do
     get 'recipes/:slug.md', to: 'recipes#show_markdown', as: :recipe_markdown, defaults: { format: 'text' }
     get 'recipes/:slug.html', to: 'recipes#show_html', as: :recipe_html, defaults: { format: 'html' }
     get 'recipes/:slug/content', to: 'recipes#content', as: :recipe_content
+    get 'recipes/:slug/editor_frame', to: 'recipes#editor_frame', as: :recipe_editor_frame
     post 'recipes/parse', to: 'recipes#parse', as: :recipe_parse
     post 'recipes/serialize', to: 'recipes#serialize', as: :recipe_serialize
     resources :recipes, only: %i[show create update destroy], param: :slug

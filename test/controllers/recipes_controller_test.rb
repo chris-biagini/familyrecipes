@@ -991,4 +991,111 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select '.nutrition-label'
   end
+
+  # --- editor_frame ---
+
+  test 'editor_frame returns turbo frame with correct ID' do
+    log_in
+    get recipe_editor_frame_path('focaccia', kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select 'turbo-frame#recipe-editor-frame'
+  end
+
+  test 'editor_frame contains embedded markdown JSON' do
+    log_in
+    get recipe_editor_frame_path('focaccia', kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select 'script[type="application/json"][data-editor-markdown]' do |scripts|
+      json = JSON.parse(scripts.first.text)
+
+      assert_includes json['markdown_source'], '# Focaccia'
+      assert_includes json['markdown_source'], 'Serves: 8'
+    end
+  end
+
+  test 'editor_frame contains server-rendered graphical form with step cards' do
+    log_in
+    get recipe_editor_frame_path('focaccia', kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select '.graphical-step-card', count: 2
+    assert_select '.graphical-step-title', text: 'Make the dough (combine ingredients)'
+    assert_select '.graphical-step-title', text: 'Bake (put it in the oven)'
+    assert_select '.graphical-ingredient-row', count: 3
+  end
+
+  test 'editor_frame pre-populates front matter fields' do
+    log_in
+    get recipe_editor_frame_path('focaccia', kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select "input[data-recipe-graphical-target='title']" do |inputs|
+      assert_equal 'Focaccia', inputs.first['value']
+    end
+    assert_select "textarea[data-recipe-graphical-target='description']", text: 'A simple flatbread.'
+    assert_select "input[data-recipe-graphical-target='serves']" do |inputs|
+      assert_equal '8', inputs.first['value']
+    end
+  end
+
+  test 'editor_frame includes plaintext container with CodeMirror mount' do
+    log_in
+    get recipe_editor_frame_path('focaccia', kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select '.cm-mount'
+  end
+
+  test 'editor_frame requires membership' do
+    get recipe_editor_frame_path('focaccia', kitchen_slug: kitchen_slug)
+
+    assert_response :forbidden
+  end
+
+  test 'editor_frame returns 404 for unknown recipe' do
+    log_in
+    get recipe_editor_frame_path('nonexistent', kitchen_slug: kitchen_slug)
+
+    assert_response :not_found
+  end
+
+  test 'editor_frame renders cross-reference steps' do
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @bread)
+      # Pizza Dough
+
+      ## Mix.
+      - Flour, 500 g
+
+      Combine ingredients.
+    MD
+
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @bread)
+      # White Pizza
+
+      ## Make dough.
+      > @[Pizza Dough], 2
+
+      ## Top (add toppings)
+      - Mozzarella, 200 g
+
+      Spread cheese.
+    MD
+
+    log_in
+    get recipe_editor_frame_path('white-pizza', kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select '.graphical-step-card--crossref .graphical-crossref-label', text: /Imports from Pizza Dough/
+    assert_select '.graphical-crossref-hint', text: 'edit in </> mode'
+  end
+
+  test 'editor_frame pre-populates footer' do
+    log_in
+    get recipe_editor_frame_path('focaccia', kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select "textarea[data-recipe-graphical-target='footer']", text: 'A classic Italian bread.'
+  end
 end
