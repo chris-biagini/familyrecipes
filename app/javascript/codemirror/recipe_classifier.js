@@ -7,7 +7,7 @@
  *
  * - editor_setup.js: receives recipeClassifier as the `classifier` extension
  * - plaintext_editor_controller.js: consumes recipeClassifier via registry
- * - style.css (.hl-*): highlight colours consumed by the decoration class names
+ * - editor.css (.hl-*): highlight colours consumed by the decoration class names
  */
 import { ViewPlugin, Decoration } from "@codemirror/view"
 import { RangeSetBuilder } from "@codemirror/state"

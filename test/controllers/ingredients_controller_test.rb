@@ -462,7 +462,7 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select 'details.collapse-header:not([open])', minimum: 1
-    assert_select 'details.density-candidates[hidden]'
+    assert_select 'details.editor-density-candidates[hidden]'
   end
 
   test 'rows have data-source attribute' do

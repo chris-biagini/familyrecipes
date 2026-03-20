@@ -6,7 +6,7 @@ import { Controller } from "@hotwired/stimulus"
  * Uses ResizeObserver to detect actual content overflow rather than
  * hardcoded breakpoints — adapts to any link count or label length.
  *
- * - Collaborators: _nav.html.erb, style.css (.nav-compact / .nav-hamburger)
+ * - Collaborators: _nav.html.erb, navigation.css (.nav-compact / .nav-hamburger)
  * - Drawer animates via CSS grid-template-rows (0fr <-> 1fr)
  * - Closes on Escape, click outside, and Turbo navigation
  */

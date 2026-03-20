@@ -149,7 +149,7 @@ Update the CSP initializer before adding any.
 - **Errors**: Inline errors (`editor_utils.showErrors`) for dialog validation;
   toast notifications (`notify.show`) for page-level mutations.
 
-**CSS color tokens.** The canonical tokens are defined in `style.css` `:root`.
+**CSS color tokens.** The canonical tokens are defined in `base.css` `:root`.
 Key names: `--ground` (background), `--text`, `--text-soft`, `--text-light`
 (foreground), `--surface-alt` (offset bg), `--rule`/`--rule-faint` (borders),
 `--red` (accent/links), `--dialog-backdrop`, `--shadow-dialog`. Never invent
@@ -230,7 +230,7 @@ jsbundling-rails + esbuild for JS bundling.
   `<meta name="csp-nonce">` so JS libraries (CodeMirror) can read it at
   runtime for injected `<style>` tags. Without this meta tag, CodeMirror's
   layout styles are blocked by CSP and the editor breaks silently.
-- Turbo's progress bar styles live in `style.css` (not Turbo's dynamic
+- Turbo's progress bar styles live in `base.css` (not Turbo's dynamic
   `<style>` injection) to satisfy strict CSP — the harmless console error
   from Turbo's blocked injection is expected.
 

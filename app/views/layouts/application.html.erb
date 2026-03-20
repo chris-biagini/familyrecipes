@@ -14,7 +14,12 @@
   <%= csrf_meta_tags %>
   <%= csp_meta_tag %>
   <%= action_cable_meta_tag %>
-  <%= stylesheet_link_tag 'style', "data-turbo-track": "reload" %>
+  <%= stylesheet_link_tag 'base', "data-turbo-track": "reload" %>
+  <%= stylesheet_link_tag 'navigation', "data-turbo-track": "reload" %>
+  <%= stylesheet_link_tag 'editor', "data-turbo-track": "reload" %>
+  <%= stylesheet_link_tag 'nutrition', "data-turbo-track": "reload" %>
+  <%= stylesheet_link_tag 'recipe', "data-turbo-track": "reload" %>
+  <%= stylesheet_link_tag 'print', "data-turbo-track": "reload" %>
   <link rel="icon" type="image/svg+xml" href="<%= asset_path('favicon.svg') %>">
   <link rel="icon" type="image/png" sizes="32x32" href="<%= versioned_icon_path('favicon-32.png') %>">
   <link rel="icon" type="image/png" sizes="32x32" href="<%= versioned_icon_path('favicon-32-dark.png') %>" media="(prefers-color-scheme: dark)">

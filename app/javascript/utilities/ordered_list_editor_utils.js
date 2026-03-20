@@ -6,7 +6,7 @@
  * Supports an `orderable` flag to suppress up/down buttons for unordered lists.
  *
  * - ordered_list_editor_controller: unified controller for aisles, categories, tags
- * - style.css (.aisle-row, .btn-icon-round): shared row and button styles
+ * - editor.css (.aisle-row, .btn-icon-round): shared row and button styles
  */
 
 // --- Data / State ---

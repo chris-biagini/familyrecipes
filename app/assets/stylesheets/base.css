@@ -1,0 +1,1292 @@
+/*********************************************************/
+/* Base styles, applicable to all screen sizes and media */
+/*********************************************************/
+
+/* Made with invaluable assistance from ChatGPT and Claude. :) */
+
+:root {
+  --font-display: "Instrument Serif", Georgia, serif;
+  --font-body: "Outfit", system-ui, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, monospace;
+
+  /* Canonical color tokens */
+  --ground: #faf8f5;
+  --text: #2d2a26;
+  --text-soft: #706960;
+  --text-light: #a09788;
+  --red: #b33a3a;
+  --red-light: rgba(179, 58, 58, 0.08);
+  --rule: #e4dfd8;
+  --rule-faint: #eee9e3;
+
+  --surface-alt: #f7f5f1;
+  --danger-color: #c00;
+  --hover-bg: var(--red-light);
+  --hover-bg-strong: rgba(179, 58, 58, 0.15);
+
+  --input-bg: white;
+  --accent-hover: #993030;
+  --scaled-highlight: rgba(255, 243, 205, 0.6);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-nav: 0 2px 4px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-dialog: 0 4px 24px rgba(0, 0, 0, 0.15);
+  --dialog-backdrop: rgba(0, 0, 0, 0.5);
+  --aisle-renamed-bg: #fff8e1;
+  --aisle-renamed-border: #ffe082;
+  --aisle-new-bg: #e8f5e9;
+  --aisle-new-border: #a5d6a7;
+  --broken-reference-bg: #fdf6f0;
+  --aisle-row-border: #e0e0e0;
+  --danger-hover-bg: rgba(204, 0, 0, 0.08);
+  --custom-item-border: #eee;
+  --custom-item-remove: #bbb;
+  --custom-item-aisle: #a09788;
+
+  /* Notification bar — upward-facing nav shadow */
+  --shadow-nav-up: 0 -2px 4px rgba(0, 0, 0, 0.08), 0 -1px 2px rgba(0, 0, 0, 0.04);
+
+  /* Tag/category pill colors */
+  --tag-bg: #e8e3db;
+  --tag-text: #4a4540;
+  --cat-bg: #dde7d8;
+  --cat-text: #3a4a35;
+
+  /* Smart tag color groups */
+  --smart-green-bg: #d4edda;    --smart-green-text: #1b5e20;
+  --smart-amber-bg: #fff3cd;    --smart-amber-text: #7a5d00;
+  --smart-blue-bg: #d6eaf8;     --smart-blue-text: #1a4a6e;
+  --smart-purple-bg: #e8daf5;   --smart-purple-text: #4a2080;
+  --smart-cuisine-bg: #f5ddd0;  --smart-cuisine-text: #6e3a22;
+
+  /* Transition timing — use these instead of bare durations */
+  --duration-fast: 0.12s;
+  --duration-normal: 0.2s;
+  --duration-slow: 0.35s;
+
+  /* Gingham tablecloth background */
+  --gingham-base: rgb(249, 246, 243);
+  --gingham-stripe: rgba(190, 12, 30, 0.5);
+  --gingham-gap: 1.5rem;
+  --gingham-stripe-width: 75px;
+  --weave-color: rgba(150, 150, 150, 0.04);
+  --weave-width: 1.5px;
+  --content-card-bg: rgb(255, 252, 249);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Canonical dark-mode color tokens */
+    --ground: #1e1b18;
+    --text: #dcd7d0;
+    --text-soft: #a09788;
+    --text-light: #706960;
+    --red: #c85050;
+    --red-light: rgba(200, 80, 80, 0.12);
+    --rule: #3a3530;
+    --rule-faint: #2e2a26;
+
+    --surface-alt: #2a2724;
+    --danger-color: #d05050;
+    --hover-bg: rgba(255, 255, 255, 0.04);
+    --hover-bg-strong: rgba(200, 80, 80, 0.22);
+
+    --input-bg: #1a1816;
+    --accent-hover: #a03838;
+    --scaled-highlight: rgba(180, 140, 60, 0.2);
+
+    /* Shadows — reduced opacity for dark backgrounds */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.16), 0 4px 12px rgba(0, 0, 0, 0.12);
+    --shadow-nav: 0 2px 4px rgba(0, 0, 0, 0.16), 0 1px 2px rgba(0, 0, 0, 0.08);
+    --shadow-dialog: 0 4px 24px rgba(0, 0, 0, 0.3);
+    --dialog-backdrop: rgba(0, 0, 0, 0.65);
+    --shadow-nav-up: 0 -2px 4px rgba(0, 0, 0, 0.16), 0 -1px 2px rgba(0, 0, 0, 0.08);
+
+    /* Status indicators */
+    --aisle-renamed-bg: rgba(180, 140, 40, 0.15);
+    --aisle-renamed-border: rgba(180, 140, 40, 0.3);
+    --aisle-new-bg: rgba(60, 140, 70, 0.15);
+    --aisle-new-border: rgba(60, 140, 70, 0.3);
+    --broken-reference-bg: rgb(42, 36, 32);
+    --aisle-row-border: rgb(55, 52, 48);
+    --danger-hover-bg: rgba(220, 60, 50, 0.12);
+    --custom-item-border: rgb(50, 47, 44);
+    --custom-item-remove: rgb(110, 106, 102);
+    --custom-item-aisle: rgb(110, 106, 102);
+
+    /* Tag/category pill colors */
+    --tag-bg: #3a3530;
+    --tag-text: #c8c0b5;
+    --cat-bg: #2e3a2b;
+    --cat-text: #a8c8a0;
+
+    /* Smart tag color groups */
+    --smart-green-bg: #1a3a1e;    --smart-green-text: #a8d8a0;
+    --smart-amber-bg: #3a3018;    --smart-amber-text: #d8c070;
+    --smart-blue-bg: #1a2e3e;     --smart-blue-text: #90c0e0;
+    --smart-purple-bg: #2a1e3a;   --smart-purple-text: #c0a8e0;
+    --smart-cuisine-bg: #3a2820;  --smart-cuisine-text: #d8b0a0;
+
+    /* Gingham — muted for dark mode */
+    --gingham-base: #1e1b18;
+    --gingham-stripe: rgba(200, 55, 60, 0.35);
+    --weave-color: rgba(255, 255, 255, 0.02);
+    --content-card-bg: rgb(30, 27, 24);
+  }
+}
+
+html {
+  color-scheme: light dark;
+  font-size: 18px;
+  touch-action: manipulation;
+  scrollbar-gutter: stable;
+  background-color: var(--gingham-base);
+}
+
+/* Gingham tablecloth — fixed pseudo-element, NOT background-attachment: fixed
+   on html. Safari caches gradient tiles as GPU textures; on zoom it scales the
+   stale textures instead of repainting, producing tile-seam glitches that
+   persist across refreshes (WebKit #125118). Using position: fixed with NO
+   background-size avoids tiling entirely — repeating-linear-gradient fills the
+   full viewport as a single computation. The pseudo-element's viewport-sized
+   rendering area is constant across Turbo navigation, so the pattern never
+   shifts (the original reason tiling was introduced at d90092e). */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(
+      135deg,
+      var(--gingham-stripe) 0,
+      var(--gingham-stripe) var(--gingham-stripe-width),
+      transparent var(--gingham-stripe-width),
+      transparent calc(2 * var(--gingham-stripe-width))),
+    repeating-linear-gradient(
+      45deg,
+      var(--gingham-stripe) 0,
+      var(--gingham-stripe) var(--gingham-stripe-width),
+      transparent var(--gingham-stripe-width),
+      transparent calc(2 * var(--gingham-stripe-width))),
+    repeating-linear-gradient(
+      135deg,
+      var(--weave-color) 0,
+      var(--weave-color) var(--weave-width),
+      transparent var(--weave-width),
+      transparent calc(2 * var(--weave-width))),
+    repeating-linear-gradient(
+      45deg,
+      var(--weave-color) 0,
+      var(--weave-color) var(--weave-width),
+      transparent var(--weave-width),
+      transparent calc(2 * var(--weave-width))),
+    linear-gradient(var(--gingham-base), var(--gingham-base));
+}
+
+/* Turbo Drive progress bar — base styles defined here because Turbo's
+   dynamic <style> injection is blocked by our strict CSP. The JS-driven
+   width/opacity changes via CSSOM are not blocked. */
+.turbo-progress-bar {
+  position: fixed;
+  display: block;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: var(--text);
+  z-index: 2147483647;
+  transition: width 300ms ease-out, opacity 150ms 150ms ease-in;
+  transform: translate3d(0, 0, 0);
+}
+
+body,
+html {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  padding: env(safe-area-inset-top, 0px) var(--gingham-gap) 0;
+  font-family: var(--font-body);
+  color: var(--text);
+  line-height: 1.65;
+}
+
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+/* Custom checkbox — shared base for menu and grocery pages */
+.custom-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 1rem;
+  height: 1rem;
+  border: 1.5px solid var(--rule);
+  border-radius: 2px;
+  cursor: pointer;
+  flex-shrink: 0;
+  position: relative;
+  transition: background-color var(--duration-fast) ease, border-color var(--duration-fast) ease;
+}
+
+.custom-checkbox:checked {
+  background-color: var(--red);
+  border-color: var(--red);
+  animation: check-box-pop 250ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.custom-checkbox:checked::after {
+  content: '\2713';
+  color: white;
+  font-size: 0.75rem;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: check-mark-pop 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Buttons — the one shared interactive style across the site */
+.btn {
+  appearance: none;
+  -webkit-appearance: none;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  background: var(--ground);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 0.3rem 0.75rem;
+  color: var(--text);
+  cursor: pointer;
+  text-decoration: none;
+  line-height: 1.5;
+  transition: background-color var(--duration-fast) ease, border-color var(--duration-fast) ease, color var(--duration-fast) ease, box-shadow var(--duration-fast) ease;
+}
+
+.btn:hover {
+  color: var(--text);
+  border-color: var(--text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+
+.btn-primary {
+  background: var(--red);
+  color: white;
+  border-color: var(--red);
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.btn-danger {
+  color: var(--danger-color);
+  border-color: var(--danger-color);
+}
+
+.btn-danger:hover {
+  background: var(--danger-color);
+  color: white;
+  border-color: var(--danger-color);
+}
+
+.btn-sm {
+  font-size: 0.8rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+}
+
+.btn-link {
+  all: unset;
+  cursor: pointer;
+  color: var(--red);
+  text-decoration: underline dotted;
+  font-family: var(--font-body);
+}
+
+.btn-link:hover {
+  text-decoration-style: solid;
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  padding: 0.3rem 0.6rem;
+  border: none;
+  border-radius: 0.4rem;
+  background: none;
+  color: var(--text-light);
+  cursor: pointer;
+  transition: color var(--duration-fast) ease, background var(--duration-fast) ease;
+}
+
+.btn-ghost:hover {
+  color: var(--red);
+  background: var(--hover-bg);
+}
+
+.btn-ghost:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+
+.btn-icon-round {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: 1px solid var(--rule);
+  border-radius: 50%;
+  background: none;
+  color: var(--text-light);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  transition: color var(--duration-fast) ease, border-color var(--duration-fast) ease;
+}
+
+.btn-icon-round:hover {
+  color: var(--text-soft);
+  border-color: var(--rule);
+}
+
+.btn-icon-round:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.btn-icon-round.btn-danger:hover {
+  color: var(--danger-color);
+  border-color: var(--danger-color);
+}
+
+.btn-icon-round.btn-primary:hover {
+  color: var(--red);
+  border-color: var(--red);
+}
+
+.btn-icon-round-lg {
+  width: 2.25rem;
+  height: 2.25rem;
+  flex-shrink: 0;
+}
+
+.btn-pill {
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: transparent;
+  font-size: 0.85rem;
+  font-family: var(--font-body);
+  color: var(--text);
+  cursor: pointer;
+  transition: background var(--duration-fast) ease, border-color var(--duration-fast) ease;
+}
+
+.btn-pill:hover {
+  background: var(--hover-bg);
+  border-color: var(--red);
+}
+
+.btn-pill.active {
+  background: var(--red);
+  color: white;
+  border-color: var(--red);
+}
+/* ── Input base ────────────────────────────────────────────── */
+
+.input-base {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--rule-faint);
+  border-radius: 3px;
+  background: var(--input-bg);
+  color: var(--text);
+  box-sizing: border-box;
+  outline: none;
+}
+
+.input-base:focus {
+  outline: 2px solid var(--red);
+  outline-offset: -1px;
+  border-color: var(--red);
+}
+
+.input-base::placeholder {
+  color: var(--text-light);
+}
+
+.input-lg {
+  font-size: 1rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.input-sm {
+  width: 4.5rem;
+  text-align: right;
+}
+
+.input-inline {
+  padding: 0.25rem 0.4rem;
+  font-size: 0.85rem;
+}
+
+.input-title {
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.input-short {
+  max-width: 6rem;
+}
+
+/* ── Collapse ──────────────────────────────────────────────── */
+
+.collapse-header {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.collapse-header summary {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  list-style: none;
+  user-select: none;
+}
+
+.collapse-header summary::before {
+  content: '';
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0.3rem 0 0.3rem 0.45rem;
+  border-color: transparent transparent transparent var(--text-light);
+  transition: transform var(--duration-fast) ease;
+  flex-shrink: 0;
+}
+
+.collapse-header[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.collapse-header summary::-webkit-details-marker {
+  display: none;
+}
+
+.collapse-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--duration-normal) ease;
+}
+
+.collapse-header[open] + .collapse-body,
+.collapse-header[open] ~ .collapse-body {
+  grid-template-rows: 1fr;
+}
+
+.collapse-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+main a {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: var(--rule-faint);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: color var(--duration-normal) ease, text-decoration-color var(--duration-normal) ease;
+}
+
+main a:hover {
+  color: var(--red);
+  text-decoration-color: var(--red);
+}
+
+main a:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+main {
+  position: relative;
+  max-width: 35rem;
+  margin: var(--gingham-gap) auto;
+  padding: 3rem 2.5rem 5rem;
+  background: var(--content-card-bg);
+  border: 1px solid var(--rule-faint);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.07),
+    0 4px 8px rgba(0, 0, 0, 0.05),
+    3px 8px 14px rgba(0, 0, 0, 0.08);
+  min-height: calc(100vh - 2 * var(--gingham-gap) - 3rem);
+}
+
+main::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("paper-noise.png");
+  background-size: 200px 200px;
+  opacity: 0.05;
+  pointer-events: none;
+}
+
+main > * {
+  position: relative;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+header h1 {
+  font-family: var(--font-display);
+  font-size: 3.8rem;
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  margin: 0 0 0.5rem 0;
+}
+
+header p {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.3rem;
+  margin-top: 0;
+  color: var(--text-soft);
+}
+
+header .recipe-meta {
+  font-style: normal;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-top: 1rem;
+  color: var(--text-light);
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: baseline;
+  gap: 0 0.35em;
+}
+
+header .recipe-meta > :first-child { justify-self: end; }
+header .recipe-meta > :last-child  { justify-self: start; }
+
+header .recipe-meta > :only-child {
+  grid-column: 1 / -1;
+  justify-self: center;
+}
+
+/* 5+ children: item · item · item */
+header .recipe-meta:has(> :nth-child(4)) {
+  grid-template-columns: 1fr auto auto auto 1fr;
+}
+
+header .recipe-meta:has(> :nth-child(6)) {
+  grid-template-columns: 1fr auto auto auto auto auto 1fr;
+}
+
+header .recipe-meta a {
+  color: inherit;
+  text-decoration: none;
+}
+
+header .recipe-meta a:hover {
+  text-decoration: underline;
+}
+
+.recipe-tags {
+  margin-top: 0.25rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.recipe-tag-pill {
+  border: none;
+  cursor: pointer;
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+}
+
+.recipe-tag-pill:hover { opacity: 0.8; }
+
+/* Scale bar — centered disclosure toggle + vertical reveal */
+.scale-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 0.6rem;
+}
+
+.scale-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--text-light);
+  text-decoration: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 0.4rem;
+  user-select: none;
+  transition: color var(--duration-normal) ease, background-color var(--duration-slow) ease-out;
+}
+
+.scale-toggle:hover {
+  color: var(--red);
+  background-color: var(--hover-bg);
+}
+
+.scale-toggle::before {
+  content: '';
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0.3rem 0 0.3rem 0.45rem;
+  border-color: transparent transparent transparent currentColor;
+  transition: transform var(--duration-fast) ease;
+}
+
+.scale-bar.open .scale-toggle::before {
+  transform: rotate(90deg);
+}
+
+/* Recipe actions row — scale toggle + edit, middot-separated.
+   Grid with 1fr/auto/1fr anchors the middot at dead center. */
+.recipe-actions {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.recipe-actions > :first-child {
+  justify-self: end;
+}
+
+.recipe-actions > :last-child {
+  justify-self: start;
+}
+
+.recipe-actions > :only-child {
+  grid-column: 1 / -1;
+  justify-self: center;
+}
+
+/* Homepage has multiple action buttons — flex wraps gracefully */
+.homepage .recipe-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+header > .recipe-actions {
+  margin-top: 0.6rem;
+}
+
+.recipe-actions-dot {
+  color: var(--text-light);
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+
+/* Scale controls — animated vertical expand/collapse */
+.scale-controls {
+  display: grid;
+  grid-template-rows: 0fr;
+  overflow: hidden;
+  transition: grid-template-rows var(--duration-normal) ease;
+}
+
+.scale-bar.open .scale-controls {
+  grid-template-rows: 1fr;
+}
+
+.scale-controls-inner {
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.scale-controls-center {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 0;
+  padding: 0.5rem 0.25rem;
+}
+
+.scale-controls-center > :first-child {
+  justify-self: end;
+}
+
+.scale-controls-center > :last-child {
+  justify-self: start;
+}
+
+.scale-input-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.scale-presets {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.scale-preset {
+  line-height: 1;
+}
+
+@keyframes preset-box-pop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+.scale-preset.active {
+  background: var(--red);
+  border-color: var(--red);
+  color: white;
+  animation: preset-box-pop 250ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.scale-divider {
+  width: 1px;
+  height: 1.25rem;
+  background: var(--rule);
+}
+
+.scale-input {
+  text-align: center;
+}
+
+.scale-input.invalid,
+.scale-input.invalid:focus {
+  outline: 2px solid var(--danger-color);
+  outline-offset: -1px;
+  border-color: var(--danger-color);
+  color: var(--danger-color);
+  background: color-mix(in srgb, var(--danger-color) 8%, var(--input-bg));
+}
+
+.scale-reset[hidden] {
+  display: block;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.scalable.scaled {
+  background-color: var(--scaled-highlight);
+  border-radius: 2px;
+  padding: 0 1px;
+}
+
+.recipe-meta .scalable.scaled {
+  background-color: transparent;
+}
+
+header::after {
+  content: "";
+  display: block;
+  width: 40px;
+  height: 1px;
+  background: var(--red);
+  margin: 1.5rem auto 0;
+}
+
+
+.toc_nav {
+  text-align: center;
+  margin-bottom: 3rem;
+  padding: 0;
+}
+
+.toc_nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  line-height: 2;
+}
+
+.toc_nav ul li {
+  display: inline;
+  margin: 0;
+}
+
+.toc_nav ul li:not(:last-child)::after {
+  content: " \00b7 ";
+  color: var(--text-light);
+}
+
+.toc_nav ul li a {
+  font-style: normal;
+  font-size: 0.84rem;
+  color: var(--text-light);
+  text-decoration: none;
+  transition: color var(--duration-normal);
+}
+
+.toc_nav ul li a:hover {
+  color: var(--red);
+}
+
+section {
+  margin-top: 2.5rem;
+  break-inside: avoid;
+}
+
+section > ul {
+  column-count: 2;
+  column-gap: 2.5rem;
+  list-style: none;
+  padding-left: 0;
+}
+
+section > ul li {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+section > ul li a {
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 400;
+  transition: color var(--duration-normal);
+}
+
+section > ul li a:hover {
+  color: var(--red);
+}
+
+section h2 {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 400;
+  line-height: 1.35;
+  text-transform: none;
+  letter-spacing: normal;
+  margin-top: 3.5rem;
+  margin-bottom: 1.25rem;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+section:first-of-type h2 {
+  margin-top: 0;
+}
+
+.homepage section h2 {
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--text-light);
+  margin: 3rem 0 0.9rem;
+  padding-bottom: 0.7rem;
+  border-bottom: 1px solid var(--rule-faint);
+}
+
+.homepage section:first-of-type h2 {
+  margin-top: 0;
+}
+
+#export-actions {
+  margin-top: 1.5rem;
+  padding: 1.5rem 0;
+  border-top: 1px solid var(--rule);
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.loading-placeholder {
+  color: var(--text-soft);
+  font-style: italic;
+  padding: 2rem;
+  text-align: center;
+}
+
+section > div:has(.ingredients):has(.instructions) {
+  display: grid;
+  grid-template-columns: 10rem 1fr;
+  gap: 0 2.5rem;
+}
+
+.instructions p {
+  margin: 0 0 0.85rem 0;
+  font-size: 0.95rem;
+  line-height: 1.75;
+}
+
+.instructions {
+  border-left: 1px solid var(--rule-faint);
+  padding-left: 2rem;
+}
+
+.ingredients ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ingredients li {
+  break-inside: avoid;
+  padding: 0;
+  font-size: 0.84rem;
+  line-height: 2;
+}
+
+.quantity {
+  color: var(--text-light);
+  font-weight: 300;
+}
+
+/* .ingredients ul li small::before 	{ content: "↳ "; } */
+
+.ingredients ul li small {
+  display: block;
+  font-style: italic;
+  font-size: 0.95em;
+  padding: 0.25rem 0 0 1rem;
+}
+
+footer {
+  font-family: var(--font-display);
+  font-style: italic;
+  text-align: center;
+  font-size: 1rem;
+  margin-top: 3.5rem;
+  padding-top: 2rem;
+  color: var(--text-light);
+  position: relative;
+}
+
+footer::after {
+  content: "";
+  display: block;
+  width: 40px;
+  height: 1px;
+  background: var(--rule);
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.app-version::after {
+  display: none;
+}
+
+.nutrition-label footer::after {
+  display: none;
+}
+
+footer small {
+  text-align: right;
+  display: block;
+}
+
+@media (prefers-color-scheme: dark) {
+  .smart-icon--crossout::after {
+    border-color: rgba(220, 80, 80, 0.85);
+    background: linear-gradient(
+      to top left,
+      transparent calc(50% - 1px),
+      rgba(220, 80, 80, 0.85) calc(50% - 1px),
+      rgba(220, 80, 80, 0.85) calc(50% + 1px),
+      transparent calc(50% + 1px)
+    );
+  }
+}
+/******************************************************/
+/* Styles for interactivity, applies to screen media */
+/*****************************************************/
+
+@media screen {
+  /* switch to hand pointer for interactive elements */
+  .recipe section h2,
+  .recipe .instructions p,
+  .recipe .ingredients li {
+    cursor: pointer;
+  }
+
+  /* Target h2 in a recipe section where every <li> and instructions <p> is "crossed-off".
+     Scoped to .recipe so it doesn't affect settings or other pages with <section> + <h2>. */
+  .crossed-off,
+  .recipe section:not(:has(li:not(.crossed-off), .instructions p:not(.crossed-off))) h2 {
+    text-decoration: line-through;
+    color: var(--text-light);
+    border-color: var(--text-light);
+  }
+
+  /* Fade the entire embedded card when the parent step is crossed off */
+  section:not(:has(li:not(.crossed-off), .instructions p:not(.crossed-off))) .embedded-recipe {
+    opacity: 0.4;
+  }
+}
+
+/****************************************/
+/* Styles for mobiles and small screens */
+/****************************************/
+
+/* small mobiles only */
+@media screen and (max-width: 720px) and (pointer: coarse) {
+  html {
+    font-size: 16px;
+  }
+}
+
+/* anything with a narrow window */
+@media screen and (max-width: 720px) {
+  :root {
+    --gingham-gap: 0.75rem;
+  }
+
+  main {
+    padding: 1.5rem 1rem 3rem;
+  }
+
+  section > div:has(.ingredients):has(.instructions) {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  /* On small screens, switch to two ingredient columns */
+  .ingredients ul {
+    column-count: 2;
+    column-gap: 0.5rem;
+  }
+
+  /* Switch to two index columns as well */
+  section > ul {
+    column-count: 2;
+  }
+
+  header h1 { font-size: 2.6rem; }
+
+  /* Flex fallback for recipe-meta on narrow screens (grid doesn't wrap) */
+  header .recipe-meta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0 0.35em;
+  }
+
+  .instructions {
+    border-left: none;
+    padding-left: 0;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--rule-faint);
+  }
+
+}
+html:has(dialog[open]) {
+  overflow: hidden;
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes bloop {
+  0%   { transform: scale(0.92); opacity: 0; }
+  60%  { transform: scale(1.04); opacity: 1; }
+  100% { transform: scale(1);    opacity: 1; }
+}
+
+@keyframes check-box-pop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+@keyframes check-mark-pop {
+  0%   { transform: translate(-50%, -50%) scale(0); }
+  60%  { transform: translate(-50%, -50%) scale(1.4); }
+  100% { transform: translate(-50%, -50%) scale(1); }
+}
+.tag-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: default;
+}
+.tag-pill--tag { background: var(--tag-bg); color: var(--tag-text); }
+.tag-pill--category { background: var(--cat-bg); color: var(--cat-text); }
+
+/* Smart tag color variants */
+.tag-pill--green   { background: var(--smart-green-bg);   color: var(--smart-green-text); }
+.tag-pill--amber   { background: var(--smart-amber-bg);   color: var(--smart-amber-text); }
+.tag-pill--blue    { background: var(--smart-blue-bg);     color: var(--smart-blue-text); }
+.tag-pill--purple  { background: var(--smart-purple-bg);   color: var(--smart-purple-text); }
+.tag-pill--cuisine { background: var(--smart-cuisine-bg);  color: var(--smart-cuisine-text); }
+
+/* Smart tag icon wrapper */
+.smart-icon {
+  position: relative;
+  margin-right: 0.3em;
+  font-size: 0.85em;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Crossout circle+slash overlay on the icon */
+.smart-icon--crossout::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border: 1.5px solid rgba(180, 40, 40, 0.85);
+  border-radius: 50%;
+  background: linear-gradient(
+    to top left,
+    transparent calc(50% - 1px),
+    rgba(180, 40, 40, 0.85) calc(50% - 1px),
+    rgba(180, 40, 40, 0.85) calc(50% + 1px),
+    transparent calc(50% + 1px)
+  );
+  pointer-events: none;
+}
+
+.tag-pill__remove {
+  font-size: 0.6rem;
+  opacity: 0.5;
+  cursor: pointer;
+  line-height: 1;
+  border: none;
+  background: none;
+  color: inherit;
+  padding: 0;
+}
+.tag-pill__remove:hover { opacity: 1; }
+/************************/
+/* Notification toast   */
+/************************/
+
+.notify-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
+  background: var(--ground);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid var(--rule);
+  box-shadow: var(--shadow-nav-up);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: var(--text);
+  transform: translateY(100%);
+  opacity: 0;
+  transition: transform var(--duration-slow) ease, opacity var(--duration-slow) ease;
+}
+
+@keyframes slide-up-bounce {
+  0%   { transform: translateY(100%); opacity: 0; }
+  60%  { transform: translateY(-8%);  opacity: 1; }
+  100% { transform: translateY(0);    opacity: 1; }
+}
+
+.notify-bar.notify-visible {
+  transform: translateY(0);
+  opacity: 1;
+  animation: slide-up-bounce 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.notify-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+
+.notify-dismiss {
+  appearance: none;
+  -webkit-appearance: none;
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  color: var(--rule);
+  cursor: pointer;
+  padding: 0.25rem 0.4rem;
+  line-height: 1;
+}
+
+.notify-dismiss:hover {
+  color: var(--text-soft);
+}
+.app-version {
+  text-align: center;
+  margin: -0.75rem auto 0;
+  padding: 0 0 0.25rem;
+  max-width: 35rem;
+  font-size: 0.7rem;
+  font-style: normal;
+  color: var(--text);
+  opacity: 0.3;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+

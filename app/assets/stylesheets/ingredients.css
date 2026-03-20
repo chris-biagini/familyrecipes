@@ -1,0 +1,63 @@
+/********************************/
+/* Ingredients page             */
+/********************************/
+
+
+/* Search + filter toolbar */
+.ingredients-toolbar { margin-bottom: 1rem; }
+.ingredients-toolbar .input-base {
+  width: 100%;
+  margin-bottom: 0.5rem;
+}
+
+.filter-pills { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+/* Ingredient table */
+.ingredients-table { width: 100%; border-collapse: collapse; }
+.ingredients-table thead th {
+  text-align: left;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--text-soft);
+  padding: 0.4rem 0.5rem;
+  border-bottom: 2px solid var(--rule);
+}
+
+.sortable { cursor: pointer; user-select: none; white-space: nowrap; }
+.sortable:hover { color: var(--text); }
+.sort-arrow { font-size: 0.65rem; margin-left: 0.15em; }
+
+.ingredient-row {
+  cursor: pointer;
+  transition: background-color var(--duration-fast) ease;
+}
+.ingredient-row:hover {
+  background-color: var(--hover-bg);
+}
+.ingredient-row td {
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--rule-faint);
+  vertical-align: middle;
+}
+
+.col-name { font-weight: 500; word-break: break-word; }
+.ingredient-icons {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-left: 0.4rem;
+  vertical-align: middle;
+}
+.ingredient-icon { color: var(--text-soft); flex-shrink: 0; }
+.col-aisle { color: var(--text-soft); font-size: 0.9rem; width: 8rem; }
+.col-recipes { width: 4.5rem; text-align: center; color: var(--text-soft); font-size: 0.9rem; }
+
+/* Mobile: hide aisle and recipes columns */
+@media (max-width: 768px) {
+  .col-aisle,
+  .col-recipes,
+  .ingredients-table thead .col-aisle,
+  .ingredients-table thead .col-recipes { display: none; }
+}
