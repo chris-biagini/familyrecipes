@@ -1,8 +1,8 @@
 /**
  * Shared DOM factory functions for graphical editors. Pure element
- * creators with no Stimulus or framework coupling. Used by both
- * recipe_graphical_controller and quickbites_graphical_controller.
+ * creators with no Stimulus or framework coupling.
  *
+ * - graphical_editor_utils: higher-level card/section builders
  * - recipe_graphical_controller: recipe step/ingredient editing
  * - quickbites_graphical_controller: category/item editing
  */
