@@ -1,0 +1,109 @@
+/*********************************/
+/* Embedded recipe cards         */
+/*********************************/
+
+/* Embedded cross-referenced recipe — a mini version of the full recipe */
+.embedded-recipe {
+  border: 1px solid var(--rule);
+  border-radius: 0.25rem;
+  background-color: var(--ground);
+  box-shadow: var(--shadow-sm);
+  padding: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+.embedded-recipe header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.15rem 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.embedded-recipe header::after {
+  display: none;
+}
+
+.embedded-recipe header h3 {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 400;
+  margin: 0;
+}
+
+a.recipe-link {
+  text-decoration-style: dotted;
+}
+
+.embedded-recipe-link {
+  font-size: 0.85rem;
+  text-decoration: none;
+  color: var(--text-light);
+  transition: color var(--duration-normal);
+  margin-left: auto;
+}
+
+.embedded-recipe-link:hover {
+  color: var(--red);
+}
+
+.embedded-description {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-style: italic;
+  color: var(--text-soft);
+  margin: 0 0 0.75rem;
+}
+
+.embedded-footer {
+  font-size: 0.85rem;
+  color: var(--text-soft);
+  border-top: 1px solid var(--rule);
+  margin-top: 1.5rem;
+  padding-top: 0.75rem;
+}
+
+.embedded-multiplier {
+  font-size: 0.9rem;
+  color: var(--text-soft);
+}
+
+.embedded-prep-note {
+  font-size: 0.9rem;
+  color: var(--text-soft);
+  margin: 0.25rem 0 0;
+}
+
+.embedded-recipe section {
+  margin-top: 1.5rem;
+}
+
+.embedded-recipe section:first-of-type {
+  margin-top: 0;
+}
+
+.embedded-recipe section h3 {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 400;
+  line-height: 1.35;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.broken-reference {
+  background-color: var(--broken-reference-bg);
+  color: var(--text-soft);
+}
+
+.broken-reference p {
+  margin: 0;
+  font-style: italic;
+}
+
+/* Mobile: keep embedded card border/shadow even when main drops it */
+@media (max-width: 768px) {
+  .embedded-recipe {
+    padding: 1rem;
+  }
+}

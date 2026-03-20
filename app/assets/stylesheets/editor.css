@@ -1,0 +1,908 @@
+.editor-error-message {
+  color: var(--danger-color);
+  padding: 1rem 0;
+}
+/* Settings dialog */
+#settings-editor {
+  width: min(90vw, 460px);
+}
+
+.settings-field {
+  margin-bottom: 1rem;
+}
+
+.settings-field label {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.settings-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: normal;
+  cursor: pointer;
+}
+
+.settings-field-hint {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--text-soft);
+  margin-top: 0.1rem;
+  padding-left: 1.45rem;
+}
+
+.settings-field .input-base {
+  width: 100%;
+}
+
+.settings-api-key-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.settings-api-key-row .input-base {
+  flex: 1;
+  font-family: var(--font-mono);
+}
+
+.settings-reveal-btn {
+  white-space: nowrap;
+  min-width: 3.5rem;
+}
+@media (prefers-color-scheme: dark) {
+  .editor-section { border-color: var(--text); }
+}
+/************************/
+/* Editor Dialog        */
+/************************/
+
+.editor-dialog {
+  border: 1px solid var(--text);
+  border-radius: 0.25rem;
+  background: var(--ground);
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+  width: min(90vw, 50rem);
+  height: 90vh;
+  max-height: 90vh;
+  box-shadow: var(--shadow-dialog);
+  animation: bloop 250ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+html:has(dialog[open]) {
+  overflow: hidden;
+}
+
+.editor-dialog[open] {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.editor-dialog::backdrop {
+  background: var(--dialog-backdrop);
+  animation: fade-in 200ms ease-out;
+}
+.editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.editor-header h2 {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 0;
+  border: none;
+  padding: 0;
+}
+
+.editor-header .btn {
+  font-size: 1.25rem;
+  line-height: 1;
+  padding: 0.2rem 0.5rem;
+  border: none;
+  background: none;
+}
+
+.editor-errors {
+  padding: 0.75rem 1.5rem;
+  color: var(--danger-color);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.editor-errors ul {
+  margin: 0;
+  padding: 0 0 0 1.25rem;
+}
+
+.editor-warnings {
+  color: var(--text-soft);
+}
+
+.editor-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+.editor-textarea {
+  flex: 1;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 60vh;
+  padding: 1.5rem;
+  border: none;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  line-height: 1.6;
+  resize: none;
+  outline: none;
+  color: var(--text);
+  background: var(--ground);
+  overscroll-behavior: contain;
+}
+
+.editor-category-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-top: 1px solid var(--text);
+  position: relative;
+  z-index: 2;
+  background: var(--ground);
+}
+
+.editor-category-row label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-soft);
+  white-space: nowrap;
+}
+
+.category-select, .category-new-input {
+  flex: 1;
+  max-width: 16rem;
+}
+
+/* Editor side panel — desktop */
+.editor-body-split {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.editor-side-panel {
+  width: 200px;
+  flex-shrink: 0;
+  border-left: 1px solid var(--rule);
+  background: var(--surface-alt);
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  overflow-y: auto;
+}
+
+.side-section label {
+  font-weight: 600;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-soft);
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+/* Mobile toggle */
+.editor-mobile-meta {
+  display: none;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.75rem;
+  border-top: 1px solid var(--rule);
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text-soft);
+  background: var(--surface-alt);
+  user-select: none;
+}
+
+.editor-mobile-meta__chevron {
+  font-size: 0.55rem;
+  transition: transform var(--duration-normal);
+  color: var(--text-light);
+}
+
+.editor-mobile-meta--open .editor-mobile-meta__chevron {
+  transform: rotate(180deg);
+}
+
+.editor-mobile-meta__preview {
+  display: flex;
+  gap: 0.2rem;
+  margin-left: auto;
+}
+
+@media (max-width: 640px) {
+  .editor-dialog:has(.editor-body-split) { width: min(95vw, 50rem); }
+  .editor-body-split { flex-direction: column; }
+  .editor-side-panel {
+    width: 100%;
+    border-left: none;
+    border-top: 1px solid var(--rule-faint);
+    display: none;
+  }
+  .editor-side-panel--mobile-open { display: flex; }
+  .editor-mobile-meta { display: flex; }
+}
+
+@media (min-width: 641px) {
+  .editor-dialog:has(.editor-body-split) { width: min(90vw, 56rem); }
+}
+
+/* Tag input in side panel */
+.tag-pills-editor {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-bottom: 0.3rem;
+}
+
+.tag-text-input {
+  width: 100%;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 0.25rem 0.4rem;
+  font-size: 0.78rem;
+  font-family: inherit;
+  background: var(--ground);
+  color: var(--text);
+}
+.tag-text-input::placeholder { color: var(--text-light); }
+
+.tag-autocomplete-wrapper { position: relative; }
+
+.tag-autocomplete {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--ground);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  max-height: 150px;
+  overflow-y: auto;
+  z-index: 10;
+  font-size: 0.75rem;
+}
+
+.tag-autocomplete__item {
+  padding: 0.35rem 0.5rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.tag-autocomplete__item:hover,
+.tag-autocomplete__item--highlighted {
+  background: rgba(179, 58, 58, 0.06);
+}
+
+.tag-autocomplete__count {
+  font-size: 0.65rem;
+  color: var(--text-light);
+}
+/* CodeMirror mount — sized by the editor-body flex parent.
+   CM's own injected styles (via CSP nonce) handle internal flexbox layout.
+   We only need to give .cm-mount a height so CM fills it. */
+
+.cm-mount {
+  height: 100%;
+}
+
+.hl-category {
+  font-weight: 700;
+  color: var(--red);
+  text-decoration: underline;
+}
+
+.hl-item {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.hl-ingredients {
+  color: var(--text-soft);
+  font-style: italic;
+}
+
+/* Recipe token highlights */
+
+.hl-title {
+  font-weight: 700;
+  color: var(--red);
+  text-decoration: underline;
+}
+
+.hl-step-header {
+  font-weight: 700;
+  color: var(--text);
+  text-decoration: underline;
+}
+
+.hl-ingredient-name {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.hl-ingredient-qty {
+  color: var(--text);
+}
+
+.hl-ingredient-prep {
+  color: var(--text-soft);
+  font-style: italic;
+}
+
+.hl-cross-ref {
+  font-weight: 600;
+  color: var(--red);
+  font-style: italic;
+}
+
+.hl-recipe-link {
+  color: var(--red);
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}
+
+.hl-front-matter {
+  color: var(--text-soft);
+}
+
+.hl-divider {
+  color: var(--text-soft);
+}
+.editor-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--rule);
+}
+
+.editor-footer-spacer {
+  flex: 1;
+}
+
+/* Aisle Order Editor */
+.aisle-order-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0.75rem 1.5rem;
+}
+
+.aisle-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.aisle-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--surface-alt);
+  border: 1px solid var(--aisle-row-border);
+  border-radius: 6px;
+  transition: background var(--duration-normal) ease, border-color var(--duration-normal) ease, opacity var(--duration-normal) ease;
+}
+
+.aisle-row--renamed {
+  background: var(--aisle-renamed-bg);
+  border-color: var(--aisle-renamed-border);
+}
+
+.aisle-row--deleted {
+  opacity: 0.4;
+  background: var(--surface-alt);
+}
+
+.aisle-row--deleted .aisle-name {
+  text-decoration: line-through;
+  cursor: default;
+}
+
+.aisle-row--new {
+  background: var(--aisle-new-bg);
+  border-color: var(--aisle-new-border);
+}
+
+.aisle-name-area {
+  flex: 1;
+  min-width: 0;
+}
+
+.aisle-name {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  color: var(--text);
+  width: 100%;
+}
+
+button.aisle-name:hover {
+  color: var(--red);
+}
+
+.aisle-rename-input {
+  box-sizing: border-box;
+  font-size: 0.85rem;
+  padding: 0.25rem 0.4rem;
+  border: 1px solid var(--rule-faint);
+  border-radius: 3px;
+  background: var(--ground);
+  color: var(--text);
+  outline: none;
+  width: 100%;
+}
+
+.aisle-rename-input:focus {
+  border-color: var(--rule);
+}
+
+.aisle-controls {
+  display: flex;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.btn-icon-round svg {
+  display: block;
+}
+
+.aisle-icon--flipped {
+  transform: scaleY(-1);
+}
+
+.aisle-add-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  align-items: center;
+}
+
+.aisle-add-row .input-base {
+  flex: 1;
+}
+
+.editor-form {
+  padding: 1rem 1.5rem;
+}
+.editor-section {
+  border: none;
+  padding: 0;
+  margin: 0 0 1.25rem;
+}
+
+.editor-section-title {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-soft);
+  margin-bottom: 0.5rem;
+  cursor: default;
+}
+
+/* Collapsible editor sections — uses canonical .collapse-* mechanism */
+.editor-section {
+  margin-bottom: 0.75rem;
+  background: var(--surface-alt);
+  border: 1px solid var(--aisle-row-border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.editor-section .collapse-header:not([open]) > summary {
+  padding-bottom: 0.5rem;
+}
+
+.editor-section .collapse-header > summary {
+  padding: 0.6rem 0.75rem;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text);
+}
+
+.editor-section .collapse-header > summary::before {
+  border-color: transparent transparent transparent var(--rule);
+}
+
+.editor-section .collapse-inner {
+  padding: 0;
+  transition: padding var(--duration-normal) ease;
+}
+
+.editor-section .collapse-header[open] + .collapse-body > .collapse-inner {
+  padding: 0.75rem;
+}
+
+.editor-help {
+  font-size: 0.8rem;
+  color: var(--text-soft);
+  margin: 0 0 0.75rem;
+  line-height: 1.4;
+}
+
+.editor-recipes {
+  font-size: 0.85rem;
+  color: var(--text-soft);
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--rule);
+}
+.editor-recipes-label {
+  font-weight: 600;
+  margin-right: 0.25em;
+}
+.editor-recipes a { white-space: nowrap; }
+
+.editor-reset-btn {
+  font-size: 0.8rem;
+}
+/* Mobile: all editors fill screen, no horizontal scroll, bigger tap targets */
+@media (max-width: 720px) {
+  .editor-dialog {
+    inset: 0;
+    width: 100%;
+    height: 100dvh;
+    max-width: none;
+    max-height: none;
+    border-radius: 0;
+    border: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .search-overlay {
+    width: min(95vw, 32rem);
+    margin-top: 10vh;
+  }
+
+  .editor-header {
+    padding: calc(env(safe-area-inset-top, 0px) + 0.75rem) 1rem 0.75rem;
+  }
+
+  .editor-footer {
+    padding: 0.75rem 1rem calc(env(safe-area-inset-bottom, 0px) + 0.75rem);
+  }
+
+  .editor-errors {
+    padding: 0.5rem 1rem;
+  }
+
+  /* Textarea editors: tighter padding, smaller font, word wrap */
+  .editor-textarea {
+    padding: 0.75rem;
+    font-size: 0.8rem;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    min-height: 0;
+  }
+
+  /* Category row: full width select */
+  .category-select, .category-new-input {
+    max-width: none;
+  }
+
+  /* Aisle/category list editor: bigger tap targets */
+  .aisle-order-body {
+    padding: 0.75rem 1rem;
+  }
+
+  .aisle-row {
+    padding: 0.625rem 0.75rem;
+    gap: 0.75rem;
+  }
+
+  .btn-icon-round {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .btn-icon-round-lg {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .aisle-add-row .input-base {
+    font-size: 1rem;
+    padding: 0.4rem 0.5rem;
+  }
+
+  /* Nutrition editor: fullscreen override for ID-specificity width */
+  #nutrition-editor {
+    width: 100vw;
+  }
+
+  /* Nutrition editor: stack labels above inputs */
+  .editor-form {
+    padding: 0.75rem 1rem;
+  }
+
+  .form-row {
+    flex-wrap: wrap;
+  }
+
+  .form-row > label {
+    min-width: 4.5rem;
+    font-size: 0.85rem;
+  }
+
+  .nf-editor .input-sm {
+    width: 4rem;
+  }
+
+  .portion-row {
+    flex-wrap: wrap;
+    gap: 0.25rem 0.5rem;
+  }
+
+  .portion-row .input-base:first-child {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .alias-add-row {
+    flex-wrap: wrap;
+  }
+
+  .usda-search-row { flex-wrap: wrap; }
+  .usda-search-row .input-base { min-width: 0; font-size: 1rem; }
+  .usda-results { max-height: 200px; }
+
+  .editor-section .collapse-header > summary {
+    padding: 0.7rem 0.75rem;
+  }
+}
+/****************************************/
+/* Graphical recipe editor — dual-mode */
+/****************************************/
+
+/* Layout */
+.graphical-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.25rem;
+}
+
+.graphical-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.graphical-label {
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  opacity: 0.6;
+  font-weight: 600;
+}
+
+.graphical-optional {
+  text-transform: none;
+  opacity: 0.5;
+  font-size: 0.85em;
+}
+
+.graphical-front-matter-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.graphical-front-matter-row > * {
+  min-width: 120px;
+  flex: 1;
+}
+
+/* Textarea overrides for graphical editors */
+textarea.input-base {
+  resize: vertical;
+  min-height: 60px;
+  max-height: 8rem;
+  line-height: 1.5;
+}
+
+/* Step cards */
+.graphical-step-card {
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
+  overflow: hidden;
+}
+
+.graphical-step-card > .collapse-header {
+  margin: 0;
+}
+
+.graphical-step-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: var(--surface-alt);
+  cursor: pointer;
+}
+
+.graphical-step-body {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.graphical-step-summary {
+  opacity: 0.4;
+  font-size: 0.8em;
+}
+
+.graphical-step-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.graphical-step-readonly {
+  opacity: 0.7;
+  border-style: dashed;
+}
+
+.graphical-step-hint {
+  opacity: 0.4;
+  font-size: 0.75em;
+  font-style: italic;
+}
+
+/* Ingredients */
+.graphical-ingredients-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.graphical-ingredient-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.graphical-ingredient-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.graphical-ingredient-reorder {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Section header */
+.graphical-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+/* Buttons */
+.graphical-btn {
+  padding: 4px 10px;
+  font-size: 0.8em;
+  font-family: var(--font-body);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  color: inherit;
+  line-height: 1.5;
+  transition: border-color var(--duration-fast) ease, color var(--duration-fast) ease;
+}
+
+.graphical-btn:hover {
+  border-color: var(--text);
+}
+
+.graphical-btn:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+
+.graphical-btn-danger {
+  color: var(--danger-color);
+  border-color: var(--danger-color);
+}
+
+.graphical-btn-danger:hover {
+  background: var(--danger-hover-bg);
+}
+
+/* Editor header — mode toggle and actions */
+.editor-mode-toggle {
+  padding: 4px 8px;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  opacity: 0.6;
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition: opacity var(--duration-fast) ease, border-color var(--duration-fast) ease;
+}
+
+.editor-mode-toggle:hover {
+  opacity: 1;
+  border-color: var(--text);
+}
+
+.editor-mode-toggle:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+
+.editor-header-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* Responsive — mobile stacking */
+@media (max-width: 600px) {
+  .graphical-front-matter-row {
+    flex-direction: column;
+  }
+
+  .graphical-ingredient-row {
+    flex-wrap: wrap;
+  }
+}

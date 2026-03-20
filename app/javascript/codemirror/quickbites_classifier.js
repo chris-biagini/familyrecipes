@@ -5,7 +5,7 @@
  *
  * - editor_setup.js: consumes quickbitesClassifier as a classifier extension
  * - plaintext_editor_controller.js: consumes quickbitesClassifier via registry
- * - style.css (.hl-category, .hl-item, .hl-ingredients): decoration styles
+ * - editor.css (.hl-category, .hl-item, .hl-ingredients): decoration styles
  */
 import { ViewPlugin, Decoration } from "@codemirror/view"
 import { RangeSetBuilder } from "@codemirror/state"

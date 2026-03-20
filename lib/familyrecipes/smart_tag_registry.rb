@@ -8,7 +8,7 @@
 # - SmartTagHelper: reads this to build CSS classes + data attributes
 # - search_overlay_controller.js / tag_input_controller.js: consume JSON
 #   version embedded in the layout
-# - style.css: defines the .tag-pill--{color} and .tag-pill--crossout classes
+# - base.css: defines the .tag-pill--{color} and .tag-pill--crossout classes
 
 module FamilyRecipes
   module SmartTagRegistry # rubocop:disable Metrics/ModuleLength

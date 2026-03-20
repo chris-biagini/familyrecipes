@@ -1,0 +1,57 @@
+/********************/
+/* Styles for print */
+/********************/
+
+@media print {
+  @page {
+    margin: 1in 1.5in;
+  }
+
+  html {
+    font-size: 12pt;
+    margin: 0;
+    padding: 0;
+    background: white;
+  }
+
+  body {
+    margin: 0 auto;
+    padding: 0;
+    background-color: white;
+    color: black;
+    background: none;
+  }
+
+  nav,
+  .notify-bar,
+  .editor-dialog,
+  #export-actions {
+    display: none;
+  }
+
+  h1 {
+    margin-top: 0;
+  }
+
+  main {
+    margin: 0;
+    padding: 0;
+    border: none;
+    background-color: white;
+    box-shadow: none;
+    max-width: none;
+  }
+
+  a {
+    color: black;
+    text-decoration: none;
+  }
+
+  .scalable.scaled {
+    background-color: transparent;
+  }
+
+  .embedded-recipe {
+    box-shadow: none;
+  }
+}
