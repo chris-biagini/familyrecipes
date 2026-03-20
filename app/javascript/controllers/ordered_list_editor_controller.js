@@ -1,6 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { showErrors, clearErrors } from "../utilities/editor_utils"
-import { saveRequest } from "../utilities/editor_utils"
+import { showErrors, clearErrors, saveRequest } from "../utilities/editor_utils"
 import {
   createItem, buildPayload, takeSnapshot, isModified, checkDuplicate,
   renderRows, startInlineRename, swapItems, animateSwap, updateButtonStates
