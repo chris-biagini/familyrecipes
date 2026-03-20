@@ -301,18 +301,40 @@ assertions (`Minitest/EmptyLineBeforeAssertionMethods`).
 
 ## Workflow
 
-**Git hygiene.** Always commit after finishing up edits to a file. When
-completing work on a GitHub issue, reference it in the commit message so that
-it will close on push (e.g., "Resolves #nn" or "Resolves #nn1, resolves #nn2,
-resolves #nn3")
+### Git Strategy — trunk-based with short-lived feature branches
 
-**Branches and PRs.** Small, self-contained changes (a bug fix, a few-line
-cleanup) can go straight to main. Anything that touches multiple files or that
-the user would want to review before it lands should go on a branch with a PR.
-When in doubt, use a branch — it's easy to merge, hard to undo a bad commit to
-main. Squash-and-merge PRs to keep history linear. After merging, clean up:
-`git checkout main && git pull && git branch -D <branch>` (`-D` because the
-post-commit timestamp hook changes SHAs, making `-d` fail).
+**`main` is always deployable.** CI gates every push. Tag releases trigger
+Docker builds.
+
+**Commit directly to `main` when:** the change is small, self-contained, and
+low-risk — a single-file bug fix, doc update, CLAUDE.md edit, or cleanup.
+
+**Use a feature branch + PR when:** the change touches multiple files, adds a
+feature, refactors code, or is anything the user would want to review first.
+When in doubt, branch — it's easy to merge, hard to undo a bad commit to main.
+
+**Branch workflow:**
+```bash
+git checkout -b feature/short-description    # branch from main
+# ... work, committing as you go ...
+git push -u origin feature/short-description # push to GitHub
+gh pr create --title "..." --body "..."      # open PR for review
+# after merge on GitHub:
+git checkout main && git pull && git branch -D feature/short-description
+```
+
+**Key rules:**
+- **Squash-merge PRs** (`gh pr merge --squash`) for clean, linear history.
+- **`-D` not `-d`** for local branch deletion — the post-commit timestamp
+  hook amends SHAs, making `-d`'s "is it merged?" check fail.
+- **No manual git worktrees.** Use simple `git checkout -b` branching. The
+  Agent tool's built-in `isolation: "worktree"` handles subagent isolation
+  automatically when needed — never create worktrees manually. This overrides
+  any superpowers skill that recommends worktrees.
+- **GitHub auto-deletes remote branches** after PR merge.
+- Reference GitHub issues in commit messages to auto-close on push
+  (e.g., "Resolves #nn" or "Resolves #nn1, resolves #nn2").
+- Commit after finishing edits to a file — don't batch unrelated changes.
 
 **Screenshots.** Save to `~/screenshots/`, not inside the repo.
 
