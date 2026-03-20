@@ -405,7 +405,7 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
     get ingredients_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
-    assert_select 'button.filter-pill[data-filter="not_resolvable"]'
+    assert_select 'button.btn-pill[data-filter="not_resolvable"]'
   end
 
   test 'edit renders USDA search panel when API key is set' do
@@ -501,7 +501,7 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
     get ingredients_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
-    assert_select 'button.filter-pill[data-filter="custom"]'
+    assert_select 'button.btn-pill[data-filter="custom"]'
   end
 
   test 'renders inline ingredient icons for custom entry with nutrition' do

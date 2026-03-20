@@ -325,18 +325,7 @@
 .dinner-picker-spin-btn {
   display: block;
   margin: 0 auto;
-  background: var(--red);
-  color: white;
-  border: none;
-  padding: 0.6rem 1.8rem;
-  border-radius: 6px;
-  font-size: 0.95rem;
-  cursor: pointer;
   min-width: 200px;
-}
-
-.dinner-picker-spin-btn:hover {
-  opacity: 0.85;
 }
 
 .dinner-picker-slot[hidden],
@@ -421,33 +410,6 @@
   margin-bottom: 0.6rem;
 }
 
-.result-accept-btn {
-  background: var(--smart-green-bg);
-  color: var(--smart-green-text);
-  border: none;
-  padding: 0.5rem 1.2rem;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  cursor: pointer;
-}
-
-.result-accept-btn:hover {
-  opacity: 0.85;
-}
-
-.result-retry-btn {
-  background: transparent;
-  border: 1px solid var(--rule-faint);
-  color: var(--text-soft);
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  cursor: pointer;
-}
-
-.result-retry-btn:hover {
-  border-color: var(--text-light);
-}
 
 .result-view-link {
   display: block;

@@ -111,7 +111,7 @@ export default class extends Controller {
     container.appendChild(pills)
 
     const btn = document.createElement("button")
-    btn.className = "dinner-picker-spin-btn"
+    btn.className = "btn btn-primary dinner-picker-spin-btn"
     btn.textContent = this.randomQuip()
     btn.addEventListener("click", () => this.spin())
     container.appendChild(btn)
@@ -255,13 +255,13 @@ export default class extends Controller {
     actions.className = "result-actions"
 
     const acceptBtn = document.createElement("button")
-    acceptBtn.className = "result-accept-btn"
+    acceptBtn.className = "btn btn-primary"
     acceptBtn.textContent = "\u2713 Add to Menu"
     acceptBtn.addEventListener("click", () => this.accept(recipe))
     actions.appendChild(acceptBtn)
 
     const retryBtn = document.createElement("button")
-    retryBtn.className = "result-retry-btn"
+    retryBtn.className = "btn"
     retryBtn.textContent = "Try again"
     retryBtn.addEventListener("click", () => this.retry(recipe))
     actions.appendChild(retryBtn)

@@ -14,27 +14,6 @@
   flex: 1;
 }
 
-#custom-add {
-  appearance: none;
-  -webkit-appearance: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  padding: 0;
-  background: none;
-  color: var(--rule);
-  border: 1px solid var(--rule-faint);
-  border-radius: 50%;
-  cursor: pointer;
-  flex-shrink: 0;
-}
-
-#custom-add:hover {
-  color: var(--text-soft);
-  border-color: var(--rule);
-}
 
 #custom-items-list {
   list-style: none;

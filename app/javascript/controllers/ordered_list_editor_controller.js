@@ -152,7 +152,7 @@ export default class extends Controller {
   }
 
   focusMoveButton(newIndex, direction) {
-    const selector = direction === "up" ? ".aisle-btn--up" : ".aisle-btn--down"
+    const selector = direction === "up" ? ".btn-move-up" : ".btn-move-down"
     const row = this.listTarget.children[newIndex]
     if (row) {
       const btn = row.querySelector(selector)

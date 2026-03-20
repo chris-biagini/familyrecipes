@@ -6,7 +6,7 @@
  * Supports an `orderable` flag to suppress up/down buttons for unordered lists.
  *
  * - ordered_list_editor_controller: unified controller for aisles, categories, tags
- * - style.css (.aisle-row, .aisle-btn): shared row and button styles
+ * - style.css (.aisle-row, .btn-icon-round): shared row and button styles
  */
 
 // --- Data / State ---
@@ -90,8 +90,8 @@ export function updateDisabledStates(container) {
 }
 
 export function updateButtonStates(row, livePos, lastLiveIndex) {
-  const up = row.querySelector(".aisle-btn--up")
-  const down = row.querySelector(".aisle-btn--down")
+  const up = row.querySelector(".btn-move-up")
+  const down = row.querySelector(".btn-move-down")
   if (up) up.disabled = livePos <= 0
   if (down) down.disabled = livePos < 0 || livePos >= lastLiveIndex
 }
@@ -212,20 +212,20 @@ function buildControls(item, index, liveItems, callbacks, orderable = true) {
   const livePos = liveItems.indexOf(index)
 
   if (orderable) {
-    const upBtn = buildIconButton(chevronSvg(), "aisle-btn--up", "Move up", index)
+    const upBtn = buildIconButton(chevronSvg(), "btn-move-up", "Move up", index)
     upBtn.addEventListener("click", () => callbacks.onMoveUp(index))
     if (item.deleted || livePos === 0) upBtn.disabled = true
     controls.appendChild(upBtn)
 
-    const downBtn = buildIconButton(chevronSvg(true), "aisle-btn--down", "Move down", index)
+    const downBtn = buildIconButton(chevronSvg(true), "btn-move-down", "Move down", index)
     downBtn.addEventListener("click", () => callbacks.onMoveDown(index))
     if (item.deleted || livePos === liveItems.length - 1) downBtn.disabled = true
     controls.appendChild(downBtn)
   }
 
   const toggleBtn = item.deleted
-    ? buildIconButton(undoSvg(), "aisle-btn--undo", "Undo delete", index)
-    : buildIconButton(deleteSvg(), "aisle-btn--delete", "Delete", index)
+    ? buildIconButton(undoSvg(), "btn-primary", "Undo delete", index)
+    : buildIconButton(deleteSvg(), "btn-danger", "Delete", index)
   toggleBtn.addEventListener("click", () => {
     if (item.deleted) {
       callbacks.onUndo(index)
@@ -241,7 +241,7 @@ function buildControls(item, index, liveItems, callbacks, orderable = true) {
 function buildIconButton(svgElement, className, label, index) {
   const btn = document.createElement("button")
   btn.type = "button"
-  btn.className = `aisle-btn ${className}`
+  btn.className = `btn-icon-round ${className}`
   btn.setAttribute("aria-label", label)
   btn.dataset.index = index
   btn.appendChild(svgElement)

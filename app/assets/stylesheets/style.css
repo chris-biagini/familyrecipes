@@ -976,30 +976,6 @@ header > .recipe-actions {
   line-height: 1;
 }
 
-.edit-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  background: none;
-  border: none;
-  padding: 0.3rem 0.6rem;
-  color: var(--text-light);
-  cursor: pointer;
-  font-family: var(--font-body);
-  font-size: 0.85rem;
-  border-radius: 0.4rem;
-  transition: color var(--duration-normal) ease, background-color var(--duration-slow) ease-out;
-}
-
-.edit-toggle:hover {
-  color: var(--red);
-  background-color: var(--hover-bg);
-}
-
-.edit-toggle:focus-visible {
-  outline: 2px solid var(--red);
-  outline-offset: 2px;
-}
 
 /* Scale controls — animated vertical expand/collapse */
 .scale-controls {
@@ -1051,21 +1027,7 @@ header > .recipe-actions {
 }
 
 .scale-preset {
-  font-family: var(--font-body);
-  font-size: 0.8rem;
-  padding: 0.25rem 0.55rem;
-  border: 1px solid var(--rule);
-  border-radius: 3px;
-  background: var(--ground);
-  color: var(--text);
-  cursor: pointer;
-  transition: background-color var(--duration-fast) ease, border-color var(--duration-fast) ease, color var(--duration-fast) ease;
   line-height: 1;
-}
-
-.scale-preset:hover {
-  border-color: var(--red);
-  color: var(--red);
 }
 
 @keyframes preset-box-pop {
@@ -1100,27 +1062,11 @@ header > .recipe-actions {
   background: color-mix(in srgb, var(--danger-color) 8%, var(--input-bg));
 }
 
-.scale-reset {
-  font-family: var(--font-body);
-  font-size: 0.75rem;
-  padding: 0.2rem 0.5rem 0.2rem 0;
-  border: none;
-  border-radius: 3px;
-  background: none;
-  color: var(--text-light);
-  cursor: pointer;
-  transition: color var(--duration-fast) ease, opacity var(--duration-fast) ease;
-}
-
 .scale-reset[hidden] {
   display: block;
   visibility: hidden;
   opacity: 0;
   pointer-events: none;
-}
-
-.scale-reset:hover {
-  color: var(--red);
 }
 
 .scalable.scaled {
@@ -1264,21 +1210,6 @@ section:first-of-type h2 {
 }
 
 .filter-pills { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-.filter-pill {
-  padding: 0.25rem 0.75rem;
-  border: 1px solid var(--rule);
-  border-radius: 999px;
-  background: transparent;
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition: background var(--duration-fast), color var(--duration-fast), border-color var(--duration-fast);
-}
-.filter-pill:hover { background: var(--hover-bg); border-color: var(--red); }
-.filter-pill.active {
-  background: var(--red);
-  color: #fff;
-  border-color: var(--red);
-}
 
 /* Ingredient table */
 .ingredients-table { width: 100%; border-collapse: collapse; }
@@ -1322,15 +1253,6 @@ section:first-of-type h2 {
 .col-aisle { color: var(--text-soft); font-size: 0.9rem; width: 8rem; }
 .col-recipes { width: 4.5rem; text-align: center; color: var(--text-soft); font-size: 0.9rem; }
 
-.btn-small {
-  font-size: 0.8rem;
-  padding: 0.25rem 0.5rem;
-  border: 1px solid var(--rule);
-  border-radius: 0.25rem;
-  background: transparent;
-  cursor: pointer;
-}
-.btn-small:hover { background: var(--hover-bg); }
 
 .loading-placeholder {
   color: var(--text-soft);
@@ -1630,17 +1552,7 @@ footer small {
   margin-right: auto;
 }
 
-.btn-inline-link {
-  all: unset;
-  cursor: pointer;
-  color: var(--red);
-  text-decoration: underline;
-  text-decoration-style: dotted;
-}
 
-.btn-inline-link:hover {
-  text-decoration-style: solid;
-}
 
 @media (prefers-color-scheme: dark) {
   .nutrition-label {
@@ -2422,60 +2334,12 @@ button.aisle-name:hover {
   flex-shrink: 0;
 }
 
-.aisle-btn {
-  appearance: none;
-  -webkit-appearance: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.75rem;
-  height: 1.75rem;
-  padding: 0;
-  background: none;
-  color: var(--text-light);
-  border: 1px solid var(--rule);
-  border-radius: 50%;
-  cursor: pointer;
-}
-
-.aisle-btn svg {
+.btn-icon-round svg {
   display: block;
 }
 
 .aisle-icon--flipped {
   transform: scaleY(-1);
-}
-
-.aisle-btn:hover:not(:disabled) {
-  color: var(--text-soft);
-  border-color: var(--rule);
-}
-
-.aisle-btn:disabled {
-  opacity: 0.3;
-  cursor: default;
-  transition: opacity var(--duration-fast) ease;
-}
-
-.aisle-btn--delete:hover:not(:disabled) {
-  color: var(--danger-color);
-  border-color: var(--danger-color);
-}
-
-.aisle-btn--undo:hover:not(:disabled) {
-  color: var(--red);
-  border-color: var(--red);
-}
-
-.aisle-btn--add {
-  width: 2.25rem;
-  height: 2.25rem;
-  flex-shrink: 0;
-}
-
-.aisle-btn--add:hover {
-  color: var(--text-soft);
-  border-color: var(--rule);
 }
 
 .aisle-add-row {
@@ -3031,12 +2895,12 @@ button.aisle-name:hover {
     gap: 0.75rem;
   }
 
-  .aisle-btn {
+  .btn-icon-round {
     width: 2.5rem;
     height: 2.5rem;
   }
 
-  .aisle-btn--add {
+  .btn-icon-round-lg {
     width: 2.75rem;
     height: 2.75rem;
   }
