@@ -56,20 +56,24 @@
 </article>
 
 <% if current_member? %>
-<dialog id="category-order-editor" class="editor-dialog"
-        data-controller="ordered-list-editor"
-        data-ordered-list-editor-load-url-value="<%= categories_order_content_path %>"
-        data-ordered-list-editor-save-url-value="<%= categories_order_path %>"
-        data-ordered-list-editor-payload-key-value="category_order"
-        data-ordered-list-editor-load-key-value="categories"
-        data-ordered-list-editor-open-selector-value="#edit-categories-button">
-  <div class="editor-header">
-    <h2>Categories</h2>
-    <button type="button" class="btn editor-close" data-action="click->ordered-list-editor#close" aria-label="Close">&times;</button>
-  </div>
-  <div class="editor-errors" data-ordered-list-editor-target="errors" hidden></div>
-  <div class="aisle-order-body">
-    <div class="aisle-list" data-ordered-list-editor-target="list"></div>
+<%= render layout: 'shared/editor_dialog',
+    locals: { title: 'Categories',
+              id: 'category-order-editor',
+              dialog_data: { extra_controllers: 'ordered-list-editor',
+                             editor_url: categories_order_path,
+                             editor_method: 'PATCH',
+                             editor_on_success: 'reload',
+                             editor_open: '#edit-categories-button' },
+              extra_data: {
+                'ordered-list-editor-save-url-value' => categories_order_path,
+                'ordered-list-editor-payload-key-value' => 'category_order'
+              } } do %>
+  <div class="editor-body aisle-order-body">
+    <turbo-frame id="category-order-frame"
+                 src="<%= categories_order_content_path %>"
+                 data-editor-target="frame">
+      <p class="loading-placeholder">Loading&hellip;</p>
+    </turbo-frame>
     <div class="aisle-add-row">
       <label for="new-category-input" class="sr-only">New category name</label>
       <input type="text" id="new-category-input" class="aisle-add-input" placeholder="Add a category..."
@@ -85,26 +89,26 @@
       </button>
     </div>
   </div>
-  <div class="editor-footer">
-    <button type="button" class="btn editor-cancel" data-action="click->ordered-list-editor#close">Cancel</button>
-    <button type="button" class="btn btn-primary editor-save" data-ordered-list-editor-target="saveButton" data-action="click->ordered-list-editor#save">Save</button>
-  </div>
-</dialog>
+<% end %>
 
-<dialog id="tag-order-editor" class="editor-dialog"
-        data-controller="ordered-list-editor"
-        data-ordered-list-editor-load-url-value="<%= tags_content_path %>"
-        data-ordered-list-editor-save-url-value="<%= tags_update_path %>"
-        data-ordered-list-editor-load-key-value="items"
-        data-ordered-list-editor-open-selector-value="#edit-tags-button"
-        data-ordered-list-editor-orderable-value="false">
-  <div class="editor-header">
-    <h2>Tags</h2>
-    <button type="button" class="btn editor-close" data-action="click->ordered-list-editor#close" aria-label="Close">&times;</button>
-  </div>
-  <div class="editor-errors" data-ordered-list-editor-target="errors" hidden></div>
-  <div class="aisle-order-body">
-    <div class="aisle-list" data-ordered-list-editor-target="list"></div>
+<%= render layout: 'shared/editor_dialog',
+    locals: { title: 'Tags',
+              id: 'tag-order-editor',
+              dialog_data: { extra_controllers: 'ordered-list-editor',
+                             editor_url: tags_update_path,
+                             editor_method: 'PATCH',
+                             editor_on_success: 'reload',
+                             editor_open: '#edit-tags-button' },
+              extra_data: {
+                'ordered-list-editor-save-url-value' => tags_update_path,
+                'ordered-list-editor-orderable-value' => 'false'
+              } } do %>
+  <div class="editor-body aisle-order-body">
+    <turbo-frame id="tag-order-frame"
+                 src="<%= tags_content_path %>"
+                 data-editor-target="frame">
+      <p class="loading-placeholder">Loading&hellip;</p>
+    </turbo-frame>
     <div class="aisle-add-row">
       <label for="new-tag-input" class="sr-only">New tag name</label>
       <input type="text" id="new-tag-input" class="aisle-add-input" placeholder="Add a tag..."
@@ -120,11 +124,7 @@
       </button>
     </div>
   </div>
-  <div class="editor-footer">
-    <button type="button" class="btn editor-cancel" data-action="click->ordered-list-editor#close">Cancel</button>
-    <button type="button" class="btn btn-primary editor-save" data-ordered-list-editor-target="saveButton" data-action="click->ordered-list-editor#save">Save</button>
-  </div>
-</dialog>
+<% end %>
 <% end %>
 
 <% if current_member? %>

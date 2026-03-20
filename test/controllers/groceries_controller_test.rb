@@ -233,7 +233,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select '#edit-aisle-order-button', 'Edit Aisles'
-    assert_select 'dialog[data-controller="ordered-list-editor"]'
+    assert_select 'dialog[data-controller="editor ordered-list-editor"]'
   end
 
   # --- Uncounted indicators ---
