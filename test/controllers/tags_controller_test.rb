@@ -19,6 +19,7 @@ class TagsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select 'turbo-frame#tag-order-frame'
+    assert_select "[data-ordered-list-editor-target='list']"
     assert_select '.aisle-row[data-name="quick"]'
     assert_select '.aisle-row[data-name="vegan"]'
   end

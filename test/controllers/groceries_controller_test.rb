@@ -390,6 +390,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select 'turbo-frame#aisle-order-frame'
+    assert_select "[data-ordered-list-editor-target='list']"
     assert_select '.aisle-row[data-name="Baking"]'
     assert_select '.aisle-row[data-name="Spices"]'
   end

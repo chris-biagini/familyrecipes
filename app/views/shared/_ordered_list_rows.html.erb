@@ -1,8 +1,10 @@
 <%# locals: (items:) %>
-<% items.each_with_index do |name, index| %>
-  <div class="aisle-row" data-name="<%= name %>" data-index="<%= index %>">
-    <div class="aisle-name-area">
-      <span class="aisle-name"><%= name %></span>
+<div class="aisle-list" data-ordered-list-editor-target="list">
+  <% items.each do |name| %>
+    <div class="aisle-row" data-name="<%= name %>">
+      <div class="aisle-name-area">
+        <span class="aisle-name"><%= name %></span>
+      </div>
     </div>
-  </div>
-<% end %>
+  <% end %>
+</div>
