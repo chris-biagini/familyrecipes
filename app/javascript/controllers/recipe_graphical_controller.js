@@ -22,6 +22,46 @@ export default class extends Controller {
 
   connect() {
     this.steps = []
+    if (this.stepsContainerTarget.children.length > 0) {
+      this.initFromRenderedDOM()
+    }
+  }
+
+  initFromRenderedDOM() {
+    const cards = this.stepsContainerTarget.children
+    this.steps = Array.from(cards).map(card => this.readStepFromCard(card))
+    this.rebuildSteps()
+    if (this.steps.length > 0) expandAccordionItem(this.stepsContainerTarget, 0)
+  }
+
+  readStepFromCard(card) {
+    if (card.classList.contains("graphical-step-card--crossref")) {
+      const label = card.querySelector(".graphical-crossref-label")?.textContent || ""
+      const match = label.match(/Imports from (.+?)(?:\s*\u00d7([\d.]+))?$/)
+      return {
+        cross_reference: {
+          target_title: match?.[1]?.trim() || "",
+          multiplier: match?.[2] ? parseFloat(match[2]) : null
+        }
+      }
+    }
+
+    const body = card.querySelector(".graphical-step-body")
+    return {
+      tldr: body?.querySelector("[data-field='tldr']")?.value || "",
+      ingredients: this.readIngredientsFromCard(card),
+      instructions: body?.querySelector("[data-field='instructions']")?.value || "",
+      cross_reference: null
+    }
+  }
+
+  readIngredientsFromCard(card) {
+    const rows = card.querySelectorAll(".graphical-ingredient-row")
+    return Array.from(rows).map(row => ({
+      name: row.querySelector("[data-field='name']")?.value || "",
+      quantity: row.querySelector("[data-field='quantity']")?.value || "",
+      prep_note: row.querySelector("[data-field='prep_note']")?.value || ""
+    }))
   }
 
   // --- Public API (for coordinator) ---

@@ -75,7 +75,7 @@
           <label class="graphical-label">Tags</label>
           <div data-controller="tag-input"
                data-tag-input-all-tags-value="<%= current_kitchen.tags.left_joins(:recipe_tags).group(:name).order(:name).count.to_a.to_json %>"
-               data-tag-input-initial-value="<%= (structure.dig(:front_matter, :tags) || []).to_json %>">
+               data-tag-input-tags-value="<%= (structure.dig(:front_matter, :tags) || []).to_json %>">
             <div class="tag-input-container">
               <div class="tag-pills" data-tag-input-target="pills"></div>
               <input type="text" class="tag-input-field" placeholder="Add tag..."

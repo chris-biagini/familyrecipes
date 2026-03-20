@@ -67,14 +67,13 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     assert_select '#edit-button'
   end
 
-  test 'renders editor dialog with load URL' do
+  test 'renders editor dialog with Turbo Frame' do
     log_in
 
     get recipe_path('focaccia', kitchen_slug: kitchen_slug)
 
-    assert_select '#recipe-editor[data-editor-load-url-value]'
-    assert_select '#recipe-editor[data-editor-load-key-value="markdown_source"]'
-    assert_select '.cm-mount'
+    assert_select '#recipe-editor turbo-frame#recipe-editor-content[src]'
+    assert_select '#recipe-editor turbo-frame[data-editor-target="frame"]'
   end
 
   test 'renders scale bar with toggle and presets' do
@@ -529,11 +528,11 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     assert_select 'article.embedded-recipe[data-base-multiplier="2.0"]'
   end
 
-  test 'recipe editor includes CodeMirror mount without side panel' do
+  test 'recipe editor uses Turbo Frame instead of inline content' do
     log_in
     get recipe_path('focaccia', kitchen_slug: kitchen_slug)
 
-    assert_select '#recipe-editor .cm-mount'
+    assert_select '#recipe-editor turbo-frame#recipe-editor-content'
     assert_select '#recipe-editor select.category-select', count: 0
   end
 

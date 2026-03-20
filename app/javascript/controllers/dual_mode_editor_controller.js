@@ -133,6 +133,19 @@ export default class extends Controller {
     event.detail.handled = true
     const data = event.detail
 
+    if (!data[this.contentKeyValue]) {
+      const jsonEl = this.element.querySelector("script[data-editor-markdown]")
+      if (jsonEl) {
+        const parsed = JSON.parse(jsonEl.textContent)
+        this.originalContent = parsed[this.contentKeyValue] || ""
+        this.plaintextController.content = this.originalContent
+      }
+      this.originalStructure = this.graphicalController.toStructure()
+      this.enableEditing()
+      this.showActiveMode()
+      return
+    }
+
     this.originalContent = data[this.contentKeyValue]
     this.originalStructure = data.structure
 
