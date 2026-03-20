@@ -1,6 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
 import { buildButton, buildInput, buildFieldGroup, buildTextareaGroup } from "../utilities/dom_builders"
-import { toggleAccordionItem, expandAccordionItem, buildToggleButton } from "../utilities/accordion"
 import { structureChanged } from "../utilities/editor_utils"
 
 /**
@@ -31,7 +30,7 @@ export default class extends Controller {
     const cards = this.stepsContainerTarget.children
     this.steps = Array.from(cards).map(card => this.readStepFromCard(card))
     this.rebuildSteps()
-    if (this.steps.length > 0) expandAccordionItem(this.stepsContainerTarget, 0)
+    if (this.steps.length > 0) this.expandItem(this.stepsContainerTarget, 0)
   }
 
   readStepFromCard(card) {
@@ -182,7 +181,7 @@ export default class extends Controller {
   loadSteps(stepsData) {
     this.steps = stepsData.map(s => ({ ...s }))
     this.rebuildSteps()
-    if (this.steps.length > 0) expandAccordionItem(this.stepsContainerTarget, 0)
+    if (this.steps.length > 0) this.expandItem(this.stepsContainerTarget, 0)
   }
 
   removeStep(index) {
@@ -198,7 +197,7 @@ export default class extends Controller {
     const [moved] = this.steps.splice(index, 1)
     this.steps.splice(target, 0, moved)
     this.rebuildSteps()
-    expandAccordionItem(this.stepsContainerTarget, target)
+    this.expandItem(this.stepsContainerTarget, target)
   }
 
   rebuildSteps() {
@@ -214,10 +213,31 @@ export default class extends Controller {
   findExpandedIndex() {
     const cards = this.stepsContainerTarget.children
     for (let i = 0; i < cards.length; i++) {
-      const body = cards[i].querySelector(".graphical-step-body")
-      if (body && !body.hidden) return i
+      const details = cards[i].querySelector("details.collapse-header")
+      if (details?.open) return i
     }
     return -1
+  }
+
+  // --- Accordion helpers ---
+
+  collapseAll(container) {
+    container.querySelectorAll("details.collapse-header[open]").forEach(d => { d.open = false })
+  }
+
+  expandItem(container, index) {
+    this.collapseAll(container)
+    const card = container.children[index]
+    if (!card) return
+    const details = card.querySelector("details.collapse-header")
+    if (details) details.open = true
+  }
+
+  toggleItem(container, index) {
+    const card = container.children[index]
+    if (!card) return
+    const details = card.querySelector("details.collapse-header")
+    if (details) details.open = !details.open
   }
 
   // --- Step Card DOM Builder ---
@@ -227,8 +247,8 @@ export default class extends Controller {
 
     const card = document.createElement("div")
     card.className = "graphical-step-card"
-    card.appendChild(this.buildStepHeader(index, stepData))
-    card.appendChild(this.buildStepBody(index, stepData))
+    card.appendChild(this.buildStepDetails(index, stepData))
+    card.appendChild(this.buildStepCollapseBody(index, stepData))
     return card
   }
 
@@ -262,19 +282,19 @@ export default class extends Controller {
     return label
   }
 
-  buildStepHeader(index, stepData) {
-    const header = document.createElement("div")
-    header.className = "graphical-step-header"
-    header.addEventListener("click", (e) => {
-      if (e.target.closest(".graphical-step-actions") || e.target.closest(".graphical-step-toggle")) return
-      toggleAccordionItem(this.stepsContainerTarget, index)
-    })
+  buildStepDetails(index, stepData) {
+    const details = document.createElement("details")
+    details.className = "collapse-header"
 
-    header.appendChild(buildToggleButton(() => toggleAccordionItem(this.stepsContainerTarget, index)))
-    header.appendChild(this.buildStepTitle(index, stepData))
-    header.appendChild(this.buildIngredientSummary(stepData))
-    header.appendChild(this.buildStepActions(index))
-    return header
+    const summary = document.createElement("summary")
+    summary.className = "graphical-step-header"
+
+    summary.appendChild(this.buildStepTitle(index, stepData))
+    summary.appendChild(this.buildIngredientSummary(stepData))
+    summary.appendChild(this.buildStepActions(index))
+
+    details.appendChild(summary)
+    return details
   }
 
   buildStepTitle(index, stepData) {
@@ -302,23 +322,26 @@ export default class extends Controller {
     return actions
   }
 
-  buildStepBody(index, stepData) {
-    const body = document.createElement("div")
-    body.className = "graphical-step-body"
-    body.hidden = true
+  buildStepCollapseBody(index, stepData) {
+    const wrapper = document.createElement("div")
+    wrapper.className = "collapse-body"
 
-    body.appendChild(buildFieldGroup("Step name", "text", stepData.tldr || "", (val) => {
+    const inner = document.createElement("div")
+    inner.className = "collapse-inner graphical-step-body"
+
+    inner.appendChild(buildFieldGroup("Step name", "text", stepData.tldr || "", (val) => {
       this.steps[index].tldr = val
       this.updateStepTitleDisplay(index)
     }))
 
-    body.appendChild(this.buildIngredientsSection(index, stepData.ingredients || []))
+    inner.appendChild(this.buildIngredientsSection(index, stepData.ingredients || []))
 
-    body.appendChild(buildTextareaGroup("Instructions", stepData.instructions || "", (val) => {
+    inner.appendChild(buildTextareaGroup("Instructions", stepData.instructions || "", (val) => {
       this.steps[index].instructions = val
     }))
 
-    return body
+    wrapper.appendChild(inner)
+    return wrapper
   }
 
   updateStepTitleDisplay(index) {

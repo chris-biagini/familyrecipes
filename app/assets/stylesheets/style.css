@@ -3469,6 +3469,10 @@ a.recipe-link {
   overflow: hidden;
 }
 
+.graphical-step-card > .collapse-header {
+  margin: 0;
+}
+
 .graphical-step-header {
   display: flex;
   justify-content: space-between;
@@ -3478,27 +3482,11 @@ a.recipe-link {
   cursor: pointer;
 }
 
-.graphical-step-header-left {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
 .graphical-step-body {
   padding: 14px;
   display: flex;
   flex-direction: column;
   gap: 1rem;
-}
-
-.graphical-step-body[hidden] {
-  display: none;
-}
-
-.graphical-step-toggle {
-  opacity: 0.4;
-  font-size: 0.8em;
-  cursor: pointer;
 }
 
 .graphical-step-summary {

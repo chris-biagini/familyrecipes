@@ -1,12 +1,11 @@
 import { Controller } from "@hotwired/stimulus"
 import { buildButton, buildInput, buildFieldGroup } from "../utilities/dom_builders"
-import { toggleAccordionItem, expandAccordionItem, buildToggleButton } from "../utilities/accordion"
 import { structureChanged } from "../utilities/editor_utils"
 
 /**
  * Form-based Quick Bites editor: structured fields for categories containing
- * items. Each category is a collapsible accordion card with item rows (name +
- * ingredients). Produces an IR hash matching QuickBitesSerializer output for
+ * items. Each category is a collapsible card using native <details> with CSS
+ * grid animation. Produces an IR hash matching QuickBitesSerializer output for
  * the structured save path. Simpler than the recipe graphical editor — only
  * two levels (categories with items, no steps/instructions).
  *
@@ -27,7 +26,7 @@ export default class extends Controller {
     const cards = this.categoriesContainerTarget.children
     this.categories = Array.from(cards).map(card => this.readCategoryFromCard(card))
     this.rebuildCategories()
-    if (this.categories.length > 0) expandAccordionItem(this.categoriesContainerTarget, 0)
+    if (this.categories.length > 0) this.expandItem(this.categoriesContainerTarget, 0)
   }
 
   readCategoryFromCard(card) {
@@ -52,7 +51,7 @@ export default class extends Controller {
       items: (cat.items || []).map(item => ({ ...item }))
     }))
     this.rebuildCategories()
-    if (this.categories.length > 0) expandAccordionItem(this.categoriesContainerTarget, 0)
+    if (this.categories.length > 0) this.expandItem(this.categoriesContainerTarget, 0)
   }
 
   toStructure() {
@@ -66,7 +65,21 @@ export default class extends Controller {
   addCategory() {
     this.categories.push({ name: "", items: [] })
     this.appendCategoryCard(this.categories.length - 1, this.categories.at(-1))
-    expandAccordionItem(this.categoriesContainerTarget, this.categories.length - 1)
+    this.expandItem(this.categoriesContainerTarget, this.categories.length - 1)
+  }
+
+  // --- Accordion helpers ---
+
+  collapseAll(container) {
+    container.querySelectorAll("details.collapse-header[open]").forEach(d => { d.open = false })
+  }
+
+  expandItem(container, index) {
+    this.collapseAll(container)
+    const card = container.children[index]
+    if (!card) return
+    const details = card.querySelector("details.collapse-header")
+    if (details) details.open = true
   }
 
   // --- Category Management ---
@@ -83,7 +96,7 @@ export default class extends Controller {
     const [moved] = this.categories.splice(index, 1)
     this.categories.splice(target, 0, moved)
     this.rebuildCategories()
-    expandAccordionItem(this.categoriesContainerTarget, target)
+    this.expandItem(this.categoriesContainerTarget, target)
   }
 
   rebuildCategories() {
@@ -166,24 +179,24 @@ export default class extends Controller {
   buildCategoryCard(index, catData) {
     const card = document.createElement("div")
     card.className = "graphical-step-card"
-    card.appendChild(this.buildCategoryHeader(index, catData))
-    card.appendChild(this.buildCategoryBody(index, catData))
+    card.appendChild(this.buildCategoryDetails(index, catData))
+    card.appendChild(this.buildCategoryCollapseBody(index, catData))
     return card
   }
 
-  buildCategoryHeader(index, catData) {
-    const header = document.createElement("div")
-    header.className = "graphical-step-header"
-    header.addEventListener("click", (e) => {
-      if (e.target.closest(".graphical-step-actions") || e.target.closest(".graphical-step-toggle")) return
-      toggleAccordionItem(this.categoriesContainerTarget, index)
-    })
+  buildCategoryDetails(index, catData) {
+    const details = document.createElement("details")
+    details.className = "collapse-header"
 
-    header.appendChild(buildToggleButton(() => toggleAccordionItem(this.categoriesContainerTarget, index)))
-    header.appendChild(this.buildCategoryTitle(index, catData))
-    header.appendChild(this.buildItemSummary(catData))
-    header.appendChild(this.buildCategoryActions(index))
-    return header
+    const summary = document.createElement("summary")
+    summary.className = "graphical-step-header"
+
+    summary.appendChild(this.buildCategoryTitle(index, catData))
+    summary.appendChild(this.buildItemSummary(catData))
+    summary.appendChild(this.buildCategoryActions(index))
+
+    details.appendChild(summary)
+    return details
   }
 
   buildCategoryTitle(index, catData) {
@@ -211,18 +224,22 @@ export default class extends Controller {
     return actions
   }
 
-  buildCategoryBody(index, catData) {
-    const body = document.createElement("div")
-    body.className = "graphical-step-body"
-    body.hidden = true
+  buildCategoryCollapseBody(index, catData) {
+    const wrapper = document.createElement("div")
+    wrapper.className = "collapse-body"
 
-    body.appendChild(buildFieldGroup("Category name", "text", catData.name || "", (val) => {
+    const inner = document.createElement("div")
+    inner.className = "collapse-inner graphical-step-body"
+
+    inner.appendChild(buildFieldGroup("Category name", "text", catData.name || "", (val) => {
       this.categories[index].name = val
       this.updateCategoryTitleDisplay(index)
     }))
 
-    body.appendChild(this.buildItemsSection(index, catData.items || []))
-    return body
+    inner.appendChild(this.buildItemsSection(index, catData.items || []))
+
+    wrapper.appendChild(inner)
+    return wrapper
   }
 
   updateCategoryTitleDisplay(index) {
