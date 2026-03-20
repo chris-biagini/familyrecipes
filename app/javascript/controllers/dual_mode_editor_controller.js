@@ -135,11 +135,15 @@ export default class extends Controller {
 
     if (!data[this.contentKeyValue]) {
       const jsonEl = this.element.querySelector("script[data-editor-markdown]")
-      if (jsonEl) {
-        const parsed = JSON.parse(jsonEl.textContent)
-        this.originalContent = parsed[this.contentKeyValue] || ""
-        this.plaintextController.content = this.originalContent
+      if (!jsonEl) {
+        // No frame content — new recipe or other non-frame case
+        this.enableEditing()
+        this.showActiveMode()
+        return
       }
+      const parsed = JSON.parse(jsonEl.textContent)
+      this.originalContent = parsed[this.contentKeyValue] || ""
+      this.plaintextController.content = this.originalContent
       this.originalStructure = this.graphicalController.toStructure()
       this.enableEditing()
       this.showActiveMode()
