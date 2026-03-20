@@ -21,7 +21,7 @@ export function buildInput(placeholder, value, onChange, className) {
   input.type = "text"
   input.placeholder = placeholder
   input.value = value
-  if (className) input.className = className
+  input.className = className ? `input-base ${className}` : "input-base"
   input.addEventListener("input", () => onChange(input.value))
   return input
 }
@@ -36,6 +36,7 @@ export function buildFieldGroup(labelText, type, value, onChange) {
 
   const input = document.createElement("input")
   input.type = type
+  input.className = "input-base"
   input.value = value
   input.addEventListener("input", () => onChange(input.value))
   group.appendChild(input)
@@ -52,6 +53,7 @@ export function buildTextareaGroup(labelText, value, onChange) {
   group.appendChild(label)
 
   const textarea = document.createElement("textarea")
+  textarea.className = "input-base"
   textarea.value = value
   textarea.rows = 4
   textarea.addEventListener("input", () => onChange(textarea.value))

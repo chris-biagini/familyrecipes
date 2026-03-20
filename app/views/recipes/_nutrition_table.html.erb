@@ -48,7 +48,7 @@
     <%- end -%>
     <%- all_issues.each_with_index do |issue, i| -%>
       <%- if current_member? -%>
-        <button type="button" class="btn-inline-link" data-open-editor data-ingredient-name="<%= issue[:name] %>"><%= issue[:name] %></button><%- else -%>
+        <button type="button" class="btn-link" data-open-editor data-ingredient-name="<%= issue[:name] %>"><%= issue[:name] %></button><%- else -%>
         <%= issue[:name] %><%- end -%><%= " (#{issue[:reason]})" if issue[:reason] %><%= ',' unless i == all_issues.size - 1 %>
     <%- end -%>.</p>
   <%- end -%>

@@ -13,35 +13,36 @@
   </div>
 <% else %>
   <div class="graphical-step-card">
-    <div class="graphical-step-header">
-      <button type="button" class="graphical-step-toggle">
-        <span class="graphical-step-toggle-icon">&#x25B6;</span>
-      </button>
-      <span class="graphical-step-title"><%= step[:tldr] || "Step #{index + 1}" %></span>
-      <span class="graphical-ingredient-summary"><%= ingredient_summary(step[:ingredients]) %></span>
-    </div>
-    <div class="graphical-step-body" hidden>
-      <div class="graphical-field-group">
-        <label>Step name</label>
-        <input type="text" value="<%= step[:tldr] %>" data-field="tldr">
-      </div>
-      <div class="graphical-ingredients-section">
-        <div class="graphical-ingredients-header">
-          <span>Ingredients</span>
+    <details class="collapse-header"<%= " open" if index == 0 %>>
+      <summary class="graphical-step-header">
+        <span class="graphical-step-title"><%= step[:tldr] || "Step #{index + 1}" %></span>
+        <span class="graphical-ingredient-summary"><%= ingredient_summary(step[:ingredients]) %></span>
+      </summary>
+    </details>
+    <div class="collapse-body">
+      <div class="collapse-inner graphical-step-body">
+        <div class="graphical-field-group">
+          <label>Step name</label>
+          <input type="text" value="<%= step[:tldr] %>" data-field="tldr">
         </div>
-        <div class="graphical-ingredient-rows" data-step-index="<%= index %>">
-          <% (step[:ingredients] || []).each do |ing| %>
-            <div class="graphical-ingredient-row">
-              <input type="text" placeholder="Name" value="<%= ing[:name] %>" class="graphical-input--name" data-field="name">
-              <input type="text" placeholder="Qty" value="<%= ing[:quantity] %>" class="graphical-input--qty" data-field="quantity">
-              <input type="text" placeholder="Prep note" value="<%= ing[:prep_note] %>" class="graphical-input--prep" data-field="prep_note">
-            </div>
-          <% end %>
+        <div class="graphical-ingredients-section">
+          <div class="graphical-ingredients-header">
+            <span>Ingredients</span>
+          </div>
+          <div class="graphical-ingredient-rows" data-step-index="<%= index %>">
+            <% (step[:ingredients] || []).each do |ing| %>
+              <div class="graphical-ingredient-row">
+                <input type="text" placeholder="Name" value="<%= ing[:name] %>" class="graphical-input--name" data-field="name">
+                <input type="text" placeholder="Qty" value="<%= ing[:quantity] %>" class="graphical-input--qty" data-field="quantity">
+                <input type="text" placeholder="Prep note" value="<%= ing[:prep_note] %>" class="graphical-input--prep" data-field="prep_note">
+              </div>
+            <% end %>
+          </div>
         </div>
-      </div>
-      <div class="graphical-field-group">
-        <label>Instructions</label>
-        <textarea rows="4" data-field="instructions"><%= step[:instructions] %></textarea>
+        <div class="graphical-field-group">
+          <label>Instructions</label>
+          <textarea rows="4" data-field="instructions"><%= step[:instructions] %></textarea>
+        </div>
       </div>
     </div>
   </div>

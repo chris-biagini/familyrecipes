@@ -1,35 +1,35 @@
 <%# locals: (summary:, coverage:) %>
-<button type="button" class="filter-pill active"
+<button type="button" class="btn-pill active"
         data-ingredient-table-target="filterButton"
         data-filter="all"
         data-action="click->ingredient-table#filter"
         aria-pressed="true">All (<%= summary[:total] %>)</button>
-<button type="button" class="filter-pill"
+<button type="button" class="btn-pill"
         data-ingredient-table-target="filterButton"
         data-filter="complete"
         data-action="click->ingredient-table#filter"
         aria-pressed="false">Complete (<%= summary[:complete] %>)</button>
-<button type="button" class="filter-pill"
+<button type="button" class="btn-pill"
         data-ingredient-table-target="filterButton"
         data-filter="custom"
         data-action="click->ingredient-table#filter"
         aria-pressed="false">Custom (<%= summary[:custom] %>)</button>
-<button type="button" class="filter-pill"
+<button type="button" class="btn-pill"
         data-ingredient-table-target="filterButton"
         data-filter="no_aisle"
         data-action="click->ingredient-table#filter"
         aria-pressed="false">No Aisle (<%= summary[:missing_aisle] %>)</button>
-<button type="button" class="filter-pill"
+<button type="button" class="btn-pill"
         data-ingredient-table-target="filterButton"
         data-filter="no_nutrition"
         data-action="click->ingredient-table#filter"
         aria-pressed="false">No Nutrition (<%= summary[:missing_nutrition] %>)</button>
-<button type="button" class="filter-pill"
+<button type="button" class="btn-pill"
         data-ingredient-table-target="filterButton"
         data-filter="no_density"
         data-action="click->ingredient-table#filter"
         aria-pressed="false">No Density (<%= summary[:missing_density] %>)</button>
-<button type="button" class="filter-pill"
+<button type="button" class="btn-pill"
         data-ingredient-table-target="filterButton"
         data-filter="not_resolvable"
         data-action="click->ingredient-table#filter"

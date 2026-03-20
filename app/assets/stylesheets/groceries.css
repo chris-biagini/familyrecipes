@@ -12,39 +12,8 @@
 
 #custom-input {
   flex: 1;
-  padding: 0.5rem 0.75rem;
-  font-family: var(--font-body);
-  font-size: 16px;
-  border: 1px solid var(--rule-faint);
-  border-radius: 4px;
 }
 
-#custom-input:focus {
-  outline: none;
-  border-color: var(--rule);
-}
-
-#custom-add {
-  appearance: none;
-  -webkit-appearance: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  padding: 0;
-  background: none;
-  color: var(--rule);
-  border: 1px solid var(--rule-faint);
-  border-radius: 50%;
-  cursor: pointer;
-  flex-shrink: 0;
-}
-
-#custom-add:hover {
-  color: var(--text-soft);
-  border-color: var(--rule);
-}
 
 #custom-items-list {
   list-style: none;
@@ -152,72 +121,42 @@
   padding: 0.3rem 0;
 }
 
-/* On-hand divider button */
-.on-hand-divider {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  width: 100%;
-  padding: 0.4rem 0.75rem;
+/* On-hand section (collapse-header layering) */
+.on-hand-section {
   border: none;
+}
+
+.on-hand-divider summary {
+  padding: 0.4rem 0.75rem;
   border-top: 1px solid var(--rule-faint);
-  background: none;
-  cursor: pointer;
   font-family: var(--font-body);
   font-size: 0.75rem;
   color: var(--text-light);
-  text-align: left;
 }
 
-.on-hand-divider:hover {
+.on-hand-divider summary:hover {
   color: var(--text-soft);
 }
 
-.on-hand-arrow {
-  font-size: 0.6rem;
-  transition: transform var(--duration-fast) ease;
-}
-
-.on-hand-divider[aria-expanded="true"] .on-hand-arrow {
-  transform: rotate(90deg);
-}
-
-/* On-hand items container */
-.on-hand-items {
+.on-hand-body .on-hand-items {
+  list-style: none;
+  margin: 0;
   padding: 0 0.75rem 0.5rem;
 }
 
-.on-hand-items[hidden] {
-  display: none;
-}
-
-.on-hand-items ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.on-hand-items li {
+.on-hand-body .on-hand-items li {
   padding: 0.3rem 0;
 }
 
 /* Fully-checked aisle */
-.aisle-complete .aisle-complete-header {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  width: 100%;
+.aisle-complete-header summary {
   padding: 0.6rem 0.75rem;
-  border: none;
-  background: none;
-  cursor: pointer;
   font-family: var(--font-body);
   font-size: 0.8rem;
-  text-align: left;
   color: var(--text-light);
 }
 
-.aisle-complete .aisle-complete-header:hover {
+.aisle-complete-header summary:hover {
   color: var(--text-soft);
 }
 
@@ -299,8 +238,8 @@
   }
 
   /* Hide on-hand sections, dividers, and fully-checked aisles */
-  .on-hand-divider,
-  .on-hand-items,
+  .on-hand-section,
+  .on-hand-body,
   .aisle-complete {
     display: none !important;
   }

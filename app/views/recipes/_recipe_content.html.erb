@@ -35,7 +35,7 @@
       <div class="scale-bar" data-scale-panel-target="panel">
         <div class="recipe-actions">
           <%- if current_member? -%>
-          <button type="button" id="edit-button" class="edit-toggle">
+          <button type="button" id="edit-button" class="btn-ghost">
             <svg width="12" height="12" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 4l6 6-16 16H6v-6z"/><line x1="18" y1="8" x2="24" y2="14"/></svg>
             Edit
           </button>
@@ -47,15 +47,15 @@
           <div class="scale-controls-inner">
             <div class="scale-controls-center">
               <div class="scale-presets">
-                <button type="button" class="scale-preset" data-scale-panel-target="preset" data-action="scale-panel#selectPreset">&frac12;&times;</button>
-                <button type="button" class="scale-preset active" data-scale-panel-target="preset" data-action="scale-panel#selectPreset">1&times;</button>
-                <button type="button" class="scale-preset" data-scale-panel-target="preset" data-action="scale-panel#selectPreset">2&times;</button>
-                <button type="button" class="scale-preset" data-scale-panel-target="preset" data-action="scale-panel#selectPreset">3&times;</button>
+                <button type="button" class="btn btn-sm scale-preset" data-scale-panel-target="preset" data-action="scale-panel#selectPreset">&frac12;&times;</button>
+                <button type="button" class="btn btn-sm scale-preset active" data-scale-panel-target="preset" data-action="scale-panel#selectPreset">1&times;</button>
+                <button type="button" class="btn btn-sm scale-preset" data-scale-panel-target="preset" data-action="scale-panel#selectPreset">2&times;</button>
+                <button type="button" class="btn btn-sm scale-preset" data-scale-panel-target="preset" data-action="scale-panel#selectPreset">3&times;</button>
               </div>
               <span class="scale-divider"></span>
               <div class="scale-input-group">
-                <input type="text" class="scale-input" data-scale-panel-target="input" data-action="input->scale-panel#onInput" value="1" placeholder="e.g. 3/2" inputmode="text" autocomplete="off">
-                <button type="button" class="scale-reset" data-scale-panel-target="reset" data-action="scale-panel#reset" hidden>Reset</button>
+                <input type="text" class="input-base input-sm scale-input" data-scale-panel-target="input" data-action="input->scale-panel#onInput" value="1" placeholder="e.g. 3/2" inputmode="text" autocomplete="off">
+                <button type="button" class="btn-ghost btn-sm scale-reset" data-scale-panel-target="reset" data-action="scale-panel#reset" hidden>Reset</button>
               </div>
             </div>
           </div>

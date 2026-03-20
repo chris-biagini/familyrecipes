@@ -4,29 +4,30 @@
     (move/remove/add item) are omitted — the JS controller adds them when
     it hydrates. %>
 <div class="graphical-step-card">
-  <div class="graphical-step-header">
-    <button type="button" class="graphical-step-toggle">
-      <span class="graphical-step-toggle-icon">&#x25B6;</span>
-    </button>
-    <span class="graphical-step-title"><%= category[:name].presence || "Category #{index + 1}" %></span>
-    <span class="graphical-ingredient-summary"><%= item_summary(category[:items]) %></span>
-  </div>
-  <div class="graphical-step-body" hidden>
-    <div class="graphical-field-group">
-      <label>Category name</label>
-      <input type="text" value="<%= category[:name] %>" data-field="name">
-    </div>
-    <div class="graphical-ingredients-section">
-      <div class="graphical-ingredients-header">
-        <span>Items</span>
+  <details class="collapse-header"<%= " open" if index == 0 %>>
+    <summary class="graphical-step-header">
+      <span class="graphical-step-title"><%= category[:name].presence || "Category #{index + 1}" %></span>
+      <span class="graphical-ingredient-summary"><%= item_summary(category[:items]) %></span>
+    </summary>
+  </details>
+  <div class="collapse-body">
+    <div class="collapse-inner graphical-step-body">
+      <div class="graphical-field-group">
+        <label>Category name</label>
+        <input type="text" value="<%= category[:name] %>" data-field="name">
       </div>
-      <div class="graphical-ingredient-rows" data-cat-index="<%= index %>">
-        <% (category[:items] || []).each do |item| %>
-          <div class="graphical-ingredient-row">
-            <input type="text" placeholder="Item name" value="<%= item[:name] %>" class="graphical-input--name" data-field="item-name">
-            <input type="text" placeholder="Ingredients (comma-separated)" value="<%= ingredients_display_text(item) %>" class="graphical-input--prep" data-field="ingredients-text">
-          </div>
-        <% end %>
+      <div class="graphical-ingredients-section">
+        <div class="graphical-ingredients-header">
+          <span>Items</span>
+        </div>
+        <div class="graphical-ingredient-rows" data-cat-index="<%= index %>">
+          <% (category[:items] || []).each do |item| %>
+            <div class="graphical-ingredient-row">
+              <input type="text" placeholder="Item name" value="<%= item[:name] %>" class="graphical-input--name" data-field="item-name">
+              <input type="text" placeholder="Ingredients (comma-separated)" value="<%= ingredients_display_text(item) %>" class="graphical-input--prep" data-field="ingredients-text">
+            </div>
+          <% end %>
+        </div>
       </div>
     </div>
   </div>

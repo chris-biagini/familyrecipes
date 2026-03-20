@@ -138,7 +138,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
 
     get menu_path(kitchen_slug: kitchen_slug)
 
-    assert_select 'details.availability-detail summary', text: %r{1/2}
+    assert_select 'details.collapse-header summary', text: %r{1/2}
   end
 
   test 'show renders x for single-ingredient recipe when not on hand' do
@@ -174,7 +174,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
 
     get menu_path(kitchen_slug: kitchen_slug)
 
-    assert_select 'details.availability-detail.all-on-hand summary', text: %r{2/2}
+    assert_select 'details.collapse-header.all-on-hand summary', text: %r{2/2}
   end
 
   test 'show embeds cook history weights' do
