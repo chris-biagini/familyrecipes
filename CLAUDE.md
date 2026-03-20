@@ -177,8 +177,10 @@ collision. Parser pipeline: `LineClassifier` → `RecipeBuilder` →
 - `MealPlan` (one row per kitchen) backs both the menu and groceries pages.
 
 **Editor dialogs.** Use `render layout: 'shared/editor_dialog'` with Stimulus
-data attributes — no JS needed. For custom content, add a controller listening
-to editor lifecycle events.
+data attributes — no JS needed. Custom dialogs hook in via lifecycle events
+(`editor:content-loaded`, `editor:collect`, `editor:save`, `editor:modified`,
+`editor:reset`). All editor bodies load via Turbo Frames — content preloads
+eagerly on page load and is ready before the user opens the dialog.
 - Open `<dialog>` elements are protected from Turbo morph via
   `turbo:before-morph-element` in `application.js`.
 - `turbo:before-cache` closes all open dialogs before page snapshots.
@@ -187,15 +189,22 @@ to editor lifecycle events.
   `codemirror/`, register it in `codemirror/registry.js`, then use
   `plaintext-editor` controller with the registry key as the `classifier` value.
 - `ordered_list_editor_controller` is a single parameterized controller for
-  both aisle and category list editors.
+  aisle, category, and tag editors. It's a companion controller that delegates
+  lifecycle to `editor_controller` via events.
 - **Dual-mode editors** (recipe + Quick Bites) use a coordinator/child pattern:
   `editor_controller` → `dual_mode_editor_controller` → child controller.
   Coordinator manages mode toggle, routes lifecycle events, handles
   mode-switch serialization via `/parse` and `/serialize` endpoints.
 - `RecipeSerializer` and `QuickBitesSerializer` convert IR hashes ↔
   Markdown/plaintext. AR records are the sole source of truth — no stored
-  `markdown_source`. Graphical controllers build DOM via
-  `createElement`/`textContent` (strict CSP).
+  `markdown_source`. Graphical forms are server-rendered via Turbo Frame
+  partials (`_editor_frame.html.erb`, `_graphical_step_card.html.erb`);
+  controllers hydrate from the DOM on connect, then rebuild with interactive
+  controls. Mode-switch still uses client-side `loadStructure()` from `/parse`.
+- **Editor frame endpoints** return Turbo Frames with embedded JSON for
+  CodeMirror (`<script type="application/json" data-editor-markdown>`) plus
+  server-rendered graphical forms. The `plaintext` key in the JSON is used
+  by both recipe and Quick Bites editors.
 
 **Hotwire stack.** Turbo Drive + Turbo Streams, Stimulus controllers,
 jsbundling-rails + esbuild for JS bundling.
@@ -235,9 +244,11 @@ broadcast). Don't call `MarkdownImporter` directly for web operations.
   block exit.
 - `MealPlanActions` concern provides `rescue_from StaleObjectError`.
 
-**Adding a new setting.** 5 touch points: migration, dialog HTML,
-`SettingsController` (show JSON + params), `settings_editor_controller.js`
-(targets + all 7 methods). `multi_kitchen` is an env var, not a DB setting.
+**Adding a new setting.** 5 touch points: migration,
+`settings/_editor_frame.html.erb` (form field with value),
+`SettingsController` (`editor_frame` + `update` params),
+`settings_editor_controller.js` (target + collect/modified/reset handlers).
+`multi_kitchen` is an env var, not a DB setting.
 
 **Tags.** Single-word (`[a-zA-Z-]`), stored lowercase. Smart tag decorations
 driven by `FamilyRecipes::SmartTagRegistry` in `lib/familyrecipes/`.
@@ -312,6 +323,11 @@ low-risk — a single-file bug fix, doc update, CLAUDE.md edit, or cleanup.
 **Use a feature branch + PR when:** the change touches multiple files, adds a
 feature, refactors code, or is anything the user would want to review first.
 When in doubt, branch — it's easy to merge, hard to undo a bad commit to main.
+
+**Branch early.** Create the feature branch before the first commit —
+including design docs and plans. These are part of the feature work. If
+committed to main first, squash-merging the PR creates duplicate changes
+that cause rebase conflicts on pull.
 
 **Branch workflow:**
 ```bash
