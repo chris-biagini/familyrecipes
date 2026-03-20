@@ -36,3 +36,7 @@
 # _editor_frame.html.erb — to_json escapes <, >, & inside script[type="application/json"] (not executed as JS)
 - "app/views/recipes/_editor_frame.html.erb:8"
 - "app/views/menu/_quickbites_editor_frame.html.erb:7"
+
+# IconHelper — frozen SVG content from ICONS constant, no user-interpolated values
+- "app/helpers/icon_helper.rb:9"      # header comment mentions .html_safe (not a call)
+- "app/helpers/icon_helper.rb:105"
