@@ -58,6 +58,7 @@ export function buildRowElement(item, index, liveItems, callbacks, orderable = t
   const row = document.createElement("div")
   row.className = rowClassName(item)
   row.dataset.index = index
+  row.dataset.name = item.currentName
 
   row.appendChild(buildNameArea(item, index, callbacks))
   row.appendChild(buildControls(item, index, liveItems, callbacks, orderable))
