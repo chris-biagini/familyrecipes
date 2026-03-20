@@ -137,6 +137,18 @@ Update the CSP initializer before adding any.
 - Use semantic HTML. Recipes are **documents first** — marked-up text, not an
   app that happens to contain text.
 
+**CSS file structure.** Propshaft serves each file individually; no bundling.
+- **Global** (loaded in layout): `base.css` (tokens, typography, buttons,
+  inputs, collapse, scale, tags, notifications), `navigation.css` (nav,
+  search overlay), `editor.css` (all editor dialogs, graphical editor),
+  `nutrition.css` (FDA label, nf-editor, USDA search, density/portion/alias),
+  `recipe.css` (embedded cards), `print.css`.
+- **Page-specific** (via `content_for(:head)`): `menu.css`, `groceries.css`,
+  `ingredients.css`.
+- Editor-related classes use `editor-` prefix. Nutrition editor form classes
+  use `editor-` prefix (e.g. `.editor-form-row`, `.editor-portion-row`,
+  `.editor-alias-chip`).
+
 **CSS interaction patterns.** Shared base classes for common UI elements:
 - **Inputs**: `.input-base` + modifiers (`.input-lg`, `.input-sm`, `.input-inline`,
   `.input-title`, `.input-short`). `dom_builders.js` auto-prepends `input-base`.
