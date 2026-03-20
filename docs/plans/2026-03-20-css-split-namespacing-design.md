@@ -42,7 +42,12 @@ Foundation styles used across the entire site.
 - Collapse mechanism (`.collapse-header`, `.collapse-body`, `.collapse-inner`)
 - Scale bar and controls
 - Tag pills and smart tag variants (cross-cutting — used in search and
-  recipe display)
+  recipe display), including dark-mode `.smart-icon--crossout` override
+- Notification toast (`.notify-bar*`, `.notify-dismiss`, `slide-up-bounce`)
+- `html:has(dialog[open])` overflow lock (generic, applies to all dialogs)
+- Shared keyframes (`bloop`, `fade-in`, `check-box-pop`, `check-mark-pop`)
+  — used across editor and search dialogs, kept in base to avoid invisible
+  cross-file dependencies
 - Screen interactivity (crossed-off, cursor states)
 - Mobile base overrides (720px breakpoint)
 - App version, `prefers-reduced-motion`
@@ -54,15 +59,15 @@ Everything related to the nav bar and search overlay.
 - Nav bar, links, compact mode, hamburger button/icon, drawer
 - Search overlay dialog, search panel, input, results
 - Nav search button
-- Keyframe: `fade-in`
 - Dark-mode: nav backdrop
 
 ### `editor.css` (~700 lines)
 
 All editor dialog and form styling.
 
-- Editor dialog, keyframe `bloop`
+- Editor dialog
 - Editor header/body/footer/errors/warnings
+- Settings dialog (`#settings-editor`, `.settings-*`)
 - Textarea, category row, side panel, mobile meta toggle
 - Tag input (pills editor, autocomplete)
 - CodeMirror mount
@@ -109,7 +114,6 @@ the ingredients index page.
 - Ingredients table, sortable headers, ingredient rows
 - Column classes (`.col-name`, `.col-aisle`, `.col-recipes`)
 - Loading placeholder, error message
-- Settings dialog
 - Mobile: hide aisle/recipes columns
 
 ## Layout changes
