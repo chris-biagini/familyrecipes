@@ -6,9 +6,10 @@
 ## Problem
 
 Editor dialogs feel like they "load in pieces" — the dialog opens immediately
-but content arrives asynchronously, causing visible layout transitions. Six
-dialogs use four different loading strategies. No consistent preloading, no
-unified loading state.
+but content arrives asynchronously, causing visible layout transitions. Eight
+editor dialogs (recipe edit, recipe new, quick bites, settings, aisles,
+categories, tags, nutrition) use four different loading strategies. No
+consistent preloading, no unified loading state.
 
 ## Design Decisions
 
@@ -20,8 +21,9 @@ Turbo — no custom JSON cache or preload logic in JS.
 
 | Editor | Frame `src` set | Preload trigger | Frame response contains |
 |--------|----------------|-----------------|------------------------|
-| Recipe | At render time | Page load (eager) | Embedded markdown JSON + server-rendered graphical form |
-| Quick Bites | At render time | Page load (eager) | Same pattern as recipe |
+| Recipe (edit) | At render time | Page load (eager) | Embedded markdown JSON + server-rendered graphical form |
+| Recipe (new) | No `src` | None — starts empty | Empty template (CodeMirror mount + blank graphical form) |
+| Quick Bites | At render time | Page load (eager) | Same pattern as recipe edit |
 | Settings | At render time | Page load (eager) | Server-rendered settings form with current values |
 | Aisles/Categories/Tags | At render time | Page load (eager) | Server-rendered list rows |
 | Nutrition | Dynamically on hover | `pointerenter` | Server-rendered nutrition form (unchanged) |
@@ -54,15 +56,18 @@ becomes the yielded block.
 
 - **Remove** `openWithRemoteContent()` — no more custom JSON fetch/cache.
 - **Remove** `loadUrl`, `loadKey` values — Turbo handles loading.
-- **Add** frame readiness check on `open()`: if the Turbo Frame in the body
-  has loaded, `showModal()` immediately. If still loading, disable Save and
-  wait for `turbo:frame-load`.
+- **Add** frame readiness check on `open()`. The current branch on
+  `hasLoadUrlValue` is replaced by frame-state detection: if the body contains
+  a Turbo Frame with no `src` (new recipe) or a frame whose content has
+  already loaded, `showModal()` immediately. If the frame is still loading,
+  disable Save and wait for `turbo:frame-load`.
 - **Add** error handling: listen for frame load failures, show error message
   with "Try again" button that resets the frame `src`.
 - **Keep** `openWithContent(data)` — AI import still provides caller-supplied
   data.
 - **Keep** all lifecycle events: `editor:collect`, `editor:save`,
-  `editor:modified`, `editor:reset`, `editor:content-loaded`.
+  `editor:modified`, `editor:reset`, `editor:content-loaded`,
+  `editor:opened`.
 
 ### Ordered list editor becomes companion controller
 
@@ -71,19 +76,25 @@ becomes the yielded block.
 
 **Removed from ordered list controller (~100 lines):**
 - `open()`, `close()`, `handleCancel()`, `handleBeforeVisit()`
-- `loadItems()` fetch
+- `loadItems()` fetch, `parseLoadedItems()` JSON-to-items transform
+- `save()` — `editor_controller` handles `markSaving` and the success callback
+  (`onSuccess: 'reload'`); the ordered list controller provides only a `saveFn`
+  via `editor:save`, same pattern as settings/nutrition
 - `connect()`/`disconnect()` listener setup for open button, cancel, Turbo visit
 - `guardBeforeUnload`, `resetSaveButton()`
 
 **Stays in ordered list controller (~130 lines):**
-- `editor:content-loaded` — snapshot server-rendered rows for dirty detection
-- `editor:collect` / `editor:save` — build payload, provide save function
+- `editor:content-loaded` — reads item names from server-rendered DOM rows
+  (replaces `parseLoadedItems()` JSON parsing), takes snapshot for dirty
+  detection
+- `editor:collect` / `editor:save` — build payload from current items, provide
+  `saveFn` to `editor_controller`
 - `editor:modified` — compare current state to snapshot
 - `editor:reset` — restore rows to initial state
 - List manipulation: add, delete, rename, reorder, animate
 
-The server renders initial list rows. All mutations (add, delete, reorder,
-rename) happen client-side after frame load.
+The server renders initial list rows as HTML. All mutations (add, delete,
+reorder, rename) happen client-side after frame load.
 
 ### Settings editor simplification
 
@@ -91,7 +102,12 @@ rename) happen client-side after frame load.
 The server renders the settings form with current values in the Turbo Frame.
 The controller handles `editor:collect`, `editor:save`, `editor:modified`,
 `editor:reset` — same companion pattern it already uses, minus the custom
-`openDialog()`.
+`openDialog()` and `disableFields()`.
+
+**Timing note:** `storeOriginals()` for dirty detection must run on
+`editor:content-loaded` (after `turbo:frame-load`), since form fields arrive
+pre-populated from the server rather than being populated by JS after a JSON
+fetch.
 
 ### Recipe/Quick Bites conversion to server-rendered frames
 
@@ -128,8 +144,15 @@ interactivity to existing DOM" (add/remove rows, reorder, inline editing).
 convert between representations. Responses can return HTML fragments for the
 graphical container instead of JSON structure hashes.
 
-**Quick Bites:** Same pattern — server renders graphical form + embedded
-plaintext content in the frame.
+**New recipe dialog (homepage):** No Turbo Frame `src` — the dialog starts
+with an empty template (blank CodeMirror mount + empty graphical form). This
+is the same as today's `open()` path (no remote content). The frame element
+is present in the markup but has no `src`, so no preload occurs. On open,
+`editor_controller` sees a frame with no `src` (or an already-loaded empty
+frame) and opens immediately.
+
+**Quick Bites:** Same pattern as recipe edit — server renders graphical form +
+embedded plaintext content in the frame.
 
 ### Unified loading state
 
