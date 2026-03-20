@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 # Manages kitchen-scoped settings: site branding (title, heading, subtitle)
-# and API keys (USDA, Anthropic). JSON-only controller — the settings dialog fetches
-# and saves via fetch requests.
+# and API keys (USDA, Anthropic). The settings dialog loads its form via a
+# Turbo Frame (editor_frame) and saves via JSON PATCH.
 #
 # - Kitchen: settings live as columns on the tenant model
 # - ApplicationController: provides current_kitchen and require_membership
@@ -19,6 +19,10 @@ class SettingsController < ApplicationController
       show_nutrition: current_kitchen.show_nutrition,
       decorate_tags: current_kitchen.decorate_tags
     }
+  end
+
+  def editor_frame
+    render partial: 'settings/editor_frame', locals: { kitchen: current_kitchen }, layout: false
   end
 
   def update

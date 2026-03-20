@@ -1,0 +1,79 @@
+<%# locals: (kitchen:) %>
+<turbo-frame id="settings-editor-frame">
+  <div class="editor-body">
+    <div class="editor-form">
+      <fieldset class="editor-section">
+        <legend class="editor-section-title">Site</legend>
+        <div class="settings-field">
+          <label for="settings-site-title">Site title</label>
+          <input type="text" id="settings-site-title" class="settings-input"
+                 data-settings-editor-target="siteTitle"
+                 value="<%= kitchen.site_title %>">
+        </div>
+        <div class="settings-field">
+          <label for="settings-homepage-heading">Homepage heading</label>
+          <input type="text" id="settings-homepage-heading" class="settings-input"
+                 data-settings-editor-target="homepageHeading"
+                 value="<%= kitchen.homepage_heading %>">
+        </div>
+        <div class="settings-field">
+          <label for="settings-homepage-subtitle">Homepage subtitle</label>
+          <input type="text" id="settings-homepage-subtitle" class="settings-input"
+                 data-settings-editor-target="homepageSubtitle"
+                 value="<%= kitchen.homepage_subtitle %>">
+        </div>
+      </fieldset>
+
+      <fieldset class="editor-section">
+        <legend class="editor-section-title">Recipes</legend>
+        <div class="settings-field">
+          <label class="settings-checkbox-label">
+            <input type="checkbox" id="settings-show-nutrition"
+                   data-settings-editor-target="showNutrition"
+                   <%= 'checked' if kitchen.show_nutrition %>>
+            Display nutrition information under recipes
+          </label>
+        </div>
+        <div class="settings-field">
+          <label class="settings-checkbox-label">
+            <input type="checkbox" id="settings-decorate-tags"
+                   data-settings-editor-target="decorateTags"
+                   <%= 'checked' if kitchen.decorate_tags %>>
+            Decorate special tags
+          </label>
+          <span class="settings-field-hint">Show emoji and colors for dietary, cuisine, and other recognized tags</span>
+        </div>
+      </fieldset>
+
+      <fieldset class="editor-section">
+        <legend class="editor-section-title">API Keys</legend>
+        <div class="settings-field" data-controller="reveal">
+          <label for="settings-usda-api-key">USDA API key</label>
+          <div class="settings-api-key-row">
+            <input type="password" id="settings-usda-api-key" class="settings-input"
+                   autocomplete="off"
+                   data-settings-editor-target="usdaApiKey"
+                   data-reveal-target="input"
+                   value="<%= kitchen.usda_api_key %>">
+            <button type="button" class="btn settings-reveal-btn"
+                    data-action="reveal#toggle"
+                    data-reveal-target="button">Show</button>
+          </div>
+        </div>
+        <div class="settings-field" data-controller="reveal">
+          <label for="settings-anthropic-api-key">Anthropic API key</label>
+          <div class="settings-api-key-row">
+            <input type="password" id="settings-anthropic-api-key" class="settings-input"
+                   autocomplete="off"
+                   data-settings-editor-target="anthropicApiKey"
+                   data-reveal-target="input"
+                   value="<%= kitchen.anthropic_api_key %>">
+            <button type="button" class="btn settings-reveal-btn"
+                    data-action="reveal#toggle"
+                    data-reveal-target="button">Show</button>
+          </div>
+        </div>
+      </fieldset>
+    </div>
+  </div>
+</turbo-frame>
