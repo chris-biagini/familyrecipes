@@ -662,11 +662,11 @@ button.aisle-name:hover {
     padding: 0.75rem 1rem;
   }
 
-  .form-row {
+  .editor-form-row {
     flex-wrap: wrap;
   }
 
-  .form-row > label {
+  .editor-form-row > label {
     min-width: 4.5rem;
     font-size: 0.85rem;
   }
@@ -675,17 +675,17 @@ button.aisle-name:hover {
     width: 4rem;
   }
 
-  .portion-row {
+  .editor-portion-row {
     flex-wrap: wrap;
     gap: 0.25rem 0.5rem;
   }
 
-  .portion-row .input-base:first-child {
+  .editor-portion-row .input-base:first-child {
     flex: 1;
     min-width: 0;
   }
 
-  .alias-add-row {
+  .editor-alias-add-row {
     flex-wrap: wrap;
   }
 

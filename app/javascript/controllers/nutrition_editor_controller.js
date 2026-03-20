@@ -124,7 +124,7 @@ export default class extends Controller {
 
   addPortion() {
     const row = document.createElement("div")
-    row.className = "portion-row"
+    row.className = "editor-portion-row"
     row.setAttribute("data-nutrition-editor-target", "portionRow")
 
     const nameInput = document.createElement("input")
@@ -135,7 +135,7 @@ export default class extends Controller {
     nameInput.setAttribute("aria-label", "Portion name")
 
     const eqSpan = document.createElement("span")
-    eqSpan.className = "portion-eq"
+    eqSpan.className = "editor-portion-eq"
     eqSpan.textContent = "="
 
     const gramsInput = document.createElement("input")
@@ -148,12 +148,12 @@ export default class extends Controller {
     gramsInput.setAttribute("aria-label", "Portion grams")
 
     const unitSpan = document.createElement("span")
-    unitSpan.className = "portion-unit"
+    unitSpan.className = "editor-portion-unit"
     unitSpan.textContent = "g"
 
     const removeBtn = document.createElement("button")
     removeBtn.type = "button"
-    removeBtn.className = "btn-icon"
+    removeBtn.className = "editor-btn-icon"
     removeBtn.setAttribute("aria-label", "Remove portion")
     removeBtn.setAttribute("data-action", "click->nutrition-editor#removePortion")
     removeBtn.textContent = "\u00d7"
@@ -169,7 +169,7 @@ export default class extends Controller {
   }
 
   removePortion(event) {
-    event.currentTarget.closest(".portion-row").remove()
+    event.currentTarget.closest(".editor-portion-row").remove()
   }
 
   addAlias() {
@@ -182,7 +182,7 @@ export default class extends Controller {
     }
 
     const chip = document.createElement("span")
-    chip.className = "alias-chip"
+    chip.className = "editor-alias-chip"
     chip.setAttribute("data-nutrition-editor-target", "aliasChip")
 
     const text = document.createElement("span")
@@ -191,7 +191,7 @@ export default class extends Controller {
 
     const removeBtn = document.createElement("button")
     removeBtn.type = "button"
-    removeBtn.className = "alias-chip-remove"
+    removeBtn.className = "editor-alias-remove"
     removeBtn.setAttribute("aria-label", "Remove alias")
     removeBtn.setAttribute("data-action", "click->nutrition-editor#removeAlias")
     removeBtn.textContent = "\u00d7"
@@ -204,7 +204,7 @@ export default class extends Controller {
   }
 
   removeAlias(event) {
-    event.currentTarget.closest(".alias-chip").remove()
+    event.currentTarget.closest(".editor-alias-chip").remove()
   }
 
   aliasInputKeydown(event) {
@@ -440,7 +440,7 @@ export default class extends Controller {
 
   addPortionWithValues(name, grams) {
     this.addPortion()
-    const rows = this.portionListTarget.querySelectorAll(".portion-row")
+    const rows = this.portionListTarget.querySelectorAll(".editor-portion-row")
     const lastRow = rows[rows.length - 1]
     lastRow.querySelector("[data-nutrition-editor-target='portionName']").value = name
     lastRow.querySelector("[data-nutrition-editor-target='portionGrams']").value = this.formatValue(grams)
@@ -461,7 +461,7 @@ export default class extends Controller {
         unit === selectedDensity.unit
 
       const label = document.createElement("label")
-      label.className = "density-candidate-row"
+      label.className = "editor-density-candidate-row"
 
       const radio = document.createElement("input")
       radio.type = "radio"

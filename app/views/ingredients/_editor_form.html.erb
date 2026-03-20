@@ -81,7 +81,7 @@
             How much does a measured volume weigh? This lets the app convert
             cups and tablespoons to grams for nutrition math.
           </p>
-          <div class="form-row density-row">
+          <div class="editor-form-row editor-density-row">
             <input type="number" class="input-base input-sm"
                    value="<%= format_nutrient_value(entry.density_volume) if has_density %>"
                    inputmode="decimal" step="any" min="0"
@@ -96,17 +96,17 @@
                 <option value="<%= u %>" <%= 'selected' if has_density && entry.density_unit == u %>><%= u %></option>
               <% end %>
             </select>
-            <span class="portion-eq">=</span>
+            <span class="editor-portion-eq">=</span>
             <input type="number" class="input-base input-sm"
                    value="<%= format_nutrient_value(entry.density_grams) if has_density %>"
                    inputmode="decimal" step="any" min="0"
                    placeholder="120"
                    data-nutrition-editor-target="densityGrams"
                    aria-label="Weight in grams">
-            <span class="field-unit">g</span>
+            <span class="editor-field-unit">g</span>
           </div>
 
-          <details class="density-candidates" hidden data-nutrition-editor-target="densityCandidates">
+          <details class="editor-density-candidates" hidden data-nutrition-editor-target="densityCandidates">
             <summary class="editor-section-title">Other USDA densities</summary>
             <div data-nutrition-editor-target="densityCandidateList"></div>
           </details>
@@ -131,7 +131,7 @@
               <% end %>
             <% end %>
           </div>
-          <button type="button" class="btn add-portion"
+          <button type="button" class="btn editor-add-portion"
                   data-action="click->nutrition-editor#addPortion">+ Add portion</button>
         </div>
       </div>
@@ -143,7 +143,7 @@
       </details>
       <div class="collapse-body">
         <div class="collapse-inner">
-          <div class="form-row aisle-row">
+          <div class="editor-form-row aisle-row">
             <select class="aisle-form-select"
                     data-nutrition-editor-target="aisleSelect"
                     data-action="change->nutrition-editor#aisleChanged"
@@ -159,7 +159,7 @@
                    data-nutrition-editor-target="aisleInput"
                    data-action="keydown->nutrition-editor#aisleInputKeydown">
           </div>
-          <label class="form-row">
+          <label class="editor-form-row">
             <input type="checkbox"
                    data-nutrition-editor-target="omitCheckbox"
                    <%= 'checked' if entry&.omit_from_shopping %>>
@@ -179,21 +179,21 @@
             Alternate names for this ingredient. Recipes using any alias will map
             to this entry for nutrition and grocery grouping.
           </p>
-          <div class="alias-chip-list" data-nutrition-editor-target="aliasList">
+          <div class="editor-alias-list" data-nutrition-editor-target="aliasList">
             <% (entry&.aliases || []).each do |alias_name| %>
-              <span class="alias-chip" data-nutrition-editor-target="aliasChip">
+              <span class="editor-alias-chip" data-nutrition-editor-target="aliasChip">
                 <span class="alias-chip-text"><%= alias_name %></span>
-                <button type="button" class="alias-chip-remove" aria-label="Remove alias"
+                <button type="button" class="editor-alias-remove" aria-label="Remove alias"
                         data-action="click->nutrition-editor#removeAlias">&times;</button>
               </span>
             <% end %>
           </div>
-          <div class="alias-add-row">
-            <input type="text" class="alias-input" placeholder="e.g. AP flour"
+          <div class="editor-alias-add-row">
+            <input type="text" class="editor-alias-input" placeholder="e.g. AP flour"
                    data-nutrition-editor-target="aliasInput"
                    data-action="keydown->nutrition-editor#aliasInputKeydown"
                    aria-label="New alias name">
-            <button type="button" class="btn add-alias"
+            <button type="button" class="btn editor-add-alias"
                     data-action="click->nutrition-editor#addAlias">Add</button>
           </div>
         </div>
