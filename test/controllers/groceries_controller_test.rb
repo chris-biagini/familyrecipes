@@ -340,7 +340,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
 
     plan = MealPlan.for_kitchen(@kitchen)
 
-    assert_not_includes plan.custom_items_list, 'birthday candles'
+    assert_not_includes plan.custom_items, 'birthday candles'
   end
 
   # --- Aisle order ---

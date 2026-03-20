@@ -48,7 +48,7 @@ class KitchenBatchWritesTest < ActiveSupport::TestCase
 
     plan.reload
 
-    assert_not_includes plan.selected_recipes_set, 'ghost'
+    assert_not_includes plan.selected_recipes, 'ghost'
   end
 
   test 'batch_writes reconciles and broadcasts even when block raises' do
@@ -63,7 +63,7 @@ class KitchenBatchWritesTest < ActiveSupport::TestCase
 
     plan.reload
 
-    assert_not_includes plan.selected_recipes_set, 'ghost'
+    assert_not_includes plan.selected_recipes, 'ghost'
   end
 
   test 'finalize_writes broadcasts when not batching' do
@@ -91,7 +91,7 @@ class KitchenBatchWritesTest < ActiveSupport::TestCase
 
     plan.reload
 
-    assert_not_includes plan.selected_recipes_set, 'ghost'
+    assert_not_includes plan.selected_recipes, 'ghost'
   end
 
   test 'finalize_writes cleans up orphan categories' do
