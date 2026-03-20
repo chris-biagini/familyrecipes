@@ -14,15 +14,16 @@ import ListenerManager from "../utilities/listener_manager"
  * via lifecycle events: editor:collect, editor:save, editor:modified,
  * editor:reset, editor:content-loaded. Dual-mode editors (recipe editor) use a
  * coordinator that sets `handled = true` on these events to override default
- * textarea behavior. Three open modes: open() for new content from template,
- * openWithRemoteContent() for server-fetched content, openWithContent(data)
- * for caller-provided content (e.g. AI import).
+ * textarea behavior. Four open modes: open() for inline/frame content,
+ * openWithRemoteContent() for legacy JSON-fetched content, openWithContent(data)
+ * for caller-provided content (e.g. AI import), and Turbo Frame–based loading
+ * (via `frameTarget`) which disables Save until the frame loads.
  *
  * - editor_utils: CSRF tokens, error display, save requests, close-with-confirmation
  * - notify: toast notifications for save success/failure feedback
  */
 export default class extends Controller {
-  static targets = ["textarea", "saveButton", "deleteButton", "errors"]
+  static targets = ["textarea", "saveButton", "deleteButton", "errors", "frame"]
 
   static values = {
     url: String,
@@ -48,11 +49,21 @@ export default class extends Controller {
 
     this.listeners.add(this.element, "cancel", (e) => this.handleCancel(e))
     this.listeners.add(document, "turbo:before-visit", (e) => this.handleBeforeVisit(e))
+
+    if (this.hasFrameTarget) {
+      this.listeners.add(this.frameTarget, "turbo:fetch-request-error", () => this.showFrameError())
+    }
   }
 
   disconnect() {
     this.listeners.teardown()
     if (this.guard) this.guard.remove()
+  }
+
+  get frameLoaded() {
+    if (!this.hasFrameTarget) return true
+    if (!this.frameTarget.src) return true
+    return this.frameTarget.complete
   }
 
   open() {
@@ -61,9 +72,16 @@ export default class extends Controller {
 
     if (this.hasLoadUrlValue) {
       this.openWithRemoteContent()
+    } else if (this.hasFrameTarget && !this.frameLoaded) {
+      if (this.hasSaveButtonTarget) this.saveButtonTarget.disabled = true
+      this.element.showModal()
+      this.frameTarget.addEventListener("turbo:frame-load", () => {
+        this.onFrameReady()
+      }, { once: true })
     } else {
       if (this.hasTextareaTarget) this.originalContent = this.textareaTarget.value
       this.element.showModal()
+      this.dispatchEditorEvent("editor:content-loaded", {})
       this.dispatchEditorEvent("editor:opened")
     }
   }
@@ -73,6 +91,25 @@ export default class extends Controller {
     this.resetSaveButton()
     this.element.showModal()
     this.dispatchEditorEvent("editor:content-loaded", data)
+  }
+
+  onFrameReady() {
+    if (this.hasSaveButtonTarget) this.saveButtonTarget.disabled = false
+    this.dispatchEditorEvent("editor:content-loaded", {})
+    this.dispatchEditorEvent("editor:opened")
+  }
+
+  showFrameError() {
+    if (!this.hasErrorsTarget) return
+    const retryBtn = document.createElement("button")
+    retryBtn.className = "btn"
+    retryBtn.textContent = "Try again"
+    retryBtn.addEventListener("click", () => {
+      clearErrors(this.errorsTarget)
+      this.frameTarget.reload()
+    })
+    showErrors(this.errorsTarget, ["Failed to load. "])
+    this.errorsTarget.querySelector("li")?.appendChild(retryBtn)
   }
 
   close() {
