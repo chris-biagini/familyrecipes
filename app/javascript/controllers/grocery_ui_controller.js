@@ -111,27 +111,18 @@ export default class extends Controller {
   }
 
   bindOnHandToggle() {
-    this.listeners.add(this.element, "click", (e) => {
-      const btn = e.target.closest(".on-hand-divider, .aisle-complete-header")
-      if (!btn) return
-
-      const targetId = btn.getAttribute("aria-controls")
-      const target = document.getElementById(targetId)
-      if (!target) return
-
-      const expanding = target.hidden
-      target.hidden = !expanding
-      btn.setAttribute("aria-expanded", String(expanding))
+    this.listeners.add(this.element, "toggle", (e) => {
+      if (!e.target.matches("details.on-hand-section")) return
 
       this.saveOnHandState()
-    })
+    }, true)
   }
 
   saveOnHandState() {
     const expanded = {}
-    this.element.querySelectorAll("[aria-controls^='on-hand-']").forEach(btn => {
-      const aisle = btn.closest(".aisle-group")?.dataset.aisle
-      if (aisle) expanded[aisle] = btn.getAttribute("aria-expanded") === "true"
+    this.element.querySelectorAll("details.on-hand-section").forEach(details => {
+      const aisle = details.closest(".aisle-group")?.dataset.aisle
+      if (aisle) expanded[aisle] = details.open
     })
 
     try {
@@ -141,16 +132,11 @@ export default class extends Controller {
 
   restoreOnHandState() {
     const state = this.loadOnHandState()
-    this.element.querySelectorAll("[aria-controls^='on-hand-']").forEach(btn => {
-      const aisle = btn.closest(".aisle-group")?.dataset.aisle
+    this.element.querySelectorAll("details.on-hand-section").forEach(details => {
+      const aisle = details.closest(".aisle-group")?.dataset.aisle
       if (!aisle || !state[aisle]) return
 
-      const targetId = btn.getAttribute("aria-controls")
-      const target = document.getElementById(targetId)
-      if (!target) return
-
-      target.hidden = false
-      btn.setAttribute("aria-expanded", "true")
+      details.open = true
     })
   }
 
