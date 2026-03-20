@@ -428,6 +428,216 @@ nav > div:not(:first-child):not(.nav-drawer) {
   border-color: var(--danger-color);
 }
 
+.btn-sm {
+  font-size: 0.8rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+}
+
+.btn-link {
+  all: unset;
+  cursor: pointer;
+  color: var(--red);
+  text-decoration: underline dotted;
+  font-family: var(--font-body);
+}
+
+.btn-link:hover {
+  text-decoration-style: solid;
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  padding: 0.3rem 0.6rem;
+  border: none;
+  border-radius: 0.4rem;
+  background: none;
+  color: var(--text-light);
+  cursor: pointer;
+  transition: color var(--duration-fast) ease, background var(--duration-fast) ease;
+}
+
+.btn-ghost:hover {
+  color: var(--red);
+  background: var(--hover-bg);
+}
+
+.btn-ghost:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+
+.btn-icon-round {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: 1px solid var(--rule);
+  border-radius: 50%;
+  background: none;
+  color: var(--text-light);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  transition: color var(--duration-fast) ease, border-color var(--duration-fast) ease;
+}
+
+.btn-icon-round:hover {
+  color: var(--text-soft);
+  border-color: var(--rule);
+}
+
+.btn-icon-round:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.btn-icon-round.btn-danger:hover {
+  color: var(--danger-color);
+  border-color: var(--danger-color);
+}
+
+.btn-icon-round.btn-primary:hover {
+  color: var(--red);
+  border-color: var(--red);
+}
+
+.btn-icon-round-lg {
+  width: 2.25rem;
+  height: 2.25rem;
+  flex-shrink: 0;
+}
+
+.btn-pill {
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: transparent;
+  font-size: 0.85rem;
+  font-family: var(--font-body);
+  color: var(--text);
+  cursor: pointer;
+  transition: background var(--duration-fast) ease, border-color var(--duration-fast) ease;
+}
+
+.btn-pill:hover {
+  background: var(--hover-bg);
+  border-color: var(--red);
+}
+
+.btn-pill.active {
+  background: var(--red);
+  color: white;
+  border-color: var(--red);
+}
+
+/* ── Input base ────────────────────────────────────────────── */
+
+.input-base {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--rule-faint);
+  border-radius: 3px;
+  background: var(--input-bg);
+  color: var(--text);
+  box-sizing: border-box;
+  outline: none;
+}
+
+.input-base:focus {
+  outline: 2px solid var(--red);
+  outline-offset: -1px;
+  border-color: var(--red);
+}
+
+.input-base::placeholder {
+  color: var(--text-light);
+}
+
+.input-lg {
+  font-size: 1rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.input-sm {
+  width: 4.5rem;
+  text-align: right;
+}
+
+.input-inline {
+  padding: 0.25rem 0.4rem;
+  font-size: 0.85rem;
+}
+
+.input-title {
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.input-short {
+  max-width: 6rem;
+}
+
+/* ── Collapse ──────────────────────────────────────────────── */
+
+.collapse-header {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.collapse-header summary {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  list-style: none;
+  user-select: none;
+}
+
+.collapse-header summary::before {
+  content: '';
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0.3rem 0 0.3rem 0.45rem;
+  border-color: transparent transparent transparent var(--text-light);
+  transition: transform var(--duration-fast) ease;
+  flex-shrink: 0;
+}
+
+.collapse-header[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.collapse-header summary::-webkit-details-marker {
+  display: none;
+}
+
+.collapse-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--duration-normal) ease;
+}
+
+.collapse-header[open] + .collapse-body,
+.collapse-header[open] ~ .collapse-body {
+  grid-template-rows: 1fr;
+}
+
+.collapse-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
 nav a:hover,
 nav a:focus {
   color: var(--red);
