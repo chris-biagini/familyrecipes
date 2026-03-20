@@ -87,7 +87,9 @@ Extract these line ranges into `navigation.css`:
 | 228-349 | `nav`, nav links, `.nav-compact`, `.nav-settings-link` |
 | 641-767 | `nav a:hover/focus`, `.nav-icon`, hamburger, `.nav-links`, `.nav-drawer` |
 | 1573 | Dark-mode: `nav::before` — wrap in `@media (prefers-color-scheme: dark) { }` |
-| 1700-1931 | `.search-overlay`, `.search-panel`, `.search-input*`, `.search-result*`, `.search-no-results`, `.nav-search-btn` |
+| 1700-1724 | `.search-overlay`, open state, backdrop |
+| 1748-1773 | `.search-panel`, `.search-input-wrapper`, `.search-pill-area`, `.search-icon` |
+| 1832-1931 | `.search-input*`, `.search-result*`, `.search-no-results`, `.nav-search-btn` |
 
 - [ ] **Step 2: Commit**
 
@@ -118,11 +120,9 @@ Extract these line ranges into `editor.css`:
 | 2159-2229 | CodeMirror mount (`.cm-mount`), token highlights (`hl-*`) |
 | 2231-2355 | `.editor-footer*`, aisle order editor |
 | 2420-2422 | `.editor-form` |
-| 2428-2502 | `.editor-section*`, collapsible sections, `.editor-help`, `.editor-recipes*`, `.editor-reset-btn`, `.recipe-unit-row*` |
-| 2843-2957 | Mobile editor overrides (720px — fullscreen dialogs, stacked layouts, bigger tap targets) |
+| 2428-2502 | `.editor-section*`, collapsible sections, `.editor-help`, `.editor-recipes*`, `.editor-reset-btn` |
+| 2843-2957 | Mobile editor overrides (720px — fullscreen dialogs, stacked layouts, bigger tap targets, including nutrition-related mobile rules) |
 | 3069-3273 | Graphical editor, `.editor-mode-toggle`, `.editor-header-actions`, mobile graphical overrides |
-
-Note: The mobile overrides block (2843-2957) contains rules for `.form-row`, `.portion-row`, `.alias-add-row`, `.usda-search-row`, `.nf-editor` — these stay here for now and will be moved to `nutrition.css` during class renaming in Task 8.
 
 - [ ] **Step 2: Commit**
 
@@ -146,9 +146,9 @@ Extract these line ranges into `nutrition.css`:
 | Lines | Content |
 |-------|---------|
 | 1410-1553 | FDA nutrition label (`.nutrition-label*`, `.nutrition-footnote`) |
-| 1557-1572 | Dark-mode block for nutrition: `.nutrition-label` (border, bg, color), `.serving-size`, `.calories-row`, `.dv-header`, `.nutrient-row`, `.nutrient-row:last-child`, `.nf-thick-rule`, `.usda-results`, `.usda-result-item`, `.density-candidates` — wrap in `@media (prefers-color-scheme: dark) { }` |
+| 1557-1567, 1569-1572 | Dark-mode nutrition rules (skip line 1568 `.editor-section` — that goes in editor.css): `.nutrition-label` (border, bg, color), `.serving-size`, `.calories-row`, `.dv-header`, `.nutrient-row`, `.nutrient-row:last-child`, `.nf-thick-rule`, `.usda-results`, `.usda-result-item`, `.density-candidates` — wrap in `@media (prefers-color-scheme: dark) { }` |
 | 2424-2426 | `#nutrition-editor` width |
-| 2504-2602 | USDA search (`.usda-*`) |
+| 2504-2602 | `.recipe-unit-row*`, USDA search (`.usda-*`) |
 | 2604-2676 | `.nf-editor`, `.nf-serving-row`, `.nf-thick-rule`, `.nf-row*`, `.nf-name`, `.nf-unit`, spin button hide |
 | 2678-2841 | `.density-candidates*`, `.form-row*`, `.field-unit`, `.portion-*`, `.btn-icon`, `.add-portion`, `.alias-*`, `.add-alias`, `.aisle-form-*`, iOS zoom prevention |
 
