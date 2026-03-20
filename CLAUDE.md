@@ -198,7 +198,8 @@ collision. Parser pipeline: `LineClassifier` → `RecipeBuilder` →
 - `default_url_options` auto-injects `kitchen_slug` — always use `_path`
   helpers, never hard-code URL strings.
 - Use `home_path` (not `kitchen_root_path`) for homepage links.
-- `MealPlan` (one row per kitchen) backs both the menu and groceries pages.
+- `MealPlan` (one row per kitchen) backs the menu, groceries, and dinner
+  picker. Also stores cook history for recency weighting.
 
 **Editor dialogs.** Use `render layout: 'shared/editor_dialog'` with Stimulus
 data attributes — no JS needed. Custom dialogs hook in via lifecycle events
@@ -219,21 +220,15 @@ eagerly on page load and is ready before the user opens the dialog.
   `editor_controller` → `dual_mode_editor_controller` → child controller.
   Coordinator manages mode toggle, routes lifecycle events, handles
   mode-switch serialization via `/parse` and `/serialize` endpoints.
-- `RecipeSerializer` and `QuickBitesSerializer` convert IR hashes ↔
-  Markdown/plaintext. AR records are the sole source of truth — no stored
-  `markdown_source`. Graphical forms are server-rendered via Turbo Frame
-  partials (`_editor_frame.html.erb`, `_graphical_step_card.html.erb`);
-  controllers hydrate from the DOM on connect, then rebuild with interactive
-  controls. Mode-switch still uses client-side `loadStructure()` from `/parse`.
-- **Editor frame endpoints** return Turbo Frames with embedded JSON for
-  CodeMirror (`<script type="application/json" data-editor-markdown>`) plus
-  server-rendered graphical forms. The `plaintext` key in the JSON is used
-  by both recipe and Quick Bites editors.
+- AR records are the sole source of truth — no stored `markdown_source`.
+  `RecipeSerializer` / `QuickBitesSerializer` handle IR ↔ text conversion.
 
 **Hotwire stack.** Turbo Drive + Turbo Streams, Stimulus controllers,
 jsbundling-rails + esbuild for JS bundling.
-- New JS modules go in `app/javascript/`; new Stimulus controllers must
-  be imported and registered in `app/javascript/application.js`.
+- New JS modules go in `app/javascript/`; shared utilities live in
+  `app/javascript/utilities/` (dom_builders, editor_utils, notify, etc.).
+  New Stimulus controllers must be imported and registered in
+  `app/javascript/application.js`.
 - `npm run build` bundles JS to `app/assets/builds/`; `bin/dev` runs
   both Puma and esbuild watcher via foreman.
 - CSP requires a nonce for both `<script>` and `<style>` tags — the nonce
@@ -281,6 +276,13 @@ driven by `FamilyRecipes::SmartTagRegistry` in `lib/familyrecipes/`.
 `UnitResolver` → `NutritionCalculator`. Read their header comments for
 details. `rake catalog:sync` pushes YAML seed changes into the database.
 
+**Dinner picker.** Weighted random recipe suggestion on the menu page.
+`CookHistoryWeighter` applies quadratic recency decay so recently cooked
+recipes are deprioritized. Tag preferences bias selection further.
+
+**Import/Export.** `ExportService` builds a ZIP of all kitchen data;
+`ImportService` consumes it. Roundtrip-safe data portability.
+
 **AI import.** `AiImportService` + `AiImportController`. API key stored
 encrypted on Kitchen (`anthropic_api_key`); button hidden when no key set.
 
@@ -317,7 +319,7 @@ rake test          # all tests via Minitest
 rake catalog:sync  # push ingredient-catalog.yaml changes into the database
 ruby -Itest test/controllers/recipes_controller_test.rb              # single file
 ruby -Itest test/models/recipe_test.rb -n test_requires_title        # single test
-bin/dev            # Puma on port 3030
+bin/dev            # Puma + esbuild watcher (port 3030)
 # test helpers: create_kitchen_and_user, log_in, kitchen_slug (see test/test_helper.rb)
 ```
 
