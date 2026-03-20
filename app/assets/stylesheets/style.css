@@ -1088,21 +1088,7 @@ header > .recipe-actions {
 }
 
 .scale-input {
-  font-family: var(--font-body);
-  font-size: 0.85rem;
-  width: 4.5rem;
-  padding: 0.25rem 0.4rem;
-  border: 1px solid var(--rule-faint);
-  border-radius: 3px;
-  background: var(--input-bg);
-  color: var(--text);
   text-align: center;
-}
-
-.scale-input:focus {
-  outline: 2px solid var(--red);
-  outline-offset: -1px;
-  border-color: var(--red);
 }
 
 .scale-input.invalid,
@@ -1272,17 +1258,9 @@ section:first-of-type h2 {
 
 /* Search + filter toolbar */
 .ingredients-toolbar { margin-bottom: 1rem; }
-.ingredients-search {
+.ingredients-toolbar .input-base {
   width: 100%;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid var(--rule);
-  border-radius: 0.25rem;
-  font-size: 1rem;
   margin-bottom: 0.5rem;
-}
-.ingredients-search:focus {
-  outline: 2px solid var(--red);
-  outline-offset: -1px;
 }
 
 .filter-pills { display: flex; gap: 0.5rem; flex-wrap: wrap; }
@@ -1399,20 +1377,8 @@ section:first-of-type h2 {
   padding-left: 1.45rem;
 }
 
-.settings-input {
+.settings-field .input-base {
   width: 100%;
-  font-size: 1rem;
-  padding: 0.4rem 0.5rem;
-  border: 1px solid var(--rule-faint);
-  border-radius: 3px;
-  background: var(--ground);
-  color: var(--text);
-  box-sizing: border-box;
-}
-
-.settings-input:focus {
-  outline: none;
-  border-color: var(--rule);
 }
 
 .settings-api-key-row {
@@ -1421,7 +1387,7 @@ section:first-of-type h2 {
   align-items: stretch;
 }
 
-.settings-api-key-row .settings-input {
+.settings-api-key-row .input-base {
   flex: 1;
   font-family: var(--font-mono);
 }
@@ -2519,30 +2485,8 @@ button.aisle-name:hover {
   align-items: center;
 }
 
-.aisle-add-input {
+.aisle-add-row .input-base {
   flex: 1;
-  font-size: 0.85rem;
-  padding: 0.25rem 0.4rem;
-  border: 1px solid var(--rule-faint);
-  border-radius: 3px;
-  background: var(--ground);
-  color: var(--text);
-}
-
-.aisle-add-input:focus {
-  outline: none;
-  border-color: var(--rule);
-}
-
-.aisle-select,
-.aisle-input {
-  font-size: 0.85rem;
-  padding: 0.25rem 0.5rem;
-  border: 1px solid var(--text);
-  border-radius: 0.25rem;
-  background: var(--ground);
-  color: var(--text);
-  max-width: 12rem;
 }
 
 /************************/
@@ -2713,9 +2657,8 @@ button.aisle-name:hover {
   gap: 0.5rem;
   margin-bottom: 0.5rem;
 }
-.usda-search-input {
+.usda-search-row .input-base {
   flex: 1;
-  font-size: 0.95rem;
 }
 .usda-search-btn { white-space: nowrap; }
 .usda-results {
@@ -2832,7 +2775,7 @@ button.aisle-name:hover {
   padding: 0.2rem 0;
 }
 
-.nf-row.nf-calories .nf-input {
+.nf-row.nf-calories .input-base {
   font-weight: 900;
   font-size: 1rem;
 }
@@ -2851,33 +2794,12 @@ button.aisle-name:hover {
   font-size: inherit;
 }
 
-.nf-input {
-  width: 4.5rem;
-  padding: 0.2rem 0.35rem;
-  border: 1px solid var(--rule-faint);
-  border-radius: 3px;
-  text-align: right;
-  background: var(--input-bg);
-  color: var(--text);
-  font-family: inherit;
-  font-size: 0.85rem;
-}
-
-.nf-input:focus {
-  outline: 2px solid var(--red);
-  outline-offset: -1px;
-  border-color: var(--red);
-}
-
 /* Hide spin buttons on all number inputs in editor */
-.nf-input::-webkit-inner-spin-button,
-.nf-input::-webkit-outer-spin-button,
 .editor-section input[type="number"]::-webkit-inner-spin-button,
 .editor-section input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
-.nf-input,
 .editor-section input[type="number"] {
   -moz-appearance: textbox;
 }
@@ -2923,34 +2845,11 @@ button.aisle-name:hover {
   flex-shrink: 0;
 }
 
-.field-narrow {
-  width: 5rem;
-  padding: 0.3rem 0.4rem;
-  border: 1px solid var(--rule-faint);
-  border-radius: 3px;
-  text-align: right;
-  background: var(--input-bg);
-  color: var(--text);
-}
-
-.field-narrow:focus {
-  outline: 2px solid var(--red);
-  outline-offset: -1px;
-  border-color: var(--red);
-}
 
 .field-unit {
   font-size: 0.85rem;
   color: var(--text-soft);
   min-width: 1.5rem;
-}
-
-.field-unit-select {
-  padding: 0.3rem 0.3rem;
-  border: 1px solid var(--rule-faint);
-  border-radius: 3px;
-  background: var(--input-bg);
-  color: var(--text);
 }
 
 .portion-eq {
@@ -2970,31 +2869,6 @@ button.aisle-name:hover {
   margin-bottom: 0.4rem;
 }
 
-.portion-name-input {
-  width: 6rem;
-  padding: 0.3rem 0.4rem;
-  border: 1px solid var(--rule-faint);
-  border-radius: 3px;
-  background: var(--input-bg);
-  color: var(--text);
-}
-
-.portion-name-input:focus,
-.portion-grams-input:focus {
-  outline: 2px solid var(--red);
-  outline-offset: -1px;
-  border-color: var(--red);
-}
-
-.portion-grams-input {
-  width: 5rem;
-  padding: 0.3rem 0.4rem;
-  border: 1px solid var(--rule-faint);
-  border-radius: 3px;
-  text-align: right;
-  background: var(--input-bg);
-  color: var(--text);
-}
 
 .portion-unit {
   font-size: 0.85rem;
@@ -3167,7 +3041,7 @@ button.aisle-name:hover {
     height: 2.75rem;
   }
 
-  .aisle-add-input {
+  .aisle-add-row .input-base {
     font-size: 1rem;
     padding: 0.4rem 0.5rem;
   }
@@ -3191,11 +3065,7 @@ button.aisle-name:hover {
     font-size: 0.85rem;
   }
 
-  .field-narrow {
-    width: 4.5rem;
-  }
-
-  .nf-input {
+  .nf-editor .input-sm {
     width: 4rem;
   }
 
@@ -3204,7 +3074,7 @@ button.aisle-name:hover {
     gap: 0.25rem 0.5rem;
   }
 
-  .portion-name-input {
+  .portion-row .input-base:first-child {
     flex: 1;
     min-width: 0;
   }
@@ -3214,7 +3084,7 @@ button.aisle-name:hover {
   }
 
   .usda-search-row { flex-wrap: wrap; }
-  .usda-search-input { min-width: 0; font-size: 1rem; }
+  .usda-search-row .input-base { min-width: 0; font-size: 1rem; }
   .usda-results { max-height: 200px; }
 
   .editor-section .collapse-header > summary {
@@ -3375,47 +3245,13 @@ a.recipe-link {
   flex: 1;
 }
 
-/* Inputs — match .editor-textarea aesthetic */
-.graphical-input {
-  background: var(--ground);
-  border: 1px solid var(--rule);
-  border-radius: 4px;
-  padding: 0.4rem 0.6rem;
-  font-family: var(--font-body);
-  font-size: 0.9rem;
-  color: var(--text);
-  line-height: 1.5;
-  outline: none;
-  transition: border-color var(--duration-fast) ease;
-}
-
-.graphical-input:focus {
-  border-color: var(--text-soft);
-}
-
+/* Textarea overrides for graphical editors */
+textarea.input-base,
 .graphical-textarea {
-  background: var(--ground);
-  border: 1px solid var(--rule);
-  border-radius: 4px;
-  max-height: 8rem;
-  padding: 0.4rem 0.6rem;
-  font-family: var(--font-body);
-  font-size: 0.9rem;
-  color: var(--text);
-  line-height: 1.5;
-  outline: none;
-  transition: border-color var(--duration-fast) ease;
-  min-height: 60px;
   resize: vertical;
-}
-
-.graphical-textarea:focus {
-  border-color: var(--text-soft);
-}
-
-.graphical-input-title {
-  font-size: 1.1em;
-  font-weight: 600;
+  min-height: 60px;
+  max-height: 8rem;
+  line-height: 1.5;
 }
 
 /* Step cards */

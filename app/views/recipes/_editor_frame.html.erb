@@ -22,7 +22,7 @@
       <div class="graphical-form">
         <div class="graphical-field-group">
           <label class="graphical-label" for="graphical-title">Title</label>
-          <input type="text" id="graphical-title" class="graphical-input"
+          <input type="text" id="graphical-title" class="input-base"
                  data-recipe-graphical-target="title"
                  placeholder="Recipe title"
                  value="<%= structure[:title] %>">
@@ -30,7 +30,7 @@
 
         <div class="graphical-field-group">
           <label class="graphical-label" for="graphical-description">Description</label>
-          <textarea id="graphical-description" class="graphical-input graphical-textarea"
+          <textarea id="graphical-description" class="input-base graphical-textarea"
                     data-recipe-graphical-target="description"
                     rows="2" placeholder="Optional description"><%= structure[:description] %></textarea>
         </div>
@@ -38,7 +38,7 @@
         <div class="graphical-front-matter-row">
           <div class="graphical-field-group graphical-field-group--inline">
             <label class="graphical-label" for="graphical-serves">Serves</label>
-            <input type="text" id="graphical-serves" class="graphical-input graphical-input--short"
+            <input type="text" id="graphical-serves" class="input-base input-short"
                    data-recipe-graphical-target="serves"
                    placeholder="e.g. 4"
                    value="<%= structure.dig(:front_matter, :serves) %>">
@@ -46,7 +46,7 @@
 
           <div class="graphical-field-group graphical-field-group--inline">
             <label class="graphical-label" for="graphical-makes">Makes</label>
-            <input type="text" id="graphical-makes" class="graphical-input graphical-input--short"
+            <input type="text" id="graphical-makes" class="input-base input-short"
                    data-recipe-graphical-target="makes"
                    placeholder="e.g. 12 rolls"
                    value="<%= structure.dig(:front_matter, :makes) %>">
@@ -54,7 +54,7 @@
 
           <div class="graphical-field-group graphical-field-group--inline">
             <label class="graphical-label" for="graphical-category">Category</label>
-            <select id="graphical-category" class="graphical-input graphical-select"
+            <select id="graphical-category" class="input-base"
                     data-recipe-graphical-target="categorySelect"
                     data-action="change->recipe-graphical#categoryChanged">
               <option value="">None</option>
@@ -64,7 +64,7 @@
               <% end %>
               <option value="__new__">New category...</option>
             </select>
-            <input type="text" class="graphical-input graphical-input--short" hidden
+            <input type="text" class="input-base input-short" hidden
                    data-recipe-graphical-target="categoryInput"
                    data-action="keydown->recipe-graphical#categoryInputKeydown"
                    placeholder="New category name">
@@ -97,7 +97,7 @@
 
         <div class="graphical-field-group">
           <label class="graphical-label" for="graphical-footer">Footer</label>
-          <textarea id="graphical-footer" class="graphical-input graphical-textarea"
+          <textarea id="graphical-footer" class="input-base graphical-textarea"
                     data-recipe-graphical-target="footer"
                     rows="2" placeholder="Optional notes or source"><%= structure[:footer] %></textarea>
         </div>

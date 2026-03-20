@@ -13,7 +13,7 @@
         <div class="collapse-body">
           <div class="collapse-inner usda-search-content">
             <div class="usda-search-row">
-              <input type="search" class="usda-search-input"
+              <input type="search" class="input-base input-lg"
                      placeholder="Search USDA database…"
                      value="<%= ingredient_name %>"
                      data-nutrition-editor-target="usdaQuery"
@@ -38,7 +38,7 @@
           <div class="nf-editor">
             <div class="nf-serving-row">
               <label for="editor-basis-grams">Per</label>
-              <input type="number" id="editor-basis-grams" class="field-narrow"
+              <input type="number" id="editor-basis-grams" class="input-base input-sm"
                      value="<%= format_nutrient_value(entry.basis_grams) if entry&.basis_grams %>"
                      inputmode="decimal" step="any" min="0.1"
                      placeholder="100"
@@ -54,7 +54,7 @@
               <% nutrient_max = FamilyRecipes::NutritionConstraints::NUTRIENT_MAX[key.to_s] %>
               <div class="nf-row<%= ' nf-indent' if indent.positive? %><%= ' nf-calories' if key == :calories %>">
                 <span class="nf-name"><%= label.strip %></span>
-                <input type="number" id="editor-<%= key %>" class="nf-input"
+                <input type="number" id="editor-<%= key %>" class="input-base input-sm"
                        value="<%= format_nutrient_value(entry.public_send(key)) if entry&.public_send(key) %>"
                        inputmode="decimal" step="any" min="0" max="<%= nutrient_max %>"
                        data-nutrition-editor-target="nutrientField"
@@ -82,13 +82,13 @@
             cups and tablespoons to grams for nutrition math.
           </p>
           <div class="form-row density-row">
-            <input type="number" class="field-narrow"
+            <input type="number" class="input-base input-sm"
                    value="<%= format_nutrient_value(entry.density_volume) if has_density %>"
                    inputmode="decimal" step="any" min="0"
                    placeholder="1"
                    data-nutrition-editor-target="densityVolume"
                    aria-label="Volume amount">
-            <select class="field-unit-select"
+            <select class="input-base"
                     data-nutrition-editor-target="densityUnit"
                     aria-label="Volume unit">
               <option value="">unit</option>
@@ -97,7 +97,7 @@
               <% end %>
             </select>
             <span class="portion-eq">=</span>
-            <input type="number" class="field-narrow"
+            <input type="number" class="input-base input-sm"
                    value="<%= format_nutrient_value(entry.density_grams) if has_density %>"
                    inputmode="decimal" step="any" min="0"
                    placeholder="120"

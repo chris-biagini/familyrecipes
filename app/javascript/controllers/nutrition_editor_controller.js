@@ -129,7 +129,7 @@ export default class extends Controller {
 
     const nameInput = document.createElement("input")
     nameInput.type = "text"
-    nameInput.className = "portion-name-input"
+    nameInput.className = "input-base"
     nameInput.placeholder = "e.g. stick, slice"
     nameInput.setAttribute("data-nutrition-editor-target", "portionName")
     nameInput.setAttribute("aria-label", "Portion name")
@@ -140,7 +140,7 @@ export default class extends Controller {
 
     const gramsInput = document.createElement("input")
     gramsInput.type = "number"
-    gramsInput.className = "portion-grams-input field-narrow"
+    gramsInput.className = "input-base input-sm"
     gramsInput.inputMode = "decimal"
     gramsInput.step = "any"
     gramsInput.min = "0"

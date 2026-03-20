@@ -12,16 +12,6 @@
 
 #custom-input {
   flex: 1;
-  padding: 0.5rem 0.75rem;
-  font-family: var(--font-body);
-  font-size: 16px;
-  border: 1px solid var(--rule-faint);
-  border-radius: 4px;
-}
-
-#custom-input:focus {
-  outline: none;
-  border-color: var(--rule);
 }
 
 #custom-add {
