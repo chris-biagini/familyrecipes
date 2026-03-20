@@ -137,6 +137,18 @@ Update the CSP initializer before adding any.
 - Use semantic HTML. Recipes are **documents first** — marked-up text, not an
   app that happens to contain text.
 
+**CSS interaction patterns.** Shared base classes for common UI elements:
+- **Inputs**: `.input-base` + modifiers (`.input-lg`, `.input-sm`, `.input-inline`,
+  `.input-title`, `.input-short`). `dom_builders.js` auto-prepends `input-base`.
+- **Buttons**: `.btn` + modifiers (`.btn-primary`, `.btn-danger`, `.btn-sm`,
+  `.btn-ghost`, `.btn-link`, `.btn-icon-round`, `.btn-pill`).
+- **Collapse**: `<details class="collapse-header">` + `<summary>` with sibling
+  `<div class="collapse-body"><div class="collapse-inner">`. Animated via CSS
+  `grid-template-rows: 0fr → 1fr`. Use `+` for adjacent siblings, `~` when
+  intervening elements exist.
+- **Errors**: Inline errors (`editor_utils.showErrors`) for dialog validation;
+  toast notifications (`notify.show`) for page-level mutations.
+
 **CSS color tokens.** The canonical tokens are defined in `style.css` `:root`.
 Key names: `--ground` (background), `--text`, `--text-soft`, `--text-light`
 (foreground), `--surface-alt` (offset bg), `--rule`/`--rule-faint` (borders),
