@@ -71,6 +71,7 @@
   --weave-color: rgba(150, 150, 150, 0.04);
   --weave-width: 1.5px;
   --content-card-bg: rgb(255, 252, 249);
+  --paper-opacity: 0.08;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -131,6 +132,7 @@
     --gingham-stripe: rgba(200, 55, 60, 0.35);
     --weave-color: rgba(255, 255, 255, 0.02);
     --content-card-bg: rgb(30, 27, 24);
+    --paper-opacity: 0.04;
   }
 }
 
@@ -551,9 +553,8 @@ main::before {
   content: "";
   position: absolute;
   inset: 0;
-  background-image: url("paper-noise.png");
-  background-size: 200px 200px;
-  opacity: 0.05;
+  filter: url(#paper-texture);
+  opacity: var(--paper-opacity);
   pointer-events: none;
 }
 
