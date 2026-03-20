@@ -1,61 +1,30 @@
 <% if current_kitchen %>
   <%= link_to home_path, class: 'recipes', title: 'Recipes (Table of Contents)',
       aria: { label: 'Recipes', current: ('page' if controller_name.in?(%w[landing homepage recipes categories])) } do %>
-    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M2 17 V18.5 L12 19.5"/>
-      <path d="M22 17 V18.5 L12 19.5"/>
-      <path d="M2 4 C5 3.5 9 4 12 5.5 V18.5 C9 17 5 16.5 2 17 Z"/>
-      <path d="M22 4 C19 3.5 15 4 12 5.5 V18.5 C15 17 19 16.5 22 17 Z"/>
-      <path d="M12 5.5 V18.5"/>
-      <path d="M10.5 20 Q12 21.5 13.5 20"/>
-    </svg>
+    <%= icon(:book, class: 'nav-icon', size: nil) %>
     <span>Recipes</span>
   <% end %>
   <% if logged_in? %>
     <%= link_to ingredients_path, class: 'ingredients', title: 'Ingredients',
         aria: { label: 'Ingredients', current: ('page' if controller_name == 'ingredients') } do %>
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M2 10 L5.5 21 H18.5 L22 10"/>
-        <line x1="1" y1="10" x2="23" y2="10"/>
-        <line x1="9" y1="10" x2="16.5" y2="2.5"/>
-        <line x1="11.5" y1="10" x2="19" y2="2.5"/>
-        <path d="M16.5 2.5 C17 1 18.5 1 19 2.5"/>
-      </svg>
+      <%= icon(:ingredients, class: 'nav-icon', size: nil) %>
       <span>Ingredients</span>
     <% end %>
     <%= link_to menu_path, class: 'menu', title: 'Plan your meals',
         aria: { label: 'Menu', current: ('page' if controller_name == 'menu') } do %>
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <rect x="4" y="1" width="16" height="22"/>
-        <line x1="8" y1="7" x2="16" y2="7"/>
-        <line x1="8" y1="11" x2="16" y2="11"/>
-        <line x1="8" y1="15" x2="16" y2="15"/>
-        <line x1="8" y1="19" x2="16" y2="19"/>
-      </svg>
+      <%= icon(:menu, class: 'nav-icon', size: nil) %>
       <span>Menu</span>
     <% end %>
     <%= link_to groceries_path, class: 'groceries', title: 'Shopping list',
         aria: { label: 'Groceries', current: ('page' if controller_name == 'groceries') } do %>
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M1 1h3.5l2 11h11l2.5-7H6"/>
-        <circle cx="8.5" cy="19" r="2"/>
-        <circle cx="16.5" cy="19" r="2"/>
-        <path d="M6.5 12h11"/>
-      </svg>
+      <%= icon(:cart, class: 'nav-icon', size: nil) %>
       <span>Groceries</span>
     <% end %>
   <% end %>
 <% else %>
   <%= link_to root_path, class: 'recipes', title: 'Recipes',
       aria: { label: 'Recipes', current: 'page' } do %>
-    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M2 17 V18.5 L12 19.5"/>
-      <path d="M22 17 V18.5 L12 19.5"/>
-      <path d="M2 4 C5 3.5 9 4 12 5.5 V18.5 C9 17 5 16.5 2 17 Z"/>
-      <path d="M22 4 C19 3.5 15 4 12 5.5 V18.5 C15 17 19 16.5 22 17 Z"/>
-      <path d="M12 5.5 V18.5"/>
-      <path d="M10.5 20 Q12 21.5 13.5 20"/>
-    </svg>
+    <%= icon(:book, class: 'nav-icon', size: nil) %>
     <span>Recipes</span>
   <% end %>
 <% end %>
