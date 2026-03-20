@@ -3110,8 +3110,7 @@ a.recipe-link {
 }
 
 /* Textarea overrides for graphical editors */
-textarea.input-base,
-.graphical-textarea {
+textarea.input-base {
   resize: vertical;
   min-height: 60px;
   max-height: 8rem;

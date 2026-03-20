@@ -53,7 +53,7 @@ export function buildTextareaGroup(labelText, value, onChange) {
   group.appendChild(label)
 
   const textarea = document.createElement("textarea")
-  textarea.className = "input-base graphical-textarea"
+  textarea.className = "input-base"
   textarea.value = value
   textarea.rows = 4
   textarea.addEventListener("input", () => onChange(textarea.value))
