@@ -424,7 +424,7 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
         headers: { 'Accept' => 'text/html' }
 
     assert_response :success
-    assert_select 'details.editor-collapse-header[data-nutrition-editor-target="usdaPanel"]'
+    assert_select 'details.collapse-header[data-nutrition-editor-target="usdaPanel"]'
     assert_select 'input[data-nutrition-editor-target="usdaQuery"]'
   end
 
@@ -443,7 +443,7 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
         headers: { 'Accept' => 'text/html' }
 
     assert_response :success
-    assert_select 'details.editor-collapse-header[data-nutrition-editor-target="usdaPanel"]', count: 0
+    assert_select 'details.collapse-header[data-nutrition-editor-target="usdaPanel"]', count: 0
   end
 
   test 'edit form starts with all sections collapsed and density candidates hidden' do
@@ -461,7 +461,7 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
         headers: { 'Accept' => 'text/html' }
 
     assert_response :success
-    assert_select 'details.editor-collapse-header:not([open])', minimum: 1
+    assert_select 'details.collapse-header:not([open])', minimum: 1
     assert_select 'details.density-candidates[hidden]'
   end
 

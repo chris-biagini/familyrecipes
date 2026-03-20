@@ -4,14 +4,14 @@
   <div class="editor-form" data-nutrition-editor-target="formContent">
 
     <% if has_usda_key %>
-      <div class="editor-collapse">
-        <details class="editor-collapse-header"
+      <div class="editor-section">
+        <details class="collapse-header"
                  data-nutrition-editor-target="usdaPanel"
                  data-section-key="usda-import">
           <summary>USDA Import</summary>
         </details>
-        <div class="editor-collapse-body">
-          <div class="editor-collapse-inner usda-search-content">
+        <div class="collapse-body">
+          <div class="collapse-inner usda-search-content">
             <div class="usda-search-row">
               <input type="search" class="usda-search-input"
                      placeholder="Search USDA database…"
@@ -29,12 +29,12 @@
       </div>
     <% end %>
 
-    <div class="editor-collapse">
-      <details class="editor-collapse-header" data-section-key="nutrition-facts">
+    <div class="editor-section">
+      <details class="collapse-header" data-section-key="nutrition-facts">
         <summary>Nutrition Facts</summary>
       </details>
-      <div class="editor-collapse-body">
-        <div class="editor-collapse-inner">
+      <div class="collapse-body">
+        <div class="collapse-inner">
           <div class="nf-editor">
             <div class="nf-serving-row">
               <label for="editor-basis-grams">Per</label>
@@ -71,12 +71,12 @@
       </div>
     </div>
 
-    <div class="editor-collapse">
-      <details class="editor-collapse-header" data-section-key="density">
+    <div class="editor-section">
+      <details class="collapse-header" data-section-key="density">
         <summary>Density</summary>
       </details>
-      <div class="editor-collapse-body">
-        <div class="editor-collapse-inner">
+      <div class="collapse-body">
+        <div class="collapse-inner">
           <p class="editor-help">
             How much does a measured volume weigh? This lets the app convert
             cups and tablespoons to grams for nutrition math.
@@ -114,12 +114,12 @@
       </div>
     </div>
 
-    <div class="editor-collapse">
-      <details class="editor-collapse-header" data-section-key="portions">
+    <div class="editor-section">
+      <details class="collapse-header" data-section-key="portions">
         <summary>Portions</summary>
       </details>
-      <div class="editor-collapse-body">
-        <div class="editor-collapse-inner">
+      <div class="collapse-body">
+        <div class="collapse-inner">
           <p class="editor-help">
             Named portions map non-volume units to gram weights. Use "each" for
             items counted by number (eggs, rolls).
@@ -137,12 +137,12 @@
       </div>
     </div>
 
-    <div class="editor-collapse">
-      <details class="editor-collapse-header" data-section-key="grocery-aisle">
+    <div class="editor-section">
+      <details class="collapse-header" data-section-key="grocery-aisle">
         <summary>Grocery Aisle</summary>
       </details>
-      <div class="editor-collapse-body">
-        <div class="editor-collapse-inner">
+      <div class="collapse-body">
+        <div class="collapse-inner">
           <div class="form-row aisle-row">
             <select class="aisle-form-select"
                     data-nutrition-editor-target="aisleSelect"
@@ -169,12 +169,12 @@
       </div>
     </div>
 
-    <div class="editor-collapse">
-      <details class="editor-collapse-header" data-section-key="aliases">
+    <div class="editor-section">
+      <details class="collapse-header" data-section-key="aliases">
         <summary>Aliases</summary>
       </details>
-      <div class="editor-collapse-body">
-        <div class="editor-collapse-inner">
+      <div class="collapse-body">
+        <div class="collapse-inner">
           <p class="editor-help">
             Alternate names for this ingredient. Recipes using any alias will map
             to this entry for nutrition and grocery grouping.
@@ -201,12 +201,12 @@
     </div>
 
     <% if needed_units.any? %>
-      <div class="editor-collapse">
-        <details class="editor-collapse-header" data-section-key="recipe-units">
+      <div class="editor-section">
+        <details class="collapse-header" data-section-key="recipe-units">
           <summary>Recipe Units</summary>
         </details>
-        <div class="editor-collapse-body">
-          <div class="editor-collapse-inner">
+        <div class="collapse-body">
+          <div class="collapse-inner">
             <p class="editor-help">
               Units used in recipes. A checkmark means the app can convert this unit to grams.
             </p>

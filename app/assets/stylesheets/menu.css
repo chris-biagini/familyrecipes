@@ -79,22 +79,17 @@
   transition: opacity var(--duration-fast) ease;
 }
 
-.availability-detail {
+.recipe-selector-item .collapse-header {
   flex-shrink: 0;
   margin-left: auto;
   transition: opacity var(--duration-fast) ease;
 }
 
-.availability-detail summary {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  list-style: none;
+.recipe-selector-item .collapse-header summary {
   font-family: var(--font-body);
   font-size: 0.75rem;
   font-weight: 400;
   color: var(--red);
-  cursor: pointer;
   padding: 0.15rem 0.5rem;
   white-space: nowrap;
   background: var(--surface-alt);
@@ -102,23 +97,9 @@
   border-radius: 6px;
 }
 
-.availability-detail summary::-webkit-details-marker {
-  display: none;
-}
-
-.availability-detail summary::before {
-  content: '';
-  display: inline-block;
-  width: 0;
-  height: 0;
-  border-style: solid;
+.recipe-selector-item .collapse-header summary::before {
   border-width: 0.25rem 0 0.25rem 0.35rem;
   border-color: transparent transparent transparent var(--red);
-  transition: transform var(--duration-fast) ease;
-}
-
-.availability-detail[open] summary::before {
-  transform: rotate(90deg);
 }
 
 /* Proportional opacity for availability pills (0/10 = invisible, 10/10 = full) */
@@ -136,24 +117,15 @@
 
 /* Snap availability pill opacity to full on row hover */
 #recipe-selector li:hover .availability-single,
-#recipe-selector li:hover .availability-detail {
+#recipe-selector li:hover .collapse-header {
   opacity: 1 !important;
 }
 
-.availability-ingredients {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows var(--duration-normal) ease;
+.recipe-selector-item .collapse-body {
   flex-basis: 100%;
 }
 
-.availability-detail[open] ~ .availability-ingredients {
-  grid-template-rows: 1fr;
-}
-
-.availability-ingredients > .availability-ingredients-inner {
-  min-height: 0;
-  overflow: hidden;
+.recipe-selector-item .collapse-inner {
   font-family: var(--font-body);
   font-size: 0.8rem;
   font-style: normal;
@@ -164,7 +136,7 @@
   transition: padding var(--duration-normal) ease;
 }
 
-.availability-detail[open] ~ .availability-ingredients > .availability-ingredients-inner {
+.recipe-selector-item .collapse-header[open] ~ .collapse-body > .collapse-inner {
   padding-top: 0.4rem;
   padding-bottom: 0.4rem;
 }
@@ -553,8 +525,8 @@
   }
 
   .availability-single,
-  .availability-detail,
-  .availability-ingredients {
+  .recipe-selector-item .collapse-header,
+  .recipe-selector-item .collapse-body {
     display: none;
   }
 

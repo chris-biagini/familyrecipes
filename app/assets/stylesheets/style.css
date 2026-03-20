@@ -1687,7 +1687,7 @@ footer small {
   .nutrition-label .dv-header { border-bottom-color: var(--text); }
   .nutrition-label .nutrient-row { border-bottom-color: var(--text); }
   .nutrition-label .nutrient-row:last-child { border-bottom-color: var(--text); }
-  .editor-collapse { border-color: var(--text); }
+  .editor-section { border-color: var(--text); }
   .nf-thick-rule { border-top-color: var(--text); }
   .usda-results { border-color: var(--text); }
   .usda-result-item { border-bottom-color: var(--text); }
@@ -2634,8 +2634,8 @@ button.aisle-name:hover {
   cursor: default;
 }
 
-/* Collapsible editor sections — mirrors grocery aisle pattern */
-.editor-collapse {
+/* Collapsible editor sections — uses canonical .collapse-* mechanism */
+.editor-section {
   margin-bottom: 0.75rem;
   background: var(--surface-alt);
   border: 1px solid var(--aisle-row-border);
@@ -2643,73 +2643,30 @@ button.aisle-name:hover {
   overflow: hidden;
 }
 
-.editor-collapse-header {
-  margin: 0;
-  padding: 0;
-}
-
-.editor-collapse-header:not([open]) {
-  border-bottom: none;
-}
-
-.editor-collapse-header:not([open]) > summary {
+.editor-section .collapse-header:not([open]) > summary {
   padding-bottom: 0.5rem;
 }
 
-.editor-collapse-header > summary {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+.editor-section .collapse-header > summary {
   padding: 0.6rem 0.75rem;
   font-family: var(--font-body);
   font-size: 0.8rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  cursor: pointer;
-  list-style: none;
-  user-select: none;
   color: var(--text);
 }
 
-.editor-collapse-header > summary::-webkit-details-marker {
-  display: none;
-}
-
-.editor-collapse-header > summary::before {
-  content: '';
-  display: inline-block;
-  width: 0;
-  height: 0;
-  border-style: solid;
-  border-width: 0.3rem 0 0.3rem 0.45rem;
+.editor-section .collapse-header > summary::before {
   border-color: transparent transparent transparent var(--rule);
-  transition: transform var(--duration-fast) ease;
-  flex-shrink: 0;
 }
 
-.editor-collapse-header[open] > summary::before {
-  transform: rotate(90deg);
-}
-
-.editor-collapse-body {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows var(--duration-normal) ease;
-}
-
-.editor-collapse-header[open] + .editor-collapse-body {
-  grid-template-rows: 1fr;
-}
-
-.editor-collapse-inner {
-  min-height: 0;
-  overflow: hidden;
+.editor-section .collapse-inner {
   padding: 0;
   transition: padding var(--duration-normal) ease;
 }
 
-.editor-collapse-header[open] + .editor-collapse-body > .editor-collapse-inner {
+.editor-section .collapse-header[open] + .collapse-body > .collapse-inner {
   padding: 0.75rem;
 }
 
@@ -2915,13 +2872,13 @@ button.aisle-name:hover {
 /* Hide spin buttons on all number inputs in editor */
 .nf-input::-webkit-inner-spin-button,
 .nf-input::-webkit-outer-spin-button,
-.editor-collapse input[type="number"]::-webkit-inner-spin-button,
-.editor-collapse input[type="number"]::-webkit-outer-spin-button {
+.editor-section input[type="number"]::-webkit-inner-spin-button,
+.editor-section input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 .nf-input,
-.editor-collapse input[type="number"] {
+.editor-section input[type="number"] {
   -moz-appearance: textbox;
 }
 
@@ -3260,7 +3217,7 @@ button.aisle-name:hover {
   .usda-search-input { min-width: 0; font-size: 1rem; }
   .usda-results { max-height: 200px; }
 
-  .editor-collapse-header > summary {
+  .editor-section .collapse-header > summary {
     padding: 0.7rem 0.75rem;
   }
 }

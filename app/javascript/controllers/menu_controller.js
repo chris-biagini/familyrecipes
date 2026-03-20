@@ -35,7 +35,7 @@ export default class extends Controller {
   preserveOpenDetails(event) {
     if (!event.detail.render) return
 
-    const openSummaries = Array.from(this.element.querySelectorAll("details.availability-detail[open] summary"))
+    const openSummaries = Array.from(this.element.querySelectorAll("details.collapse-header[open] summary"))
       .map(s => s.getAttribute("aria-label"))
 
     if (!openSummaries.length) return
@@ -44,7 +44,7 @@ export default class extends Controller {
     event.detail.render = async (...args) => {
       await originalRender(...args)
       openSummaries.forEach(label => {
-        const summary = this.element.querySelector(`details.availability-detail summary[aria-label="${CSS.escape(label)}"]`)
+        const summary = this.element.querySelector(`details.collapse-header summary[aria-label="${CSS.escape(label)}"]`)
         if (summary) summary.closest("details").open = true
       })
     }
