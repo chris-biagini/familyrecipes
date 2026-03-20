@@ -10,9 +10,17 @@ class CategoriesController < ApplicationController
 
   def order_content
     categories = current_kitchen.categories.ordered.includes(:recipes)
-    render json: {
-      categories: categories.map { |c| { name: c.name, position: c.position, recipe_count: c.recipes.size } }
-    }
+
+    respond_to do |format|
+      format.html do
+        render partial: 'categories/order_frame', locals: { items: categories.map(&:name) }, layout: false
+      end
+      format.json do
+        render json: {
+          categories: categories.map { |c| { name: c.name, position: c.position, recipe_count: c.recipes.size } }
+        }
+      end
+    end
   end
 
   def update_order

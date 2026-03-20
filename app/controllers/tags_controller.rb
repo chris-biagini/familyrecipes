@@ -13,8 +13,12 @@ class TagsController < ApplicationController
   before_action :require_membership
 
   def content
-    items = current_kitchen.tags.order(:name).map { |t| { name: t.name } }
-    render json: { items: }
+    tag_names = current_kitchen.tags.order(:name).pluck(:name)
+
+    respond_to do |format|
+      format.html { render partial: 'tags/content_frame', locals: { items: tag_names }, layout: false }
+      format.json { render json: { items: tag_names.map { |name| { name: } } } }
+    end
   end
 
   def update_tags

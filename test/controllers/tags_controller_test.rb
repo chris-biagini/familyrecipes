@@ -14,6 +14,24 @@ class TagsControllerTest < ActionDispatch::IntegrationTest
     RecipeTag.create!(recipe:, tag: @quick)
   end
 
+  test 'content returns turbo frame with tag rows' do
+    get tags_content_path(kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select 'turbo-frame#tag-order-frame'
+    assert_select '.aisle-row[data-name="quick"]'
+    assert_select '.aisle-row[data-name="vegan"]'
+  end
+
+  test 'content frame orders tags alphabetically' do
+    get tags_content_path(kitchen_slug: kitchen_slug)
+
+    rows = css_select('.aisle-row')
+
+    assert_equal 'quick', rows[0]['data-name']
+    assert_equal 'vegan', rows[1]['data-name']
+  end
+
   test 'tags_content returns tag names as JSON' do
     get tags_content_path(kitchen_slug: kitchen_slug), as: :json
 

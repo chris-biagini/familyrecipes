@@ -14,6 +14,24 @@ class CategoriesControllerTest < ActionDispatch::IntegrationTest
     @kitchen.recipes.create!(title: 'Cake', slug: 'cake', category: @dessert)
   end
 
+  test 'order_content returns turbo frame with category rows' do
+    get categories_order_content_path(kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select 'turbo-frame#category-order-frame'
+    assert_select '.aisle-row[data-name="Bread"]'
+    assert_select '.aisle-row[data-name="Dessert"]'
+  end
+
+  test 'order_content frame preserves position order' do
+    get categories_order_content_path(kitchen_slug: kitchen_slug)
+
+    rows = css_select('.aisle-row')
+
+    assert_equal 'Bread', rows[0]['data-name']
+    assert_equal 'Dessert', rows[1]['data-name']
+  end
+
   test 'order_content returns categories as JSON' do
     log_in
     get categories_order_content_path(kitchen_slug: kitchen_slug), as: :json

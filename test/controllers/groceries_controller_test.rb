@@ -375,6 +375,47 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     assert_nil @kitchen.reload.aisle_order
   end
 
+  test 'aisle_order_content returns turbo frame with rows' do
+    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Flour') do |p|
+      p.basis_grams = 30
+      p.aisle = 'Baking'
+    end
+    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Salt') do |p|
+      p.basis_grams = 6
+      p.aisle = 'Spices'
+    end
+
+    log_in
+    get groceries_aisle_order_content_path(kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select 'turbo-frame#aisle-order-frame'
+    assert_select '.aisle-row[data-name="Baking"]'
+    assert_select '.aisle-row[data-name="Spices"]'
+  end
+
+  test 'aisle_order_content frame respects saved order' do
+    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Flour') do |p|
+      p.basis_grams = 30
+      p.aisle = 'Baking'
+    end
+    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Salt') do |p|
+      p.basis_grams = 6
+      p.aisle = 'Spices'
+    end
+    @kitchen.update!(aisle_order: "Spices\nProduce")
+
+    log_in
+    get groceries_aisle_order_content_path(kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    rows = css_select('.aisle-row')
+
+    assert_equal 'Spices', rows[0]['data-name']
+    assert_equal 'Produce', rows[1]['data-name']
+    assert_equal 'Baking', rows[2]['data-name']
+  end
+
   test 'aisle_order_content returns current aisles for editor' do
     IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Flour') do |p|
       p.basis_grams = 30

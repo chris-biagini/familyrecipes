@@ -52,6 +52,11 @@ class GroceriesController < ApplicationController
   end
 
   def aisle_order_content
-    render json: { aisle_order: current_kitchen.all_aisles.join("\n") }
+    aisles = current_kitchen.all_aisles
+
+    respond_to do |format|
+      format.html { render partial: 'groceries/aisle_order_frame', locals: { items: aisles }, layout: false }
+      format.json { render json: { aisle_order: aisles.join("\n") } }
+    end
   end
 end
