@@ -8,6 +8,10 @@ development, eventual move to hosted model with many users.
 ## Design Philosophy
 
 - Default to simple UI. We can add complexity when it's necessary.
+- Retro theme: skeuomorphism with mid-century cookbook vibes
+- Err on the side of less JavaScript
+
+## Development Notes
 - Challenge assumptions, misconceptions, and poor design decisions.
 - Suggest quality-of-life, performance, and feature improvements.
 - Let's walk before we run. Don't solve scale problems I don't have.
@@ -119,9 +123,9 @@ when adding new conventions or workflows.
 
 ## HTML & Security
 
-A strict CSP is enforced (`config/initializers/content_security_policy.rb`). No
-inline styles, no external resources (Google Fonts is the sole exception). Update
-the CSP initializer before adding any.
+A strict CSP is enforced (`config/initializers/content_security_policy.rb`).
+No inline styles, no external resources (Google Fonts is the sole exception).
+Update the CSP initializer before adding any.
 
 - **Never** call `.html_safe` on a string that interpolates user content
   without first escaping via `ERB::Util.html_escape`.
@@ -334,7 +338,10 @@ The esbuild watcher (`bin/dev`) auto-rebuilds on file changes.
 
 **Visual companion.** The brainstorming visual companion server must bind to
 `0.0.0.0` (`--host 0.0.0.0`) — the default `127.0.0.1` is unreachable from
-the user's browser in this remote setup.
+the user's browser in this remote setup. When providing links to the
+companion, substitute your current LAN IP or hostname in place of `localhost`.
+You have explicit permission to use the visual companion server; you don't
+need to ask before spawning it.
 
 **Skills.** Always use the superpowers skill when getting ready to write code.
 
