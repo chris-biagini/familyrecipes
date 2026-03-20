@@ -142,7 +142,7 @@ export default class extends Controller {
         return
       }
       const parsed = JSON.parse(jsonEl.textContent)
-      this.originalContent = parsed[this.contentKeyValue] || ""
+      this.originalContent = parsed.plaintext || ""
       this.plaintextController.content = this.originalContent
       this.originalStructure = this.graphicalController.toStructure()
       this.enableEditing()

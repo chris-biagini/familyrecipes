@@ -1009,8 +1009,8 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     assert_select 'script[type="application/json"][data-editor-markdown]' do |scripts|
       json = JSON.parse(scripts.first.text)
 
-      assert_includes json['markdown_source'], '# Focaccia'
-      assert_includes json['markdown_source'], 'Serves: 8'
+      assert_includes json['plaintext'], '# Focaccia'
+      assert_includes json['plaintext'], 'Serves: 8'
     end
   end
 

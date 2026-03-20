@@ -35,7 +35,7 @@ export default class extends Controller {
         ?.querySelector("script[data-editor-markdown]")
       if (jsonEl) {
         const data = JSON.parse(jsonEl.textContent)
-        doc = data.markdown_source || ""
+        doc = data.plaintext || ""
       }
     }
 

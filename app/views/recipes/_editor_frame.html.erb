@@ -5,7 +5,7 @@
     Loaded lazily when the editor dialog opens. %>
 <% categories = current_kitchen.categories.ordered %>
 <turbo-frame id="recipe-editor-content">
-  <script type="application/json" data-editor-markdown><%= { markdown_source: markdown_source }.to_json.html_safe %></script>
+  <script type="application/json" data-editor-markdown><%= { plaintext: markdown_source }.to_json.html_safe %></script>
 
   <div class="editor-body" data-dual-mode-editor-target="plaintextContainer">
     <div data-controller="plaintext-editor"

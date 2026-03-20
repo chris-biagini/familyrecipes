@@ -66,7 +66,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     assert_select 'script[type="application/json"][data-editor-markdown]' do |scripts|
       json = JSON.parse(scripts.first.text)
 
-      assert_equal "## Snacks\n- Goldfish", json['content']
+      assert_equal "## Snacks\n- Goldfish", json['plaintext']
     end
   end
 
@@ -92,7 +92,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     assert_select 'script[type="application/json"][data-editor-markdown]' do |scripts|
       json = JSON.parse(scripts.first.text)
 
-      assert_equal '', json['content']
+      assert_equal '', json['plaintext']
     end
   end
 

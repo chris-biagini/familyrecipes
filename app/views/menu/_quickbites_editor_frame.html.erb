@@ -4,7 +4,7 @@
     Graphical mode: server-rendered form with pre-populated category cards.
     Loaded lazily when the editor dialog opens. %>
 <turbo-frame id="quickbites-editor-content">
-  <script type="application/json" data-editor-markdown><%= { content: content }.to_json.html_safe %></script>
+  <script type="application/json" data-editor-markdown><%= { plaintext: content }.to_json.html_safe %></script>
 
   <div class="editor-body" data-dual-mode-editor-target="plaintextContainer">
     <div data-controller="plaintext-editor"
