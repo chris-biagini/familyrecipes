@@ -306,12 +306,13 @@ completing work on a GitHub issue, reference it in the commit message so that
 it will close on push (e.g., "Resolves #nn" or "Resolves #nn1, resolves #nn2,
 resolves #nn3")
 
-**Worktrees.** Most projects can be completed on main. For major projects, ask
-me whether I want to move to a worktree.
-
-**Worktree cleanup.** Never run `git worktree remove` directly — it deletes the
-CWD and bricks the Bash tool. Use the wrapper: `bash bin/worktree-remove
-<name>`
+**Branches and PRs.** Small, self-contained changes (a bug fix, a few-line
+cleanup) can go straight to main. Anything that touches multiple files or that
+the user would want to review before it lands should go on a branch with a PR.
+When in doubt, use a branch — it's easy to merge, hard to undo a bad commit to
+main. Squash-and-merge PRs to keep history linear. After merging, clean up:
+`git checkout main && git pull && git branch -D <branch>` (`-D` because the
+post-commit timestamp hook changes SHAs, making `-d` fail).
 
 **Screenshots.** Save to `~/screenshots/`, not inside the repo.
 
@@ -346,10 +347,6 @@ need to ask before spawning it.
 **Skills.** Always use the superpowers skill when getting ready to write code.
 
 **Subagents.** ALWAYS use Opus subagents for coding tasks.
-
-**Commit timestamps.** A post-commit hook rewrites timestamps for privacy.
-This changes commit SHAs, so `git branch -d` fails after fast-forward merges
-— use `git branch -D` when you've verified the content is merged.
 
 **Migrations.** Use `db/migrate/` for all schema and data changes — never use
 one-off rake tasks for backfills.  Migrations are numbered sequentially
