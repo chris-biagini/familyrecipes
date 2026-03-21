@@ -292,7 +292,8 @@ class CatalogWriteServiceTest < ActiveSupport::TestCase
 
     plan = MealPlan.for_kitchen(@kitchen)
     plan.apply_action('select', type: 'recipe', slug: 'bread', selected: true)
-    plan.apply_action('check', item: 'flour', checked: true)
+    plan.state['on_hand'] = { 'flour' => { 'confirmed_at' => Date.current.iso8601, 'interval' => 7 } }
+    plan.save!
 
     # Rename the canonical name by adding an alias that captures 'flour'
     # and destroying the old entry, then creating a new one
@@ -301,22 +302,25 @@ class CatalogWriteServiceTest < ActiveSupport::TestCase
 
     plan.reload
 
-    assert_not_includes plan.state['checked_off'], 'flour',
-                        'stale checked-off item should be pruned after catalog name change'
+    assert_not plan.on_hand.key?('flour'),
+               'stale on_hand item should be pruned after catalog name change'
   end
 
   test 'destroy reconciles meal plan state' do
     IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'flour', aisle: 'Baking')
 
     plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('check', item: 'flour', checked: true)
+    plan.state['on_hand'] = { 'flour' => { 'confirmed_at' => Date.current.iso8601, 'interval' => 7 } }
+    plan.save!
 
     CatalogWriteService.destroy(kitchen: @kitchen, ingredient_name: 'flour')
 
     plan.reload
 
-    assert_empty plan.state['checked_off'],
-                 'checked-off items should be pruned after catalog entry destroyed'
+    assert_equal '1970-01-01', plan.on_hand['flour']['confirmed_at'],
+                 'on_hand entry should be expired (orphaned) after catalog entry destroyed'
+    assert_empty plan.effective_on_hand,
+                 'expired entry should not appear in effective_on_hand'
   end
 
   # --- batching guard ---

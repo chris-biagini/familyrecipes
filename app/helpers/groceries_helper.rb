@@ -16,11 +16,11 @@ module GroceriesHelper
     "(#{inner})"
   end
 
-  def shopping_list_count_text(shopping_list, checked_off)
+  def shopping_list_count_text(shopping_list, on_hand_names)
     total = shopping_list.each_value.sum(&:size)
     return '' if total.zero?
 
-    remaining = total - shopping_list.each_value.sum { |items| items.count { |i| checked_off.include?(i[:name]) } }
+    remaining = total - shopping_list.each_value.sum { |items| items.count { |i| on_hand_names.include?(i[:name]) } }
 
     return "\u2713 All done!" if remaining.zero?
 

@@ -192,6 +192,11 @@
   transition: opacity var(--duration-fast) ease;
 }
 
+.in-cart .item-text {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
 .item-amount {
   font-style: italic;
 }

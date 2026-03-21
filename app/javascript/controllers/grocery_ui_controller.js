@@ -25,6 +25,7 @@ export default class extends Controller {
     this.bindCustomItemInput()
     this.bindOnHandToggle()
     this.restoreOnHandState()
+    this.applyInCartState()
 
     this.listeners.add(document, "turbo:before-render", (e) => this.preserveOnHandStateOnRefresh(e))
   }
@@ -45,6 +46,12 @@ export default class extends Controller {
 
       this.updateItemCount()
       sendAction(this.element.dataset.checkUrl, { item: name, checked: cb.checked })
+
+      if (cb.checked) {
+        this.addToCart(name)
+      } else {
+        this.removeFromCart(name)
+      }
     })
   }
 
@@ -157,6 +164,78 @@ export default class extends Controller {
     event.detail.render = async (...args) => {
       await originalRender(...args)
       this.restoreOnHandState()
+      this.applyInCartState()
     }
+  }
+
+  // --- In cart (shopping trip boundary) ---
+
+  get cartKey() {
+    return `grocery-in-cart-${this.element.dataset.kitchenSlug}`
+  }
+
+  loadCart() {
+    try {
+      const raw = sessionStorage.getItem(this.cartKey)
+      if (!raw) return new Set()
+
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed)) return this.clearCart()
+
+      const fourHours = 4 * 60 * 60 * 1000
+      if (Date.now() - parsed.ts > fourHours) return this.clearCart()
+
+      return new Set(parsed.items)
+    } catch {
+      return new Set()
+    }
+  }
+
+  saveCart(cart) {
+    try {
+      sessionStorage.setItem(this.cartKey, JSON.stringify({ items: [...cart], ts: Date.now() }))
+    } catch { /* sessionStorage full */ }
+  }
+
+  clearCart() {
+    sessionStorage.removeItem(this.cartKey)
+    return new Set()
+  }
+
+  addToCart(name) {
+    const cart = this.loadCart()
+    cart.add(name)
+    this.saveCart(cart)
+  }
+
+  removeFromCart(name) {
+    const cart = this.loadCart()
+    cart.delete(name)
+    this.saveCart(cart)
+  }
+
+  applyInCartState() {
+    const cart = this.loadCart()
+    if (cart.size === 0) return
+
+    cart.forEach(name => {
+      const onHandItem = this.element.querySelector(
+        `.on-hand-items li[data-item="${CSS.escape(name)}"]`
+      )
+      if (!onHandItem) return
+
+      const aisle = onHandItem.closest('.aisle-group')
+      if (!aisle) return
+
+      const toBuyList = aisle.querySelector('.to-buy-items')
+      if (!toBuyList) return
+
+      onHandItem.classList.add('in-cart')
+      const cb = onHandItem.querySelector('input[type="checkbox"]')
+      if (cb) cb.checked = true
+      toBuyList.appendChild(onHandItem)
+    })
+
+    this.updateItemCount()
   }
 }

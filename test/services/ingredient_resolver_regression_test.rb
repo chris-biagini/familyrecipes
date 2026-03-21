@@ -47,8 +47,9 @@ class IngredientResolverRegressionTest < ActiveSupport::TestCase
     assert_includes all_names, 'Parmesan',
                     'Expected canonical catalog name, not lowercase variant'
 
-    plan.apply_action('check', item: 'Parmesan', checked: true)
-    checked_off = plan.checked_off
+    plan.state['on_hand'] = { 'Parmesan' => { 'confirmed_at' => Date.current.iso8601, 'interval' => 7 } }
+    plan.save!
+    checked_off = plan.effective_on_hand.keys
 
     availability = RecipeAvailabilityCalculator.new(
       kitchen: @kitchen, checked_off:, resolver:

@@ -18,4 +18,5 @@
   recipes)
 - Authentication via Authelia
 - Installation via Docker
--  
+- "Anki for groceries" exponential backoff for ingredients (see groceries.md)
+ 

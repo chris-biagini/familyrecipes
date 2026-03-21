@@ -125,7 +125,75 @@ class MealPlanWriteServiceTest < ActiveSupport::TestCase
     assert_includes MealPlan.for_kitchen(@kitchen).custom_items, 'a' * 100
   end
 
+  # --- check action canonicalization ---
+
+  test 'check action canonicalizes item name via IngredientResolver' do
+    create_catalog_entry('Flour', aisle: 'Baking')
+    select_recipe_with_flour
+
+    MealPlanWriteService.apply_action(
+      kitchen: @kitchen, action_type: 'check',
+      item: 'flour', checked: true
+    )
+
+    plan = MealPlan.for_kitchen(@kitchen)
+
+    assert plan.on_hand.key?('Flour'), 'on_hand key should use canonical catalog name'
+    assert_not plan.on_hand.key?('flour'), 'non-canonical name should not be stored'
+  end
+
+  test 'check action sets null interval for custom items' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('custom_items', item: 'Birthday candles', action: 'add')
+
+    MealPlanWriteService.apply_action(
+      kitchen: @kitchen, action_type: 'check',
+      item: 'Birthday candles', checked: true
+    )
+
+    plan.reload
+    entry = plan.on_hand['Birthday candles']
+
+    assert_nil entry['interval'], 'Custom items should get null interval'
+  end
+
+  test 'check action sets recipe interval for non-custom items' do
+    select_recipe_with_flour
+
+    MealPlanWriteService.apply_action(
+      kitchen: @kitchen, action_type: 'check',
+      item: 'Flour', checked: true
+    )
+
+    plan = MealPlan.for_kitchen(@kitchen)
+
+    assert_equal 7, plan.on_hand['Flour']['interval']
+  end
+
+  test 'check action detects custom items case-insensitively' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('custom_items', item: 'Paper Towels', action: 'add')
+
+    MealPlanWriteService.apply_action(
+      kitchen: @kitchen, action_type: 'check',
+      item: 'paper towels', checked: true
+    )
+
+    plan.reload
+    entry = plan.on_hand.values.find { |e| e['interval'].nil? }
+
+    assert_not_nil entry, 'Custom item should have null interval'
+  end
+
   private
+
+  def select_recipe_with_flour
+    create_focaccia_recipe
+    MealPlanWriteService.apply_action(
+      kitchen: @kitchen, action_type: 'select',
+      type: 'recipe', slug: 'focaccia', selected: true
+    )
+  end
 
   def create_focaccia_recipe
     MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)

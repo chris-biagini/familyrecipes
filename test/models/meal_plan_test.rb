@@ -8,9 +8,10 @@ class MealPlanTest < ActiveSupport::TestCase
     MealPlan.where(kitchen: @kitchen).delete_all
   end
 
-  def reconcile_plan!(plan)
-    visible = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: plan).visible_names
-    plan.reconcile!(visible_names: visible)
+  def reconcile_plan!(plan, now: Date.current)
+    resolver = IngredientCatalog.resolver_for(@kitchen)
+    visible = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: plan, resolver:).visible_names
+    plan.reconcile!(visible_names: visible, resolver:, now:)
   end
 
   test 'belongs to kitchen' do
@@ -31,6 +32,21 @@ class MealPlanTest < ActiveSupport::TestCase
 
     assert_equal 0, list.lock_version
     assert_empty list.state
+  end
+
+  test 'on_hand defaults to empty hash' do
+    list = MealPlan.create!(kitchen: @kitchen)
+
+    assert_empty list.on_hand
+  end
+
+  test 'ensure_state_keys initializes on_hand as hash not array' do
+    list = MealPlan.create!(kitchen: @kitchen)
+    list.apply_action('custom_items', item: 'test', action: 'add')
+    list.reload
+
+    assert_instance_of Hash, list.state['on_hand']
+    assert_instance_of Array, list.state['custom_items']
   end
 
   test 'for_kitchen finds or creates' do
@@ -64,21 +80,6 @@ class MealPlanTest < ActiveSupport::TestCase
     assert_includes list.state['selected_quick_bites'], 'nachos'
   end
 
-  test 'apply_action checks off item' do
-    list = MealPlan.for_kitchen(@kitchen)
-    list.apply_action('check', item: 'milk', checked: true)
-
-    assert_includes list.state['checked_off'], 'milk'
-  end
-
-  test 'apply_action unchecks item' do
-    list = MealPlan.for_kitchen(@kitchen)
-    list.apply_action('check', item: 'milk', checked: true)
-    list.apply_action('check', item: 'milk', checked: false)
-
-    assert_not_includes list.state['checked_off'], 'milk'
-  end
-
   test 'apply_action adds custom item' do
     list = MealPlan.for_kitchen(@kitchen)
     list.apply_action('custom_items', item: 'birthday candles', action: 'add')
@@ -92,25 +93,6 @@ class MealPlanTest < ActiveSupport::TestCase
     list.apply_action('custom_items', item: 'birthday candles', action: 'remove')
 
     assert_not_includes list.state['custom_items'], 'birthday candles'
-  end
-
-  test 'apply_action bumps version' do
-    list = MealPlan.for_kitchen(@kitchen)
-    old_version = list.lock_version
-
-    list.apply_action('check', item: 'milk', checked: true)
-
-    assert_operator list.lock_version, :>, old_version
-  end
-
-  test 'operations are idempotent' do
-    list = MealPlan.for_kitchen(@kitchen)
-    list.apply_action('check', item: 'milk', checked: true)
-    version_after_first = list.lock_version
-
-    list.apply_action('check', item: 'milk', checked: true)
-
-    assert_equal version_after_first, list.lock_version
   end
 
   test 'raises on unknown action types' do
@@ -143,17 +125,23 @@ class MealPlanTest < ActiveSupport::TestCase
 
   # --- reconcile! ---
 
-  test 'reconcile! removes checked-off items not on shopping list' do
+  test 'reconcile! expires orphaned on_hand entries preserving interval' do
     plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('check', item: 'Phantom Item', checked: true)
+    plan.state['on_hand'] = {
+      'Phantom' => { 'confirmed_at' => Date.current.iso8601, 'interval' => 28 }
+    }
+    plan.save!
 
     reconcile_plan!(plan)
     plan.reload
 
-    assert_empty plan.state['checked_off']
+    assert plan.on_hand.key?('Phantom'), 'Orphaned entry should persist with sentinel date'
+    assert_equal '1970-01-01', plan.on_hand['Phantom']['confirmed_at']
+    assert_equal 28, plan.on_hand['Phantom']['interval'], 'Learned interval should be preserved'
+    assert_empty plan.effective_on_hand, 'Orphaned entry should not appear in effective_on_hand'
   end
 
-  test 'reconcile! preserves checked-off items on shopping list' do
+  test 'reconcile! preserves on_hand entries in visible names' do
     @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
     MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Focaccia
@@ -167,36 +155,223 @@ class MealPlanTest < ActiveSupport::TestCase
 
     plan = MealPlan.for_kitchen(@kitchen)
     plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
-    plan.apply_action('check', item: 'Flour', checked: true)
-    plan.apply_action('check', item: 'Phantom', checked: true)
+    plan.state['on_hand'] = {
+      'Flour' => { 'confirmed_at' => Date.current.iso8601, 'interval' => 14 },
+      'Phantom' => { 'confirmed_at' => Date.current.iso8601, 'interval' => 7 }
+    }
+    plan.save!
 
     reconcile_plan!(plan)
     plan.reload
 
-    assert_includes plan.state['checked_off'], 'Flour'
-    assert_not_includes plan.state['checked_off'], 'Phantom'
+    assert plan.on_hand.key?('Flour')
+    assert_equal '1970-01-01', plan.on_hand['Phantom']['confirmed_at'],
+                 'Orphaned entry should be expired, not deleted'
   end
 
-  test 'reconcile! preserves custom items even when not in visible names' do
+  test 'reconcile! preserves custom items in on_hand' do
     plan = MealPlan.for_kitchen(@kitchen)
     plan.apply_action('custom_items', item: 'birthday candles', action: 'add')
-    plan.apply_action('check', item: 'birthday candles', checked: true)
+    plan.state['on_hand'] = {
+      'birthday candles' => { 'confirmed_at' => Date.current.iso8601, 'interval' => nil }
+    }
+    plan.save!
 
     reconcile_plan!(plan)
     plan.reload
 
-    assert_includes plan.state['checked_off'], 'birthday candles'
+    assert plan.on_hand.key?('birthday candles')
   end
 
   test 'reconcile! preserves custom items case-insensitively' do
     plan = MealPlan.for_kitchen(@kitchen)
     plan.apply_action('custom_items', item: 'Birthday Candles', action: 'add')
-    plan.apply_action('check', item: 'birthday candles', checked: true)
+    plan.state['on_hand'] = {
+      'birthday candles' => { 'confirmed_at' => Date.current.iso8601, 'interval' => nil }
+    }
+    plan.save!
 
     reconcile_plan!(plan)
     plan.reload
 
-    assert_includes plan.state['checked_off'], 'birthday candles'
+    assert plan.on_hand.key?('Birthday Candles'), 'Key re-canonicalized to match custom item casing'
+  end
+
+  test 'expired entries in visible names stay in on_hand but not in effective_on_hand' do
+    @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    md = "# Bread\n\n## Mix (combine)\n\n- Flour, 2 cups\n\nMix.\n"
+    MarkdownImporter.import(md, kitchen: @kitchen, category: @category)
+
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('select', type: 'recipe', slug: 'bread', selected: true)
+    plan.state['on_hand'] = {
+      'Flour' => { 'confirmed_at' => '2026-01-01', 'interval' => 7 }
+    }
+    plan.save!
+
+    assert plan.on_hand.key?('Flour'), 'Expired entry stays in raw on_hand'
+    assert_not plan.effective_on_hand(now: Date.new(2026, 3, 21)).key?('Flour'),
+               'Expired entry should not appear in effective_on_hand'
+  end
+
+  test 'reconcile! fixes orphaned null intervals' do
+    @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    md = "# Bread\n\n## Mix (combine)\n\n- Flour, 2 cups\n\nMix.\n"
+    MarkdownImporter.import(md, kitchen: @kitchen, category: @category)
+
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('select', type: 'recipe', slug: 'bread', selected: true)
+    plan.state['on_hand'] = {
+      'Flour' => { 'confirmed_at' => Date.current.iso8601, 'interval' => nil }
+    }
+    plan.save!
+
+    reconcile_plan!(plan)
+    plan.reload
+
+    assert_equal 7, plan.on_hand['Flour']['interval'],
+                 'Null interval should be converted to starting interval when item is not in custom_items'
+  end
+
+  test 'reconcile! re-canonicalizes on_hand keys when catalog changes' do
+    create_catalog_entry('Flour', aisle: 'Baking')
+    @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    md = "# Bread\n\n## Mix (combine)\n\n- Flour, 2 cups\n\nMix.\n"
+    MarkdownImporter.import(md, kitchen: @kitchen, category: @category)
+
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('select', type: 'recipe', slug: 'bread', selected: true)
+    plan.state['on_hand'] = {
+      'flour' => { 'confirmed_at' => Date.current.iso8601, 'interval' => 28 }
+    }
+    plan.save!
+
+    reconcile_plan!(plan)
+    plan.reload
+
+    assert plan.on_hand.key?('Flour'), 'Key should be re-canonicalized to catalog name'
+    assert_not plan.on_hand.key?('flour'), 'Old key should be removed'
+    assert_equal 28, plan.on_hand['Flour']['interval'], 'Interval should be preserved'
+  end
+
+  test 'pruned item reappearing doubles interval on re-confirmation' do
+    @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    md = "# Bread\n\n## Mix (combine)\n\n- Flour, 2 cups\n\nMix.\n"
+    MarkdownImporter.import(md, kitchen: @kitchen, category: @category)
+
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.state['on_hand'] = {
+      'Flour' => { 'confirmed_at' => '1970-01-01', 'interval' => 28 }
+    }
+    plan.save!
+
+    plan.apply_action('check', item: 'Flour', checked: true, now: Date.new(2026, 3, 21))
+
+    assert_equal 56, plan.on_hand['Flour']['interval'],
+                 'Re-confirming a pruned item should double from its preserved interval'
+    assert_equal '2026-03-21', plan.on_hand['Flour']['confirmed_at']
+  end
+
+  test 'reconcile! merge prefers fresh entry over sentinel orphan' do
+    create_catalog_entry('Flour', aisle: 'Baking')
+    @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    md = "# Bread\n\n## Mix (combine)\n\n- Flour, 2 cups\n\nMix.\n"
+    MarkdownImporter.import(md, kitchen: @kitchen, category: @category)
+
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('select', type: 'recipe', slug: 'bread', selected: true)
+    plan.state['on_hand'] = {
+      'flour' => { 'confirmed_at' => '1970-01-01', 'interval' => 28 },
+      'Flour' => { 'confirmed_at' => '2026-03-21', 'interval' => 7 }
+    }
+    plan.save!
+
+    reconcile_plan!(plan)
+    plan.reload
+
+    assert plan.on_hand.key?('Flour'), 'Should keep canonical key'
+    assert_not plan.on_hand.key?('flour'), 'Should remove old key'
+    assert_equal '2026-03-21', plan.on_hand['Flour']['confirmed_at'],
+                 'Should prefer fresh (non-sentinel) entry over orphaned one'
+    assert_equal 7, plan.on_hand['Flour']['interval']
+  end
+
+  test 'reconcile! sets orphaned_at when expiring entries' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.state['on_hand'] = {
+      'Phantom' => { 'confirmed_at' => Date.current.iso8601, 'interval' => 28 }
+    }
+    plan.save!
+
+    today = Date.new(2026, 3, 21)
+    reconcile_plan!(plan, now: today)
+    plan.reload
+
+    assert_equal '1970-01-01', plan.on_hand['Phantom']['confirmed_at']
+    assert_equal today.iso8601, plan.on_hand['Phantom']['orphaned_at'],
+                 'orphaned_at should be set when entry is first orphaned'
+  end
+
+  test 'reconcile! purges orphaned entries older than ORPHAN_RETENTION days' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.state['on_hand'] = {
+      'Ancient' => { 'confirmed_at' => '1970-01-01', 'interval' => 14,
+                     'orphaned_at' => '2025-06-01' },
+      'Recent' => { 'confirmed_at' => '1970-01-01', 'interval' => 14,
+                    'orphaned_at' => '2026-03-01' }
+    }
+    plan.save!
+
+    reconcile_plan!(plan, now: Date.new(2026, 3, 21))
+    plan.reload
+
+    assert_not plan.on_hand.key?('Ancient'), 'Entry orphaned >180 days ago should be purged'
+    assert plan.on_hand.key?('Recent'), 'Entry orphaned <180 days ago should be preserved'
+  end
+
+  test 'reconcile! backfills orphaned_at for legacy orphaned entries' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.state['on_hand'] = {
+      'Legacy' => { 'confirmed_at' => '1970-01-01', 'interval' => 7 }
+    }
+    plan.save!
+
+    today = Date.new(2026, 3, 21)
+    reconcile_plan!(plan, now: today)
+    plan.reload
+
+    assert plan.on_hand.key?('Legacy'), 'Legacy entry should not be purged immediately'
+    assert_equal today.iso8601, plan.on_hand['Legacy']['orphaned_at'],
+                 'orphaned_at should be backfilled to today for legacy entries'
+  end
+
+  test 'reconcile! is idempotent when nothing to prune' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    version_before = plan.lock_version
+
+    reconcile_plan!(plan)
+
+    assert_equal version_before, plan.reload.lock_version
+  end
+
+  test 'removing custom item and reconciling expires and converts on_hand entry' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('custom_items', item: 'Birthday Candles', action: 'add')
+    plan.state['on_hand'] = {
+      'Birthday Candles' => { 'confirmed_at' => Date.current.iso8601, 'interval' => nil }
+    }
+    plan.save!
+
+    plan.apply_action('custom_items', item: 'Birthday Candles', action: 'remove')
+    reconcile_plan!(plan)
+    plan.reload
+
+    assert_empty plan.state['custom_items']
+    entry = plan.on_hand['Birthday Candles']
+
+    assert_equal '1970-01-01', entry['confirmed_at'], 'Orphaned entry should be expired'
+    assert_equal 7, entry['interval'], 'Null interval should be converted since custom item removed'
+    assert_empty plan.effective_on_hand, 'Expired entry should not appear in effective_on_hand'
   end
 
   test 'reconcile! removes deleted recipe slugs from selections' do
@@ -226,25 +401,6 @@ class MealPlanTest < ActiveSupport::TestCase
     assert_not_includes plan.state['selected_quick_bites'], 'gone-bite'
   end
 
-  test 'reconcile! is idempotent when nothing to prune' do
-    plan = MealPlan.for_kitchen(@kitchen)
-    version_before = plan.lock_version
-
-    reconcile_plan!(plan)
-
-    assert_equal version_before, plan.reload.lock_version
-  end
-
-  test 'reconcile! saves when items are pruned' do
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('check', item: 'Phantom', checked: true)
-    version_before = plan.lock_version
-
-    reconcile_plan!(plan)
-
-    assert_operator plan.lock_version, :>, version_before
-  end
-
   # --- Case-insensitive custom items (issue #156) ---
 
   test 'adding custom item ignores case-insensitive duplicate' do
@@ -261,48 +417,6 @@ class MealPlanTest < ActiveSupport::TestCase
     list.apply_action('custom_items', item: 'butter', action: 'remove')
 
     assert_empty list.state['custom_items']
-  end
-
-  test 'checking off item is case-insensitive' do
-    list = MealPlan.for_kitchen(@kitchen)
-    list.apply_action('check', item: 'Milk', checked: true)
-    list.apply_action('check', item: 'milk', checked: true)
-
-    assert_equal ['Milk'], list.state['checked_off']
-  end
-
-  test 'unchecking item is case-insensitive' do
-    list = MealPlan.for_kitchen(@kitchen)
-    list.apply_action('check', item: 'Milk', checked: true)
-    list.apply_action('check', item: 'milk', checked: false)
-
-    assert_empty list.state['checked_off']
-  end
-
-  test 'removing custom item and reconciling cleans up checked-off entry' do
-    list = MealPlan.for_kitchen(@kitchen)
-    list.apply_action('custom_items', item: 'Birthday Candles', action: 'add')
-    list.apply_action('check', item: 'Birthday Candles', checked: true)
-    list.apply_action('custom_items', item: 'Birthday Candles', action: 'remove')
-    reconcile_plan!(list)
-
-    list.reload
-
-    assert_empty list.state['custom_items']
-    assert_empty list.state['checked_off']
-  end
-
-  test 'removing custom item and reconciling cleans up case-mismatched checked-off entry' do
-    list = MealPlan.for_kitchen(@kitchen)
-    list.apply_action('custom_items', item: 'Test', action: 'add')
-    list.apply_action('check', item: 'Test', checked: true)
-    list.apply_action('custom_items', item: 'test', action: 'remove')
-    reconcile_plan!(list)
-
-    list.reload
-
-    assert_empty list.state['custom_items']
-    assert_empty list.state['checked_off']
   end
 
   # -- Cook History --
@@ -364,5 +478,196 @@ class MealPlanTest < ActiveSupport::TestCase
 
     assert_equal 1, plan.cook_history.size
     assert_equal 'focaccia', plan.cook_history.first['slug']
+  end
+
+  # --- on_hand check/uncheck ---
+
+  test 'checking off a new item creates on_hand entry with interval 7' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('check', item: 'Flour', checked: true)
+
+    entry = plan.on_hand['Flour']
+
+    assert_equal Date.current.iso8601, entry['confirmed_at']
+    assert_equal 7, entry['interval']
+  end
+
+  test 'checking off a custom item creates on_hand entry with null interval' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('check', item: 'Birthday candles', checked: true, custom: true)
+
+    entry = plan.on_hand['Birthday candles']
+
+    assert_equal Date.current.iso8601, entry['confirmed_at']
+    assert_nil entry['interval']
+  end
+
+  test 'checking off an existing item on a different day doubles the interval' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.state['on_hand'] = {
+      'Flour' => { 'confirmed_at' => '2026-03-01', 'interval' => 7 }
+    }
+    plan.save!
+
+    plan.apply_action('check', item: 'Flour', checked: true, now: Date.new(2026, 3, 10))
+
+    entry = plan.on_hand['Flour']
+
+    assert_equal '2026-03-10', entry['confirmed_at']
+    assert_equal 14, entry['interval']
+  end
+
+  test 'next_interval treats nil existing interval as starting interval' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.state['on_hand'] = {
+      'Paper Towels' => { 'confirmed_at' => '2026-03-01', 'interval' => nil }
+    }
+    plan.save!
+
+    plan.apply_action('check', item: 'Paper Towels', checked: true, custom: false, now: Date.new(2026, 3, 10))
+
+    assert_equal 14, plan.on_hand['Paper Towels']['interval'],
+                 'nil interval should be treated as STARTING_INTERVAL (7), then doubled to 14'
+  end
+
+  test 'interval caps at 56 days' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.state['on_hand'] = {
+      'Salt' => { 'confirmed_at' => '2026-01-01', 'interval' => 56 }
+    }
+    plan.save!
+
+    plan.apply_action('check', item: 'Salt', checked: true, now: Date.new(2026, 3, 10))
+
+    assert_equal 56, plan.on_hand['Salt']['interval']
+  end
+
+  test 'checking off same item on same day is idempotent' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    today = Date.new(2026, 3, 15)
+    plan.apply_action('check', item: 'Flour', checked: true, now: today)
+    version_after_first = plan.lock_version
+
+    plan.apply_action('check', item: 'Flour', checked: true, now: today)
+
+    assert_equal 7, plan.on_hand['Flour']['interval'], 'interval should not double on same-day re-check'
+    assert_equal version_after_first, plan.lock_version, 'no save on idempotent check'
+  end
+
+  test 'expired item re-confirmed doubles interval from previous value' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.state['on_hand'] = {
+      'Milk' => { 'confirmed_at' => '2026-03-01', 'interval' => 7 }
+    }
+    plan.save!
+
+    plan.apply_action('check', item: 'Milk', checked: true, now: Date.new(2026, 3, 20))
+
+    assert_equal 14, plan.on_hand['Milk']['interval']
+    assert_equal '2026-03-20', plan.on_hand['Milk']['confirmed_at']
+  end
+
+  test 'unchecking an item deletes it from on_hand' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('check', item: 'Milk', checked: true)
+    plan.apply_action('check', item: 'Milk', checked: false)
+
+    assert_not plan.on_hand.key?('Milk')
+  end
+
+  test 'unchecking an item succeeds even when on_hand key has different casing' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.state['on_hand'] = {
+      'flour' => { 'confirmed_at' => Date.current.iso8601, 'interval' => 7 }
+    }
+    plan.save!
+
+    plan.apply_action('check', item: 'Flour', checked: false)
+
+    assert_not plan.on_hand.key?('flour'), 'Case-insensitive uncheck should remove the entry'
+    assert_not plan.on_hand.key?('Flour')
+  end
+
+  test 'checking re-keys on_hand entry to new canonical form' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.state['on_hand'] = {
+      'flour' => { 'confirmed_at' => '2026-03-01', 'interval' => 7 }
+    }
+    plan.save!
+
+    plan.apply_action('check', item: 'Flour', checked: true, now: Date.new(2026, 3, 10))
+
+    assert plan.on_hand.key?('Flour'), 'Entry should be re-keyed to new canonical form'
+    assert_not plan.on_hand.key?('flour'), 'Old key should be removed'
+    assert_equal 14, plan.on_hand['Flour']['interval'], 'Interval should double from existing entry'
+  end
+
+  test 'unchecking then re-checking starts fresh at interval 7' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.state['on_hand'] = {
+      'Flour' => { 'confirmed_at' => '2026-03-01', 'interval' => 28 }
+    }
+    plan.save!
+
+    plan.apply_action('check', item: 'Flour', checked: false)
+    plan.apply_action('check', item: 'Flour', checked: true)
+
+    assert_equal 7, plan.on_hand['Flour']['interval']
+  end
+
+  # -- effective_on_hand --
+
+  test 'effective_on_hand returns non-expired entries' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.state['on_hand'] = {
+      'Flour' => { 'confirmed_at' => '2026-03-01', 'interval' => 14 },
+      'Salt' => { 'confirmed_at' => '2026-03-01', 'interval' => 56 }
+    }
+    plan.save!
+
+    result = plan.effective_on_hand(now: Date.new(2026, 3, 20))
+
+    assert result.key?('Salt'), 'Salt (56-day interval, confirmed 19 days ago) should still be on hand'
+    assert_not result.key?('Flour'), 'Flour (14-day interval, confirmed 19 days ago) should be expired'
+  end
+
+  test 'effective_on_hand excludes expired entries' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.state['on_hand'] = {
+      'Milk' => { 'confirmed_at' => '2026-03-01', 'interval' => 7 }
+    }
+    plan.save!
+
+    result = plan.effective_on_hand(now: Date.new(2026, 3, 9))
+
+    assert_not result.key?('Milk'), 'Milk confirmed 8 days ago with 7-day interval should be expired'
+  end
+
+  test 'effective_on_hand preserves custom items with null interval' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.state['on_hand'] = {
+      'Birthday candles' => { 'confirmed_at' => '2026-01-01', 'interval' => nil }
+    }
+    plan.save!
+
+    result = plan.effective_on_hand(now: Date.new(2026, 12, 31))
+
+    assert result.key?('Birthday candles'), 'Custom items (null interval) never expire'
+  end
+
+  test 'effective_on_hand boundary: item expires on exact day' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.state['on_hand'] = {
+      'Flour' => { 'confirmed_at' => '2026-03-01', 'interval' => 7 }
+    }
+    plan.save!
+
+    day_before = plan.effective_on_hand(now: Date.new(2026, 3, 7))
+    exact_day = plan.effective_on_hand(now: Date.new(2026, 3, 8))
+    day_after = plan.effective_on_hand(now: Date.new(2026, 3, 9))
+
+    assert day_before.key?('Flour'), 'Day 7 (confirmed_at + 6): still on hand'
+    assert exact_day.key?('Flour'), 'Day 8 (confirmed_at + 7): boundary, still on hand'
+    assert_not day_after.key?('Flour'), 'Day 9 (confirmed_at + 8): expired'
   end
 end
