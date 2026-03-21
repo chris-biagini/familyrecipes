@@ -45,45 +45,45 @@ groceries page (e.g., after navigating to the menu or reopening the app).
 
 ## How the System Learns Your Pantry
 
-The groceries page uses a spaced-repetition model (think "Anki for
-groceries") to figure out which ingredients you almost always have at home
-and which ones you need to check every time.
+The groceries page builds confidence in each ingredient independently. Every
+time you confirm that you have something (by checking it off), the system
+grows a little more confident that you keep it stocked and waits longer before
+asking again.
 
 **Here's how it works:**
 
-Every time you confirm that you have an ingredient (by checking it off), the
-system remembers when you confirmed it and schedules the next check further in
-the future. The first time you check off salt, the system will ask again in
-about a week. Confirm it a second time, and it waits two weeks. Then four.
-Then eight. Eight weeks is the longest the system will wait — even staples you
-always have get a check every couple of months. Over time, the system learns
-that you always have salt and stops asking about it — unless you tell it
-otherwise by unchecking salt, which resets the schedule.
+The first time you check off an ingredient, the system asks again in about a
+week. Each time you confirm it again, the system waits a bit longer — and
+items you consistently have on hand build confidence quickly, so the wait
+grows faster over time. Items you always have eventually stop appearing on the
+list altogether (except for an occasional check every few months).
 
 Meanwhile, an ingredient like milk — which you sometimes have and sometimes
-don't — keeps its schedule short because you occasionally uncheck it. The
-system adapts to your actual pantry, not a set of rules you have to configure.
+run out of — builds confidence slowly, because running out reduces some of
+that built-up confidence. The system adapts to your actual pantry, not a set
+of rules you have to configure. Over time, each ingredient settles into its
+own rhythm that matches your real usage.
 
 **What this looks like in practice:**
 
-- **Week 1**: the list is long — everything needs checking (the system doesn't
-  know your kitchen yet).
-- **Week 3**: the list is shorter — staples like oil, salt, and pepper aren't
-  due for verification yet.
-- **Week 8**: the list is mostly just new ingredients from this week's recipes,
-  plus the occasional staple that's due for a check.
+- **First few weeks**: the list is long — everything needs checking (the
+  system doesn't know your kitchen yet).
+- **After a while**: the list is shorter — staples like oil, salt, and pepper
+  aren't due for verification yet.
+- **Once it's learned your kitchen**: the list is mostly just new ingredients
+  from this week's recipes, plus the occasional staple that's due for a check.
 
-The schedule adapts to any shopping frequency, but it converges faster if you
-shop weekly — the more often you confirm items, the quicker the system learns
-what you keep stocked.
+The system adapts to any shopping frequency, but it converges faster if you
+shop regularly — the more often you confirm items, the quicker it learns what
+you keep stocked.
 
 You don't need to do anything to make this work. Just check and uncheck items
 honestly, and the system tunes itself.
 
-Even items with long schedules eventually reappear for a check. If salt has
-been off the list for eight weeks and its schedule expires, it shows up on the
-To Buy list again — not because anything went wrong, but because the system
-wants to verify you still have it. Just check it off and the cycle resets.
+Even high-confidence items eventually reappear for a check. When an
+ingredient's schedule expires, it shows up on the To Buy list again — not
+because anything went wrong, but because the system wants to verify you still
+have it. Just check it off and the cycle continues.
 
 ## What Happens When Recipes Change
 
@@ -99,19 +99,20 @@ once you confirm it, the schedule resumes from where it left off rather than
 starting from scratch. (Your confirmation also advances it to the next level,
 just like any other confirmation.)
 
-Unchecking is different: when you tell the system "I don't have this," the
-schedule resets to one week. The system trusts your judgment — if you ran out,
-the previous interval was too optimistic.
+Unchecking is different: when you tell the system "I don't have this," it
+adjusts the schedule based on how long you actually had the item. If you ran
+out sooner than expected, the system loses some confidence and asks sooner
+next time.
 
 Ingredients that appear in many of your recipes (like olive oil) are rarely
 pruned, because there's almost always a selected recipe that needs them. Rare
 ingredients (like fresh basil) are pruned frequently. This means the system
 naturally asks about rare ingredients more often and staples less often — even
-before the spaced-repetition schedule kicks in.
+before the confidence system kicks in.
 
 ## Custom Items
 
-Custom items (things you add manually) are not affected by the
-spaced-repetition system or by pruning. They stay in whatever state you put
-them in — checked or unchecked — until you remove them. They're meant for
-one-off purchases and non-recipe items.
+Custom items (things you add manually) are not affected by the confidence
+system or by pruning. They stay in whatever state you put them in — checked
+or unchecked — until you remove them. They're meant for one-off purchases
+and non-recipe items.
