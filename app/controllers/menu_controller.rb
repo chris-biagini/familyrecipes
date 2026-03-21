@@ -22,7 +22,8 @@ class MenuController < ApplicationController
     @selected_quick_bites = plan.selected_quick_bites.to_set
     on_hand_names = plan.effective_on_hand.keys
     recipes = @categories.flat_map(&:recipes)
-    @availability = RecipeAvailabilityCalculator.new(kitchen: current_kitchen, checked_off: on_hand_names, recipes:).call
+    calculator = RecipeAvailabilityCalculator.new(kitchen: current_kitchen, checked_off: on_hand_names, recipes:)
+    @availability = calculator.call
     @cook_weights = CookHistoryWeighter.call(plan.cook_history)
   end
 

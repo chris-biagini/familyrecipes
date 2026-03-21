@@ -1,14 +1,18 @@
 # frozen_string_literal: true
 
 # Singleton-per-kitchen JSON state record for shared meal planning: selected
-# recipes/quick bites, custom grocery items, checked-off items. Both menu and
-# groceries pages read/write this model.
+# recipes/quick bites, custom grocery items, on-hand ingredient tracking with
+# exponential backoff intervals. Both menu and groceries pages read/write
+# this model.
 #
 # - .reconcile_kitchen!(kitchen) — computes visible ingredient names (via
-#   ShoppingListBuilder) and prunes stale on_hand/selection state.
-#   Called by Kitchen.run_finalization; not called directly by services.
-# - #reconcile!(visible_names:, now:) — inner pruning for callers already
-#   holding the plan inside a retry block.
+#   ShoppingListBuilder) and runs four cleanup passes on on_hand state:
+#   prune orphans, prune expired, fix orphaned null intervals, re-canonicalize
+#   keys. Called by Kitchen.run_finalization; not called directly by services.
+# - #effective_on_hand(now:) — single source of truth for on-hand status:
+#   returns only non-expired entries. All display/availability code calls this.
+# - #reconcile!(visible_names:, resolver:, now:) — inner pruning for callers
+#   already holding the plan inside a retry block.
 class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
   acts_as_tenant :kitchen
 
