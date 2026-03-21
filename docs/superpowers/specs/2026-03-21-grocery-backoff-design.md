@@ -328,7 +328,6 @@ The backoff logic must be testable without waiting for real time to pass:
 | `groceries_controller_test.rb` | Update tests that reference `checked_off` state. |
 | `catalog_write_service_test.rb` | Update references to `checked_off`. |
 | `ingredient_resolver_regression_test.rb` | Update references to `checked_off`. |
-| `ExportService` / `ImportService` | Exports will contain the new `on_hand` hash format. `ImportService` must handle both legacy `checked_off` arrays (from old exports) and `on_hand` hashes (from new exports). Legacy conversion applies the same logic as the data migration. |
 | Data migration | Convert `checked_off` → `on_hand` hash. Recipe ingredients get `interval: 7`, custom items get `interval: null`. Remove `checked_off` key. |
 | `docs/help/groceries.md` | Already written (behavioral contract). |
 | Companion UI spec | Update `2026-03-19-grocery-list-need-have-design.md` data model section to reference this spec. |
