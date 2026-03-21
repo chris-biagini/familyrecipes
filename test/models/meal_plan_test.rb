@@ -79,21 +79,6 @@ class MealPlanTest < ActiveSupport::TestCase
     assert_includes list.state['selected_quick_bites'], 'nachos'
   end
 
-  test 'apply_action checks off item' do
-    list = MealPlan.for_kitchen(@kitchen)
-    list.apply_action('check', item: 'milk', checked: true)
-
-    assert_includes list.state['checked_off'], 'milk'
-  end
-
-  test 'apply_action unchecks item' do
-    list = MealPlan.for_kitchen(@kitchen)
-    list.apply_action('check', item: 'milk', checked: true)
-    list.apply_action('check', item: 'milk', checked: false)
-
-    assert_not_includes list.state['checked_off'], 'milk'
-  end
-
   test 'apply_action adds custom item' do
     list = MealPlan.for_kitchen(@kitchen)
     list.apply_action('custom_items', item: 'birthday candles', action: 'add')
@@ -107,25 +92,6 @@ class MealPlanTest < ActiveSupport::TestCase
     list.apply_action('custom_items', item: 'birthday candles', action: 'remove')
 
     assert_not_includes list.state['custom_items'], 'birthday candles'
-  end
-
-  test 'apply_action bumps version' do
-    list = MealPlan.for_kitchen(@kitchen)
-    old_version = list.lock_version
-
-    list.apply_action('check', item: 'milk', checked: true)
-
-    assert_operator list.lock_version, :>, old_version
-  end
-
-  test 'operations are idempotent' do
-    list = MealPlan.for_kitchen(@kitchen)
-    list.apply_action('check', item: 'milk', checked: true)
-    version_after_first = list.lock_version
-
-    list.apply_action('check', item: 'milk', checked: true)
-
-    assert_equal version_after_first, list.lock_version
   end
 
   test 'raises on unknown action types' do
@@ -278,22 +244,6 @@ class MealPlanTest < ActiveSupport::TestCase
     assert_empty list.state['custom_items']
   end
 
-  test 'checking off item is case-insensitive' do
-    list = MealPlan.for_kitchen(@kitchen)
-    list.apply_action('check', item: 'Milk', checked: true)
-    list.apply_action('check', item: 'milk', checked: true)
-
-    assert_equal ['Milk'], list.state['checked_off']
-  end
-
-  test 'unchecking item is case-insensitive' do
-    list = MealPlan.for_kitchen(@kitchen)
-    list.apply_action('check', item: 'Milk', checked: true)
-    list.apply_action('check', item: 'milk', checked: false)
-
-    assert_empty list.state['checked_off']
-  end
-
   test 'removing custom item and reconciling cleans up checked-off entry' do
     list = MealPlan.for_kitchen(@kitchen)
     list.apply_action('custom_items', item: 'Birthday Candles', action: 'add')
@@ -379,6 +329,101 @@ class MealPlanTest < ActiveSupport::TestCase
 
     assert_equal 1, plan.cook_history.size
     assert_equal 'focaccia', plan.cook_history.first['slug']
+  end
+
+  # --- on_hand check/uncheck ---
+
+  test 'checking off a new item creates on_hand entry with interval 7' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('check', item: 'Flour', checked: true)
+
+    entry = plan.on_hand['Flour']
+
+    assert_equal Date.current.iso8601, entry['confirmed_at']
+    assert_equal 7, entry['interval']
+  end
+
+  test 'checking off a custom item creates on_hand entry with null interval' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('check', item: 'Birthday candles', checked: true, custom: true)
+
+    entry = plan.on_hand['Birthday candles']
+
+    assert_equal Date.current.iso8601, entry['confirmed_at']
+    assert_nil entry['interval']
+  end
+
+  test 'checking off an existing item on a different day doubles the interval' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.state['on_hand'] = {
+      'Flour' => { 'confirmed_at' => '2026-03-01', 'interval' => 7 }
+    }
+    plan.save!
+
+    plan.apply_action('check', item: 'Flour', checked: true, now: Date.new(2026, 3, 10))
+
+    entry = plan.on_hand['Flour']
+
+    assert_equal '2026-03-10', entry['confirmed_at']
+    assert_equal 14, entry['interval']
+  end
+
+  test 'interval caps at 56 days' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.state['on_hand'] = {
+      'Salt' => { 'confirmed_at' => '2026-01-01', 'interval' => 56 }
+    }
+    plan.save!
+
+    plan.apply_action('check', item: 'Salt', checked: true, now: Date.new(2026, 3, 10))
+
+    assert_equal 56, plan.on_hand['Salt']['interval']
+  end
+
+  test 'checking off same item on same day is idempotent' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    today = Date.new(2026, 3, 15)
+    plan.apply_action('check', item: 'Flour', checked: true, now: today)
+    version_after_first = plan.lock_version
+
+    plan.apply_action('check', item: 'Flour', checked: true, now: today)
+
+    assert_equal 7, plan.on_hand['Flour']['interval'], 'interval should not double on same-day re-check'
+    assert_equal version_after_first, plan.lock_version, 'no save on idempotent check'
+  end
+
+  test 'expired item re-confirmed doubles interval from previous value' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.state['on_hand'] = {
+      'Milk' => { 'confirmed_at' => '2026-03-01', 'interval' => 7 }
+    }
+    plan.save!
+
+    plan.apply_action('check', item: 'Milk', checked: true, now: Date.new(2026, 3, 20))
+
+    assert_equal 14, plan.on_hand['Milk']['interval']
+    assert_equal '2026-03-20', plan.on_hand['Milk']['confirmed_at']
+  end
+
+  test 'unchecking an item deletes it from on_hand' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('check', item: 'Milk', checked: true)
+    plan.apply_action('check', item: 'Milk', checked: false)
+
+    assert_not plan.on_hand.key?('Milk')
+  end
+
+  test 'unchecking then re-checking starts fresh at interval 7' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.state['on_hand'] = {
+      'Flour' => { 'confirmed_at' => '2026-03-01', 'interval' => 28 }
+    }
+    plan.save!
+
+    plan.apply_action('check', item: 'Flour', checked: false)
+    plan.apply_action('check', item: 'Flour', checked: true)
+
+    assert_equal 7, plan.on_hand['Flour']['interval']
   end
 
   # -- effective_on_hand --

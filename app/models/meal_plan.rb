@@ -9,7 +9,7 @@
 #   Called by Kitchen.run_finalization; not called directly by services.
 # - #reconcile!(visible_names:) — inner pruning for callers already holding
 #   the plan inside a retry block.
-class MealPlan < ApplicationRecord
+class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
   acts_as_tenant :kitchen
 
   validates :kitchen_id, uniqueness: true
@@ -108,6 +108,32 @@ class MealPlan < ApplicationRecord
     Date.parse(entry['confirmed_at']) + entry['interval'].days >= now
   end
 
+  def add_to_on_hand(item, custom:, now:)
+    hash = state['on_hand']
+    existing = hash[item]
+
+    return if existing && existing['confirmed_at'] == now.iso8601
+
+    hash[item] = if existing
+                   { 'confirmed_at' => now.iso8601, 'interval' => next_interval(existing, custom) }
+                 else
+                   { 'confirmed_at' => now.iso8601, 'interval' => custom ? nil : STARTING_INTERVAL }
+                 end
+    save!
+  end
+
+  def remove_from_on_hand(item)
+    return unless state['on_hand'].delete(item)
+
+    save!
+  end
+
+  def next_interval(existing, custom)
+    return nil if custom
+
+    [existing['interval'].to_i * 2, MAX_INTERVAL].min
+  end
+
   def prune_checked_off(visible_names:) # rubocop:disable Naming/PredicateMethod
     custom = state['custom_items']
     before_size = state['checked_off'].size
@@ -139,8 +165,12 @@ class MealPlan < ApplicationRecord
     toggle_array(key, slug, selected)
   end
 
-  def apply_check(item:, checked:, **)
-    toggle_array('checked_off', item, checked)
+  def apply_check(item:, checked:, custom: false, now: Date.current, **)
+    if checked
+      add_to_on_hand(item, custom:, now:)
+    else
+      remove_from_on_hand(item)
+    end
   end
 
   def apply_custom_items(item:, action:, **)
