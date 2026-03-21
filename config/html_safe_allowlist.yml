@@ -31,7 +31,7 @@
 - "app/views/shared/_search_overlay.html.erb:2"
 
 # application.html.erb — smart_tags_json returns JSON from a frozen Ruby constant (no user content)
-- "app/views/layouts/application.html.erb:50"
+- "app/views/layouts/application.html.erb:41"
 
 # _editor_frame.html.erb — to_json escapes <, >, & inside script[type="application/json"] (not executed as JS)
 - "app/views/recipes/_editor_frame.html.erb:8"
