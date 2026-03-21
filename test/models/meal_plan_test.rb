@@ -380,4 +380,60 @@ class MealPlanTest < ActiveSupport::TestCase
     assert_equal 1, plan.cook_history.size
     assert_equal 'focaccia', plan.cook_history.first['slug']
   end
+
+  # -- effective_on_hand --
+
+  test 'effective_on_hand returns non-expired entries' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.state['on_hand'] = {
+      'Flour' => { 'confirmed_at' => '2026-03-01', 'interval' => 14 },
+      'Salt' => { 'confirmed_at' => '2026-03-01', 'interval' => 56 }
+    }
+    plan.save!
+
+    result = plan.effective_on_hand(now: Date.new(2026, 3, 20))
+
+    assert result.key?('Salt'), 'Salt (56-day interval, confirmed 19 days ago) should still be on hand'
+    assert_not result.key?('Flour'), 'Flour (14-day interval, confirmed 19 days ago) should be expired'
+  end
+
+  test 'effective_on_hand excludes expired entries' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.state['on_hand'] = {
+      'Milk' => { 'confirmed_at' => '2026-03-01', 'interval' => 7 }
+    }
+    plan.save!
+
+    result = plan.effective_on_hand(now: Date.new(2026, 3, 9))
+
+    assert_not result.key?('Milk'), 'Milk confirmed 8 days ago with 7-day interval should be expired'
+  end
+
+  test 'effective_on_hand preserves custom items with null interval' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.state['on_hand'] = {
+      'Birthday candles' => { 'confirmed_at' => '2026-01-01', 'interval' => nil }
+    }
+    plan.save!
+
+    result = plan.effective_on_hand(now: Date.new(2026, 12, 31))
+
+    assert result.key?('Birthday candles'), 'Custom items (null interval) never expire'
+  end
+
+  test 'effective_on_hand boundary: item expires on exact day' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.state['on_hand'] = {
+      'Flour' => { 'confirmed_at' => '2026-03-01', 'interval' => 7 }
+    }
+    plan.save!
+
+    day_before = plan.effective_on_hand(now: Date.new(2026, 3, 7))
+    exact_day = plan.effective_on_hand(now: Date.new(2026, 3, 8))
+    day_after = plan.effective_on_hand(now: Date.new(2026, 3, 9))
+
+    assert day_before.key?('Flour'), 'Day 7 (confirmed_at + 6): still on hand'
+    assert exact_day.key?('Flour'), 'Day 8 (confirmed_at + 7): boundary, still on hand'
+    assert_not day_after.key?('Flour'), 'Day 9 (confirmed_at + 8): expired'
+  end
 end

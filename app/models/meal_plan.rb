@@ -49,6 +49,10 @@ class MealPlan < ApplicationRecord
     state.fetch('on_hand', {})
   end
 
+  def effective_on_hand(now: Date.current)
+    on_hand.select { |_, entry| entry_on_hand?(entry, now) }
+  end
+
   def custom_items
     state.fetch('custom_items', [])
   end
@@ -97,6 +101,12 @@ class MealPlan < ApplicationRecord
   end
 
   private
+
+  def entry_on_hand?(entry, now)
+    return true if entry['interval'].nil?
+
+    Date.parse(entry['confirmed_at']) + entry['interval'].days >= now
+  end
 
   def prune_checked_off(visible_names:) # rubocop:disable Naming/PredicateMethod
     custom = state['custom_items']
