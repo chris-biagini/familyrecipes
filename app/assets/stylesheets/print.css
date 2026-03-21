@@ -46,10 +46,6 @@
     display: none;
   }
 
-  body::after {
-    display: none;
-  }
-
   a {
     color: black;
     text-decoration: none;

@@ -72,7 +72,6 @@
   --weave-width: 1.5px;
   --content-card-bg: rgb(255, 252, 249);
   --paper-opacity: 0.08;
-  --gingham-noise-opacity: 0.07;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -134,7 +133,6 @@
     --weave-color: rgba(255, 255, 255, 0.02);
     --content-card-bg: rgb(30, 27, 24);
     --paper-opacity: 0.04;
-    --gingham-noise-opacity: 0.04;
   }
 }
 
@@ -188,15 +186,6 @@ body::before {
     linear-gradient(var(--gingham-base), var(--gingham-base));
 }
 
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  filter: url(#paper-texture);
-  opacity: var(--gingham-noise-opacity);
-}
 
 /* Turbo Drive progress bar — base styles defined here because Turbo's
    dynamic <style> injection is blocked by our strict CSP. The JS-driven
