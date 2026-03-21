@@ -78,13 +78,19 @@ honestly, and the system tunes itself.
 ## What Happens When Recipes Change
 
 When you deselect a recipe, its ingredients may no longer be needed by any
-selected recipe. When that happens, the ingredient is **pruned** — removed
-from On Hand and its verification schedule is reset.
+selected recipe. When that happens, the ingredient is **pruned** — moved back
+to To Buy so you'll re-verify it when it next appears on the list.
 
-If you later select a recipe that uses the same ingredient, it reappears in
-To Buy as if it were new. This is intentional: if an ingredient fell off the
-list long enough to be pruned, there's a decent chance your supply situation
-has changed. Better to check once than to assume.
+Unlike unchecking (which resets the schedule), pruning **preserves the learned
+interval**. If you confirmed flour every week for two months and it reached an
+eight-week schedule, briefly deselecting the recipe that uses it won't destroy
+that history. When you re-select the recipe, flour shows up as To Buy — but
+once you confirm it, the schedule picks up where it left off rather than
+starting over.
+
+Unchecking is different: when you tell the system "I don't have this," the
+schedule resets to one week. The system trusts your judgment — if you ran out,
+the previous interval was too optimistic.
 
 Ingredients that appear in many of your recipes (like olive oil) are rarely
 pruned, because there's almost always a selected recipe that needs them. Rare

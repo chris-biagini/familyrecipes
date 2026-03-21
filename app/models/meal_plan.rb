@@ -138,29 +138,40 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
   def prune_on_hand(visible_names:, now:, resolver: nil) # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
     hash = state['on_hand']
     custom = state['custom_items']
+    changed = resolver ? recanon_on_hand_keys(hash, resolver) : false
 
-    # Pass 4 (runs first): re-canonicalize keys before orphan check
-    recanon_changed = resolver ? recanon_on_hand_keys(hash, resolver) : false
+    # Pass 1: expire orphans (preserve learned interval for when ingredient reappears)
+    changed |= expire_orphaned_on_hand(hash, visible_names, custom)
 
-    before_size = hash.size
+    # Pass 2: fix orphaned null intervals
+    changed |= fix_orphaned_null_intervals(hash, custom)
+    changed
+  end
 
-    # Pass 1: prune orphans
-    hash.select! { |key, _| visible_names.include?(key) || custom.any? { |c| c.casecmp?(key) } }
+  ORPHAN_SENTINEL = '1970-01-01'
 
-    # Pass 2: prune expired
-    hash.reject! { |_, entry| entry['interval'] && Date.parse(entry['confirmed_at']) + entry['interval'].days < now }
+  def expire_orphaned_on_hand(hash, visible_names, custom) # rubocop:disable Naming/PredicateMethod
+    changed = false
+    hash.each do |key, entry|
+      next if visible_names.include?(key) || custom.any? { |c| c.casecmp?(key) }
+      next if entry['confirmed_at'] == ORPHAN_SENTINEL
 
-    # Pass 3: fix orphaned null intervals
-    null_fixed = false
+      entry['confirmed_at'] = ORPHAN_SENTINEL
+      changed = true
+    end
+    changed
+  end
+
+  def fix_orphaned_null_intervals(hash, custom) # rubocop:disable Naming/PredicateMethod
+    changed = false
     hash.each do |key, entry|
       next unless entry['interval'].nil?
       next if custom.any? { |c| c.casecmp?(key) }
 
       entry['interval'] = STARTING_INTERVAL
-      null_fixed = true
+      changed = true
     end
-
-    hash.size != before_size || null_fixed || recanon_changed
+    changed
   end
 
   def recanon_on_hand_keys(hash, resolver) # rubocop:disable Naming/PredicateMethod

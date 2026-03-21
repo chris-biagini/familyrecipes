@@ -125,17 +125,20 @@ class MealPlanTest < ActiveSupport::TestCase
 
   # --- reconcile! ---
 
-  test 'reconcile! prunes orphaned on_hand entries not in visible names' do
+  test 'reconcile! expires orphaned on_hand entries preserving interval' do
     plan = MealPlan.for_kitchen(@kitchen)
     plan.state['on_hand'] = {
-      'Phantom' => { 'confirmed_at' => Date.current.iso8601, 'interval' => 7 }
+      'Phantom' => { 'confirmed_at' => Date.current.iso8601, 'interval' => 28 }
     }
     plan.save!
 
     reconcile_plan!(plan)
     plan.reload
 
-    assert_empty plan.on_hand
+    assert plan.on_hand.key?('Phantom'), 'Orphaned entry should persist with sentinel date'
+    assert_equal '1970-01-01', plan.on_hand['Phantom']['confirmed_at']
+    assert_equal 28, plan.on_hand['Phantom']['interval'], 'Learned interval should be preserved'
+    assert_empty plan.effective_on_hand, 'Orphaned entry should not appear in effective_on_hand'
   end
 
   test 'reconcile! preserves on_hand entries in visible names' do
@@ -162,7 +165,8 @@ class MealPlanTest < ActiveSupport::TestCase
     plan.reload
 
     assert plan.on_hand.key?('Flour')
-    assert_not plan.on_hand.key?('Phantom')
+    assert_equal '1970-01-01', plan.on_hand['Phantom']['confirmed_at'],
+                 'Orphaned entry should be expired, not deleted'
   end
 
   test 'reconcile! preserves custom items in on_hand' do
@@ -193,7 +197,7 @@ class MealPlanTest < ActiveSupport::TestCase
     assert plan.on_hand.key?('Birthday Candles'), 'Key re-canonicalized to match custom item casing'
   end
 
-  test 'reconcile! prunes expired entries' do
+  test 'expired entries in visible names stay in on_hand but not in effective_on_hand' do
     @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
     md = "# Bread\n\n## Mix (combine)\n\n- Flour, 2 cups\n\nMix.\n"
     MarkdownImporter.import(md, kitchen: @kitchen, category: @category)
@@ -205,10 +209,9 @@ class MealPlanTest < ActiveSupport::TestCase
     }
     plan.save!
 
-    reconcile_plan!(plan, now: Date.new(2026, 3, 21))
-    plan.reload
-
-    assert_not plan.on_hand.key?('Flour'), 'Expired entry should be pruned'
+    assert plan.on_hand.key?('Flour'), 'Expired entry stays in raw on_hand'
+    assert_not plan.effective_on_hand(now: Date.new(2026, 3, 21)).key?('Flour'),
+              'Expired entry should not appear in effective_on_hand'
   end
 
   test 'reconcile! fixes orphaned null intervals' do
@@ -251,6 +254,24 @@ class MealPlanTest < ActiveSupport::TestCase
     assert_equal 28, plan.on_hand['Flour']['interval'], 'Interval should be preserved'
   end
 
+  test 'pruned item reappearing doubles interval on re-confirmation' do
+    @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    md = "# Bread\n\n## Mix (combine)\n\n- Flour, 2 cups\n\nMix.\n"
+    MarkdownImporter.import(md, kitchen: @kitchen, category: @category)
+
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.state['on_hand'] = {
+      'Flour' => { 'confirmed_at' => '1970-01-01', 'interval' => 28 }
+    }
+    plan.save!
+
+    plan.apply_action('check', item: 'Flour', checked: true, now: Date.new(2026, 3, 21))
+
+    assert_equal 56, plan.on_hand['Flour']['interval'],
+                 'Re-confirming a pruned item should double from its preserved interval'
+    assert_equal '2026-03-21', plan.on_hand['Flour']['confirmed_at']
+  end
+
   test 'reconcile! is idempotent when nothing to prune' do
     plan = MealPlan.for_kitchen(@kitchen)
     version_before = plan.lock_version
@@ -260,7 +281,7 @@ class MealPlanTest < ActiveSupport::TestCase
     assert_equal version_before, plan.reload.lock_version
   end
 
-  test 'removing custom item and reconciling cleans up on_hand entry' do
+  test 'removing custom item and reconciling expires and converts on_hand entry' do
     plan = MealPlan.for_kitchen(@kitchen)
     plan.apply_action('custom_items', item: 'Birthday Candles', action: 'add')
     plan.state['on_hand'] = {
@@ -273,7 +294,11 @@ class MealPlanTest < ActiveSupport::TestCase
     plan.reload
 
     assert_empty plan.state['custom_items']
-    assert_empty plan.on_hand
+    entry = plan.on_hand['Birthday Candles']
+
+    assert_equal '1970-01-01', entry['confirmed_at'], 'Orphaned entry should be expired'
+    assert_equal 7, entry['interval'], 'Null interval should be converted since custom item removed'
+    assert_empty plan.effective_on_hand, 'Expired entry should not appear in effective_on_hand'
   end
 
   test 'reconcile! removes deleted recipe slugs from selections' do

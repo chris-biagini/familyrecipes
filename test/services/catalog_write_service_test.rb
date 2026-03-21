@@ -317,8 +317,10 @@ class CatalogWriteServiceTest < ActiveSupport::TestCase
 
     plan.reload
 
-    assert_empty plan.on_hand,
-                 'on_hand items should be pruned after catalog entry destroyed'
+    assert_equal '1970-01-01', plan.on_hand['flour']['confirmed_at'],
+                 'on_hand entry should be expired (orphaned) after catalog entry destroyed'
+    assert_empty plan.effective_on_hand,
+                 'expired entry should not appear in effective_on_hand'
   end
 
   # --- batching guard ---

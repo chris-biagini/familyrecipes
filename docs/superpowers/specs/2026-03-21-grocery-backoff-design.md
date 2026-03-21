@@ -137,13 +137,18 @@ call this method rather than reading `on_hand` directly.
 3. **Item unchecked by user** → Delete from `on_hand`. When re-checked, starts
    with `interval: 7` (fresh start, since unchecking signals unreliability).
 
-4. **Item pruned** (no selected recipe needs it) → Delete from `on_hand`.
-   No residual verification entry. When the ingredient reappears from a
-   newly selected recipe, it starts fresh. Custom items (`interval: null`)
-   are never pruned by this mechanism.
+4. **Item pruned** (no selected recipe needs it) → Entry stays in `on_hand`
+   but `confirmed_at` is set to a sentinel (`1970-01-01`) that guarantees
+   expiration. The learned `interval` is preserved. When the ingredient
+   reappears from a newly selected recipe, it shows as "To Buy" (expired),
+   and re-confirmation doubles the interval from its previous value rather
+   than resetting to 7. This differs from unchecking, which deletes the
+   entry and resets to 7 — pruning is "we stopped asking," not "I'm out."
+   Custom items (`interval: null`) are never pruned by this mechanism.
 
-5. **Item reappears after pruning** → No `on_hand` entry exists. Shows as
-   "To Buy" with no history.
+5. **Item reappears after pruning** → `on_hand` entry exists with sentinel
+   `confirmed_at`. Shows as "To Buy" (expired). Re-confirmation picks up
+   where the interval left off.
 
 ### Expiration Check: Render-Time + Reconciliation
 
@@ -183,14 +188,17 @@ The expiration check runs in two places:
 
 ### Interaction with Pruning
 
-Pruning fully resets the backoff. When an item is pruned:
-- Its entry is deleted from `on_hand`
-- If the item later reappears (recipe re-selected), it starts fresh with
-  `interval: 7`
+Pruning preserves the learned interval. When an item is pruned:
+- Its `confirmed_at` is set to a sentinel date (`1970-01-01`), ensuring
+  `effective_on_hand` filters it out (it's expired)
+- The `interval` is preserved
+- If the item later reappears (recipe re-selected), re-confirmation doubles
+  the interval from its previous value
 
-This aligns with the principle of erring toward re-confirmation. If all
-recipes using an ingredient were deselected (even temporarily), the supply
-situation may have changed.
+This differs from unchecking, which deletes the entry entirely. Pruning means
+"no recipe needs this right now" — not "I don't have it." The system
+shouldn't discard what it learned about the user's pantry just because recipe
+selections changed temporarily.
 
 Pruning remains the primary staleness mechanism for ingredients with high
 recipe coverage (salt, olive oil). These are rarely pruned, so their intervals
