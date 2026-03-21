@@ -548,19 +548,14 @@ main {
     0 4px 8px rgba(0, 0, 0, 0.05),
     3px 8px 14px rgba(0, 0, 0, 0.08);
   min-height: calc(100vh - 2 * var(--gingham-gap) - 3rem);
-  overflow: clip;
 }
 
-/* Oversized so the feTurbulence filter isn't recalculated when collapse
-   animations change main's height — the filter is the bottleneck. */
 main::before {
   content: "";
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  min-height: max(100%, 300vh);
-  filter: url(#paper-texture);
+  inset: 0;
+  background-image: url("paper-noise.png");
+  background-size: 200px 200px;
   opacity: var(--paper-opacity);
   pointer-events: none;
 }
