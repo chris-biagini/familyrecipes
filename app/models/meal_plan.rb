@@ -2,7 +2,9 @@
 
 # Singleton-per-kitchen JSON state record for shared meal planning: selected
 # recipes/quick bites, custom grocery items, on-hand ingredient tracking with
-# exponential backoff intervals. Both menu and groceries pages read/write
+# SM-2-inspired adaptive ease (per-item growth rates converge on each
+# ingredient's natural restock cycle; depleted state preserves learned
+# intervals when users run out). Both menu and groceries pages read/write
 # this model.
 #
 # - .reconcile_kitchen!(kitchen) — computes visible ingredient names (via
