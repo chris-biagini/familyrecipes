@@ -231,6 +231,8 @@ class MealPlanTest < ActiveSupport::TestCase
 
     assert_equal 7, plan.on_hand['Flour']['interval'],
                  'Null interval should be converted to starting interval when item is not in custom_items'
+    assert_in_delta 2.0, plan.on_hand['Flour']['ease'], 0.01,
+                    'Ease should be set to STARTING_EASE when null interval is fixed'
   end
 
   test 'reconcile! re-canonicalizes on_hand keys when catalog changes' do
@@ -372,6 +374,7 @@ class MealPlanTest < ActiveSupport::TestCase
 
     assert_equal '1970-01-01', entry['confirmed_at'], 'Orphaned entry should be expired'
     assert_equal 7, entry['interval'], 'Null interval should be converted since custom item removed'
+    assert_in_delta 2.0, entry['ease'], 0.01, 'Ease should be set to STARTING_EASE when null interval is fixed'
     assert_empty plan.effective_on_hand, 'Expired entry should not appear in effective_on_hand'
   end
 
@@ -750,6 +753,59 @@ class MealPlanTest < ActiveSupport::TestCase
 
     assert_in_delta 14.7, plan.on_hand['Milk']['interval'], 0.1, '10 * 1.47'
     assert_in_delta 1.57, plan.on_hand['Milk']['ease'], 0.01, '1.47 + 0.1'
+  end
+
+  # --- Reconciliation: depleted entries ---
+
+  test 'reconcile! skips depleted entries during orphan expiration' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.state['on_hand'] = {
+      'Milk' => { 'confirmed_at' => '1970-01-01', 'interval' => 10, 'ease' => 1.1,
+                  'depleted_at' => '2026-03-20' }
+    }
+    plan.save!
+
+    reconcile_plan!(plan, now: Date.new(2026, 3, 21))
+    plan.reload
+
+    entry = plan.on_hand['Milk']
+
+    assert entry.key?('depleted_at'), 'Depleted entry should not be converted to orphan'
+    assert_not entry.key?('orphaned_at'), 'No orphaned_at should be added to depleted entry'
+  end
+
+  test 'reconcile! does not purge depleted entries regardless of age' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.state['on_hand'] = {
+      'Milk' => { 'confirmed_at' => '1970-01-01', 'interval' => 10, 'ease' => 1.1,
+                  'depleted_at' => '2025-01-01' }
+    }
+    plan.save!
+
+    reconcile_plan!(plan, now: Date.new(2026, 3, 21))
+    plan.reload
+
+    assert plan.on_hand.key?('Milk'), 'Depleted entry should be retained indefinitely'
+  end
+
+  test 'reconcile! fixes null interval and sets starting ease' do
+    @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    md = "# Bread\n\n## Mix (combine)\n\n- Flour, 2 cups\n\nMix.\n"
+    MarkdownImporter.import(md, kitchen: @kitchen, category: @category)
+
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('select', type: 'recipe', slug: 'bread', selected: true)
+    plan.state['on_hand'] = {
+      'Flour' => { 'confirmed_at' => Date.current.iso8601, 'interval' => nil, 'ease' => nil }
+    }
+    plan.save!
+
+    reconcile_plan!(plan)
+    plan.reload
+
+    assert_equal 7, plan.on_hand['Flour']['interval']
+    assert_in_delta 2.0, plan.on_hand['Flour']['ease'], 0.01,
+                    'Ease should be set to STARTING_EASE when null interval is fixed'
   end
 
   # -- effective_on_hand --

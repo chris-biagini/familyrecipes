@@ -200,6 +200,7 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
     hash.each do |key, entry|
       next if visible_names.include?(key) || custom.any? { |c| c.casecmp?(key) }
       next if entry['confirmed_at'] == ORPHAN_SENTINEL
+      next if entry.key?('depleted_at')
 
       entry['confirmed_at'] = ORPHAN_SENTINEL
       entry['orphaned_at'] = now.iso8601
@@ -215,6 +216,7 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
       next if custom.any? { |c| c.casecmp?(key) }
 
       entry['interval'] = STARTING_INTERVAL
+      entry['ease'] = STARTING_EASE
       changed = true
     end
     changed
@@ -252,6 +254,7 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
   def purge_stale_orphans(hash, now)
     changed = false
     hash.each_value do |entry|
+      next if entry.key?('depleted_at')
       next unless entry['confirmed_at'] == ORPHAN_SENTINEL && !entry.key?('orphaned_at')
 
       entry['orphaned_at'] = now.iso8601
@@ -259,7 +262,11 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
     end
     cutoff = now - ORPHAN_RETENTION
     before = hash.size
-    hash.reject! { |_, e| e['confirmed_at'] == ORPHAN_SENTINEL && Date.parse(e['orphaned_at']) < cutoff }
+    hash.reject! do |_, e|
+      e['confirmed_at'] == ORPHAN_SENTINEL &&
+        !e.key?('depleted_at') &&
+        e.key?('orphaned_at') && Date.parse(e['orphaned_at']) < cutoff
+    end
     changed || hash.size < before
   end
 
