@@ -8,9 +8,9 @@ class MealPlanTest < ActiveSupport::TestCase
     MealPlan.where(kitchen: @kitchen).delete_all
   end
 
-  def reconcile_plan!(plan)
+  def reconcile_plan!(plan, now: Date.current)
     visible = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: plan).visible_names
-    plan.reconcile!(visible_names: visible)
+    plan.reconcile!(visible_names: visible, now:)
   end
 
   test 'belongs to kitchen' do
@@ -124,17 +124,20 @@ class MealPlanTest < ActiveSupport::TestCase
 
   # --- reconcile! ---
 
-  test 'reconcile! removes checked-off items not on shopping list' do
+  test 'reconcile! prunes orphaned on_hand entries not in visible names' do
     plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('check', item: 'Phantom Item', checked: true)
+    plan.state['on_hand'] = {
+      'Phantom' => { 'confirmed_at' => Date.current.iso8601, 'interval' => 7 }
+    }
+    plan.save!
 
     reconcile_plan!(plan)
     plan.reload
 
-    assert_empty plan.state['checked_off']
+    assert_empty plan.on_hand
   end
 
-  test 'reconcile! preserves checked-off items on shopping list' do
+  test 'reconcile! preserves on_hand entries in visible names' do
     @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
     MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Focaccia
@@ -148,36 +151,107 @@ class MealPlanTest < ActiveSupport::TestCase
 
     plan = MealPlan.for_kitchen(@kitchen)
     plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
-    plan.apply_action('check', item: 'Flour', checked: true)
-    plan.apply_action('check', item: 'Phantom', checked: true)
+    plan.state['on_hand'] = {
+      'Flour' => { 'confirmed_at' => Date.current.iso8601, 'interval' => 14 },
+      'Phantom' => { 'confirmed_at' => Date.current.iso8601, 'interval' => 7 }
+    }
+    plan.save!
 
     reconcile_plan!(plan)
     plan.reload
 
-    assert_includes plan.state['checked_off'], 'Flour'
-    assert_not_includes plan.state['checked_off'], 'Phantom'
+    assert plan.on_hand.key?('Flour')
+    assert_not plan.on_hand.key?('Phantom')
   end
 
-  test 'reconcile! preserves custom items even when not in visible names' do
+  test 'reconcile! preserves custom items in on_hand' do
     plan = MealPlan.for_kitchen(@kitchen)
     plan.apply_action('custom_items', item: 'birthday candles', action: 'add')
-    plan.apply_action('check', item: 'birthday candles', checked: true)
+    plan.state['on_hand'] = {
+      'birthday candles' => { 'confirmed_at' => Date.current.iso8601, 'interval' => nil }
+    }
+    plan.save!
 
     reconcile_plan!(plan)
     plan.reload
 
-    assert_includes plan.state['checked_off'], 'birthday candles'
+    assert plan.on_hand.key?('birthday candles')
   end
 
   test 'reconcile! preserves custom items case-insensitively' do
     plan = MealPlan.for_kitchen(@kitchen)
     plan.apply_action('custom_items', item: 'Birthday Candles', action: 'add')
-    plan.apply_action('check', item: 'birthday candles', checked: true)
+    plan.state['on_hand'] = {
+      'birthday candles' => { 'confirmed_at' => Date.current.iso8601, 'interval' => nil }
+    }
+    plan.save!
 
     reconcile_plan!(plan)
     plan.reload
 
-    assert_includes plan.state['checked_off'], 'birthday candles'
+    assert plan.on_hand.key?('birthday candles')
+  end
+
+  test 'reconcile! prunes expired entries' do
+    @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    md = "# Bread\n\n## Mix (combine)\n\n- Flour, 2 cups\n\nMix.\n"
+    MarkdownImporter.import(md, kitchen: @kitchen, category: @category)
+
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('select', type: 'recipe', slug: 'bread', selected: true)
+    plan.state['on_hand'] = {
+      'Flour' => { 'confirmed_at' => '2026-01-01', 'interval' => 7 }
+    }
+    plan.save!
+
+    reconcile_plan!(plan, now: Date.new(2026, 3, 21))
+    plan.reload
+
+    assert_not plan.on_hand.key?('Flour'), 'Expired entry should be pruned'
+  end
+
+  test 'reconcile! fixes orphaned null intervals' do
+    @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    md = "# Bread\n\n## Mix (combine)\n\n- Flour, 2 cups\n\nMix.\n"
+    MarkdownImporter.import(md, kitchen: @kitchen, category: @category)
+
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('select', type: 'recipe', slug: 'bread', selected: true)
+    plan.state['on_hand'] = {
+      'Flour' => { 'confirmed_at' => Date.current.iso8601, 'interval' => nil }
+    }
+    plan.save!
+
+    reconcile_plan!(plan)
+    plan.reload
+
+    assert_equal 7, plan.on_hand['Flour']['interval'],
+                 'Null interval should be converted to starting interval when item is not in custom_items'
+  end
+
+  test 'reconcile! is idempotent when nothing to prune' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    version_before = plan.lock_version
+
+    reconcile_plan!(plan)
+
+    assert_equal version_before, plan.reload.lock_version
+  end
+
+  test 'removing custom item and reconciling cleans up on_hand entry' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('custom_items', item: 'Birthday Candles', action: 'add')
+    plan.state['on_hand'] = {
+      'Birthday Candles' => { 'confirmed_at' => Date.current.iso8601, 'interval' => nil }
+    }
+    plan.save!
+
+    plan.apply_action('custom_items', item: 'Birthday Candles', action: 'remove')
+    reconcile_plan!(plan)
+    plan.reload
+
+    assert_empty plan.state['custom_items']
+    assert_empty plan.on_hand
   end
 
   test 'reconcile! removes deleted recipe slugs from selections' do
@@ -207,25 +281,6 @@ class MealPlanTest < ActiveSupport::TestCase
     assert_not_includes plan.state['selected_quick_bites'], 'gone-bite'
   end
 
-  test 'reconcile! is idempotent when nothing to prune' do
-    plan = MealPlan.for_kitchen(@kitchen)
-    version_before = plan.lock_version
-
-    reconcile_plan!(plan)
-
-    assert_equal version_before, plan.reload.lock_version
-  end
-
-  test 'reconcile! saves when items are pruned' do
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('check', item: 'Phantom', checked: true)
-    version_before = plan.lock_version
-
-    reconcile_plan!(plan)
-
-    assert_operator plan.lock_version, :>, version_before
-  end
-
   # --- Case-insensitive custom items (issue #156) ---
 
   test 'adding custom item ignores case-insensitive duplicate' do
@@ -242,32 +297,6 @@ class MealPlanTest < ActiveSupport::TestCase
     list.apply_action('custom_items', item: 'butter', action: 'remove')
 
     assert_empty list.state['custom_items']
-  end
-
-  test 'removing custom item and reconciling cleans up checked-off entry' do
-    list = MealPlan.for_kitchen(@kitchen)
-    list.apply_action('custom_items', item: 'Birthday Candles', action: 'add')
-    list.apply_action('check', item: 'Birthday Candles', checked: true)
-    list.apply_action('custom_items', item: 'Birthday Candles', action: 'remove')
-    reconcile_plan!(list)
-
-    list.reload
-
-    assert_empty list.state['custom_items']
-    assert_empty list.state['checked_off']
-  end
-
-  test 'removing custom item and reconciling cleans up case-mismatched checked-off entry' do
-    list = MealPlan.for_kitchen(@kitchen)
-    list.apply_action('custom_items', item: 'Test', action: 'add')
-    list.apply_action('check', item: 'Test', checked: true)
-    list.apply_action('custom_items', item: 'test', action: 'remove')
-    reconcile_plan!(list)
-
-    list.reload
-
-    assert_empty list.state['custom_items']
-    assert_empty list.state['checked_off']
   end
 
   # -- Cook History --

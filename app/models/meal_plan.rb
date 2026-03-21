@@ -5,10 +5,10 @@
 # groceries pages read/write this model.
 #
 # - .reconcile_kitchen!(kitchen) — computes visible ingredient names (via
-#   ShoppingListBuilder) and prunes stale checked-off/selection state.
+#   ShoppingListBuilder) and prunes stale on_hand/selection state.
 #   Called by Kitchen.run_finalization; not called directly by services.
-# - #reconcile!(visible_names:) — inner pruning for callers already holding
-#   the plan inside a retry block.
+# - #reconcile!(visible_names:, now:) — inner pruning for callers already
+#   holding the plan inside a retry block.
 class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
   acts_as_tenant :kitchen
 
@@ -39,10 +39,6 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
       visible = ShoppingListBuilder.new(kitchen:, meal_plan: plan).visible_names
       plan.reconcile!(visible_names: visible)
     end
-  end
-
-  def checked_off
-    state.fetch('checked_off', [])
   end
 
   def on_hand
@@ -93,9 +89,9 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
     end
   end
 
-  def reconcile!(visible_names:)
+  def reconcile!(visible_names:, now: Date.current)
     ensure_state_keys
-    changed = prune_checked_off(visible_names:)
+    changed = prune_on_hand(visible_names:, now:)
     changed |= prune_stale_selections
     save! if changed
   end
@@ -134,11 +130,28 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
     [existing['interval'].to_i * 2, MAX_INTERVAL].min
   end
 
-  def prune_checked_off(visible_names:) # rubocop:disable Naming/PredicateMethod
+  def prune_on_hand(visible_names:, now:) # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+    hash = state['on_hand']
+    before_size = hash.size
     custom = state['custom_items']
-    before_size = state['checked_off'].size
-    state['checked_off'].select! { |item| visible_names.include?(item) || custom.any? { |c| c.casecmp?(item) } }
-    state['checked_off'].size < before_size
+
+    # Pass 1: prune orphans
+    hash.select! { |key, _| visible_names.include?(key) || custom.any? { |c| c.casecmp?(key) } }
+
+    # Pass 2: prune expired
+    hash.reject! { |_, entry| entry['interval'] && Date.parse(entry['confirmed_at']) + entry['interval'].days < now }
+
+    # Pass 3: fix orphaned null intervals
+    null_fixed = false
+    hash.each do |key, entry|
+      next unless entry['interval'].nil?
+      next if custom.any? { |c| c.casecmp?(key) }
+
+      entry['interval'] = STARTING_INTERVAL
+      null_fixed = true
+    end
+
+    hash.size != before_size || null_fixed
   end
 
   def prune_stale_selections # rubocop:disable Metrics/AbcSize, Naming/PredicateMethod
