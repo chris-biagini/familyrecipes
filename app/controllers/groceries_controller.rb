@@ -17,7 +17,7 @@ class GroceriesController < ApplicationController
   def show
     plan = MealPlan.for_kitchen(current_kitchen)
     @shopping_list = ShoppingListBuilder.new(kitchen: current_kitchen, meal_plan: plan).build
-    @checked_off = plan.checked_off.to_set
+    @on_hand_names = plan.effective_on_hand.keys.to_set
     @custom_items = plan.custom_items
   end
 
