@@ -194,7 +194,7 @@ body::after {
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  filter: url(#fabric-texture);
+  filter: url(#paper-texture);
   opacity: var(--gingham-noise-opacity);
 }
 
