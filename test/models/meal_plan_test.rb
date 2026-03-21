@@ -33,6 +33,21 @@ class MealPlanTest < ActiveSupport::TestCase
     assert_empty list.state
   end
 
+  test 'on_hand defaults to empty hash' do
+    list = MealPlan.create!(kitchen: @kitchen)
+
+    assert_equal({}, list.on_hand)
+  end
+
+  test 'ensure_state_keys initializes on_hand as hash not array' do
+    list = MealPlan.create!(kitchen: @kitchen)
+    list.apply_action('custom_items', item: 'test', action: 'add')
+    list.reload
+
+    assert_instance_of Hash, list.state['on_hand']
+    assert_instance_of Array, list.state['custom_items']
+  end
+
   test 'for_kitchen finds or creates' do
     list = MealPlan.for_kitchen(@kitchen)
 

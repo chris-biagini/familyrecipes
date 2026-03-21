@@ -14,11 +14,18 @@ class MealPlan < ApplicationRecord
 
   validates :kitchen_id, uniqueness: true
 
-  STATE_KEYS = %w[selected_recipes selected_quick_bites custom_items checked_off].freeze
-  CASE_INSENSITIVE_KEYS = %w[custom_items checked_off].freeze
+  STATE_DEFAULTS = {
+    'selected_recipes' => [],
+    'selected_quick_bites' => [],
+    'custom_items' => [],
+    'on_hand' => {}
+  }.freeze
+  CASE_INSENSITIVE_KEYS = %w[custom_items].freeze
   MAX_RETRY_ATTEMPTS = 3
   MAX_CUSTOM_ITEM_LENGTH = 100
   COOK_HISTORY_WINDOW = 90
+  STARTING_INTERVAL = 7
+  MAX_INTERVAL = 56
 
   def self.for_kitchen(kitchen)
     find_or_create_by!(kitchen: kitchen)
@@ -36,6 +43,10 @@ class MealPlan < ApplicationRecord
 
   def checked_off
     state.fetch('checked_off', [])
+  end
+
+  def on_hand
+    state.fetch('on_hand', {})
   end
 
   def custom_items
@@ -109,7 +120,7 @@ class MealPlan < ApplicationRecord
   end
 
   def ensure_state_keys
-    STATE_KEYS.each { |key| state[key] ||= [] }
+    STATE_DEFAULTS.each { |key, default| state[key] ||= default.dup }
   end
 
   def apply_select(type:, slug:, selected:, **)
