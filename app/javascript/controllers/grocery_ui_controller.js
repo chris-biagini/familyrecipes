@@ -177,7 +177,15 @@ export default class extends Controller {
   loadCart() {
     try {
       const raw = sessionStorage.getItem(this.cartKey)
-      return raw ? new Set(JSON.parse(raw)) : new Set()
+      if (!raw) return new Set()
+
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed)) return this.clearCart()
+
+      const fourHours = 4 * 60 * 60 * 1000
+      if (Date.now() - parsed.ts > fourHours) return this.clearCart()
+
+      return new Set(parsed.items)
     } catch {
       return new Set()
     }
@@ -185,8 +193,13 @@ export default class extends Controller {
 
   saveCart(cart) {
     try {
-      sessionStorage.setItem(this.cartKey, JSON.stringify([...cart]))
+      sessionStorage.setItem(this.cartKey, JSON.stringify({ items: [...cart], ts: Date.now() }))
     } catch { /* sessionStorage full */ }
+  }
+
+  clearCart() {
+    sessionStorage.removeItem(this.cartKey)
+    return new Set()
   }
 
   addToCart(name) {

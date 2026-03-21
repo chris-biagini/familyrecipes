@@ -55,9 +55,10 @@ Every time you confirm that you have an ingredient (by checking it off), the
 system remembers when you confirmed it and schedules the next check further in
 the future. The first time you check off salt, the system will ask again in
 about a week. Confirm it a second time, and it waits two weeks. Then four.
-Then eight. Over time, the system learns that you always have salt and stops
-asking about it — unless you tell it otherwise by unchecking salt, which
-resets the schedule.
+Then eight. Eight weeks is the longest the system will wait — even staples you
+always have get a check every couple of months. Over time, the system learns
+that you always have salt and stops asking about it — unless you tell it
+otherwise by unchecking salt, which resets the schedule.
 
 Meanwhile, an ingredient like milk — which you sometimes have and sometimes
 don't — keeps its schedule short because you occasionally uncheck it. The
@@ -72,8 +73,17 @@ system adapts to your actual pantry, not a set of rules you have to configure.
 - **Week 8**: the list is mostly just new ingredients from this week's recipes,
   plus the occasional staple that's due for a check.
 
+The schedule adapts to any shopping frequency, but it converges faster if you
+shop weekly — the more often you confirm items, the quicker the system learns
+what you keep stocked.
+
 You don't need to do anything to make this work. Just check and uncheck items
 honestly, and the system tunes itself.
+
+Even items with long schedules eventually reappear for a check. If salt has
+been off the list for eight weeks and its schedule expires, it shows up on the
+To Buy list again — not because anything went wrong, but because the system
+wants to verify you still have it. Just check it off and the cycle resets.
 
 ## What Happens When Recipes Change
 
@@ -85,8 +95,9 @@ Unlike unchecking (which resets the schedule), pruning **preserves the learned
 interval**. If you confirmed flour every week for two months and it reached an
 eight-week schedule, briefly deselecting the recipe that uses it won't destroy
 that history. When you re-select the recipe, flour shows up as To Buy — but
-once you confirm it, the schedule picks up where it left off rather than
-starting over.
+once you confirm it, the schedule resumes from where it left off rather than
+starting from scratch. (Your confirmation also advances it to the next level,
+just like any other confirmation.)
 
 Unchecking is different: when you tell the system "I don't have this," the
 schedule resets to one week. The system trusts your judgment — if you ran out,

@@ -7,8 +7,9 @@
 #
 # - .reconcile_kitchen!(kitchen) — computes visible ingredient names (via
 #   ShoppingListBuilder) and runs four cleanup passes on on_hand state:
-#   prune orphans, prune expired, fix orphaned null intervals, re-canonicalize
-#   keys. Called by Kitchen.run_finalization; not called directly by services.
+#   re-canonicalize keys, expire orphans, fix orphaned null intervals,
+#   purge stale orphans. Called by Kitchen.run_finalization; not called
+#   directly by services.
 # - #effective_on_hand(now:) — single source of truth for on-hand status:
 #   returns only non-expired entries. All display/availability code calls this.
 # - #reconcile!(visible_names:, resolver:, now:) — inner pruning for callers
@@ -30,6 +31,8 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
   COOK_HISTORY_WINDOW = 90
   STARTING_INTERVAL = 7
   MAX_INTERVAL = 56
+  ORPHAN_RETENTION = 180
+  ORPHAN_SENTINEL = '1970-01-01'
 
   def self.for_kitchen(kitchen)
     find_or_create_by!(kitchen: kitchen)
@@ -111,10 +114,12 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
 
   def add_to_on_hand(item, custom:, now:)
     hash = state['on_hand']
-    existing = hash[item]
+    stored_key = find_on_hand_key(item)
+    existing = stored_key ? hash[stored_key] : nil
 
     return if existing && existing['confirmed_at'] == now.iso8601
 
+    hash.delete(stored_key) if stored_key && stored_key != item
     hash[item] = if existing
                    { 'confirmed_at' => now.iso8601, 'interval' => next_interval(existing, custom) }
                  else
@@ -124,7 +129,8 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
   end
 
   def remove_from_on_hand(item)
-    return unless state['on_hand'].delete(item)
+    key = find_on_hand_key(item) || item
+    return unless state['on_hand'].delete(key)
 
     save!
   end
@@ -132,37 +138,34 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
   def next_interval(existing, custom)
     return nil if custom
 
-    [existing['interval'].to_i * 2, MAX_INTERVAL].min
+    [(existing['interval'] || STARTING_INTERVAL) * 2, MAX_INTERVAL].min
   end
 
-  def prune_on_hand(visible_names:, now:, resolver: nil) # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+  def prune_on_hand(visible_names:, now:, resolver: nil)
     hash = state['on_hand']
     custom = state['custom_items']
     changed = resolver ? recanon_on_hand_keys(hash, resolver) : false
 
-    # Pass 1: expire orphans (preserve learned interval for when ingredient reappears)
-    changed |= expire_orphaned_on_hand(hash, visible_names, custom)
-
-    # Pass 2: fix orphaned null intervals
+    changed |= expire_orphaned_on_hand(hash, visible_names, custom, now)
     changed |= fix_orphaned_null_intervals(hash, custom)
+    changed |= purge_stale_orphans(hash, now)
     changed
   end
 
-  ORPHAN_SENTINEL = '1970-01-01'
-
-  def expire_orphaned_on_hand(hash, visible_names, custom) # rubocop:disable Naming/PredicateMethod
+  def expire_orphaned_on_hand(hash, visible_names, custom, now)
     changed = false
     hash.each do |key, entry|
       next if visible_names.include?(key) || custom.any? { |c| c.casecmp?(key) }
       next if entry['confirmed_at'] == ORPHAN_SENTINEL
 
       entry['confirmed_at'] = ORPHAN_SENTINEL
+      entry['orphaned_at'] = now.iso8601
       changed = true
     end
     changed
   end
 
-  def fix_orphaned_null_intervals(hash, custom) # rubocop:disable Naming/PredicateMethod
+  def fix_orphaned_null_intervals(hash, custom)
     changed = false
     hash.each do |key, entry|
       next unless entry['interval'].nil?
@@ -188,8 +191,33 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
   def merge_on_hand_entry(hash, old_key, new_key)
     old_entry = hash.delete(old_key)
     existing = hash[new_key]
-    keep_old = !existing || old_entry['interval'].to_i > existing['interval'].to_i
-    hash[new_key] = keep_old ? old_entry : existing
+    hash[new_key] = pick_merge_winner(old_entry, existing)
+  end
+
+  def pick_merge_winner(old_entry, existing)
+    return old_entry unless existing
+    return existing if old_entry['confirmed_at'] == ORPHAN_SENTINEL
+    return old_entry if existing['confirmed_at'] == ORPHAN_SENTINEL
+
+    old_entry['interval'].to_i >= existing['interval'].to_i ? old_entry : existing
+  end
+
+  def find_on_hand_key(item)
+    state['on_hand'].each_key.find { |k| k.casecmp?(item) }
+  end
+
+  def purge_stale_orphans(hash, now)
+    changed = false
+    hash.each_value do |entry|
+      next unless entry['confirmed_at'] == ORPHAN_SENTINEL && !entry.key?('orphaned_at')
+
+      entry['orphaned_at'] = now.iso8601
+      changed = true
+    end
+    cutoff = now - ORPHAN_RETENTION
+    before = hash.size
+    hash.reject! { |_, e| e['confirmed_at'] == ORPHAN_SENTINEL && Date.parse(e['orphaned_at']) < cutoff }
+    changed || hash.size < before
   end
 
   def prune_stale_selections # rubocop:disable Metrics/AbcSize, Naming/PredicateMethod
