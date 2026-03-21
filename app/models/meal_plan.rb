@@ -33,11 +33,12 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
     find_by!(kitchen: kitchen)
   end
 
-  def self.reconcile_kitchen!(kitchen)
+  def self.reconcile_kitchen!(kitchen, now: Date.current)
     plan = for_kitchen(kitchen)
     plan.with_optimistic_retry do
-      visible = ShoppingListBuilder.new(kitchen:, meal_plan: plan).visible_names
-      plan.reconcile!(visible_names: visible)
+      resolver = IngredientCatalog.resolver_for(kitchen)
+      visible = ShoppingListBuilder.new(kitchen:, meal_plan: plan, resolver:).visible_names
+      plan.reconcile!(visible_names: visible, resolver:, now:)
     end
   end
 
@@ -89,9 +90,9 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
     end
   end
 
-  def reconcile!(visible_names:, now: Date.current)
+  def reconcile!(visible_names:, resolver: nil, now: Date.current)
     ensure_state_keys
-    changed = prune_on_hand(visible_names:, now:)
+    changed = prune_on_hand(visible_names:, resolver:, now:)
     changed |= prune_stale_selections
     save! if changed
   end
@@ -130,10 +131,14 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
     [existing['interval'].to_i * 2, MAX_INTERVAL].min
   end
 
-  def prune_on_hand(visible_names:, now:) # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+  def prune_on_hand(visible_names:, now:, resolver: nil) # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
     hash = state['on_hand']
-    before_size = hash.size
     custom = state['custom_items']
+
+    # Pass 4 (runs first): re-canonicalize keys before orphan check
+    recanon_changed = resolver ? recanon_on_hand_keys(hash, resolver) : false
+
+    before_size = hash.size
 
     # Pass 1: prune orphans
     hash.select! { |key, _| visible_names.include?(key) || custom.any? { |c| c.casecmp?(key) } }
@@ -151,7 +156,25 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
       null_fixed = true
     end
 
-    hash.size != before_size || null_fixed
+    hash.size != before_size || null_fixed || recanon_changed
+  end
+
+  def recanon_on_hand_keys(hash, resolver) # rubocop:disable Naming/PredicateMethod
+    renames = hash.each_key.with_object({}) do |key, acc|
+      canonical = resolver.resolve(key)
+      acc[key] = canonical if canonical != key
+    end
+    return false if renames.empty?
+
+    renames.each { |old, new_key| merge_on_hand_entry(hash, old, new_key) }
+    true
+  end
+
+  def merge_on_hand_entry(hash, old_key, new_key)
+    old_entry = hash.delete(old_key)
+    existing = hash[new_key]
+    keep_old = !existing || old_entry['interval'].to_i > existing['interval'].to_i
+    hash[new_key] = keep_old ? old_entry : existing
   end
 
   def prune_stale_selections # rubocop:disable Metrics/AbcSize, Naming/PredicateMethod

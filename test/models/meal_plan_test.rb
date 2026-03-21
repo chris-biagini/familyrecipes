@@ -9,8 +9,9 @@ class MealPlanTest < ActiveSupport::TestCase
   end
 
   def reconcile_plan!(plan, now: Date.current)
-    visible = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: plan).visible_names
-    plan.reconcile!(visible_names: visible, now:)
+    resolver = IngredientCatalog.resolver_for(@kitchen)
+    visible = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: plan, resolver:).visible_names
+    plan.reconcile!(visible_names: visible, resolver:, now:)
   end
 
   test 'belongs to kitchen' do
@@ -189,7 +190,7 @@ class MealPlanTest < ActiveSupport::TestCase
     reconcile_plan!(plan)
     plan.reload
 
-    assert plan.on_hand.key?('birthday candles')
+    assert plan.on_hand.key?('Birthday Candles'), 'Key re-canonicalized to match custom item casing'
   end
 
   test 'reconcile! prunes expired entries' do
@@ -227,6 +228,27 @@ class MealPlanTest < ActiveSupport::TestCase
 
     assert_equal 7, plan.on_hand['Flour']['interval'],
                  'Null interval should be converted to starting interval when item is not in custom_items'
+  end
+
+  test 'reconcile! re-canonicalizes on_hand keys when catalog changes' do
+    create_catalog_entry('Flour', aisle: 'Baking')
+    @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    md = "# Bread\n\n## Mix (combine)\n\n- Flour, 2 cups\n\nMix.\n"
+    MarkdownImporter.import(md, kitchen: @kitchen, category: @category)
+
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('select', type: 'recipe', slug: 'bread', selected: true)
+    plan.state['on_hand'] = {
+      'flour' => { 'confirmed_at' => Date.current.iso8601, 'interval' => 28 }
+    }
+    plan.save!
+
+    reconcile_plan!(plan)
+    plan.reload
+
+    assert plan.on_hand.key?('Flour'), 'Key should be re-canonicalized to catalog name'
+    assert_not plan.on_hand.key?('flour'), 'Old key should be removed'
+    assert_equal 28, plan.on_hand['Flour']['interval'], 'Interval should be preserved'
   end
 
   test 'reconcile! is idempotent when nothing to prune' do
