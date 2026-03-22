@@ -104,16 +104,11 @@ export default class extends Controller {
   }
 
   hideEmptyInventoryCheck() {
-    const details = this.element.querySelector("details.inventory-check-section")
-    if (!details) return
+    const wrapper = this.element.querySelector(".inventory-check-wrapper")
+    if (!wrapper) return
 
-    const remaining = details.closest("#shopping-list")
-      ?.querySelectorAll(".inventory-check-items li")
-    if (!remaining || remaining.length === 0) {
-      const collapseBody = details.nextElementSibling
-      details.remove()
-      if (collapseBody) collapseBody.remove()
-    }
+    const remaining = wrapper.querySelectorAll(".inventory-check-items li")
+    if (remaining.length === 0) wrapper.remove()
   }
 
   // --- Custom items (delegated from controller root to survive morphs) ---

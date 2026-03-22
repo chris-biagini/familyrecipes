@@ -156,11 +156,12 @@
 
 
 /* Inventory Check — items with unknown on-hand status */
-.inventory-check-section {
+.inventory-check-wrapper {
   margin-bottom: 0.75rem;
   background: var(--surface-alt);
   border: 1px solid var(--aisle-row-border);
   border-radius: 6px;
+  overflow: hidden;
 }
 
 .inventory-check-section summary {
@@ -269,8 +270,7 @@
   }
 
   /* Hide inventory check in print — it's actionable, not printable */
-  details.inventory-check-section,
-  details.inventory-check-section + .collapse-body {
+  .inventory-check-wrapper {
     display: none !important;
   }
 

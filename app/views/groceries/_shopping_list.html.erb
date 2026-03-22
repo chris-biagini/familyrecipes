@@ -6,30 +6,32 @@
   <% inventory_items.sort_by! { |i| [-i[:sources].size, i[:name]] } %>
 
   <% if inventory_items.any? %>
-    <details class="collapse-header inventory-check-section" open data-section="inventory-check">
-      <summary>
-        <span class="section-header">Inventory Check (<%= inventory_items.size %>)</span>
-      </summary>
-    </details>
-    <div class="collapse-body">
-      <div class="collapse-inner">
-        <p class="inventory-check-hint">Check your kitchen &mdash; do you have these?</p>
-        <ul class="inventory-check-items">
-          <% inventory_items.each do |item| %>
-            <% sources_tip = item[:sources].present? ? "Needed for: #{h item[:sources].join(', ')}" : nil %>
-            <li data-item="<%= item[:name] %>"<%= " title=\"#{h sources_tip}\"".html_safe if sources_tip %>>
-              <button class="btn btn-sm btn-need-it" data-grocery-action="need-it"
-                      data-item="<%= item[:name] %>">Need It</button>
-              <span class="item-text"><%= item[:name] %>
-                <% if item[:amounts].any? %>
-                  <span class="item-amount"><%= format_amounts(item[:amounts], uncounted: item[:uncounted]) %></span>
-                <% end %>
-              </span>
-              <button class="btn btn-sm btn-have-it" data-grocery-action="have-it"
-                      data-item="<%= item[:name] %>">Have It</button>
-            </li>
-          <% end %>
-        </ul>
+    <div class="inventory-check-wrapper">
+      <details class="collapse-header inventory-check-section" open data-section="inventory-check">
+        <summary>
+          <span class="section-header">Inventory Check (<%= inventory_items.size %>)</span>
+        </summary>
+      </details>
+      <div class="collapse-body">
+        <div class="collapse-inner">
+          <p class="inventory-check-hint">Check your kitchen &mdash; do you have these?</p>
+          <ul class="inventory-check-items">
+            <% inventory_items.each do |item| %>
+              <% sources_tip = item[:sources].present? ? "Needed for: #{h item[:sources].join(', ')}" : nil %>
+              <li data-item="<%= item[:name] %>"<%= " title=\"#{h sources_tip}\"".html_safe if sources_tip %>>
+                <button class="btn btn-sm btn-need-it" data-grocery-action="need-it"
+                        data-item="<%= item[:name] %>">Need It</button>
+                <span class="item-text"><%= item[:name] %>
+                  <% if item[:amounts].any? %>
+                    <span class="item-amount"><%= format_amounts(item[:amounts], uncounted: item[:uncounted]) %></span>
+                  <% end %>
+                </span>
+                <button class="btn btn-sm btn-have-it" data-grocery-action="have-it"
+                        data-item="<%= item[:name] %>">Have It</button>
+              </li>
+            <% end %>
+          </ul>
+        </div>
       </div>
     </div>
   <% end %>
