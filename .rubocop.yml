@@ -10,6 +10,7 @@ AllCops:
     - vendor/**/*
     - db/migrate/**/*
     - db/schema.rb
+    - test/sim/**/*
 
 plugins:
   - rubocop-minitest
