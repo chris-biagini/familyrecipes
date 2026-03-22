@@ -133,7 +133,6 @@
   padding-left: calc(1.6rem + 4px);
   padding-top: 0;
   padding-bottom: 0;
-  transition: padding var(--duration-normal) ease;
 }
 
 .recipe-selector-item .collapse-header[open] ~ .collapse-body > .collapse-inner {

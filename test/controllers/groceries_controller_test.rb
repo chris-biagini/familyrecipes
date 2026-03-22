@@ -222,9 +222,10 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     log_in
     get groceries_path(kitchen_slug: kitchen_slug)
 
-    assert_select 'section.aisle-complete[data-aisle="Baking"]' do
-      assert_select 'details.aisle-complete-header'
-      assert_select '.collapse-body .on-hand-items'
+    assert_select 'section.aisle-group[data-aisle="Baking"]' do
+      assert_select '.aisle-check'
+      assert_select 'details.on-hand-section'
+      assert_select '.on-hand-items'
     end
   end
 
@@ -261,7 +262,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
 
     assert_select 'section.aisle-group[data-aisle="Baking"]' do
       assert_select '.to-buy-items li[data-item="Yeast"]'
-      assert_select 'details.on-hand-divider'
+      assert_select 'details.on-hand-section'
       assert_select '.on-hand-items li[data-item="Flour"]'
     end
   end

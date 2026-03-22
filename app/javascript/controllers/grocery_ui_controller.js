@@ -4,10 +4,10 @@ import ListenerManager from "../utilities/listener_manager"
 
 /**
  * Groceries page interaction — optimistic checkbox toggle, inventory check
- * buttons (Have It / Need It), custom item input, on-hand section collapse
- * persistence. All rendering is server-side via Turbo page-refresh morphs;
- * this controller handles user interactions and preserves local state
- * (on-hand expand/collapse) across morphs.
+ * buttons (Have It / Need It), custom item input, collapse persistence for
+ * inventory check and per-aisle to-buy/on-hand sections. All rendering is
+ * server-side via Turbo page-refresh morphs; this controller handles user
+ * interactions and preserves local state across morphs.
  *
  * Three zones: Inventory Check (unknown items), To Buy (confirmed needed),
  * On Hand (confirmed in stock). Have It / Need It buttons resolve items out
@@ -29,8 +29,8 @@ export default class extends Controller {
     this.bindShoppingListEvents()
     this.bindInventoryCheckButtons()
     this.bindCustomItemInput()
-    this.bindOnHandToggle()
-    this.restoreOnHandState()
+    this.bindCollapseToggle()
+    this.restoreCollapseState()
     this.applyInCartState()
 
     this.listeners.add(document, "turbo:before-render", (e) => this.preserveOnHandStateOnRefresh(e))
@@ -104,11 +104,16 @@ export default class extends Controller {
   }
 
   hideEmptyInventoryCheck() {
-    const section = this.element.querySelector(".inventory-check-section")
-    if (!section) return
+    const details = this.element.querySelector("details.inventory-check-section")
+    if (!details) return
 
-    const remaining = section.querySelectorAll(".inventory-check-items li")
-    if (remaining.length === 0) section.remove()
+    const remaining = details.closest("#shopping-list")
+      ?.querySelectorAll(".inventory-check-items li")
+    if (!remaining || remaining.length === 0) {
+      const collapseBody = details.nextElementSibling
+      details.remove()
+      if (collapseBody) collapseBody.remove()
+    }
   }
 
   // --- Custom items (delegated from controller root to survive morphs) ---
@@ -145,7 +150,7 @@ export default class extends Controller {
     input.focus()
   }
 
-  // --- On-hand section collapse ---
+  // --- Collapse persistence ---
 
   cleanupOldStorage() {
     try {
@@ -153,37 +158,62 @@ export default class extends Controller {
     } catch { /* ignore */ }
   }
 
-  bindOnHandToggle() {
+  bindCollapseToggle() {
     this.listeners.add(this.element, "toggle", (e) => {
-      if (!e.target.matches("details.on-hand-section")) return
+      if (!e.target.matches("details.to-buy-section, details.on-hand-section, details.inventory-check-section")) return
 
-      this.saveOnHandState()
+      this.saveCollapseState()
     }, true)
   }
 
-  saveOnHandState() {
-    const expanded = {}
-    this.element.querySelectorAll("details.on-hand-section").forEach(details => {
-      const aisle = details.closest(".aisle-group")?.dataset.aisle
-      if (aisle) expanded[aisle] = details.open
+  saveCollapseState() {
+    const state = {}
+
+    const invCheck = this.element.querySelector("details.inventory-check-section")
+    if (invCheck) state._inventory_check = invCheck.open
+
+    this.element.querySelectorAll(".aisle-group").forEach(group => {
+      const aisle = group.dataset.aisle
+      if (!aisle) return
+
+      const toBuy = group.querySelector("details.to-buy-section")
+      const onHand = group.querySelector("details.on-hand-section")
+
+      state[aisle] = {
+        to_buy: toBuy ? toBuy.open : true,
+        on_hand: onHand ? onHand.open : true
+      }
     })
 
     try {
-      localStorage.setItem(this.onHandKey, JSON.stringify(expanded))
+      localStorage.setItem(this.onHandKey, JSON.stringify(state))
     } catch { /* localStorage full */ }
   }
 
-  restoreOnHandState() {
-    const state = this.loadOnHandState()
-    this.element.querySelectorAll("details.on-hand-section").forEach(details => {
-      const aisle = details.closest(".aisle-group")?.dataset.aisle
+  restoreCollapseState() {
+    const state = this.loadCollapseState()
+
+    const invCheck = this.element.querySelector("details.inventory-check-section")
+    if (invCheck && state._inventory_check === false) invCheck.open = false
+
+    this.element.querySelectorAll(".aisle-group").forEach(group => {
+      const aisle = group.dataset.aisle
       if (!aisle || !state[aisle]) return
 
-      details.open = true
+      let entry = state[aisle]
+      if (typeof entry === "boolean") {
+        entry = { to_buy: true, on_hand: entry }
+      }
+
+      const toBuy = group.querySelector("details.to-buy-section")
+      const onHand = group.querySelector("details.on-hand-section")
+
+      if (toBuy && entry.to_buy === false) toBuy.open = false
+      if (onHand && entry.on_hand === false) onHand.open = false
     })
   }
 
-  loadOnHandState() {
+  loadCollapseState() {
     try {
       const raw = localStorage.getItem(this.onHandKey)
       return raw ? JSON.parse(raw) : {}
@@ -195,11 +225,11 @@ export default class extends Controller {
   preserveOnHandStateOnRefresh(event) {
     if (!event.detail.render) return
 
-    this.saveOnHandState()
+    this.saveCollapseState()
     const originalRender = event.detail.render
     event.detail.render = async (...args) => {
       await originalRender(...args)
-      this.restoreOnHandState()
+      this.restoreCollapseState()
       this.applyInCartState()
     }
   }

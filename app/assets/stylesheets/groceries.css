@@ -123,21 +123,24 @@
   padding: 0.3rem 0;
 }
 
-/* On-hand section (collapse-header layering) */
-.on-hand-section {
-  border: none;
-}
-
-.on-hand-divider summary {
+/* Per-section collapse summaries */
+.to-buy-section summary,
+.on-hand-section summary {
   padding: 0.4rem 0.75rem;
-  border-top: 1px solid var(--rule-faint);
   font-family: var(--font-body);
   font-size: 0.75rem;
   color: var(--text-light);
 }
 
-.on-hand-divider summary:hover {
+.to-buy-section summary:hover,
+.on-hand-section summary:hover {
   color: var(--text-soft);
+}
+
+.aisle-check {
+  color: var(--text-light);
+  font-size: 0.75rem;
+  margin-left: 0.35rem;
 }
 
 .on-hand-body .on-hand-items {
@@ -151,33 +154,6 @@
   padding: 0.3rem 0;
 }
 
-/* Fully-checked aisle */
-.aisle-complete-header summary {
-  padding: 0.6rem 0.75rem;
-  font-family: var(--font-body);
-  font-size: 0.8rem;
-  color: var(--text-light);
-}
-
-.aisle-complete-header summary:hover {
-  color: var(--text-soft);
-}
-
-.aisle-complete-check {
-  color: var(--text-light);
-  font-size: 0.75rem;
-}
-
-.aisle-complete .aisle-name {
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
-.aisle-complete-detail {
-  margin-left: auto;
-  font-size: 0.75rem;
-}
 
 /* Inventory Check — items with unknown on-hand status */
 .inventory-check-section {
@@ -185,11 +161,17 @@
   background: var(--surface-alt);
   border: 1px solid var(--aisle-row-border);
   border-radius: 6px;
-  padding: 0.6rem 0.75rem 0.5rem;
+}
+
+.inventory-check-section summary {
+  padding: 0.6rem 0.75rem;
+}
+
+.inventory-check-section + .collapse-body {
+  padding: 0 0.75rem 0.5rem;
 }
 
 .inventory-check-section .section-header {
-  margin: 0;
   font-family: var(--font-body);
   font-size: 0.8rem;
   font-weight: 600;
@@ -286,29 +268,10 @@
     display: none !important;
   }
 
-  /* Inventory check: print as regular items, hide buttons and hint */
-  .inventory-check-section {
-    break-inside: avoid;
-    background: none;
-    border: none;
-    border-radius: 0;
-    padding: 0;
-    margin-bottom: 0.5rem;
-  }
-
-  .inventory-check-hint,
-  .btn-need-it,
-  .btn-have-it {
+  /* Hide inventory check in print — it's actionable, not printable */
+  details.inventory-check-section,
+  details.inventory-check-section + .collapse-body {
     display: none !important;
-  }
-
-  .inventory-check-items {
-    padding: 0 0 0.25rem 0.25rem;
-  }
-
-  .inventory-check-items li {
-    padding: 0.15rem 0;
-    font-size: 0.85rem;
   }
 
   /* 4-column grid (not column-count, which is broken in WebKit print) */
@@ -333,10 +296,18 @@
     overflow: visible;
   }
 
-  /* Hide on-hand sections, dividers, and fully-checked aisles */
+  /* Hide on-hand sections in print */
   .on-hand-section,
-  .on-hand-body,
-  .aisle-complete {
+  .on-hand-body {
+    display: none !important;
+  }
+
+  /* Force to-buy details open in print */
+  details.to-buy-section {
+    display: block !important;
+  }
+
+  details.to-buy-section > summary {
     display: none !important;
   }
 

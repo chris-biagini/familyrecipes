@@ -124,6 +124,7 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
   private
 
   def entry_on_hand?(entry, now)
+    return false if entry.key?('depleted_at')
     return true if entry['interval'].nil?
 
     Date.parse(entry['confirmed_at']) + entry['interval'].days >= now
@@ -172,7 +173,7 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
     if custom || entry['interval'].nil?
       state['on_hand'].delete(key)
     else
-      mark_depleted(entry, now)
+      deplete_existing(entry, now)
     end
     save!
   end
