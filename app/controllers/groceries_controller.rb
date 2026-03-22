@@ -4,7 +4,7 @@
 # load via ShoppingListBuilder. Mutations delegate to write services and return
 # 204 No Content; broadcasts happen inside the services for cross-device sync.
 #
-# - MealPlanWriteService: check-off and custom item mutations
+# - MealPlanWriteService: check-off, have_it, need_it, and custom item mutations
 # - AisleWriteService: aisle order mutations
 # - MealPlanActions: param coercion and StaleObjectError rescue
 # - ShoppingListBuilder: computes the shopping list for rendering
@@ -26,6 +26,22 @@ class GroceriesController < ApplicationController
     MealPlanWriteService.apply_action(
       kitchen: current_kitchen, action_type: 'check',
       item: params[:item], checked: truthy_param?(params[:checked])
+    )
+    head :no_content
+  end
+
+  def have_it # rubocop:disable Naming/PredicatePrefix -- action name, not a boolean predicate
+    MealPlanWriteService.apply_action(
+      kitchen: current_kitchen, action_type: 'have_it',
+      item: params[:item]
+    )
+    head :no_content
+  end
+
+  def need_it
+    MealPlanWriteService.apply_action(
+      kitchen: current_kitchen, action_type: 'need_it',
+      item: params[:item]
     )
     head :no_content
   end

@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
 # Orchestrates all direct MealPlan mutations: action application (select,
-# check, custom items). Validates input (e.g. custom item length) before
-# mutating. Canonicalization boundary for check actions: resolves item names
-# via IngredientResolver and detects custom items (case-insensitive) before
-# passing to MealPlan. Owns optimistic-locking retry for state changes.
+# check, custom items, have_it, need_it). Validates input (e.g. custom item
+# length) before mutating. Canonicalization boundary for check/have_it/need_it:
+# resolves item names via IngredientResolver; check also detects custom items
+# (case-insensitive). Owns optimistic-locking retry for state changes.
 # Post-write finalization (reconciliation, broadcast) is handled by
 # Kitchen.finalize_writes.
 #
@@ -45,10 +45,13 @@ class MealPlanWriteService
   end
 
   def enrich_check_params(plan, action_type, **params)
-    return params unless action_type == 'check'
+    return params unless %w[check have_it need_it].include?(action_type)
 
     resolver = IngredientCatalog.resolver_for(kitchen)
     canonical = resolver.resolve(params[:item].to_s)
+
+    return params.merge(item: canonical) unless action_type == 'check'
+
     custom = plan.custom_items.any? { |c| c.casecmp?(params[:item].to_s) }
     params.merge(item: canonical, custom:)
   end

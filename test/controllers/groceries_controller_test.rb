@@ -40,6 +40,22 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     assert_response :forbidden
   end
 
+  test 'have_it requires membership' do
+    patch groceries_have_it_path(kitchen_slug: kitchen_slug),
+          params: { item: 'flour' },
+          as: :json
+
+    assert_response :forbidden
+  end
+
+  test 'need_it requires membership' do
+    patch groceries_need_it_path(kitchen_slug: kitchen_slug),
+          params: { item: 'flour' },
+          as: :json
+
+    assert_response :forbidden
+  end
+
   # --- Show page ---
 
   test 'includes groceries CSS and Stimulus controllers' do
@@ -67,6 +83,8 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     assert_select '#shopping-list'
     assert_select '#groceries-app[data-kitchen-slug]'
     assert_select '#groceries-app[data-check-url]'
+    assert_select '#groceries-app[data-have-it-url]'
+    assert_select '#groceries-app[data-need-it-url]'
     assert_select '#groceries-app[data-custom-items-url]'
   end
 
@@ -91,7 +109,37 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     assert_select '#grocery-preview-empty', 'No items yet.'
   end
 
-  test 'show renders aisle sections when recipes selected' do
+  test 'show renders aisle sections for to-buy items' do
+    @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Focaccia
+
+
+      ## Mix (combine)
+
+      - Flour, 3 cups
+
+      Mix well.
+    MD
+
+    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Flour') do |p|
+      p.basis_grams = 30
+      p.aisle = 'Baking'
+    end
+
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+    plan.apply_action('need_it', item: 'Flour')
+
+    log_in
+    get groceries_path(kitchen_slug: kitchen_slug)
+
+    assert_select 'section.aisle-group[data-aisle="Baking"]'
+    assert_select 'li[data-item="Flour"]'
+    assert_select 'input[type="checkbox"][data-item="Flour"]'
+  end
+
+  test 'show renders inventory check for new items' do
     @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
     MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Focaccia
@@ -115,9 +163,10 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     log_in
     get groceries_path(kitchen_slug: kitchen_slug)
 
-    assert_select 'section.aisle-group[data-aisle="Baking"]'
-    assert_select 'li[data-item="Flour"]'
-    assert_select 'input[type="checkbox"][data-item="Flour"]'
+    assert_select '.inventory-check-section'
+    assert_select '.inventory-check-items li[data-item="Flour"]'
+    assert_select '[data-grocery-action="need-it"][data-item="Flour"]'
+    assert_select '[data-grocery-action="have-it"][data-item="Flour"]'
   end
 
   test 'show pre-checks checked-off items' do
@@ -204,6 +253,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
 
     plan = MealPlan.for_kitchen(@kitchen)
     plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+    plan.apply_action('need_it', item: 'Yeast')
     plan.apply_action('check', item: 'Flour', checked: true)
 
     log_in
@@ -265,6 +315,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     list = MealPlan.for_kitchen(@kitchen)
     list.apply_action('select', type: 'recipe', slug: 'stuffed-peppers', selected: true)
     list.apply_action('select', type: 'recipe', slug: 'stir-fry', selected: true)
+    list.apply_action('need_it', item: 'Red bell pepper')
 
     log_in
     get groceries_path(kitchen_slug: kitchen_slug)
@@ -300,6 +351,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     list = MealPlan.for_kitchen(@kitchen)
     list.apply_action('select', type: 'recipe', slug: 'pasta', selected: true)
     list.apply_action('select', type: 'recipe', slug: 'stir-fry', selected: true)
+    list.apply_action('need_it', item: 'Garlic')
 
     log_in
     get groceries_path(kitchen_slug: kitchen_slug)
@@ -314,6 +366,30 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     log_in
     patch groceries_check_path(kitchen_slug: kitchen_slug),
           params: { item: 'flour', checked: true },
+          as: :turbo_stream
+
+    assert_response :no_content
+  end
+
+  test 'have_it returns no_content' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('check', item: 'Flour', checked: true)
+
+    log_in
+    patch groceries_have_it_path(kitchen_slug: kitchen_slug),
+          params: { item: 'Flour' },
+          as: :turbo_stream
+
+    assert_response :no_content
+  end
+
+  test 'need_it returns no_content' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('check', item: 'Flour', checked: true)
+
+    log_in
+    patch groceries_need_it_path(kitchen_slug: kitchen_slug),
+          params: { item: 'Flour' },
           as: :turbo_stream
 
     assert_response :no_content
@@ -629,6 +705,84 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_equal 'Produce', IngredientCatalog.find_by(kitchen: other_kitchen, ingredient_name: 'Apples').aisle
+  end
+
+  # --- Full lifecycle integration ---
+
+  test 'inventory check full cycle: new → have it → expired → need it → buy → on hand' do # rubocop:disable Minitest/MultipleAssertions
+    @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Focaccia
+
+      ## Mix (combine)
+
+      - Flour, 3 cups
+
+      Mix well.
+    MD
+
+    create_catalog_entry('Flour', basis_grams: 30, aisle: 'Baking')
+
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+
+    log_in
+
+    # 1) New item appears in Inventory Check
+    get groceries_path(kitchen_slug: kitchen_slug)
+
+    assert_select '.inventory-check-section'
+    assert_select '.inventory-check-items li[data-item="Flour"]'
+
+    # 2) "Have It" moves it to On Hand
+    patch groceries_have_it_path(kitchen_slug: kitchen_slug),
+          params: { item: 'Flour' },
+          as: :turbo_stream
+
+    assert_response :no_content
+
+    get groceries_path(kitchen_slug: kitchen_slug)
+
+    assert_select '.on-hand-items li[data-item="Flour"]'
+    assert_select '.inventory-check-items li[data-item="Flour"]', count: 0
+
+    # 3) Simulate timer expiring: set confirmed_at far enough in the past
+    plan.reload
+    entry = plan.on_hand['Flour']
+    expired_date = (Date.current - entry['interval'].to_i - 1).iso8601
+    entry['confirmed_at'] = expired_date
+    plan.save!
+
+    get groceries_path(kitchen_slug: kitchen_slug)
+
+    assert_select '.inventory-check-items li[data-item="Flour"]'
+    assert_select '.on-hand-items li[data-item="Flour"]', count: 0
+
+    # 4) "Need It" depletes the item — moves to To Buy
+    patch groceries_need_it_path(kitchen_slug: kitchen_slug),
+          params: { item: 'Flour' },
+          as: :turbo_stream
+
+    assert_response :no_content
+
+    get groceries_path(kitchen_slug: kitchen_slug)
+
+    assert_select '.to-buy-items li[data-item="Flour"]'
+    assert_select '.inventory-check-items li[data-item="Flour"]', count: 0
+    assert_select '.on-hand-items li[data-item="Flour"]', count: 0
+
+    # 5) Purchase (check off) moves to On Hand
+    patch groceries_check_path(kitchen_slug: kitchen_slug),
+          params: { item: 'Flour', checked: true },
+          as: :turbo_stream
+
+    assert_response :no_content
+
+    get groceries_path(kitchen_slug: kitchen_slug)
+
+    assert_select '.on-hand-items li[data-item="Flour"]'
+    assert_select '.to-buy-items li[data-item="Flour"]', count: 0
+    assert_select '.inventory-check-items li[data-item="Flour"]', count: 0
   end
 
   private

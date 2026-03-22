@@ -23,10 +23,12 @@
      data-controller="wake-lock grocery-ui"
      data-kitchen-slug="<%= current_kitchen.slug %>"
      data-check-url="<%= groceries_check_path %>"
+     data-have-it-url="<%= groceries_have_it_path %>"
+     data-need-it-url="<%= groceries_need_it_path %>"
      data-custom-items-url="<%= groceries_custom_items_path %>">
 
   <div id="shopping-list">
-    <%= render 'groceries/shopping_list', shopping_list: @shopping_list, on_hand_names: @on_hand_names, on_hand_data: @on_hand_data %>
+    <%= render 'groceries/shopping_list', shopping_list: @shopping_list, on_hand_names: @on_hand_names, on_hand_data: @on_hand_data, custom_items: @custom_items %>
   </div>
 
   <%= render 'groceries/custom_items', custom_items: @custom_items %>

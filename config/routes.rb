@@ -37,6 +37,8 @@ Rails.application.routes.draw do
     post 'menu/serialize_quick_bites', to: 'menu#serialize_quick_bites', as: :menu_serialize_quick_bites
     get 'groceries', to: 'groceries#show', as: :groceries
     patch 'groceries/check', to: 'groceries#check', as: :groceries_check
+    patch 'groceries/have_it', to: 'groceries#have_it', as: :groceries_have_it
+    patch 'groceries/need_it', to: 'groceries#need_it', as: :groceries_need_it
     patch 'groceries/custom_items', to: 'groceries#update_custom_items', as: :groceries_custom_items
     patch 'groceries/aisle_order', to: 'groceries#update_aisle_order', as: :groceries_aisle_order
     get 'groceries/aisle_order_content', to: 'groceries#aisle_order_content', as: :groceries_aisle_order_content

@@ -7,6 +7,12 @@
 # intervals when users run out). Both menu and groceries pages read/write
 # this model.
 #
+# Action types: select, check, custom_items, have_it, need_it.
+# - have_it: user confirms they still have an ingredient. Grows interval via
+#   anchored growth (preserves confirmed_at at purchase date) or standard
+#   growth (resets confirmed_at for sentinel/orphaned entries).
+# - need_it: user says they need to buy an ingredient (Task 2).
+#
 # - .reconcile_kitchen!(kitchen) — computes visible ingredient names (via
 #   ShoppingListBuilder) and runs four cleanup passes on on_hand state:
 #   re-canonicalize keys, expire orphans, fix orphaned null intervals,
@@ -89,6 +95,8 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
     when 'select' then apply_select(**params)
     when 'check' then apply_check(**params)
     when 'custom_items' then apply_custom_items(**params)
+    when 'have_it' then apply_have_it(**params)
+    when 'need_it' then apply_need_it(**params)
     else raise ArgumentError, "unknown action: #{action_type}"
     end
   end
@@ -334,5 +342,95 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
     history << { 'slug' => slug, 'at' => Time.current.iso8601 }
     cutoff = COOK_HISTORY_WINDOW.days.ago
     history.reject! { |e| Time.zone.parse(e['at']) < cutoff }
+  end
+
+  def apply_have_it(item:, now: Date.current, **)
+    hash = state['on_hand']
+    stored_key = find_on_hand_key(item)
+    existing = stored_key ? hash[stored_key] : nil
+
+    return create_on_hand_entry(hash, item, now) unless existing
+    return if entry_on_hand?(existing, now)
+
+    hash.delete(stored_key) if stored_key != item
+    grow_on_hand(existing, now)
+    hash[item] = existing
+    save!
+  end
+
+  def apply_need_it(item:, now: Date.current, **)
+    hash = state['on_hand']
+    stored_key = find_on_hand_key(item)
+    existing = stored_key ? hash[stored_key] : nil
+
+    return create_depleted_entry(hash, item, now) unless existing
+
+    hash.delete(stored_key) if stored_key != item
+    deplete_existing(existing, now)
+    hash[item] = existing
+    save!
+  end
+
+  def create_depleted_entry(hash, item, now)
+    hash[item] = { 'confirmed_at' => ORPHAN_SENTINEL,
+                   'interval' => STARTING_INTERVAL,
+                   'ease' => STARTING_EASE,
+                   'depleted_at' => now.iso8601 }
+    save!
+  end
+
+  def deplete_existing(entry, now)
+    if entry['confirmed_at'] == ORPHAN_SENTINEL
+      mark_depleted_sentinel(entry, now)
+    else
+      mark_depleted(entry, now)
+    end
+  end
+
+  # Penalizes ease and marks depleted without touching interval — the
+  # sentinel confirmed_at means we have no real observed period to record.
+  def mark_depleted_sentinel(entry, now)
+    entry['ease'] = [(entry['ease'] || STARTING_EASE) * (1 - EASE_PENALTY), MIN_EASE].max
+    entry['depleted_at'] = now.iso8601
+    entry.delete('orphaned_at')
+  end
+
+  def create_on_hand_entry(hash, item, now)
+    hash[item] = { 'confirmed_at' => now.iso8601,
+                   'interval' => STARTING_INTERVAL,
+                   'ease' => STARTING_EASE }
+    save!
+  end
+
+  def grow_on_hand(entry, now)
+    if entry['confirmed_at'] == ORPHAN_SENTINEL
+      grow_standard(entry, now)
+    else
+      grow_anchored(entry, now)
+    end
+  end
+
+  # Grows interval by ease, resets confirmed_at to now. Used for sentinel
+  # (orphaned) entries where the original purchase date is meaningless.
+  def grow_standard(entry, now)
+    entry['ease'] = [entry['ease'] + EASE_BONUS, MAX_EASE].min
+    entry['interval'] = [entry['interval'] * entry['ease'], MAX_INTERVAL].min
+    entry['confirmed_at'] = now.iso8601
+    entry.delete('orphaned_at')
+  end
+
+  # Grows interval in a loop until confirmed_at + interval covers now.
+  # Preserves confirmed_at at the original purchase date so the interval
+  # reflects actual shelf life, not the confirmation date.
+  def grow_anchored(entry, now)
+    entry['ease'] = [entry['ease'] + EASE_BONUS, MAX_EASE].min
+    confirmed = Date.parse(entry['confirmed_at'])
+    loop do
+      entry['interval'] = [entry['interval'] * entry['ease'], MAX_INTERVAL].min
+      break if confirmed + entry['interval'].to_i >= now
+      break if entry['interval'] >= MAX_INTERVAL
+    end
+    # Fall back to reset if anchored growth can't bridge the gap
+    entry['confirmed_at'] = now.iso8601 if confirmed + entry['interval'].to_i < now
   end
 end

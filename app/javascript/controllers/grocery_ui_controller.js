@@ -3,14 +3,19 @@ import { sendAction } from "../utilities/turbo_fetch"
 import ListenerManager from "../utilities/listener_manager"
 
 /**
- * Groceries page interaction — optimistic checkbox toggle, custom item input,
- * on-hand section collapse persistence. All rendering is server-side via Turbo
- * page-refresh morphs; this controller handles user interactions and preserves
- * local state (on-hand expand/collapse) across morphs.
+ * Groceries page interaction — optimistic checkbox toggle, inventory check
+ * buttons (Have It / Need It), custom item input, on-hand section collapse
+ * persistence. All rendering is server-side via Turbo page-refresh morphs;
+ * this controller handles user interactions and preserves local state
+ * (on-hand expand/collapse) across morphs.
  *
- * Item zone movement (to-buy ↔ on-hand) is handled entirely by server morphs.
- * CSS :checked transitions provide immediate visual feedback (strikethrough,
- * fade). The counter updates optimistically before the morph arrives.
+ * Three zones: Inventory Check (unknown items), To Buy (confirmed needed),
+ * On Hand (confirmed in stock). Have It / Need It buttons resolve items out
+ * of the Inventory Check zone; checkbox toggle moves between To Buy and On Hand.
+ *
+ * Item zone movement is handled by server morphs after button/checkbox clicks.
+ * CSS transitions provide immediate visual feedback. The counter updates
+ * optimistically before the morph arrives.
  *
  * - turbo_fetch (sendAction): fire-and-forget mutations with retry and error toast
  * - ListenerManager: tracks event listeners for clean teardown on disconnect
@@ -22,6 +27,7 @@ export default class extends Controller {
 
     this.cleanupOldStorage()
     this.bindShoppingListEvents()
+    this.bindInventoryCheckButtons()
     this.bindCustomItemInput()
     this.bindOnHandToggle()
     this.restoreOnHandState()
@@ -59,20 +65,50 @@ export default class extends Controller {
     const countEl = document.getElementById("item-count")
     if (!countEl) return
 
-    const allItems = document.querySelectorAll("#shopping-list li[data-item]")
-    const total = allItems.length
-    const unchecked = Array.from(allItems).filter(li => {
+    const toBuyItems = document.querySelectorAll("#shopping-list .to-buy-items li[data-item]")
+    const unchecked = Array.from(toBuyItems).filter(li => {
       const cb = li.querySelector('input[type="checkbox"]')
       return cb && !cb.checked
     }).length
 
-    if (total === 0) {
+    if (toBuyItems.length === 0) {
       countEl.textContent = ""
     } else if (unchecked === 0) {
       countEl.textContent = "\u2713 All done!"
     } else {
       countEl.textContent = `${unchecked} ${unchecked === 1 ? "item" : "items"} to buy`
     }
+  }
+
+  // --- Inventory check (Have It / Need It) ---
+
+  bindInventoryCheckButtons() {
+    this.listeners.add(this.element, "click", (e) => {
+      const btn = e.target.closest("[data-grocery-action='have-it'], [data-grocery-action='need-it']")
+      if (!btn) return
+
+      const name = btn.dataset.item
+      const action = btn.dataset.groceryAction
+      const url = action === "have-it"
+        ? this.element.dataset.haveItUrl
+        : this.element.dataset.needItUrl
+
+      sendAction(url, { item: name })
+
+      const li = btn.closest("li")
+      if (li) li.remove()
+
+      this.hideEmptyInventoryCheck()
+      this.updateItemCount()
+    })
+  }
+
+  hideEmptyInventoryCheck() {
+    const section = this.element.querySelector(".inventory-check-section")
+    if (!section) return
+
+    const remaining = section.querySelectorAll(".inventory-check-items li")
+    if (remaining.length === 0) section.remove()
   }
 
   // --- Custom items (delegated from controller root to survive morphs) ---

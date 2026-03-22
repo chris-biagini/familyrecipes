@@ -1,27 +1,57 @@
-<%# locals: (shopping_list:, on_hand_names:, on_hand_data:) %>
+<%# locals: (shopping_list:, on_hand_names:, on_hand_data:, custom_items:) %>
 <div class="shopping-list-header">
   <h2>Shopping List</h2>
-  <span id="item-count"><%= shopping_list_count_text(shopping_list, on_hand_names) %></span>
+  <span id="item-count"><%= shopping_list_count_text(shopping_list, on_hand_names, on_hand_data:, custom_items:) %></span>
 </div>
 
 <% if shopping_list.empty? %>
   <p id="grocery-preview-empty">No items yet.</p>
 <% else %>
-  <% shopping_list.each_with_index do |(aisle, items), idx| %>
-    <% unchecked, checked = items.partition { |i| on_hand_names.exclude?(i[:name]) } %>
-    <% if unchecked.empty? %>
+  <% zone_for = ->(name) { item_zone(name:, on_hand_names:, on_hand_data:, custom_items:) } %>
+  <% all_items = shopping_list.values.flatten %>
+  <% inventory_items = all_items.select { |i| zone_for.(i[:name]) == :inventory_check } %>
+  <% inventory_items.sort_by! { |i| [-i[:sources].size, i[:name]] } %>
+
+  <% if inventory_items.any? %>
+    <section class="inventory-check-section">
+      <h3 class="section-header">Inventory Check</h3>
+      <p class="inventory-check-hint">Check your kitchen &mdash; do you have these?</p>
+      <ul class="inventory-check-items">
+        <% inventory_items.each do |item| %>
+          <li data-item="<%= item[:name] %>">
+            <button class="btn btn-sm btn-need-it" data-grocery-action="need-it"
+                    data-item="<%= item[:name] %>">Need It</button>
+            <span class="item-text"><%= item[:name] %>
+              <% if item[:amounts].any? %>
+                <span class="item-amount"><%= format_amounts(item[:amounts], uncounted: item[:uncounted]) %></span>
+              <% end %>
+            </span>
+            <button class="btn btn-sm btn-have-it" data-grocery-action="have-it"
+                    data-item="<%= item[:name] %>">Have It</button>
+          </li>
+        <% end %>
+      </ul>
+    </section>
+  <% end %>
+
+  <% shopping_list.each do |aisle, items| %>
+    <% to_buy = items.select { |i| zone_for.(i[:name]) == :to_buy } %>
+    <% on_hand = items.select { |i| zone_for.(i[:name]) == :on_hand } %>
+    <% next if to_buy.empty? && on_hand.empty? %>
+
+    <% if to_buy.empty? %>
       <section class="aisle-group aisle-complete" data-aisle="<%= aisle %>">
         <details class="collapse-header on-hand-section aisle-complete-header">
           <summary>
             <span class="aisle-complete-check">&#10003;</span>
             <span class="aisle-name"><%= aisle %></span>
-            <span class="aisle-complete-detail"><%= checked.size %> <%= 'item'.pluralize(checked.size) %>, all on hand</span>
+            <span class="aisle-complete-detail"><%= on_hand.size %> <%= 'item'.pluralize(on_hand.size) %>, all on hand</span>
           </summary>
         </details>
         <div class="collapse-body on-hand-body">
           <div class="collapse-inner">
             <ul class="on-hand-items">
-              <% checked.each do |item| %>
+              <% on_hand.each do |item| %>
                 <% sources_tip = item[:sources].present? ? "Needed for: #{h item[:sources].join(', ')}" : nil %>
                 <% restock_tip = restock_tooltip(item[:name], on_hand_data, on_hand_names) %>
                 <% full_tip = [sources_tip, restock_tip].compact.join("\n") %>
@@ -40,7 +70,7 @@
       <section class="aisle-group" data-aisle="<%= aisle %>">
         <h3 class="aisle-header"><%= aisle %></h3>
         <ul class="to-buy-items">
-          <% unchecked.each do |item| %>
+          <% to_buy.each do |item| %>
             <% sources_tip = item[:sources].present? ? "Needed for: #{h item[:sources].join(', ')}" : nil %>
             <% restock_tip = restock_tooltip(item[:name], on_hand_data, on_hand_names) %>
             <% full_tip = [sources_tip, restock_tip].compact.join("\n") %>
@@ -52,16 +82,16 @@
             </li>
           <% end %>
         </ul>
-        <% if checked.any? %>
+        <% if on_hand.any? %>
           <details class="collapse-header on-hand-section on-hand-divider">
             <summary>
-              <span class="on-hand-count"><%= checked.size %> on hand</span>
+              <span class="on-hand-count"><%= on_hand.size %> on hand</span>
             </summary>
           </details>
           <div class="collapse-body on-hand-body">
             <div class="collapse-inner">
               <ul class="on-hand-items">
-                <% checked.each do |item| %>
+                <% on_hand.each do |item| %>
                   <% sources_tip = item[:sources].present? ? "Needed for: #{h item[:sources].join(', ')}" : nil %>
                   <% restock_tip = restock_tooltip(item[:name], on_hand_data, on_hand_names) %>
                   <% full_tip = [sources_tip, restock_tip].compact.join("\n") %>

@@ -37,14 +37,16 @@ class GroceriesHelperTest < ActionView::TestCase
 
   test 'shopping_list_count_text with no checked items shows total to buy' do
     shopping_list = { 'Dairy' => [{ name: 'Milk' }, { name: 'Eggs' }] }
+    on_hand_data = { 'Milk' => { 'depleted_at' => '2026-03-20' }, 'Eggs' => { 'depleted_at' => '2026-03-20' } }
 
-    assert_equal '2 items to buy', shopping_list_count_text(shopping_list, Set.new)
+    assert_equal '2 items to buy', shopping_list_count_text(shopping_list, Set.new, on_hand_data:)
   end
 
   test 'shopping_list_count_text with some checked shows unchecked count' do
     shopping_list = { 'Dairy' => [{ name: 'Milk' }, { name: 'Eggs' }] }
+    on_hand_data = { 'Eggs' => { 'depleted_at' => '2026-03-20' } }
 
-    assert_equal '1 item to buy', shopping_list_count_text(shopping_list, Set.new(%w[Milk]))
+    assert_equal '1 item to buy', shopping_list_count_text(shopping_list, Set.new(%w[Milk]), on_hand_data:)
   end
 
   test 'shopping_list_count_text with all checked shows done' do
@@ -55,8 +57,9 @@ class GroceriesHelperTest < ActionView::TestCase
 
   test 'shopping_list_count_text with single item uses singular' do
     shopping_list = { 'Dairy' => [{ name: 'Milk' }] }
+    on_hand_data = { 'Milk' => { 'depleted_at' => '2026-03-20' } }
 
-    assert_equal '1 item to buy', shopping_list_count_text(shopping_list, Set.new)
+    assert_equal '1 item to buy', shopping_list_count_text(shopping_list, Set.new, on_hand_data:)
   end
 
   test 'format_amounts with uncounted appends +N more' do
@@ -154,5 +157,67 @@ class GroceriesHelperTest < ActionView::TestCase
     result = restock_tooltip('Flour', on_hand_data, on_hand_names, now: Date.new(2026, 3, 25))
 
     assert_nil result
+  end
+
+  test 'item_zone returns :on_hand for items in on_hand_names' do
+    result = item_zone(name: 'Milk', on_hand_names: Set.new(%w[Milk]), on_hand_data: {}, custom_items: [])
+
+    assert_equal :on_hand, result
+  end
+
+  test 'item_zone returns :to_buy for items with depleted_at entry' do
+    on_hand_data = { 'Milk' => { 'depleted_at' => '2026-03-20' } }
+
+    result = item_zone(name: 'Milk', on_hand_names: Set.new, on_hand_data:, custom_items: [])
+
+    assert_equal :to_buy, result
+  end
+
+  test 'item_zone returns :inventory_check for items with no entry' do
+    result = item_zone(name: 'Eggs', on_hand_names: Set.new, on_hand_data: {}, custom_items: [])
+
+    assert_equal :inventory_check, result
+  end
+
+  test 'item_zone returns :inventory_check for expired non-depleted items' do
+    # Expired items have an entry but no depleted_at (interval expired, not manually depleted)
+    on_hand_data = { 'Butter' => { 'confirmed_at' => '2026-01-01', 'interval' => 7 } }
+
+    result = item_zone(name: 'Butter', on_hand_names: Set.new, on_hand_data:, custom_items: [])
+
+    assert_equal :inventory_check, result
+  end
+
+  test 'item_zone returns :on_hand for custom items that are on_hand' do
+    # Custom items with null interval can still be checked on-hand
+    result = item_zone(name: 'Candles', on_hand_names: Set.new(%w[Candles]),
+                       on_hand_data: {}, custom_items: %w[Candles])
+
+    assert_equal :on_hand, result
+  end
+
+  test 'item_zone returns :to_buy for unchecked custom items' do
+    # Custom items never go to Inventory Check — always :to_buy when not on hand
+    result = item_zone(name: 'Shaving cream', on_hand_names: Set.new, on_hand_data: {}, custom_items: ['Shaving cream'])
+
+    assert_equal :to_buy, result
+  end
+
+  test 'item_zone matching is case-insensitive for on_hand_data lookup' do
+    on_hand_data = { 'milk' => { 'depleted_at' => '2026-03-20' } }
+
+    result = item_zone(name: 'Milk', on_hand_names: Set.new, on_hand_data:, custom_items: [])
+
+    assert_equal :to_buy, result
+  end
+
+  test 'shopping_list_count_text counts only :to_buy items, not :inventory_check' do
+    shopping_list = { 'Dairy' => [{ name: 'Milk' }, { name: 'Eggs' }] }
+    # Milk is depleted (:to_buy), Eggs has no entry (:inventory_check)
+    on_hand_data = { 'Milk' => { 'depleted_at' => '2026-03-20' } }
+
+    result = shopping_list_count_text(shopping_list, Set.new, on_hand_data:, custom_items: [])
+
+    assert_equal '1 item to buy', result
   end
 end
