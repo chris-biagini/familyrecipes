@@ -647,6 +647,23 @@ class MealPlanTest < ActiveSupport::TestCase
     assert_equal MealPlan::ORPHAN_SENTINEL, entry['confirmed_at']
   end
 
+  test 'unchecking an orphaned-sentinel entry does not inflate interval' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.state['on_hand'] = {
+      'Garlic' => { 'confirmed_at' => MealPlan::ORPHAN_SENTINEL, 'interval' => 14, 'ease' => 2.0 }
+    }
+    plan.save!
+
+    plan.apply_action('check', item: 'Garlic', checked: false, now: Date.new(2026, 3, 22))
+
+    entry = plan.on_hand['Garlic']
+
+    assert entry.key?('depleted_at')
+    assert_equal 14, entry['interval'], 'Interval must not balloon to sentinel distance'
+    assert_not plan.effective_on_hand(now: Date.new(2026, 3, 22)).key?('Garlic'),
+               'Depleted item must not appear in effective_on_hand'
+  end
+
   test 'checking re-keys on_hand entry to new canonical form' do
     plan = MealPlan.for_kitchen(@kitchen)
     plan.state['on_hand'] = {
