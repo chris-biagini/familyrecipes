@@ -83,6 +83,8 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     assert_select '#shopping-list'
     assert_select '#groceries-app[data-kitchen-slug]'
     assert_select '#groceries-app[data-check-url]'
+    assert_select '#groceries-app[data-have-it-url]'
+    assert_select '#groceries-app[data-need-it-url]'
     assert_select '#groceries-app[data-custom-items-url]'
   end
 
@@ -107,7 +109,37 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     assert_select '#grocery-preview-empty', 'No items yet.'
   end
 
-  test 'show renders aisle sections when recipes selected' do
+  test 'show renders aisle sections for to-buy items' do
+    @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Focaccia
+
+
+      ## Mix (combine)
+
+      - Flour, 3 cups
+
+      Mix well.
+    MD
+
+    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Flour') do |p|
+      p.basis_grams = 30
+      p.aisle = 'Baking'
+    end
+
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+    plan.apply_action('need_it', item: 'Flour')
+
+    log_in
+    get groceries_path(kitchen_slug: kitchen_slug)
+
+    assert_select 'section.aisle-group[data-aisle="Baking"]'
+    assert_select 'li[data-item="Flour"]'
+    assert_select 'input[type="checkbox"][data-item="Flour"]'
+  end
+
+  test 'show renders inventory check for new items' do
     @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
     MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Focaccia
@@ -131,9 +163,10 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     log_in
     get groceries_path(kitchen_slug: kitchen_slug)
 
-    assert_select 'section.aisle-group[data-aisle="Baking"]'
-    assert_select 'li[data-item="Flour"]'
-    assert_select 'input[type="checkbox"][data-item="Flour"]'
+    assert_select '.inventory-check-section'
+    assert_select '.inventory-check-items li[data-item="Flour"]'
+    assert_select '[data-grocery-action="need-it"][data-item="Flour"]'
+    assert_select '[data-grocery-action="have-it"][data-item="Flour"]'
   end
 
   test 'show pre-checks checked-off items' do
@@ -220,6 +253,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
 
     plan = MealPlan.for_kitchen(@kitchen)
     plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+    plan.apply_action('need_it', item: 'Yeast')
     plan.apply_action('check', item: 'Flour', checked: true)
 
     log_in
@@ -281,6 +315,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     list = MealPlan.for_kitchen(@kitchen)
     list.apply_action('select', type: 'recipe', slug: 'stuffed-peppers', selected: true)
     list.apply_action('select', type: 'recipe', slug: 'stir-fry', selected: true)
+    list.apply_action('need_it', item: 'Red bell pepper')
 
     log_in
     get groceries_path(kitchen_slug: kitchen_slug)
@@ -316,6 +351,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     list = MealPlan.for_kitchen(@kitchen)
     list.apply_action('select', type: 'recipe', slug: 'pasta', selected: true)
     list.apply_action('select', type: 'recipe', slug: 'stir-fry', selected: true)
+    list.apply_action('need_it', item: 'Garlic')
 
     log_in
     get groceries_path(kitchen_slug: kitchen_slug)
