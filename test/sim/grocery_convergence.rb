@@ -329,8 +329,8 @@ puts '  ' + ('-' * (18 + all_sims.size * 8))
 item_names.each_with_index do |name, idx|
   true_cycle = all_sims.first.last.items[idx].true_cycle
   row = format('  %-10s  %5d', name, true_cycle)
-  all_sims.each do |_, s|
-    ev = s.items[idx].events.last
+  all_sims.each do |pair|
+    ev = pair.last.items[idx].events.last
     err = ev ? ((ev[:interval] - true_cycle).to_f / true_cycle * 100).round(0) : 0
     row += format('  %+5d%%', err)
   end
