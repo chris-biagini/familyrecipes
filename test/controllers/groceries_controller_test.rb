@@ -707,6 +707,84 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'Produce', IngredientCatalog.find_by(kitchen: other_kitchen, ingredient_name: 'Apples').aisle
   end
 
+  # --- Full lifecycle integration ---
+
+  test 'inventory check full cycle: new → have it → expired → need it → buy → on hand' do # rubocop:disable Minitest/MultipleAssertions
+    @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Focaccia
+
+      ## Mix (combine)
+
+      - Flour, 3 cups
+
+      Mix well.
+    MD
+
+    create_catalog_entry('Flour', basis_grams: 30, aisle: 'Baking')
+
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+
+    log_in
+
+    # 1) New item appears in Inventory Check
+    get groceries_path(kitchen_slug: kitchen_slug)
+
+    assert_select '.inventory-check-section'
+    assert_select '.inventory-check-items li[data-item="Flour"]'
+
+    # 2) "Have It" moves it to On Hand
+    patch groceries_have_it_path(kitchen_slug: kitchen_slug),
+          params: { item: 'Flour' },
+          as: :turbo_stream
+
+    assert_response :no_content
+
+    get groceries_path(kitchen_slug: kitchen_slug)
+
+    assert_select '.on-hand-items li[data-item="Flour"]'
+    assert_select '.inventory-check-items li[data-item="Flour"]', count: 0
+
+    # 3) Simulate timer expiring: set confirmed_at far enough in the past
+    plan.reload
+    entry = plan.on_hand['Flour']
+    expired_date = (Date.current - entry['interval'].to_i - 1).iso8601
+    entry['confirmed_at'] = expired_date
+    plan.save!
+
+    get groceries_path(kitchen_slug: kitchen_slug)
+
+    assert_select '.inventory-check-items li[data-item="Flour"]'
+    assert_select '.on-hand-items li[data-item="Flour"]', count: 0
+
+    # 4) "Need It" depletes the item — moves to To Buy
+    patch groceries_need_it_path(kitchen_slug: kitchen_slug),
+          params: { item: 'Flour' },
+          as: :turbo_stream
+
+    assert_response :no_content
+
+    get groceries_path(kitchen_slug: kitchen_slug)
+
+    assert_select '.to-buy-items li[data-item="Flour"]'
+    assert_select '.inventory-check-items li[data-item="Flour"]', count: 0
+    assert_select '.on-hand-items li[data-item="Flour"]', count: 0
+
+    # 5) Purchase (check off) moves to On Hand
+    patch groceries_check_path(kitchen_slug: kitchen_slug),
+          params: { item: 'Flour', checked: true },
+          as: :turbo_stream
+
+    assert_response :no_content
+
+    get groceries_path(kitchen_slug: kitchen_slug)
+
+    assert_select '.on-hand-items li[data-item="Flour"]'
+    assert_select '.to-buy-items li[data-item="Flour"]', count: 0
+    assert_select '.inventory-check-items li[data-item="Flour"]', count: 0
+  end
+
   private
 
   def build_stale_list(method_to_stub)
