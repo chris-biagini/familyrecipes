@@ -70,7 +70,7 @@
   height: 90vh;
   max-height: 90vh;
   box-shadow: var(--shadow-dialog);
-  animation: bloop 250ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: bloop 320ms cubic-bezier(0.16, 0.75, 0.40, 1);
 }
 
 .editor-dialog[open] {
