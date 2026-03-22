@@ -110,11 +110,13 @@
   color: var(--text);
 }
 
-/* To-buy items list */
+/* To-buy items list — column-count: 1 overrides the base.css section>ul
+   two-column rule, which cuts off buttons and long item names */
 .to-buy-items {
   list-style: none;
   margin: 0;
   padding: 0 0.75rem 0.5rem;
+  column-count: 1;
 }
 
 .to-buy-items li {
@@ -142,6 +144,7 @@
   list-style: none;
   margin: 0;
   padding: 0 0.75rem 0.5rem;
+  column-count: 1;
 }
 
 .on-hand-body .on-hand-items li {
@@ -206,6 +209,7 @@
   list-style: none;
   margin: 0;
   padding: 0;
+  column-count: 1;
 }
 
 .inventory-check-items li {
