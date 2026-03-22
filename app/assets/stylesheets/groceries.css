@@ -221,26 +221,22 @@
 
 .inventory-check-items .item-text {
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 0.9rem;
 }
 
-.btn-need-it {
-  border: 1px solid var(--rule);
-  background: transparent;
-  color: var(--text-soft);
-}
-
-.btn-need-it:hover {
-  border-color: var(--text-soft);
-  color: var(--text);
-}
-
+.btn-need-it,
 .btn-have-it {
+  flex-shrink: 0;
   border: 1px solid var(--red);
   background: transparent;
   color: var(--red);
 }
 
+.btn-need-it:hover,
 .btn-have-it:hover {
   background: var(--red);
   color: white;
