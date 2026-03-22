@@ -42,10 +42,15 @@ Example: "pancakes sweet" → `["pancakes", "sweet"]`
 - "sweet" matches tag → tier 3
 - Result: tier 0 (best of the two)
 
+Best-tier (minimum) was chosen over worst-tier or sum scoring because the
+recipe corpus is small. The priority is surfacing results that match at all;
+fine-grained ranking differences only matter at scale.
+
 ### Ranking — `rankResults`
 
-Passes the token array to `matchTier` instead of the raw string. Sort logic
-(tier ascending, then alphabetical) is unchanged.
+New signature: `rankResults(tokens, candidates)`. `performSearch` tokenizes
+the query and passes the token array to `rankResults`, which passes it through
+to `matchTier`. Sort logic (tier ascending, then alphabetical) is unchanged.
 
 ### What doesn't change
 
