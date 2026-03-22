@@ -185,6 +185,54 @@ class MealPlanWriteServiceTest < ActiveSupport::TestCase
     assert_not_nil entry, 'Custom item should have null interval'
   end
 
+  # --- have_it / need_it canonicalization ---
+
+  test 'have_it puts item on_hand using canonical name' do
+    create_catalog_entry('Flour', aisle: 'Baking')
+    select_recipe_with_flour
+
+    result = MealPlanWriteService.apply_action(
+      kitchen: @kitchen, action_type: 'have_it', item: 'flour'
+    )
+
+    plan = MealPlan.for_kitchen(@kitchen)
+
+    assert_predicate result, :success
+    assert plan.on_hand.key?('Flour'), 'on_hand key should use canonical catalog name'
+    assert_not plan.on_hand.key?('flour'), 'non-canonical name should not be stored'
+  end
+
+  test 'need_it puts item in depleted state using canonical name' do
+    create_catalog_entry('Flour', aisle: 'Baking')
+    select_recipe_with_flour
+
+    result = MealPlanWriteService.apply_action(
+      kitchen: @kitchen, action_type: 'need_it', item: 'flour'
+    )
+
+    plan = MealPlan.for_kitchen(@kitchen)
+    entry = plan.on_hand['Flour']
+
+    assert_predicate result, :success
+    assert plan.on_hand.key?('Flour'), 'on_hand key should use canonical catalog name'
+    assert entry['depleted_at'], 'need_it should set depleted_at on the entry'
+  end
+
+  test 'have_it does not include custom flag' do
+    create_catalog_entry('Flour', aisle: 'Baking')
+    select_recipe_with_flour
+
+    MealPlanWriteService.apply_action(
+      kitchen: @kitchen, action_type: 'have_it', item: 'Flour'
+    )
+
+    plan = MealPlan.for_kitchen(@kitchen)
+    entry = plan.on_hand['Flour']
+
+    assert_not_nil entry, 'entry should exist'
+    assert_not_nil entry['interval'], 'have_it for catalog item should have an interval'
+  end
+
   private
 
   def select_recipe_with_flour
