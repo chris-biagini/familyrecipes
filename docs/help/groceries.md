@@ -1,7 +1,7 @@
 # Groceries
 
 The groceries page builds a shopping list from the recipes and quick bites you
-select on the menu page. 
+select on the menu page.
 
 ## How the Shopping List Works
 
@@ -13,84 +13,92 @@ You can also add **custom items** (things not tied to any recipe) using the
 input at the bottom of the page. Type a name, or use `Name @ Aisle` to place
 an item in a specific aisle.
 
-## Taking Inventory 
+## The Three Sections
 
-Items are either **To Buy** (unchecked) or **On Hand** (checked, in a
-collapsed section at the bottom of each aisle).
+Each aisle is split into three sections:
 
-Before you go shopping, look around your kitchen. If an item is marked **On
-Hand** but you've run out of it, uncheck it. If an item is marked **To Buy**
-but you have enough for now, check it off. 
+- **Inventory Check** — items the system is asking about. These are either
+  new ingredients the system hasn't seen before, or items it thinks you might
+  be running low on. Look in your kitchen: tap **Have It** if you have it, or
+  **Need It** if you're out. "Need It" moves the item down to To Buy so you
+  can pick it up on your next shopping trip. Items are sorted by how many of
+  your selected recipes use them, so the most important ones appear first.
+
+- **To Buy** — items you need to purchase, grouped by aisle. These are things
+  you've told the system you're out of. Check them off as you buy them.
+
+- **On Hand** — items you have. These are collapsed by default since you
+  don't need to act on them. If you run out of something, expand the section
+  and uncheck it — it moves to To Buy.
+
+## Before You Shop
+
+Walk through your kitchen and work through the **Inventory Check** items.
+Tap **Have It** for things you still have, and **Need It** for things you're
+out of. Then head to the store and work through **To Buy**, checking items off
+as they go in the cart.
+
+You don't have to clear every Inventory Check item before shopping — anything
+you skip stays there until next time.
+
+## While Shopping
+
+When you check off an item during a shopping trip, it stays visible in the
+To Buy list with a strikethrough rather than immediately disappearing into the
+On Hand section. This makes it easy to undo a mistake — if you checked off
+milk but realize you grabbed the wrong kind, just uncheck it.
+
+Checked items settle into On Hand the next time you visit the page.
 
 ## How the System Learns Your Pantry
 
-Over time, the groceries page learns how often you tend to buy each
-ingredient. At first, it will move each **On Hand** item back to **To Buy**
-after one week has passed. But every time you confirm that you have something
-(by checking it off), the system grows a little more confident that you keep
-it stocked and waits longer before asking again.
+The system learns how often you need each ingredient by paying attention to
+two things: how you answer Inventory Check questions, and when you tell it
+you've run out.
 
-**Here's how it works:**
+When a new ingredient first appears, the system asks about it again in about
+a week. Each time you confirm you still have it (**Have It**), the system
+waits longer before asking again — and items you consistently keep build
+confidence quickly, so the wait grows faster over time. Items you always have
+eventually stop appearing for months at a stretch (except for an occasional
+check).
 
-The first time you check off an ingredient, the system asks again in about a
-week. Each time you confirm it again, the system waits a bit longer — and
-items you consistently have on hand build confidence quickly, so the wait
-grows faster over time. Items you always have eventually stop appearing on the
-list altogether (except for an occasional check every few months).
-
-The system adapts to your actual pantry, not a set of rules you have to
-configure. Over time, each ingredient settles into its own rhythm that matches
-your real usage.
+When you tell the system you're out — either by tapping **Need It** in an
+Inventory Check, or by unchecking an On Hand item — the system adjusts the
+schedule based on how long you actually had the item. If you ran out sooner
+than expected, the system loses some confidence and asks sooner next time.
 
 **What this looks like in practice:**
 
-- **First few weeks**: the list is long — everything needs checking (the
-  system doesn't know your kitchen yet).
-- **After a while**: the list is shorter — staples like oil, salt, and pepper
-  aren't due for verification yet.
-- **Once it's learned your kitchen**: the list is mostly just new ingredients
-  from this week's recipes, plus the occasional staple that's due for a check.
-
-The system adapts to any shopping frequency, but it converges faster if you
-shop regularly — the more often you confirm items, the quicker it learns what
-you keep stocked.
-
-You don't need to do anything to make this work. Just check and uncheck items
-honestly, and the system tunes itself.
-
-Even high-confidence items eventually reappear for a check. When an
-ingredient's schedule expires, it shows up on the To Buy list again — not
-because anything went wrong, but because the system wants to verify you still
-have it. Just check it off and the cycle continues.
+- **First week or two**: the Inventory Check list is long — the system
+  doesn't know your kitchen yet. As you tell it what you have and what you
+  need, it starts building a picture.
+- **After a while**: Inventory Check starts doing the work. Staples like oil,
+  salt, and pepper show up there less and less often. To Buy is mostly things
+  you actually need.
+- **Once it's learned your kitchen**: To Buy is short — just new ingredients
+  for this week's recipes and things you've run out of. Inventory Check is an
+  occasional quick scan. The list practically runs itself.
 
 ## What Happens When Recipes Change
 
 When you deselect a recipe, its ingredients may no longer be needed by any
-selected recipe. When that happens, the ingredient is **pruned** — moved back
-to To Buy so you'll re-verify it when it next appears on the list.
+selected recipe. When that happens, the ingredient is **pruned** — set aside
+so you'll re-verify it when it next appears on the list.
 
-Unlike unchecking (which resets the schedule), pruning **preserves the learned
-interval**. If you confirmed flour every week for two months and it reached an
-eight-week schedule, briefly deselecting the recipe that uses it won't destroy
-that history. When you re-select the recipe, flour shows up as To Buy — but
-once you confirm it, the schedule resumes from where it left off rather than
-starting from scratch. (Your confirmation also advances it to the next level,
-just like any other confirmation.)
+Pruning **preserves the learned schedule**. If you confirmed flour every week
+for two months and it reached a long schedule, briefly deselecting the recipe
+that uses it won't destroy that history. When you re-select the recipe, flour
+shows up in Inventory Check — and if you still have it, the schedule resumes
+from where it left off.
 
-Unchecking is different: when you tell the system "I don't have this," it
-adjusts the schedule based on how long you actually had the item. If you ran
-out sooner than expected, the system loses some confidence and asks sooner
-next time.
-
-Ingredients that appear in many of your recipes (like olive oil) are rarely
-pruned, because there's almost always a selected recipe that needs them. Rare
-ingredients (like fresh basil) are pruned frequently. This means the system
-naturally asks about rare ingredients more often and staples less often — even
-before the confidence system kicks in.
+Telling the system you've run out is different from pruning. Pruning means
+"no recipe needs this right now." Running out means "I used it up" — and the
+system uses that information to recalibrate.
 
 ## Custom Items
 
-Custom items (things you add manually) are not affected by the confidence
-system or by pruning. They stay in whatever state you put them in — checked
-or unchecked — until you remove them. They're meant for one-off purchases
-and non-recipe items.
+Custom items (things you add manually) are not affected by the schedule system
+or by pruning. They stay in whatever state you put them in — To Buy or On
+Hand — until you remove them. They're meant for one-off purchases and
+non-recipe items. They don't appear in Inventory Check.
