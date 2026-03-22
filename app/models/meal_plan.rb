@@ -380,8 +380,8 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
   # Grows interval by ease, resets confirmed_at to now. Used for sentinel
   # (orphaned) entries where the original purchase date is meaningless.
   def grow_standard(entry, now)
-    entry['interval'] = [entry['interval'] * entry['ease'], MAX_INTERVAL].min
     entry['ease'] = [entry['ease'] + EASE_BONUS, MAX_EASE].min
+    entry['interval'] = [entry['interval'] * entry['ease'], MAX_INTERVAL].min
     entry['confirmed_at'] = now.iso8601
     entry.delete('orphaned_at')
   end

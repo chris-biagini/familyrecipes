@@ -908,7 +908,7 @@ class MealPlanTest < ActiveSupport::TestCase
     entry = plan.on_hand['Flour']
 
     assert_equal today.iso8601, entry['confirmed_at'], 'Sentinel entries get confirmed_at reset to now'
-    assert_in_delta 42.0, entry['interval'], 0.1, '28 * 1.5 = 42 (grows before ease bump)'
+    assert_in_delta 44.8, entry['interval'], 0.1, '28 * 1.6 = 44.8 (ease bumps first, then grows)'
     assert_in_delta 1.6, entry['ease'], 0.01, 'Ease bumped by EASE_BONUS'
   end
 
