@@ -40,6 +40,22 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     assert_response :forbidden
   end
 
+  test 'have_it requires membership' do
+    patch groceries_have_it_path(kitchen_slug: kitchen_slug),
+          params: { item: 'flour' },
+          as: :json
+
+    assert_response :forbidden
+  end
+
+  test 'need_it requires membership' do
+    patch groceries_need_it_path(kitchen_slug: kitchen_slug),
+          params: { item: 'flour' },
+          as: :json
+
+    assert_response :forbidden
+  end
+
   # --- Show page ---
 
   test 'includes groceries CSS and Stimulus controllers' do
@@ -314,6 +330,30 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     log_in
     patch groceries_check_path(kitchen_slug: kitchen_slug),
           params: { item: 'flour', checked: true },
+          as: :turbo_stream
+
+    assert_response :no_content
+  end
+
+  test 'have_it returns no_content' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('check', item: 'Flour', checked: true)
+
+    log_in
+    patch groceries_have_it_path(kitchen_slug: kitchen_slug),
+          params: { item: 'Flour' },
+          as: :turbo_stream
+
+    assert_response :no_content
+  end
+
+  test 'need_it returns no_content' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('check', item: 'Flour', checked: true)
+
+    log_in
+    patch groceries_need_it_path(kitchen_slug: kitchen_slug),
+          params: { item: 'Flour' },
           as: :turbo_stream
 
     assert_response :no_content
