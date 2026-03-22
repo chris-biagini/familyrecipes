@@ -205,9 +205,12 @@ collision. Parser pipeline: `LineClassifier` → `RecipeBuilder` →
 - Use `home_path` (not `kitchen_root_path`) for homepage links.
 - `MealPlan` (one row per kitchen) backs the menu, groceries, and dinner
   picker. Stores cook history (recency weighting) and on-hand ingredient
-  state (SM-2-inspired adaptive ease — per-item growth rate converges on
-  each ingredient's natural restock cycle; depleted state preserves learned
-  intervals when user runs out).
+  state. Three-zone grocery model: Inventory Check (new/expired items,
+  "Have It"/"Need It" buttons), To Buy (depleted items, checkboxes), On
+  Hand (active items, collapsed). SM-2-inspired adaptive ease with anchor
+  fix — "Have It" preserves `confirmed_at` at the purchase date so
+  depletion observations capture the full consumption period. See
+  `docs/superpowers/specs/2026-03-22-inventory-check-design.md`.
 
 **Editor dialogs.** Use `render layout: 'shared/editor_dialog'` with Stimulus
 data attributes — no JS needed. Custom dialogs hook in via lifecycle events
@@ -236,7 +239,9 @@ jsbundling-rails + esbuild for JS bundling.
 - New JS modules go in `app/javascript/`; shared utilities live in
   `app/javascript/utilities/` (dom_builders, editor_utils, notify, etc.).
   New Stimulus controllers must be imported and registered in
-  `app/javascript/application.js`.
+  `app/javascript/application.js`. Stimulus reserves `data-action` for its
+  own dispatch syntax — use a prefixed attribute (e.g. `data-grocery-action`)
+  for custom button actions handled by manual event listeners.
 - `npm run build` bundles JS to `app/assets/builds/`; `bin/dev` runs
   both Puma and esbuild watcher via foreman.
 - CSP requires a nonce for both `<script>` and `<style>` tags — the nonce
@@ -335,6 +340,7 @@ bin/dev            # Puma + esbuild watcher (port 3030)
 npm install                # install JS dependencies
 npm run build              # bundle JS (esbuild)
 npm test                   # run JS classifier tests
+ruby test/sim/grocery_convergence.rb   # standalone convergence simulation (excluded from RuboCop)
 ```
 
 The default `rake` task runs both lint and test.
