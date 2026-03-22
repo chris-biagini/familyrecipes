@@ -231,6 +231,8 @@ class MealPlanTest < ActiveSupport::TestCase
 
     assert_equal 7, plan.on_hand['Flour']['interval'],
                  'Null interval should be converted to starting interval when item is not in custom_items'
+    assert_in_delta 2.0, plan.on_hand['Flour']['ease'], 0.01,
+                    'Ease should be set to STARTING_EASE when null interval is fixed'
   end
 
   test 'reconcile! re-canonicalizes on_hand keys when catalog changes' do
@@ -254,21 +256,22 @@ class MealPlanTest < ActiveSupport::TestCase
     assert_equal 28, plan.on_hand['Flour']['interval'], 'Interval should be preserved'
   end
 
-  test 'pruned item reappearing doubles interval on re-confirmation' do
+  test 'pruned item reappearing grows by ease on re-confirmation' do
     @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
     md = "# Bread\n\n## Mix (combine)\n\n- Flour, 2 cups\n\nMix.\n"
     MarkdownImporter.import(md, kitchen: @kitchen, category: @category)
 
     plan = MealPlan.for_kitchen(@kitchen)
     plan.state['on_hand'] = {
-      'Flour' => { 'confirmed_at' => '1970-01-01', 'interval' => 28 }
+      'Flour' => { 'confirmed_at' => '1970-01-01', 'interval' => 28, 'ease' => 2.0 }
     }
     plan.save!
 
     plan.apply_action('check', item: 'Flour', checked: true, now: Date.new(2026, 3, 21))
 
-    assert_equal 56, plan.on_hand['Flour']['interval'],
-                 'Re-confirming a pruned item should double from its preserved interval'
+    assert_in_delta 56.0, plan.on_hand['Flour']['interval'], 0.1,
+                    'Re-confirming a pruned item: 28 * 2.0 = 56'
+    assert_in_delta 2.1, plan.on_hand['Flour']['ease']
     assert_equal '2026-03-21', plan.on_hand['Flour']['confirmed_at']
   end
 
@@ -371,6 +374,7 @@ class MealPlanTest < ActiveSupport::TestCase
 
     assert_equal '1970-01-01', entry['confirmed_at'], 'Orphaned entry should be expired'
     assert_equal 7, entry['interval'], 'Null interval should be converted since custom item removed'
+    assert_in_delta 2.0, entry['ease'], 0.01, 'Ease should be set to STARTING_EASE when null interval is fixed'
     assert_empty plan.effective_on_hand, 'Expired entry should not appear in effective_on_hand'
   end
 
@@ -482,7 +486,7 @@ class MealPlanTest < ActiveSupport::TestCase
 
   # --- on_hand check/uncheck ---
 
-  test 'checking off a new item creates on_hand entry with interval 7' do
+  test 'checking off a new item creates on_hand entry with interval 7 and ease 2.0' do
     plan = MealPlan.for_kitchen(@kitchen)
     plan.apply_action('check', item: 'Flour', checked: true)
 
@@ -490,9 +494,10 @@ class MealPlanTest < ActiveSupport::TestCase
 
     assert_equal Date.current.iso8601, entry['confirmed_at']
     assert_equal 7, entry['interval']
+    assert_in_delta 2.0, entry['ease']
   end
 
-  test 'checking off a custom item creates on_hand entry with null interval' do
+  test 'checking off a custom item creates on_hand entry with null interval and null ease' do
     plan = MealPlan.for_kitchen(@kitchen)
     plan.apply_action('check', item: 'Birthday candles', checked: true, custom: true)
 
@@ -500,12 +505,13 @@ class MealPlanTest < ActiveSupport::TestCase
 
     assert_equal Date.current.iso8601, entry['confirmed_at']
     assert_nil entry['interval']
+    assert_nil entry['ease']
   end
 
-  test 'checking off an existing item on a different day doubles the interval' do
+  test 'checking off an existing item on a different day grows by ease factor' do
     plan = MealPlan.for_kitchen(@kitchen)
     plan.state['on_hand'] = {
-      'Flour' => { 'confirmed_at' => '2026-03-01', 'interval' => 7 }
+      'Flour' => { 'confirmed_at' => '2026-03-01', 'interval' => 7, 'ease' => 2.0 }
     }
     plan.save!
 
@@ -514,10 +520,11 @@ class MealPlanTest < ActiveSupport::TestCase
     entry = plan.on_hand['Flour']
 
     assert_equal '2026-03-10', entry['confirmed_at']
-    assert_equal 14, entry['interval']
+    assert_in_delta 14.0, entry['interval']
+    assert_in_delta 2.1, entry['ease']
   end
 
-  test 'next_interval treats nil existing interval as starting interval' do
+  test 'nil existing interval treated as starting interval with default ease' do
     plan = MealPlan.for_kitchen(@kitchen)
     plan.state['on_hand'] = {
       'Paper Towels' => { 'confirmed_at' => '2026-03-01', 'interval' => nil }
@@ -526,20 +533,24 @@ class MealPlanTest < ActiveSupport::TestCase
 
     plan.apply_action('check', item: 'Paper Towels', checked: true, custom: false, now: Date.new(2026, 3, 10))
 
-    assert_equal 14, plan.on_hand['Paper Towels']['interval'],
-                 'nil interval should be treated as STARTING_INTERVAL (7), then doubled to 14'
+    assert_in_delta 14.0, plan.on_hand['Paper Towels']['interval'], 0.1,
+                    'nil interval treated as 7, grown by default ease 2.0 to 14'
+    assert_in_delta 2.1, plan.on_hand['Paper Towels']['ease']
   end
 
-  test 'interval caps at 56 days' do
+  test 'interval caps at 180 days' do
     plan = MealPlan.for_kitchen(@kitchen)
     plan.state['on_hand'] = {
-      'Salt' => { 'confirmed_at' => '2026-01-01', 'interval' => 56 }
+      'Salt' => { 'confirmed_at' => '2026-01-01', 'interval' => 100, 'ease' => 2.5 }
     }
     plan.save!
 
     plan.apply_action('check', item: 'Salt', checked: true, now: Date.new(2026, 3, 10))
 
-    assert_equal 56, plan.on_hand['Salt']['interval']
+    assert_in_delta 180.0, plan.on_hand['Salt']['interval'], 0.1,
+                    'interval should cap at MAX_INTERVAL (180)'
+    assert_in_delta 2.5, plan.on_hand['Salt']['ease'], 0.001,
+                    'ease already at max should stay at max'
   end
 
   test 'checking off same item on same day is idempotent' do
@@ -550,48 +561,96 @@ class MealPlanTest < ActiveSupport::TestCase
 
     plan.apply_action('check', item: 'Flour', checked: true, now: today)
 
-    assert_equal 7, plan.on_hand['Flour']['interval'], 'interval should not double on same-day re-check'
+    assert_equal 7, plan.on_hand['Flour']['interval'], 'interval should not grow on same-day re-check'
+    assert_in_delta 2.0, plan.on_hand['Flour']['ease'], 0.001, 'ease should not change on same-day re-check'
     assert_equal version_after_first, plan.lock_version, 'no save on idempotent check'
   end
 
-  test 'expired item re-confirmed doubles interval from previous value' do
+  test 'expired item re-confirmed grows by ease factor' do
     plan = MealPlan.for_kitchen(@kitchen)
     plan.state['on_hand'] = {
-      'Milk' => { 'confirmed_at' => '2026-03-01', 'interval' => 7 }
+      'Milk' => { 'confirmed_at' => '2026-03-01', 'interval' => 7, 'ease' => 2.0 }
     }
     plan.save!
 
     plan.apply_action('check', item: 'Milk', checked: true, now: Date.new(2026, 3, 20))
 
-    assert_equal 14, plan.on_hand['Milk']['interval']
+    assert_in_delta 14.0, plan.on_hand['Milk']['interval']
+    assert_in_delta 2.1, plan.on_hand['Milk']['ease']
     assert_equal '2026-03-20', plan.on_hand['Milk']['confirmed_at']
   end
 
-  test 'unchecking an item deletes it from on_hand' do
+  test 'unchecking a custom item deletes it from on_hand' do
     plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('check', item: 'Milk', checked: true)
-    plan.apply_action('check', item: 'Milk', checked: false)
+    plan.apply_action('check', item: 'Candles', checked: true, custom: true)
+    plan.apply_action('check', item: 'Candles', checked: false, custom: true)
 
-    assert_not plan.on_hand.key?('Milk')
+    assert_not plan.on_hand.key?('Candles')
+  end
+
+  test 'unchecking a non-custom item marks it depleted instead of deleting' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    today = Date.new(2026, 3, 15)
+    plan.state['on_hand'] = {
+      'Milk' => { 'confirmed_at' => '2026-03-10', 'interval' => 14, 'ease' => 2.1 }
+    }
+    plan.save!
+
+    plan.apply_action('check', item: 'Milk', checked: false, now: today)
+
+    entry = plan.on_hand['Milk']
+
+    assert entry, 'Non-custom entry should not be deleted'
+    assert_equal MealPlan::ORPHAN_SENTINEL, entry['confirmed_at']
+    assert_equal today.iso8601, entry['depleted_at']
+    assert_equal 7, entry['interval'], 'Observed 5 days floors to STARTING_INTERVAL (7)'
+    assert_in_delta 1.47, entry['ease'], 0.01, 'Ease penalized: 2.1 * 0.7'
+  end
+
+  test 'depleted observed period uses actual days when greater than STARTING_INTERVAL' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.state['on_hand'] = {
+      'Butter' => { 'confirmed_at' => '2026-03-01', 'interval' => 28, 'ease' => 2.0 }
+    }
+    plan.save!
+
+    plan.apply_action('check', item: 'Butter', checked: false, now: Date.new(2026, 3, 15))
+
+    assert_equal 14, plan.on_hand['Butter']['interval'], 'Observed 14 days > 7, use observed'
+  end
+
+  test 'depleted ease penalty floors at MIN_EASE' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.state['on_hand'] = {
+      'Eggs' => { 'confirmed_at' => '2026-03-01', 'interval' => 7, 'ease' => 1.2 }
+    }
+    plan.save!
+
+    plan.apply_action('check', item: 'Eggs', checked: false, now: Date.new(2026, 3, 10))
+
+    assert_in_delta 1.1, plan.on_hand['Eggs']['ease'], 0.001,
+                    'Ease 1.2 * 0.7 = 0.84, floors to MIN_EASE (1.1)'
   end
 
   test 'unchecking an item succeeds even when on_hand key has different casing' do
     plan = MealPlan.for_kitchen(@kitchen)
     plan.state['on_hand'] = {
-      'flour' => { 'confirmed_at' => Date.current.iso8601, 'interval' => 7 }
+      'flour' => { 'confirmed_at' => Date.current.iso8601, 'interval' => 7, 'ease' => 2.0 }
     }
     plan.save!
 
-    plan.apply_action('check', item: 'Flour', checked: false)
+    plan.apply_action('check', item: 'Flour', checked: false, now: Date.current)
 
-    assert_not plan.on_hand.key?('flour'), 'Case-insensitive uncheck should remove the entry'
-    assert_not plan.on_hand.key?('Flour')
+    entry = plan.on_hand['flour']
+
+    assert entry, 'Should mark depleted under original key'
+    assert_equal MealPlan::ORPHAN_SENTINEL, entry['confirmed_at']
   end
 
   test 'checking re-keys on_hand entry to new canonical form' do
     plan = MealPlan.for_kitchen(@kitchen)
     plan.state['on_hand'] = {
-      'flour' => { 'confirmed_at' => '2026-03-01', 'interval' => 7 }
+      'flour' => { 'confirmed_at' => '2026-03-01', 'interval' => 7, 'ease' => 2.0 }
     }
     plan.save!
 
@@ -599,20 +658,154 @@ class MealPlanTest < ActiveSupport::TestCase
 
     assert plan.on_hand.key?('Flour'), 'Entry should be re-keyed to new canonical form'
     assert_not plan.on_hand.key?('flour'), 'Old key should be removed'
-    assert_equal 14, plan.on_hand['Flour']['interval'], 'Interval should double from existing entry'
+    assert_in_delta 14.0, plan.on_hand['Flour']['interval']
+    assert_in_delta 2.1, plan.on_hand['Flour']['ease']
   end
 
-  test 'unchecking then re-checking starts fresh at interval 7' do
+  test 'depleted re-check preserves interval and ease without growth' do
     plan = MealPlan.for_kitchen(@kitchen)
+    today = Date.new(2026, 3, 15)
     plan.state['on_hand'] = {
-      'Flour' => { 'confirmed_at' => '2026-03-01', 'interval' => 28 }
+      'Milk' => { 'confirmed_at' => MealPlan::ORPHAN_SENTINEL, 'interval' => 10,
+                  'ease' => 1.47, 'depleted_at' => '2026-03-14' }
     }
     plan.save!
 
-    plan.apply_action('check', item: 'Flour', checked: false)
-    plan.apply_action('check', item: 'Flour', checked: true)
+    plan.apply_action('check', item: 'Milk', checked: true, now: today)
+
+    entry = plan.on_hand['Milk']
+
+    assert_equal today.iso8601, entry['confirmed_at']
+    assert_equal 10, entry['interval'], 'Interval should be preserved, not grown'
+    assert_in_delta 1.47, entry['ease'], 0.001, 'Ease should be preserved, not grown'
+    assert_nil entry['depleted_at'], 'depleted_at should be cleared'
+  end
+
+  test 'uncheck + re-check same day preserves learned interval' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    today = Date.new(2026, 3, 15)
+    plan.state['on_hand'] = {
+      'Flour' => { 'confirmed_at' => '2026-03-01', 'interval' => 28, 'ease' => 2.1 }
+    }
+    plan.save!
+
+    plan.apply_action('check', item: 'Flour', checked: false, now: today)
+
+    depleted_entry = plan.on_hand['Flour']
+
+    assert_equal 14, depleted_entry['interval'], 'Observed 14 days'
+
+    plan.apply_action('check', item: 'Flour', checked: true, now: today)
+
+    entry = plan.on_hand['Flour']
+
+    assert_equal today.iso8601, entry['confirmed_at']
+    assert_equal 14, entry['interval'], 'Re-check of depleted preserves interval'
+    assert_nil entry['depleted_at']
+  end
+
+  test 'ease caps at MAX_EASE' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.state['on_hand'] = {
+      'Salt' => { 'confirmed_at' => '2026-03-01', 'interval' => 50, 'ease' => 2.5 }
+    }
+    plan.save!
+
+    plan.apply_action('check', item: 'Salt', checked: true, now: Date.new(2026, 3, 10))
+
+    assert_in_delta 2.5, plan.on_hand['Salt']['ease'], 0.001,
+                    'Ease should cap at MAX_EASE (2.5)'
+    assert_in_delta 125.0, plan.on_hand['Salt']['interval'], 0.1,
+                    'interval = 50 * 2.5 = 125'
+  end
+
+  test 'full convergence scenario: milk settling around 10 days' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    day = Date.new(2026, 1, 1)
+
+    # Day 0: first check — interval 7, ease 2.0
+    plan.apply_action('check', item: 'Milk', checked: true, now: day)
+
+    assert_equal 7, plan.on_hand['Milk']['interval']
+    assert_in_delta 2.0, plan.on_hand['Milk']['ease']
+
+    # Day 8: still have it, re-confirm — interval 14, ease 2.1
+    plan.apply_action('check', item: 'Milk', checked: true, now: day + 8)
+
+    assert_in_delta 14.0, plan.on_hand['Milk']['interval']
+    assert_in_delta 2.1, plan.on_hand['Milk']['ease']
+
+    # Day 18: ran out after 10 days (before 14-day interval expired)
+    # Uncheck — observed 10 days, ease penalized
+    plan.apply_action('check', item: 'Milk', checked: false, now: day + 18)
+
+    assert_equal 10, plan.on_hand['Milk']['interval'], 'Observed 10 days'
+    assert_in_delta 1.47, plan.on_hand['Milk']['ease'], 0.01, '2.1 * 0.7'
+
+    # Day 18: re-check (just bought more) — no growth, preserves depleted state
+    plan.apply_action('check', item: 'Milk', checked: true, now: day + 18)
+
+    assert_equal 10, plan.on_hand['Milk']['interval']
+    assert_in_delta 1.47, plan.on_hand['Milk']['ease'], 0.01
+
+    # Day 29: still have it after ~11 days, re-confirm — grows
+    plan.apply_action('check', item: 'Milk', checked: true, now: day + 29)
+
+    assert_in_delta 14.7, plan.on_hand['Milk']['interval'], 0.1, '10 * 1.47'
+    assert_in_delta 1.57, plan.on_hand['Milk']['ease'], 0.01, '1.47 + 0.1'
+  end
+
+  # --- Reconciliation: depleted entries ---
+
+  test 'reconcile! skips depleted entries during orphan expiration' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.state['on_hand'] = {
+      'Milk' => { 'confirmed_at' => '1970-01-01', 'interval' => 10, 'ease' => 1.1,
+                  'depleted_at' => '2026-03-20' }
+    }
+    plan.save!
+
+    reconcile_plan!(plan, now: Date.new(2026, 3, 21))
+    plan.reload
+
+    entry = plan.on_hand['Milk']
+
+    assert entry.key?('depleted_at'), 'Depleted entry should not be converted to orphan'
+    assert_not entry.key?('orphaned_at'), 'No orphaned_at should be added to depleted entry'
+  end
+
+  test 'reconcile! does not purge depleted entries regardless of age' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.state['on_hand'] = {
+      'Milk' => { 'confirmed_at' => '1970-01-01', 'interval' => 10, 'ease' => 1.1,
+                  'depleted_at' => '2025-01-01' }
+    }
+    plan.save!
+
+    reconcile_plan!(plan, now: Date.new(2026, 3, 21))
+    plan.reload
+
+    assert plan.on_hand.key?('Milk'), 'Depleted entry should be retained indefinitely'
+  end
+
+  test 'reconcile! fixes null interval and sets starting ease' do
+    @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    md = "# Bread\n\n## Mix (combine)\n\n- Flour, 2 cups\n\nMix.\n"
+    MarkdownImporter.import(md, kitchen: @kitchen, category: @category)
+
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('select', type: 'recipe', slug: 'bread', selected: true)
+    plan.state['on_hand'] = {
+      'Flour' => { 'confirmed_at' => Date.current.iso8601, 'interval' => nil, 'ease' => nil }
+    }
+    plan.save!
+
+    reconcile_plan!(plan)
+    plan.reload
 
     assert_equal 7, plan.on_hand['Flour']['interval']
+    assert_in_delta 2.0, plan.on_hand['Flour']['ease'], 0.01,
+                    'Ease should be set to STARTING_EASE when null interval is fixed'
   end
 
   # -- effective_on_hand --

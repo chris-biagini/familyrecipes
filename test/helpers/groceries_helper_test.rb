@@ -124,4 +124,35 @@ class GroceriesHelperTest < ActionView::TestCase
     assert_equal 'foo', name
     assert_nil aisle
   end
+
+  test 'restock_tooltip shows days remaining for on-hand items' do
+    on_hand_data = { 'Milk' => { 'confirmed_at' => '2026-03-15', 'interval' => 10, 'ease' => 1.1 } }
+    on_hand_names = Set.new(['Milk'])
+    result = restock_tooltip('Milk', on_hand_data, on_hand_names, now: Date.new(2026, 3, 20))
+
+    assert_equal 'Estimated restock in ~5 days', result
+  end
+
+  test 'restock_tooltip shows cycle length for to-buy items with history' do
+    on_hand_data = { 'Milk' => { 'confirmed_at' => '2026-03-01', 'interval' => 10, 'ease' => 1.1 } }
+    on_hand_names = Set.new
+    result = restock_tooltip('Milk', on_hand_data, on_hand_names, now: Date.new(2026, 3, 20))
+
+    assert_equal 'Restocks every ~10 days', result
+  end
+
+  test 'restock_tooltip returns nil for custom items' do
+    on_hand_data = { 'Candles' => { 'confirmed_at' => '2026-03-15', 'interval' => nil, 'ease' => nil } }
+    on_hand_names = Set.new(['Candles'])
+
+    assert_nil restock_tooltip('Candles', on_hand_data, on_hand_names)
+  end
+
+  test 'restock_tooltip returns nil for fresh items with no history' do
+    on_hand_data = { 'Flour' => { 'confirmed_at' => '2026-03-15', 'interval' => 7, 'ease' => 2.0 } }
+    on_hand_names = Set.new
+    result = restock_tooltip('Flour', on_hand_data, on_hand_names, now: Date.new(2026, 3, 25))
+
+    assert_nil result
+  end
 end

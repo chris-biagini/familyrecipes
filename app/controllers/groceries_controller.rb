@@ -18,6 +18,7 @@ class GroceriesController < ApplicationController
     plan = MealPlan.for_kitchen(current_kitchen)
     @shopping_list = ShoppingListBuilder.new(kitchen: current_kitchen, meal_plan: plan).build
     @on_hand_names = plan.effective_on_hand.keys.to_set
+    @on_hand_data = plan.on_hand
     @custom_items = plan.custom_items
   end
 

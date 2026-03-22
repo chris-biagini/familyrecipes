@@ -2,7 +2,9 @@
 
 # Singleton-per-kitchen JSON state record for shared meal planning: selected
 # recipes/quick bites, custom grocery items, on-hand ingredient tracking with
-# exponential backoff intervals. Both menu and groceries pages read/write
+# SM-2-inspired adaptive ease (per-item growth rates converge on each
+# ingredient's natural restock cycle; depleted state preserves learned
+# intervals when users run out). Both menu and groceries pages read/write
 # this model.
 #
 # - .reconcile_kitchen!(kitchen) — computes visible ingredient names (via
@@ -30,9 +32,16 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
   MAX_CUSTOM_ITEM_LENGTH = 100
   COOK_HISTORY_WINDOW = 90
   STARTING_INTERVAL = 7
-  MAX_INTERVAL = 56
+  MAX_INTERVAL = 180
   ORPHAN_RETENTION = 180
   ORPHAN_SENTINEL = '1970-01-01'
+
+  # SM-2-inspired adaptive ease factor — per-item growth multiplier
+  STARTING_EASE = 2.0
+  MIN_EASE = 1.1
+  MAX_EASE = 2.5
+  EASE_BONUS = 0.1
+  EASE_PENALTY = 0.3
 
   def self.for_kitchen(kitchen)
     find_or_create_by!(kitchen: kitchen)
@@ -117,28 +126,64 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
     stored_key = find_on_hand_key(item)
     existing = stored_key ? hash[stored_key] : nil
 
+    return recheck_depleted(hash, item, stored_key, now) if existing&.key?('depleted_at')
+
     return if existing && existing['confirmed_at'] == now.iso8601
 
     hash.delete(stored_key) if stored_key && stored_key != item
-    hash[item] = if existing
-                   { 'confirmed_at' => now.iso8601, 'interval' => next_interval(existing, custom) }
-                 else
-                   { 'confirmed_at' => now.iso8601, 'interval' => custom ? nil : STARTING_INTERVAL }
-                 end
+    hash[item] = build_on_hand_entry(existing, custom:, now:)
     save!
   end
 
-  def remove_from_on_hand(item)
+  def build_on_hand_entry(existing, custom:, now:)
+    if existing
+      new_interval, new_ease = next_interval_and_ease(existing, custom)
+      { 'confirmed_at' => now.iso8601, 'interval' => new_interval, 'ease' => new_ease }
+    else
+      { 'confirmed_at' => now.iso8601,
+        'interval' => custom ? nil : STARTING_INTERVAL,
+        'ease' => custom ? nil : STARTING_EASE }
+    end
+  end
+
+  def next_interval_and_ease(existing, custom)
+    return [nil, nil] if custom
+
+    base_interval = existing['interval'] || STARTING_INTERVAL
+    ease = existing['ease'] || STARTING_EASE
+    new_interval = [base_interval * ease, MAX_INTERVAL].min
+    new_ease = [ease + EASE_BONUS, MAX_EASE].min
+    [new_interval, new_ease]
+  end
+
+  def remove_from_on_hand(item, custom: false, now: Date.current)
     key = find_on_hand_key(item) || item
-    return unless state['on_hand'].delete(key)
+    entry = state['on_hand'][key]
+    return unless entry
 
+    if custom || entry['interval'].nil?
+      state['on_hand'].delete(key)
+    else
+      mark_depleted(entry, now)
+    end
     save!
   end
 
-  def next_interval(existing, custom)
-    return nil if custom
+  def mark_depleted(entry, now)
+    observed = (now - Date.parse(entry['confirmed_at'])).to_i
+    entry['interval'] = [observed, STARTING_INTERVAL].max
+    entry['ease'] = [(entry['ease'] || STARTING_EASE) * (1 - EASE_PENALTY), MIN_EASE].max
+    entry['confirmed_at'] = ORPHAN_SENTINEL
+    entry['depleted_at'] = now.iso8601
+    entry.delete('orphaned_at')
+  end
 
-    [(existing['interval'] || STARTING_INTERVAL) * 2, MAX_INTERVAL].min
+  def recheck_depleted(hash, item, stored_key, now)
+    entry = hash.delete(stored_key)
+    entry['confirmed_at'] = now.iso8601
+    entry.delete('depleted_at')
+    hash[item] = entry
+    save!
   end
 
   def prune_on_hand(visible_names:, now:, resolver: nil)
@@ -157,6 +202,7 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
     hash.each do |key, entry|
       next if visible_names.include?(key) || custom.any? { |c| c.casecmp?(key) }
       next if entry['confirmed_at'] == ORPHAN_SENTINEL
+      next if entry.key?('depleted_at')
 
       entry['confirmed_at'] = ORPHAN_SENTINEL
       entry['orphaned_at'] = now.iso8601
@@ -172,6 +218,7 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
       next if custom.any? { |c| c.casecmp?(key) }
 
       entry['interval'] = STARTING_INTERVAL
+      entry['ease'] = STARTING_EASE
       changed = true
     end
     changed
@@ -209,6 +256,7 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
   def purge_stale_orphans(hash, now)
     changed = false
     hash.each_value do |entry|
+      next if entry.key?('depleted_at')
       next unless entry['confirmed_at'] == ORPHAN_SENTINEL && !entry.key?('orphaned_at')
 
       entry['orphaned_at'] = now.iso8601
@@ -216,7 +264,11 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
     end
     cutoff = now - ORPHAN_RETENTION
     before = hash.size
-    hash.reject! { |_, e| e['confirmed_at'] == ORPHAN_SENTINEL && Date.parse(e['orphaned_at']) < cutoff }
+    hash.reject! do |_, e|
+      e['confirmed_at'] == ORPHAN_SENTINEL &&
+        !e.key?('depleted_at') &&
+        e.key?('orphaned_at') && Date.parse(e['orphaned_at']) < cutoff
+    end
     changed || hash.size < before
   end
 
@@ -248,7 +300,7 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
     if checked
       add_to_on_hand(item, custom:, now:)
     else
-      remove_from_on_hand(item)
+      remove_from_on_hand(item, custom:, now:)
     end
   end
 

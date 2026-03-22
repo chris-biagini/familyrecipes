@@ -1,4 +1,4 @@
-<%# locals: (shopping_list:, on_hand_names:) %>
+<%# locals: (shopping_list:, on_hand_names:, on_hand_data:) %>
 <div class="shopping-list-header">
   <h2>Shopping List</h2>
   <span id="item-count"><%= shopping_list_count_text(shopping_list, on_hand_names) %></span>
@@ -22,7 +22,10 @@
           <div class="collapse-inner">
             <ul class="on-hand-items">
               <% checked.each do |item| %>
-                <li data-item="<%= item[:name] %>"<%= " title=\"Needed for: #{h item[:sources].join(', ')}\"".html_safe if item[:sources].present? %>>
+                <% sources_tip = item[:sources].present? ? "Needed for: #{h item[:sources].join(', ')}" : nil %>
+                <% restock_tip = restock_tooltip(item[:name], on_hand_data, on_hand_names) %>
+                <% full_tip = [sources_tip, restock_tip].compact.join("\n") %>
+                <li data-item="<%= item[:name] %>"<%= " title=\"#{h full_tip}\"".html_safe if full_tip.present? %>>
                   <label class="check-off">
                     <input class="custom-checkbox" type="checkbox" data-item="<%= item[:name] %>" checked>
                     <span class="item-text"><%= item[:name] %><% amount_str = format_amounts(item[:amounts], uncounted: item[:uncounted]) %><% if amount_str.present? %> <span class="item-amount"><%= amount_str %></span><% end %></span>
@@ -38,7 +41,10 @@
         <h3 class="aisle-header"><%= aisle %></h3>
         <ul class="to-buy-items">
           <% unchecked.each do |item| %>
-            <li data-item="<%= item[:name] %>"<%= " title=\"Needed for: #{h item[:sources].join(', ')}\"".html_safe if item[:sources].present? %>>
+            <% sources_tip = item[:sources].present? ? "Needed for: #{h item[:sources].join(', ')}" : nil %>
+            <% restock_tip = restock_tooltip(item[:name], on_hand_data, on_hand_names) %>
+            <% full_tip = [sources_tip, restock_tip].compact.join("\n") %>
+            <li data-item="<%= item[:name] %>"<%= " title=\"#{h full_tip}\"".html_safe if full_tip.present? %>>
               <label class="check-off">
                 <input class="custom-checkbox" type="checkbox" data-item="<%= item[:name] %>">
                 <span class="item-text"><%= item[:name] %><% amount_str = format_amounts(item[:amounts], uncounted: item[:uncounted]) %><% if amount_str.present? %> <span class="item-amount"><%= amount_str %></span><% end %></span>
@@ -56,7 +62,10 @@
             <div class="collapse-inner">
               <ul class="on-hand-items">
                 <% checked.each do |item| %>
-                  <li data-item="<%= item[:name] %>"<%= " title=\"Needed for: #{h item[:sources].join(', ')}\"".html_safe if item[:sources].present? %>>
+                  <% sources_tip = item[:sources].present? ? "Needed for: #{h item[:sources].join(', ')}" : nil %>
+                  <% restock_tip = restock_tooltip(item[:name], on_hand_data, on_hand_names) %>
+                  <% full_tip = [sources_tip, restock_tip].compact.join("\n") %>
+                  <li data-item="<%= item[:name] %>"<%= " title=\"#{h full_tip}\"".html_safe if full_tip.present? %>>
                     <label class="check-off">
                       <input class="custom-checkbox" type="checkbox" data-item="<%= item[:name] %>" checked>
                       <span class="item-text"><%= item[:name] %><% amount_str = format_amounts(item[:amounts], uncounted: item[:uncounted]) %><% if amount_str.present? %> <span class="item-amount"><%= amount_str %></span><% end %></span>

@@ -27,6 +27,20 @@ module GroceriesHelper
     "#{remaining} #{'item'.pluralize(remaining)} to buy"
   end
 
+  def restock_tooltip(item_name, on_hand_data, on_hand_names, now: Date.current)
+    entry = on_hand_data.find { |k, _| k.casecmp?(item_name) }&.last
+    return nil unless entry
+    return nil if entry['interval'].nil?
+
+    if on_hand_names.include?(item_name)
+      days_left = ((Date.parse(entry['confirmed_at']) + entry['interval'].to_f.round.days) - now).to_i
+      "Estimated restock in ~#{[days_left, 0].max} days"
+    elsif entry['interval'] > MealPlan::STARTING_INTERVAL ||
+          (entry['ease'] && entry['ease'] != MealPlan::STARTING_EASE)
+      "Restocks every ~#{entry['interval'].to_f.round} days"
+    end
+  end
+
   def parse_custom_item(text)
     prefix, separator, hint = text.rpartition('@')
     return [text.strip, nil] if separator.empty?

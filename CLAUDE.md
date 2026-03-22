@@ -205,8 +205,9 @@ collision. Parser pipeline: `LineClassifier` → `RecipeBuilder` →
 - Use `home_path` (not `kitchen_root_path`) for homepage links.
 - `MealPlan` (one row per kitchen) backs the menu, groceries, and dinner
   picker. Stores cook history (recency weighting) and on-hand ingredient
-  state (spaced-repetition backoff — intervals double on re-confirmation,
-  expired entries reappear on the shopping list).
+  state (SM-2-inspired adaptive ease — per-item growth rate converges on
+  each ingredient's natural restock cycle; depleted state preserves learned
+  intervals when user runs out).
 
 **Editor dialogs.** Use `render layout: 'shared/editor_dialog'` with Stimulus
 data attributes — no JS needed. Custom dialogs hook in via lifecycle events

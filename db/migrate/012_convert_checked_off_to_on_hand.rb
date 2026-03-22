@@ -15,7 +15,7 @@ class ConvertCheckedOffToOnHand < ActiveRecord::Migration[8.0]
 
       Array(checked_off).each do |item|
         custom = custom_items.any? { |c| c.downcase == item.downcase }
-        on_hand[item] = { 'confirmed_at' => today, 'interval' => custom ? nil : 7 }
+        on_hand[item] = { 'confirmed_at' => today, 'interval' => custom ? nil : 7, 'ease' => custom ? nil : 2.0 }
       end
 
       state['on_hand'] = on_hand
