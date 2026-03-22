@@ -410,11 +410,14 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     get groceries_aisle_order_content_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
-    rows = css_select('.aisle-row')
+    names = css_select('.aisle-row').pluck('data-name')
 
-    assert_equal 'Spices', rows[0]['data-name']
-    assert_equal 'Produce', rows[1]['data-name']
-    assert_equal 'Baking', rows[2]['data-name']
+    assert_equal 'Spices', names[0]
+    assert_equal 'Produce', names[1]
+    assert_includes names, 'Baking'
+    remaining = names[2..]
+
+    assert_equal remaining.sort, remaining
   end
 
   # --- Length limits ---
