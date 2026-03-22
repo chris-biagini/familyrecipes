@@ -1,16 +1,7 @@
 # Groceries
 
 The groceries page builds a shopping list from the recipes and quick bites you
-select on the menu page, organized by aisle. It also tracks what you have at
-home so you only see what you actually need to buy.
-
-## The Weekly Flow
-
-1. **Plan meals** on the menu page — select recipes for the week.
-2. **Take inventory** on the groceries page — check off ingredients you already
-   have at home.
-3. **Go shopping** — buy what's left on the list, checking items off as you
-   place them in the cart.
+select on the menu page. 
 
 ## How the Shopping List Works
 
@@ -22,16 +13,14 @@ You can also add **custom items** (things not tied to any recipe) using the
 input at the bottom of the page. Type a name, or use `Name @ Aisle` to place
 an item in a specific aisle.
 
-## Checking Items Off
+## Taking Inventory 
 
-Items are either **To Buy** (unchecked, in the main list) or **On Hand**
-(checked, in a collapsed section at the bottom of each aisle).
+Items are either **To Buy** (unchecked) or **On Hand** (checked, in a
+collapsed section at the bottom of each aisle).
 
-- **At home**: check off ingredients you already have. They move to On Hand.
-- **At the store**: check off ingredients as you place them in the cart.
-- **Mid-week**: if you run out of something, uncheck it from On Hand to move
-  it back to To Buy — even if you're not planning a shopping trip yet. This
-  is the fastest way to make sure it lands on the list for next time.
+Before you go shopping, look around your kitchen. If an item is marked **On
+Hand** but you've run out of it, uncheck it. If an item is marked **To Buy**
+but you have enough for now, check it off. 
 
 ## Staying Visible While Shopping
 
@@ -45,10 +34,11 @@ groceries page (e.g., after navigating to the menu or reopening the app).
 
 ## How the System Learns Your Pantry
 
-The groceries page builds confidence in each ingredient independently. Every
-time you confirm that you have something (by checking it off), the system
-grows a little more confident that you keep it stocked and waits longer before
-asking again.
+Over time, the groceries page learns how often you tend to buy each
+ingredient. At first, it will move each **On Hand** item back to **To Buy**
+after one week has passed. But every time you confirm that you have something
+(by checking it off), the system grows a little more confident that you keep
+it stocked and waits longer before asking again.
 
 **Here's how it works:**
 
@@ -58,11 +48,9 @@ items you consistently have on hand build confidence quickly, so the wait
 grows faster over time. Items you always have eventually stop appearing on the
 list altogether (except for an occasional check every few months).
 
-Meanwhile, an ingredient like milk — which you sometimes have and sometimes
-run out of — builds confidence slowly, because running out reduces some of
-that built-up confidence. The system adapts to your actual pantry, not a set
-of rules you have to configure. Over time, each ingredient settles into its
-own rhythm that matches your real usage.
+The system adapts to your actual pantry, not a set of rules you have to
+configure. Over time, each ingredient settles into its own rhythm that matches
+your real usage.
 
 **What this looks like in practice:**
 
