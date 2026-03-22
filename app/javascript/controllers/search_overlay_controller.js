@@ -1,6 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { loadSmartTagData } from "../utilities/search_data"
 import ListenerManager from "../utilities/listener_manager"
+import { matchTier } from "../utilities/search_match"
 
 function normalizeForSearch(str) {
   return (str || "")
@@ -210,7 +211,8 @@ export default class extends Controller {
       candidates = candidates.filter(r => this.matchesPill(r, pill))
     }
 
-    const results = query ? this.rankResults(query, candidates) : candidates
+    const tokens = query ? query.split(/\s+/).filter(Boolean) : []
+    const results = tokens.length ? this.rankResults(tokens, candidates) : candidates
     this.renderResults(results)
     this.selectFirst()
   }
@@ -232,11 +234,11 @@ export default class extends Controller {
       recipe._ingredients.some(i => i.includes(text))
   }
 
-  rankResults(query, candidates = this.recipes) {
+  rankResults(tokens, candidates = this.recipes) {
     const scored = []
 
     for (const recipe of candidates) {
-      const tier = this.matchTier(recipe, query)
+      const tier = matchTier(recipe, tokens)
       if (tier < 5) scored.push({ recipe, tier })
     }
 
@@ -246,15 +248,6 @@ export default class extends Controller {
     })
 
     return scored.map(s => s.recipe)
-  }
-
-  matchTier(recipe, query) {
-    if (recipe._title.includes(query)) return 0
-    if (recipe._description.includes(query)) return 1
-    if (recipe._category.includes(query)) return 2
-    if (recipe._tags?.some(t => t.includes(query))) return 3
-    if (recipe._ingredients.some(i => i.includes(query))) return 4
-    return 5
   }
 
   renderResults(recipes) {
