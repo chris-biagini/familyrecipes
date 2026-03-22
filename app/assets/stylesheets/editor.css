@@ -556,8 +556,7 @@ button.aisle-name:hover {
 }
 
 .editor-section .collapse-inner {
-  padding: 0;
-  transition: padding var(--duration-normal) ease;
+  padding: 0 0.75rem;
 }
 
 .editor-section .collapse-header[open] + .collapse-body > .collapse-inner {
