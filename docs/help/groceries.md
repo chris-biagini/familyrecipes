@@ -22,16 +22,6 @@ Before you go shopping, look around your kitchen. If an item is marked **On
 Hand** but you've run out of it, uncheck it. If an item is marked **To Buy**
 but you have enough for now, check it off. 
 
-## Staying Visible While Shopping
-
-When you check an item off during a shopping trip, it stays visible in the
-main list (with a strikethrough) rather than immediately disappearing into the
-On Hand section. This makes it easy to spot and undo a mistake — if you
-realize you checked off milk but don't actually have it, just uncheck it.
-
-Checked items settle into the On Hand section the next time you visit the
-groceries page (e.g., after navigating to the menu or reopening the app).
-
 ## How the System Learns Your Pantry
 
 Over time, the groceries page learns how often you tend to buy each
