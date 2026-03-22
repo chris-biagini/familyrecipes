@@ -50,23 +50,31 @@ export default class extends Controller {
 
     try {
       if (newMode === "plaintext") {
-        const structure = this.graphicalController.toStructure()
-        const response = await fetch(this.serializeUrlValue, {
-          method: "POST",
-          headers: { ...csrfHeaders(), "Content-Type": "application/json" },
-          body: JSON.stringify({ structure })
-        })
-        const data = await response.json()
-        this.plaintextController.content = data[key]
+        if (!this.graphicalController.isModified(this.originalStructure)) {
+          this.plaintextController.content = this.originalContent
+        } else {
+          const structure = this.graphicalController.toStructure()
+          const response = await fetch(this.serializeUrlValue, {
+            method: "POST",
+            headers: { ...csrfHeaders(), "Content-Type": "application/json" },
+            body: JSON.stringify({ structure })
+          })
+          const data = await response.json()
+          this.plaintextController.content = data[key]
+        }
       } else {
-        const content = this.plaintextController.content
-        const response = await fetch(this.parseUrlValue, {
-          method: "POST",
-          headers: { ...csrfHeaders(), "Content-Type": "application/json" },
-          body: JSON.stringify({ [key]: content })
-        })
-        const ir = await response.json()
-        this.graphicalController.loadStructure(ir)
+        if (!this.plaintextController.isModified(this.originalContent)) {
+          this.graphicalController.loadStructure(this.originalStructure)
+        } else {
+          const content = this.plaintextController.content
+          const response = await fetch(this.parseUrlValue, {
+            method: "POST",
+            headers: { ...csrfHeaders(), "Content-Type": "application/json" },
+            body: JSON.stringify({ [key]: content })
+          })
+          const ir = await response.json()
+          this.graphicalController.loadStructure(ir)
+        }
       }
 
       this.mode = newMode
@@ -125,6 +133,9 @@ export default class extends Controller {
     if (this.originalContent !== null) {
       this.plaintextController.content = this.originalContent
     }
+    if (this.originalStructure !== null) {
+      this.graphicalController.loadStructure(this.originalStructure)
+    }
     this.originalContent = null
     this.originalStructure = null
   }
@@ -136,7 +147,8 @@ export default class extends Controller {
     if (!data[this.contentKeyValue]) {
       const jsonEl = this.element.querySelector("script[data-editor-markdown]")
       if (!jsonEl) {
-        // No frame content — new recipe or other non-frame case
+        this.originalContent = this.plaintextController.content
+        this.originalStructure = this.graphicalController.toStructure()
         this.enableEditing()
         this.showActiveMode()
         return
