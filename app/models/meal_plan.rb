@@ -359,7 +359,40 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
   end
 
   def apply_need_it(item:, now: Date.current, **)
-    raise NotImplementedError, 'Task 2 will implement this'
+    hash = state['on_hand']
+    stored_key = find_on_hand_key(item)
+    existing = stored_key ? hash[stored_key] : nil
+
+    return create_depleted_entry(hash, item, now) unless existing
+
+    hash.delete(stored_key) if stored_key != item
+    deplete_existing(existing, now)
+    hash[item] = existing
+    save!
+  end
+
+  def create_depleted_entry(hash, item, now)
+    hash[item] = { 'confirmed_at' => ORPHAN_SENTINEL,
+                   'interval' => STARTING_INTERVAL,
+                   'ease' => STARTING_EASE,
+                   'depleted_at' => now.iso8601 }
+    save!
+  end
+
+  def deplete_existing(entry, now)
+    if entry['confirmed_at'] == ORPHAN_SENTINEL
+      mark_depleted_sentinel(entry, now)
+    else
+      mark_depleted(entry, now)
+    end
+  end
+
+  # Penalizes ease and marks depleted without touching interval — the
+  # sentinel confirmed_at means we have no real observed period to record.
+  def mark_depleted_sentinel(entry, now)
+    entry['ease'] = [(entry['ease'] || STARTING_EASE) * (1 - EASE_PENALTY), MIN_EASE].max
+    entry['depleted_at'] = now.iso8601
+    entry.delete('orphaned_at')
   end
 
   def create_on_hand_entry(hash, item, now)

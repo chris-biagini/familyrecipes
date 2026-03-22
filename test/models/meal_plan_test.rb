@@ -953,9 +953,54 @@ class MealPlanTest < ActiveSupport::TestCase
     assert_in_delta MealPlan::STARTING_EASE, entry['ease'], 0.01
   end
 
-  test 'need_it raises NotImplementedError' do
-    plan = MealPlan.for_kitchen(@kitchen)
+  # --- need_it action ---
 
-    assert_raises(NotImplementedError) { plan.apply_action('need_it', item: 'Flour') }
+  test 'need_it on new item creates depleted entry with defaults' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    today = Date.new(2026, 3, 22)
+
+    plan.apply_action('need_it', item: 'Flour', now: today)
+    entry = plan.on_hand['Flour']
+
+    assert_equal MealPlan::ORPHAN_SENTINEL, entry['confirmed_at']
+    assert_equal today.iso8601, entry['depleted_at']
+    assert_equal MealPlan::STARTING_INTERVAL, entry['interval']
+    assert_in_delta MealPlan::STARTING_EASE, entry['ease'], 0.01
+  end
+
+  test 'need_it on sentinel entry preserves interval and penalizes ease' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    today = Date.new(2026, 3, 22)
+    plan.state['on_hand'] = {
+      'Flour' => { 'confirmed_at' => MealPlan::ORPHAN_SENTINEL, 'interval' => 28, 'ease' => 1.5 }
+    }
+    plan.save!
+
+    plan.apply_action('need_it', item: 'Flour', now: today)
+    entry = plan.on_hand['Flour']
+
+    assert_equal 28, entry['interval'], 'Interval unchanged for sentinel entries'
+    # 1.5 * 0.7 = 1.05, which is below MIN_EASE (1.1), so clamped
+    assert_in_delta MealPlan::MIN_EASE, entry['ease'], 0.01, '1.5 * 0.7 = 1.05 < MIN_EASE, clamped to 1.1'
+    assert_equal today.iso8601, entry['depleted_at']
+  end
+
+  test 'need_it on normal expired entry uses observed period' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    now = Date.new(2026, 3, 22)
+    plan.state['on_hand'] = {
+      'Flour' => { 'confirmed_at' => '2026-03-01', 'interval' => 14, 'ease' => 1.5 }
+    }
+    plan.save!
+
+    plan.apply_action('need_it', item: 'Flour', now: now)
+    entry = plan.on_hand['Flour']
+
+    # observed = 22 - 1 = 21 days; max(21, 7) = 21
+    assert_equal 21, entry['interval'], 'Interval set to observed days since confirmed_at'
+    # 1.5 * 0.7 = 1.05, which is below MIN_EASE (1.1), so clamped
+    assert_in_delta MealPlan::MIN_EASE, entry['ease'], 0.01, '1.5 * 0.7 = 1.05 < MIN_EASE, clamped to 1.1'
+    assert_equal now.iso8601, entry['depleted_at']
+    assert_equal MealPlan::ORPHAN_SENTINEL, entry['confirmed_at']
   end
 end
