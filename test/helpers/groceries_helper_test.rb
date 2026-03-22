@@ -211,6 +211,40 @@ class GroceriesHelperTest < ActionView::TestCase
     assert_equal :to_buy, result
   end
 
+  test 'confirmed_today? returns true when confirmed_at matches today' do
+    on_hand_data = { 'Milk' => { 'confirmed_at' => Date.current.iso8601 } }
+
+    assert confirmed_today?('Milk', on_hand_data)
+  end
+
+  test 'confirmed_today? returns false for past confirmed_at' do
+    on_hand_data = { 'Milk' => { 'confirmed_at' => '2026-01-01' } }
+
+    assert_not confirmed_today?('Milk', on_hand_data)
+  end
+
+  test 'confirmed_today? returns false for missing entry' do
+    assert_not confirmed_today?('Eggs', {})
+  end
+
+  test 'confirmed_today? returns false for orphan sentinel' do
+    on_hand_data = { 'Milk' => { 'confirmed_at' => MealPlan::ORPHAN_SENTINEL } }
+
+    assert_not confirmed_today?('Milk', on_hand_data)
+  end
+
+  test 'confirmed_today? matches case-insensitively' do
+    on_hand_data = { 'milk' => { 'confirmed_at' => Date.current.iso8601 } }
+
+    assert confirmed_today?('Milk', on_hand_data)
+  end
+
+  test 'confirmed_today? returns false when confirmed_at is nil' do
+    on_hand_data = { 'Milk' => { 'interval' => nil } }
+
+    assert_not confirmed_today?('Milk', on_hand_data)
+  end
+
   test 'shopping_list_count_text counts only :to_buy items, not :inventory_check' do
     shopping_list = { 'Dairy' => [{ name: 'Milk' }, { name: 'Eggs' }] }
     # Milk is depleted (:to_buy), Eggs has no entry (:inventory_check)

@@ -249,13 +249,11 @@ body {
   cursor: pointer;
   flex-shrink: 0;
   position: relative;
-  transition: background-color var(--duration-fast) ease, border-color var(--duration-fast) ease;
 }
 
 .custom-checkbox:checked {
   background-color: var(--red);
   border-color: var(--red);
-  animation: check-box-pop 250ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .custom-checkbox:checked::after {
@@ -266,7 +264,6 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  animation: check-mark-pop 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* Buttons — the one shared interactive style across the site */
@@ -1157,17 +1154,6 @@ html:has(dialog[open]) {
   100% { transform: scale(1);     opacity: 1; }
 }
 
-@keyframes check-box-pop {
-  0%   { transform: scale(1); }
-  50%  { transform: scale(1.2); }
-  100% { transform: scale(1); }
-}
-
-@keyframes check-mark-pop {
-  0%   { transform: translate(-50%, -50%) scale(0); }
-  60%  { transform: translate(-50%, -50%) scale(1.4); }
-  100% { transform: translate(-50%, -50%) scale(1); }
-}
 .tag-pill {
   display: inline-flex;
   align-items: center;

@@ -267,6 +267,65 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test 'show renders confirmed-today class on items confirmed today' do
+    @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Focaccia
+
+
+      ## Mix (combine)
+
+      - Flour, 3 cups
+
+      Mix well.
+    MD
+
+    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Flour') do |p|
+      p.basis_grams = 30
+      p.aisle = 'Baking'
+    end
+
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+    plan.apply_action('check', item: 'Flour', checked: true)
+
+    log_in
+    get groceries_path(kitchen_slug: kitchen_slug)
+
+    assert_select '.on-hand-items li.confirmed-today[data-item="Flour"]'
+  end
+
+  test 'show omits confirmed-today class on items confirmed yesterday' do
+    @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Focaccia
+
+
+      ## Mix (combine)
+
+      - Flour, 3 cups
+
+      Mix well.
+    MD
+
+    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Flour') do |p|
+      p.basis_grams = 30
+      p.aisle = 'Baking'
+    end
+
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+    plan.apply_action('check', item: 'Flour', checked: true)
+    plan.on_hand['Flour']['confirmed_at'] = (Date.current - 1).iso8601
+    plan.save!
+
+    log_in
+    get groceries_path(kitchen_slug: kitchen_slug)
+
+    assert_select '.on-hand-items li[data-item="Flour"]'
+    assert_select '.on-hand-items li.confirmed-today[data-item="Flour"]', count: 0
+  end
+
   test 'show renders custom items' do
     plan = MealPlan.for_kitchen(@kitchen)
     plan.apply_action('custom_items', item: 'Birthday candles', action: 'add')

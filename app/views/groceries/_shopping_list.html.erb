@@ -48,8 +48,8 @@
   <% zone_for ||= ->(name) { item_zone(name:, on_hand_names:, on_hand_data:, custom_items:) } %>
 
   <% shopping_list.each do |aisle, items| %>
-    <% to_buy = items.select { |i| zone_for.(i[:name]) == :to_buy } %>
-    <% on_hand = items.select { |i| zone_for.(i[:name]) == :on_hand } %>
+    <% to_buy = items.select { |i| zone_for.(i[:name]) == :to_buy }.sort_by { |i| i[:name] } %>
+    <% on_hand = items.select { |i| zone_for.(i[:name]) == :on_hand }.sort_by { |i| on_hand_sort_key(i[:name], on_hand_data) } %>
     <% next if to_buy.empty? && on_hand.empty? %>
 
     <section class="aisle-group" data-aisle="<%= aisle %>">
@@ -101,7 +101,7 @@
                   <% sources_tip = item[:sources].present? ? "Needed for: #{h item[:sources].join(', ')}" : nil %>
                   <% restock_tip = restock_tooltip(item[:name], on_hand_data, on_hand_names) %>
                   <% full_tip = [sources_tip, restock_tip].compact.join("\n") %>
-                  <li data-item="<%= item[:name] %>"<%= " title=\"#{h full_tip}\"".html_safe if full_tip.present? %>>
+                  <li<%= ' class="confirmed-today"'.html_safe if confirmed_today?(item[:name], on_hand_data) %> data-item="<%= item[:name] %>"<%= " title=\"#{h full_tip}\"".html_safe if full_tip.present? %>>
                     <label class="check-off">
                       <input class="custom-checkbox" type="checkbox" data-item="<%= item[:name] %>" checked>
                       <span class="item-text"><%= item[:name] %><% amount_str = format_amounts(item[:amounts], uncounted: item[:uncounted]) %><% if amount_str.present? %> <span class="item-amount"><%= amount_str %></span><% end %></span>

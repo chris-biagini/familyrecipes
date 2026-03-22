@@ -63,6 +63,20 @@ module GroceriesHelper
     [prefix.strip, stripped_hint]
   end
 
+  def on_hand_sort_key(name, on_hand_data)
+    [confirmed_today?(name, on_hand_data) ? 0 : 1, name]
+  end
+
+  def confirmed_today?(name, on_hand_data)
+    entry = on_hand_data.find { |k, _| k.casecmp?(name) }&.last
+    return false unless entry
+
+    confirmed = entry['confirmed_at']
+    return false if confirmed.nil? || confirmed == MealPlan::ORPHAN_SENTINEL
+
+    confirmed == Date.current.iso8601
+  end
+
   private
 
   def uncounted_only_text(count)

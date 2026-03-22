@@ -13,9 +13,10 @@ import ListenerManager from "../utilities/listener_manager"
  * On Hand (confirmed in stock). Have It / Need It buttons resolve items out
  * of the Inventory Check zone; checkbox toggle moves between To Buy and On Hand.
  *
- * Item zone movement is handled by server morphs after button/checkbox clicks.
- * CSS transitions provide immediate visual feedback. The counter updates
- * optimistically before the morph arrives.
+ * Two-phase zone animation: exit (grid collapse + fade on the old <li>)
+ * and entry (bloop on the new <li> after morph). pendingMoves tracks items
+ * mid-transition so the post-morph hook knows which items to animate in.
+ * The counter updates optimistically before the morph arrives.
  *
  * - turbo_fetch (sendAction): fire-and-forget mutations with retry and error toast
  * - ListenerManager: tracks event listeners for clean teardown on disconnect
@@ -24,14 +25,15 @@ export default class extends Controller {
   connect() {
     this.onHandKey = `grocery-on-hand-${this.element.dataset.kitchenSlug}`
     this.listeners = new ListenerManager()
+    this.pendingMoves = new Set()
 
     this.cleanupOldStorage()
+    this.cleanupCartStorage()
     this.bindShoppingListEvents()
     this.bindInventoryCheckButtons()
     this.bindCustomItemInput()
     this.bindCollapseToggle()
-    this.restoreCollapseState()
-    this.applyInCartState()
+    this.restoreCollapseWithoutTransition()
 
     this.listeners.add(document, "turbo:before-render", (e) => this.preserveOnHandStateOnRefresh(e))
   }
@@ -50,14 +52,14 @@ export default class extends Controller {
       const name = cb.dataset.item
       if (!name) return
 
+      const li = cb.closest("li")
+      if (li) {
+        this.pendingMoves.add(name)
+        this.animateExit(li)
+      }
+
       this.updateItemCount()
       sendAction(this.element.dataset.checkUrl, { item: name, checked: cb.checked })
-
-      if (cb.checked) {
-        this.addToCart(name)
-      } else {
-        this.removeFromCart(name)
-      }
     })
   }
 
@@ -80,6 +82,15 @@ export default class extends Controller {
     }
   }
 
+  animateExit(li) {
+    li.style.display = "grid"
+    li.style.gridTemplateRows = "1fr"
+    li.style.overflow = "hidden"
+    li.firstElementChild.style.minHeight = "0"
+    li.offsetHeight // force reflow so browser computes 1fr before transition
+    li.classList.add("check-off-exit")
+  }
+
   // --- Inventory check (Have It / Need It) ---
 
   bindInventoryCheckButtons() {
@@ -95,6 +106,7 @@ export default class extends Controller {
 
       sendAction(url, { item: name })
 
+      this.pendingMoves.add(name)
       const li = btn.closest("li")
       if (li) li.remove()
 
@@ -185,6 +197,21 @@ export default class extends Controller {
     } catch { /* localStorage full */ }
   }
 
+  restoreCollapseWithoutTransition() {
+    this.element.style.setProperty("transition", "none", "important")
+    this.element.querySelectorAll(".collapse-body").forEach(el => {
+      el.style.setProperty("transition", "none", "important")
+    })
+
+    this.restoreCollapseState()
+
+    this.element.offsetHeight
+    this.element.style.removeProperty("transition")
+    this.element.querySelectorAll(".collapse-body").forEach(el => {
+      el.style.removeProperty("transition")
+    })
+  }
+
   restoreCollapseState() {
     const state = this.loadCollapseState()
 
@@ -193,7 +220,7 @@ export default class extends Controller {
 
     this.element.querySelectorAll(".aisle-group").forEach(group => {
       const aisle = group.dataset.aisle
-      if (!aisle || !state[aisle]) return
+      if (!aisle) return
 
       let entry = state[aisle]
       if (typeof entry === "boolean") {
@@ -203,8 +230,8 @@ export default class extends Controller {
       const toBuy = group.querySelector("details.to-buy-section")
       const onHand = group.querySelector("details.on-hand-section")
 
-      if (toBuy && entry.to_buy === false) toBuy.open = false
-      if (onHand && entry.on_hand === false) onHand.open = false
+      if (toBuy && entry?.to_buy === false) toBuy.open = false
+      if (onHand && entry?.on_hand === false) onHand.open = false
     })
   }
 
@@ -225,78 +252,33 @@ export default class extends Controller {
     event.detail.render = async (...args) => {
       await originalRender(...args)
       this.restoreCollapseState()
-      this.applyInCartState()
+      this.applyPendingMoves()
     }
   }
 
-  // --- In cart (shopping trip boundary) ---
-
-  get cartKey() {
-    return `grocery-in-cart-${this.element.dataset.kitchenSlug}`
-  }
-
-  loadCart() {
+  cleanupCartStorage() {
     try {
-      const raw = sessionStorage.getItem(this.cartKey)
-      if (!raw) return new Set()
-
-      const parsed = JSON.parse(raw)
-      if (Array.isArray(parsed)) return this.clearCart()
-
-      const fourHours = 4 * 60 * 60 * 1000
-      if (Date.now() - parsed.ts > fourHours) return this.clearCart()
-
-      return new Set(parsed.items)
-    } catch {
-      return new Set()
-    }
+      sessionStorage.removeItem(`grocery-in-cart-${this.element.dataset.kitchenSlug}`)
+    } catch { /* ignore */ }
   }
 
-  saveCart(cart) {
-    try {
-      sessionStorage.setItem(this.cartKey, JSON.stringify({ items: [...cart], ts: Date.now() }))
-    } catch { /* sessionStorage full */ }
-  }
+  // --- Zone transition animations ---
 
-  clearCart() {
-    sessionStorage.removeItem(this.cartKey)
-    return new Set()
-  }
+  applyPendingMoves() {
+    if (this.pendingMoves.size === 0) return
 
-  addToCart(name) {
-    const cart = this.loadCart()
-    cart.add(name)
-    this.saveCart(cart)
-  }
-
-  removeFromCart(name) {
-    const cart = this.loadCart()
-    cart.delete(name)
-    this.saveCart(cart)
-  }
-
-  applyInCartState() {
-    const cart = this.loadCart()
-    if (cart.size === 0) return
-
-    cart.forEach(name => {
-      const onHandItem = this.element.querySelector(
-        `.on-hand-items li[data-item="${CSS.escape(name)}"]`
+    this.pendingMoves.forEach(name => {
+      const li = this.element.querySelector(
+        `li[data-item="${CSS.escape(name)}"]`
       )
-      if (!onHandItem) return
+      if (!li) return
 
-      const aisle = onHandItem.closest('.aisle-group')
-      if (!aisle) return
-
-      const toBuyList = aisle.querySelector('.to-buy-items')
-      if (!toBuyList) return
-
-      onHandItem.classList.add('in-cart')
-      const cb = onHandItem.querySelector('input[type="checkbox"]')
-      if (cb) cb.checked = true
-      toBuyList.appendChild(onHandItem)
+      li.classList.add("check-off-enter")
+      li.addEventListener("animationend", () => {
+        li.classList.remove("check-off-enter")
+      }, { once: true })
     })
 
-    this.updateItemCount()
+    this.pendingMoves.clear()
   }
 }
