@@ -211,6 +211,63 @@ module GrocerySim
     end
   end
 
+  # Models the three-zone grocery workflow explicitly:
+  #   Inventory Check → "Have It" (anchor confirm) or "Need It" (deplete)
+  #   To Buy → purchase (recheck depleted, reset confirmed_at)
+  #   On Hand → timer expires → back to Inventory Check
+  #   On Hand → user runs out → deplete → To Buy → purchase
+  #
+  # Uses anchor_mode: :confirm_only — the same algorithm MealPlan uses.
+  class ThreeZoneSim < Sim
+    def run!
+      (1..@days).each do |day|
+        consume!(day)
+        shop!(day) if (day % @shop_every).zero?
+      end
+      self
+    end
+
+    private
+
+    def shop!(day)
+      @items.each do |it|
+        case it.status(day)
+        when :new
+          triage_new!(it, day)
+        when :expired
+          triage_expired!(it, day)
+        when :on_hand
+          deplete!(it, day) unless it.has_stock
+        when :depleted
+          purchase!(it, day)
+        end
+      end
+    end
+
+    # First time seeing this item — user checks pantry
+    def triage_new!(it, day)
+      if it.has_stock
+        it.entry = Entry.new(confirmed_at: day)
+        it.record(day, 'have_it:new')
+      else
+        it.entry = Entry.new(confirmed_at: -999_999)
+        it.entry.depleted_at = day
+        it.record(day, 'need_it:new')
+        purchase!(it, day)
+      end
+    end
+
+    # Timer expired, item reappears in Inventory Check
+    def triage_expired!(it, day)
+      if it.has_stock
+        anchor_confirm!(it, day, label: 'have_it:confirm')
+      else
+        deplete!(it, day)
+        purchase!(it, day)
+      end
+    end
+  end
+
   def self.default_items
     { 'Eggs' => 7, 'Milk' => 10, 'Butter' => 14,
       'Flour' => 30, 'Pepper' => 60, 'Salt' => 90 }.map { |name, tc| Item.new(name, tc) }
@@ -222,20 +279,62 @@ end
 puts 'Grocery Interval Convergence Simulation'
 puts 'Immediate uncheck, 365 days'
 
-GrocerySim::Sim.new(items: GrocerySim.default_items, anchor_mode: :none)
-  .run!.report('A) Current algorithm — weekly, no fuzz')
+all_sims = []
 
-GrocerySim::Sim.new(items: GrocerySim.default_items, anchor_mode: :confirm_only)
-  .run!.report('B) Anchor (confirm only) — weekly, no fuzz')
+sim = GrocerySim::Sim.new(items: GrocerySim.default_items, anchor_mode: :none)
+label = 'A) Current algorithm — weekly, no fuzz'
+sim.run!.report(label)
+all_sims << [label, sim]
 
-GrocerySim::Sim.new(items: GrocerySim.default_items, anchor_mode: :none, shop_every: 3)
-  .run!.report('C) Current algorithm — shop every 3d, no fuzz')
+sim = GrocerySim::Sim.new(items: GrocerySim.default_items, anchor_mode: :confirm_only)
+label = 'B) Anchor (confirm only) — weekly, no fuzz'
+sim.run!.report(label)
+all_sims << [label, sim]
 
-GrocerySim::Sim.new(items: GrocerySim.default_items, anchor_mode: :confirm_only, shop_every: 3)
-  .run!.report('D) Anchor (confirm only) — shop every 3d, no fuzz')
+sim = GrocerySim::Sim.new(items: GrocerySim.default_items, anchor_mode: :none, shop_every: 3)
+label = 'C) Current algorithm — shop every 3d, no fuzz'
+sim.run!.report(label)
+all_sims << [label, sim]
 
-GrocerySim::Sim.new(items: GrocerySim.default_items, anchor_mode: :confirm_only, fuzz: 2)
-  .run!.report('E) Anchor (confirm only) — weekly, ±2d fuzz')
+sim = GrocerySim::Sim.new(items: GrocerySim.default_items, anchor_mode: :confirm_only, shop_every: 3)
+label = 'D) Anchor (confirm only) — shop every 3d, no fuzz'
+sim.run!.report(label)
+all_sims << [label, sim]
 
-GrocerySim::Sim.new(items: GrocerySim.default_items, anchor_mode: :all, fuzz: 2)
-  .run!.report('F) Anchor (all checks) — weekly, ±2d fuzz')
+sim = GrocerySim::Sim.new(items: GrocerySim.default_items, anchor_mode: :confirm_only, fuzz: 2)
+label = 'E) Anchor (confirm only) — weekly, ±2d fuzz'
+sim.run!.report(label)
+all_sims << [label, sim]
+
+sim = GrocerySim::Sim.new(items: GrocerySim.default_items, anchor_mode: :all, fuzz: 2)
+label = 'F) Anchor (all checks) — weekly, ±2d fuzz'
+sim.run!.report(label)
+all_sims << [label, sim]
+
+sim = GrocerySim::ThreeZoneSim.new(items: GrocerySim.default_items, anchor_mode: :confirm_only, fuzz: 2)
+label = 'G) Three-zone model — weekly shopping, ±2d fuzz'
+sim.run!.report(label)
+all_sims << [label, sim]
+
+# ---- Side-by-side comparison ----
+
+puts "\n\n#{'=' * 70}"
+puts 'COMPARISON: Final intervals across all scenarios'
+puts '=' * 70
+item_names = all_sims.first.last.items.map(&:name)
+header = format('  %-10s  %5s', 'Item', 'True')
+all_sims.each_with_index { |(_, _), i| header += format('  %6s', (65 + i).chr) }
+puts header
+puts '  ' + ('-' * (18 + all_sims.size * 8))
+item_names.each_with_index do |name, idx|
+  true_cycle = all_sims.first.last.items[idx].true_cycle
+  row = format('  %-10s  %5d', name, true_cycle)
+  all_sims.each do |_, s|
+    ev = s.items[idx].events.last
+    err = ev ? ((ev[:interval] - true_cycle).to_f / true_cycle * 100).round(0) : 0
+    row += format('  %+5d%%', err)
+  end
+  puts row
+end
+puts "\n  Legend:"
+all_sims.each_with_index { |(lbl, _), i| puts "    #{(65 + i).chr}) #{lbl.sub(/^[A-G]\) /, '')}" }
