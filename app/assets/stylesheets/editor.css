@@ -70,7 +70,7 @@
   height: 90vh;
   max-height: 90vh;
   box-shadow: var(--shadow-dialog);
-  animation: bloop 320ms cubic-bezier(0.16, 0.75, 0.40, 1);
+  animation: bloop 250ms cubic-bezier(0.16, 0.75, 0.40, 1);
 }
 
 .editor-dialog[open] {
@@ -773,11 +773,10 @@ textarea.input-base {
 }
 
 .graphical-step-body {
-  padding: 0;
+  padding: 0 14px;
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  transition: padding var(--duration-normal) ease;
 }
 
 .collapse-header[open] + .collapse-body > .graphical-step-body {

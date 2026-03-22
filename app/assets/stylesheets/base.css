@@ -1138,9 +1138,9 @@ html:has(dialog[open]) {
 }
 
 @keyframes bloop {
-  0%   { transform: scale(0.94); opacity: 0; }
-  50%  { transform: scale(1.04); opacity: 1; }
-  80%  { transform: scale(0.985); opacity: 1; }
+  0%   { transform: scale(0.95);  opacity: 0; }
+  40%  { transform: scale(1.02);  opacity: 1; }
+  70%  { transform: scale(0.992); opacity: 1; }
   100% { transform: scale(1);     opacity: 1; }
 }
 
