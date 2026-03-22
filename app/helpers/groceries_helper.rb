@@ -16,11 +16,23 @@ module GroceriesHelper
     "(#{inner})"
   end
 
-  def shopping_list_count_text(shopping_list, on_hand_names)
+  def item_zone(name:, on_hand_names:, on_hand_data:, custom_items:)
+    return :on_hand if on_hand_names.include?(name)
+
+    entry = on_hand_data.find { |k, _| k.casecmp?(name) }&.last
+    return :to_buy if entry&.key?('depleted_at')
+    return :to_buy if custom_items.any? { |c| c.casecmp?(name) }
+
+    :inventory_check
+  end
+
+  def shopping_list_count_text(shopping_list, on_hand_names, on_hand_data: {}, custom_items: [])
     total = shopping_list.each_value.sum(&:size)
     return '' if total.zero?
 
-    remaining = total - shopping_list.each_value.sum { |items| items.count { |i| on_hand_names.include?(i[:name]) } }
+    remaining = shopping_list.each_value.sum do |items|
+      items.count { |i| item_zone(name: i[:name], on_hand_names:, on_hand_data:, custom_items:) == :to_buy }
+    end
 
     return "\u2713 All done!" if remaining.zero?
 
