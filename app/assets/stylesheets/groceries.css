@@ -176,6 +176,72 @@
   font-size: 0.75rem;
 }
 
+/* Inventory Check — items with unknown on-hand status */
+.inventory-check-section {
+  margin-bottom: 0.75rem;
+  background: var(--surface-alt);
+  border: 1px solid var(--aisle-row-border);
+  border-radius: 6px;
+  padding: 0.6rem 0.75rem 0.5rem;
+}
+
+.inventory-check-section .section-header {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text);
+}
+
+.inventory-check-hint {
+  margin: 0.2rem 0 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text-soft);
+  font-style: italic;
+}
+
+.inventory-check-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.inventory-check-items li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0;
+}
+
+.inventory-check-items .item-text {
+  flex: 1;
+  font-size: 0.9rem;
+}
+
+.btn-need-it {
+  border: 1px solid var(--rule);
+  background: transparent;
+  color: var(--text-soft);
+}
+
+.btn-need-it:hover {
+  border-color: var(--text-soft);
+  color: var(--text);
+}
+
+.btn-have-it {
+  border: 1px solid var(--red);
+  background: transparent;
+  color: var(--red);
+}
+
+.btn-have-it:hover {
+  background: var(--red);
+  color: white;
+}
+
 /* Check-off Items */
 .check-off {
   display: flex;
@@ -218,6 +284,31 @@
   .shopping-list-header,
   .subtitle {
     display: none !important;
+  }
+
+  /* Inventory check: print as regular items, hide buttons and hint */
+  .inventory-check-section {
+    break-inside: avoid;
+    background: none;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    margin-bottom: 0.5rem;
+  }
+
+  .inventory-check-hint,
+  .btn-need-it,
+  .btn-have-it {
+    display: none !important;
+  }
+
+  .inventory-check-items {
+    padding: 0 0 0.25rem 0.25rem;
+  }
+
+  .inventory-check-items li {
+    padding: 0.15rem 0;
+    font-size: 0.85rem;
   }
 
   /* 4-column grid (not column-count, which is broken in WebKit print) */
