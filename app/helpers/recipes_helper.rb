@@ -50,7 +50,7 @@ module RecipesHelper # rubocop:disable Metrics/ModuleLength
 
   def servings_per_recipe_text(nutrition)
     count = nutrition['serving_count'] || 1
-    "#{count} #{'serving'.pluralize(count)} per recipe"
+    "#{format_numeric(count)} #{'serving'.pluralize(count)} per recipe"
   end
 
   def serving_size_text(nutrition)

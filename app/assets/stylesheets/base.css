@@ -632,6 +632,7 @@ header .recipe-meta a:hover {
   display: flex;
   flex-wrap: wrap;
   gap: 0.3rem;
+  justify-content: center;
 }
 
 .recipe-tag-pill {
