@@ -292,8 +292,8 @@ export default class extends Controller {
 
     const cappedRecipes = recipes.slice(0, 8)
 
-    // Groceries above if no strong recipe match (tier 2+), below otherwise
-    const groceryAbove = bestTier > 1
+    // Only a title match (tier 0) signals clear recipe intent
+    const groceryAbove = bestTier > 0
 
     if (grocerySectionEl && groceryAbove) {
       grocerySectionEl.classList.add("grocery-section--above")
