@@ -60,6 +60,9 @@ const baseTheme = EditorView.theme({
   ".cm-activeLine": {
     backgroundColor: "color-mix(in srgb, var(--text) 5%, transparent)",
   },
+  ".cm-cursor, .cm-cursor-primary": {
+    borderLeftColor: "var(--text)",
+  },
   "&.cm-focused": {
     outline: "none",
   },

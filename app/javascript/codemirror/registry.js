@@ -6,11 +6,11 @@
  * - plaintext_editor_controller: looks up classifier/foldService by key
  * - recipe_classifier.js: provides recipeClassifier ViewPlugin
  * - quickbites_classifier.js: provides quickbitesClassifier ViewPlugin
- * - recipe_fold.js: provides recipeFoldService
+ * - markdown_fold.js: provides markdownFoldService
  */
 import { recipeClassifier } from "./recipe_classifier"
 import { quickbitesClassifier } from "./quickbites_classifier"
-import { recipeFoldService } from "./recipe_fold"
+import { markdownFoldService } from "./markdown_fold"
 
 export const classifiers = {
   recipe: recipeClassifier,
@@ -18,5 +18,5 @@ export const classifiers = {
 }
 
 export const foldServices = {
-  recipe: recipeFoldService
+  markdown: markdownFoldService
 }
