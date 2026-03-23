@@ -25,7 +25,7 @@
 # _shopping_list.html.erb — title/class attributes; user content escaped by h(), class is a static literal
 - "app/views/groceries/_shopping_list.html.erb:27"
 - "app/views/groceries/_shopping_list.html.erb:83"
-- "app/views/groceries/_shopping_list.html.erb:110"
+- "app/views/groceries/_shopping_list.html.erb:112"
 
 # _search_overlay.html.erb — JSON inside <script type="application/json"> (not executed as JS)
 - "app/views/shared/_search_overlay.html.erb:2"

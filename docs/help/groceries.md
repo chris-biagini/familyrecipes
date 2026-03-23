@@ -29,9 +29,9 @@ Each aisle is split into three sections:
 - **To Buy** — items you need to purchase, grouped by aisle. These are things
   you've told the system you're out of. Check them off as you buy them.
 
-- **On Hand** — items you have. These are collapsed by default since you
-  don't need to act on them. If you run out of something, expand the section
-  and uncheck it — it moves to To Buy.
+- **On Hand** — items you have, shown with reduced opacity that fades as the
+  item ages. Items you just bought appear bolder so you can confirm your cart
+  at a glance. If you run out of something, uncheck it — it moves to To Buy.
 
 ## Before You Shop
 
@@ -45,12 +45,13 @@ you skip stays there until next time.
 
 ## While Shopping
 
-When you check off an item during a shopping trip, it stays visible in the
-To Buy list with a strikethrough rather than immediately disappearing into the
-On Hand section. This makes it easy to undo a mistake — if you checked off
-milk but realize you grabbed the wrong kind, just uncheck it.
+Check off items as they go in the cart. Checked items get a brief
+strikethrough before sliding into the On Hand section, where they appear bold
+to confirm what you've just grabbed. If you checked something by mistake,
+just uncheck it — same-day corrections are treated as an undo.
 
-Checked items settle into On Hand the next time you visit the page.
+Older on-hand items gradually fade, giving you a sense of pantry freshness at
+a glance without adding clutter.
 
 ## How the System Learns Your Pantry
 

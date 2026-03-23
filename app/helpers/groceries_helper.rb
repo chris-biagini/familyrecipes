@@ -12,7 +12,7 @@ module GroceriesHelper
 
     parts = amounts.map { |value, unit| format_amount_part(value, unit) }
     inner = parts.join(' + ')
-    inner += " +#{format_uncounted(uncounted)}" if uncounted.positive?
+    inner += " + #{format_uncounted(uncounted)}" if uncounted.positive?
     "(#{inner})"
   end
 
@@ -65,8 +65,12 @@ module GroceriesHelper
     [prefix.strip, stripped_hint]
   end
 
-  def on_hand_sort_key(name, on_hand_data)
-    [confirmed_today?(name, on_hand_data) ? 0 : 1, name]
+  def on_hand_sort_key(name, on_hand_data, now: Date.current)
+    return [0, name] if confirmed_today?(name, on_hand_data)
+
+    entry = on_hand_data.find { |k, _| k.casecmp?(name) }&.last
+    days_left = days_until_restock(entry, now)
+    [1, -days_left, name]
   end
 
   def confirmed_today?(name, on_hand_data)
@@ -79,7 +83,30 @@ module GroceriesHelper
     confirmed == Date.current.iso8601
   end
 
+  def on_hand_freshness_class(entry, now: Date.current)
+    return 'on-hand-fresh' if entry['interval'].nil?
+
+    effective = (entry['interval'] * MealPlan::SAFETY_MARGIN).to_i
+    return 'on-hand-aging' if effective <= 0
+
+    days_elapsed = (now - Date.parse(entry['confirmed_at'])).to_i
+    progress = days_elapsed.to_f / effective
+
+    return 'on-hand-aging' unless progress < 0.66
+    return 'on-hand-mid' unless progress < 0.33
+
+    'on-hand-fresh'
+  end
+
   private
+
+  def days_until_restock(entry, now)
+    return Float::INFINITY unless entry&.dig('interval')
+
+    effective = (entry['interval'] * MealPlan::SAFETY_MARGIN).to_i
+    confirmed = Date.parse(entry['confirmed_at'])
+    (confirmed + effective.days - now).to_i
+  end
 
   def uncounted_only_text(count)
     return '' if count <= 1
