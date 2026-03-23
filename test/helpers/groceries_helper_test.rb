@@ -63,11 +63,11 @@ class GroceriesHelperTest < ActionView::TestCase
   end
 
   test 'format_amounts with uncounted appends +N more' do
-    assert_equal "(1 +1\u00a0more)", format_amounts([[1.0, nil]], uncounted: 1)
+    assert_equal "(1 + 1\u00a0more)", format_amounts([[1.0, nil]], uncounted: 1)
   end
 
   test 'format_amounts with multiple uncounted appends +N more' do
-    assert_equal "(3\u00a0Tbsp +2\u00a0more)", format_amounts([[3.0, 'Tbsp']], uncounted: 2)
+    assert_equal "(3\u00a0Tbsp + 2\u00a0more)", format_amounts([[3.0, 'Tbsp']], uncounted: 2)
   end
 
   test 'format_amounts all uncounted with multiple uses shows count' do

@@ -442,7 +442,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     get groceries_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
-    assert_select '.item-amount', text: /\+1.more/
+    assert_select '.item-amount', text: /\+ 1.more/
   end
 
   test 'shopping list shows uses indicator for all-uncounted multi-source' do
