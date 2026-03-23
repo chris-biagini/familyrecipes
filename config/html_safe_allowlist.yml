@@ -23,9 +23,9 @@
 - "app/views/recipes/_step.html.erb:44" # processed_instructions: pre-rendered HTML from parse-on-save
 
 # _shopping_list.html.erb — title/class attributes; user content escaped by h(), class is a static literal
-- "app/views/groceries/_shopping_list.html.erb:21"
-- "app/views/groceries/_shopping_list.html.erb:77"
-- "app/views/groceries/_shopping_list.html.erb:104"
+- "app/views/groceries/_shopping_list.html.erb:27"
+- "app/views/groceries/_shopping_list.html.erb:83"
+- "app/views/groceries/_shopping_list.html.erb:110"
 
 # _search_overlay.html.erb — JSON inside <script type="application/json"> (not executed as JS)
 - "app/views/shared/_search_overlay.html.erb:2"

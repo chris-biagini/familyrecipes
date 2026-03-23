@@ -15,6 +15,12 @@
       <div class="collapse-body">
         <div class="collapse-inner">
           <p class="inventory-check-hint">Check your kitchen &mdash; do you have these?</p>
+          <% if inventory_items.size >= 5 %>
+            <div class="ic-bulk-actions">
+              <button type="button" class="btn btn-sm btn-need-it" data-grocery-action="deplete-all">Need All</button>
+              <button type="button" class="btn btn-sm btn-have-it" data-grocery-action="confirm-all">Have All</button>
+            </div>
+          <% end %>
           <ul class="inventory-check-items">
             <% inventory_items.each do |item| %>
               <% sources_tip = item[:sources].present? ? "Needed for: #{h item[:sources].join(', ')}" : nil %>

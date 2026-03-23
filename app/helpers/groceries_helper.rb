@@ -44,12 +44,14 @@ module GroceriesHelper
     return nil unless entry
     return nil if entry['interval'].nil?
 
+    effective = entry['interval'] * MealPlan::SAFETY_MARGIN
+
     if on_hand_names.include?(item_name)
-      days_left = ((Date.parse(entry['confirmed_at']) + entry['interval'].to_f.round.days) - now).to_i
+      days_left = ((Date.parse(entry['confirmed_at']) + effective.round.days) - now).to_i
       "Estimated restock in ~#{[days_left, 0].max} days"
     elsif entry['interval'] > MealPlan::STARTING_INTERVAL ||
           (entry['ease'] && entry['ease'] != MealPlan::STARTING_EASE)
-      "Restocks every ~#{entry['interval'].to_f.round} days"
+      "Restocks every ~#{effective.round} days"
     end
   end
 
