@@ -3,7 +3,7 @@ import { loadSmartTagData } from "../utilities/search_data"
 import ListenerManager from "../utilities/listener_manager"
 import { matchTier } from "../utilities/search_match"
 import { matchIngredients } from "../utilities/ingredient_match"
-import { buildGroceryActionRow, postNeedAction, flashAndClose } from "../utilities/grocery_action"
+import { buildGrocerySection, postNeedAction, flashAndClose } from "../utilities/grocery_action"
 
 function normalizeForSearch(str) {
   return (str || "")
@@ -220,12 +220,18 @@ export default class extends Controller {
     }
 
     const tokens = query ? query.split(/\s+/).filter(Boolean) : []
-    const results = tokens.length ? this.rankResults(tokens, candidates) : candidates
+    let results, bestTier
+    if (tokens.length) {
+      ({ recipes: results, bestTier } = this.rankResults(tokens, candidates))
+    } else {
+      results = candidates
+      bestTier = 5
+    }
 
     const ingredientMatches = query
       ? matchIngredients(query, this.ingredientCorpus, { customItems: this.customItems, max: 6 })
       : []
-    this.renderResultsWithGrocery(results, ingredientMatches, query)
+    this.renderResultsWithGrocery(results, ingredientMatches, query, bestTier)
     this.selectFirst()
   }
 
@@ -259,45 +265,49 @@ export default class extends Controller {
       return a.recipe.title.localeCompare(b.recipe.title)
     })
 
-    return scored.map(s => s.recipe)
+    const bestTier = scored.length > 0 ? scored[0].tier : 5
+    return { recipes: scored.map(s => s.recipe), bestTier }
   }
 
-  renderResults(recipes) {
-    this.clearResults()
-    this.groceryRowCount = 0
-    this.renderRecipeItems(recipes)
-  }
-
-  renderResultsWithGrocery(recipes, ingredientMatches, query) {
+  renderResultsWithGrocery(recipes, ingredientMatches, query, bestTier = 5) {
     this.clearResults()
     const list = this.resultsTarget
-    this.groceryRowCount = 0
+    this.groceryRows = []
 
     const showGrocery = this.needUrl &&
       (ingredientMatches.length > 0 || (query && this.activePills.length === 0))
 
+    let grocerySectionEl = null
     if (showGrocery) {
-      const topMatch = ingredientMatches.length > 0 ? ingredientMatches[0] : query
-      const alternates = ingredientMatches.slice(1, 4)
+      const { section, rows } = buildGrocerySection(
+        ingredientMatches, query, { customItems: this.customItems }
+      )
+      grocerySectionEl = section
+      this.groceryRows = rows
 
-      const rows = buildGroceryActionRow(topMatch, alternates, { customItems: this.customItems })
-      rows.forEach(row => list.appendChild(row))
-      this.groceryRowCount = 1
-
-      const altRow = list.querySelector(".grocery-alternates")
-      if (altRow) {
-        altRow.querySelectorAll(".grocery-alternate-btn").forEach(btn => {
-          btn.addEventListener("click", () => {
-            this.inputTarget.value = btn.dataset.ingredient
-            this.search()
-          })
-        })
-      }
+      rows.forEach(row => {
+        row.addEventListener("click", () => this.executeGroceryAction(row))
+      })
     }
 
-    this.renderRecipeItems(recipes)
+    const cappedRecipes = recipes.slice(0, 8)
 
-    if (this.groceryRowCount === 0 && recipes.length === 0) {
+    // Groceries above if no strong recipe match (tier 2+), below otherwise
+    const groceryAbove = bestTier > 1
+
+    if (grocerySectionEl && groceryAbove) {
+      grocerySectionEl.classList.add("grocery-section--above")
+      list.appendChild(grocerySectionEl)
+    }
+
+    this.renderRecipeItems(cappedRecipes, groceryAbove ? this.groceryRows.length : 0)
+
+    if (grocerySectionEl && !groceryAbove) {
+      grocerySectionEl.classList.add("grocery-section--below")
+      list.appendChild(grocerySectionEl)
+    }
+
+    if (!grocerySectionEl && cappedRecipes.length === 0) {
       const li = document.createElement("li")
       li.className = "search-no-results"
       li.textContent = "No matches"
@@ -306,9 +316,8 @@ export default class extends Controller {
     }
   }
 
-  renderRecipeItems(recipes) {
+  renderRecipeItems(recipes, offset = 0) {
     const list = this.resultsTarget
-    const offset = this.groceryRowCount
 
     recipes.forEach((recipe, index) => {
       const li = document.createElement("li")

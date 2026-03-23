@@ -1,72 +1,54 @@
 /**
- * Builds and manages the grocery action row in the search overlay — the "Need X?"
- * prompt that lets users quick-add ingredients to their grocery list without
- * leaving the search dialog. Handles DOM construction, alternate suggestions,
- * POST submission, and flash-and-close confirmation animation.
+ * Builds the grocery section in the search overlay — a floating panel with
+ * full-height ingredient rows that lets users quick-add items to their grocery
+ * list without leaving the search dialog. The section positions above or below
+ * recipe results based on match quality (tier-based positioning in the controller).
  *
  * Collaborators:
- *   - search_overlay_controller.js (renders and triggers actions)
+ *   - search_overlay_controller.js (renders, positions, and triggers actions)
  *   - GroceriesController#need (server endpoint for adding items)
  *   - editor_utils.js (CSRF token)
  */
 import { getCsrfToken } from "./editor_utils"
 
-export function buildGroceryActionRow(topMatch, alternates, { customItems = [] } = {}) {
-  const items = []
+export function buildGrocerySection(matches, query, { customItems = [] } = {}) {
+  const ingredients = matches.length > 0 ? matches.slice(0, 4) : [query]
 
-  const li = document.createElement("li")
-  li.className = "search-result grocery-action-row"
-  li.setAttribute("role", "option")
-  li.dataset.groceryAction = "true"
-  li.dataset.ingredient = topMatch
+  const section = document.createElement("li")
+  section.className = "grocery-section"
 
-  const left = document.createElement("span")
-  left.className = "grocery-action-left"
+  const header = document.createElement("div")
+  header.className = "grocery-section-header"
+  header.textContent = "Add to grocery list"
+  section.appendChild(header)
 
-  const label = document.createDocumentFragment()
-  label.appendChild(document.createTextNode("\uD83D\uDED2 Need "))
-  const strong = document.createElement("strong")
-  strong.textContent = topMatch
-  label.appendChild(strong)
-  label.appendChild(document.createTextNode("?"))
+  const rows = []
+  ingredients.forEach(name => {
+    const row = document.createElement("div")
+    row.className = "search-result grocery-item-row"
+    row.setAttribute("role", "option")
+    row.dataset.groceryAction = "true"
+    row.dataset.ingredient = name
 
-  left.appendChild(label)
+    const title = document.createElement("span")
+    title.className = "search-result-title"
+    title.textContent = name
 
-  const custom = customItems.find(c => c.name.toLowerCase() === topMatch.toLowerCase())
-  if (custom && custom.aisle && custom.aisle !== "Miscellaneous") {
-    const aisle = document.createElement("span")
-    aisle.className = "grocery-action-aisle"
-    aisle.textContent = custom.aisle
-    left.appendChild(aisle)
-  }
+    row.appendChild(title)
 
-  const hint = document.createElement("span")
-  hint.className = "grocery-action-hint"
-  hint.textContent = "\u21B5"
+    const custom = customItems.find(c => c.name.toLowerCase() === name.toLowerCase())
+    if (custom && custom.aisle && custom.aisle !== "Miscellaneous") {
+      const aisle = document.createElement("span")
+      aisle.className = "search-result-category"
+      aisle.textContent = custom.aisle
+      row.appendChild(aisle)
+    }
 
-  li.appendChild(left)
-  li.appendChild(hint)
-  items.push(li)
+    section.appendChild(row)
+    rows.push(row)
+  })
 
-  if (alternates && alternates.length > 0) {
-    const altLi = document.createElement("li")
-    altLi.className = "grocery-alternates"
-    altLi.appendChild(document.createTextNode("also: "))
-
-    alternates.forEach((alt, i) => {
-      if (i > 0) altLi.appendChild(document.createTextNode(", "))
-      const btn = document.createElement("button")
-      btn.type = "button"
-      btn.className = "grocery-alternate-btn"
-      btn.textContent = alt
-      btn.dataset.ingredient = alt
-      altLi.appendChild(btn)
-    })
-
-    items.push(altLi)
-  }
-
-  return items
+  return { section, rows }
 }
 
 export function buildAlreadyNeededRow(name) {
