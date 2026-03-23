@@ -147,7 +147,7 @@ module FamilyRecipes
     private_class_method :alternate_form
 
     def self.split_ingredient_name(name)
-      match = name.match(/\A(.+?)\s*(\([^)]+\))\z/)
+      match = name.match(/\A(.+\S)\s*(\([^)]+\))\z/)
       match ? [match[1].strip, match[2]] : [name, nil]
     end
     private_class_method :split_ingredient_name
