@@ -49,32 +49,36 @@ The system should be slightly pessimistic about shelf life. A 10% undershoot
 
 ### 1. Same-Day Uncheck Grace
 
-When `remove_from_on_hand` fires and `confirmed_at == today`:
+When `remove_from_on_hand` fires on a non-custom entry and the entry's
+`confirmed_at` matches the `now` parameter (same calendar day), intercept
+before `deplete_existing` runs:
 
-- **New entry (created today, no depleted_at history):** Delete from on_hand
-  entirely. Treat as undo — the check never happened.
-- **Rechecked depleted entry (came through recheck_depleted today):** Restore
-  to depleted state — set confirmed_at back to sentinel, set depleted_at to
-  today. Interval and ease are unchanged. The learned state survives.
+- **Default-valued entry** (`interval == STARTING_INTERVAL` and
+  `ease == STARTING_EASE`): Delete from on_hand entirely. The check never
+  happened — item returns to Inventory Check on next render.
+- **Entry with learned values** (anything else): Restore to depleted state
+  without penalizing ease. Set confirmed_at to sentinel, depleted_at to now.
+  Preserve interval and ease unchanged.
 
-Detection: add a `rechecked_today` flag (or check whether the entry had
-`depleted_at` before the recheck cleared it). Simplest: track in a transient
-instance variable or check if the entry's interval > STARTING_INTERVAL and
-ease < STARTING_EASE (heuristic for "this was previously depleted").
+This avoids any extra state tracking. Brand-new entries match defaults;
+everything else has learned values that differ.
 
-Actually, simplest approach: in `recheck_depleted`, stash the original
-depleted entry's interval and ease. In `remove_from_on_hand`, if
-`confirmed_at == today`, restore from stash. No — too stateful across calls.
+**Edge case — rechecked-depleted entry with default values.** An item
+depleted before any learning (created via `create_depleted_entry`, then
+purchased same day via `recheck_depleted`) has STARTING_INTERVAL and
+STARTING_EASE. The heuristic would delete it instead of restoring to
+depleted state. This is acceptable: deletion puts the item back in
+Inventory Check, which is the conservative choice. The item was never
+learned — there's no state worth preserving.
 
-Cleanest: in `remove_from_on_hand`, when `confirmed_at == today`:
-- If the entry has `interval == STARTING_INTERVAL` and
-  `ease == STARTING_EASE` (brand-new): delete it.
-- Otherwise (was rechecked from depletion or had prior history): restore to
-  depleted state with the existing interval and ease. Don't penalize ease.
-  Set confirmed_at to sentinel, depleted_at to today.
+**Edge case — old entries with pre-change defaults.** Entries created before
+these changes may have `ease == 2.0` (the old STARTING_EASE). They won't
+match the new defaults and will take the "restore to depleted" path, which
+preserves their learned state. This is correct behavior.
 
-This avoids any extra state tracking. Brand-new entries look like defaults;
-everything else has learned values that differ from defaults.
+**Insertion point:** In `remove_from_on_hand`, after the `return unless entry`
+guard and before the `custom || entry['interval'].nil?` branch. Only applies
+to the `else` (non-custom) branch.
 
 ### 2. Blended Intervals on Depletion
 
@@ -90,8 +94,8 @@ entry['interval'] = [blended, STARTING_INTERVAL].max
 ```
 
 Where `old_interval` is the entry's interval before this depletion event.
-For brand-new items (no prior interval), use `observed` directly since
-there's nothing to blend with.
+Every entry reaching `mark_depleted` has an interval (from `build_on_hand_entry`
+or prior learning), so `old_interval` is always present — no nil guard needed.
 
 Blending is an exponential moving average. Each observation pulls the interval
 halfway toward truth. For oscillating items (eggs with observations of 7 and
@@ -100,6 +104,7 @@ For delay-inflated observations, blending halves the damage.
 
 `mark_depleted_sentinel` is unchanged — it already preserves the interval
 and only penalizes ease, which is correct when there's no real observation.
+It will automatically use the softer EASE_PENALTY (0.15) from Change 4.
 
 ### 3. One-Step Growth Cap
 
@@ -114,20 +119,27 @@ loop do
 end
 ```
 
-With a single multiplication:
+With a single multiplication, and ease bumped only on success:
 
 ```ruby
-entry['interval'] = [entry['interval'] * entry['ease'], MAX_INTERVAL].min
-# If one step doesn't bridge the gap, reset confirmed_at — the gap is
-# too large to trust the anchor (user was absent, not consuming).
-if confirmed + entry['interval'].to_i < now
+new_ease = [entry['ease'] + EASE_BONUS, MAX_EASE].min
+entry['interval'] = [entry['interval'] * new_ease, MAX_INTERVAL].min
+
+if confirmed + entry['interval'].to_i >= now
+  # Success: one step bridges the gap. Commit the ease bump.
+  entry['ease'] = new_ease
+else
+  # Gap too large to trust the anchor. Reset confirmed_at to now.
+  # Don't bump ease — we can't tell if the item lasted or the user
+  # was just absent.
   entry['confirmed_at'] = now.iso8601
 end
 ```
 
 One "Have It" = one growth step. If the gap is too large, the system honestly
-admits it doesn't know and starts a fresh observation from today. The learned
-interval and ease are preserved.
+admits it doesn't know and starts a fresh observation from today. Ease is
+only rewarded when anchored growth succeeds — a long absence doesn't build
+false confidence.
 
 ### 4. Constant Tuning
 
@@ -158,16 +170,17 @@ When Inventory Check contains 5 or more items, render an "All Stocked"
 button at the top of the IC section. One tap fires `have_it` for every
 IC item.
 
-**Controller:** New `confirm_all` action on `GroceriesController`. Accepts
-the list of item names (embedded as a data attribute on the button, sourced
-from the server-rendered IC items). Loops through items, calling
-`apply_action('have_it', ...)` for each. Single save via
-`Kitchen.batch_writes`.
+**Controller:** New `confirm_all` action on `GroceriesController`. Receives
+a list of item names and calls `apply_action('have_it', ...)` for each.
+Single save via `Kitchen.batch_writes`.
 
 **Route:** `PATCH /groceries/confirm_all`
 
 **Stimulus:** Button handler in `grocery_ui_controller` that collects IC
-item names and posts to the endpoint. Animates the IC section closed.
+item names from the DOM at click time (from `data-item` attributes on
+`.inventory-check-items li` elements — same pattern the Have It / Need It
+buttons already use). Posts the collected names to the endpoint. Animates
+the IC section closed.
 
 **Threshold:** Hardcoded at 5. Below that, the individual buttons are fast
 enough that bulk action adds clutter without saving meaningful time.
@@ -192,6 +205,12 @@ Light touch — behavior is mostly the same, system just does it better:
   undo, not as running out."
 - Mention "All Stocked" in the Inventory Check section.
 - Soften "confidence grows faster" language to match the slower EASE_BONUS.
+
+**Restock tooltip:** `restock_tooltip` in `groceries_helper.rb` computes
+days remaining from the raw interval. With the safety margin, an item can
+appear in IC while the tooltip would show "Estimated restock in ~2 days."
+Update the tooltip to use the safety-margined effective interval so the
+numbers are consistent with the IC trigger.
 
 ### 8. Simulation Updates
 
