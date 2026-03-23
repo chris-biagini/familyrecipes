@@ -29,7 +29,7 @@
   <%= javascript_include_tag "application", defer: true %>
   <%= yield :head %>
 </head>
-<body data-controller="search-overlay" data-search-overlay-base-path="<%= params[:kitchen_slug] ? "/kitchens/#{params[:kitchen_slug]}" : '' %>" <%= yield :body_attrs %>>
+<body data-controller="search-overlay" data-search-overlay-base-path="<%= params[:kitchen_slug] ? "/kitchens/#{params[:kitchen_slug]}" : '' %>" data-search-overlay-need-url="<%= groceries_need_path %>" <%= yield :body_attrs %>>
   <%= render 'shared/nav' %>
   <main>
     <%= yield %>

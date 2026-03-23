@@ -63,11 +63,11 @@ class GroceriesHelperTest < ActionView::TestCase
   end
 
   test 'format_amounts with uncounted appends +N more' do
-    assert_equal "(1 +1\u00a0more)", format_amounts([[1.0, nil]], uncounted: 1)
+    assert_equal "(1 + 1\u00a0more)", format_amounts([[1.0, nil]], uncounted: 1)
   end
 
   test 'format_amounts with multiple uncounted appends +N more' do
-    assert_equal "(3\u00a0Tbsp +2\u00a0more)", format_amounts([[3.0, 'Tbsp']], uncounted: 2)
+    assert_equal "(3\u00a0Tbsp + 2\u00a0more)", format_amounts([[3.0, 'Tbsp']], uncounted: 2)
   end
 
   test 'format_amounts all uncounted with multiple uses shows count' do
@@ -84,48 +84,6 @@ class GroceriesHelperTest < ActionView::TestCase
 
   test 'format_amounts defaults uncounted to zero' do
     assert_equal '(2)', format_amounts([[2.0, nil]])
-  end
-
-  test 'parse_custom_item splits on last @' do
-    name, aisle = parse_custom_item('Shaving cream @ Personal care')
-
-    assert_equal 'Shaving cream', name
-    assert_equal 'Personal care', aisle
-  end
-
-  test 'parse_custom_item returns nil aisle when no @' do
-    name, aisle = parse_custom_item('Just milk')
-
-    assert_equal 'Just milk', name
-    assert_nil aisle
-  end
-
-  test 'parse_custom_item strips whitespace from both parts' do
-    name, aisle = parse_custom_item('  soap  @  Health  ')
-
-    assert_equal 'soap', name
-    assert_equal 'Health', aisle
-  end
-
-  test 'parse_custom_item handles no spaces around @' do
-    name, aisle = parse_custom_item('foo@bar')
-
-    assert_equal 'foo', name
-    assert_equal 'bar', aisle
-  end
-
-  test 'parse_custom_item with multiple @ uses last' do
-    name, aisle = parse_custom_item('foo @ bar @ Baz')
-
-    assert_equal 'foo @ bar', name
-    assert_equal 'Baz', aisle
-  end
-
-  test 'parse_custom_item with trailing @ returns nil aisle' do
-    name, aisle = parse_custom_item('foo @ ')
-
-    assert_equal 'foo', name
-    assert_nil aisle
   end
 
   test 'restock_tooltip shows days remaining for on-hand items' do
@@ -254,5 +212,71 @@ class GroceriesHelperTest < ActionView::TestCase
     result = shopping_list_count_text(shopping_list, Set.new, on_hand_data:, custom_items: [])
 
     assert_equal '1 item to buy', result
+  end
+
+  test 'on_hand_freshness_class returns on-hand-fresh for early progress' do
+    entry = { 'confirmed_at' => '2026-03-21', 'interval' => 10 }
+
+    assert_equal 'on-hand-fresh', on_hand_freshness_class(entry, now: Date.new(2026, 3, 23))
+  end
+
+  test 'on_hand_freshness_class returns on-hand-mid for middle progress' do
+    entry = { 'confirmed_at' => '2026-03-19', 'interval' => 10 }
+
+    assert_equal 'on-hand-mid', on_hand_freshness_class(entry, now: Date.new(2026, 3, 23))
+  end
+
+  test 'on_hand_freshness_class returns on-hand-aging for late progress' do
+    entry = { 'confirmed_at' => '2026-03-16', 'interval' => 10 }
+
+    assert_equal 'on-hand-aging', on_hand_freshness_class(entry, now: Date.new(2026, 3, 23))
+  end
+
+  test 'on_hand_freshness_class returns on-hand-fresh for nil interval' do
+    entry = { 'confirmed_at' => '2026-03-01', 'interval' => nil }
+
+    assert_equal 'on-hand-fresh', on_hand_freshness_class(entry, now: Date.new(2026, 3, 23))
+  end
+
+  test 'on_hand_freshness_class boundary at 0.33 returns mid' do
+    entry = { 'confirmed_at' => '2026-03-20', 'interval' => 10 }
+
+    assert_equal 'on-hand-mid', on_hand_freshness_class(entry, now: Date.new(2026, 3, 23))
+  end
+
+  test 'on_hand_freshness_class boundary at 0.66 returns aging' do
+    entry = { 'confirmed_at' => '2026-03-17', 'interval' => 10 }
+
+    assert_equal 'on-hand-aging', on_hand_freshness_class(entry, now: Date.new(2026, 3, 23))
+  end
+
+  test 'on_hand_freshness_class clamps progress above 1.0 to aging' do
+    entry = { 'confirmed_at' => '2026-03-08', 'interval' => 10 }
+
+    assert_equal 'on-hand-aging', on_hand_freshness_class(entry, now: Date.new(2026, 3, 23))
+  end
+
+  test 'on_hand_sort_key orders by days until restock descending' do
+    now = Date.new(2026, 3, 23)
+    on_hand_data = {
+      'Eggs' => { 'confirmed_at' => '2026-03-16', 'interval' => 10 },
+      'Butter' => { 'confirmed_at' => '2026-03-22', 'interval' => 10 },
+      'Milk' => { 'confirmed_at' => now.iso8601, 'interval' => 10 }
+    }
+    names = %w[Eggs Butter Milk]
+    sorted = names.sort_by { |n| on_hand_sort_key(n, on_hand_data, now:) }
+
+    assert_equal %w[Milk Butter Eggs], sorted
+  end
+
+  test 'on_hand_sort_key puts custom items after today' do
+    now = Date.new(2026, 3, 23)
+    on_hand_data = {
+      'Eggs' => { 'confirmed_at' => '2026-03-20', 'interval' => 10 },
+      'Candles' => { 'confirmed_at' => '2026-03-15', 'interval' => nil }
+    }
+    sorted = %w[Eggs Candles].sort_by { |n| on_hand_sort_key(n, on_hand_data, now:) }
+
+    assert_equal %w[Candles Eggs], sorted
   end
 end

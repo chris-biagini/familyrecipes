@@ -122,7 +122,7 @@ class MealPlanWriteServiceTest < ActiveSupport::TestCase
     )
 
     assert_predicate result, :success
-    assert_includes MealPlan.for_kitchen(@kitchen).custom_items, 'a' * 100
+    assert MealPlan.for_kitchen(@kitchen).custom_items.key?('a' * 100)
   end
 
   # --- check action canonicalization ---

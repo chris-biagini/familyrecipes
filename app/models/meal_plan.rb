@@ -7,7 +7,7 @@
 # intervals when users run out). Both menu and groceries pages read/write
 # this model.
 #
-# Action types: select, check, custom_items, have_it, need_it.
+# Action types: select, check, custom_items, have_it, need_it, quick_add.
 # - have_it: user confirms they still have an ingredient. Grows interval via
 #   anchored growth (preserves confirmed_at at purchase date) or standard
 #   growth (resets confirmed_at for sentinel/orphaned entries).
@@ -30,13 +30,13 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
   STATE_DEFAULTS = {
     'selected_recipes' => [],
     'selected_quick_bites' => [],
-    'custom_items' => [],
+    'custom_items' => {},
     'on_hand' => {}
   }.freeze
-  CASE_INSENSITIVE_KEYS = %w[custom_items].freeze
   MAX_RETRY_ATTEMPTS = 3
   MAX_CUSTOM_ITEM_LENGTH = 100
   COOK_HISTORY_WINDOW = 90
+  CUSTOM_ITEM_RETENTION = 45
   STARTING_INTERVAL = 7
   MAX_INTERVAL = 180
   ORPHAN_RETENTION = 180
@@ -80,7 +80,19 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
   end
 
   def custom_items
-    state.fetch('custom_items', [])
+    state.fetch('custom_items', {})
+  end
+
+  def visible_custom_items(now: Date.current)
+    custom_items.select { |_, entry| custom_item_visible?(entry, now) }
+  end
+
+  def sync_custom_on_hand(item, on_hand:, now: Date.current)
+    key = find_custom_key(item)
+    return unless key
+
+    state['custom_items'][key]['on_hand_at'] = on_hand ? now.iso8601 : nil
+    save!
   end
 
   def selected_recipes
@@ -123,7 +135,8 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
 
   def reconcile!(visible_names:, resolver: nil, now: Date.current)
     ensure_state_keys
-    changed = prune_on_hand(visible_names:, resolver:, now:)
+    changed = prune_custom_items(now)
+    changed |= prune_on_hand(visible_names:, resolver:, now:)
     changed |= prune_stale_selections
     save! if changed
   end
@@ -138,18 +151,19 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
     Date.parse(entry['confirmed_at']) + effective.to_i.days >= now
   end
 
-  def add_to_on_hand(item, custom:, now:)
+  def add_to_on_hand(item, custom:, now:) # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
     hash = state['on_hand']
     stored_key = find_on_hand_key(item)
     existing = stored_key ? hash[stored_key] : nil
 
-    return recheck_depleted(hash, item, stored_key, now) if existing&.key?('depleted_at')
+    return recheck_depleted(hash, item, stored_key, now, custom:) if existing&.key?('depleted_at')
 
     return if existing && existing['confirmed_at'] == now.iso8601
     return if existing && entry_on_hand?(existing, now)
 
     hash.delete(stored_key) if stored_key && stored_key != item
     hash[item] = build_on_hand_entry(existing, custom:, now:)
+    sync_custom_on_hand(item, on_hand: true, now:) if custom
     save!
   end
 
@@ -181,6 +195,7 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
 
     if custom || entry['interval'].nil?
       state['on_hand'].delete(key)
+      sync_custom_on_hand(item, on_hand: false, now:) if custom
     elsif entry['confirmed_at'] == now.iso8601
       # Same-day uncheck grace: treat as an undo, not a depletion signal.
       # Cracked eggs, wrong brand, accidental tap — don't nuke learned state.
@@ -219,11 +234,12 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
     end
   end
 
-  def recheck_depleted(hash, item, stored_key, now)
+  def recheck_depleted(hash, item, stored_key, now, custom: false)
     entry = hash.delete(stored_key)
     entry['confirmed_at'] = now.iso8601
     entry.delete('depleted_at')
     hash[item] = entry
+    sync_custom_on_hand(item, on_hand: true, now:) if custom
     save!
   end
 
@@ -241,7 +257,7 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
   def expire_orphaned_on_hand(hash, visible_names, custom, now)
     changed = false
     hash.each do |key, entry|
-      next if visible_names.include?(key) || custom.any? { |c| c.casecmp?(key) }
+      next if visible_names.include?(key) || custom.any? { |k, _| k.casecmp?(key) }
       next if entry['confirmed_at'] == ORPHAN_SENTINEL
       next if entry.key?('depleted_at')
 
@@ -256,7 +272,7 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
     changed = false
     hash.each do |key, entry|
       next unless entry['interval'].nil?
-      next if custom.any? { |c| c.casecmp?(key) }
+      next if custom.any? { |k, _| k.casecmp?(key) }
 
       entry['interval'] = STARTING_INTERVAL
       entry['ease'] = STARTING_EASE
@@ -345,29 +361,58 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
     end
   end
 
-  def apply_custom_items(item:, action:, **)
-    toggle_array('custom_items', item, action == 'add')
+  def apply_custom_items(item:, action:, aisle: 'Miscellaneous', now: Date.current, **)
+    if action == 'add'
+      add_custom_item(item, aisle:, now:)
+    else
+      remove_custom_item(item)
+    end
   end
 
   def toggle_array(key, value, add, save: true)
     list = state[key]
-    already_present = list_include?(key, list, value)
 
-    if add && !already_present
+    if add && list.exclude?(value)
       list << value
       save! if save
-    elsif !add && already_present
-      list_remove(key, list, value)
+    elsif !add && list.include?(value)
+      list.delete(value)
       save! if save
     end
   end
 
-  def list_include?(key, list, value)
-    CASE_INSENSITIVE_KEYS.include?(key) ? list.any? { |v| v.casecmp?(value) } : list.include?(value)
+  def add_custom_item(item, aisle:, now:)
+    hash = state['custom_items']
+    existing_key = find_custom_key(item)
+    hash.delete(existing_key) if existing_key
+    hash[item] = { 'aisle' => aisle, 'last_used_at' => now.iso8601, 'on_hand_at' => nil }
+    save!
   end
 
-  def list_remove(key, list, value)
-    CASE_INSENSITIVE_KEYS.include?(key) ? list.reject! { |v| v.casecmp?(value) } : list.delete(value)
+  def remove_custom_item(item)
+    key = find_custom_key(item)
+    return unless key
+
+    state['custom_items'].delete(key)
+    save!
+  end
+
+  def find_custom_key(item)
+    state['custom_items'].each_key.find { |k| k.casecmp?(item) }
+  end
+
+  def custom_item_visible?(entry, now)
+    return true if entry['on_hand_at'].nil?
+
+    Date.parse(entry['on_hand_at']) >= now
+  end
+
+  def prune_custom_items(now) # rubocop:disable Naming/PredicateMethod
+    hash = state['custom_items']
+    cutoff = now - CUSTOM_ITEM_RETENTION
+    before = hash.size
+    hash.reject! { |_, e| Date.parse(e['last_used_at']) < cutoff }
+    hash.size < before
   end
 
   def record_cook_event(slug)

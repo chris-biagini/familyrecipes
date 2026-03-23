@@ -33,7 +33,7 @@
     <%= render 'groceries/shopping_list', shopping_list: @shopping_list, on_hand_names: @on_hand_names, on_hand_data: @on_hand_data, custom_items: @custom_items %>
   </div>
 
-  <%= render 'groceries/custom_items', custom_items: @custom_items %>
+  <%= render 'groceries/custom_items', custom_items: @visible_custom_items %>
 
 </div>
 
