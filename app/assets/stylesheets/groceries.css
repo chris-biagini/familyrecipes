@@ -199,11 +199,17 @@
   justify-content: center;
   gap: 0.75rem;
   margin: 0.25rem 0 0.6rem;
-  background: linear-gradient(var(--rule-faint), var(--rule-faint)) center / 100% 1px no-repeat;
+}
+
+.ic-bulk-actions::before,
+.ic-bulk-actions::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--rule-faint);
 }
 
 .ic-bulk-actions .btn {
-  background: var(--ground);
   padding-left: 0.75rem;
   padding-right: 0.75rem;
 }
