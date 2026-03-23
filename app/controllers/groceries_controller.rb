@@ -46,6 +46,19 @@ class GroceriesController < ApplicationController
     head :no_content
   end
 
+  # Post-vacation recovery: confirm all inventory check items at once
+  def confirm_all
+    items = Array(params[:items])
+    Kitchen.batch_writes(current_kitchen) do
+      items.each do |item|
+        MealPlanWriteService.apply_action(
+          kitchen: current_kitchen, action_type: 'have_it', item:
+        )
+      end
+    end
+    head :no_content
+  end
+
   def update_custom_items
     result = MealPlanWriteService.apply_action(
       kitchen: current_kitchen, action_type: 'custom_items',

@@ -56,6 +56,14 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     assert_response :forbidden
   end
 
+  test 'confirm_all requires membership' do
+    patch groceries_confirm_all_path(kitchen_slug: kitchen_slug),
+          params: { items: ['flour'] },
+          as: :json
+
+    assert_response :forbidden
+  end
+
   # --- Show page ---
 
   test 'includes groceries CSS and Stimulus controllers' do
@@ -85,6 +93,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     assert_select '#groceries-app[data-check-url]'
     assert_select '#groceries-app[data-have-it-url]'
     assert_select '#groceries-app[data-need-it-url]'
+    assert_select '#groceries-app[data-confirm-all-url]'
     assert_select '#groceries-app[data-custom-items-url]'
   end
 
@@ -137,6 +146,57 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     assert_select 'section.aisle-group[data-aisle="Baking"]'
     assert_select 'li[data-item="Flour"]'
     assert_select 'input[type="checkbox"][data-item="Flour"]'
+  end
+
+  test 'show renders All Stocked button when 5+ IC items' do
+    @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Focaccia
+
+      ## Mix (combine)
+
+      - Flour, 3 cups
+      - Yeast, 1 tsp
+      - Olive oil, 2 tbsp
+      - Salt, 1 tsp
+      - Sugar, 1 tsp
+
+      Mix well.
+    MD
+
+    %w[Flour Yeast Salt Sugar].each { |name| create_catalog_entry(name, basis_grams: 10, aisle: 'Baking') }
+    create_catalog_entry('Olive oil', basis_grams: 14, aisle: 'Oils')
+
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+
+    log_in
+    get groceries_path(kitchen_slug: kitchen_slug)
+
+    assert_select '[data-grocery-action="confirm-all"]', 'All Stocked'
+  end
+
+  test 'show omits All Stocked button when fewer than 5 IC items' do
+    @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Focaccia
+
+      ## Mix (combine)
+
+      - Flour, 3 cups
+
+      Mix well.
+    MD
+
+    create_catalog_entry('Flour', basis_grams: 30, aisle: 'Baking')
+
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+
+    log_in
+    get groceries_path(kitchen_slug: kitchen_slug)
+
+    assert_select '[data-grocery-action="confirm-all"]', count: 0
   end
 
   test 'show renders inventory check for new items' do
@@ -453,6 +513,44 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
           as: :turbo_stream
 
     assert_response :no_content
+  end
+
+  test 'confirm_all moves multiple IC items to on-hand' do
+    @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Focaccia
+
+      ## Mix (combine)
+
+      - Flour, 3 cups
+      - Yeast, 1 tsp
+      - Olive oil, 2 tbsp
+      - Salt, 1 tsp
+      - Sugar, 1 tsp
+
+      Mix well.
+    MD
+
+    %w[Flour Yeast Salt Sugar].each { |name| create_catalog_entry(name, basis_grams: 10, aisle: 'Baking') }
+    create_catalog_entry('Olive oil', basis_grams: 14, aisle: 'Oils')
+
+    plan = MealPlan.for_kitchen(@kitchen)
+    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+
+    log_in
+    patch groceries_confirm_all_path(kitchen_slug: kitchen_slug),
+          params: { items: ['Flour', 'Yeast', 'Salt', 'Sugar', 'Olive oil'] },
+          as: :turbo_stream
+
+    assert_response :no_content
+
+    get groceries_path(kitchen_slug: kitchen_slug)
+
+    assert_select '.inventory-check-items li', count: 0
+    %w[Flour Yeast Salt Sugar].each do |name|
+      assert_select '.on-hand-items li[data-item=?]', name
+    end
+    assert_select '.on-hand-items li[data-item="Olive oil"]'
   end
 
   test 'custom_items adds item' do

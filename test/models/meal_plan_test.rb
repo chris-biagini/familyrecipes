@@ -1101,11 +1101,11 @@ class MealPlanTest < ActiveSupport::TestCase
     plan.save!
 
     # effective = 7 * 0.9 = 6.3, to_i = 6
-    on_day_7 = plan.effective_on_hand(now: Date.new(2026, 3, 7))
-    on_day_8 = plan.effective_on_hand(now: Date.new(2026, 3, 8))
+    before_margin = plan.effective_on_hand(now: Date.new(2026, 3, 7))
+    after_margin = plan.effective_on_hand(now: Date.new(2026, 3, 8))
 
-    assert on_day_7.key?('Flour'), 'March 7 (confirmed_at + 6): on-hand'
-    assert_not on_day_8.key?('Flour'), 'March 8 (confirmed_at + 7): expired due to safety margin'
+    assert before_margin.key?('Flour'), 'March 7 (confirmed_at + 6): on-hand'
+    assert_not after_margin.key?('Flour'), 'March 8 (confirmed_at + 7): expired due to safety margin'
   end
 
   # --- On-hand guard prevents double-growth ---
