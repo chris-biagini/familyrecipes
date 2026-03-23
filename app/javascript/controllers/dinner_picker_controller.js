@@ -1,18 +1,17 @@
 import { Controller } from "@hotwired/stimulus"
 import { computeFinalWeights, weightedRandomPick } from "../utilities/dinner_picker_logic"
 import { loadSearchData, loadSmartTagData } from "../utilities/search_data"
-import ListenerManager from "../utilities/listener_manager"
 
 /**
  * Dinner picker dialog: weighted random recipe suggestion with tag preferences,
- * slot machine animation, and re-roll with decline penalties. Opens from the
- * menu page, reads recipe data from SearchDataHelper JSON and recency weights
- * from a data attribute. Accept dispatches a checkbox change to menu_controller.
+ * slot machine animation, and re-roll with decline penalties. Paired with
+ * editor_controller on the same <dialog> element — editor handles open/close
+ * lifecycle, this controller handles picker UI and logic.
  *
  * - dinner_picker_logic.js: weight computation and random selection
- * - search_overlay_controller.js: provides searchData JSON (shared data source)
+ * - search_data.js: provides searchData JSON (shared data source)
+ * - editor_controller: dialog open/close, bloop animation
  * - menu_controller.js: handles checkbox change events for recipe selection
- * - ListenerManager: clean event listener teardown
  */
 
 const QUIPS = [
@@ -28,11 +27,10 @@ const QUIPS = [
 ]
 
 export default class extends Controller {
-  static targets = ["dialog", "tagState", "slotDisplay", "resultArea"]
+  static targets = ["tagState", "slotDisplay", "resultArea"]
   static values = { weights: Object, recipeBasePath: String }
 
   connect() {
-    this.listeners = new ListenerManager()
     this.tagPreferences = {}
     this.declinePenalties = {}
     this.animationTimer = null
@@ -41,23 +39,17 @@ export default class extends Controller {
     this.recipes = data.recipes || []
     this.allTags = data.all_tags || []
 
-    const btn = document.getElementById("dinner-picker-button")
-    if (btn) {
-      this.listeners.add(btn, "click", () => this.open())
-    }
-
-    this.listeners.add(this.dialogTarget, "close", () => this.reset())
+    this.element.addEventListener("close", () => this.reset())
   }
 
   disconnect() {
-    this.listeners.teardown()
+    this.cancelAnimation()
   }
 
-  open() {
+  onOpen() {
     this.tagPreferences = {}
     this.declinePenalties = {}
     this.showTagState()
-    this.dialogTarget.showModal()
   }
 
   reset() {
@@ -81,20 +73,9 @@ export default class extends Controller {
     this.renderTagUI()
   }
 
-  renderCloseButton(container) {
-    const btn = document.createElement("button")
-    btn.className = "dinner-picker-close"
-    btn.textContent = "\u00D7"
-    btn.setAttribute("aria-label", "Close")
-    btn.addEventListener("click", () => this.dialogTarget.close())
-    container.appendChild(btn)
-  }
-
   renderTagUI() {
     const container = this.tagStateTarget
     container.textContent = ""
-
-    this.renderCloseButton(container)
 
     const heading = document.createElement("h2")
     heading.textContent = "What are you in the mood for?"
@@ -179,11 +160,6 @@ export default class extends Controller {
     const display = this.slotDisplayTarget
     display.textContent = ""
 
-    const emoji = document.createElement("div")
-    emoji.className = "slot-emoji"
-    emoji.textContent = "\u{1F3B0}"
-    display.appendChild(emoji)
-
     const slotWindow = document.createElement("div")
     slotWindow.className = "slot-window"
     display.appendChild(slotWindow)
@@ -205,7 +181,6 @@ export default class extends Controller {
       } else {
         nameEl.textContent = winner.title
         nameEl.classList.add("slot-landed")
-        emoji.textContent = "\u{1F389}"
         this.animationTimer = setTimeout(() => this.showResult(winner), 400)
       }
     }
@@ -219,8 +194,6 @@ export default class extends Controller {
 
     const container = this.resultAreaTarget
     container.textContent = ""
-
-    this.renderCloseButton(container)
 
     const label = document.createElement("div")
     label.className = "result-label"
@@ -254,17 +227,17 @@ export default class extends Controller {
     const actions = document.createElement("div")
     actions.className = "result-actions"
 
-    const acceptBtn = document.createElement("button")
-    acceptBtn.className = "btn btn-primary"
-    acceptBtn.textContent = "\u2713 Add to Menu"
-    acceptBtn.addEventListener("click", () => this.accept(recipe))
-    actions.appendChild(acceptBtn)
-
     const retryBtn = document.createElement("button")
     retryBtn.className = "btn"
     retryBtn.textContent = "Try again"
     retryBtn.addEventListener("click", () => this.retry(recipe))
     actions.appendChild(retryBtn)
+
+    const acceptBtn = document.createElement("button")
+    acceptBtn.className = "btn btn-primary"
+    acceptBtn.textContent = "Add to Menu"
+    acceptBtn.addEventListener("click", () => this.accept(recipe))
+    actions.appendChild(acceptBtn)
 
     container.appendChild(actions)
 
@@ -283,7 +256,7 @@ export default class extends Controller {
       checkbox.checked = true
       checkbox.dispatchEvent(new Event("change", { bubbles: true }))
     }
-    this.dialogTarget.close()
+    this.element.close()
   }
 
   retry(recipe) {
@@ -292,6 +265,6 @@ export default class extends Controller {
   }
 
   randomQuip() {
-    return "\u{1F3B0} " + QUIPS[Math.floor(Math.random() * QUIPS.length)]
+    return QUIPS[Math.floor(Math.random() * QUIPS.length)]
   }
 }

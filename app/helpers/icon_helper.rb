@@ -75,7 +75,10 @@ module IconHelper
              content: '<line x1="16" y1="3" x2="16" y2="26"/>' \
                       '<line x1="4" y1="9" x2="28" y2="9"/>' \
                       '<path d="M6 9L3 19h10L10 9"/><path d="M22 9l-3 10h10l-3-10"/>' \
-                      '<line x1="10" y1="26" x2="22" y2="26"/>' }
+                      '<line x1="10" y1="26" x2="22" y2="26"/>' },
+    dice: { view_box: '0 0 24 24', attrs: { 'stroke-width' => '1.8' },
+            content: '<rect x="3" y="3" width="18" height="18" rx="3"/>' \
+                     '<path d="M8.5 8.5h.01"/><path d="M12 12h.01"/><path d="M15.5 15.5h.01"/>' }
   }.tap { |h| h.each_value(&:freeze) }.freeze
 
   def icon(name, size: 24, **attrs)

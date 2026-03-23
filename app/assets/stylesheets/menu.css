@@ -250,16 +250,14 @@
 
 /* -- Dinner Picker -- */
 
-#dinner-picker-dialog {
-  position: relative;
+#dinner-picker-dialog.editor-dialog,
+#dinner-picker-dialog.editor-dialog[open] {
   max-width: 28rem;
   width: 90vw;
-  border: 1px solid var(--rule);
-  border-radius: 0.25rem;
+  height: fit-content;
+  max-height: 90vh;
   padding: 1.5rem;
-  background: var(--ground);
-  color: var(--text);
-  box-shadow: var(--shadow-dialog);
+  overflow: visible;
 }
 
 .dinner-picker-close {
@@ -273,14 +271,11 @@
   color: var(--text-light);
   cursor: pointer;
   padding: 0.25rem 0.5rem;
+  z-index: 1;
 }
 
 .dinner-picker-close:hover {
   color: var(--text);
-}
-
-#dinner-picker-dialog::backdrop {
-  background: var(--dialog-backdrop);
 }
 
 .dinner-picker-subtitle {
@@ -340,11 +335,6 @@
   justify-content: center;
   min-height: 14rem;
   text-align: center;
-}
-
-.slot-emoji {
-  font-size: 2rem;
-  margin-bottom: 0.8rem;
 }
 
 .slot-window {
@@ -415,6 +405,18 @@
   text-align: center;
   color: var(--text-soft);
   font-size: 0.8rem;
+}
+
+@media (max-width: 720px) {
+  #dinner-picker-dialog.editor-dialog {
+    width: 90vw;
+    height: fit-content;
+    max-width: 28rem;
+    max-height: 90vh;
+    border-radius: 0.25rem;
+    border: 1px solid var(--text);
+    padding: 1.5rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

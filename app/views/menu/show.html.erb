@@ -13,7 +13,8 @@
   <div class="recipe-actions">
     <% if current_kitchen.recipes.any? %>
     <button type="button" id="dinner-picker-button" class="btn-ghost">
-      🎲 What Should We Make?
+      <%= icon(:dice, size: 14) %>
+      What Should We Make?
     </button>
     <span class="recipe-actions-dot">&middot;</span>
     <% end %>
@@ -58,15 +59,19 @@
   </turbo-frame>
 <% end %>
 
-<div data-controller="dinner-picker"
-     data-dinner-picker-weights-value="<%= @cook_weights.to_json %>"
-     data-dinner-picker-recipe-base-path-value="<%= recipes_path %>/">
-  <dialog id="dinner-picker-dialog" data-dinner-picker-target="dialog">
-    <div class="dinner-picker-content">
-      <div data-dinner-picker-target="tagState" class="dinner-picker-tags"></div>
-      <div data-dinner-picker-target="slotDisplay" class="dinner-picker-slot" hidden></div>
-      <div data-dinner-picker-target="resultArea" class="dinner-picker-result" hidden></div>
-    </div>
-  </dialog>
-</div>
+<dialog id="dinner-picker-dialog" class="editor-dialog"
+        data-controller="editor dinner-picker"
+        data-editor-open-selector-value="#dinner-picker-button"
+        data-editor-on-success-value="close"
+        data-action="editor:opened->dinner-picker#onOpen"
+        data-dinner-picker-weights-value="<%= @cook_weights.to_json %>"
+        data-dinner-picker-recipe-base-path-value="<%= recipes_path %>/">
+  <div class="dinner-picker-content">
+    <button type="button" class="dinner-picker-close"
+            data-action="click->editor#close" aria-label="Close">&times;</button>
+    <div data-dinner-picker-target="tagState" class="dinner-picker-tags"></div>
+    <div data-dinner-picker-target="slotDisplay" class="dinner-picker-slot" hidden></div>
+    <div data-dinner-picker-target="resultArea" class="dinner-picker-result" hidden></div>
+  </div>
+</dialog>
 <% end %>
