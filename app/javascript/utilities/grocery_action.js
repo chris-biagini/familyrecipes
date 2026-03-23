@@ -51,16 +51,6 @@ export function buildGrocerySection(matches, query, { customItems = [] } = {}) {
   return { section, rows }
 }
 
-export function buildAlreadyNeededRow(name) {
-  const li = document.createElement("li")
-  li.className = "search-result grocery-already-needed"
-  li.setAttribute("role", "option")
-
-  li.textContent = `\u2713 ${name} is already on your list`
-
-  return li
-}
-
 export function postNeedAction(url, item, aisle) {
   return fetch(url, {
     method: "POST",

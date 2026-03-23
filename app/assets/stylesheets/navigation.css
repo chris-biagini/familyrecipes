@@ -454,11 +454,3 @@ nav a:focus-visible {
   transition: opacity 300ms ease;
 }
 
-.grocery-already-needed {
-  background: color-mix(in srgb, var(--smart-amber-text) 8%, var(--ground));
-  border: 1px solid color-mix(in srgb, var(--smart-amber-text) 20%, var(--rule));
-  border-radius: 6px;
-  padding: 8px 12px;
-  color: var(--smart-amber-text);
-  font-size: 0.9rem;
-}
