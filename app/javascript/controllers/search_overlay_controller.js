@@ -300,7 +300,7 @@ export default class extends Controller {
       list.appendChild(grocerySectionEl)
     }
 
-    this.renderRecipeItems(cappedRecipes, groceryAbove ? this.groceryRows.length : 0)
+    this.renderRecipeItems(cappedRecipes)
 
     if (grocerySectionEl && !groceryAbove) {
       grocerySectionEl.classList.add("grocery-section--below")
@@ -316,14 +316,13 @@ export default class extends Controller {
     }
   }
 
-  renderRecipeItems(recipes, offset = 0) {
+  renderRecipeItems(recipes) {
     const list = this.resultsTarget
 
     recipes.forEach((recipe, index) => {
       const li = document.createElement("li")
       li.className = "search-result"
       li.setAttribute("role", "option")
-      li.dataset.index = offset + index
       li.dataset.slug = recipe.slug
 
       const title = document.createElement("span")
