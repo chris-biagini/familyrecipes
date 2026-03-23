@@ -211,6 +211,11 @@ collision. Parser pipeline: `LineClassifier` → `RecipeBuilder` →
   fix — "Have It" preserves `confirmed_at` at the purchase date so
   depletion observations capture the full consumption period. See
   `docs/superpowers/specs/2026-03-22-inventory-check-design.md`.
+- `POST /groceries/need` — search overlay quick-add: resolves ingredient
+  name, adds unrecognized items as structured custom items (`{ name:,
+  added_at: }`), marks item as needed. `SearchDataHelper` exposes
+  `ingredients` and `custom_items` keys so the overlay can match against
+  the grocery corpus.
 
 **Editor dialogs.** Use `render layout: 'shared/editor_dialog'` with Stimulus
 data attributes — no JS needed. Custom dialogs hook in via lifecycle events

@@ -7,7 +7,7 @@
 # intervals when users run out). Both menu and groceries pages read/write
 # this model.
 #
-# Action types: select, check, custom_items, have_it, need_it.
+# Action types: select, check, custom_items, have_it, need_it, quick_add.
 # - have_it: user confirms they still have an ingredient. Grows interval via
 #   anchored growth (preserves confirmed_at at purchase date) or standard
 #   growth (resets confirmed_at for sentinel/orphaned entries).

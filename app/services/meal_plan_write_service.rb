@@ -1,12 +1,13 @@
 # frozen_string_literal: true
 
 # Orchestrates all direct MealPlan mutations: action application (select,
-# check, custom items, have_it, need_it). Validates input (e.g. custom item
-# length) before mutating. Canonicalization boundary for check/have_it/need_it:
-# resolves item names via IngredientResolver; check also detects custom items
-# (case-insensitive). Owns optimistic-locking retry for state changes.
-# Post-write finalization (reconciliation, broadcast) is handled by
-# Kitchen.finalize_writes.
+# check, custom items, have_it, need_it, quick_add). Validates input (e.g.
+# custom item length) before mutating. Canonicalization boundary for
+# check/have_it/need_it: resolves item names via IngredientResolver; check
+# also detects custom items (case-insensitive). quick_add is the search
+# overlay's "add to grocery list" action — resolves name, adds to custom
+# items if unrecognized, and marks the item as needed. Returns QuickAddResult
+# with :added, :already_on_list, or :failed status.
 #
 # - MealPlan: singleton-per-kitchen JSON state record
 # - IngredientCatalog.resolver_for: builds resolver for canonical name lookup
