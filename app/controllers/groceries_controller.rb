@@ -20,6 +20,7 @@ class GroceriesController < ApplicationController
     @on_hand_names = plan.effective_on_hand.keys.to_set
     @on_hand_data = plan.on_hand
     @custom_items = plan.custom_items
+    @visible_custom_items = plan.visible_custom_items
   end
 
   def check
@@ -59,7 +60,8 @@ class GroceriesController < ApplicationController
   def update_custom_items
     result = MealPlanWriteService.apply_action(
       kitchen: current_kitchen, action_type: 'custom_items',
-      item: params[:item].to_s, action: params[:action_type]
+      item: params[:item].to_s, action: params[:action_type],
+      aisle: params[:aisle].presence || 'Miscellaneous'
     )
     return render json: { errors: result.errors }, status: :unprocessable_content if result.errors.any?
 

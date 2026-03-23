@@ -28,7 +28,7 @@ class ShoppingListBuilder # rubocop:disable Metrics/ClassLength
   end
 
   def visible_names
-    custom = @meal_plan.custom_items.map { |item| canonical_name(parse_custom_item(item).first) }
+    custom = @meal_plan.visible_custom_items.keys.map { |name| canonical_name(name) }
     (canonical_recipe_names + canonical_quick_bite_names + custom)
       .reject { |name| @resolver.omitted?(name) }.to_set
   end
@@ -150,34 +150,23 @@ class ShoppingListBuilder # rubocop:disable Metrics/ClassLength
   end
 
   def add_custom_items(organized)
-    custom = @meal_plan.custom_items
+    custom = @meal_plan.visible_custom_items
     return if custom.empty?
 
     existing = existing_canonical_names(organized)
-    new_items = custom.filter_map { |raw| custom_item_entry(raw, organized, existing) }
+    new_items = custom.filter_map { |name, entry| custom_item_entry_from_hash(name, entry, organized, existing) }
     return if new_items.empty?
 
     new_items.each { |aisle, item| (organized[aisle] ||= []) << item }
     organized.replace(sort_aisles(organized))
   end
 
-  def custom_item_entry(raw_item, organized, existing)
-    name, aisle_hint = parse_custom_item(raw_item)
+  def custom_item_entry_from_hash(name, entry, organized, existing)
     canonical = canonical_name(name)
     return if existing.include?(canonical)
 
-    aisle = aisle_hint ? resolve_aisle_hint(aisle_hint, organized) : aisle_for(canonical)
+    aisle = resolve_aisle_hint(entry['aisle'], organized)
     [aisle, { name: canonical, amounts: [], sources: [], uncounted: 0 }]
-  end
-
-  def parse_custom_item(text)
-    prefix, separator, hint = text.rpartition('@')
-    return [text.strip, nil] if separator.empty?
-
-    stripped_hint = hint.strip
-    return [prefix.strip, nil] if stripped_hint.empty?
-
-    [prefix.strip, stripped_hint]
   end
 
   def resolve_aisle_hint(hint, organized)

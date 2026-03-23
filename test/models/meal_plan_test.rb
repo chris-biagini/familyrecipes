@@ -46,7 +46,7 @@ class MealPlanTest < ActiveSupport::TestCase
     list.reload
 
     assert_instance_of Hash, list.state['on_hand']
-    assert_instance_of Array, list.state['custom_items']
+    assert_instance_of Hash, list.state['custom_items']
   end
 
   test 'for_kitchen finds or creates' do
@@ -84,7 +84,7 @@ class MealPlanTest < ActiveSupport::TestCase
     list = MealPlan.for_kitchen(@kitchen)
     list.apply_action('custom_items', item: 'birthday candles', action: 'add')
 
-    assert_includes list.state['custom_items'], 'birthday candles'
+    assert list.custom_items.key?('birthday candles')
   end
 
   test 'apply_action removes custom item' do
@@ -92,7 +92,7 @@ class MealPlanTest < ActiveSupport::TestCase
     list.apply_action('custom_items', item: 'birthday candles', action: 'add')
     list.apply_action('custom_items', item: 'birthday candles', action: 'remove')
 
-    assert_not_includes list.state['custom_items'], 'birthday candles'
+    assert_not list.custom_items.key?('birthday candles')
   end
 
   test 'raises on unknown action types' do
@@ -369,7 +369,7 @@ class MealPlanTest < ActiveSupport::TestCase
     reconcile_plan!(plan)
     plan.reload
 
-    assert_empty plan.state['custom_items']
+    assert_empty plan.custom_items
     entry = plan.on_hand['Birthday Candles']
 
     assert_equal '1970-01-01', entry['confirmed_at'], 'Orphaned entry should be expired'
@@ -412,7 +412,8 @@ class MealPlanTest < ActiveSupport::TestCase
     list.apply_action('custom_items', item: 'Butter', action: 'add')
     list.apply_action('custom_items', item: 'butter', action: 'add')
 
-    assert_equal ['Butter'], list.state['custom_items']
+    assert_equal 1, list.custom_items.size
+    assert list.custom_items.key?('Butter')
   end
 
   test 'removing custom item is case-insensitive' do
@@ -420,7 +421,97 @@ class MealPlanTest < ActiveSupport::TestCase
     list.apply_action('custom_items', item: 'Butter', action: 'add')
     list.apply_action('custom_items', item: 'butter', action: 'remove')
 
-    assert_empty list.state['custom_items']
+    assert_empty list.custom_items
+  end
+
+  # --- Structured custom items ---
+
+  test 'custom item stores aisle and last_used_at' do
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('custom_items', item: 'Shaving cream', action: 'add', aisle: 'Personal')
+
+    entry = list.custom_items['Shaving cream']
+
+    assert_equal 'Personal', entry['aisle']
+    assert_equal Date.current.iso8601, entry['last_used_at']
+    assert_nil entry['on_hand_at']
+  end
+
+  test 'custom item defaults aisle to Miscellaneous' do
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('custom_items', item: 'paper towels', action: 'add')
+
+    assert_equal 'Miscellaneous', list.custom_items['paper towels']['aisle']
+  end
+
+  test 'visible_custom_items excludes items with past on_hand_at' do
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('custom_items', item: 'candles', action: 'add')
+    list.state['custom_items']['candles']['on_hand_at'] = '2026-03-20'
+    list.save!
+
+    visible = list.visible_custom_items(now: Date.new(2026, 3, 23))
+
+    assert_not visible.key?('candles')
+  end
+
+  test 'visible_custom_items includes items with nil on_hand_at' do
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('custom_items', item: 'candles', action: 'add')
+
+    visible = list.visible_custom_items
+
+    assert visible.key?('candles')
+  end
+
+  test 'visible_custom_items includes items with today on_hand_at' do
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('custom_items', item: 'candles', action: 'add')
+    list.state['custom_items']['candles']['on_hand_at'] = Date.current.iso8601
+    list.save!
+
+    visible = list.visible_custom_items(now: Date.current)
+
+    assert visible.key?('candles')
+  end
+
+  test 'prune_custom_items removes items with on_hand_at older than retention' do
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('custom_items', item: 'old candles', action: 'add')
+    list.apply_action('custom_items', item: 'fresh candles', action: 'add')
+    list.state['custom_items']['old candles']['on_hand_at'] = '2026-01-01'
+    list.state['custom_items']['fresh candles']['on_hand_at'] = nil
+    list.save!
+
+    resolver = IngredientCatalog.resolver_for(@kitchen)
+    visible = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: list, resolver:).visible_names
+    list.reconcile!(visible_names: visible, resolver:, now: Date.new(2026, 3, 23))
+    list.reload
+
+    assert_not list.custom_items.key?('old candles'), 'Should be pruned (>45 days with on_hand_at)'
+    assert list.custom_items.key?('fresh candles'), 'Should be retained (nil on_hand_at)'
+  end
+
+  test 'sync_custom_on_hand sets on_hand_at when checked' do
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('custom_items', item: 'candles', action: 'add')
+
+    list.sync_custom_on_hand('candles', on_hand: true)
+    list.reload
+
+    assert_equal Date.current.iso8601, list.custom_items['candles']['on_hand_at']
+  end
+
+  test 'sync_custom_on_hand clears on_hand_at when unchecked' do
+    list = MealPlan.for_kitchen(@kitchen)
+    list.apply_action('custom_items', item: 'candles', action: 'add')
+    list.state['custom_items']['candles']['on_hand_at'] = Date.current.iso8601
+    list.save!
+
+    list.sync_custom_on_hand('candles', on_hand: false)
+    list.reload
+
+    assert_nil list.custom_items['candles']['on_hand_at']
   end
 
   # -- Cook History --

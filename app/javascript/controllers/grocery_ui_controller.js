@@ -175,9 +175,20 @@ export default class extends Controller {
     const text = input.value.trim()
     if (!text) return
 
-    sendAction(url, { item: text, action_type: "add" })
+    const { name, aisle } = this.parseCustomItemText(text)
+    sendAction(url, { item: name, aisle: aisle || "Miscellaneous", action_type: "add" })
     input.value = ""
     input.focus()
+  }
+
+  parseCustomItemText(text) {
+    const idx = text.lastIndexOf("@")
+    if (idx < 0) return { name: text.trim(), aisle: null }
+
+    const hint = text.slice(idx + 1).trim()
+    if (!hint) return { name: text.slice(0, idx).trim(), aisle: null }
+
+    return { name: text.slice(0, idx).trim(), aisle: hint }
   }
 
   // --- Collapse persistence ---

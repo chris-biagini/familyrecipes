@@ -52,7 +52,7 @@ class MealPlanWriteService
 
     return params.merge(item: canonical) unless action_type == 'check'
 
-    custom = plan.custom_items.any? { |c| c.casecmp?(params[:item].to_s) }
+    custom = plan.custom_items.any? { |k, _| k.casecmp?(params[:item].to_s) }
     params.merge(item: canonical, custom:)
   end
 

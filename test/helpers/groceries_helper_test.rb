@@ -86,48 +86,6 @@ class GroceriesHelperTest < ActionView::TestCase
     assert_equal '(2)', format_amounts([[2.0, nil]])
   end
 
-  test 'parse_custom_item splits on last @' do
-    name, aisle = parse_custom_item('Shaving cream @ Personal care')
-
-    assert_equal 'Shaving cream', name
-    assert_equal 'Personal care', aisle
-  end
-
-  test 'parse_custom_item returns nil aisle when no @' do
-    name, aisle = parse_custom_item('Just milk')
-
-    assert_equal 'Just milk', name
-    assert_nil aisle
-  end
-
-  test 'parse_custom_item strips whitespace from both parts' do
-    name, aisle = parse_custom_item('  soap  @  Health  ')
-
-    assert_equal 'soap', name
-    assert_equal 'Health', aisle
-  end
-
-  test 'parse_custom_item handles no spaces around @' do
-    name, aisle = parse_custom_item('foo@bar')
-
-    assert_equal 'foo', name
-    assert_equal 'bar', aisle
-  end
-
-  test 'parse_custom_item with multiple @ uses last' do
-    name, aisle = parse_custom_item('foo @ bar @ Baz')
-
-    assert_equal 'foo @ bar', name
-    assert_equal 'Baz', aisle
-  end
-
-  test 'parse_custom_item with trailing @ returns nil aisle' do
-    name, aisle = parse_custom_item('foo @ ')
-
-    assert_equal 'foo', name
-    assert_nil aisle
-  end
-
   test 'restock_tooltip shows days remaining for on-hand items' do
     on_hand_data = { 'Milk' => { 'confirmed_at' => '2026-03-15', 'interval' => 10, 'ease' => 1.1 } }
     on_hand_names = Set.new(['Milk'])
@@ -161,7 +119,7 @@ class GroceriesHelperTest < ActionView::TestCase
   end
 
   test 'item_zone returns :on_hand for items in on_hand_names' do
-    result = item_zone(name: 'Milk', on_hand_names: Set.new(%w[Milk]), on_hand_data: {}, custom_items: [])
+    result = item_zone(name: 'Milk', on_hand_names: Set.new(%w[Milk]), on_hand_data: {}, custom_items: {})
 
     assert_equal :on_hand, result
   end
@@ -169,37 +127,36 @@ class GroceriesHelperTest < ActionView::TestCase
   test 'item_zone returns :to_buy for items with depleted_at entry' do
     on_hand_data = { 'Milk' => { 'depleted_at' => '2026-03-20' } }
 
-    result = item_zone(name: 'Milk', on_hand_names: Set.new, on_hand_data:, custom_items: [])
+    result = item_zone(name: 'Milk', on_hand_names: Set.new, on_hand_data:, custom_items: {})
 
     assert_equal :to_buy, result
   end
 
   test 'item_zone returns :inventory_check for items with no entry' do
-    result = item_zone(name: 'Eggs', on_hand_names: Set.new, on_hand_data: {}, custom_items: [])
+    result = item_zone(name: 'Eggs', on_hand_names: Set.new, on_hand_data: {}, custom_items: {})
 
     assert_equal :inventory_check, result
   end
 
   test 'item_zone returns :inventory_check for expired non-depleted items' do
-    # Expired items have an entry but no depleted_at (interval expired, not manually depleted)
     on_hand_data = { 'Butter' => { 'confirmed_at' => '2026-01-01', 'interval' => 7 } }
 
-    result = item_zone(name: 'Butter', on_hand_names: Set.new, on_hand_data:, custom_items: [])
+    result = item_zone(name: 'Butter', on_hand_names: Set.new, on_hand_data:, custom_items: {})
 
     assert_equal :inventory_check, result
   end
 
   test 'item_zone returns :on_hand for custom items that are on_hand' do
-    # Custom items with null interval can still be checked on-hand
+    custom = { 'Candles' => { 'aisle' => 'Miscellaneous', 'last_used_at' => '2026-03-23', 'on_hand_at' => nil } }
     result = item_zone(name: 'Candles', on_hand_names: Set.new(%w[Candles]),
-                       on_hand_data: {}, custom_items: %w[Candles])
+                       on_hand_data: {}, custom_items: custom)
 
     assert_equal :on_hand, result
   end
 
   test 'item_zone returns :to_buy for unchecked custom items' do
-    # Custom items never go to Inventory Check — always :to_buy when not on hand
-    result = item_zone(name: 'Shaving cream', on_hand_names: Set.new, on_hand_data: {}, custom_items: ['Shaving cream'])
+    custom = { 'Shaving cream' => { 'aisle' => 'Miscellaneous', 'last_used_at' => '2026-03-23', 'on_hand_at' => nil } }
+    result = item_zone(name: 'Shaving cream', on_hand_names: Set.new, on_hand_data: {}, custom_items: custom)
 
     assert_equal :to_buy, result
   end
@@ -207,7 +164,7 @@ class GroceriesHelperTest < ActionView::TestCase
   test 'item_zone matching is case-insensitive for on_hand_data lookup' do
     on_hand_data = { 'milk' => { 'depleted_at' => '2026-03-20' } }
 
-    result = item_zone(name: 'Milk', on_hand_names: Set.new, on_hand_data:, custom_items: [])
+    result = item_zone(name: 'Milk', on_hand_names: Set.new, on_hand_data:, custom_items: {})
 
     assert_equal :to_buy, result
   end
@@ -251,7 +208,7 @@ class GroceriesHelperTest < ActionView::TestCase
     # Milk is depleted (:to_buy), Eggs has no entry (:inventory_check)
     on_hand_data = { 'Milk' => { 'depleted_at' => '2026-03-20' } }
 
-    result = shopping_list_count_text(shopping_list, Set.new, on_hand_data:, custom_items: [])
+    result = shopping_list_count_text(shopping_list, Set.new, on_hand_data:, custom_items: {})
 
     assert_equal '1 item to buy', result
   end

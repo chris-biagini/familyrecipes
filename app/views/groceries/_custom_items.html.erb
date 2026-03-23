@@ -1,4 +1,4 @@
-<%# locals: (custom_items: []) %>
+<%# locals: (custom_items: {}) %>
 <div id="custom-items-section">
   <div id="custom-input-row">
     <label for="custom-input" class="sr-only">Add a custom item</label>
@@ -6,11 +6,10 @@
     <button id="custom-add" class="btn-icon-round btn-icon-round-lg btn-primary" type="button" aria-label="Add item"><%= icon(:plus, size: 18) %></button>
   </div>
   <ul id="custom-items-list">
-    <% custom_items.each do |raw_item| %>
-      <% name, aisle_hint = parse_custom_item(raw_item) %>
+    <% custom_items.each do |name, entry| %>
       <li>
-        <span><%= name %><% if aisle_hint %> <span class="custom-item-aisle"><%= aisle_hint %></span><% end %></span>
-        <button class="custom-item-remove" type="button" aria-label="Remove <%= name %>" data-item="<%= raw_item %>">×</button>
+        <span><%= name %><% if entry['aisle'] && entry['aisle'] != 'Miscellaneous' %> <span class="custom-item-aisle"><%= entry['aisle'] %></span><% end %></span>
+        <button class="custom-item-remove" type="button" aria-label="Remove <%= name %>" data-item="<%= name %>">×</button>
       </li>
     <% end %>
   </ul>

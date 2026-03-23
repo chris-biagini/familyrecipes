@@ -21,12 +21,12 @@ module GroceriesHelper
 
     entry = on_hand_data.find { |k, _| k.casecmp?(name) }&.last
     return :to_buy if entry&.key?('depleted_at')
-    return :to_buy if custom_items.any? { |c| c.casecmp?(name) }
+    return :to_buy if custom_items.any? { |k, _| k.casecmp?(name) }
 
     :inventory_check
   end
 
-  def shopping_list_count_text(shopping_list, on_hand_names, on_hand_data: {}, custom_items: [])
+  def shopping_list_count_text(shopping_list, on_hand_names, on_hand_data: {}, custom_items: {})
     total = shopping_list.each_value.sum(&:size)
     return '' if total.zero?
 
@@ -53,16 +53,6 @@ module GroceriesHelper
           (entry['ease'] && entry['ease'] != MealPlan::STARTING_EASE)
       "Restocks every ~#{effective.round} days"
     end
-  end
-
-  def parse_custom_item(text)
-    prefix, separator, hint = text.rpartition('@')
-    return [text.strip, nil] if separator.empty?
-
-    stripped_hint = hint.strip
-    return [prefix.strip, nil] if stripped_hint.empty?
-
-    [prefix.strip, stripped_hint]
   end
 
   def on_hand_sort_key(name, on_hand_data, now: Date.current)
