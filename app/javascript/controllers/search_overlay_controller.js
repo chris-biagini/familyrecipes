@@ -2,6 +2,8 @@ import { Controller } from "@hotwired/stimulus"
 import { loadSmartTagData } from "../utilities/search_data"
 import ListenerManager from "../utilities/listener_manager"
 import { matchTier } from "../utilities/search_match"
+import { matchIngredients } from "../utilities/ingredient_match"
+import { buildGroceryActionRow, postNeedAction, flashAndClose } from "../utilities/grocery_action"
 
 function normalizeForSearch(str) {
   return (str || "")
@@ -58,6 +60,12 @@ export default class extends Controller {
     }))
     this.allTags = new Set((data.all_tags || []).map(t => normalizeForSearch(t).toLowerCase()))
     this.allCategories = new Set((data.all_categories || []).map(c => normalizeForSearch(c).toLowerCase()))
+    this.ingredientCorpus = data.ingredients || []
+    this.customItems = data.custom_items || []
+  }
+
+  get needUrl() {
+    return this.element.dataset.searchOverlayNeedUrl || ""
   }
 
   open() {
@@ -213,7 +221,11 @@ export default class extends Controller {
 
     const tokens = query ? query.split(/\s+/).filter(Boolean) : []
     const results = tokens.length ? this.rankResults(tokens, candidates) : candidates
-    this.renderResults(results)
+
+    const ingredientMatches = query
+      ? matchIngredients(query, this.ingredientCorpus, { customItems: this.customItems, max: 6 })
+      : []
+    this.renderResultsWithGrocery(results, ingredientMatches, query)
     this.selectFirst()
   }
 
@@ -252,22 +264,57 @@ export default class extends Controller {
 
   renderResults(recipes) {
     this.clearResults()
-    const list = this.resultsTarget
+    this.groceryRowCount = 0
+    this.renderRecipeItems(recipes)
+  }
 
-    if (recipes.length === 0) {
+  renderResultsWithGrocery(recipes, ingredientMatches, query) {
+    this.clearResults()
+    const list = this.resultsTarget
+    this.groceryRowCount = 0
+
+    const showGrocery = this.needUrl &&
+      (ingredientMatches.length > 0 || (query && this.activePills.length === 0))
+
+    if (showGrocery) {
+      const topMatch = ingredientMatches.length > 0 ? ingredientMatches[0] : query
+      const alternates = ingredientMatches.slice(1, 4)
+
+      const rows = buildGroceryActionRow(topMatch, alternates, { customItems: this.customItems })
+      rows.forEach(row => list.appendChild(row))
+      this.groceryRowCount = 1
+
+      const altRow = list.querySelector(".grocery-alternates")
+      if (altRow) {
+        altRow.querySelectorAll(".grocery-alternate-btn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            this.inputTarget.value = btn.dataset.ingredient
+            this.search()
+          })
+        })
+      }
+    }
+
+    this.renderRecipeItems(recipes)
+
+    if (this.groceryRowCount === 0 && recipes.length === 0) {
       const li = document.createElement("li")
       li.className = "search-no-results"
       li.textContent = "No matches"
       li.setAttribute("role", "option")
       list.appendChild(li)
-      return
     }
+  }
+
+  renderRecipeItems(recipes) {
+    const list = this.resultsTarget
+    const offset = this.groceryRowCount
 
     recipes.forEach((recipe, index) => {
       const li = document.createElement("li")
       li.className = "search-result"
       li.setAttribute("role", "option")
-      li.dataset.index = index
+      li.dataset.index = offset + index
       li.dataset.slug = recipe.slug
 
       const title = document.createElement("span")
@@ -319,7 +366,21 @@ export default class extends Controller {
     const index = this.selectedIndex >= 0 ? this.selectedIndex : 0
     if (items.length === 0) return
 
-    this.navigateTo(items[index].dataset.slug)
+    const row = items[index]
+    if (row.dataset.groceryAction) {
+      this.executeGroceryAction(row)
+    } else {
+      this.navigateTo(row.dataset.slug)
+    }
+  }
+
+  async executeGroceryAction(row) {
+    const ingredient = row.dataset.ingredient
+    const custom = this.customItems.find(c => c.name.toLowerCase() === ingredient.toLowerCase())
+    const aisle = custom?.aisle || "Miscellaneous"
+
+    const result = await postNeedAction(this.needUrl, ingredient, aisle)
+    flashAndClose(row, result.status, () => this.close())
   }
 
   navigateTo(slug) {

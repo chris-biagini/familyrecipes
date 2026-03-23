@@ -401,3 +401,75 @@ nav a:focus-visible {
   color: var(--red);
   background-color: var(--hover-bg);
 }
+
+/************************/
+/* Grocery Action Row   */
+/************************/
+
+.grocery-action-row {
+  background: color-mix(in srgb, var(--smart-green-text) 8%, var(--ground));
+  border: 1px solid color-mix(in srgb, var(--smart-green-text) 20%, var(--rule));
+  border-radius: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  margin-bottom: 4px;
+}
+
+.grocery-action-row.selected {
+  background: color-mix(in srgb, var(--smart-green-text) 18%, var(--ground));
+}
+
+.grocery-action-left {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.grocery-action-aisle {
+  font-size: 0.75rem;
+  color: var(--text-soft);
+}
+
+.grocery-action-hint {
+  font-size: 0.8rem;
+  color: var(--text-light);
+}
+
+.grocery-alternates {
+  padding: 2px 12px 6px;
+  font-size: 0.75rem;
+  color: var(--text-soft);
+  list-style: none;
+}
+
+.grocery-alternate-btn {
+  background: none;
+  border: none;
+  color: var(--red);
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 0;
+  text-decoration: underline;
+  font-family: inherit;
+}
+
+.grocery-alternate-btn:hover {
+  color: var(--text);
+}
+
+.grocery-action-flash {
+  color: var(--smart-green-text);
+  font-weight: 500;
+  transition: opacity 300ms ease;
+}
+
+.grocery-already-needed {
+  background: color-mix(in srgb, var(--smart-amber-text) 8%, var(--ground));
+  border: 1px solid color-mix(in srgb, var(--smart-amber-text) 20%, var(--rule));
+  border-radius: 6px;
+  padding: 8px 12px;
+  color: var(--smart-amber-text);
+  font-size: 0.9rem;
+}
