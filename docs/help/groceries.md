@@ -21,8 +21,10 @@ Each aisle is split into three sections:
   new ingredients the system hasn't seen before, or items it thinks you might
   be running low on. Look in your kitchen: tap **Have It** if you have it, or
   **Need It** if you're out. "Need It" moves the item down to To Buy so you
-  can pick it up on your next shopping trip. Items are sorted by how many of
-  your selected recipes use them, so the most important ones appear first.
+  can pick it up on your next shopping trip. When there are many items to
+  verify, an **All Stocked** button confirms everything at once. Items are
+  sorted by how many of your selected recipes use them, so the most important
+  ones appear first.
 
 - **To Buy** — items you need to purchase, grouped by aisle. These are things
   you've told the system you're out of. Check them off as you buy them.
@@ -58,10 +60,13 @@ you've run out.
 
 When a new ingredient first appears, the system asks about it again in about
 a week. Each time you confirm you still have it (**Have It**), the system
-waits longer before asking again — and items you consistently keep build
-confidence quickly, so the wait grows faster over time. Items you always have
+waits longer before asking again — and items you consistently keep gradually
+build confidence, so the wait grows over time. Items you always have
 eventually stop appearing for months at a stretch (except for an occasional
 check).
+
+If you check something off by mistake, just uncheck it — the system treats
+same-day corrections as an undo, not as running out.
 
 When you tell the system you're out — either by tapping **Need It** in an
 Inventory Check, or by unchecking an On Hand item — the system adjusts the
