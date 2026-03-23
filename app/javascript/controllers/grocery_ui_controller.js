@@ -96,7 +96,12 @@ export default class extends Controller {
   bindInventoryCheckButtons() {
     this.listeners.add(this.element, "click", (e) => {
       if (e.target.closest("[data-grocery-action='confirm-all']")) {
-        this.confirmAllItems()
+        this.bulkIcAction(this.element.dataset.confirmAllUrl)
+        return
+      }
+
+      if (e.target.closest("[data-grocery-action='deplete-all']")) {
+        this.bulkIcAction(this.element.dataset.depleteAllUrl)
         return
       }
 
@@ -120,12 +125,12 @@ export default class extends Controller {
     })
   }
 
-  confirmAllItems() {
+  bulkIcAction(url) {
     const lis = this.element.querySelectorAll(".inventory-check-items li")
     const items = Array.from(lis).map(li => li.dataset.item).filter(Boolean)
     if (items.length === 0) return
 
-    sendAction(this.element.dataset.confirmAllUrl, { items })
+    sendAction(url, { items })
 
     items.forEach(name => this.pendingMoves.add(name))
     lis.forEach(li => li.remove())

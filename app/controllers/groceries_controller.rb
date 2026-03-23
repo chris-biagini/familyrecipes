@@ -46,17 +46,14 @@ class GroceriesController < ApplicationController
     head :no_content
   end
 
-  # Post-vacation recovery: confirm all inventory check items at once
+  # Bulk IC actions: confirm or deplete all inventory check items at once.
+  # Post-vacation recovery (have all) or fresh-start restock (need all).
   def confirm_all
-    items = Array(params[:items])
-    Kitchen.batch_writes(current_kitchen) do
-      items.each do |item|
-        MealPlanWriteService.apply_action(
-          kitchen: current_kitchen, action_type: 'have_it', item:
-        )
-      end
-    end
-    head :no_content
+    bulk_ic_action('have_it')
+  end
+
+  def deplete_all
+    bulk_ic_action('need_it')
   end
 
   def update_custom_items
@@ -85,5 +82,17 @@ class GroceriesController < ApplicationController
     render partial: 'groceries/aisle_order_frame',
            locals: { items: current_kitchen.all_aisles },
            layout: false
+  end
+
+  private
+
+  def bulk_ic_action(action_type)
+    items = Array(params[:items])
+    Kitchen.batch_writes(current_kitchen) do
+      items.each do |item|
+        MealPlanWriteService.apply_action(kitchen: current_kitchen, action_type:, item:)
+      end
+    end
+    head :no_content
   end
 end

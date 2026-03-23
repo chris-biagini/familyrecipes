@@ -173,10 +173,11 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     log_in
     get groceries_path(kitchen_slug: kitchen_slug)
 
-    assert_select '[data-grocery-action="confirm-all"]', 'All Stocked'
+    assert_select '[data-grocery-action="confirm-all"]', 'Have All'
+    assert_select '[data-grocery-action="deplete-all"]', 'Need All'
   end
 
-  test 'show omits All Stocked button when fewer than 5 IC items' do
+  test 'show omits bulk IC buttons when fewer than 5 IC items' do
     @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
     MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Focaccia
