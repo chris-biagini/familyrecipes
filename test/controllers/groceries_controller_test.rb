@@ -944,7 +944,124 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     assert_select '.inventory-check-items li[data-item="Flour"]', count: 0
   end
 
+  # --- Quick-add (POST /groceries/need) ---
+
+  test 'need adds unknown item as custom → status added' do
+    log_in
+    post groceries_need_path(kitchen_slug: kitchen_slug),
+         params: { item: 'Birthday Candles', aisle: 'Miscellaneous' },
+         as: :json
+
+    assert_response :success
+    body = response.parsed_body
+
+    assert_equal 'added', body['status']
+  end
+
+  test 'need returns already_needed when item is in To Buy' do
+    log_in
+    setup_test_category(name: 'Bread', slug: 'bread')
+    create_recipe_with_ingredient('Flour')
+    select_recipe('focaccia')
+    mark_need_it('Flour')
+
+    post groceries_need_path(kitchen_slug: kitchen_slug),
+         params: { item: 'Flour' },
+         as: :json
+
+    assert_response :success
+    assert_equal 'already_needed', response.parsed_body['status']
+  end
+
+  test 'need depletes on-hand item → status moved_to_buy' do
+    log_in
+    setup_test_category(name: 'Bread', slug: 'bread')
+    create_recipe_with_ingredient('Flour')
+    select_recipe('focaccia')
+    check_have_it('Flour')
+
+    post groceries_need_path(kitchen_slug: kitchen_slug),
+         params: { item: 'Flour' },
+         as: :json
+
+    assert_response :success
+    assert_equal 'moved_to_buy', response.parsed_body['status']
+  end
+
+  test 'need depletes inventory-check item → status moved_to_buy' do
+    log_in
+    setup_test_category(name: 'Bread', slug: 'bread')
+    create_recipe_with_ingredient('Flour')
+    select_recipe('focaccia')
+
+    # Item is in inventory check (visible, no on_hand entry yet → expired-like)
+    # First have_it then travel forward so it expires into IC
+    check_have_it('Flour')
+    travel 365.days do
+      post groceries_need_path(kitchen_slug: kitchen_slug),
+           params: { item: 'Flour' },
+           as: :json
+
+      assert_response :success
+      assert_equal 'moved_to_buy', response.parsed_body['status']
+    end
+  end
+
+  test 'need rejects item that is too long' do
+    log_in
+    post groceries_need_path(kitchen_slug: kitchen_slug),
+         params: { item: 'x' * (MealPlan::MAX_CUSTOM_ITEM_LENGTH + 1) },
+         as: :json
+
+    assert_response :unprocessable_content
+  end
+
+  test 'need rejects blank item' do
+    log_in
+    post groceries_need_path(kitchen_slug: kitchen_slug),
+         params: { item: '' },
+         as: :json
+
+    assert_response :unprocessable_content
+  end
+
+  test 'need requires membership' do
+    post groceries_need_path(kitchen_slug: kitchen_slug),
+         params: { item: 'Flour' },
+         as: :json
+
+    assert_response :forbidden
+  end
+
   private
+
+  def create_recipe_with_ingredient(ingredient_name)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Focaccia
+      ## Mix
+      - #{ingredient_name}, 3 cups
+      Mix well.
+    MD
+  end
+
+  def select_recipe(slug)
+    MealPlanWriteService.apply_action(
+      kitchen: @kitchen, action_type: 'select',
+      type: 'recipe', slug: slug, selected: true
+    )
+  end
+
+  def mark_need_it(item)
+    MealPlanWriteService.apply_action(
+      kitchen: @kitchen, action_type: 'need_it', item: item
+    )
+  end
+
+  def check_have_it(item)
+    MealPlanWriteService.apply_action(
+      kitchen: @kitchen, action_type: 'have_it', item: item
+    )
+  end
 
   def build_stale_list(method_to_stub)
     list = MealPlan.for_kitchen(@kitchen)

@@ -57,6 +57,18 @@ class GroceriesController < ApplicationController
     bulk_ic_action('need_it')
   end
 
+  def need
+    result = MealPlanWriteService.apply_action(
+      kitchen: current_kitchen, action_type: 'quick_add',
+      item: params[:item].to_s, aisle: params[:aisle].presence || 'Miscellaneous'
+    )
+    if result.errors.any?
+      return render json: { status: 'error', message: result.errors.first }, status: :unprocessable_content
+    end
+
+    render json: { status: result.status }
+  end
+
   def update_custom_items
     result = MealPlanWriteService.apply_action(
       kitchen: current_kitchen, action_type: 'custom_items',
