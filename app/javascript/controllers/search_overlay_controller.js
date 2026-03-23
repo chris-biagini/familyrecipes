@@ -229,7 +229,7 @@ export default class extends Controller {
     }
 
     const ingredientMatches = query
-      ? matchIngredients(query, this.ingredientCorpus, { customItems: this.customItems, max: 6 })
+      ? matchIngredients(query, this.ingredientCorpus, { customItems: this.customItems, max: 4 })
       : []
     this.renderResultsWithGrocery(results, ingredientMatches, query, bestTier)
     this.selectFirst()
