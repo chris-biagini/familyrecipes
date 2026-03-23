@@ -268,6 +268,87 @@ module GrocerySim
     end
   end
 
+  # ThreeZoneSim with resilience changes: lower starting ease, slower ease
+  # growth, lighter depletion penalty, blended intervals on depletion,
+  # one-step growth cap on anchor confirm, and safety margin on expiry.
+  class ResilientThreeZoneSim < ThreeZoneSim
+    RESILIENT_STARTING_EASE = 1.5
+    RESILIENT_EASE_BONUS = 0.05
+    RESILIENT_EASE_PENALTY = 0.15
+    SAFETY_MARGIN = 0.9
+
+    private
+
+    def resilient_status(it, day)
+      return :new unless it.entry
+      return :depleted if it.entry.depleted?
+
+      effective = it.entry.confirmed_at + (it.entry.interval * SAFETY_MARGIN)
+      effective >= day ? :on_hand : :expired
+    end
+
+    def shop!(day)
+      @items.each do |it|
+        case resilient_status(it, day)
+        when :new
+          triage_new!(it, day)
+        when :expired
+          triage_expired!(it, day)
+        when :on_hand
+          deplete!(it, day) unless it.has_stock
+        when :depleted
+          purchase!(it, day)
+        end
+      end
+    end
+
+    def consume!(day)
+      @items.each do |it|
+        next unless it.has_stock && day >= it.runs_out_on
+
+        it.has_stock = false
+        deplete!(it, day) if resilient_status(it, day) == :on_hand
+      end
+    end
+
+    def triage_new!(it, day)
+      if it.has_stock
+        it.entry = Entry.new(confirmed_at: day, ease: RESILIENT_STARTING_EASE)
+        it.record(day, 'have_it:new')
+      else
+        it.entry = Entry.new(confirmed_at: -999_999, ease: RESILIENT_STARTING_EASE)
+        it.entry.depleted_at = day
+        it.record(day, 'need_it:new')
+        purchase!(it, day)
+      end
+    end
+
+    def deplete!(it, day)
+      e = it.entry
+      obs = day - e.confirmed_at
+      e.interval = ((e.interval + [obs, STARTING_INTERVAL].max.to_f) / 2.0)
+      e.ease = [(e.ease * (1 - RESILIENT_EASE_PENALTY)), MIN_EASE].max
+      e.confirmed_at = -999_999
+      e.depleted_at = day
+      it.record(day, "deplete(obs=#{obs})")
+    end
+
+    def anchor_confirm!(it, day, label: 'confirm(anchor)')
+      e = it.entry
+      new_interval = [e.interval * e.ease, MAX_INTERVAL].min
+      e.ease = [e.ease + RESILIENT_EASE_BONUS, MAX_EASE].min
+
+      if e.confirmed_at + new_interval >= day
+        e.interval = new_interval
+      else
+        e.interval = new_interval
+        e.confirmed_at = day
+      end
+
+      it.record(day, label)
+    end
+  end
+
   def self.default_items
     { 'Eggs' => 7, 'Milk' => 10, 'Butter' => 14,
       'Flour' => 30, 'Pepper' => 60, 'Salt' => 90 }.map { |name, tc| Item.new(name, tc) }
@@ -316,6 +397,11 @@ label = 'G) Three-zone model — weekly shopping, ±2d fuzz'
 sim.run!.report(label)
 all_sims << [label, sim]
 
+sim = GrocerySim::ResilientThreeZoneSim.new(items: GrocerySim.default_items, anchor_mode: :confirm_only, fuzz: 2)
+label = 'H) Resilient three-zone — weekly shopping, ±2d fuzz'
+sim.run!.report(label)
+all_sims << [label, sim]
+
 # ---- Side-by-side comparison ----
 
 puts "\n\n#{'=' * 70}"
@@ -337,4 +423,4 @@ item_names.each_with_index do |name, idx|
   puts row
 end
 puts "\n  Legend:"
-all_sims.each_with_index { |(lbl, _), i| puts "    #{(65 + i).chr}) #{lbl.sub(/^[A-G]\) /, '')}" }
+all_sims.each_with_index { |(lbl, _), i| puts "    #{(65 + i).chr}) #{lbl.sub(/^[A-H]\) /, '')}" }
