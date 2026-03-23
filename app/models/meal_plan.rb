@@ -42,12 +42,19 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
   ORPHAN_RETENTION = 180
   ORPHAN_SENTINEL = '1970-01-01'
 
-  # SM-2-inspired adaptive ease factor — per-item growth multiplier
-  STARTING_EASE = 2.0
+  # SM-2-inspired adaptive ease factor — per-item growth multiplier.
+  # Tuned for resilience: slower growth and gentler penalties make the
+  # system robust to messy real-world signals (irregular shopping, delayed
+  # updates, accidental taps). See grocery-interval-resilience-design.md.
+  STARTING_EASE = 1.5
   MIN_EASE = 1.1
   MAX_EASE = 2.5
-  EASE_BONUS = 0.1
-  EASE_PENALTY = 0.3
+  EASE_BONUS = 0.05
+  EASE_PENALTY = 0.15
+
+  # Items surface in Inventory Check 10% before the predicted depletion
+  # date. Better to ask and not need it than to miss a depleted staple.
+  SAFETY_MARGIN = 0.9
 
   def self.for_kitchen(kitchen)
     find_or_create_by!(kitchen: kitchen)
@@ -127,7 +134,8 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
     return false if entry.key?('depleted_at')
     return true if entry['interval'].nil?
 
-    Date.parse(entry['confirmed_at']) + entry['interval'].days >= now
+    effective = entry['interval'] * SAFETY_MARGIN
+    Date.parse(entry['confirmed_at']) + effective.to_i.days >= now
   end
 
   def add_to_on_hand(item, custom:, now:)
@@ -138,6 +146,7 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
     return recheck_depleted(hash, item, stored_key, now) if existing&.key?('depleted_at')
 
     return if existing && existing['confirmed_at'] == now.iso8601
+    return if existing && entry_on_hand?(existing, now)
 
     hash.delete(stored_key) if stored_key && stored_key != item
     hash[item] = build_on_hand_entry(existing, custom:, now:)
@@ -172,6 +181,10 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
 
     if custom || entry['interval'].nil?
       state['on_hand'].delete(key)
+    elsif entry['confirmed_at'] == now.iso8601
+      # Same-day uncheck grace: treat as an undo, not a depletion signal.
+      # Cracked eggs, wrong brand, accidental tap — don't nuke learned state.
+      undo_same_day_check(entry, now)
     else
       deplete_existing(entry, now)
     end
@@ -180,11 +193,30 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
 
   def mark_depleted(entry, now)
     observed = (now - Date.parse(entry['confirmed_at'])).to_i
-    entry['interval'] = [observed, STARTING_INTERVAL].max
+    old_interval = entry['interval']
+    # Blend observed period with current estimate. Dampens oscillation when
+    # observations are quantized to the shopping interval (e.g. weekly
+    # shopping → eggs alternate 7d and 14d, blending converges to ~10.5d).
+    # Also halves the impact of delay-inflated observations.
+    blended = (observed + old_interval) / 2.0
+    entry['interval'] = [blended, STARTING_INTERVAL].max
     entry['ease'] = [(entry['ease'] || STARTING_EASE) * (1 - EASE_PENALTY), MIN_EASE].max
     entry['confirmed_at'] = ORPHAN_SENTINEL
     entry['depleted_at'] = now.iso8601
     entry.delete('orphaned_at')
+  end
+
+  # Same-day undo: if the entry still has default values (brand-new),
+  # delete it entirely. Otherwise restore to depleted state without
+  # penalizing — the learned interval and ease survive the oops.
+  def undo_same_day_check(entry, now)
+    if entry['interval'] == STARTING_INTERVAL && entry['ease'] == STARTING_EASE
+      key = state['on_hand'].key(entry)
+      state['on_hand'].delete(key)
+    else
+      entry['confirmed_at'] = ORPHAN_SENTINEL
+      entry['depleted_at'] = now.iso8601
+    end
   end
 
   def recheck_depleted(hash, item, stored_key, now)
@@ -420,18 +452,21 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
     entry.delete('orphaned_at')
   end
 
-  # Grows interval in a loop until confirmed_at + interval covers now.
-  # Preserves confirmed_at at the original purchase date so the interval
-  # reflects actual shelf life, not the confirmation date.
+  # One-step anchored growth: grows interval once and checks if the anchor
+  # still covers today. Capped to a single multiplication to prevent IC
+  # delay from inflating intervals — a 3-week absence shouldn't turn a
+  # 7-day item into a 65-day item. If one step can't bridge the gap, the
+  # user was absent (not consuming), so we reset confirmed_at honestly.
+  # Ease is only rewarded when anchored growth succeeds.
   def grow_anchored(entry, now)
-    entry['ease'] = [entry['ease'] + EASE_BONUS, MAX_EASE].min
+    new_ease = [entry['ease'] + EASE_BONUS, MAX_EASE].min
+    entry['interval'] = [entry['interval'] * new_ease, MAX_INTERVAL].min
     confirmed = Date.parse(entry['confirmed_at'])
-    loop do
-      entry['interval'] = [entry['interval'] * entry['ease'], MAX_INTERVAL].min
-      break if confirmed + entry['interval'].to_i >= now
-      break if entry['interval'] >= MAX_INTERVAL
+
+    if confirmed + entry['interval'].to_i >= now
+      entry['ease'] = new_ease
+    else
+      entry['confirmed_at'] = now.iso8601
     end
-    # Fall back to reset if anchored growth can't bridge the gap
-    entry['confirmed_at'] = now.iso8601 if confirmed + entry['interval'].to_i < now
   end
 end
