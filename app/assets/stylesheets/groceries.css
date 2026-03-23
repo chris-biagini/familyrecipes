@@ -191,6 +191,7 @@
   font-size: 0.8rem;
   color: var(--text-soft);
   font-style: italic;
+  text-align: center;
 }
 
 .ic-bulk-actions {
