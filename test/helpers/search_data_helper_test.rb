@@ -82,9 +82,68 @@ class SearchDataHelperTest < ActionView::TestCase
     assert_equal %w[quick vegan], recipe_data['tags'].sort
   end
 
+  test 'search data includes ingredients key as sorted array' do
+    MarkdownImporter.import(pancake_markdown, kitchen: @kitchen, category: @category)
+
+    data = JSON.parse(search_data_json)
+
+    assert_includes data['ingredients'], 'flour'
+    assert_includes data['ingredients'], 'buttermilk'
+    assert_equal data['ingredients'].sort, data['ingredients']
+  end
+
+  test 'ingredients deduplicates names across recipes' do
+    MarkdownImporter.import(pancake_markdown, kitchen: @kitchen, category: @category)
+    MarkdownImporter.import("# Waffles\n\nCrispy.\n\n## Step 1\n\n- flour, 2 cups:\n- eggs, 2:\n",
+                            kitchen: @kitchen, category: @category)
+
+    data = JSON.parse(search_data_json)
+
+    assert_equal 1, data['ingredients'].tally.values.max
+  end
+
+  test 'ingredients includes on-hand item names' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    on_hand = { 'olive oil' => { 'on_hand_at' => Date.current.iso8601, 'custom' => true } }
+    plan.update!(state: plan.state.merge('on_hand' => on_hand))
+
+    data = JSON.parse(search_data_json)
+
+    assert_includes data['ingredients'], 'olive oil'
+  end
+
+  test 'search data includes custom_items key with name and aisle' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    entry = { 'aisle' => 'Baking', 'last_used_at' => Date.current.iso8601, 'on_hand_at' => nil }
+    plan.update!(state: plan.state.merge('custom_items' => { 'Parchment Paper' => entry }))
+
+    data = JSON.parse(search_data_json)
+    item = data['custom_items'].find { |ci| ci['name'] == 'Parchment Paper' }
+
+    assert_not_nil item
+    assert_equal 'Baking', item['aisle']
+  end
+
+  test 'custom_items excludes items older than 45 days' do
+    plan = MealPlan.for_kitchen(@kitchen)
+    old = { 'aisle' => 'Misc', 'last_used_at' => (Date.current - 46).iso8601, 'on_hand_at' => nil }
+    recent = { 'aisle' => 'Misc', 'last_used_at' => Date.current.iso8601, 'on_hand_at' => nil }
+    plan.update!(state: plan.state.merge('custom_items' => { 'Old Item' => old, 'Recent Item' => recent }))
+
+    data = JSON.parse(search_data_json)
+    names = data['custom_items'].pluck('name')
+
+    assert_not_includes names, 'Old Item'
+    assert_includes names, 'Recent Item'
+  end
+
   private
 
   def current_kitchen = @kitchen
+
+  def pancake_markdown
+    "# Pancakes\n\nFluffy.\n\n## Step 1\n\n- flour, 2 cups:\n- buttermilk, 1 cup:\n"
+  end
 
   def setup_tagged_recipe
     @recipe = Recipe.create!(title: 'Miso Soup', slug: 'miso-soup',
