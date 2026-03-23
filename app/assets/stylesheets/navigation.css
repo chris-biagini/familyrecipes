@@ -411,17 +411,17 @@ nav a:focus-visible {
   background: color-mix(in srgb, var(--smart-green-text) 6%, var(--ground));
   border: 1px solid color-mix(in srgb, var(--smart-green-text) 20%, var(--rule));
   border-radius: 0.5rem;
-  margin: 0.4rem;
+  margin: 0.15rem 0.4rem;
   overflow: hidden;
   padding: 0.3rem 0;
 }
 
 .grocery-section--above {
-  margin-bottom: 0.15rem;
+  margin-bottom: 0.4rem;
 }
 
 .grocery-section--below {
-  margin-top: 0.15rem;
+  margin-top: 0.4rem;
 }
 
 .grocery-section-header {
