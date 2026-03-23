@@ -407,13 +407,14 @@ class MealPlanTest < ActiveSupport::TestCase
 
   # --- Case-insensitive custom items (issue #156) ---
 
-  test 'adding custom item ignores case-insensitive duplicate' do
+  test 're-adding custom item with different case updates entry' do
     list = MealPlan.for_kitchen(@kitchen)
-    list.apply_action('custom_items', item: 'Butter', action: 'add')
-    list.apply_action('custom_items', item: 'butter', action: 'add')
+    list.apply_action('custom_items', item: 'Paper Towels', action: 'add', aisle: 'Miscellaneous')
+    list.apply_action('custom_items', item: 'paper towels', action: 'add', aisle: 'Cleaning')
 
     assert_equal 1, list.custom_items.size
-    assert list.custom_items.key?('Butter')
+    assert list.custom_items.key?('paper towels')
+    assert_equal 'Cleaning', list.custom_items['paper towels']['aisle']
   end
 
   test 'removing custom item is case-insensitive' do
@@ -475,12 +476,12 @@ class MealPlanTest < ActiveSupport::TestCase
     assert visible.key?('candles')
   end
 
-  test 'prune_custom_items removes items with on_hand_at older than retention' do
+  test 'prune_custom_items removes items with last_used_at older than retention' do
     list = MealPlan.for_kitchen(@kitchen)
     list.apply_action('custom_items', item: 'old candles', action: 'add')
     list.apply_action('custom_items', item: 'fresh candles', action: 'add')
-    list.state['custom_items']['old candles']['on_hand_at'] = '2026-01-01'
-    list.state['custom_items']['fresh candles']['on_hand_at'] = nil
+    list.state['custom_items']['old candles']['last_used_at'] = '2026-01-01'
+    list.state['custom_items']['fresh candles']['last_used_at'] = Date.new(2026, 3, 20).iso8601
     list.save!
 
     resolver = IngredientCatalog.resolver_for(@kitchen)
@@ -488,8 +489,8 @@ class MealPlanTest < ActiveSupport::TestCase
     list.reconcile!(visible_names: visible, resolver:, now: Date.new(2026, 3, 23))
     list.reload
 
-    assert_not list.custom_items.key?('old candles'), 'Should be pruned (>45 days with on_hand_at)'
-    assert list.custom_items.key?('fresh candles'), 'Should be retained (nil on_hand_at)'
+    assert_not list.custom_items.key?('old candles'), 'Should be pruned (last_used_at >45 days ago)'
+    assert list.custom_items.key?('fresh candles'), 'Should be retained (last_used_at recent)'
   end
 
   test 'sync_custom_on_hand sets on_hand_at when checked' do

@@ -383,8 +383,8 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
 
   def add_custom_item(item, aisle:, now:)
     hash = state['custom_items']
-    return if hash.any? { |k, _| k.casecmp?(item) }
-
+    existing_key = find_custom_key(item)
+    hash.delete(existing_key) if existing_key
     hash[item] = { 'aisle' => aisle, 'last_used_at' => now.iso8601, 'on_hand_at' => nil }
     save!
   end
@@ -411,7 +411,7 @@ class MealPlan < ApplicationRecord # rubocop:disable Metrics/ClassLength
     hash = state['custom_items']
     cutoff = now - CUSTOM_ITEM_RETENTION
     before = hash.size
-    hash.reject! { |_, e| e['on_hand_at'] && Date.parse(e['on_hand_at']) < cutoff }
+    hash.reject! { |_, e| Date.parse(e['last_used_at']) < cutoff }
     hash.size < before
   end
 

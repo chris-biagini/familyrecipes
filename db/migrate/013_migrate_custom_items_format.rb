@@ -44,7 +44,7 @@ class MigrateCustomItemsFormat < ActiveRecord::Migration[8.0]
     [prefix.strip, stripped_hint]
   end
 
-  class MealPlanStub < ActiveRecord::Base # rubocop:disable Rails/ApplicationRecord
+  class MealPlanStub < ActiveRecord::Base
     self.table_name = 'meal_plans'
   end
 end
