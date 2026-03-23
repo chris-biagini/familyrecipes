@@ -437,6 +437,7 @@ nav a:focus-visible {
   margin: 0.1rem 0.3rem;
   border-radius: 0.35rem;
   padding: 0.4rem 0.4rem;
+  font-size: 0.9rem;
 }
 
 .grocery-item-row.selected {
