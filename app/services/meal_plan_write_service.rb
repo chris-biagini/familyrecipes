@@ -90,9 +90,8 @@ class MealPlanWriteService
 
   def quick_add_status(canonical, visible, effective_on_hand, raw_entry)
     return :moved_to_buy if effective_on_hand.key?(canonical)
-    return :already_needed if visible.include?(canonical) && (raw_entry.nil? || raw_entry.key?('depleted_at'))
-    return :moved_to_buy if visible.include?(canonical) && raw_entry
-    return :added unless visible.include?(canonical)
+    return :already_needed if visible.include?(canonical) && raw_entry&.key?('depleted_at')
+    return :moved_to_buy if visible.include?(canonical)
 
     :added
   end
