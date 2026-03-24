@@ -3,20 +3,14 @@ import { sendAction } from "../utilities/turbo_fetch"
 import ListenerManager from "../utilities/listener_manager"
 
 /**
- * Groceries page interaction — optimistic checkbox toggle, inventory check
- * buttons (Have It / Need It), custom item input, collapse persistence for
- * inventory check and per-aisle to-buy/on-hand sections. All rendering is
- * server-side via Turbo page-refresh morphs; this controller handles user
- * interactions and preserves local state across morphs.
+ * Groceries page — three zones (Inventory Check, To Buy, On Hand), optimistic
+ * zone transitions, custom item input, and collapse persistence. Server-side
+ * Turbo morphs are authoritative; this controller provides instant UI feedback.
  *
- * Three zones: Inventory Check (unknown items), To Buy (confirmed needed),
- * On Hand (confirmed in stock). Have It / Need It buttons resolve items out
- * of the Inventory Check zone; checkbox toggle moves between To Buy and On Hand.
- *
- * Two-phase zone animation: exit (grid collapse + fade on the old <li>)
- * and entry (bloop on the new <li> after morph). pendingMoves tracks items
- * mid-transition so the post-morph hook knows which items to animate in.
- * The counter updates optimistically before the morph arrives.
+ * On Hand splits by recency: today items have checkboxes (undo purchase),
+ * older items have "Need It" buttons (SM-2 blending). After exit animation,
+ * buildOptimisticItem inserts a minimal <li> in the destination zone so the
+ * subsequent morph is a near-no-op.
  *
  * - turbo_fetch (sendAction): fire-and-forget mutations with retry and error toast
  * - ListenerManager: tracks event listeners for clean teardown on disconnect
