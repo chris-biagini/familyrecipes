@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 13) do
+ActiveRecord::Schema[8.1].define(version: 14) do
   create_table "categories", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "kitchen_id", null: false
@@ -22,6 +22,13 @@ ActiveRecord::Schema[8.1].define(version: 13) do
     t.index ["kitchen_id", "slug"], name: "index_categories_on_kitchen_id_and_slug", unique: true
     t.index ["kitchen_id"], name: "index_categories_on_kitchen_id"
     t.index ["position"], name: "index_categories_on_position"
+  end
+
+  create_table "cook_history_entries", force: :cascade do |t|
+    t.datetime "cooked_at", null: false
+    t.integer "kitchen_id", null: false
+    t.string "recipe_slug", null: false
+    t.index ["kitchen_id", "recipe_slug", "cooked_at"], name: "idx_cook_history_entries_lookup"
   end
 
   create_table "cross_references", force: :cascade do |t|
@@ -39,6 +46,16 @@ ActiveRecord::Schema[8.1].define(version: 13) do
     t.index ["step_id", "position"], name: "index_cross_references_on_step_id_and_position", unique: true
     t.index ["step_id"], name: "index_cross_references_on_step_id"
     t.index ["target_recipe_id"], name: "index_cross_references_on_target_recipe_id"
+  end
+
+  create_table "custom_grocery_items", force: :cascade do |t|
+    t.string "aisle", default: "Miscellaneous", null: false
+    t.datetime "created_at", null: false
+    t.integer "kitchen_id", null: false
+    t.date "last_used_at", null: false
+    t.string "name", null: false, collation: "NOCASE"
+    t.date "on_hand_at"
+    t.index ["kitchen_id", "name"], name: "idx_custom_grocery_items_unique", unique: true
   end
 
   create_table "ingredient_catalog", force: :cascade do |t|
@@ -103,11 +120,17 @@ ActiveRecord::Schema[8.1].define(version: 13) do
     t.index ["slug"], name: "index_kitchens_on_slug", unique: true
   end
 
+  create_table "meal_plan_selections", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "kitchen_id", null: false
+    t.string "selectable_id", null: false
+    t.string "selectable_type", null: false
+    t.index ["kitchen_id", "selectable_type", "selectable_id"], name: "idx_meal_plan_selections_unique", unique: true
+  end
+
   create_table "meal_plans", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "kitchen_id", null: false
-    t.integer "lock_version", default: 0, null: false
-    t.json "state", default: {}, null: false
     t.datetime "updated_at", null: false
     t.index ["kitchen_id"], name: "index_meal_plans_on_kitchen_id", unique: true
   end
@@ -121,6 +144,19 @@ ActiveRecord::Schema[8.1].define(version: 13) do
     t.index ["kitchen_id", "user_id"], name: "index_memberships_on_kitchen_id_and_user_id", unique: true
     t.index ["kitchen_id"], name: "index_memberships_on_kitchen_id"
     t.index ["user_id"], name: "index_memberships_on_user_id"
+  end
+
+  create_table "on_hand_entries", force: :cascade do |t|
+    t.date "confirmed_at", null: false
+    t.datetime "created_at", null: false
+    t.date "depleted_at"
+    t.float "ease"
+    t.string "ingredient_name", null: false, collation: "NOCASE"
+    t.float "interval"
+    t.integer "kitchen_id", null: false
+    t.date "orphaned_at"
+    t.datetime "updated_at", null: false
+    t.index ["kitchen_id", "ingredient_name"], name: "idx_on_hand_entries_unique", unique: true
   end
 
   create_table "recipe_tags", force: :cascade do |t|
