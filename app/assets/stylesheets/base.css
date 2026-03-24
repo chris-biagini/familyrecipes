@@ -548,7 +548,7 @@ main {
   position: relative;
   max-width: 35rem;
   margin: var(--gingham-gap) auto;
-  padding: 3rem 2.5rem 5rem;
+  padding: 3rem 3rem 5rem;
   background: var(--content-card-bg);
   border: 1px solid var(--rule-faint);
   box-shadow:
@@ -1102,7 +1102,7 @@ footer small {
   }
 
   main {
-    padding: 1.5rem 1rem 3rem;
+    padding: 1.5rem 1.25rem 3rem;
   }
 
   section > div:has(.ingredients):has(.instructions) {
