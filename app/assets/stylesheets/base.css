@@ -68,6 +68,7 @@
   --gingham-stripe: rgba(190, 12, 30, 0.5);
   --gingham-gap: 1.5rem;
   --gingham-stripe-width: 75px;
+  --gingham-tile-size: calc(var(--gingham-stripe-width) * 2 * 1.41421356);
   --weave-color: rgba(150, 150, 150, 0.04);
   --weave-width: 1.5px;
   --content-card-bg: rgb(255, 252, 249);
@@ -136,28 +137,27 @@
   }
 }
 
+/* Gingham tablecloth — applied directly to the root element so the browser
+   paints it across the entire CSS canvas, filling the full physical screen
+   including iOS Safari's overscroll regions and behind the status bar.
+   background-attachment: fixed keeps it stationary on desktop; iOS ignores
+   that and falls back to scroll, but the repeating pattern makes the movement
+   imperceptible.  background-size tiles each gradient in a fixed-size box
+   (one diagonal period ≈ 212px) so the pattern origin is independent of
+   viewport and document dimensions — no shifting on resize or navigation. */
 html {
   color-scheme: light dark;
   font-size: 18px;
   touch-action: manipulation;
   scrollbar-gutter: stable;
   background-color: var(--gingham-base);
-}
-
-/* Gingham tablecloth — fixed pseudo-element, NOT background-attachment: fixed
-   on html. Safari caches gradient tiles as GPU textures; on zoom it scales the
-   stale textures instead of repainting, producing tile-seam glitches that
-   persist across refreshes (WebKit #125118). Using position: fixed with NO
-   background-size avoids tiling entirely — repeating-linear-gradient fills the
-   full viewport as a single computation. The pseudo-element's viewport-sized
-   rendering area is constant across Turbo navigation, so the pattern never
-   shifts (the original reason tiling was introduced at d90092e). */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
+  background-attachment: fixed;
+  background-size:
+    var(--gingham-tile-size) var(--gingham-tile-size),
+    var(--gingham-tile-size) var(--gingham-tile-size),
+    var(--gingham-tile-size) var(--gingham-tile-size),
+    var(--gingham-tile-size) var(--gingham-tile-size),
+    auto;
   background-image:
     repeating-linear-gradient(
       135deg,
