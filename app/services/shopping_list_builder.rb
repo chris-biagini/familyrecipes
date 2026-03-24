@@ -1,16 +1,17 @@
 # frozen_string_literal: true
 
-# Produces the grocery shopping list from a MealPlan's selected recipes and quick
-# bites. Aggregates ingredient quantities (via IngredientAggregator), canonicalizes
-# names through IngredientResolver, organizes items by grocery aisle, appends custom
-# items, and sorts aisles by the kitchen's user-defined order. The lightweight
-# `visible_names` method is used by write services for meal plan reconciliation
-# without invoking `build`. Consumed by GroceriesController#show and MealPlanActions.
+# Produces the grocery shopping list from selected recipes, quick bites, and
+# custom items stored as normalized AR records. Aggregates ingredient quantities
+# (via IngredientAggregator), canonicalizes names through IngredientResolver,
+# organizes items by grocery aisle, and sorts aisles by the kitchen's user-defined
+# order. The lightweight `visible_names` method is used by write services for
+# on-hand reconciliation without invoking `build`.
 #
 # Collaborators:
+# - MealPlanSelection — which recipes/quick bites are selected
+# - CustomGroceryItem — user-added non-recipe grocery items
 # - IngredientResolver — name canonicalization and catalog lookups
 # - IngredientAggregator — quantity merging
-# - IngredientCatalog.resolver_for — factory for resolver
 class ShoppingListBuilder # rubocop:disable Metrics/ClassLength
   AISLE_SORT_PRIORITY = { ordered: 0, unordered: 1, miscellaneous: 2 }.freeze
 
@@ -18,9 +19,8 @@ class ShoppingListBuilder # rubocop:disable Metrics/ClassLength
     new(kitchen:, resolver:).visible_names
   end
 
-  def initialize(kitchen:, meal_plan: nil, resolver: nil)
+  def initialize(kitchen:, resolver: nil)
     @kitchen = kitchen
-    @meal_plan = meal_plan
     @resolver = resolver || IngredientCatalog.resolver_for(kitchen)
   end
 
@@ -67,12 +67,12 @@ class ShoppingListBuilder # rubocop:disable Metrics/ClassLength
   end
 
   def selected_recipes
-    slugs = @meal_plan ? @meal_plan.selected_recipes : MealPlanSelection.recipe_slugs_for(@kitchen)
+    slugs = MealPlanSelection.recipe_slugs_for(@kitchen)
     @kitchen.recipes.with_full_tree.where(slug: slugs)
   end
 
   def selected_quick_bites
-    ids = @meal_plan ? @meal_plan.selected_quick_bites : MealPlanSelection.quick_bite_ids_for(@kitchen)
+    ids = MealPlanSelection.quick_bite_ids_for(@kitchen)
     return [] if ids.empty?
 
     @kitchen.parsed_quick_bites.select { |qb| ids.include?(qb.id) }
@@ -120,17 +120,11 @@ class ShoppingListBuilder # rubocop:disable Metrics/ClassLength
   end
 
   def visible_custom_item_names
-    if @meal_plan
-      @meal_plan.visible_custom_items.keys
-    else
-      CustomGroceryItem.where(kitchen_id: @kitchen.id).visible.pluck(:name)
-    end
+    CustomGroceryItem.where(kitchen_id: @kitchen.id).visible.pluck(:name)
   end
 
-  def custom_items_from_ar
-    CustomGroceryItem.where(kitchen_id: @kitchen.id).visible.each_with_object({}) do |item, hash|
-      hash[item.name] = { 'aisle' => item.aisle }
-    end
+  def visible_custom_items
+    CustomGroceryItem.where(kitchen_id: @kitchen.id).visible
   end
 
   def canonical_name(name)
@@ -169,22 +163,22 @@ class ShoppingListBuilder # rubocop:disable Metrics/ClassLength
   end
 
   def add_custom_items(organized)
-    custom = @meal_plan ? @meal_plan.visible_custom_items : custom_items_from_ar
-    return if custom.empty?
+    items = visible_custom_items.to_a
+    return if items.empty?
 
     existing = existing_canonical_names(organized)
-    new_items = custom.filter_map { |name, entry| custom_item_entry_from_hash(name, entry, organized, existing) }
+    new_items = items.filter_map { |item| custom_item_entry(item, organized, existing) }
     return if new_items.empty?
 
-    new_items.each { |aisle, item| (organized[aisle] ||= []) << item }
+    new_items.each { |aisle, entry| (organized[aisle] ||= []) << entry }
     organized.replace(sort_aisles(organized))
   end
 
-  def custom_item_entry_from_hash(name, entry, organized, existing)
-    canonical = canonical_name(name)
+  def custom_item_entry(item, organized, existing)
+    canonical = canonical_name(item.name)
     return if existing.include?(canonical)
 
-    aisle = resolve_aisle_hint(entry['aisle'], organized)
+    aisle = resolve_aisle_hint(item.aisle, organized)
     [aisle, { name: canonical, amounts: [], sources: [], uncounted: 0 }]
   end
 
