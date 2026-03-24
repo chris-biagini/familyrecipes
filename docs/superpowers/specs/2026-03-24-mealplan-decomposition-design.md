@@ -147,24 +147,35 @@ The 517-line model shrinks to ~100 lines. Code falls into three categories:
 - `acts_as_tenant :kitchen`
 - Scopes: `active(now:)` (not expired, not depleted), `depleted`, `orphaned`,
   `expired(now:)` (past safety margin)
-- `active` scope uses SQL: `WHERE depleted_at IS NULL AND
+- `active` scope uses SQL with a bound date parameter for testability:
+  `WHERE depleted_at IS NULL AND (interval IS NULL OR
   date(confirmed_at, '+' || CAST(interval * 0.9 AS INTEGER) || ' days') >=
-  date('now')`. Entries with `NULL` interval (custom-item-sourced) are always
-  active if not depleted.
+  date(?))`. Entries with `NULL` interval (custom-item-sourced) are always
+  active when not depleted — the explicit `OR interval IS NULL` clause is
+  required because SQLite date arithmetic on NULL produces NULL.
 - Instance methods: `have_it!(now:)`, `need_it!(now:)`, `check!(now:)`,
   `uncheck!(now:)` — encapsulate SM-2 growth/depletion logic.
+- `check!` and `uncheck!` accept an optional `custom_item:` parameter. When
+  present, they also update `CustomGroceryItem#on_hand_at` in the same
+  call — this replaces the current `sync_custom_on_hand` cross-hash
+  coordination. The cross-table update lives on `OnHandEntry` (not in a
+  callback) so the coupling is explicit and testable.
 - Class method: `reconcile!(kitchen:, visible_names:, resolver:, now:)` —
   the four cleanup passes as scoped queries.
 
 **`CustomGroceryItem`** — thin AR model.
 - `acts_as_tenant :kitchen`
-- Scope: `visible(now:)` — items where `on_hand_at` is nil or in the future
+- Scope: `visible(now:)` — `WHERE on_hand_at IS NULL OR on_hand_at >= date(?)`
+  (includes today — an item marked on-hand today is still visible)
 - Scope: `stale(cutoff:)` — items where `last_used_at < cutoff`
 
 **`CookHistoryEntry`** — thin AR model, append-only.
 - `acts_as_tenant :kitchen`
 - Scope: `recent(window:)` — entries within the history window (90 days)
-- Class method: `record(kitchen:, recipe_slug:)`
+- Class method: `record(kitchen:, recipe_slug:)` — appends a row; does not
+  prune. Old entries are ignored by the `recent` scope, so they are harmless.
+  Pruning happens during reconciliation: `CookHistoryEntry.where('cooked_at < ?',
+  window.ago).delete_all`.
 
 ### Broadcast Fixes
 
@@ -226,7 +237,13 @@ The JSON structure is well-documented and deterministic. The migration handles:
 - `apply_check` → `OnHandEntry.find_or_initialize_by` + instance methods
 - `apply_custom_items` → `CustomGroceryItem.create` / `.destroy`
 - `apply_have_it` / `apply_need_it` → `OnHandEntry` instance methods
-- `apply_quick_add` → direct record creation, no recursive self-call
+- `apply_quick_add` → direct record creation, no recursive self-call.
+  Currently reads `plan.on_hand` and `plan.effective_on_hand` directly;
+  these become `OnHandEntry` queries.
+- `enrich_check_params` custom item detection: the current
+  `plan.custom_items.any? { |k, _| k.casecmp?(item) }` becomes
+  `CustomGroceryItem.where(kitchen:, name: item).exists?` (NOCASE index
+  handles case-insensitivity).
 
 **`ShoppingListBuilder`** — queries `MealPlanSelection` instead of JSON
 arrays. `visible_names` queries `OnHandEntry` and `CustomGroceryItem`
@@ -253,13 +270,107 @@ JSON state:
 **`MenuController`** — `show` action reads selections from
 `MealPlanSelection` and cook history from `CookHistoryEntry.recent`.
 
+**`GroceriesHelper`** — the heaviest consumer of raw on-hand data outside
+the model. Six methods read hash entries directly (`item_zone`,
+`restock_tooltip`, `on_hand_sort_key`, `confirmed_today?`,
+`on_hand_freshness_class`). After decomposition, these receive `OnHandEntry`
+AR objects instead of hash entries. Attribute access changes from
+`entry['interval']` to `entry.interval`. References to `MealPlan::` constants
+(e.g. `MealPlan::SAFETY_MARGIN`, `MealPlan::ORPHAN_SENTINEL`) move to the
+new models (see Constants section below).
+
+**`_shopping_list.html.erb`** — the view template does direct hash lookups:
+`on_hand_data.find { |k, _| k.casecmp?(item[:name]) }&.last`. After
+decomposition, the controller passes an indexed hash of `OnHandEntry` objects
+keyed by ingredient name, or the view queries `@on_hand_entries` directly.
+The `casecmp?` scan is eliminated by the NOCASE index.
+
+**`SearchDataHelper`** — reads `plan.on_hand.keys` for the ingredient corpus
+and filters `plan.custom_items` by retention date. After decomposition:
+- Ingredient corpus: `OnHandEntry.where(kitchen:).pluck(:ingredient_name)`
+- Custom items: `CustomGroceryItem.visible(now:).pluck(:name, :aisle)`
+
+### Constant Relocation
+
+Constants currently on `MealPlan` move to the model that owns the concept:
+
+| Current | New home |
+|---------|----------|
+| `MealPlan::STARTING_INTERVAL` | `OnHandEntry::STARTING_INTERVAL` |
+| `MealPlan::MAX_INTERVAL` | `OnHandEntry::MAX_INTERVAL` |
+| `MealPlan::STARTING_EASE` | `OnHandEntry::STARTING_EASE` |
+| `MealPlan::MIN_EASE` | `OnHandEntry::MIN_EASE` |
+| `MealPlan::MAX_EASE` | `OnHandEntry::MAX_EASE` |
+| `MealPlan::EASE_BONUS` | `OnHandEntry::EASE_BONUS` |
+| `MealPlan::EASE_PENALTY` | `OnHandEntry::EASE_PENALTY` |
+| `MealPlan::SAFETY_MARGIN` | `OnHandEntry::SAFETY_MARGIN` |
+| `MealPlan::ORPHAN_SENTINEL` | `OnHandEntry::ORPHAN_SENTINEL` |
+| `MealPlan::ORPHAN_RETENTION` | `OnHandEntry::ORPHAN_RETENTION` |
+| `MealPlan::MAX_CUSTOM_ITEM_LENGTH` | `CustomGroceryItem::MAX_NAME_LENGTH` |
+| `MealPlan::CUSTOM_ITEM_RETENTION` | `CustomGroceryItem::RETENTION` |
+| `MealPlan::COOK_HISTORY_WINDOW` | `CookHistoryEntry::WINDOW` |
+| `MealPlan::MAX_RETRY_ATTEMPTS` | stays on `MealPlan` (batch ops) |
+
+### MealPlanActions Concern
+
+The `MealPlanActions` concern provides `rescue_from StaleObjectError` and
+`truthy_param?`. After decomposition, `StaleObjectError` is unlikely for
+individual mutations (row-level updates, no shared lock). Retain the rescue
+as a safety net for batch operations (`confirm_all`, `deplete_all`) and
+edge cases. `truthy_param?` is unaffected.
+
+### Reconciliation: Stale Selection Pruning
+
+The current `prune_stale_selections` removes recipe slugs and QB IDs that
+no longer exist. This must migrate to `MealPlanSelection`:
+- Recipe selections: `MealPlanSelection.recipes.where.not(selectable_id:
+  kitchen.recipes.select(:slug)).delete_all`
+- QB selections: filter against `kitchen.parsed_quick_bites.map(&:id)` (text
+  parsing survives until #286 normalizes QBs)
+
+This runs as part of `Kitchen.finalize_writes` reconciliation.
+
 ### Export/Import Impact
 
-`ExportService` and `ImportService` currently serialize/deserialize the
-`meal_plans.state` JSON as part of kitchen data export. These must be updated
-to export/import the four new tables. The export format version should be
-bumped to indicate the new structure, with backward-compatible import that
-detects the old JSON format and migrates on import.
+Neither `ExportService` nor `ImportService` currently touches MealPlan state
+— exports include only recipes, catalog, aisle order, categories, and quick
+bites. The decomposition does not change the export format. If we later want
+to export on-hand state or cook history, that is a new feature, not a
+migration concern.
+
+### Test Impact
+
+~4,800 lines across 13 test files need some level of update.
+
+**Near-total rewrite (~1,500 lines):**
+- `test/models/meal_plan_test.rb` (1220 lines) — every test directly
+  manipulates `plan.state['on_hand']`, `plan.state['custom_items']`, etc.
+  This is the densest test file and the primary SM-2 correctness guarantee.
+- `test/services/meal_plan_write_service_test.rb` (257 lines) — asserts
+  against `plan.state['selected_recipes']`, `plan.on_hand`, etc.
+
+**Moderate rewrites:**
+- `test/controllers/groceries_controller_test.rb` (1074 lines)
+- `test/controllers/menu_controller_test.rb` (477 lines)
+- `test/helpers/groceries_helper_test.rb` (282 lines)
+- `test/helpers/search_data_helper_test.rb` (155 lines)
+- `test/services/shopping_list_builder_test.rb` (859 lines)
+
+**Minor updates:**
+- `test/models/kitchen_batch_writes_test.rb` (120 lines)
+- `test/services/recipe_availability_calculator_test.rb` (179 lines)
+- `test/services/catalog_write_service_test.rb`
+- `test/services/recipe_write_service_test.rb`
+- `test/services/quick_bites_write_service_test.rb`
+
+**Unaffected:**
+- `test/sim/grocery_convergence.rb` — standalone simulation, no Rails deps.
+
+**New test files needed:**
+- `test/models/on_hand_entry_test.rb` (SM-2 logic, active scope, reconciliation)
+- `test/models/meal_plan_selection_test.rb`
+- `test/models/custom_grocery_item_test.rb`
+- `test/models/cook_history_entry_test.rb`
 
 ## Key Wins
 
