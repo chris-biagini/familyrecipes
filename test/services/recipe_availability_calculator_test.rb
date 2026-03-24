@@ -118,16 +118,13 @@ class RecipeAvailabilityCalculatorTest < ActiveSupport::TestCase
   end
 
   test 'includes quick bites when present' do
-    @kitchen.update!(quick_bites_content: <<~MD)
-      ## Snacks
-      - Nachos: Tortilla chips, Cheese
-    MD
+    qb = create_quick_bite('Nachos', category_name: 'Snacks', ingredients: ['Tortilla chips', 'Cheese'])
 
     result = RecipeAvailabilityCalculator.new(kitchen: @kitchen, checked_off: ['Cheese']).call
 
-    assert result.key?('nachos')
-    assert_equal 1, result['nachos'][:missing]
-    assert_equal ['Tortilla chips'], result['nachos'][:missing_names]
+    assert result.key?(qb.id)
+    assert_equal 1, result[qb.id][:missing]
+    assert_equal ['Tortilla chips'], result[qb.id][:missing_names]
   end
 
   test 'resolves checked-off names case-insensitively' do

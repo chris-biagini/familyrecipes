@@ -65,6 +65,15 @@ module ActiveSupport
       RecipeWriteService.create(markdown:, kitchen:, category_name:).recipe
     end
 
+    def create_quick_bite(title, category_name: 'Snacks', ingredients: [title])
+      cat = Category.find_or_create_for(@kitchen, category_name)
+      qb = QuickBite.create!(title:, category: cat, position: QuickBite.where(kitchen_id: @kitchen.id).count)
+      ingredients.each_with_index do |name, idx|
+        qb.quick_bite_ingredients.create!(name:, position: idx)
+      end
+      qb
+    end
+
     def with_multi_kitchen
       original = ENV.fetch('MULTI_KITCHEN', nil)
       ENV['MULTI_KITCHEN'] = 'true'

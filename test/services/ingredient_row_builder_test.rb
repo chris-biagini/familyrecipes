@@ -261,10 +261,7 @@ class IngredientRowBuilderTest < ActiveSupport::TestCase
   # --- quick bites ---
 
   test 'includes quick bite ingredients in rows' do
-    @kitchen.update!(quick_bites_content: <<~MD)
-      ## Snacks
-      - Hummus with Pretzels: Hummus, Pretzels
-    MD
+    create_quick_bite('Hummus with Pretzels', category_name: 'Snacks', ingredients: %w[Hummus Pretzels])
 
     rows = IngredientRowBuilder.new(kitchen: @kitchen).rows
     names = rows.pluck(:name)
@@ -274,10 +271,7 @@ class IngredientRowBuilderTest < ActiveSupport::TestCase
   end
 
   test 'quick bite sources count toward recipe_count' do
-    @kitchen.update!(quick_bites_content: <<~MD)
-      ## Snacks
-      - Toast: Flour, Butter
-    MD
+    create_quick_bite('Toast', category_name: 'Snacks', ingredients: %w[Flour Butter])
 
     rows = IngredientRowBuilder.new(kitchen: @kitchen).rows
     flour = rows.find { |r| r[:name] == 'Flour' }
@@ -286,10 +280,7 @@ class IngredientRowBuilderTest < ActiveSupport::TestCase
   end
 
   test 'quick bite sources appear as QuickBiteSource in recipes list' do
-    @kitchen.update!(quick_bites_content: <<~MD)
-      ## Snacks
-      - Hummus with Pretzels: Hummus, Pretzels
-    MD
+    create_quick_bite('Hummus with Pretzels', category_name: 'Snacks', ingredients: %w[Hummus Pretzels])
 
     rows = IngredientRowBuilder.new(kitchen: @kitchen).rows
     hummus = rows.find { |r| r[:name] == 'Hummus' }
@@ -301,10 +292,7 @@ class IngredientRowBuilderTest < ActiveSupport::TestCase
 
   test 'quick bite ingredients are canonicalized through resolver' do
     create_catalog_entry('Eggs', basis_grams: 50)
-    @kitchen.update!(quick_bites_content: <<~MD)
-      ## Breakfast
-      - Quick Eggs: Egg, Toast
-    MD
+    create_quick_bite('Quick Eggs', category_name: 'Breakfast', ingredients: %w[Egg Toast])
 
     rows = IngredientRowBuilder.new(kitchen: @kitchen).rows
     names = rows.pluck(:name)
@@ -465,10 +453,7 @@ class IngredientRowBuilderTest < ActiveSupport::TestCase
   end
 
   test 'sources_for includes quick bite sources' do
-    @kitchen.update!(quick_bites_content: <<~MD)
-      ## Snacks
-      - Toast: Flour, Butter
-    MD
+    create_quick_bite('Toast', category_name: 'Snacks', ingredients: %w[Flour Butter])
 
     builder = IngredientRowBuilder.new(kitchen: @kitchen)
     sources = builder.sources_for('Flour')

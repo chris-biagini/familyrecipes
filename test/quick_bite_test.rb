@@ -2,7 +2,7 @@
 
 require_relative 'test_helper'
 
-class QuickBiteTest < Minitest::Test
+class QuickBiteParserTest < Minitest::Test
   def test_parses_title_from_text
     qb = FamilyRecipes::QuickBite.new(text_source: 'PB&J: Peanut butter, jelly, bread', category: 'Sandwiches')
 

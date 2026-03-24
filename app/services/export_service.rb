@@ -8,7 +8,7 @@
 # - ExportsController: sole caller (planned)
 # - IngredientCatalog: custom entries exported as seed-compatible YAML
 # - ImportService: consumes the ZIP format this service produces
-# - Kitchen: tenant container providing recipes, quick_bites_content, slug
+# - Kitchen: tenant container providing recipes, quick bites, slug
 class ExportService
   def self.call(kitchen:)
     new(kitchen).build_zip
@@ -44,10 +44,12 @@ class ExportService
   end
 
   def add_quick_bites(zos)
-    return if @kitchen.quick_bites_content.blank?
+    return if @kitchen.quick_bites.none?
 
+    ir = FamilyRecipes::QuickBitesSerializer.from_records(@kitchen)
+    content = FamilyRecipes::QuickBitesSerializer.serialize(ir)
     zos.put_next_entry('quick-bites.txt')
-    zos.write(@kitchen.quick_bites_content)
+    zos.write(content)
   end
 
   def add_aisle_order(zos)

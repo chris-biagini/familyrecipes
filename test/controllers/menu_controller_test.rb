@@ -57,7 +57,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'quickbites_editor_frame contains embedded content JSON' do
-    @kitchen.update!(quick_bites_content: "## Snacks\n- Goldfish")
+    create_quick_bite('Goldfish', category_name: 'Snacks')
 
     log_in
     get menu_quickbites_editor_frame_path(kitchen_slug: kitchen_slug)
@@ -66,12 +66,13 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     assert_select 'script[type="application/json"][data-editor-markdown]' do |scripts|
       json = JSON.parse(scripts.first.text)
 
-      assert_equal "## Snacks\n- Goldfish", json['plaintext']
+      assert_includes json['plaintext'], 'Goldfish'
     end
   end
 
   test 'quickbites_editor_frame renders category cards' do
-    @kitchen.update!(quick_bites_content: "## Snacks\n- Goldfish\n- Hummus with Pretzels: Hummus, Pretzels")
+    create_quick_bite('Goldfish', category_name: 'Snacks')
+    create_quick_bite('Hummus with Pretzels', category_name: 'Snacks', ingredients: %w[Hummus Pretzels])
 
     log_in
     get menu_quickbites_editor_frame_path(kitchen_slug: kitchen_slug)
@@ -258,7 +259,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
   # --- Quick Bites ---
 
   test 'quick_bites_content returns current content and structure' do
-    @kitchen.update!(quick_bites_content: "## Snacks\n- Goldfish")
+    create_quick_bite('Goldfish', category_name: 'Snacks')
 
     log_in
     get menu_quick_bites_content_path(kitchen_slug: kitchen_slug), as: :json
@@ -266,7 +267,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     json = response.parsed_body
 
-    assert_equal "## Snacks\n- Goldfish", json['content']
+    assert_includes json['content'], 'Goldfish'
     assert_equal 'Snacks', json['structure']['categories'].first['name']
     assert_equal 'Goldfish', json['structure']['categories'].first['items'].first['name']
   end
@@ -289,11 +290,12 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
           as: :json
 
     assert_response :success
-    assert_equal "## Snacks\n- Goldfish", @kitchen.reload.quick_bites_content
+    assert_equal 1, @kitchen.quick_bites.count
+    assert_equal 'Goldfish', @kitchen.quick_bites.first.title
   end
 
   test 'update_quick_bites clears content when blank' do
-    @kitchen.update!(quick_bites_content: 'old content')
+    create_quick_bite('Goldfish', category_name: 'Snacks')
 
     log_in
     patch menu_quick_bites_path(kitchen_slug: kitchen_slug),
@@ -301,7 +303,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
           as: :json
 
     assert_response :success
-    assert_nil @kitchen.reload.quick_bites_content
+    assert_equal 0, @kitchen.quick_bites.reload.count
   end
 
   test 'update_quick_bites returns warnings for unrecognized lines' do
@@ -332,18 +334,23 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'update_quick_bites prunes removed quick bite from selections' do
-    both = "## Snacks\n- Nachos: Chips\n- Pretzels: Pretzels\n"
-    @kitchen.update!(quick_bites_content: both)
-    MealPlanSelection.create!(kitchen: @kitchen, selectable_type: 'QuickBite', selectable_id: 'nachos')
-    MealPlanSelection.create!(kitchen: @kitchen, selectable_type: 'QuickBite', selectable_id: 'pretzels')
+    nachos = create_quick_bite('Nachos', category_name: 'Snacks', ingredients: ['Chips'])
+    pretzels = create_quick_bite('Pretzels', category_name: 'Snacks', ingredients: ['Pretzels'])
+    MealPlanSelection.create!(kitchen: @kitchen, selectable_type: 'QuickBite', selectable_id: nachos.id.to_s)
+    MealPlanSelection.create!(kitchen: @kitchen, selectable_type: 'QuickBite', selectable_id: pretzels.id.to_s)
 
     log_in
     patch menu_quick_bites_path(kitchen_slug: kitchen_slug),
           params: { content: "## Snacks\n- Nachos: Chips\n" },
           as: :json
 
-    assert MealPlanSelection.exists?(kitchen: @kitchen, selectable_type: 'QuickBite', selectable_id: 'nachos')
-    assert_not MealPlanSelection.exists?(kitchen: @kitchen, selectable_type: 'QuickBite', selectable_id: 'pretzels')
+    # Nachos was re-created with a new ID; old selections for removed QBs are pruned
+    new_nachos = @kitchen.quick_bites.find_by(title: 'Nachos')
+
+    assert new_nachos, 'Nachos should still exist'
+    pretzels_sel = { kitchen: @kitchen, selectable_type: 'QuickBite', selectable_id: pretzels.id.to_s }
+
+    assert_not MealPlanSelection.exists?(pretzels_sel)
   end
 
   test 'update_quick_bites broadcasts meal plan refresh' do
@@ -418,8 +425,10 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
           params: { structure: ir }, as: :json
 
     assert_response :ok
-    assert_includes @kitchen.reload.quick_bites_content, '## Snacks'
-    assert_includes @kitchen.quick_bites_content, '- Crackers: Ritz'
+    qb = @kitchen.quick_bites.find_by(title: 'Crackers')
+
+    assert qb
+    assert_equal ['Ritz'], qb.quick_bite_ingredients.map(&:name)
   end
 
   private
