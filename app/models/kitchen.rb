@@ -3,11 +3,11 @@
 # Multi-tenant container — the top-level scope for all user-facing data. Every
 # query on tenant-scoped models must go through current_kitchen; unscoped finders
 # like Recipe.find_by would cross kitchen boundaries. Owns recipes, categories,
-# ingredient catalog entries, a single MealPlan, and its member Users via
-# Memberships. Also holds quick_bites_content (web-editable), aisle_order
-# (user-customized grocery aisle sequence), site branding (site_title,
-# homepage_heading, homepage_subtitle), display preferences (show_nutrition),
-# and encrypted API keys (usda_api_key, anthropic_api_key).
+# quick bites, ingredient catalog entries, a single MealPlan, and its member
+# Users via Memberships. Also holds aisle_order (user-customized grocery aisle
+# sequence), site branding (site_title, homepage_heading, homepage_subtitle),
+# display preferences (show_nutrition), and encrypted API keys (usda_api_key,
+# anthropic_api_key).
 #
 # Kitchen.finalize_writes(kitchen) is the single post-write entry point for
 # all write services: orphan cleanup, meal plan reconciliation, broadcast.
@@ -18,6 +18,7 @@ class Kitchen < ApplicationRecord
 
   has_many :categories, dependent: :destroy
   has_many :recipes, dependent: :destroy
+  has_many :quick_bites, dependent: :destroy
   has_many :tags, dependent: :destroy
   has_many :ingredient_catalog, dependent: :destroy, class_name: 'IngredientCatalog'
   has_many :meal_plan_selections, dependent: :destroy
@@ -77,7 +78,7 @@ class Kitchen < ApplicationRecord
     CustomGroceryItem.where(kitchen_id: kitchen.id).stale(cutoff: Date.current - CustomGroceryItem::RETENTION).delete_all
     CookHistoryEntry.prune!(kitchen:)
     valid_slugs = kitchen.recipes.pluck(:slug)
-    valid_qb_ids = kitchen.parsed_quick_bites.map(&:id)
+    valid_qb_ids = kitchen.quick_bites.pluck(:id).map(&:to_s)
     MealPlanSelection.prune_stale!(kitchen:, valid_recipe_slugs: valid_slugs, valid_qb_ids:)
   end
   private_class_method :reconcile_meal_plan_tables
@@ -85,7 +86,6 @@ class Kitchen < ApplicationRecord
   validates :name, presence: true
   validates :slug, presence: true, uniqueness: true
   validate :enforce_single_kitchen_mode, on: :create
-  after_save :clear_parsed_quick_bites_cache, if: :saved_change_to_quick_bites_content?
 
   def broadcast_update
     Turbo::StreamsChannel.broadcast_refresh_to(self, :updates)
@@ -95,16 +95,6 @@ class Kitchen < ApplicationRecord
     return false unless user
 
     memberships.exists?(user: user)
-  end
-
-  def parsed_quick_bites
-    return [] unless quick_bites_content
-
-    @parsed_quick_bites ||= FamilyRecipes.parse_quick_bites_content(quick_bites_content).quick_bites
-  end
-
-  def quick_bites_by_subsection
-    parsed_quick_bites.group_by { |qb| qb.category.delete_prefix('Quick Bites: ') }
   end
 
   def parsed_aisle_order
@@ -132,10 +122,6 @@ class Kitchen < ApplicationRecord
   end
 
   private
-
-  def clear_parsed_quick_bites_cache
-    @parsed_quick_bites = nil
-  end
 
   def enforce_single_kitchen_mode
     return if ENV['MULTI_KITCHEN'] == 'true'

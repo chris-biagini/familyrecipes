@@ -103,6 +103,33 @@ class CategoryTest < ActiveSupport::TestCase
     assert_not_includes results, empty
   end
 
+  # --- with_content scope ---
+
+  test 'with_content includes categories with only quick bites' do
+    empty = Category.create!(name: 'Empty')
+    recipe_cat = Category.create!(name: 'Has Recipe')
+    qb_cat = Category.create!(name: 'Has QB')
+    Recipe.create!(title: 'Test', slug: 'test', category: recipe_cat)
+    QuickBite.create!(title: 'Goldfish', category: qb_cat, position: 0)
+
+    results = Category.with_content
+
+    assert_includes results, recipe_cat
+    assert_includes results, qb_cat
+    assert_not_includes results, empty
+  end
+
+  # --- cleanup_orphans ---
+
+  test 'cleanup_orphans preserves categories that have only quick bites' do
+    cat = Category.create!(name: 'Snacks', slug: 'snacks')
+    QuickBite.create!(title: 'Goldfish', category: cat, position: 0)
+
+    Category.cleanup_orphans(@kitchen)
+
+    assert Category.exists?(id: cat.id), 'QB-only category should not be destroyed'
+  end
+
   # --- ordered scope ---
 
   test 'ordered scope sorts by position then name' do
