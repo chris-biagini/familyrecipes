@@ -28,8 +28,8 @@ class PwaController < ApplicationController
       short_name: 'Recipes',
       start_url: '/',
       display: 'standalone',
-      background_color: '#ffffff',
-      theme_color: '#cd4754',
+      background_color: '#faf8f5',
+      theme_color: '#faf8f5',
       icons: manifest_icons,
       shortcuts: [
         { name: 'Grocery List', short_name: 'Groceries', url: '/groceries' }
