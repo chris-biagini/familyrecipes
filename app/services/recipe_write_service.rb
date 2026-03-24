@@ -61,6 +61,7 @@ class RecipeWriteService
   def update(slug:, markdown: nil, structure: nil, category_name: nil, tags: nil)
     updated_references = []
     recipe = nil
+    rename_data = nil
 
     ActiveRecord::Base.transaction do
       old_recipe = kitchen.recipes.find_by!(slug:)
@@ -68,9 +69,10 @@ class RecipeWriteService
       recipe, front_matter_tags = import_recipe(markdown:, structure:, category:)
       sync_tags(recipe, tags || front_matter_tags)
       updated_references = rename_cross_references(old_recipe, recipe)
-      handle_slug_change(old_recipe, recipe)
+      rename_data = destroy_old_slug(old_recipe, recipe)
     end
 
+    broadcast_rename(rename_data) if rename_data
     finalize
     Result.new(recipe:, updated_references:)
   end
@@ -86,10 +88,10 @@ class RecipeWriteService
 
     ActiveRecord::Base.transaction do
       recipe = kitchen.recipes.find_by!(slug:)
-      RecipeBroadcaster.notify_recipe_deleted(recipe, recipe_title: recipe.title)
       recipe.destroy!
     end
 
+    RecipeBroadcaster.notify_recipe_deleted(recipe, recipe_title: recipe.title)
     finalize
     Result.new(recipe:, updated_references: [])
   end
@@ -126,14 +128,18 @@ class RecipeWriteService
     )
   end
 
-  def handle_slug_change(old_recipe, new_recipe)
+  def destroy_old_slug(old_recipe, new_recipe)
     return if new_recipe.slug == old_recipe.slug
 
-    RecipeBroadcaster.broadcast_rename(
-      old_recipe, new_title: new_recipe.title,
-                  redirect_path: Rails.application.routes.url_helpers.recipe_path(new_recipe)
-    )
     old_recipe.destroy!
+    { old_recipe:, new_title: new_recipe.title,
+      redirect_path: Rails.application.routes.url_helpers.recipe_path(new_recipe) }
+  end
+
+  def broadcast_rename(data)
+    RecipeBroadcaster.broadcast_rename(
+      data[:old_recipe], new_title: data[:new_title], redirect_path: data[:redirect_path]
+    )
   end
 
   def finalize

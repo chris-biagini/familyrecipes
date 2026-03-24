@@ -54,10 +54,22 @@ class Kitchen < ApplicationRecord
   def self.run_finalization(kitchen)
     Category.cleanup_orphans(kitchen)
     Tag.cleanup_orphans(kitchen)
-    MealPlan.reconcile_kitchen!(kitchen)
-    kitchen.broadcast_update
+    reconcile_meal_plan_tables(kitchen)
+    Current.broadcast_pending = kitchen
   end
   private_class_method :run_finalization
+
+  def self.reconcile_meal_plan_tables(kitchen)
+    resolver = IngredientCatalog.resolver_for(kitchen)
+    visible = ShoppingListBuilder.visible_names_for(kitchen:, resolver:)
+    OnHandEntry.reconcile!(kitchen:, visible_names: visible, resolver:)
+    CustomGroceryItem.where(kitchen_id: kitchen.id).stale(cutoff: Date.current - CustomGroceryItem::RETENTION).delete_all
+    CookHistoryEntry.prune!(kitchen:)
+    valid_slugs = kitchen.recipes.pluck(:slug)
+    valid_qb_ids = kitchen.parsed_quick_bites.map(&:id)
+    MealPlanSelection.prune_stale!(kitchen:, valid_recipe_slugs: valid_slugs, valid_qb_ids:)
+  end
+  private_class_method :reconcile_meal_plan_tables
 
   validates :name, presence: true
   validates :slug, presence: true, uniqueness: true

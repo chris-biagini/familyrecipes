@@ -14,7 +14,11 @@
 class ShoppingListBuilder # rubocop:disable Metrics/ClassLength
   AISLE_SORT_PRIORITY = { ordered: 0, unordered: 1, miscellaneous: 2 }.freeze
 
-  def initialize(kitchen:, meal_plan:, resolver: nil)
+  def self.visible_names_for(kitchen:, resolver: nil)
+    new(kitchen:, resolver:).visible_names
+  end
+
+  def initialize(kitchen:, meal_plan: nil, resolver: nil)
     @kitchen = kitchen
     @meal_plan = meal_plan
     @resolver = resolver || IngredientCatalog.resolver_for(kitchen)
@@ -28,7 +32,7 @@ class ShoppingListBuilder # rubocop:disable Metrics/ClassLength
   end
 
   def visible_names
-    custom = @meal_plan.visible_custom_items.keys.map { |name| canonical_name(name) }
+    custom = visible_custom_item_names.map { |name| canonical_name(name) }
     (canonical_recipe_names + canonical_quick_bite_names + custom)
       .reject { |name| @resolver.omitted?(name) }.to_set
   end
@@ -63,11 +67,12 @@ class ShoppingListBuilder # rubocop:disable Metrics/ClassLength
   end
 
   def selected_recipes
-    @kitchen.recipes.with_full_tree.where(slug: @meal_plan.selected_recipes)
+    slugs = @meal_plan ? @meal_plan.selected_recipes : MealPlanSelection.recipe_slugs_for(@kitchen)
+    @kitchen.recipes.with_full_tree.where(slug: slugs)
   end
 
   def selected_quick_bites
-    ids = @meal_plan.selected_quick_bites
+    ids = @meal_plan ? @meal_plan.selected_quick_bites : MealPlanSelection.quick_bite_ids_for(@kitchen)
     return [] if ids.empty?
 
     @kitchen.parsed_quick_bites.select { |qb| ids.include?(qb.id) }
@@ -114,6 +119,20 @@ class ShoppingListBuilder # rubocop:disable Metrics/ClassLength
     IngredientAggregator.merge_amounts(existing, incoming)
   end
 
+  def visible_custom_item_names
+    if @meal_plan
+      @meal_plan.visible_custom_items.keys
+    else
+      CustomGroceryItem.where(kitchen_id: @kitchen.id).visible.pluck(:name)
+    end
+  end
+
+  def custom_items_from_ar
+    CustomGroceryItem.where(kitchen_id: @kitchen.id).visible.each_with_object({}) do |item, hash|
+      hash[item.name] = { 'aisle' => item.aisle }
+    end
+  end
+
   def canonical_name(name)
     @resolver.resolve(name)
   end
@@ -150,7 +169,7 @@ class ShoppingListBuilder # rubocop:disable Metrics/ClassLength
   end
 
   def add_custom_items(organized)
-    custom = @meal_plan.visible_custom_items
+    custom = @meal_plan ? @meal_plan.visible_custom_items : custom_items_from_ar
     return if custom.empty?
 
     existing = existing_canonical_names(organized)

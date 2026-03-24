@@ -18,6 +18,14 @@ class MealPlanSelection < ApplicationRecord
   scope :recipes, -> { where(selectable_type: 'Recipe') }
   scope :quick_bites, -> { where(selectable_type: 'QuickBite') }
 
+  def self.recipe_slugs_for(kitchen)
+    ActsAsTenant.with_tenant(kitchen) { recipes.pluck(:selectable_id) }
+  end
+
+  def self.quick_bite_ids_for(kitchen)
+    ActsAsTenant.with_tenant(kitchen) { quick_bites.pluck(:selectable_id) }
+  end
+
   def self.toggle(kitchen:, type:, id:, selected:)
     scope = ActsAsTenant.with_tenant(kitchen) { where(selectable_type: type, selectable_id: id) }
 
