@@ -11,7 +11,7 @@
 # - IngredientResolver (name resolution, catalog entry access)
 # - IngredientCatalog.resolver_for (default resolver factory)
 # - IngredientsController, NutritionEntriesController
-# - FamilyRecipes::QuickBite (parsed from Kitchen#quick_bites_content)
+# - QuickBite / QuickBiteIngredient (AR-backed grocery bundles)
 class IngredientRowBuilder # rubocop:disable Metrics/ClassLength
   QuickBiteSource = Data.define(:title)
 
@@ -153,7 +153,7 @@ class IngredientRowBuilder # rubocop:disable Metrics/ClassLength
   end
 
   def merge_quick_bite_sources(index, seen)
-    kitchen.parsed_quick_bites.each do |qb|
+    kitchen.quick_bites.includes(:quick_bite_ingredients).find_each do |qb|
       source = QuickBiteSource.new(title: qb.title)
       qb.all_ingredient_names.each do |raw_name|
         name = canonical_ingredient_name(raw_name)

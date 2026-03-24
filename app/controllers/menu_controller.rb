@@ -16,9 +16,8 @@ class MenuController < ApplicationController
 
   def show
     @categories = recipe_selector_categories
-    @quick_bites_by_subsection = current_kitchen.quick_bites_by_subsection
     @selected_recipes = selected_ids_for('Recipe')
-    @selected_quick_bites = selected_ids_for('QuickBite')
+    @selected_quick_bites = selected_ids_for('QuickBite').to_set(&:to_i)
     @availability = compute_availability
     @cook_weights = CookHistoryWeighter.call(CookHistoryEntry.where(kitchen_id: current_kitchen.id).recent)
   end
@@ -32,19 +31,17 @@ class MenuController < ApplicationController
   end
 
   def quick_bites_content
-    content = current_kitchen.quick_bites_content || ''
-    result = FamilyRecipes.parse_quick_bites_content(content)
-    structure = FamilyRecipes::QuickBitesSerializer.to_ir(result.quick_bites)
-    render json: { content:, structure: }
+    ir = FamilyRecipes::QuickBitesSerializer.from_records(current_kitchen)
+    content = FamilyRecipes::QuickBitesSerializer.serialize(ir)
+    render json: { content:, structure: ir }
   end
 
   def quickbites_editor_frame
-    content = current_kitchen.quick_bites_content || ''
-    result = FamilyRecipes.parse_quick_bites_content(content)
-    structure = FamilyRecipes::QuickBitesSerializer.to_ir(result.quick_bites)
+    ir = FamilyRecipes::QuickBitesSerializer.from_records(current_kitchen)
+    content = FamilyRecipes::QuickBitesSerializer.serialize(ir)
 
     render partial: 'menu/quickbites_editor_frame', locals: {
-      content:, structure:
+      content:, structure: ir
     }, layout: false
   end
 
@@ -92,6 +89,7 @@ class MenuController < ApplicationController
 
   def recipe_selector_categories
     current_kitchen.categories.ordered.includes(
+      quick_bites: :quick_bite_ingredients,
       recipes: { steps: [:ingredients, { cross_references: { target_recipe: { steps: :ingredients } } }] }
     )
   end

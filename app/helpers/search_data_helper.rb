@@ -31,6 +31,7 @@ module SearchDataHelper
   def ingredient_corpus(recipes)
     names = recipes.flat_map { |r| r.ingredients.map(&:name) }
     names.concat(OnHandEntry.where(kitchen_id: current_kitchen.id).pluck(:ingredient_name))
+    names.concat(current_kitchen.quick_bites.joins(:quick_bite_ingredients).pluck('quick_bite_ingredients.name'))
     names.uniq.sort
   end
 
