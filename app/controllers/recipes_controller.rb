@@ -10,6 +10,7 @@ class RecipesController < ApplicationController
   include StructureValidation
 
   before_action :require_membership, only: %i[content editor_frame create update destroy parse serialize]
+  before_action :prevent_html_caching, only: :show
 
   def show
     @recipe = current_kitchen.recipes.with_full_tree.find_by!(slug: params[:slug])

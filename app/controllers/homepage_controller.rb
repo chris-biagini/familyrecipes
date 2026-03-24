@@ -7,9 +7,9 @@
 # - Category: ordered categories with eager-loaded recipes
 # - Kitchen: site title and branding read from current_kitchen
 class HomepageController < ApplicationController
+  before_action :prevent_html_caching, only: :show
+
   def show
-    all = current_kitchen.categories.ordered.includes(:recipes)
-    @all_categories = all
-    @categories = all.select { |c| c.recipes.any? }
+    @categories = current_kitchen.categories.with_recipes.ordered.includes(:recipes)
   end
 end

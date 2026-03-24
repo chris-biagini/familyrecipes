@@ -9,6 +9,7 @@
 # - HomepageController: shares the homepage/show view for the sole-kitchen case
 class LandingController < ApplicationController
   skip_before_action :set_kitchen_from_path
+  before_action :prevent_html_caching, only: :show
 
   def show
     @kitchens = ActsAsTenant.without_tenant { Kitchen.all.to_a }
@@ -19,9 +20,7 @@ class LandingController < ApplicationController
 
   def render_sole_kitchen_homepage
     set_current_tenant(@kitchens.first)
-    all = current_kitchen.categories.ordered.includes(:recipes)
-    @all_categories = all
-    @categories = all.select { |c| c.recipes.any? }
+    @categories = current_kitchen.categories.with_recipes.ordered.includes(:recipes)
     render 'homepage/show'
   end
 end

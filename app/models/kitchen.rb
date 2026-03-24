@@ -101,7 +101,7 @@ class Kitchen < ApplicationRecord
   def parsed_aisle_order
     return [] unless aisle_order
 
-    aisle_order.lines.map(&:strip).reject(&:empty?)
+    @parsed_aisle_order ||= aisle_order.lines.map(&:strip).reject(&:empty?)
   end
 
   def normalize_aisle_order!
