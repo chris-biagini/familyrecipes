@@ -28,7 +28,7 @@ class CookHistoryEntryTest < ActiveSupport::TestCase
     freeze_time do
       entry = CookHistoryEntry.record(kitchen: @kitchen, recipe_slug: 'bagels')
 
-      assert entry.persisted?
+      assert_predicate entry, :persisted?
       assert_equal 'bagels', entry.recipe_slug
       assert_equal @kitchen.id, entry.kitchen_id
       assert_in_delta Time.current, entry.cooked_at, 1.second

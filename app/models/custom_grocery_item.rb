@@ -21,5 +21,5 @@ class CustomGroceryItem < ApplicationRecord
                    uniqueness: { scope: :kitchen_id, case_sensitive: false }
 
   scope :visible, ->(now: Date.current) { where('on_hand_at IS NULL OR on_hand_at >= ?', now) }
-  scope :stale, ->(cutoff:) { where('last_used_at < ?', cutoff) }
+  scope :stale, ->(cutoff:) { where(last_used_at: ...cutoff) }
 end

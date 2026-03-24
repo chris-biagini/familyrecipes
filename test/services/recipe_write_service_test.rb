@@ -239,20 +239,16 @@ class RecipeWriteServiceTest < ActiveSupport::TestCase
 
   test 'destroy prunes deleted recipe from meal plan selections' do
     RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen, category_name: 'Bread')
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+    MealPlanSelection.create!(kitchen: @kitchen, selectable_type: 'Recipe', selectable_id: 'focaccia')
 
     RecipeWriteService.destroy(slug: 'focaccia', kitchen: @kitchen)
 
-    plan.reload
-
-    assert_not_includes plan.state['selected_recipes'], 'focaccia'
+    assert_not MealPlanSelection.exists?(kitchen: @kitchen, selectable_type: 'Recipe', selectable_id: 'focaccia')
   end
 
   test 'update with rename prunes old slug from meal plan selections' do
     RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen, category_name: 'Bread')
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+    MealPlanSelection.create!(kitchen: @kitchen, selectable_type: 'Recipe', selectable_id: 'focaccia')
 
     renamed = <<~MD
       # Rosemary Focaccia
@@ -266,9 +262,7 @@ class RecipeWriteServiceTest < ActiveSupport::TestCase
 
     RecipeWriteService.update(slug: 'focaccia', markdown: renamed, kitchen: @kitchen, category_name: 'Bread')
 
-    plan.reload
-
-    assert_not_includes plan.state['selected_recipes'], 'focaccia'
+    assert_not MealPlanSelection.exists?(kitchen: @kitchen, selectable_type: 'Recipe', selectable_id: 'focaccia')
   end
 
   test 'create raises SlugCollisionError when slug collides with different title' do
@@ -304,8 +298,7 @@ class RecipeWriteServiceTest < ActiveSupport::TestCase
 
   test 'slug reuse after delete does not auto-select' do
     RecipeWriteService.create(markdown: BASIC_MARKDOWN, kitchen: @kitchen, category_name: 'Bread')
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+    MealPlanSelection.create!(kitchen: @kitchen, selectable_type: 'Recipe', selectable_id: 'focaccia')
 
     RecipeWriteService.destroy(slug: 'focaccia', kitchen: @kitchen)
 
@@ -322,9 +315,7 @@ class RecipeWriteServiceTest < ActiveSupport::TestCase
     MD
     RecipeWriteService.create(markdown: new_markdown, kitchen: @kitchen, category_name: 'Bread')
 
-    plan.reload
-
-    assert_not_includes plan.state['selected_recipes'], 'focaccia'
+    assert_not MealPlanSelection.exists?(kitchen: @kitchen, selectable_type: 'Recipe', selectable_id: 'focaccia')
   end
 
   test 'create uses front matter tags when tags param is nil' do

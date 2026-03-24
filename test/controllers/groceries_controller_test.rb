@@ -136,9 +136,8 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
       p.aisle = 'Baking'
     end
 
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
-    plan.apply_action('need_it', item: 'Flour')
+    MealPlanSelection.create!(kitchen: @kitchen, selectable_type: 'Recipe', selectable_id: 'focaccia')
+    MealPlanWriteService.apply_action(kitchen: @kitchen, action_type: 'need_it', item: 'Flour')
 
     log_in
     get groceries_path(kitchen_slug: kitchen_slug)
@@ -167,8 +166,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     %w[Flour Yeast Salt Sugar].each { |name| create_catalog_entry(name, basis_grams: 10, aisle: 'Baking') }
     create_catalog_entry('Olive oil', basis_grams: 14, aisle: 'Oils')
 
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+    MealPlanSelection.create!(kitchen: @kitchen, selectable_type: 'Recipe', selectable_id: 'focaccia')
 
     log_in
     get groceries_path(kitchen_slug: kitchen_slug)
@@ -191,8 +189,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
 
     create_catalog_entry('Flour', basis_grams: 30, aisle: 'Baking')
 
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+    MealPlanSelection.create!(kitchen: @kitchen, selectable_type: 'Recipe', selectable_id: 'focaccia')
 
     log_in
     get groceries_path(kitchen_slug: kitchen_slug)
@@ -218,8 +215,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
       p.aisle = 'Baking'
     end
 
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+    MealPlanSelection.create!(kitchen: @kitchen, selectable_type: 'Recipe', selectable_id: 'focaccia')
 
     log_in
     get groceries_path(kitchen_slug: kitchen_slug)
@@ -248,9 +244,8 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
       p.aisle = 'Baking'
     end
 
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
-    plan.apply_action('check', item: 'Flour', checked: true)
+    MealPlanSelection.create!(kitchen: @kitchen, selectable_type: 'Recipe', selectable_id: 'focaccia')
+    MealPlanWriteService.apply_action(kitchen: @kitchen, action_type: 'check', item: 'Flour', checked: true)
 
     log_in
     get groceries_path(kitchen_slug: kitchen_slug)
@@ -276,9 +271,8 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
       p.aisle = 'Baking'
     end
 
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
-    plan.apply_action('check', item: 'Flour', checked: true)
+    MealPlanSelection.create!(kitchen: @kitchen, selectable_type: 'Recipe', selectable_id: 'focaccia')
+    MealPlanWriteService.apply_action(kitchen: @kitchen, action_type: 'check', item: 'Flour', checked: true)
 
     log_in
     get groceries_path(kitchen_slug: kitchen_slug)
@@ -313,10 +307,9 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
       p.aisle = 'Baking'
     end
 
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
-    plan.apply_action('need_it', item: 'Yeast')
-    plan.apply_action('check', item: 'Flour', checked: true)
+    MealPlanSelection.create!(kitchen: @kitchen, selectable_type: 'Recipe', selectable_id: 'focaccia')
+    MealPlanWriteService.apply_action(kitchen: @kitchen, action_type: 'need_it', item: 'Yeast')
+    MealPlanWriteService.apply_action(kitchen: @kitchen, action_type: 'check', item: 'Flour', checked: true)
 
     log_in
     get groceries_path(kitchen_slug: kitchen_slug)
@@ -346,9 +339,8 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
       p.aisle = 'Baking'
     end
 
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
-    plan.apply_action('check', item: 'Flour', checked: true)
+    MealPlanSelection.create!(kitchen: @kitchen, selectable_type: 'Recipe', selectable_id: 'focaccia')
+    MealPlanWriteService.apply_action(kitchen: @kitchen, action_type: 'check', item: 'Flour', checked: true)
 
     log_in
     get groceries_path(kitchen_slug: kitchen_slug)
@@ -374,11 +366,9 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
       p.aisle = 'Baking'
     end
 
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
-    plan.apply_action('check', item: 'Flour', checked: true)
-    plan.on_hand['Flour']['confirmed_at'] = (Date.current - 1).iso8601
-    plan.save!
+    MealPlanSelection.create!(kitchen: @kitchen, selectable_type: 'Recipe', selectable_id: 'focaccia')
+    OnHandEntry.create!(kitchen: @kitchen, ingredient_name: 'Flour',
+                        confirmed_at: Date.current - 1, interval: 7, ease: 1.5)
 
     log_in
     get groceries_path(kitchen_slug: kitchen_slug)
@@ -388,8 +378,8 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'show renders custom items' do
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('custom_items', item: 'Birthday candles', action: 'add')
+    CustomGroceryItem.create!(kitchen: @kitchen, name: 'Birthday candles',
+                              aisle: 'Miscellaneous', last_used_at: Date.current)
 
     log_in
     get groceries_path(kitchen_slug: kitchen_slug)
@@ -433,10 +423,9 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
       Cook.
     MD
 
-    list = MealPlan.for_kitchen(@kitchen)
-    list.apply_action('select', type: 'recipe', slug: 'stuffed-peppers', selected: true)
-    list.apply_action('select', type: 'recipe', slug: 'stir-fry', selected: true)
-    list.apply_action('need_it', item: 'Red bell pepper')
+    MealPlanSelection.create!(kitchen: @kitchen, selectable_type: 'Recipe', selectable_id: 'stuffed-peppers')
+    MealPlanSelection.create!(kitchen: @kitchen, selectable_type: 'Recipe', selectable_id: 'stir-fry')
+    MealPlanWriteService.apply_action(kitchen: @kitchen, action_type: 'need_it', item: 'Red bell pepper')
 
     log_in
     get groceries_path(kitchen_slug: kitchen_slug)
@@ -469,10 +458,9 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
       Cook.
     MD
 
-    list = MealPlan.for_kitchen(@kitchen)
-    list.apply_action('select', type: 'recipe', slug: 'pasta', selected: true)
-    list.apply_action('select', type: 'recipe', slug: 'stir-fry', selected: true)
-    list.apply_action('need_it', item: 'Garlic')
+    MealPlanSelection.create!(kitchen: @kitchen, selectable_type: 'Recipe', selectable_id: 'pasta')
+    MealPlanSelection.create!(kitchen: @kitchen, selectable_type: 'Recipe', selectable_id: 'stir-fry')
+    MealPlanWriteService.apply_action(kitchen: @kitchen, action_type: 'need_it', item: 'Garlic')
 
     log_in
     get groceries_path(kitchen_slug: kitchen_slug)
@@ -493,8 +481,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'have_it returns no_content' do
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('check', item: 'Flour', checked: true)
+    MealPlanWriteService.apply_action(kitchen: @kitchen, action_type: 'check', item: 'Flour', checked: true)
 
     log_in
     patch groceries_have_it_path(kitchen_slug: kitchen_slug),
@@ -505,8 +492,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'need_it returns no_content' do
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('check', item: 'Flour', checked: true)
+    MealPlanWriteService.apply_action(kitchen: @kitchen, action_type: 'check', item: 'Flour', checked: true)
 
     log_in
     patch groceries_need_it_path(kitchen_slug: kitchen_slug),
@@ -535,8 +521,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     %w[Flour Yeast Salt Sugar].each { |name| create_catalog_entry(name, basis_grams: 10, aisle: 'Baking') }
     create_catalog_entry('Olive oil', basis_grams: 14, aisle: 'Oils')
 
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+    MealPlanSelection.create!(kitchen: @kitchen, selectable_type: 'Recipe', selectable_id: 'focaccia')
 
     log_in
     patch groceries_confirm_all_path(kitchen_slug: kitchen_slug),
@@ -573,9 +558,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
           params: { item: 'birthday candles', action_type: 'remove' },
           as: :turbo_stream
 
-    plan = MealPlan.for_kitchen(@kitchen)
-
-    assert_not plan.custom_items.key?('birthday candles')
+    assert_nil CustomGroceryItem.find_by(kitchen: @kitchen, name: 'birthday candles')
   end
 
   # --- Aisle order ---
@@ -716,11 +699,9 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
 
   # --- Optimistic locking / 409 Conflict ---
 
-  test 'check returns 409 when retry exhausted' do
+  test 'check returns 409 when StaleObjectError raised' do
     log_in
-    stale_list = build_stale_list(:apply_action)
-
-    MealPlan.stub(:for_kitchen, stale_list) do
+    MealPlanWriteService.stub(:apply_action, ->(**) { raise ActiveRecord::StaleObjectError, nil }) do
       patch groceries_check_path(kitchen_slug: kitchen_slug),
             params: { item: 'flour', checked: true },
             as: :turbo_stream
@@ -882,8 +863,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
 
     create_catalog_entry('Flour', basis_grams: 30, aisle: 'Baking')
 
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+    MealPlanSelection.create!(kitchen: @kitchen, selectable_type: 'Recipe', selectable_id: 'focaccia')
 
     log_in
 
@@ -906,11 +886,9 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     assert_select '.inventory-check-items li[data-item="Flour"]', count: 0
 
     # 3) Simulate timer expiring: set confirmed_at far enough in the past
-    plan.reload
-    entry = plan.on_hand['Flour']
-    expired_date = (Date.current - entry['interval'].to_i - 1).iso8601
-    entry['confirmed_at'] = expired_date
-    plan.save!
+    entry = OnHandEntry.find_by!(kitchen: @kitchen, ingredient_name: 'Flour')
+    expired_date = Date.current - entry.interval.to_i - 1
+    entry.update!(confirmed_at: expired_date)
 
     get groceries_path(kitchen_slug: kitchen_slug)
 
@@ -1010,7 +988,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
   test 'need rejects item that is too long' do
     log_in
     post groceries_need_path(kitchen_slug: kitchen_slug),
-         params: { item: 'x' * (MealPlan::MAX_CUSTOM_ITEM_LENGTH + 1) },
+         params: { item: 'x' * (CustomGroceryItem::MAX_NAME_LENGTH + 1) },
          as: :json
 
     assert_response :unprocessable_content
@@ -1061,14 +1039,5 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     MealPlanWriteService.apply_action(
       kitchen: @kitchen, action_type: 'have_it', item: item
     )
-  end
-
-  def build_stale_list(method_to_stub)
-    list = MealPlan.for_kitchen(@kitchen)
-    list.define_singleton_method(method_to_stub) do |*, **|
-      raise ActiveRecord::StaleObjectError, self
-    end
-    list.define_singleton_method(:reload) { self }
-    list
   end
 end

@@ -21,6 +21,6 @@ class CookHistoryEntry < ApplicationRecord
   end
 
   def self.prune!(kitchen:)
-    ActsAsTenant.with_tenant(kitchen) { where('cooked_at <= ?', Time.current - WINDOW.days).delete_all }
+    ActsAsTenant.with_tenant(kitchen) { where(cooked_at: ..(Time.current - WINDOW.days)).delete_all }
   end
 end

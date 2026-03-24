@@ -290,37 +290,30 @@ class CatalogWriteServiceTest < ActiveSupport::TestCase
       Stir together.
     MD
 
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('select', type: 'recipe', slug: 'bread', selected: true)
-    plan.state['on_hand'] = { 'flour' => { 'confirmed_at' => Date.current.iso8601, 'interval' => 7 } }
-    plan.save!
+    MealPlanSelection.create!(kitchen: @kitchen, selectable_type: 'Recipe', selectable_id: 'bread')
+    OnHandEntry.create!(kitchen: @kitchen, ingredient_name: 'flour',
+                        confirmed_at: Date.current, interval: 7, ease: 1.5)
 
-    # Rename the canonical name by adding an alias that captures 'flour'
-    # and destroying the old entry, then creating a new one
     IngredientCatalog.where(ingredient_name: 'flour').delete_all
     upsert_entry('All-Purpose Flour', nutrients: {}, aisle: 'Baking', aliases: ['flour'])
 
-    plan.reload
-
-    assert_not plan.on_hand.key?('flour'),
+    assert_nil OnHandEntry.find_by(kitchen: @kitchen, ingredient_name: 'flour'),
                'stale on_hand item should be pruned after catalog name change'
   end
 
   test 'destroy reconciles meal plan state' do
     IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'flour', aisle: 'Baking')
-
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.state['on_hand'] = { 'flour' => { 'confirmed_at' => Date.current.iso8601, 'interval' => 7 } }
-    plan.save!
+    OnHandEntry.create!(kitchen: @kitchen, ingredient_name: 'flour',
+                        confirmed_at: Date.current, interval: 7, ease: 1.5)
 
     CatalogWriteService.destroy(kitchen: @kitchen, ingredient_name: 'flour')
 
-    plan.reload
+    entry = OnHandEntry.find_by(kitchen: @kitchen, ingredient_name: 'flour')
 
-    assert_equal '1970-01-01', plan.on_hand['flour']['confirmed_at'],
+    assert_equal Date.parse('1970-01-01'), entry.confirmed_at,
                  'on_hand entry should be expired (orphaned) after catalog entry destroyed'
-    assert_empty plan.effective_on_hand,
-                 'expired entry should not appear in effective_on_hand'
+    assert_empty OnHandEntry.where(kitchen: @kitchen).active.to_a,
+                 'expired entry should not appear in active entries'
   end
 
   # --- batching guard ---

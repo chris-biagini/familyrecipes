@@ -67,12 +67,12 @@ class MealPlanWriteService
 
   def apply_have_it(item:, **)
     entry = resolve_and_find(item.to_s)
-    entry.have_it!
+    entry.new_record? ? entry.check! : entry.have_it!
   end
 
   def apply_need_it(item:, **)
-    entry = resolve_and_find(item.to_s)
-    entry.need_it!
+    canonical = build_resolver.resolve(item.to_s)
+    deplete_on_hand(canonical)
   end
 
   def apply_quick_add(item:, aisle: 'Miscellaneous', **)

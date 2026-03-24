@@ -33,13 +33,12 @@ class IngredientResolverRegressionTest < ActiveSupport::TestCase
   end
 
   test 'shopping list and availability agree on canonical name for different casings' do
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('select', type: 'recipe', slug: 'pasta-alfredo', selected: true)
-    plan.apply_action('select', type: 'recipe', slug: 'caesar-salad', selected: true)
+    MealPlanSelection.create!(kitchen: @kitchen, selectable_type: 'Recipe', selectable_id: 'pasta-alfredo')
+    MealPlanSelection.create!(kitchen: @kitchen, selectable_type: 'Recipe', selectable_id: 'caesar-salad')
 
     resolver = IngredientCatalog.resolver_for(@kitchen)
 
-    shopping = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: plan, resolver:).build
+    shopping = ShoppingListBuilder.new(kitchen: @kitchen, resolver:).build
     all_names = shopping.values.flatten.pluck(:name)
 
     assert_equal 1, all_names.count { |n| n.casecmp('parmesan').zero? },
@@ -47,9 +46,9 @@ class IngredientResolverRegressionTest < ActiveSupport::TestCase
     assert_includes all_names, 'Parmesan',
                     'Expected canonical catalog name, not lowercase variant'
 
-    plan.state['on_hand'] = { 'Parmesan' => { 'confirmed_at' => Date.current.iso8601, 'interval' => 7 } }
-    plan.save!
-    checked_off = plan.effective_on_hand.keys
+    OnHandEntry.create!(kitchen: @kitchen, ingredient_name: 'Parmesan',
+                        confirmed_at: Date.current, interval: 7, ease: 1.5)
+    checked_off = OnHandEntry.where(kitchen: @kitchen).active.pluck(:ingredient_name)
 
     availability = RecipeAvailabilityCalculator.new(
       kitchen: @kitchen, checked_off:, resolver:
@@ -84,12 +83,11 @@ class IngredientResolverRegressionTest < ActiveSupport::TestCase
       Drizzle.
     MD
 
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('select', type: 'recipe', slug: 'bruschetta', selected: true)
-    plan.apply_action('select', type: 'recipe', slug: 'caprese', selected: true)
+    MealPlanSelection.create!(kitchen: @kitchen, selectable_type: 'Recipe', selectable_id: 'bruschetta')
+    MealPlanSelection.create!(kitchen: @kitchen, selectable_type: 'Recipe', selectable_id: 'caprese')
 
     resolver = IngredientCatalog.resolver_for(@kitchen)
-    shopping = ShoppingListBuilder.new(kitchen: @kitchen, meal_plan: plan, resolver:).build
+    shopping = ShoppingListBuilder.new(kitchen: @kitchen, resolver:).build
     all_names = shopping.values.flatten.pluck(:name)
 
     assert_equal 1, all_names.count { |n| n.casecmp('balsamic glaze').zero? },

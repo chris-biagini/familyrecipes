@@ -37,7 +37,7 @@ class CustomGroceryItemTest < ActiveSupport::TestCase
     item = CustomGroceryItem.new(name: 'x' * 101, last_used_at: Date.current)
 
     assert_not item.valid?
-    assert item.errors[:name].any? { |msg| msg.include?('too long') }
+    assert(item.errors[:name].any? { |msg| msg.include?('too long') })
   end
 
   test 'accepts name at MAX_NAME_LENGTH' do

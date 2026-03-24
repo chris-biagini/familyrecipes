@@ -37,6 +37,7 @@ class Kitchen < ApplicationRecord
     return if batching?
 
     run_finalization(kitchen)
+    flush_pending_broadcast
   end
 
   def self.batch_writes(kitchen)
@@ -45,6 +46,7 @@ class Kitchen < ApplicationRecord
   ensure
     Current.batching_kitchen = nil
     run_finalization(kitchen)
+    flush_pending_broadcast
   end
 
   def self.batching?
@@ -58,6 +60,15 @@ class Kitchen < ApplicationRecord
     Current.broadcast_pending = kitchen
   end
   private_class_method :run_finalization
+
+  def self.flush_pending_broadcast
+    kitchen = Current.broadcast_pending
+    return unless kitchen
+
+    Current.broadcast_pending = nil
+    kitchen.broadcast_update
+  end
+  private_class_method :flush_pending_broadcast
 
   def self.reconcile_meal_plan_tables(kitchen)
     resolver = IngredientCatalog.resolver_for(kitchen)

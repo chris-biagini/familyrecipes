@@ -111,8 +111,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
   test 'show pre-checks selected recipes' do
     log_in
     create_focaccia_recipe
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('select', type: 'recipe', slug: 'focaccia', selected: true)
+    MealPlanSelection.create!(kitchen: @kitchen, selectable_type: 'Recipe', selectable_id: 'focaccia')
 
     get menu_path(kitchen_slug: kitchen_slug)
 
@@ -133,8 +132,8 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     create_two_ingredient_recipe
     create_catalog_entry('Flour', basis_grams: 30, aisle: 'Baking')
     create_catalog_entry('Salt', basis_grams: 5, aisle: 'Baking')
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('check', item: 'Salt', checked: true)
+    OnHandEntry.create!(kitchen: @kitchen, ingredient_name: 'Salt',
+                        confirmed_at: Date.current, interval: 7, ease: 1.5)
 
     get menu_path(kitchen_slug: kitchen_slug)
 
@@ -155,8 +154,8 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     log_in
     create_focaccia_recipe
     create_catalog_entry('Flour', basis_grams: 30, aisle: 'Baking')
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('check', item: 'Flour', checked: true)
+    OnHandEntry.create!(kitchen: @kitchen, ingredient_name: 'Flour',
+                        confirmed_at: Date.current, interval: 7, ease: 1.5)
 
     get menu_path(kitchen_slug: kitchen_slug)
 
@@ -168,9 +167,10 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     create_two_ingredient_recipe
     create_catalog_entry('Flour', basis_grams: 30, aisle: 'Baking')
     create_catalog_entry('Salt', basis_grams: 5, aisle: 'Baking')
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('check', item: 'Flour', checked: true)
-    plan.apply_action('check', item: 'Salt', checked: true)
+    OnHandEntry.create!(kitchen: @kitchen, ingredient_name: 'Flour',
+                        confirmed_at: Date.current, interval: 7, ease: 1.5)
+    OnHandEntry.create!(kitchen: @kitchen, ingredient_name: 'Salt',
+                        confirmed_at: Date.current, interval: 7, ease: 1.5)
 
     get menu_path(kitchen_slug: kitchen_slug)
 
@@ -179,11 +179,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
 
   test 'show embeds cook history weights' do
     log_in
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.state['cook_history'] = [
-      { 'slug' => 'focaccia', 'at' => 1.day.ago.iso8601 }
-    ]
-    plan.save!
+    CookHistoryEntry.create!(kitchen: @kitchen, recipe_slug: 'focaccia', cooked_at: 1.day.ago)
 
     get menu_path(kitchen_slug:)
 
@@ -198,8 +194,8 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     create_two_ingredient_recipe
     create_catalog_entry('Flour', basis_grams: 30, aisle: 'Baking')
     create_catalog_entry('Salt', basis_grams: 5, aisle: 'Baking')
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('check', item: 'Salt', checked: true)
+    OnHandEntry.create!(kitchen: @kitchen, ingredient_name: 'Salt',
+                        confirmed_at: Date.current, interval: 7, ease: 1.5)
 
     get menu_path(kitchen_slug: kitchen_slug)
 
@@ -218,9 +214,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :no_content
 
-    plan = MealPlan.for_kitchen(@kitchen)
-
-    assert_includes plan.state['selected_recipes'], 'focaccia'
+    assert MealPlanSelection.exists?(kitchen: @kitchen, selectable_type: 'Recipe', selectable_id: 'focaccia')
   end
 
   test 'select broadcasts meal plan refresh' do
@@ -244,16 +238,12 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
           params: { type: 'recipe', slug: 'focaccia', selected: false },
           as: :turbo_stream
 
-    plan = MealPlan.for_kitchen(@kitchen)
-
-    assert_not_includes plan.state['selected_recipes'], 'focaccia'
+    assert_not MealPlanSelection.exists?(kitchen: @kitchen, selectable_type: 'Recipe', selectable_id: 'focaccia')
   end
 
-  test 'select returns 409 when retry exhausted' do
+  test 'select returns 409 when StaleObjectError raised' do
     log_in
-    stale_plan = build_stale_plan(:apply_action)
-
-    MealPlan.stub(:for_kitchen, stale_plan) do
+    MealPlanWriteService.stub(:apply_action, ->(**) { raise ActiveRecord::StaleObjectError, nil }) do
       patch menu_select_path(kitchen_slug: kitchen_slug),
             params: { type: 'recipe', slug: 'focaccia', selected: true },
             as: :turbo_stream
@@ -344,19 +334,16 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
   test 'update_quick_bites prunes removed quick bite from selections' do
     both = "## Snacks\n- Nachos: Chips\n- Pretzels: Pretzels\n"
     @kitchen.update!(quick_bites_content: both)
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('select', type: 'quick_bite', slug: 'nachos', selected: true)
-    plan.apply_action('select', type: 'quick_bite', slug: 'pretzels', selected: true)
+    MealPlanSelection.create!(kitchen: @kitchen, selectable_type: 'QuickBite', selectable_id: 'nachos')
+    MealPlanSelection.create!(kitchen: @kitchen, selectable_type: 'QuickBite', selectable_id: 'pretzels')
 
     log_in
     patch menu_quick_bites_path(kitchen_slug: kitchen_slug),
           params: { content: "## Snacks\n- Nachos: Chips\n" },
           as: :json
 
-    plan.reload
-
-    assert_includes plan.state['selected_quick_bites'], 'nachos'
-    assert_not_includes plan.state['selected_quick_bites'], 'pretzels'
+    assert MealPlanSelection.exists?(kitchen: @kitchen, selectable_type: 'QuickBite', selectable_id: 'nachos')
+    assert_not MealPlanSelection.exists?(kitchen: @kitchen, selectable_type: 'QuickBite', selectable_id: 'pretzels')
   end
 
   test 'update_quick_bites broadcasts meal plan refresh' do
@@ -464,14 +451,5 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
 
       Mix well.
     MD
-  end
-
-  def build_stale_plan(method_to_stub)
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.define_singleton_method(method_to_stub) do |*, **|
-      raise ActiveRecord::StaleObjectError, self
-    end
-    plan.define_singleton_method(:reload) { self }
-    plan
   end
 end
