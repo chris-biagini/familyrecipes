@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 14) do
+ActiveRecord::Schema[8.1].define(version: 15) do
   create_table "categories", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "kitchen_id", null: false
@@ -111,7 +111,6 @@ ActiveRecord::Schema[8.1].define(version: 14) do
     t.string "homepage_heading", default: "Our Recipes"
     t.string "homepage_subtitle", default: "A collection of our family’s favorite recipes."
     t.string "name", null: false
-    t.text "quick_bites_content"
     t.boolean "show_nutrition", default: false, null: false
     t.string "site_title", default: "Family Recipes"
     t.string "slug", null: false
@@ -157,6 +156,26 @@ ActiveRecord::Schema[8.1].define(version: 14) do
     t.date "orphaned_at"
     t.datetime "updated_at", null: false
     t.index ["kitchen_id", "ingredient_name"], name: "idx_on_hand_entries_unique", unique: true
+  end
+
+  create_table "quick_bite_ingredients", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.integer "position", default: 0, null: false
+    t.integer "quick_bite_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["quick_bite_id"], name: "index_quick_bite_ingredients_on_quick_bite_id"
+  end
+
+  create_table "quick_bites", force: :cascade do |t|
+    t.integer "category_id", null: false
+    t.datetime "created_at", null: false
+    t.integer "kitchen_id", null: false
+    t.integer "position", default: 0, null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["kitchen_id", "category_id"], name: "index_quick_bites_on_kitchen_id_and_category_id"
+    t.index ["kitchen_id", "title"], name: "index_quick_bites_on_kitchen_id_and_title", unique: true
   end
 
   create_table "recipe_tags", force: :cascade do |t|
