@@ -55,7 +55,11 @@ export default class extends Controller {
       const li = cb.closest("li")
       if (li) {
         this.pendingMoves.add(name)
+        const aisleGroup = li.closest(".aisle-group")
+        const destZone = cb.checked ? "on-hand" : "to-buy"
+
         this.animateExit(li)
+        setTimeout(() => this.insertOptimisticItem(name, destZone, aisleGroup), 260)
       }
 
       this.updateItemCount()
@@ -118,7 +122,13 @@ export default class extends Controller {
 
       this.pendingMoves.add(name)
       const li = btn.closest("li")
+      const aisleGroup = li?.closest(".aisle-group")
       if (li) li.remove()
+
+      if (aisleGroup) {
+        const destZone = action === "have-it" ? "on-hand" : "to-buy"
+        this.insertOptimisticItem(name, destZone, aisleGroup)
+      }
 
       this.hideEmptyInventoryCheck()
       this.updateItemCount()
@@ -307,12 +317,50 @@ export default class extends Controller {
       )
       if (!li) return
 
-      li.classList.add("check-off-enter")
-      li.addEventListener("animationend", () => {
-        li.classList.remove("check-off-enter")
-      }, { once: true })
+      this.animateEntry(li)
     })
 
     this.pendingMoves.clear()
+  }
+
+  animateEntry(li) {
+    li.classList.add("check-off-enter")
+    li.addEventListener("animationend", () => {
+      li.classList.remove("check-off-enter")
+    }, { once: true })
+  }
+
+  buildOptimisticItem(name, zone) {
+    const li = document.createElement("li")
+    li.dataset.item = name
+
+    const label = document.createElement("label")
+    label.className = "check-off"
+    const cb = document.createElement("input")
+    cb.className = "custom-checkbox"
+    cb.type = "checkbox"
+    cb.dataset.item = name
+    if (zone === "on-hand") cb.checked = true
+    const span = document.createElement("span")
+    span.className = "item-text"
+    span.textContent = name
+    label.append(cb, span)
+    li.append(label)
+
+    return li
+  }
+
+  insertOptimisticItem(name, zone, aisleGroup) {
+    if (!aisleGroup) return
+
+    const selector = zone === "on-hand" ? ".on-hand-items" : ".to-buy-items"
+    const ul = aisleGroup.querySelector(selector)
+    if (!ul) return
+
+    const li = this.buildOptimisticItem(name, zone)
+    ul.appendChild(li)
+    this.pendingMoves.delete(name)
+
+    this.animateEntry(li)
   }
 }
