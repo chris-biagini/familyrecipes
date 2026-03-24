@@ -20,7 +20,10 @@ class Kitchen < ApplicationRecord
   has_many :recipes, dependent: :destroy
   has_many :tags, dependent: :destroy
   has_many :ingredient_catalog, dependent: :destroy, class_name: 'IngredientCatalog'
+  has_many :meal_plan_selections, dependent: :destroy
   has_one :meal_plan, dependent: :destroy
+  has_many :cook_history_entries, dependent: :destroy
+  has_many :custom_grocery_items, dependent: :destroy
 
   encrypts :usda_api_key
   encrypts :anthropic_api_key
