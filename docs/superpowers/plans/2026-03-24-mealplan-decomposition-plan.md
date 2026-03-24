@@ -68,6 +68,13 @@ This migration creates all four tables, migrates data from JSON, and drops
 the old columns. Run it first so all subsequent tasks develop against the
 new schema.
 
+**Important:** After this migration runs, the full test suite will be broken
+(~12 test files reference `plan.state` which no longer exists). This is
+expected — the feature branch will be broken from Task 1 through Task 13.
+Individual new model tests (Tasks 2-5) will pass in isolation. Do not
+merge to main until Task 14 verifies full green. `bin/dev` will also fail
+to render pages that use MealPlan until the consuming code is updated.
+
 - [ ] **Step 1: Create feature branch**
 
 ```bash
@@ -523,10 +530,28 @@ def self.reconcile_meal_plan_tables(kitchen)
 end
 ```
 
-Note: `ShoppingListBuilder.visible_names_for` is a new class method that
-computes visible names without requiring a `meal_plan` parameter (Task 9
-creates this). Until Task 9 is complete, this method won't exist yet — the
-reconciliation will be wired up when the full pipeline is connected.
+- [ ] **Step 3b: Extract `ShoppingListBuilder.visible_names_for`**
+
+Add a class method to `app/services/shopping_list_builder.rb` so
+`Kitchen.reconcile_meal_plan_tables` can call it immediately (the full
+consumer rewrite happens in Task 9):
+
+```ruby
+def self.visible_names_for(kitchen:, resolver: nil)
+  resolver ||= IngredientCatalog.resolver_for(kitchen)
+  new(kitchen:).visible_names
+end
+```
+
+Update the constructor to make `meal_plan:` optional (default nil). The
+`visible_names` method already uses AR queries for the new tables
+(after Task 9 completes the full rewrite); for now, selection queries
+come from `MealPlanSelection` and custom items from `CustomGroceryItem`.
+
+Since `selected_recipes` and `selected_quick_bites` still reference
+`@meal_plan.selected_recipes` at this point, create a temporary shim:
+if `@meal_plan` is nil, query `MealPlanSelection` directly. Task 9
+removes this shim when it rewrites the full builder.
 
 - [ ] **Step 4: Fix RecipeBroadcaster cross-DB atomicity**
 
@@ -540,8 +565,12 @@ but still holds `title` for the notification.
 **Update/slug change** (lines 129-137): Move
 `RecipeBroadcaster.broadcast_rename` from inside `handle_slug_change` to
 the `update` method, after the transaction block (after line 72, before
-`finalize` on line 74). Pass the old recipe data needed for the broadcast
-before the transaction destroys it.
+`finalize` on line 74). Capture the old recipe's stream key data (id, class
+name) and title *before* the transaction, since `old_recipe.destroy!` runs
+inside the transaction. `RecipeBroadcaster.broadcast_rename` uses the old
+recipe as a Turbo stream channel key — verify that a destroyed-but-committed
+AR record still works as a stream signing key, or pass pre-captured values
+instead.
 
 - [ ] **Step 5: Commit**
 
@@ -670,10 +699,11 @@ git commit -m "Rewrite MealPlanWriteService to delegate to AR models"
 Changes to `app/services/shopping_list_builder.rb`:
 
 - Constructor (line 17): remove `meal_plan:` parameter. The builder queries
-  AR models directly via `kitchen:`.
-- Add class method `self.visible_names_for(kitchen:, resolver:)` — extracted
-  from `visible_names` so `Kitchen.reconcile_meal_plan_tables` can call it
-  without instantiating a full builder.
+  AR models directly via `kitchen:`. Remove the temporary shim added in
+  Task 6 Step 3b.
+- Finalize `self.visible_names_for(kitchen:, resolver:)` — already extracted
+  in Task 6 Step 3b; now remove the shim since the builder is fully
+  rewritten.
 - `selected_recipes` (line 66): replace
   `@meal_plan.selected_recipes` with
   `MealPlanSelection.where(kitchen_id: @kitchen.id).recipes.pluck(:selectable_id)`.
@@ -746,13 +776,18 @@ All `MealPlan::` constant references → `OnHandEntry::` equivalents:
 - `MealPlan::ORPHAN_SENTINEL` → `OnHandEntry::ORPHAN_SENTINEL` (line 71)
 
 Change method signatures to accept `OnHandEntry` objects instead of hashes.
-The `on_hand_data` parameter changes from a raw hash `{ 'Salt' => { 'confirmed_at' => ..., 'interval' => ... } }`
-to an indexed hash of AR objects `{ 'salt' => #<OnHandEntry ...> }` (keys
-are already NOCASE in the DB, so we index by `ingredient_name`).
+The `on_hand_data` parameter changes from a raw hash
+`{ 'Salt' => { 'confirmed_at' => ..., 'interval' => ... } }` to an indexed
+hash of AR objects keyed by **downcased** ingredient name:
+`entries.index_by { |e| e.ingredient_name.downcase }`. All lookup keys must
+also be downcased: `on_hand_data[name.downcase]`. This is necessary because
+`COLLATE NOCASE` only applies in SQL queries — Ruby `Hash` lookups are
+case-sensitive, so `index_by(&:ingredient_name)` would silently miss
+case-mismatched keys.
 
 Key changes:
 - `item_zone`: replace `on_hand_data.find { |k, _| k.casecmp?(name) }`
-  with `on_hand_data[name]` (NOCASE indexing handles case).
+  with `on_hand_data[name.downcase]`.
   Replace `entry&.key?('depleted_at')` with `entry&.depleted_at?`.
   Replace `custom_items.any? { |k, _| k.casecmp?(name) }` with
   `custom_names.include?(name)` (pass a pre-built set).
@@ -774,7 +809,7 @@ Change locals signature (line 1):
 - Line 80: `custom_items.any? { |k, _| k.casecmp?(item[:name]) }` →
   `custom_names.include?(item[:name])`
 - Line 114: `on_hand_data.find { |k, _| k.casecmp?(item[:name]) }&.last` →
-  `on_hand_data[item[:name]]`
+  `on_hand_data[item[:name].downcase]`
 
 - [ ] **Step 3: Update GroceriesController#show to pass new data shapes**
 
@@ -785,7 +820,7 @@ def show
   @shopping_list = ShoppingListBuilder.new(kitchen: current_kitchen).build
   entries = OnHandEntry.where(kitchen_id: current_kitchen.id)
   @on_hand_names = entries.active.pluck(:ingredient_name).to_set
-  @on_hand_data = entries.index_by(&:ingredient_name)
+  @on_hand_data = entries.index_by { |e| e.ingredient_name.downcase }
   @custom_names = CustomGroceryItem.where(kitchen_id: current_kitchen.id).pluck(:name).to_set
 end
 ```
@@ -925,6 +960,10 @@ git commit -m "Rewrite MealPlan tests for thin coordinator model"
 - Modify: `test/controllers/menu_controller_test.rb`
 - Modify: `test/models/kitchen_batch_writes_test.rb`
 - Modify: `test/test_helper.rb`
+- Modify: `test/services/catalog_write_service_test.rb` — references `plan.state['on_hand']`, `plan.on_hand`, `plan.effective_on_hand`
+- Modify: `test/services/recipe_write_service_test.rb` — references `plan.state['selected_recipes']`
+- Modify: `test/services/quick_bites_write_service_test.rb` — references `plan.state['selected_quick_bites']`
+- Modify: `test/services/ingredient_resolver_regression_test.rb` — references `plan.state['on_hand']`, `plan.effective_on_hand`
 
 - [ ] **Step 1: Update test_helper.rb**
 
@@ -974,7 +1013,25 @@ In `test/models/kitchen_batch_writes_test.rb`:
   `MealPlanSelection.exists?(kitchen: @kitchen, selectable_type: 'Recipe',
   selectable_id: slug)`.
 
-- [ ] **Step 5: Run all tests**
+- [ ] **Step 5: Update remaining service test files**
+
+Four more test files reference MealPlan state directly:
+
+- `test/services/catalog_write_service_test.rb`: Replace
+  `plan.state['on_hand']` setup with `OnHandEntry.create!(...)`. Replace
+  `plan.on_hand` and `plan.effective_on_hand` assertions with
+  `OnHandEntry.find_by(...)` and `OnHandEntry.active.find_by(...)`.
+- `test/services/recipe_write_service_test.rb`: Replace
+  `plan.state['selected_recipes']` assertions with
+  `MealPlanSelection.exists?(selectable_type: 'Recipe', selectable_id:)`.
+- `test/services/quick_bites_write_service_test.rb`: Replace
+  `plan.state['selected_quick_bites']` assertions with
+  `MealPlanSelection.exists?(selectable_type: 'QuickBite', selectable_id:)`.
+- `test/services/ingredient_resolver_regression_test.rb`: Replace
+  `plan.state['on_hand']` setup with `OnHandEntry.create!(...)`. Replace
+  `plan.effective_on_hand` assertions with `OnHandEntry.active` queries.
+
+- [ ] **Step 6: Run all tests**
 
 ```bash
 rake test
@@ -986,7 +1043,7 @@ Fix any remaining failures. Common issues:
 - Missed `plan.state` references → grep for `\.state\[` across test files
 - Missed `apply_action` calls that now need AR model creation
 
-- [ ] **Step 6: Run lint**
+- [ ] **Step 7: Run lint**
 
 ```bash
 bundle exec rubocop
@@ -995,7 +1052,7 @@ bundle exec rubocop
 Fix any offenses. Update `config/html_safe_allowlist.yml` if line numbers
 shifted in modified files.
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 8: Commit**
 
 ```bash
 git add test/ config/html_safe_allowlist.yml
