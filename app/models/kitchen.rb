@@ -24,6 +24,7 @@ class Kitchen < ApplicationRecord
   has_one :meal_plan, dependent: :destroy
   has_many :cook_history_entries, dependent: :destroy
   has_many :custom_grocery_items, dependent: :destroy
+  has_many :on_hand_entries, dependent: :destroy
 
   encrypts :usda_api_key
   encrypts :anthropic_api_key
