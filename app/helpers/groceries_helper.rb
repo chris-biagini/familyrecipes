@@ -16,22 +16,22 @@ module GroceriesHelper
     "(#{inner})"
   end
 
-  def item_zone(name:, on_hand_names:, on_hand_data:, custom_items:)
+  def item_zone(name:, on_hand_names:, on_hand_data:, custom_names:)
     return :on_hand if on_hand_names.include?(name)
 
-    entry = on_hand_data.find { |k, _| k.casecmp?(name) }&.last
-    return :to_buy if entry&.key?('depleted_at')
-    return :to_buy if custom_items.any? { |k, _| k.casecmp?(name) }
+    entry = on_hand_data[name.downcase]
+    return :to_buy if entry&.depleted_at.present?
+    return :to_buy if custom_names.include?(name.downcase)
 
     :inventory_check
   end
 
-  def shopping_list_count_text(shopping_list, on_hand_names, on_hand_data: {}, custom_items: {})
+  def shopping_list_count_text(shopping_list, on_hand_names, on_hand_data: {}, custom_names: Set.new)
     total = shopping_list.each_value.sum(&:size)
     return '' if total.zero?
 
     remaining = shopping_list.each_value.sum do |items|
-      items.count { |i| item_zone(name: i[:name], on_hand_names:, on_hand_data:, custom_items:) == :to_buy }
+      items.count { |i| item_zone(name: i[:name], on_hand_names:, on_hand_data:, custom_names:) == :to_buy }
     end
 
     return "\u2713 All done!" if remaining.zero?
@@ -40,17 +40,17 @@ module GroceriesHelper
   end
 
   def restock_tooltip(item_name, on_hand_data, on_hand_names, now: Date.current)
-    entry = on_hand_data.find { |k, _| k.casecmp?(item_name) }&.last
+    entry = on_hand_data[item_name.downcase]
     return nil unless entry
-    return nil if entry['interval'].nil?
+    return nil if entry.interval.nil?
 
-    effective = entry['interval'] * MealPlan::SAFETY_MARGIN
+    effective = entry.interval * OnHandEntry::SAFETY_MARGIN
 
     if on_hand_names.include?(item_name)
-      days_left = ((Date.parse(entry['confirmed_at']) + effective.round.days) - now).to_i
+      days_left = ((entry.confirmed_at + effective.round.days) - now).to_i
       "Estimated restock in ~#{[days_left, 0].max} days"
-    elsif entry['interval'] > MealPlan::STARTING_INTERVAL ||
-          (entry['ease'] && entry['ease'] != MealPlan::STARTING_EASE)
+    elsif entry.interval > OnHandEntry::STARTING_INTERVAL ||
+          (entry.ease && entry.ease != OnHandEntry::STARTING_EASE)
       "Restocks every ~#{effective.round} days"
     end
   end
@@ -58,28 +58,28 @@ module GroceriesHelper
   def on_hand_sort_key(name, on_hand_data, now: Date.current)
     return [0, name] if confirmed_today?(name, on_hand_data)
 
-    entry = on_hand_data.find { |k, _| k.casecmp?(name) }&.last
+    entry = on_hand_data[name.downcase]
     days_left = days_until_restock(entry, now)
     [1, -days_left, name]
   end
 
   def confirmed_today?(name, on_hand_data)
-    entry = on_hand_data.find { |k, _| k.casecmp?(name) }&.last
+    entry = on_hand_data[name.downcase]
     return false unless entry
 
-    confirmed = entry['confirmed_at']
-    return false if confirmed.nil? || confirmed == MealPlan::ORPHAN_SENTINEL
+    confirmed = entry.confirmed_at
+    return false if confirmed.nil? || confirmed == Date.parse(OnHandEntry::ORPHAN_SENTINEL)
 
-    confirmed == Date.current.iso8601
+    confirmed == Date.current
   end
 
   def on_hand_freshness_class(entry, now: Date.current)
-    return 'on-hand-fresh' if entry['interval'].nil?
+    return 'on-hand-fresh' if entry.interval.nil?
 
-    effective = (entry['interval'] * MealPlan::SAFETY_MARGIN).to_i
+    effective = (entry.interval * OnHandEntry::SAFETY_MARGIN).to_i
     return 'on-hand-aging' if effective <= 0
 
-    days_elapsed = (now - Date.parse(entry['confirmed_at'])).to_i
+    days_elapsed = (now - entry.confirmed_at).to_i
     progress = days_elapsed.to_f / effective
 
     return 'on-hand-aging' unless progress < 0.66
@@ -91,11 +91,10 @@ module GroceriesHelper
   private
 
   def days_until_restock(entry, now)
-    return Float::INFINITY unless entry&.dig('interval')
+    return Float::INFINITY unless entry&.interval
 
-    effective = (entry['interval'] * MealPlan::SAFETY_MARGIN).to_i
-    confirmed = Date.parse(entry['confirmed_at'])
-    (confirmed + effective.days - now).to_i
+    effective = (entry.interval * OnHandEntry::SAFETY_MARGIN).to_i
+    (entry.confirmed_at + effective.days - now).to_i
   end
 
   def uncounted_only_text(count)

@@ -655,9 +655,10 @@ button.aisle-name:hover {
     padding: 0.4rem 0.5rem;
   }
 
-  /* Nutrition editor: fullscreen override for ID-specificity width */
-  #nutrition-editor {
-    width: 100vw;
+  /* ID-specificity width overrides need matching mobile reset */
+  #nutrition-editor,
+  #settings-editor {
+    width: 100%;
   }
 
   /* Nutrition editor: stack labels above inputs */

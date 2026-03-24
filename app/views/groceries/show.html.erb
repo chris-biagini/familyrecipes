@@ -30,7 +30,7 @@
      data-custom-items-url="<%= groceries_custom_items_path %>">
 
   <div id="shopping-list">
-    <%= render 'groceries/shopping_list', shopping_list: @shopping_list, on_hand_names: @on_hand_names, on_hand_data: @on_hand_data, custom_items: @custom_items %>
+    <%= render 'groceries/shopping_list', shopping_list: @shopping_list, on_hand_names: @on_hand_names, on_hand_data: @on_hand_data, custom_names: @custom_names %>
   </div>
 
   <%= render 'groceries/custom_items' %>

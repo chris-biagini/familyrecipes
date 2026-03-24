@@ -3,6 +3,10 @@
 require 'test_helper'
 
 class GroceriesHelperTest < ActionView::TestCase
+  setup do
+    setup_test_kitchen
+  end
+
   test 'format_amounts with single amount and unit' do
     assert_equal "(3\u00a0cups)", format_amounts([[3.0, 'cups']])
   end
@@ -37,14 +41,19 @@ class GroceriesHelperTest < ActionView::TestCase
 
   test 'shopping_list_count_text with no checked items shows total to buy' do
     shopping_list = { 'Dairy' => [{ name: 'Milk' }, { name: 'Eggs' }] }
-    on_hand_data = { 'Milk' => { 'depleted_at' => '2026-03-20' }, 'Eggs' => { 'depleted_at' => '2026-03-20' } }
+    on_hand_data = {
+      'milk' => build_entry(ingredient_name: 'Milk', depleted_at: Date.new(2026, 3, 20)),
+      'eggs' => build_entry(ingredient_name: 'Eggs', depleted_at: Date.new(2026, 3, 20))
+    }
 
     assert_equal '2 items to buy', shopping_list_count_text(shopping_list, Set.new, on_hand_data:)
   end
 
   test 'shopping_list_count_text with some checked shows unchecked count' do
     shopping_list = { 'Dairy' => [{ name: 'Milk' }, { name: 'Eggs' }] }
-    on_hand_data = { 'Eggs' => { 'depleted_at' => '2026-03-20' } }
+    on_hand_data = {
+      'eggs' => build_entry(ingredient_name: 'Eggs', depleted_at: Date.new(2026, 3, 20))
+    }
 
     assert_equal '1 item to buy', shopping_list_count_text(shopping_list, Set.new(%w[Milk]), on_hand_data:)
   end
@@ -57,7 +66,7 @@ class GroceriesHelperTest < ActionView::TestCase
 
   test 'shopping_list_count_text with single item uses singular' do
     shopping_list = { 'Dairy' => [{ name: 'Milk' }] }
-    on_hand_data = { 'Milk' => { 'depleted_at' => '2026-03-20' } }
+    on_hand_data = { 'milk' => build_entry(ingredient_name: 'Milk', depleted_at: Date.new(2026, 3, 20)) }
 
     assert_equal '1 item to buy', shopping_list_count_text(shopping_list, Set.new, on_hand_data:)
   end
@@ -87,7 +96,9 @@ class GroceriesHelperTest < ActionView::TestCase
   end
 
   test 'restock_tooltip shows days remaining for on-hand items' do
-    on_hand_data = { 'Milk' => { 'confirmed_at' => '2026-03-15', 'interval' => 10, 'ease' => 1.1 } }
+    entry = build_entry(ingredient_name: 'Milk', confirmed_at: Date.new(2026, 3, 15),
+                        interval: 10, ease: 1.1)
+    on_hand_data = { 'milk' => entry }
     on_hand_names = Set.new(['Milk'])
     result = restock_tooltip('Milk', on_hand_data, on_hand_names, now: Date.new(2026, 3, 20))
 
@@ -95,7 +106,9 @@ class GroceriesHelperTest < ActionView::TestCase
   end
 
   test 'restock_tooltip shows cycle length for to-buy items with history' do
-    on_hand_data = { 'Milk' => { 'confirmed_at' => '2026-03-01', 'interval' => 10, 'ease' => 1.1 } }
+    entry = build_entry(ingredient_name: 'Milk', confirmed_at: Date.new(2026, 3, 1),
+                        interval: 10, ease: 1.1)
+    on_hand_data = { 'milk' => entry }
     on_hand_names = Set.new
     result = restock_tooltip('Milk', on_hand_data, on_hand_names, now: Date.new(2026, 3, 20))
 
@@ -103,15 +116,19 @@ class GroceriesHelperTest < ActionView::TestCase
   end
 
   test 'restock_tooltip returns nil for custom items' do
-    on_hand_data = { 'Candles' => { 'confirmed_at' => '2026-03-15', 'interval' => nil, 'ease' => nil } }
+    entry = build_entry(ingredient_name: 'Candles', confirmed_at: Date.new(2026, 3, 15),
+                        interval: nil, ease: nil)
+    on_hand_data = { 'candles' => entry }
     on_hand_names = Set.new(['Candles'])
 
     assert_nil restock_tooltip('Candles', on_hand_data, on_hand_names)
   end
 
   test 'restock_tooltip returns nil for fresh items with no history' do
-    on_hand_data = { 'Flour' => { 'confirmed_at' => '2026-03-15', 'interval' => 7,
-                                  'ease' => MealPlan::STARTING_EASE } }
+    on_hand_data = {
+      'flour' => build_entry(ingredient_name: 'Flour', confirmed_at: Date.new(2026, 3, 15),
+                             interval: 7, ease: OnHandEntry::STARTING_EASE)
+    }
     on_hand_names = Set.new
     result = restock_tooltip('Flour', on_hand_data, on_hand_names, now: Date.new(2026, 3, 25))
 
@@ -119,65 +136,64 @@ class GroceriesHelperTest < ActionView::TestCase
   end
 
   test 'item_zone returns :on_hand for items in on_hand_names' do
-    result = item_zone(name: 'Milk', on_hand_names: Set.new(%w[Milk]), on_hand_data: {}, custom_items: [])
+    result = item_zone(name: 'Milk', on_hand_names: Set.new(%w[Milk]), on_hand_data: {}, custom_names: Set.new)
 
     assert_equal :on_hand, result
   end
 
   test 'item_zone returns :to_buy for items with depleted_at entry' do
-    on_hand_data = { 'Milk' => { 'depleted_at' => '2026-03-20' } }
+    on_hand_data = { 'milk' => build_entry(ingredient_name: 'Milk', depleted_at: Date.new(2026, 3, 20)) }
 
-    result = item_zone(name: 'Milk', on_hand_names: Set.new, on_hand_data:, custom_items: [])
+    result = item_zone(name: 'Milk', on_hand_names: Set.new, on_hand_data:, custom_names: Set.new)
 
     assert_equal :to_buy, result
   end
 
   test 'item_zone returns :inventory_check for items with no entry' do
-    result = item_zone(name: 'Eggs', on_hand_names: Set.new, on_hand_data: {}, custom_items: [])
+    result = item_zone(name: 'Eggs', on_hand_names: Set.new, on_hand_data: {}, custom_names: Set.new)
 
     assert_equal :inventory_check, result
   end
 
   test 'item_zone returns :inventory_check for expired non-depleted items' do
-    # Expired items have an entry but no depleted_at (interval expired, not manually depleted)
-    on_hand_data = { 'Butter' => { 'confirmed_at' => '2026-01-01', 'interval' => 7 } }
+    entry = build_entry(ingredient_name: 'Butter', confirmed_at: Date.new(2026, 1, 1), interval: 7)
+    on_hand_data = { 'butter' => entry }
 
-    result = item_zone(name: 'Butter', on_hand_names: Set.new, on_hand_data:, custom_items: [])
+    result = item_zone(name: 'Butter', on_hand_names: Set.new, on_hand_data:, custom_names: Set.new)
 
     assert_equal :inventory_check, result
   end
 
   test 'item_zone returns :on_hand for custom items that are on_hand' do
-    # Custom items with null interval can still be checked on-hand
     result = item_zone(name: 'Candles', on_hand_names: Set.new(%w[Candles]),
-                       on_hand_data: {}, custom_items: %w[Candles])
+                       on_hand_data: {}, custom_names: Set.new(%w[candles]))
 
     assert_equal :on_hand, result
   end
 
   test 'item_zone returns :to_buy for unchecked custom items' do
-    # Custom items never go to Inventory Check — always :to_buy when not on hand
-    result = item_zone(name: 'Shaving cream', on_hand_names: Set.new, on_hand_data: {}, custom_items: ['Shaving cream'])
+    result = item_zone(name: 'Shaving cream', on_hand_names: Set.new, on_hand_data: {},
+                       custom_names: Set.new(['shaving cream']))
 
     assert_equal :to_buy, result
   end
 
   test 'item_zone matching is case-insensitive for on_hand_data lookup' do
-    on_hand_data = { 'milk' => { 'depleted_at' => '2026-03-20' } }
+    on_hand_data = { 'milk' => build_entry(ingredient_name: 'Milk', depleted_at: Date.new(2026, 3, 20)) }
 
-    result = item_zone(name: 'Milk', on_hand_names: Set.new, on_hand_data:, custom_items: [])
+    result = item_zone(name: 'Milk', on_hand_names: Set.new, on_hand_data:, custom_names: Set.new)
 
     assert_equal :to_buy, result
   end
 
   test 'confirmed_today? returns true when confirmed_at matches today' do
-    on_hand_data = { 'Milk' => { 'confirmed_at' => Date.current.iso8601 } }
+    on_hand_data = { 'milk' => build_entry(ingredient_name: 'Milk', confirmed_at: Date.current) }
 
     assert confirmed_today?('Milk', on_hand_data)
   end
 
   test 'confirmed_today? returns false for past confirmed_at' do
-    on_hand_data = { 'Milk' => { 'confirmed_at' => '2026-01-01' } }
+    on_hand_data = { 'milk' => build_entry(ingredient_name: 'Milk', confirmed_at: Date.new(2026, 1, 1)) }
 
     assert_not confirmed_today?('Milk', on_hand_data)
   end
@@ -187,71 +203,70 @@ class GroceriesHelperTest < ActionView::TestCase
   end
 
   test 'confirmed_today? returns false for orphan sentinel' do
-    on_hand_data = { 'Milk' => { 'confirmed_at' => MealPlan::ORPHAN_SENTINEL } }
+    on_hand_data = { 'milk' => build_entry(ingredient_name: 'Milk', confirmed_at: Date.parse(OnHandEntry::ORPHAN_SENTINEL)) }
 
     assert_not confirmed_today?('Milk', on_hand_data)
   end
 
   test 'confirmed_today? matches case-insensitively' do
-    on_hand_data = { 'milk' => { 'confirmed_at' => Date.current.iso8601 } }
+    on_hand_data = { 'milk' => build_entry(ingredient_name: 'Milk', confirmed_at: Date.current) }
 
     assert confirmed_today?('Milk', on_hand_data)
   end
 
   test 'confirmed_today? returns false when confirmed_at is nil' do
-    on_hand_data = { 'Milk' => { 'interval' => nil } }
+    on_hand_data = { 'milk' => build_entry(ingredient_name: 'Milk', confirmed_at: nil, interval: nil) }
 
     assert_not confirmed_today?('Milk', on_hand_data)
   end
 
   test 'shopping_list_count_text counts only :to_buy items, not :inventory_check' do
     shopping_list = { 'Dairy' => [{ name: 'Milk' }, { name: 'Eggs' }] }
-    # Milk is depleted (:to_buy), Eggs has no entry (:inventory_check)
-    on_hand_data = { 'Milk' => { 'depleted_at' => '2026-03-20' } }
+    on_hand_data = { 'milk' => build_entry(ingredient_name: 'Milk', depleted_at: Date.new(2026, 3, 20)) }
 
-    result = shopping_list_count_text(shopping_list, Set.new, on_hand_data:, custom_items: [])
+    result = shopping_list_count_text(shopping_list, Set.new, on_hand_data:, custom_names: Set.new)
 
     assert_equal '1 item to buy', result
   end
 
   test 'on_hand_freshness_class returns on-hand-fresh for early progress' do
-    entry = { 'confirmed_at' => '2026-03-21', 'interval' => 10 }
+    entry = build_entry(ingredient_name: 'test', confirmed_at: Date.new(2026, 3, 21), interval: 10)
 
     assert_equal 'on-hand-fresh', on_hand_freshness_class(entry, now: Date.new(2026, 3, 23))
   end
 
   test 'on_hand_freshness_class returns on-hand-mid for middle progress' do
-    entry = { 'confirmed_at' => '2026-03-19', 'interval' => 10 }
+    entry = build_entry(ingredient_name: 'test', confirmed_at: Date.new(2026, 3, 19), interval: 10)
 
     assert_equal 'on-hand-mid', on_hand_freshness_class(entry, now: Date.new(2026, 3, 23))
   end
 
   test 'on_hand_freshness_class returns on-hand-aging for late progress' do
-    entry = { 'confirmed_at' => '2026-03-16', 'interval' => 10 }
+    entry = build_entry(ingredient_name: 'test', confirmed_at: Date.new(2026, 3, 16), interval: 10)
 
     assert_equal 'on-hand-aging', on_hand_freshness_class(entry, now: Date.new(2026, 3, 23))
   end
 
   test 'on_hand_freshness_class returns on-hand-fresh for nil interval' do
-    entry = { 'confirmed_at' => '2026-03-01', 'interval' => nil }
+    entry = build_entry(ingredient_name: 'test', confirmed_at: Date.new(2026, 3, 1), interval: nil)
 
     assert_equal 'on-hand-fresh', on_hand_freshness_class(entry, now: Date.new(2026, 3, 23))
   end
 
   test 'on_hand_freshness_class boundary at 0.33 returns mid' do
-    entry = { 'confirmed_at' => '2026-03-20', 'interval' => 10 }
+    entry = build_entry(ingredient_name: 'test', confirmed_at: Date.new(2026, 3, 20), interval: 10)
 
     assert_equal 'on-hand-mid', on_hand_freshness_class(entry, now: Date.new(2026, 3, 23))
   end
 
   test 'on_hand_freshness_class boundary at 0.66 returns aging' do
-    entry = { 'confirmed_at' => '2026-03-17', 'interval' => 10 }
+    entry = build_entry(ingredient_name: 'test', confirmed_at: Date.new(2026, 3, 17), interval: 10)
 
     assert_equal 'on-hand-aging', on_hand_freshness_class(entry, now: Date.new(2026, 3, 23))
   end
 
   test 'on_hand_freshness_class clamps progress above 1.0 to aging' do
-    entry = { 'confirmed_at' => '2026-03-08', 'interval' => 10 }
+    entry = build_entry(ingredient_name: 'test', confirmed_at: Date.new(2026, 3, 8), interval: 10)
 
     assert_equal 'on-hand-aging', on_hand_freshness_class(entry, now: Date.new(2026, 3, 23))
   end
@@ -259,9 +274,9 @@ class GroceriesHelperTest < ActionView::TestCase
   test 'on_hand_sort_key orders by days until restock descending' do
     now = Date.new(2026, 3, 23)
     on_hand_data = {
-      'Eggs' => { 'confirmed_at' => '2026-03-16', 'interval' => 10 },
-      'Butter' => { 'confirmed_at' => '2026-03-22', 'interval' => 10 },
-      'Milk' => { 'confirmed_at' => now.iso8601, 'interval' => 10 }
+      'eggs' => build_entry(ingredient_name: 'Eggs', confirmed_at: Date.new(2026, 3, 16), interval: 10),
+      'butter' => build_entry(ingredient_name: 'Butter', confirmed_at: Date.new(2026, 3, 22), interval: 10),
+      'milk' => build_entry(ingredient_name: 'Milk', confirmed_at: now, interval: 10)
     }
     names = %w[Eggs Butter Milk]
     sorted = names.sort_by { |n| on_hand_sort_key(n, on_hand_data, now:) }
@@ -272,11 +287,18 @@ class GroceriesHelperTest < ActionView::TestCase
   test 'on_hand_sort_key puts custom items after today' do
     now = Date.new(2026, 3, 23)
     on_hand_data = {
-      'Eggs' => { 'confirmed_at' => '2026-03-20', 'interval' => 10 },
-      'Candles' => { 'confirmed_at' => '2026-03-15', 'interval' => nil }
+      'eggs' => build_entry(ingredient_name: 'Eggs', confirmed_at: Date.new(2026, 3, 20), interval: 10),
+      'candles' => build_entry(ingredient_name: 'Candles', confirmed_at: Date.new(2026, 3, 15), interval: nil)
     }
     sorted = %w[Eggs Candles].sort_by { |n| on_hand_sort_key(n, on_hand_data, now:) }
 
     assert_equal %w[Candles Eggs], sorted
+  end
+
+  private
+
+  def build_entry(ingredient_name:, confirmed_at: Date.current, interval: OnHandEntry::STARTING_INTERVAL,
+                  ease: OnHandEntry::STARTING_EASE, depleted_at: nil)
+    OnHandEntry.new(ingredient_name:, confirmed_at:, interval:, ease:, depleted_at:)
   end
 end

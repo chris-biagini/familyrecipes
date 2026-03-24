@@ -43,16 +43,13 @@ class QuickBitesWriteServiceTest < ActiveSupport::TestCase
 
   test 'update reconciles meal plan' do
     @kitchen.update!(quick_bites_content: "## Snacks\n- Nachos: Chips\n- Pretzels: Pretzels")
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('select', type: 'quick_bite', slug: 'nachos', selected: true)
-    plan.apply_action('select', type: 'quick_bite', slug: 'pretzels', selected: true)
+    MealPlanSelection.create!(kitchen: @kitchen, selectable_type: 'QuickBite', selectable_id: 'nachos')
+    MealPlanSelection.create!(kitchen: @kitchen, selectable_type: 'QuickBite', selectable_id: 'pretzels')
 
     QuickBitesWriteService.update(kitchen: @kitchen, content: "## Snacks\n- Nachos: Chips")
 
-    plan.reload
-
-    assert_includes plan.state['selected_quick_bites'], 'nachos'
-    assert_not_includes plan.state['selected_quick_bites'], 'pretzels'
+    assert MealPlanSelection.exists?(kitchen: @kitchen, selectable_type: 'QuickBite', selectable_id: 'nachos')
+    assert_not MealPlanSelection.exists?(kitchen: @kitchen, selectable_type: 'QuickBite', selectable_id: 'pretzels')
   end
 
   test 'update broadcasts to kitchen updates stream' do

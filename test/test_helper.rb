@@ -32,6 +32,14 @@ module ActiveSupport
       end
       @kitchen = Kitchen.find_or_create_by!(name: 'Test Kitchen', slug: 'test-kitchen')
       ActsAsTenant.current_tenant = @kitchen
+      cleanup_meal_plan_tables
+    end
+
+    def cleanup_meal_plan_tables
+      MealPlanSelection.where(kitchen_id: @kitchen.id).delete_all
+      OnHandEntry.where(kitchen_id: @kitchen.id).delete_all
+      CustomGroceryItem.where(kitchen_id: @kitchen.id).delete_all
+      CookHistoryEntry.where(kitchen_id: @kitchen.id).delete_all
     end
 
     def setup_test_category(name: 'Test', slug: nil)

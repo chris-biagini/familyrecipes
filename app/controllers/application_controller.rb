@@ -24,6 +24,7 @@ class ApplicationController < ActionController::Base
   before_action :auto_login_in_development
   before_action :auto_join_sole_kitchen
   before_action :set_kitchen_from_path
+  after_action :flush_broadcast
   helper_method :current_kitchen, :current_member?, :logged_in?, :home_path, :versioned_icon_path
 
   private
@@ -122,6 +123,14 @@ class ApplicationController < ActionController::Base
 
   def prevent_html_caching
     response.headers['Cache-Control'] = 'private, no-cache'
+  end
+
+  def flush_broadcast
+    kitchen = Current.broadcast_pending
+    return unless kitchen
+
+    Current.broadcast_pending = nil
+    kitchen.broadcast_update
   end
 
   def record_not_found

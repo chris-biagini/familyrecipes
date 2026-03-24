@@ -15,16 +15,12 @@ class MenuController < ApplicationController
   before_action :prevent_html_caching, only: :show
 
   def show
-    plan = MealPlan.for_kitchen(current_kitchen)
     @categories = recipe_selector_categories
     @quick_bites_by_subsection = current_kitchen.quick_bites_by_subsection
-    @selected_recipes = plan.selected_recipes.to_set
-    @selected_quick_bites = plan.selected_quick_bites.to_set
-    on_hand_names = plan.effective_on_hand.keys
-    recipes = @categories.flat_map(&:recipes)
-    calculator = RecipeAvailabilityCalculator.new(kitchen: current_kitchen, checked_off: on_hand_names, recipes:)
-    @availability = calculator.call
-    @cook_weights = CookHistoryWeighter.call(plan.cook_history)
+    @selected_recipes = selected_ids_for('Recipe')
+    @selected_quick_bites = selected_ids_for('QuickBite')
+    @availability = compute_availability
+    @cook_weights = CookHistoryWeighter.call(CookHistoryEntry.where(kitchen_id: current_kitchen.id).recent)
   end
 
   def select
@@ -82,6 +78,17 @@ class MenuController < ApplicationController
   end
 
   private
+
+  def selected_ids_for(type)
+    MealPlanSelection.where(kitchen_id: current_kitchen.id, selectable_type: type)
+                     .pluck(:selectable_id).to_set
+  end
+
+  def compute_availability
+    on_hand_names = OnHandEntry.where(kitchen_id: current_kitchen.id).active.pluck(:ingredient_name)
+    recipes = @categories.flat_map(&:recipes)
+    RecipeAvailabilityCalculator.new(kitchen: current_kitchen, checked_off: on_hand_names, recipes:).call
+  end
 
   def recipe_selector_categories
     current_kitchen.categories.ordered.includes(

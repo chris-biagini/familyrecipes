@@ -20,7 +20,11 @@ class Kitchen < ApplicationRecord
   has_many :recipes, dependent: :destroy
   has_many :tags, dependent: :destroy
   has_many :ingredient_catalog, dependent: :destroy, class_name: 'IngredientCatalog'
+  has_many :meal_plan_selections, dependent: :destroy
   has_one :meal_plan, dependent: :destroy
+  has_many :cook_history_entries, dependent: :destroy
+  has_many :custom_grocery_items, dependent: :destroy
+  has_many :on_hand_entries, dependent: :destroy
 
   encrypts :usda_api_key
   encrypts :anthropic_api_key
@@ -33,6 +37,7 @@ class Kitchen < ApplicationRecord
     return if batching?
 
     run_finalization(kitchen)
+    flush_pending_broadcast
   end
 
   def self.batch_writes(kitchen)
@@ -41,6 +46,7 @@ class Kitchen < ApplicationRecord
   ensure
     Current.batching_kitchen = nil
     run_finalization(kitchen)
+    flush_pending_broadcast
   end
 
   def self.batching?
@@ -50,10 +56,31 @@ class Kitchen < ApplicationRecord
   def self.run_finalization(kitchen)
     Category.cleanup_orphans(kitchen)
     Tag.cleanup_orphans(kitchen)
-    MealPlan.reconcile_kitchen!(kitchen)
-    kitchen.broadcast_update
+    reconcile_meal_plan_tables(kitchen)
+    Current.broadcast_pending = kitchen
   end
   private_class_method :run_finalization
+
+  def self.flush_pending_broadcast
+    kitchen = Current.broadcast_pending
+    return unless kitchen
+
+    Current.broadcast_pending = nil
+    kitchen.broadcast_update
+  end
+  private_class_method :flush_pending_broadcast
+
+  def self.reconcile_meal_plan_tables(kitchen)
+    resolver = IngredientCatalog.resolver_for(kitchen)
+    visible = ShoppingListBuilder.visible_names_for(kitchen:, resolver:)
+    OnHandEntry.reconcile!(kitchen:, visible_names: visible, resolver:)
+    CustomGroceryItem.where(kitchen_id: kitchen.id).stale(cutoff: Date.current - CustomGroceryItem::RETENTION).delete_all
+    CookHistoryEntry.prune!(kitchen:)
+    valid_slugs = kitchen.recipes.pluck(:slug)
+    valid_qb_ids = kitchen.parsed_quick_bites.map(&:id)
+    MealPlanSelection.prune_stale!(kitchen:, valid_recipe_slugs: valid_slugs, valid_qb_ids:)
+  end
+  private_class_method :reconcile_meal_plan_tables
 
   validates :name, presence: true
   validates :slug, presence: true, uniqueness: true

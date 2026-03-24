@@ -41,19 +41,15 @@ class KitchenBatchWritesTest < ActiveSupport::TestCase
   end
 
   test 'batch_writes reconciles once on block exit' do
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('select', type: 'recipe', slug: 'ghost', selected: true)
+    MealPlanSelection.create!(kitchen: @kitchen, selectable_type: 'Recipe', selectable_id: 'ghost')
 
     Kitchen.batch_writes(@kitchen) { :noop }
 
-    plan.reload
-
-    assert_not_includes plan.selected_recipes, 'ghost'
+    assert_not MealPlanSelection.exists?(kitchen: @kitchen, selectable_type: 'Recipe', selectable_id: 'ghost')
   end
 
   test 'batch_writes reconciles and broadcasts even when block raises' do
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('select', type: 'recipe', slug: 'ghost', selected: true)
+    MealPlanSelection.create!(kitchen: @kitchen, selectable_type: 'Recipe', selectable_id: 'ghost')
 
     assert_turbo_stream_broadcasts [@kitchen, :updates] do
       assert_raises(RuntimeError) do
@@ -61,9 +57,7 @@ class KitchenBatchWritesTest < ActiveSupport::TestCase
       end
     end
 
-    plan.reload
-
-    assert_not_includes plan.selected_recipes, 'ghost'
+    assert_not MealPlanSelection.exists?(kitchen: @kitchen, selectable_type: 'Recipe', selectable_id: 'ghost')
   end
 
   test 'finalize_writes broadcasts when not batching' do
@@ -84,14 +78,11 @@ class KitchenBatchWritesTest < ActiveSupport::TestCase
   end
 
   test 'finalize_writes reconciles meal plan' do
-    plan = MealPlan.for_kitchen(@kitchen)
-    plan.apply_action('select', type: 'recipe', slug: 'ghost', selected: true)
+    MealPlanSelection.create!(kitchen: @kitchen, selectable_type: 'Recipe', selectable_id: 'ghost')
 
     Kitchen.finalize_writes(@kitchen)
 
-    plan.reload
-
-    assert_not_includes plan.selected_recipes, 'ghost'
+    assert_not MealPlanSelection.exists?(kitchen: @kitchen, selectable_type: 'Recipe', selectable_id: 'ghost')
   end
 
   test 'finalize_writes cleans up orphan categories' do
