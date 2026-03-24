@@ -7,14 +7,26 @@
 # fuzzy ingredient/grocery matching without a server round-trip.
 #
 # Trade-off: the full blob is embedded on every page for instant search with
-# no server round-trip. Payload grows linearly with recipe count (~1KB per
-# recipe). If it exceeds ~50KB, consider lazy-loading via fetch on overlay open.
+# no server round-trip. Payload grows linearly with recipe count (~250 bytes
+# per recipe). If it exceeds ~50KB, consider lazy-loading via fetch on overlay
+# open. Cached per-kitchen keyed on updated_at; invalidated by
+# Kitchen.finalize_writes (which touches the kitchen).
 #
 # Collaborators:
 # - ApplicationController (current_kitchen provides tenant scope)
 # - search_overlay_controller.js (consumes the JSON in the browser)
 module SearchDataHelper
   def search_data_json
+    Rails.cache.fetch(search_data_cache_key) { build_search_data_json }
+  end
+
+  private
+
+  def search_data_cache_key
+    ['search_data', current_kitchen.id, current_kitchen.updated_at.to_f]
+  end
+
+  def build_search_data_json
     recipes = current_kitchen.recipes.includes(:category, :ingredients, :tags).alphabetical
 
     {
@@ -25,8 +37,6 @@ module SearchDataHelper
       custom_items: custom_item_corpus
     }.to_json
   end
-
-  private
 
   def ingredient_corpus(recipes)
     names = recipes.flat_map { |r| r.ingredients.map(&:name) }

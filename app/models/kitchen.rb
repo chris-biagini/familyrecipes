@@ -58,6 +58,7 @@ class Kitchen < ApplicationRecord
     Category.cleanup_orphans(kitchen)
     Tag.cleanup_orphans(kitchen)
     reconcile_meal_plan_tables(kitchen)
+    kitchen.update_column(:updated_at, Time.current) # rubocop:disable Rails/SkipsModelValidations -- intentional: invalidates search data cache without triggering callbacks
     Current.broadcast_pending = kitchen
   end
   private_class_method :run_finalization

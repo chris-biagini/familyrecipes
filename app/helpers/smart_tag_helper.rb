@@ -9,8 +9,10 @@
 # - Kitchen#decorate_tags: per-kitchen toggle
 # - _recipe_content.html.erb: server-rendered tag pills
 module SmartTagHelper
+  SMART_TAGS_JSON = FamilyRecipes::SmartTagRegistry::TAGS.to_json.freeze
+
   def smart_tags_json
-    FamilyRecipes::SmartTagRegistry::TAGS.to_json
+    SMART_TAGS_JSON
   end
 
   def smart_tag_pill_attrs(tag_name, kitchen: current_kitchen)
