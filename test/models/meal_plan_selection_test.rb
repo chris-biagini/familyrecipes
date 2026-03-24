@@ -145,4 +145,16 @@ class MealPlanSelectionTest < ActiveSupport::TestCase
 
     assert_equal 0, MealPlanSelection.count
   end
+
+  # --- quick_bite_ids_for ---
+
+  test 'quick_bite_ids_for returns integer IDs' do
+    MealPlanSelection.create!(selectable_type: 'QuickBite', selectable_id: '42')
+    MealPlanSelection.create!(selectable_type: 'QuickBite', selectable_id: '7')
+
+    ids = MealPlanSelection.quick_bite_ids_for(@kitchen)
+
+    assert_equal [42, 7].to_set, ids.to_set
+    assert_kind_of Integer, ids.first
+  end
 end

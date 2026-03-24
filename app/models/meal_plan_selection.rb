@@ -23,7 +23,7 @@ class MealPlanSelection < ApplicationRecord
   end
 
   def self.quick_bite_ids_for(kitchen)
-    ActsAsTenant.with_tenant(kitchen) { quick_bites.pluck(:selectable_id) }
+    ActsAsTenant.with_tenant(kitchen) { quick_bites.pluck(:selectable_id).map(&:to_i) }
   end
 
   def self.toggle(kitchen:, type:, id:, selected:)
