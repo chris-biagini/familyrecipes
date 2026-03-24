@@ -394,8 +394,8 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     log_in
     get groceries_path(kitchen_slug: kitchen_slug)
 
-    assert_select '#custom-items-list li span', 'Birthday candles'
-    assert_select '#custom-items-list button.custom-item-remove[data-item="Birthday candles"]'
+    assert_select '.to-buy-items li[data-item="Birthday candles"]'
+    assert_select '.to-buy-items button.custom-item-remove[data-item="Birthday candles"]'
   end
 
   test 'renders aisle order editor dialog for members' do

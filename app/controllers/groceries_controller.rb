@@ -20,7 +20,6 @@ class GroceriesController < ApplicationController
     @on_hand_names = plan.effective_on_hand.keys.to_set
     @on_hand_data = plan.on_hand
     @custom_items = plan.custom_items
-    @visible_custom_items = plan.visible_custom_items
   end
 
   def check

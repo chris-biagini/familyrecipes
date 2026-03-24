@@ -38,9 +38,7 @@
   --broken-reference-bg: #fdf6f0;
   --aisle-row-border: #e0e0e0;
   --danger-hover-bg: rgba(204, 0, 0, 0.08);
-  --custom-item-border: #eee;
   --custom-item-remove: #bbb;
-  --custom-item-aisle: #a09788;
 
   /* Notification bar — upward-facing nav shadow */
   --shadow-nav-up: 0 -2px 4px rgba(0, 0, 0, 0.08), 0 -1px 2px rgba(0, 0, 0, 0.04);
@@ -111,9 +109,7 @@
     --broken-reference-bg: rgb(42, 36, 32);
     --aisle-row-border: rgb(55, 52, 48);
     --danger-hover-bg: rgba(220, 60, 50, 0.12);
-    --custom-item-border: rgb(50, 47, 44);
     --custom-item-remove: rgb(110, 106, 102);
-    --custom-item-aisle: rgb(110, 106, 102);
 
     /* Tag/category pill colors */
     --tag-bg: #3a3530;
