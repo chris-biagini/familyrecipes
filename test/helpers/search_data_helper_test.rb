@@ -103,9 +103,8 @@ class SearchDataHelperTest < ActionView::TestCase
   end
 
   test 'ingredients includes on-hand item names' do
-    plan = MealPlan.for_kitchen(@kitchen)
-    on_hand = { 'olive oil' => { 'on_hand_at' => Date.current.iso8601, 'custom' => true } }
-    plan.update!(state: plan.state.merge('on_hand' => on_hand))
+    OnHandEntry.create!(kitchen: @kitchen, ingredient_name: 'olive oil',
+                        confirmed_at: Date.current, interval: 7, ease: 1.5)
 
     data = JSON.parse(search_data_json)
 
@@ -113,9 +112,8 @@ class SearchDataHelperTest < ActionView::TestCase
   end
 
   test 'search data includes custom_items key with name and aisle' do
-    plan = MealPlan.for_kitchen(@kitchen)
-    entry = { 'aisle' => 'Baking', 'last_used_at' => Date.current.iso8601, 'on_hand_at' => nil }
-    plan.update!(state: plan.state.merge('custom_items' => { 'Parchment Paper' => entry }))
+    CustomGroceryItem.create!(kitchen: @kitchen, name: 'Parchment Paper',
+                              last_used_at: Date.current, aisle: 'Baking')
 
     data = JSON.parse(search_data_json)
     item = data['custom_items'].find { |ci| ci['name'] == 'Parchment Paper' }
@@ -124,11 +122,12 @@ class SearchDataHelperTest < ActionView::TestCase
     assert_equal 'Baking', item['aisle']
   end
 
-  test 'custom_items excludes items older than 45 days' do
-    plan = MealPlan.for_kitchen(@kitchen)
-    old = { 'aisle' => 'Misc', 'last_used_at' => (Date.current - 46).iso8601, 'on_hand_at' => nil }
-    recent = { 'aisle' => 'Misc', 'last_used_at' => Date.current.iso8601, 'on_hand_at' => nil }
-    plan.update!(state: plan.state.merge('custom_items' => { 'Old Item' => old, 'Recent Item' => recent }))
+  test 'custom_items excludes items not visible' do
+    CustomGroceryItem.create!(kitchen: @kitchen, name: 'Old Item',
+                              last_used_at: Date.current - 46, aisle: 'Misc',
+                              on_hand_at: Date.current - 1)
+    CustomGroceryItem.create!(kitchen: @kitchen, name: 'Recent Item',
+                              last_used_at: Date.current, aisle: 'Misc')
 
     data = JSON.parse(search_data_json)
     names = data['custom_items'].pluck('name')

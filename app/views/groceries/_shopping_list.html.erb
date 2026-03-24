@@ -1,6 +1,6 @@
-<%# locals: (shopping_list:, on_hand_names:, on_hand_data:, custom_items:) %>
+<%# locals: (shopping_list:, on_hand_names:, on_hand_data:, custom_names:) %>
 <% if shopping_list.present? %>
-  <% zone_for = ->(name) { item_zone(name:, on_hand_names:, on_hand_data:, custom_items:) } %>
+  <% zone_for = ->(name) { item_zone(name:, on_hand_names:, on_hand_data:, custom_names:) } %>
   <% all_items = shopping_list.values.flatten %>
   <% inventory_items = all_items.select { |i| zone_for.(i[:name]) == :inventory_check } %>
   <% inventory_items.sort_by! { |i| [-i[:sources].size, i[:name]] } %>
@@ -45,13 +45,13 @@
 
 <div class="shopping-list-header">
   <h2>Shopping List</h2>
-  <span id="item-count"><%= shopping_list_count_text(shopping_list, on_hand_names, on_hand_data:, custom_items:) %></span>
+  <span id="item-count"><%= shopping_list_count_text(shopping_list, on_hand_names, on_hand_data:, custom_names:) %></span>
 </div>
 
 <% if shopping_list.empty? %>
   <p id="grocery-preview-empty">No items yet.</p>
 <% else %>
-  <% zone_for ||= ->(name) { item_zone(name:, on_hand_names:, on_hand_data:, custom_items:) } %>
+  <% zone_for ||= ->(name) { item_zone(name:, on_hand_names:, on_hand_data:, custom_names:) } %>
 
   <% shopping_list.each do |aisle, items| %>
     <% to_buy = items.select { |i| zone_for.(i[:name]) == :to_buy }.sort_by { |i| i[:name] } %>
@@ -77,7 +77,7 @@
             <div class="collapse-inner">
               <ul class="to-buy-items">
                 <% to_buy.each do |item| %>
-                  <% is_custom = custom_items.any? { |k, _| k.casecmp?(item[:name]) } %>
+                  <% is_custom = custom_names.include?(item[:name].downcase) %>
                   <% sources_tip = item[:sources].present? ? "Needed for: #{h item[:sources].join(', ')}" : nil %>
                   <% restock_tip = restock_tooltip(item[:name], on_hand_data, on_hand_names) %>
                   <% full_tip = [sources_tip, restock_tip].compact.join("\n") %>
@@ -111,7 +111,7 @@
                   <% sources_tip = item[:sources].present? ? "Needed for: #{h item[:sources].join(', ')}" : nil %>
                   <% restock_tip = restock_tooltip(item[:name], on_hand_data, on_hand_names) %>
                   <% full_tip = [sources_tip, restock_tip].compact.join("\n") %>
-                  <% oh_entry = on_hand_data.find { |k, _| k.casecmp?(item[:name]) }&.last %>
+                  <% oh_entry = on_hand_data[item[:name].downcase] %>
                   <% li_class = confirmed_today?(item[:name], on_hand_data) ? 'confirmed-today' : on_hand_freshness_class(oh_entry, now: Date.current) %>
                   <li class="<%= li_class %>" data-item="<%= item[:name] %>"<%= " title=\"#{h full_tip}\"".html_safe if full_tip.present? %>>
                     <label class="check-off">

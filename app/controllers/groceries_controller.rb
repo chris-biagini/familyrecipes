@@ -15,11 +15,11 @@ class GroceriesController < ApplicationController
   before_action :prevent_html_caching, only: :show
 
   def show
-    plan = MealPlan.for_kitchen(current_kitchen)
-    @shopping_list = ShoppingListBuilder.new(kitchen: current_kitchen, meal_plan: plan).build
-    @on_hand_names = plan.effective_on_hand.keys.to_set
-    @on_hand_data = plan.on_hand
-    @custom_items = plan.custom_items
+    @shopping_list = ShoppingListBuilder.new(kitchen: current_kitchen).build
+    entries = OnHandEntry.where(kitchen_id: current_kitchen.id)
+    @on_hand_names = entries.active.pluck(:ingredient_name).to_set
+    @on_hand_data = entries.index_by { |e| e.ingredient_name.downcase }
+    @custom_names = CustomGroceryItem.where(kitchen_id: current_kitchen.id).pluck(:name).to_set(&:downcase)
   end
 
   def check

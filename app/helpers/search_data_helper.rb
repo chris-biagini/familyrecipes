@@ -16,30 +16,27 @@
 module SearchDataHelper
   def search_data_json
     recipes = current_kitchen.recipes.includes(:category, :ingredients, :tags).alphabetical
-    plan = MealPlan.for_kitchen(current_kitchen)
 
     {
       all_tags: current_kitchen.tags.order(:name).pluck(:name),
       all_categories: current_kitchen.categories.ordered.pluck(:name),
       recipes: recipes.map { |r| search_entry_for(r) },
-      ingredients: ingredient_corpus(recipes, plan),
-      custom_items: custom_item_corpus(plan)
+      ingredients: ingredient_corpus(recipes),
+      custom_items: custom_item_corpus
     }.to_json
   end
 
   private
 
-  def ingredient_corpus(recipes, plan)
+  def ingredient_corpus(recipes)
     names = recipes.flat_map { |r| r.ingredients.map(&:name) }
-    names.concat(plan.on_hand.keys)
+    names.concat(OnHandEntry.where(kitchen_id: current_kitchen.id).pluck(:ingredient_name))
     names.uniq.sort
   end
 
-  def custom_item_corpus(plan)
-    cutoff = Date.current - MealPlan::CUSTOM_ITEM_RETENTION
-    plan.custom_items
-        .select { |_, e| Date.parse(e['last_used_at']) >= cutoff }
-        .map { |name, entry| { name:, aisle: entry['aisle'] } }
+  def custom_item_corpus
+    CustomGroceryItem.where(kitchen_id: current_kitchen.id).visible.pluck(:name, :aisle)
+                     .map { |name, aisle| { name:, aisle: } }
   end
 
   def search_entry_for(recipe)
