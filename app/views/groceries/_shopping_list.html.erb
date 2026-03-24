@@ -112,12 +112,19 @@
                   <% restock_tip = restock_tooltip(item[:name], on_hand_data, on_hand_names) %>
                   <% full_tip = [sources_tip, restock_tip].compact.join("\n") %>
                   <% oh_entry = on_hand_data[item[:name].downcase] %>
-                  <% li_class = confirmed_today?(item[:name], on_hand_data) ? 'confirmed-today' : on_hand_freshness_class(oh_entry, now: Date.current) %>
-                  <li class="<%= li_class %>" data-item="<%= item[:name] %>"<%= " title=\"#{h full_tip}\"".html_safe if full_tip.present? %>>
-                    <label class="check-off">
-                      <input class="custom-checkbox" type="checkbox" data-item="<%= item[:name] %>" checked>
+                  <% today = confirmed_today?(item[:name], on_hand_data) %>
+                  <% li_class = today ? nil : on_hand_freshness_class(oh_entry, now: Date.current) %>
+                  <li<%= " class=\"#{li_class}\"" if li_class %> data-item="<%= item[:name] %>"<%= " title=\"#{h full_tip}\"".html_safe if full_tip.present? %>>
+                    <% if today %>
+                      <label class="check-off">
+                        <input class="custom-checkbox" type="checkbox" data-item="<%= item[:name] %>" checked>
+                        <span class="item-text"><%= item[:name] %><% amount_str = format_amounts(item[:amounts], uncounted: item[:uncounted]) %><% if amount_str.present? %> <span class="item-amount"><%= amount_str %></span><% end %></span>
+                      </label>
+                    <% else %>
+                      <button class="btn btn-sm btn-need-it" data-grocery-action="need-it"
+                              data-item="<%= item[:name] %>">Need It</button>
                       <span class="item-text"><%= item[:name] %><% amount_str = format_amounts(item[:amounts], uncounted: item[:uncounted]) %><% if amount_str.present? %> <span class="item-amount"><%= amount_str %></span><% end %></span>
-                    </label>
+                    <% end %>
                   </li>
                 <% end %>
               </ul>

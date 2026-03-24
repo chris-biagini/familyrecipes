@@ -276,8 +276,18 @@
   transform-origin: left center;
 }
 
-.confirmed-today .item-text {
-  font-weight: 600;
+.on-hand-items li:has(.btn-need-it) {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.on-hand-items li:has(.btn-need-it) .item-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .on-hand-fresh  { opacity: 0.75; }

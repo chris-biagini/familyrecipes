@@ -321,7 +321,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test 'show renders confirmed-today class on items confirmed today' do
+  test 'show renders on-hand today item with checkbox' do
     @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
     MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Focaccia
@@ -345,10 +345,10 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     log_in
     get groceries_path(kitchen_slug: kitchen_slug)
 
-    assert_select '.on-hand-items li.confirmed-today[data-item="Flour"]'
+    assert_select '.on-hand-items li[data-item="Flour"] input[type="checkbox"][checked]'
   end
 
-  test 'show omits confirmed-today class on items confirmed yesterday' do
+  test 'show renders on-hand non-today item with need-it button' do
     @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
     MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Focaccia
@@ -373,8 +373,10 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     log_in
     get groceries_path(kitchen_slug: kitchen_slug)
 
-    assert_select '.on-hand-items li[data-item="Flour"]'
-    assert_select '.on-hand-items li.confirmed-today[data-item="Flour"]', count: 0
+    assert_select '.on-hand-items li[data-item="Flour"]' do
+      assert_select 'button[data-grocery-action="need-it"]'
+      assert_select 'input[type="checkbox"]', count: 0
+    end
   end
 
   test 'show renders custom items' do
