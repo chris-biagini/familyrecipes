@@ -1,15 +1,21 @@
-# On Hand: Replace Non-Today Checkboxes with "Need It" Button
+# On Hand: "Need It" Button + Optimistic Zone Transitions
 
 **Issue:** [#291](https://github.com/chris-biagini/familyrecipes/issues/291)
 **Date:** 2026-03-24
 
 ## Problem
 
-On Hand items all render with pre-checked checkboxes regardless of when they
-were confirmed. This creates a UX mismatch: unchecking something you bought
-last week doesn't feel right — you didn't "un-buy" it, you ran out. The bold
-styling on "confirmed today" items is the only visual distinction, and it's
-subtle.
+Two UX issues on the grocery page:
+
+1. **On Hand items all have checkboxes** regardless of when they were confirmed.
+   Unchecking something you bought last week doesn't feel right — you didn't
+   "un-buy" it, you ran out. Bold styling on "confirmed today" items is the
+   only visual distinction, and it's subtle.
+
+2. **Zone transitions feel slow.** When a checkbox is toggled, the item fades
+   out (250ms), then there's a dead gap while the server round-trips and
+   broadcasts a Turbo morph, then the item bloops into its new zone. The
+   perceived latency makes the list feel sluggish.
 
 ## Design
 
@@ -71,11 +77,61 @@ Today on-hand item (unchanged except no bold):
 </li>
 ```
 
+### Optimistic zone transitions
+
+Current flow (checkbox toggle):
+1. Exit animation (250ms collapse+fade)
+2. `sendAction` fires (fire-and-forget)
+3. Dead gap — waiting for server broadcast morph
+4. Morph arrives, `applyPendingMoves` bloops item into new zone
+
+New flow (all zone moves — checkbox and button):
+1. Exit animation (collapse+fade) or instant `li.remove()` for buttons
+2. **Optimistically insert a minimal `<li>` in the destination zone** with
+   bloop entry animation — no waiting for server
+3. `sendAction` fires
+4. Morph arrives — idiomorph matches by `data-item`, patches attribute
+   differences (freshness class, tooltip) as a near-no-op
+
+**How it works:** after the exit animation completes, construct a destination
+`<li>` with the item name, the right structure (checkbox or button depending
+on destination zone), and the correct `data-item` attribute. Insert it into
+the appropriate `<ul>` and apply the `check-off-enter` bloop animation.
+
+Idiomorph matches DOM elements by attributes. As long as the optimistic `<li>`
+has the right `data-item`, the morph updates it in place rather than
+duplicating. The optimistic markup doesn't need to be pixel-perfect — the
+morph patches any differences (tooltips, freshness classes, amounts).
+
+**Which transitions get optimistic moves:**
+
+| Action | Exit | Optimistic destination |
+|---|---|---|
+| To Buy checkbox checked | collapse+fade | On Hand `<ul>` (checkbox, checked) |
+| On Hand today checkbox unchecked | collapse+fade | To Buy `<ul>` (checkbox, unchecked) |
+| On Hand non-today "Need It" button | instant remove | To Buy `<ul>` (checkbox, unchecked) |
+| IC "Have It" button | instant remove | On Hand `<ul>` (checkbox, checked) |
+| IC "Need It" button | instant remove | To Buy `<ul>` (checkbox, unchecked) |
+
+**Destination zone or aisle doesn't exist yet:** when the target `<ul>`
+doesn't exist in the DOM (e.g., checking off the last to-buy item in an aisle
+creates the first on-hand item), skip the optimistic insert and fall back to
+the current behavior — the morph will create the section. This keeps the JS
+simple; the edge case is rare and the morph is fast enough.
+
+**Error/rejection fallback:** if the server rejects the action (stale record,
+etc.), the morph moves the item back to its correct zone — the right behavior.
+
+**Builder function:** a single `buildOptimisticItem(name, zone)` function in
+`grocery_ui_controller.js` constructs the destination `<li>`. It only needs
+the item name and target zone — no amounts, tooltips, or freshness classes.
+The morph fills those in.
+
 ### Animation
 
-Non-today "Need It" clicks should use the same exit animation as IC buttons
-(immediate `<li>` removal). The item reappears in To Buy after the Turbo
-morph broadcast.
+Non-today "Need It" clicks use instant `li.remove()` (same as IC buttons).
+Today checkbox toggles keep the existing collapse+fade exit. Both get an
+optimistic insert + bloop in the destination zone.
 
 ### Print
 
@@ -88,12 +144,13 @@ No change needed — print CSS already hides on-hand sections entirely.
 | `app/views/groceries/_shopping_list.html.erb` | Split on-hand rendering by `confirmed_today?` |
 | `app/assets/stylesheets/groceries.css` | Delete `.confirmed-today` rule; add layout for button-style on-hand items |
 | `app/helpers/groceries_helper.rb` | No change — `confirmed_today?` already exists |
-| `app/javascript/controllers/grocery_ui_controller.js` | No change — `need-it` action already handled |
+| `app/javascript/controllers/grocery_ui_controller.js` | `buildOptimisticItem`, optimistic insert after exit for all zone moves |
 | `test/helpers/groceries_helper_test.rb` | Verify existing `confirmed_today?` coverage |
 | `test/controllers/groceries_controller_test.rb` | Add test for need_it on on-hand item |
 
 ## Out of scope
 
 - Visual freshness indicators beyond existing opacity (future consideration)
-- Changes to Inventory Check or To Buy zones
 - SM-2 algorithm changes
+- Optimistic inserts when the destination zone/aisle section doesn't exist yet
+  (fall back to morph in that edge case)
