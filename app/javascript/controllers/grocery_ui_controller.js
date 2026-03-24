@@ -352,7 +352,10 @@ export default class extends Controller {
     if (!ul) return
 
     const li = this.buildOptimisticItem(name, zone)
-    ul.appendChild(li)
+    const lowerName = name.toLowerCase()
+    const ref = Array.from(ul.querySelectorAll("li[data-item]"))
+      .find(el => el.dataset.item.toLowerCase() > lowerName)
+    ref ? ul.insertBefore(li, ref) : ul.appendChild(li)
     this.pendingMoves.delete(name)
 
     this.animateEntry(li)

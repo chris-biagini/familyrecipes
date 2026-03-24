@@ -364,15 +364,18 @@ class OnHandEntryTest < ActiveSupport::TestCase
     assert_predicate entry, :destroyed?
   end
 
-  test 'uncheck! same-day with default values deletes entry' do
+  test 'uncheck! same-day with default values depletes to To Buy' do
     now = Date.new(2026, 3, 1)
     entry = OnHandEntry.create!(ingredient_name: 'Eggs',
                                 confirmed_at: now, interval: 7.0, ease: 1.5)
 
     entry.uncheck!(now:)
+    entry.reload
 
-    assert_predicate entry, :destroyed?
-    assert_equal 0, OnHandEntry.where(ingredient_name: 'Eggs').size
+    assert_equal Date.parse('1970-01-01'), entry.confirmed_at
+    assert_equal now, entry.depleted_at
+    assert_in_delta 7.0, entry.interval
+    assert_in_delta 1.5, entry.ease
   end
 
   test 'uncheck! same-day with learned values marks depleted without penalty' do

@@ -161,16 +161,12 @@ class OnHandEntry < ApplicationRecord # rubocop:disable Metrics/ClassLength
     self.orphaned_at = nil
   end
 
-  # Same-day undo: if the entry still has default values (brand-new),
-  # delete it entirely. Otherwise mark depleted without penalizing —
-  # the learned interval and ease survive the accidental tap.
+  # Same-day undo: mark depleted without penalizing — the learned
+  # interval and ease survive the accidental tap. Always depletes
+  # (never destroys) so the item lands in To Buy, not Inventory Check.
   def undo_same_day(now)
-    if interval == STARTING_INTERVAL && ease == STARTING_EASE
-      destroy!
-    else
-      self.confirmed_at = Date.parse(ORPHAN_SENTINEL)
-      self.depleted_at = now
-    end
+    self.confirmed_at = Date.parse(ORPHAN_SENTINEL)
+    self.depleted_at = now
   end
 
   def sync_custom(custom_item, on_hand:, now:)
