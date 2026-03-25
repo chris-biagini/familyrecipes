@@ -114,7 +114,7 @@
                   <% oh_entry = on_hand_data[item[:name].downcase] %>
                   <% today = confirmed_today?(item[:name], on_hand_data) %>
                   <% li_class = today ? nil : on_hand_freshness_class(oh_entry, now: Date.current) %>
-                  <li<%= " class=\"#{li_class}\"" if li_class %> data-item="<%= item[:name] %>"<%= " title=\"#{h full_tip}\"".html_safe if full_tip.present? %>>
+                  <li<%= raw(" class=\"#{li_class}\"") if li_class %> data-item="<%= item[:name] %>"<%= " title=\"#{h full_tip}\"".html_safe if full_tip.present? %>>
                     <% if today %>
                       <label class="check-off">
                         <input class="custom-checkbox" type="checkbox" data-item="<%= item[:name] %>" checked>

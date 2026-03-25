@@ -379,6 +379,34 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test 'show renders freshness class on aging on-hand item' do
+    @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Focaccia
+
+
+      ## Mix (combine)
+
+      - Flour, 3 cups
+
+      Mix well.
+    MD
+
+    IngredientCatalog.find_or_create_by!(kitchen_id: nil, ingredient_name: 'Flour') do |p|
+      p.basis_grams = 30
+      p.aisle = 'Baking'
+    end
+
+    MealPlanSelection.create!(kitchen: @kitchen, selectable_type: 'Recipe', selectable_id: 'focaccia')
+    OnHandEntry.create!(kitchen: @kitchen, ingredient_name: 'Flour',
+                        confirmed_at: Date.current - 5, interval: 7, ease: 1.5)
+
+    log_in
+    get groceries_path(kitchen_slug: kitchen_slug)
+
+    assert_select '.on-hand-items li.on-hand-aging[data-item="Flour"]'
+  end
+
   test 'show renders custom items' do
     CustomGroceryItem.create!(kitchen: @kitchen, name: 'Birthday candles',
                               aisle: 'Miscellaneous', last_used_at: Date.current)
