@@ -205,11 +205,15 @@ collision. Parser pipeline: `LineClassifier` → `RecipeBuilder` →
 - Use `home_path` (not `kitchen_root_path`) for homepage links.
 - `MealPlan` (one row per kitchen) backs the menu, groceries, and dinner
   picker. Stores cook history (recency weighting) and on-hand ingredient
-  state. Three-zone grocery model: Inventory Check (new/expired items,
-  "Have It"/"Need It" buttons), To Buy (depleted items, checkboxes), On
-  Hand (active items, collapsed). SM-2-inspired adaptive ease with anchor
-  fix — "Have It" preserves `confirmed_at` at the purchase date so
-  depletion observations capture the full consumption period. See
+  state. `QuickBite` models (normalized AR, not text blob) live within
+  `Category` alongside recipes — the menu page renders both per-category.
+  `MealPlanSelection` references QBs by stringified integer PK;
+  `quick_bite_ids_for` returns integers for consumer use. Three-zone
+  grocery model: Inventory Check (new/expired items, "Have It"/"Need It"
+  buttons), To Buy (depleted items, checkboxes), On Hand (active items,
+  collapsed). SM-2-inspired adaptive ease with anchor fix — "Have It"
+  preserves `confirmed_at` at the purchase date so depletion observations
+  capture the full consumption period. See
   `docs/superpowers/specs/2026-03-22-inventory-check-design.md`.
 - `POST /groceries/need` — search overlay quick-add: resolves ingredient
   name, adds unrecognized items as structured custom items (`{ name:,
@@ -319,9 +323,11 @@ normalized to lowercase `[a-zA-Z-]`. Front matter category overrides the
 explicit category parameter; tags sync to the `Tag`/`RecipeTag` join table
 via `RecipeWriteService`.
 
-**Quick Bites** are grocery bundles, not recipes. See
-`FamilyRecipes::QuickBite` header comment for format. Stored in
-`Kitchen#quick_bites_content`, web-editable on the menu page.
+**Quick Bites** are grocery bundles, not recipes — a title plus a flat
+ingredient list. Normalized into `QuickBite` and `QuickBiteIngredient` AR
+models within `Category` (shared with recipes). The plaintext format and
+parser (`FamilyRecipes::QuickBite`) are retained for editor mode-switching.
+`QuickBitesSerializer.from_records` builds editor IR from AR models.
 
 **Nutrition catalog** lives in `db/seeds/resources/ingredient-catalog.yaml`.
 See `NutritionConstraints` for validation rules, `IngredientCatalog` for the

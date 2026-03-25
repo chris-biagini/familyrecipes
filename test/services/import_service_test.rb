@@ -140,20 +140,21 @@ class ImportServiceTest < ActiveSupport::TestCase
   # --- Quick Bites ---
 
   test 'imports Quick Bites from ZIP' do
-    zip = build_zip('quick-bites.txt' => "Chips\nSalsa")
+    zip = build_zip('quick-bites.txt' => "## Snacks\n- Chips\n- Salsa")
     result = import_files(uploaded_file('export.zip', zip))
 
     assert result.quick_bites
-    assert_equal "Chips\nSalsa", @kitchen.reload.quick_bites_content
+    assert_equal 2, @kitchen.quick_bites.count
+    assert_equal %w[Chips Salsa], @kitchen.quick_bites.ordered.map(&:title)
   end
 
   test 'recognizes Quick Bites filename variants' do
     ['Quick-Bites.md', 'quickbites.text', 'QuickBites.txt', 'quick bites.md'].each do |name|
-      zip = build_zip(name => "Snacks v#{name}")
+      zip = build_zip(name => "## Snacks\n- Item")
       result = import_files(uploaded_file('export.zip', zip))
 
       assert result.quick_bites, "Expected #{name} to be recognized as Quick Bites"
-      assert_equal "Snacks v#{name}", @kitchen.reload.quick_bites_content
+      assert_predicate @kitchen.quick_bites, :exists?, "Expected QBs to exist for #{name}"
     end
   end
 

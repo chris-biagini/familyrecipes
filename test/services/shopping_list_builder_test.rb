@@ -170,12 +170,8 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
   end
 
   test 'includes quick bite ingredients when selected' do
-    @kitchen.update!(quick_bites_content: <<~MD)
-      ## Snacks
-      - Hummus with Pretzels: Hummus, Pretzels
-    MD
-
-    select_quick_bite('hummus-with-pretzels')
+    qb = create_quick_bite('Hummus with Pretzels', category_name: 'Snacks', ingredients: %w[Hummus Pretzels])
+    select_quick_bite(qb.id.to_s)
 
     result = ShoppingListBuilder.new(kitchen: @kitchen).build
 
@@ -257,12 +253,8 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
   end
 
   test 'quick bite ingredients include quick bite title as source' do
-    @kitchen.update!(quick_bites_content: <<~MD)
-      ## Snacks
-      - Hummus with Pretzels: Hummus, Pretzels
-    MD
-
-    select_quick_bite('hummus-with-pretzels')
+    qb = create_quick_bite('Hummus with Pretzels', category_name: 'Snacks', ingredients: %w[Hummus Pretzels])
+    select_quick_bite(qb.id.to_s)
 
     result = ShoppingListBuilder.new(kitchen: @kitchen).build
     hummus = result.values.flatten.find { |i| i[:name] == 'Hummus' }
@@ -742,13 +734,10 @@ class ShoppingListBuilderTest < ActiveSupport::TestCase
       Arrange.
     MD
 
-    @kitchen.update!(quick_bites_content: <<~MD)
-      ## Snacks
-      - Hummus with Pretzels: Hummus, Pretzels
-    MD
+    qb = create_quick_bite('Hummus with Pretzels', category_name: 'Snacks', ingredients: %w[Hummus Pretzels])
 
     select_recipe('veggie-plate')
-    select_quick_bite('hummus-with-pretzels')
+    select_quick_bite(qb.id.to_s)
 
     result = ShoppingListBuilder.new(kitchen: @kitchen).build
     hummus = result['Deli'].find { |i| i[:name] == 'Hummus' }

@@ -99,34 +99,10 @@ class KitchenTest < ActiveSupport::TestCase
     assert_equal ['Baking'], @kitchen.all_aisles
   end
 
-  test 'quick_bites_by_subsection groups parsed quick bites by stripped category' do
-    @kitchen.update!(quick_bites_content: "## Snacks\n- Chips\n- Pretzels\n\n## Drinks\n- Juice\n")
-
-    result = @kitchen.quick_bites_by_subsection
-
-    assert_kind_of Hash, result
-    assert_includes result.keys, 'Snacks'
-    assert_includes result.keys, 'Drinks'
-    assert_equal 2, result['Snacks'].size
-    assert_equal 1, result['Drinks'].size
-  end
-
   test 'broadcast_update sends refresh to kitchen updates stream' do
     assert_turbo_stream_broadcasts [@kitchen, :updates] do
       @kitchen.broadcast_update
     end
-  end
-
-  test 'quick_bites_by_subsection returns empty hash when no content' do
-    assert_empty @kitchen.quick_bites_by_subsection
-  end
-
-  test 'parsed_quick_bites returns quick bites from new format' do
-    @kitchen.update!(quick_bites_content: "## Snacks\n- Goldfish\n- Dried fruit\n")
-    qbs = @kitchen.parsed_quick_bites
-
-    assert_equal 2, qbs.size
-    assert_equal 'Goldfish', qbs.first.title
   end
 
   test 'allows first kitchen when multi_kitchen is false' do

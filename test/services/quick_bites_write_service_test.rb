@@ -10,18 +10,72 @@ class QuickBitesWriteServiceTest < ActiveSupport::TestCase
     setup_test_kitchen
   end
 
-  test 'update persists content to kitchen' do
-    QuickBitesWriteService.update(kitchen: @kitchen, content: "## Snacks\n- Goldfish")
+  test 'update_from_structure creates QuickBite records' do
+    structure = {
+      categories: [
+        { name: 'Snacks', items: [
+          { name: 'PB&J', ingredients: ['Bread', 'Peanut Butter', 'Jelly'] },
+          { name: 'Goldfish', ingredients: %w[Goldfish] }
+        ] }
+      ]
+    }
 
-    assert_equal "## Snacks\n- Goldfish", @kitchen.reload.quick_bites_content
+    QuickBitesWriteService.update_from_structure(kitchen: @kitchen, structure:)
+
+    assert_equal 2, @kitchen.quick_bites.count
+    pbj = @kitchen.quick_bites.find_by(title: 'PB&J')
+
+    assert_equal ['Bread', 'Peanut Butter', 'Jelly'], pbj.quick_bite_ingredients.order(:position).pluck(:name)
+    assert_equal 'Snacks', pbj.category.name
   end
 
-  test 'update clears content when blank' do
-    @kitchen.update!(quick_bites_content: 'old')
+  test 'update_from_structure replaces all existing QBs' do
+    cat = Category.find_or_create_for(@kitchen, 'Snacks')
+    QuickBite.create!(title: 'Old Item', category: cat, position: 0)
 
-    QuickBitesWriteService.update(kitchen: @kitchen, content: '')
+    structure = {
+      categories: [
+        { name: 'Snacks', items: [
+          { name: 'New Item', ingredients: %w[Chips] }
+        ] }
+      ]
+    }
 
-    assert_nil @kitchen.reload.quick_bites_content
+    QuickBitesWriteService.update_from_structure(kitchen: @kitchen, structure:)
+
+    assert_equal ['New Item'], @kitchen.quick_bites.pluck(:title)
+  end
+
+  test 'update with plaintext creates AR records' do
+    content = "## Snacks\n- Hummus with Pretzels: Hummus, Pretzels\n- Goldfish\n"
+
+    result = QuickBitesWriteService.update(kitchen: @kitchen, content:)
+
+    assert_equal 2, @kitchen.quick_bites.count
+    assert_empty result.warnings
+  end
+
+  test 'update with nil content clears all QBs' do
+    cat = Category.find_or_create_for(@kitchen, 'Snacks')
+    QuickBite.create!(title: 'Test', category: cat, position: 0)
+
+    QuickBitesWriteService.update(kitchen: @kitchen, content: nil)
+
+    assert_equal 0, @kitchen.quick_bites.count
+  end
+
+  test 'update_from_structure creates category if it does not exist' do
+    structure = {
+      categories: [
+        { name: 'New Category', items: [
+          { name: 'Test', ingredients: %w[Stuff] }
+        ] }
+      ]
+    }
+
+    QuickBitesWriteService.update_from_structure(kitchen: @kitchen, structure:)
+
+    assert @kitchen.categories.exists?(name: 'New Category')
   end
 
   test 'update returns warnings from parser' do
@@ -39,17 +93,6 @@ class QuickBitesWriteServiceTest < ActiveSupport::TestCase
     )
 
     assert_empty result.warnings
-  end
-
-  test 'update reconciles meal plan' do
-    @kitchen.update!(quick_bites_content: "## Snacks\n- Nachos: Chips\n- Pretzels: Pretzels")
-    MealPlanSelection.create!(kitchen: @kitchen, selectable_type: 'QuickBite', selectable_id: 'nachos')
-    MealPlanSelection.create!(kitchen: @kitchen, selectable_type: 'QuickBite', selectable_id: 'pretzels')
-
-    QuickBitesWriteService.update(kitchen: @kitchen, content: "## Snacks\n- Nachos: Chips")
-
-    assert MealPlanSelection.exists?(kitchen: @kitchen, selectable_type: 'QuickBite', selectable_id: 'nachos')
-    assert_not MealPlanSelection.exists?(kitchen: @kitchen, selectable_type: 'QuickBite', selectable_id: 'pretzels')
   end
 
   test 'update broadcasts to kitchen updates stream' do

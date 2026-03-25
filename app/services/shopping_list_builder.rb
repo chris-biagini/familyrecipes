@@ -9,6 +9,7 @@
 #
 # Collaborators:
 # - MealPlanSelection — which recipes/quick bites are selected
+# - QuickBite / QuickBiteIngredient — AR-backed grocery bundles
 # - CustomGroceryItem — user-added non-recipe grocery items
 # - IngredientResolver — name canonicalization and catalog lookups
 # - IngredientAggregator — quantity merging
@@ -75,7 +76,7 @@ class ShoppingListBuilder # rubocop:disable Metrics/ClassLength
     ids = MealPlanSelection.quick_bite_ids_for(@kitchen)
     return [] if ids.empty?
 
-    @kitchen.parsed_quick_bites.select { |qb| ids.include?(qb.id) }
+    @kitchen.quick_bites.where(id: ids).includes(:quick_bite_ingredients)
   end
 
   def aggregate_recipe_ingredients

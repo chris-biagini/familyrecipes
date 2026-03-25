@@ -51,16 +51,19 @@ class ExportServiceTest < ActiveSupport::TestCase
   end
 
   test 'includes quick bites when present' do
-    @kitchen.update!(quick_bites_content: "Chips\nSalsa")
+    create_quick_bite('Chips', category_name: 'Snacks', ingredients: ['Chips'])
+    create_quick_bite('Salsa', category_name: 'Snacks', ingredients: ['Salsa'])
     zip_data = ExportService.call(kitchen: @kitchen)
     names = zip_entry_names(zip_data)
 
     assert_includes names, 'quick-bites.txt'
-    assert_equal "Chips\nSalsa", zip_entry_content(zip_data, 'quick-bites.txt')
+    content = zip_entry_content(zip_data, 'quick-bites.txt')
+
+    assert_includes content, 'Chips'
+    assert_includes content, 'Salsa'
   end
 
-  test 'omits quick bites file when content is blank' do
-    @kitchen.update!(quick_bites_content: '')
+  test 'omits quick bites file when none exist' do
     zip_data = ExportService.call(kitchen: @kitchen)
     names = zip_entry_names(zip_data)
 

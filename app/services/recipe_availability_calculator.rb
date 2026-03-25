@@ -63,6 +63,6 @@ class RecipeAvailabilityCalculator
   end
 
   def quick_bites
-    @kitchen.parsed_quick_bites
+    @kitchen.quick_bites.includes(:quick_bite_ingredients)
   end
 end

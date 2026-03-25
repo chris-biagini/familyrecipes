@@ -67,7 +67,7 @@ if Recipe.none?
 
   quick_bites_path = recipes_dir.join(quick_bites_filename)
   if quick_bites_path.exist?
-    kitchen.update!(quick_bites_content: File.read(quick_bites_path))
+    QuickBitesWriteService.update(kitchen: kitchen, content: File.read(quick_bites_path))
     puts 'Quick Bites content loaded.'
   end
 
