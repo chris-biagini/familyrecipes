@@ -18,7 +18,7 @@
     </button>
     <span class="recipe-actions-dot">&middot;</span>
     <% end %>
-    <button type="button" id="edit-quick-bites-button" class="btn-ghost">
+    <button type="button" id="edit-quick-bites-button" class="btn-ghost qb-edit-trigger">
       <%= icon(:edit, size: 12) %>
       Edit QuickBites
     </button>
@@ -31,7 +31,7 @@
      data-kitchen-slug="<%= current_kitchen.slug %>"
      data-select-url="<%= menu_select_path %>">
 
-  <%= render 'menu/recipe_selector', categories: @categories, selected_recipes: @selected_recipes, selected_quick_bites: @selected_quick_bites, availability: @availability %>
+  <%= render 'menu/recipe_selector', categories: @categories, selected_recipes: @selected_recipes, selected_quick_bites: @selected_quick_bites, availability: @availability, editable: current_member? %>
 
 </div>
 
@@ -40,7 +40,7 @@
     locals: { title: 'Edit QuickBites',
               id: 'quickbites-editor',
               mode_toggle: true,
-              dialog_data: { editor_open: '#edit-quick-bites-button',
+              dialog_data: { editor_open: '.qb-edit-trigger',
                              editor_url: menu_quick_bites_path,
                              editor_method: 'PATCH',
                              editor_on_success: 'close',

@@ -208,6 +208,13 @@ export default class extends Controller {
     return row
   }
 
+  focusCategory(name) {
+    const index = this.categories.findIndex(cat => cat.name === name)
+    if (index >= 0) {
+      expandItem(this.categoriesContainerTarget, index)
+    }
+  }
+
   ingredientsDisplayText(item) {
     if (item.ingredientsText !== undefined) return item.ingredientsText
     if (!item.ingredients || item.ingredients.length === 0) return ""

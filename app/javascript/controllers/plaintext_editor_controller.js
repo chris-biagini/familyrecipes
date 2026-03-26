@@ -13,6 +13,7 @@ import { Controller } from "@hotwired/stimulus"
 import { createEditor } from "../codemirror/editor_setup"
 import { classifiers, foldServices } from "../codemirror/registry"
 import { autoDashKeymap } from "../codemirror/auto_dash"
+import { foldAll, unfoldCode } from "@codemirror/language"
 
 export default class extends Controller {
   static targets = ["mount"]
@@ -72,5 +73,25 @@ export default class extends Controller {
 
   isModified(originalContent) {
     return this.content !== originalContent
+  }
+
+  focusCategory(name) {
+    if (!this.editorView) return
+    const view = this.editorView
+
+    requestAnimationFrame(() => {
+      foldAll(view)
+
+      const doc = view.state.doc
+      const target = `## ${name}`
+      for (let i = 1; i <= doc.lines; i++) {
+        const line = doc.line(i)
+        if (line.text.trimEnd() === target) {
+          view.dispatch({ selection: { anchor: line.from } })
+          unfoldCode(view)
+          return
+        }
+      }
+    })
   }
 }

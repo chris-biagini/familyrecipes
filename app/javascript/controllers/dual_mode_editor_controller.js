@@ -143,6 +143,7 @@ export default class extends Controller {
   handleContentLoaded(event) {
     event.detail.handled = true
     const data = event.detail
+    const category = event.detail.category
 
     if (!data[this.contentKeyValue]) {
       const jsonEl = this.element.querySelector("script[data-editor-markdown]")
@@ -151,6 +152,7 @@ export default class extends Controller {
         this.originalStructure = this.graphicalController.toStructure()
         this.enableEditing()
         this.showActiveMode()
+        this.applyFocusCategory(category)
         return
       }
       const parsed = JSON.parse(jsonEl.textContent)
@@ -159,6 +161,7 @@ export default class extends Controller {
       this.originalStructure = this.graphicalController.toStructure()
       this.enableEditing()
       this.showActiveMode()
+      this.applyFocusCategory(category)
       return
     }
 
@@ -172,6 +175,7 @@ export default class extends Controller {
 
     this.enableEditing()
     this.showActiveMode()
+    this.applyFocusCategory(category)
   }
 
   enableEditing() {
@@ -182,6 +186,15 @@ export default class extends Controller {
     }
     const saveBtn = this.element.querySelector("[data-editor-target='saveButton']")
     if (saveBtn) saveBtn.disabled = false
+  }
+
+  applyFocusCategory(category) {
+    if (!category) return
+    if (this.mode === "graphical") {
+      this.graphicalController.focusCategory?.(category)
+    } else {
+      this.plaintextController.focusCategory?.(category)
+    }
   }
 
   get plaintextController() {
