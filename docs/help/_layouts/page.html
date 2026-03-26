@@ -13,6 +13,7 @@ layout: default
 
 {{ content }}
 
+{% if page.prev or page.next %}
 <nav class="page-nav" aria-label="page navigation">
   {% if page.prev %}
     <a href="{{ page.prev | relative_url }}" class="page-nav-prev">← Previous</a>
@@ -23,3 +24,4 @@ layout: default
     <a href="{{ page.next | relative_url }}" class="page-nav-next">Next →</a>
   {% endif %}
 </nav>
+{% endif %}
