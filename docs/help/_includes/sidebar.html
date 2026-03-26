@@ -1,0 +1,96 @@
+<div class="sidebar-section">
+  <a href="{{ site.baseurl }}/"
+     class="sidebar-link{% if page.url == '/' or page.url == '/index.html' %} active{% endif %}">
+    Getting Started
+  </a>
+</div>
+
+<div class="sidebar-divider"></div>
+
+<div class="sidebar-section">
+  <div class="sidebar-section-label">Recipes</div>
+  {% assign recipes_pages = "format,editing,cooking,scaling,cross-references,tags-and-categories,nutrition" | split: "," %}
+  {% assign recipes_titles = "Recipe format,Adding & editing,Cooking mode,Scaling,Cross-references,Tags & categories,Nutrition" | split: "," %}
+  {% for slug in recipes_pages %}
+    {% assign idx = forloop.index0 %}
+    {% assign href = site.baseurl | append: "/recipes/" | append: slug | append: "/" %}
+    <a href="{{ href }}"
+       class="sidebar-link{% if page.url contains slug and page.section == 'recipes' %} active{% endif %}">
+      {{ recipes_titles[idx] }}
+    </a>
+  {% endfor %}
+</div>
+
+<div class="sidebar-divider"></div>
+
+<div class="sidebar-section">
+  <div class="sidebar-section-label">Menu</div>
+  {% assign menu_pages = "selecting-recipes,quickbites,dinner-picker" | split: "," %}
+  {% assign menu_titles = "Selecting recipes,QuickBites,Dinner picker" | split: "," %}
+  {% for slug in menu_pages %}
+    {% assign idx = forloop.index0 %}
+    {% assign href = site.baseurl | append: "/menu/" | append: slug | append: "/" %}
+    <a href="{{ href }}"
+       class="sidebar-link{% if page.url contains slug and page.section == 'menu' %} active{% endif %}">
+      {{ menu_titles[idx] }}
+    </a>
+  {% endfor %}
+</div>
+
+<div class="sidebar-divider"></div>
+
+<div class="sidebar-section">
+  <div class="sidebar-section-label">Groceries</div>
+  {% assign groc_pages = "how-it-works,three-sections,learning,custom-items,aisles" | split: "," %}
+  {% assign groc_titles = "How the list works,The three sections,How the system learns,Custom items,Editing aisles" | split: "," %}
+  {% for slug in groc_pages %}
+    {% assign idx = forloop.index0 %}
+    {% assign href = site.baseurl | append: "/groceries/" | append: slug | append: "/" %}
+    <a href="{{ href }}"
+       class="sidebar-link{% if page.url contains slug and page.section == 'groceries' %} active{% endif %}">
+      {{ groc_titles[idx] }}
+    </a>
+  {% endfor %}
+</div>
+
+<div class="sidebar-divider"></div>
+
+<div class="sidebar-section">
+  <div class="sidebar-section-label">Ingredients</div>
+  {% assign ingr_pages = "catalog,nutrition-data" | split: "," %}
+  {% assign ingr_titles = "Ingredient catalog,Adding nutrition data" | split: "," %}
+  {% for slug in ingr_pages %}
+    {% assign idx = forloop.index0 %}
+    {% assign href = site.baseurl | append: "/ingredients/" | append: slug | append: "/" %}
+    <a href="{{ href }}"
+       class="sidebar-link{% if page.url contains slug and page.section == 'ingredients' %} active{% endif %}">
+      {{ ingr_titles[idx] }}
+    </a>
+  {% endfor %}
+</div>
+
+<div class="sidebar-divider"></div>
+
+<div class="sidebar-section">
+  <div class="sidebar-section-label">Import &amp; Export</div>
+  {% assign ie_pages = "ai-import,markdown-import,export" | split: "," %}
+  {% assign ie_titles = "AI import,Markdown import,Export" | split: "," %}
+  {% for slug in ie_pages %}
+    {% assign idx = forloop.index0 %}
+    {% assign href = site.baseurl | append: "/import-export/" | append: slug | append: "/" %}
+    <a href="{{ href }}"
+       class="sidebar-link{% if page.url contains slug and page.section == 'import-export' %} active{% endif %}">
+      {{ ie_titles[idx] }}
+    </a>
+  {% endfor %}
+</div>
+
+<div class="sidebar-divider"></div>
+
+<div class="sidebar-section">
+  <div class="sidebar-section-label">Settings</div>
+  <a href="{{ site.baseurl }}/settings/"
+     class="sidebar-link{% if page.section == 'settings' %} active{% endif %}">
+    Settings
+  </a>
+</div>
