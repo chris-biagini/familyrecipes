@@ -984,14 +984,15 @@ section > div:has(.ingredients):has(.instructions) {
 
 .ingredients li {
   break-inside: avoid;
-  padding: 0;
+  padding: 0.3rem 0;
   font-size: 0.84rem;
-  line-height: 2;
+  line-height: 1.4;
 }
 
 .quantity {
   color: var(--text-light);
   font-weight: 300;
+  white-space: nowrap;
 }
 
 /* .ingredients ul li small::before 	{ content: "↳ "; } */
@@ -1001,7 +1002,6 @@ section > div:has(.ingredients):has(.instructions) {
   font-style: italic;
   font-size: 0.95em;
   line-height: 1.3;
-  margin-top: -0.3rem;
   padding-left: 1rem;
 }
 
