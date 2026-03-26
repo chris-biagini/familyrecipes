@@ -3,7 +3,7 @@ layout: default
 title: Import & Export
 ---
 
-# Import &amp; Export
+# Import & Export
 
 <div class="section-cards">
   <a href="{{ site.baseurl }}/import-export/ai-import/" class="section-card">

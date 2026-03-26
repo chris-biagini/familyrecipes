@@ -84,7 +84,7 @@ Ingredient lines start with `- `. The format is:
 ```
 
 - **Name** — the ingredient name. Matched against the ingredient catalog for grocery tracking.
-- **Quantity** — optional. Examples: `190 g`, `2 tbsp`, `1-2`, `½ cup`.
+- **Quantity** — optional. Examples: `190 g`, `2 tbsp`, `1-2`, `½ cup`. Unicode fractions (`½`, `¾`, `⅓`) are valid. Ranges (`1-2 eggs`) express a minimum–maximum amount.
 - **Prep note** — optional. Appears in smaller text below the ingredient line.
 
 Examples:
