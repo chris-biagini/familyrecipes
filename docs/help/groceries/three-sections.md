@@ -53,7 +53,10 @@ strikethrough before sliding into On Hand, where they appear bold to confirm
 what you've just grabbed.
 
 If you checked something by mistake, uncheck it — same-day corrections are
-treated as an undo.
+treated as an undo, and the item moves back to To Buy.
+
+You can also uncheck any On Hand item to return it to To Buy — useful when
+you realize you no longer actually have something.
 
 If you run out of something from On Hand (or discover you don't actually have
 it), use the **Need It** button next to the item to move it to To Buy.
