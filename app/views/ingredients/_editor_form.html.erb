@@ -1,85 +1,174 @@
 <%# locals: (ingredient_name:, entry:, available_aisles:, sources: [], needed_units: [], has_usda_key: false) %>
 <% has_density = entry&.density_grams.present? %>
+<% all_resolved = needed_units.empty? || needed_units.all? { |nu| nu[:resolvable] } %>
 <turbo-frame id="nutrition-editor-form">
   <div class="editor-form" data-nutrition-editor-target="formContent">
 
-    <% if has_usda_key %>
-      <div class="editor-section">
-        <details class="collapse-header"
-                 data-nutrition-editor-target="usdaPanel"
-                 data-section-key="usda-import">
-          <summary>USDA Import</summary>
-        </details>
-        <div class="collapse-body">
-          <div class="collapse-inner usda-search-content">
-            <div class="usda-search-row">
-              <input type="search" class="input-base input-lg"
-                     placeholder="Search USDA database…"
-                     value="<%= ingredient_name %>"
-                     data-nutrition-editor-target="usdaQuery"
-                     data-action="keydown->nutrition-editor#usdaSearchKeydown"
-                     aria-label="USDA search query">
-              <button type="button" class="btn usda-search-btn"
-                      data-action="click->nutrition-editor#usdaSearch"
-                      data-nutrition-editor-target="usdaSearchBtn">Search</button>
-            </div>
-            <div class="usda-results" hidden data-nutrition-editor-target="usdaResults"></div>
-          </div>
-        </div>
+    <div class="editor-card">
+      <div class="editor-field-label">Grocery Aisle</div>
+      <select class="aisle-form-select"
+              data-nutrition-editor-target="aisleSelect"
+              data-action="change->nutrition-editor#aisleChanged"
+              aria-label="Grocery aisle">
+        <option value="">(none)</option>
+        <%- available_aisles.each do |aisle| -%>
+          <option value="<%= aisle %>" <%= 'selected' if entry&.aisle == aisle %>><%= aisle %></option>
+        <%- end -%>
+        <option disabled>&#x2500;&#x2500;&#x2500;</option>
+        <option value="__other__">New aisle&hellip;</option>
+      </select>
+      <input type="text" class="aisle-new-input" placeholder="New aisle name" hidden
+             data-nutrition-editor-target="aisleInput"
+             data-action="keydown->nutrition-editor#aisleInputKeydown">
+      <label class="editor-form-row editor-omit-row">
+        <input type="checkbox"
+               data-nutrition-editor-target="omitCheckbox"
+               <%= 'checked' if entry&.omit_from_shopping %>>
+        Omit from grocery list and nutrition data
+      </label>
+    </div>
+
+    <div class="editor-card">
+      <div class="editor-field-label">Aliases</div>
+      <div class="editor-alias-list" data-nutrition-editor-target="aliasList">
+        <% if (entry&.aliases || []).empty? %>
+          <span class="editor-empty-hint" data-nutrition-editor-target="aliasHint">Add alternate names so recipes using them map to this ingredient.</span>
+        <% end %>
+        <% (entry&.aliases || []).each do |alias_name| %>
+          <span class="editor-alias-chip" data-nutrition-editor-target="aliasChip">
+            <span class="alias-chip-text"><%= alias_name %></span>
+            <button type="button" class="editor-alias-remove" aria-label="Remove alias"
+                    data-action="click->nutrition-editor#removeAlias">&times;</button>
+          </span>
+        <% end %>
       </div>
-    <% end %>
+      <div class="editor-alias-add-row">
+        <input type="text" class="editor-alias-input" placeholder="Alternate name"
+               data-nutrition-editor-target="aliasInput"
+               data-action="keydown->nutrition-editor#aliasInputKeydown"
+               aria-label="New alias name">
+        <button type="button" class="btn editor-add-alias"
+                data-action="click->nutrition-editor#addAlias">Add</button>
+      </div>
+    </div>
+
+    <hr class="editor-divider">
 
     <div class="editor-section">
-      <details class="collapse-header" data-section-key="nutrition-facts">
-        <summary>Nutrition Facts</summary>
+      <details class="collapse-header" data-section-key="nutrition">
+        <summary>
+          Nutrition
+          <span class="editor-summary-meta">
+            <% if entry&.calories %>
+              <%= format_nutrient_value(entry.calories) %> cal / <%= format_nutrient_value(entry.basis_grams) %> g
+            <% else %>
+              No nutrition data
+            <% end %>
+          </span>
+        </summary>
       </details>
       <div class="collapse-body">
         <div class="collapse-inner">
-          <div class="nf-editor">
-            <div class="nf-serving-row">
-              <label for="editor-basis-grams">Per</label>
-              <input type="number" id="editor-basis-grams" class="input-base input-sm"
-                     value="<%= format_nutrient_value(entry.basis_grams) if entry&.basis_grams %>"
-                     inputmode="decimal" step="any" min="0.1"
-                     placeholder="100"
-                     data-nutrition-editor-target="basisGrams">
-              <span class="nf-unit">g</span>
-            </div>
 
-            <div class="nf-thick-rule"></div>
-
-            <% IngredientCatalog::NUTRIENT_DISPLAY.each do |label, key, unit| %>
-              <% next if key.in?(%i[trans_fat added_sugars]) %>
-              <% indent = label.size - label.lstrip.size %>
-              <% nutrient_max = FamilyRecipes::NutritionConstraints::NUTRIENT_MAX[key.to_s] %>
-              <div class="nf-row<%= ' nf-indent' if indent.positive? %><%= ' nf-calories' if key == :calories %>">
-                <span class="nf-name"><%= label.strip %></span>
-                <input type="number" id="editor-<%= key %>" class="input-base input-sm"
-                       value="<%= format_nutrient_value(entry.public_send(key)) if entry&.public_send(key) %>"
-                       inputmode="decimal" step="any" min="0" max="<%= nutrient_max %>"
-                       data-nutrition-editor-target="nutrientField"
-                       data-nutrient-key="<%= key %>"
-                       data-nutrient-max="<%= nutrient_max %>">
-                <span class="nf-unit"><%= unit %></span>
+          <% if has_usda_key %>
+            <div class="usda-search-content" data-nutrition-editor-target="usdaPanel">
+              <div class="usda-search-row">
+                <input type="search" class="input-base input-lg"
+                       placeholder="Search USDA database…"
+                       value="<%= ingredient_name %>"
+                       data-nutrition-editor-target="usdaQuery"
+                       data-action="keydown->nutrition-editor#usdaSearchKeydown"
+                       aria-label="USDA search query">
+                <button type="button" class="btn usda-search-btn"
+                        data-action="click->nutrition-editor#usdaSearch"
+                        data-nutrition-editor-target="usdaSearchBtn">Search</button>
               </div>
-              <% if key == :calories %>
-                <div class="nf-thick-rule"></div>
-              <% end %>
+              <div class="usda-results" hidden data-nutrition-editor-target="usdaResults"></div>
+            </div>
+          <% end %>
+
+          <div class="nf-summary" data-nutrition-editor-target="nutrientSummary">
+            <% if entry&.calories %>
+              <span><strong><%= format_nutrient_value(entry.calories) %></strong> cal</span>
+              <span><strong><%= format_nutrient_value(entry&.fat) %></strong> g fat</span>
+              <span><strong><%= format_nutrient_value(entry&.carbs) %></strong> g carbs</span>
+              <span><strong><%= format_nutrient_value(entry&.protein) %></strong> g protein</span>
+              <span>per <strong><%= format_nutrient_value(entry.basis_grams) %></strong> g</span>
+            <% else %>
+              <span class="editor-empty-hint">No nutrition data</span>
             <% end %>
           </div>
+          <details class="nf-disclosure" data-nutrition-editor-target="nutrientDetail">
+            <summary>Edit all nutrients</summary>
+            <div class="nf-disclosure-body"><div class="nf-editor">
+              <div class="nf-serving-row">
+                <label for="editor-basis-grams">Per</label>
+                <input type="number" id="editor-basis-grams" class="input-base input-sm"
+                       value="<%= format_nutrient_value(entry.basis_grams) if entry&.basis_grams %>"
+                       inputmode="decimal" step="any" min="0.1"
+                       placeholder="100"
+                       data-nutrition-editor-target="basisGrams">
+                <span class="nf-unit">g</span>
+              </div>
+
+              <div class="nf-thick-rule"></div>
+
+              <% IngredientCatalog::NUTRIENT_DISPLAY.each do |label, key, unit| %>
+                <% next if key.in?(%i[trans_fat added_sugars]) %>
+                <% indent = label.size - label.lstrip.size %>
+                <% nutrient_max = FamilyRecipes::NutritionConstraints::NUTRIENT_MAX[key.to_s] %>
+                <div class="nf-row<%= ' nf-indent' if indent.positive? %><%= ' nf-calories' if key == :calories %>">
+                  <span class="nf-name"><%= label.strip %></span>
+                  <input type="number" id="editor-<%= key %>" class="input-base input-sm"
+                         value="<%= format_nutrient_value(entry.public_send(key)) if entry&.public_send(key) %>"
+                         inputmode="decimal" step="any" min="0" max="<%= nutrient_max %>"
+                         data-nutrition-editor-target="nutrientField"
+                         data-nutrient-key="<%= key %>"
+                         data-nutrient-max="<%= nutrient_max %>">
+                  <span class="nf-unit"><%= unit %></span>
+                </div>
+                <% if key == :calories %>
+                  <div class="nf-thick-rule"></div>
+                <% end %>
+              <% end %>
+            </div></div>
+          </details>
+
         </div>
       </div>
     </div>
 
     <div class="editor-section">
-      <details class="collapse-header" data-section-key="density">
-        <summary>Density</summary>
+      <details class="collapse-header" data-section-key="conversions">
+        <summary>
+          Conversions
+          <span class="editor-summary-meta">
+            <%= icon(all_resolved ? :check : :alert, size: 14) %>
+          </span>
+        </summary>
       </details>
       <div class="collapse-body">
         <div class="collapse-inner">
+
+          <% if needed_units.any? %>
+            <div class="editor-inner-title">Recipe Check</div>
+            <p class="editor-help">
+              How your recipes use this ingredient, and whether each usage can be
+              converted to grams.
+            </p>
+            <% needed_units.each do |nu| %>
+              <div class="recipe-unit-row<%= ' recipe-unit-unresolved' unless nu[:resolvable] %>">
+                <span class="recipe-unit-status"><%= nu[:resolvable] ? "\u2713" : "\u2717" %></span>
+                <span class="recipe-unit-name"><%= format_unit_name(nu[:unit]) %></span>
+                <span class="recipe-unit-method"><%= format_resolution_method(nu[:method], entry) %></span>
+              </div>
+            <% end %>
+          <% end %>
+
+          <div class="editor-inner-title">Volume Conversions</div>
           <p class="editor-help">
-            How much does a measured volume weigh? This lets the app convert
-            cups and tablespoons to grams for nutrition math.
+            When a recipe measures this ingredient by volume (cups, tablespoons, etc.),
+            how much does it weigh?
           </p>
           <div class="editor-form-row editor-density-row">
             <input type="number" class="input-base input-sm"
@@ -87,13 +176,15 @@
                    inputmode="decimal" step="any" min="0"
                    placeholder="1"
                    data-nutrition-editor-target="densityVolume"
+                   data-action="input->nutrition-editor#updateDerivedVolumes"
                    aria-label="Volume amount">
             <select class="input-base"
                     data-nutrition-editor-target="densityUnit"
+                    data-action="change->nutrition-editor#updateDerivedVolumes"
                     aria-label="Volume unit">
-              <option value="">unit</option>
               <% FamilyRecipes::UnitResolver::DENSITY_UNITS.each do |u| %>
-                <option value="<%= u %>" <%= 'selected' if has_density && entry.density_unit == u %>><%= u %></option>
+                <% selected = has_density ? entry.density_unit == u : u == 'cup' %>
+                <option value="<%= u %>" <%= 'selected' if selected %>><%= u %></option>
               <% end %>
             </select>
             <span class="editor-portion-eq">=</span>
@@ -102,27 +193,21 @@
                    inputmode="decimal" step="any" min="0"
                    placeholder="120"
                    data-nutrition-editor-target="densityGrams"
+                   data-action="input->nutrition-editor#updateDerivedVolumes"
                    aria-label="Weight in grams">
             <span class="editor-field-unit">g</span>
           </div>
+          <div class="derived-volumes" data-nutrition-editor-target="derivedVolumes"></div>
 
           <details class="editor-density-candidates" hidden data-nutrition-editor-target="densityCandidates">
             <summary class="editor-section-title">Other USDA densities</summary>
             <div data-nutrition-editor-target="densityCandidateList"></div>
           </details>
-        </div>
-      </div>
-    </div>
 
-    <div class="editor-section">
-      <details class="collapse-header" data-section-key="portions">
-        <summary>Portions</summary>
-      </details>
-      <div class="collapse-body">
-        <div class="collapse-inner">
+          <div class="editor-inner-title">Unit Weights</div>
           <p class="editor-help">
-            Named portions map non-volume units to gram weights. Use "each" for
-            items counted by number (eggs, rolls).
+            When a recipe calls for this ingredient by name or count &mdash;
+            like &lsquo;2 sticks&rsquo; or &lsquo;3 eggs&rsquo; &mdash; how much does one weigh?
           </p>
           <div data-nutrition-editor-target="portionList">
             <% if entry&.portions.present? %>
@@ -132,95 +217,11 @@
             <% end %>
           </div>
           <button type="button" class="btn editor-add-portion"
-                  data-action="click->nutrition-editor#addPortion">+ Add portion</button>
+                  data-action="click->nutrition-editor#addPortion">+ Add unit weight</button>
+
         </div>
       </div>
     </div>
-
-    <div class="editor-section">
-      <details class="collapse-header" data-section-key="grocery-aisle">
-        <summary>Grocery Aisle</summary>
-      </details>
-      <div class="collapse-body">
-        <div class="collapse-inner">
-          <div class="editor-form-row aisle-row">
-            <select class="aisle-form-select"
-                    data-nutrition-editor-target="aisleSelect"
-                    data-action="change->nutrition-editor#aisleChanged"
-                    aria-label="Grocery aisle">
-              <option value="">(none)</option>
-              <%- available_aisles.each do |aisle| -%>
-                <option value="<%= aisle %>" <%= 'selected' if entry&.aisle == aisle %>><%= aisle %></option>
-              <%- end -%>
-              <option disabled>&#x2500;&#x2500;&#x2500;</option>
-              <option value="__other__">New aisle&hellip;</option>
-            </select>
-            <input type="text" class="aisle-new-input" placeholder="New aisle name" hidden
-                   data-nutrition-editor-target="aisleInput"
-                   data-action="keydown->nutrition-editor#aisleInputKeydown">
-          </div>
-          <label class="editor-form-row">
-            <input type="checkbox"
-                   data-nutrition-editor-target="omitCheckbox"
-                   <%= 'checked' if entry&.omit_from_shopping %>>
-            Omit from grocery list
-          </label>
-        </div>
-      </div>
-    </div>
-
-    <div class="editor-section">
-      <details class="collapse-header" data-section-key="aliases">
-        <summary>Aliases</summary>
-      </details>
-      <div class="collapse-body">
-        <div class="collapse-inner">
-          <p class="editor-help">
-            Alternate names for this ingredient. Recipes using any alias will map
-            to this entry for nutrition and grocery grouping.
-          </p>
-          <div class="editor-alias-list" data-nutrition-editor-target="aliasList">
-            <% (entry&.aliases || []).each do |alias_name| %>
-              <span class="editor-alias-chip" data-nutrition-editor-target="aliasChip">
-                <span class="alias-chip-text"><%= alias_name %></span>
-                <button type="button" class="editor-alias-remove" aria-label="Remove alias"
-                        data-action="click->nutrition-editor#removeAlias">&times;</button>
-              </span>
-            <% end %>
-          </div>
-          <div class="editor-alias-add-row">
-            <input type="text" class="editor-alias-input" placeholder="e.g. AP flour"
-                   data-nutrition-editor-target="aliasInput"
-                   data-action="keydown->nutrition-editor#aliasInputKeydown"
-                   aria-label="New alias name">
-            <button type="button" class="btn editor-add-alias"
-                    data-action="click->nutrition-editor#addAlias">Add</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <% if needed_units.any? %>
-      <div class="editor-section">
-        <details class="collapse-header" data-section-key="recipe-units">
-          <summary>Recipe Units</summary>
-        </details>
-        <div class="collapse-body">
-          <div class="collapse-inner">
-            <p class="editor-help">
-              Units used in recipes. A checkmark means the app can convert this unit to grams.
-            </p>
-            <% needed_units.each do |nu| %>
-              <div class="recipe-unit-row">
-                <span class="recipe-unit-status"><%= nu[:resolvable] ? "\u2713" : "\u2717" %></span>
-                <span class="recipe-unit-name"><%= nu[:unit] || '(bare count)' %></span>
-                <span class="recipe-unit-method"><%= nu[:method] %></span>
-              </div>
-            <% end %>
-          </div>
-        </div>
-      </div>
-    <% end %>
 
     <% if sources.any? %>
       <div class="editor-recipes">

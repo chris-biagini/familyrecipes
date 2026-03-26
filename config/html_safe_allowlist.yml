@@ -39,4 +39,4 @@
 
 # IconHelper — frozen SVG content from ICONS constant, no user-interpolated values
 - "app/helpers/icon_helper.rb:9"      # header comment mentions .html_safe (not a call)
-- "app/helpers/icon_helper.rb:108"
+- "app/helpers/icon_helper.rb:113"

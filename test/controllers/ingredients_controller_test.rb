@@ -424,7 +424,7 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
         headers: { 'Accept' => 'text/html' }
 
     assert_response :success
-    assert_select 'details.collapse-header[data-nutrition-editor-target="usdaPanel"]'
+    assert_select 'div[data-nutrition-editor-target="usdaPanel"]'
     assert_select 'input[data-nutrition-editor-target="usdaQuery"]'
   end
 
@@ -443,7 +443,7 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
         headers: { 'Accept' => 'text/html' }
 
     assert_response :success
-    assert_select 'details.collapse-header[data-nutrition-editor-target="usdaPanel"]', count: 0
+    assert_select 'div[data-nutrition-editor-target="usdaPanel"]', count: 0
   end
 
   test 'edit form starts with all sections collapsed and density candidates hidden' do
@@ -541,6 +541,51 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select 'th.col-data', count: 0
+  end
+
+  test 'collapsed summary shows check icon when all recipe units are resolvable' do
+    IngredientCatalog.create!(
+      kitchen: @kitchen, ingredient_name: 'Flour', basis_grams: 30, calories: 110,
+      density_grams: 120, density_volume: 1, density_unit: 'cup'
+    )
+    @category = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Focaccia
+
+      ## Mix (combine)
+
+      - Flour, 3 cups
+
+      Mix well.
+    MD
+
+    log_in
+    get ingredient_edit_path('Flour', kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select 'summary .editor-summary-meta svg path[d="M4 12l6 6L20 6"]'
+  end
+
+  test 'collapsed summary shows alert icon when some recipe units are unresolvable' do
+    IngredientCatalog.create!(
+      kitchen: @kitchen, ingredient_name: 'Flour', basis_grams: 30, calories: 110
+    )
+    @category = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Focaccia
+
+      ## Mix (combine)
+
+      - Flour, 3 cups
+
+      Mix well.
+    MD
+
+    log_in
+    get ingredient_edit_path('Flour', kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select 'summary .editor-summary-meta svg path[d^="M12 3L2 21"]'
   end
 
   test 'edit requires membership' do

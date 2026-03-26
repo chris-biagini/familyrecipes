@@ -160,7 +160,7 @@
   .editor-density-candidates { border-color: var(--text); }
 }
 #nutrition-editor {
-  width: min(90vw, 550px);
+  width: min(100vw, 550px);
 }
 .recipe-unit-row {
   display: flex;
@@ -497,4 +497,124 @@
 .editor-form select,
 .editor-form input[type="text"] {
   font-size: 1rem;
+}
+
+.editor-omit-row { margin-top: 0.4rem; }
+
+/* Outer cards (Grocery Aisle, Aliases — always visible) */
+.editor-card {
+  border: 1px solid var(--rule-faint);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.75rem;
+  background: var(--ground);
+}
+.editor-field-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-soft);
+  margin-bottom: 0.25rem;
+}
+
+/* Empty-state hint text (inline, same height as chips so nothing shifts) */
+.editor-empty-hint {
+  font-size: 0.78rem;
+  color: var(--text-light);
+  font-style: italic;
+}
+
+/* Divider between top fields and nutrition section */
+.editor-divider {
+  border: none;
+  border-top: 1px solid var(--rule-faint);
+  margin: 1rem 0;
+}
+
+/* Inner cards (nutrition subsections — halfway between ground and white) */
+.editor-inner-card {
+  background: color-mix(in srgb, var(--ground) 50%, white);
+  border: 1px solid var(--rule-faint);
+  border-radius: 6px;
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.65rem;
+}
+.editor-inner-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-soft);
+  margin: 0 0 0.5rem;
+}
+
+/* Subsections within an inner card (separated by top border) */
+.editor-subsection { padding-top: 0.65rem; margin-top: 0.65rem; border-top: 1px solid var(--rule-faint); }
+.editor-subsection:first-child { padding-top: 0; margin-top: 0; border-top: none; }
+.editor-subsection-title {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-light);
+  margin-bottom: 0.35rem;
+}
+
+/* Compact nutrition summary */
+.nf-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 1rem;
+  font-size: 0.85rem;
+  color: var(--text-soft);
+  padding: 0.25rem 0;
+}
+.nf-summary strong { color: var(--text); font-weight: 600; }
+
+/* Nutrient details disclosure — animated via grid rows */
+.nf-disclosure { margin-top: 0.35rem; }
+.nf-disclosure summary {
+  font-size: 0.8rem;
+  color: var(--text-light);
+  cursor: pointer;
+  padding: 0.15rem 0;
+}
+.nf-disclosure summary:hover { color: var(--red); }
+.nf-disclosure-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.2s ease;
+}
+.nf-disclosure[open] .nf-disclosure-body {
+  grid-template-rows: 1fr;
+}
+.nf-disclosure-body > * { overflow: hidden; }
+
+/* Derived volume conversions */
+.derived-volumes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.75rem;
+  margin: 0.15rem 0 0.4rem 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text-light);
+}
+
+/* Recipe Check: unresolved row */
+.recipe-unit-unresolved {
+  background: color-mix(in srgb, var(--red) 8%, transparent);
+  padding: 0.3rem 0.4rem;
+  border-radius: 4px;
+}
+
+/* Collapsed summary metadata */
+.editor-summary-meta {
+  margin-left: auto;
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--text-light);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
 }

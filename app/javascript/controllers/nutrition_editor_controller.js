@@ -2,6 +2,12 @@ import { Controller } from "@hotwired/stimulus"
 import { getCsrfToken, saveRequest } from "../utilities/editor_utils"
 import ListenerManager from "../utilities/listener_manager"
 
+const VOLUME_TO_ML = {
+  tsp: 4.929, tbsp: 14.787, 'fl oz': 29.5735,
+  cup: 236.588, pt: 473.176, qt: 946.353,
+  gal: 3785.41, ml: 1, l: 1000
+}
+
 /**
  * Companion controller for the nutrition editor dialog. Hooks into the shared
  * editor controller's lifecycle events to provide custom data collection,
@@ -21,7 +27,8 @@ export default class extends Controller {
     "densityVolume", "densityUnit", "densityGrams",
     "portionList", "portionRow", "portionName", "portionGrams",
     "aisleSelect", "aisleInput", "omitCheckbox",
-    "aliasList", "aliasInput", "aliasChip",
+    "aliasList", "aliasInput", "aliasChip", "aliasHint",
+    "nutrientSummary", "nutrientDetail", "derivedVolumes",
     "usdaPanel", "usdaQuery", "usdaResults", "usdaSearchBtn",
     "densityCandidates", "densityCandidateList"
   ]
@@ -120,6 +127,45 @@ export default class extends Controller {
     if (this.hasDensityCandidatesTarget) this.densityCandidatesTarget.hidden = true
   }
 
+  // Nutrient summary updates
+
+  updateNutrientSummary() {
+    if (!this.hasNutrientSummaryTarget) return
+
+    const basis = this.basisGramsTarget.value || "\u2014"
+    const cal = this.findNutrientValue("calories") || "\u2014"
+    const fat = this.findNutrientValue("fat") || "\u2014"
+    const carbs = this.findNutrientValue("carbs") || "\u2014"
+    const protein = this.findNutrientValue("protein") || "\u2014"
+
+    const summary = this.nutrientSummaryTarget
+    summary.replaceChildren()
+
+    const items = [
+      { label: "", value: cal, unit: "cal" },
+      { label: "", value: fat, unit: "g fat" },
+      { label: "", value: carbs, unit: "g carbs" },
+      { label: "", value: protein, unit: "g protein" },
+      { label: "per ", value: basis, unit: "g" }
+    ]
+    items.forEach(({ label, value, unit }) => {
+      const span = document.createElement("span")
+      if (label) span.appendChild(document.createTextNode(label))
+      const strong = document.createElement("strong")
+      strong.textContent = value
+      span.appendChild(strong)
+      span.appendChild(document.createTextNode(` ${unit}`))
+      summary.appendChild(span)
+    })
+  }
+
+  findNutrientValue(key) {
+    const field = this.nutrientFieldTargets.find(
+      f => f.dataset.nutrientKey === key
+    )
+    return field?.value || null
+  }
+
   // Form interactions
 
   addPortion() {
@@ -181,6 +227,8 @@ export default class extends Controller {
       return
     }
 
+    if (this.hasAliasHintTarget) this.aliasHintTarget.hidden = true
+
     const chip = document.createElement("span")
     chip.className = "editor-alias-chip"
     chip.setAttribute("data-nutrition-editor-target", "aliasChip")
@@ -205,6 +253,9 @@ export default class extends Controller {
 
   removeAlias(event) {
     event.currentTarget.closest(".editor-alias-chip").remove()
+    if (this.hasAliasHintTarget && this.aliasChipTargets.length === 0) {
+      this.aliasHintTarget.hidden = false
+    }
   }
 
   aliasInputKeydown(event) {
@@ -266,6 +317,7 @@ export default class extends Controller {
     this.usdaSearchBtnTarget.textContent = "Searching\u2026"
     this.usdaResultsTarget.hidden = false
     this.usdaResultsTarget.replaceChildren()
+    this.lastImportedItem = null
     this.usdaCurrentPage = 0
 
     try {
@@ -398,6 +450,8 @@ export default class extends Controller {
       }
 
       const data = await response.json()
+      this.lastImportedItem?.classList.remove("loading")
+      this.lastImportedItem = item
       this.populateFromUsda(data)
     } catch {
       item.classList.remove("loading")
@@ -421,6 +475,7 @@ export default class extends Controller {
       this.densityUnitTarget.value = data.density.unit || ""
       this.densityGramsTarget.value = data.density.grams != null
         ? this.formatValue(data.density.grams) : ""
+      this.updateDerivedVolumes()
     }
 
     this.portionListTarget.replaceChildren()
@@ -431,6 +486,34 @@ export default class extends Controller {
     if (data.density_candidates && data.density_candidates.length > 1) {
       this.showDensityCandidates(data.density_candidates, data.density)
     }
+
+    this.updateNutrientSummary()
+  }
+
+  updateDerivedVolumes() {
+    if (!this.hasDerivedVolumesTarget) return
+
+    const container = this.derivedVolumesTarget
+    container.replaceChildren()
+
+    const grams = parseFloat(this.densityGramsTarget.value)
+    const volume = parseFloat(this.densityVolumeTarget.value)
+    const unit = this.densityUnitTarget.value
+
+    if (!grams || !volume || !unit || !VOLUME_TO_ML[unit]) return
+
+    const gramsPerMl = grams / (volume * VOLUME_TO_ML[unit])
+
+    Object.entries(VOLUME_TO_ML).forEach(([derivedUnit, ml]) => {
+      if (derivedUnit === unit) return
+
+      const derivedGrams = gramsPerMl * ml
+      if (derivedGrams < 0.1 || derivedGrams > 50000) return
+
+      const span = document.createElement('span')
+      span.textContent = `1 ${derivedUnit} \u2248 ${this.formatValue(derivedGrams)} g`
+      container.appendChild(span)
+    })
   }
 
   formatValue(num) {
@@ -472,6 +555,7 @@ export default class extends Controller {
         this.densityVolumeTarget.value = 1
         this.densityUnitTarget.value = unit
         this.densityGramsTarget.value = this.formatValue(perUnit)
+        this.updateDerivedVolumes()
       })
 
       label.appendChild(radio)
@@ -553,10 +637,19 @@ export default class extends Controller {
   }
 
   onFrameLoad() {
+    const staleKeys = ["density", "portions", "recipe-units", "grocery-aisle", "aliases", "nutrition-conversions"]
+    staleKeys.forEach(key => sessionStorage.removeItem(`editor:section:${key}`))
+
     this._originalAisle = this.currentAisle()
     this.originalSnapshot = JSON.stringify(this.collectFormData())
     this.moveResetButtonToFooter()
     this.restoreSectionStates()
+    this.updateDerivedVolumes()
+    if (this.hasNutrientDetailTarget) {
+      this.nutrientDetailTarget.addEventListener("toggle", () => {
+        if (!this.nutrientDetailTarget.open) this.updateNutrientSummary()
+      })
+    }
   }
 
   restoreSectionStates() {

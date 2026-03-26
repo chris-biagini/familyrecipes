@@ -64,6 +64,22 @@ class IconHelperTest < ActionView::TestCase
     assert_includes result, 'class="a&quot;b"'
   end
 
+  test 'check icon renders svg with path content' do
+    result = icon(:check, size: 14)
+
+    assert_includes result, '<svg'
+    assert_includes result, '</svg>'
+    assert_includes result, '<path'
+  end
+
+  test 'alert icon renders svg with path content' do
+    result = icon(:alert, size: 14)
+
+    assert_includes result, '<svg'
+    assert_includes result, '</svg>'
+    assert_includes result, '<path'
+  end
+
   test 'raises ArgumentError for unknown icon' do
     assert_raises(ArgumentError) { icon(:nonexistent) }
   end
