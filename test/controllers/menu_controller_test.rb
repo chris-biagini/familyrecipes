@@ -413,6 +413,20 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     assert_response :bad_request
   end
 
+  test 'menu shows qb zone wrapper around quick bites for members' do
+    create_quick_bite('Goldfish', category_name: 'Snacks')
+    log_in
+
+    get menu_path(kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select '.qb-zone' do
+      assert_select '.qb-zone-header'
+      assert_select '.qb-zone-label', text: 'Quick Bites'
+      assert_select '.qb-zone-edit'
+    end
+  end
+
   test 'update_quick_bites with structure param uses structured path' do
     log_in
     ir = {
