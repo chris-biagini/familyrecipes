@@ -39,7 +39,10 @@ export default class extends Controller {
 
     if (this.hasOpenSelectorValue) {
       this.listeners.add(document, "click", (event) => {
-        if (event.target.closest(this.openSelectorValue)) this.open()
+        const trigger = event.target.closest(this.openSelectorValue)
+        if (!trigger) return
+        this.focusCategory = trigger.dataset.category || null
+        this.open()
       })
     }
 
@@ -67,17 +70,19 @@ export default class extends Controller {
   open() {
     this.clearErrorDisplay()
     this.resetSaveButton()
+    const category = this.focusCategory
+    this.focusCategory = null
 
     if (this.hasFrameTarget && !this.frameLoaded) {
       if (this.hasSaveButtonTarget) this.saveButtonTarget.disabled = true
       this.element.showModal()
       this.frameTarget.addEventListener("turbo:frame-load", () => {
-        this.onFrameReady()
+        this.onFrameReady(category)
       }, { once: true })
     } else {
       if (this.hasTextareaTarget) this.originalContent = this.textareaTarget.value
       this.element.showModal()
-      this.dispatchEditorEvent("editor:content-loaded", {})
+      this.dispatchEditorEvent("editor:content-loaded", { category })
       this.dispatchEditorEvent("editor:opened")
     }
   }
@@ -86,12 +91,12 @@ export default class extends Controller {
     this.clearErrorDisplay()
     this.resetSaveButton()
     this.element.showModal()
-    this.dispatchEditorEvent("editor:content-loaded", data)
+    this.dispatchEditorEvent("editor:content-loaded", { ...data, category: null })
   }
 
-  onFrameReady() {
+  onFrameReady(category) {
     if (this.hasSaveButtonTarget) this.saveButtonTarget.disabled = false
-    this.dispatchEditorEvent("editor:content-loaded", {})
+    this.dispatchEditorEvent("editor:content-loaded", { category })
     this.dispatchEditorEvent("editor:opened")
   }
 

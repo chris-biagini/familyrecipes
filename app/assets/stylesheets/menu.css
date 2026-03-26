@@ -157,13 +157,51 @@
   padding-top: 0.1rem;
 }
 
-/* Quick Bites (inline within categories) */
+/* Quick Bites zone */
+.qb-zone {
+  margin-top: 0.5rem;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--rule-faint);
+}
+
+.qb-zone-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+
+.qb-zone-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-light);
+}
+
+.qb-zone-edit {
+  background: none;
+  border: none;
+  color: var(--text-light);
+  font-size: 0.7rem;
+  font-family: var(--font-body);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+}
+
+.qb-zone-edit:hover {
+  color: var(--red);
+  background: var(--hover-bg);
+}
+
 .quick-bites-list {
   list-style: none;
   padding: 0;
-  margin: 0.25rem 0 0;
-  border-top: 1px solid var(--rule-faint);
-  padding-top: 0.25rem;
+  margin: 0;
 }
 
 .quick-bite-item {
@@ -370,6 +408,10 @@
   /* Hide checkboxes and link arrows */
   #recipe-selector input[type="checkbox"],
   #recipe-selector .recipe-link {
+    display: none;
+  }
+
+  .qb-zone-edit {
     display: none;
   }
 

@@ -1,4 +1,4 @@
-<%# locals: (categories:, selected_recipes: Set.new, selected_quick_bites: Set.new, availability: {}) %>
+<%# locals: (categories:, selected_recipes: Set.new, selected_quick_bites: Set.new, availability: {}, editable: false) %>
 <div id="recipe-selector" data-type="recipe">
   <%- categories.each do |category| -%>
   <%- next if category.recipes.empty? && category.quick_bites.empty? -%>
@@ -38,41 +38,52 @@
     </ul>
     <%- qbs = category.quick_bites.sort_by(&:position) -%>
     <%- if qbs.any? -%>
-    <ul class="quick-bites-list" data-type="quick_bite">
-      <%- qbs.each do |item| -%>
-        <li class="recipe-selector-item quick-bite-item">
-          <input class="custom-checkbox" type="checkbox"
-                 id="qb-<%= item.id %>-checkbox"
-                 data-slug="<%= item.id %>"
-                 data-title="<%= h item.title %>"
-                 <%= 'checked' if selected_quick_bites.include?(item.id) %>>
-          <label for="qb-<%= item.id %>-checkbox"><%= item.title %></label>
-          <% info = availability[item.id] %>
-          <% if info %>
-            <% have_count = info[:ingredients].size - info[:missing] %>
-            <% total = info[:ingredients].size %>
-            <% fraction = total.positive? ? have_count.to_f / total : 0 %>
-            <% opacity_step = (fraction <= 0.5 ? 0 : (fraction - 0.5) * 20).round %>
-            <% if total == 1 %>
-              <span class="availability-single<%= have_count == 1 ? ' on-hand' : ' not-on-hand' %> opacity-<%= opacity_step %>"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><% if have_count == 1 %><circle cx="5" cy="5" r="4.5" fill="currentColor"/><% else %><circle cx="5" cy="5" r="3.5" fill="none" stroke="currentColor" stroke-width="1.5"/><% end %></svg></span>
-            <% else %>
-              <details class="collapse-header<%= ' all-on-hand' if info[:missing].zero? %> opacity-<%= opacity_step %>">
-                <summary aria-label="Have <%= have_count %> of <%= total %><%= info[:missing_names].any? ? '; missing: ' + info[:missing_names].join(', ') : '' %>"><%= have_count %>/<%= total %></summary>
-              </details>
+    <div class="qb-zone">
+      <div class="qb-zone-header">
+        <span class="qb-zone-label">Quick Bites</span>
+        <%- if editable -%>
+        <button type="button" class="qb-zone-edit qb-edit-trigger"
+                data-category="<%= category.name %>">
+          <%= icon(:edit, size: 10) %> edit
+        </button>
+        <%- end -%>
+      </div>
+      <ul class="quick-bites-list" data-type="quick_bite">
+        <%- qbs.each do |item| -%>
+          <li class="recipe-selector-item quick-bite-item">
+            <input class="custom-checkbox" type="checkbox"
+                   id="qb-<%= item.id %>-checkbox"
+                   data-slug="<%= item.id %>"
+                   data-title="<%= h item.title %>"
+                   <%= 'checked' if selected_quick_bites.include?(item.id) %>>
+            <label for="qb-<%= item.id %>-checkbox"><%= item.title %></label>
+            <% info = availability[item.id] %>
+            <% if info %>
+              <% have_count = info[:ingredients].size - info[:missing] %>
+              <% total = info[:ingredients].size %>
+              <% fraction = total.positive? ? have_count.to_f / total : 0 %>
+              <% opacity_step = (fraction <= 0.5 ? 0 : (fraction - 0.5) * 20).round %>
+              <% if total == 1 %>
+                <span class="availability-single<%= have_count == 1 ? ' on-hand' : ' not-on-hand' %> opacity-<%= opacity_step %>"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><% if have_count == 1 %><circle cx="5" cy="5" r="4.5" fill="currentColor"/><% else %><circle cx="5" cy="5" r="3.5" fill="none" stroke="currentColor" stroke-width="1.5"/><% end %></svg></span>
+              <% else %>
+                <details class="collapse-header<%= ' all-on-hand' if info[:missing].zero? %> opacity-<%= opacity_step %>">
+                  <summary aria-label="Have <%= have_count %> of <%= total %><%= info[:missing_names].any? ? '; missing: ' + info[:missing_names].join(', ') : '' %>"><%= have_count %>/<%= total %></summary>
+                </details>
+              <% end %>
             <% end %>
-          <% end %>
-          <% if info && info[:ingredients].size > 1 %>
-            <div class="collapse-body">
-              <div class="collapse-inner">
-                <% have = info[:ingredients] - info[:missing_names] %>
-                <% if have.any? %><div class="availability-have"><strong>Have</strong><span><%= have.join(', ') %></span></div><% end %>
-                <% if info[:missing_names].any? %><div class="availability-need"><strong>Missing</strong><span><%= info[:missing_names].join(', ') %></span></div><% end %>
+            <% if info && info[:ingredients].size > 1 %>
+              <div class="collapse-body">
+                <div class="collapse-inner">
+                  <% have = info[:ingredients] - info[:missing_names] %>
+                  <% if have.any? %><div class="availability-have"><strong>Have</strong><span><%= have.join(', ') %></span></div><% end %>
+                  <% if info[:missing_names].any? %><div class="availability-need"><strong>Missing</strong><span><%= info[:missing_names].join(', ') %></span></div><% end %>
+                </div>
               </div>
-            </div>
-          <% end %>
-        </li>
-      <%- end -%>
-    </ul>
+            <% end %>
+          </li>
+        <%- end -%>
+      </ul>
+    </div>
     <%- end -%>
   </div>
   <%- end -%>
