@@ -869,6 +869,9 @@ textarea.input-base {
   align-items: center;
 }
 
+.graphical-input--name { font-weight: 600; }
+.graphical-input--prep { flex: 1; }
+
 /* Recipe ingredient cards — card treatment with proportional field widths */
 .graphical-ingredient-card {
   display: flex;

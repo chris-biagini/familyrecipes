@@ -96,7 +96,7 @@ export default class extends Controller {
 
   addItem(catIndex) {
     if (!this.categories[catIndex].items) this.categories[catIndex].items = []
-    this.categories[catIndex].items.unshift({ name: "", ingredients: [] })
+    this.categories[catIndex].items.push({ name: "", ingredients: [] })
     this.rebuildItemRows(catIndex)
   }
 
