@@ -155,16 +155,15 @@ Update the CSP initializer before adding any.
   markup. `size: nil` omits width/height for CSS-sized icons. Pass
   `'aria-hidden': nil` + `'aria-label'` for non-decorative icons. JS-side:
   `buildIcon(name, size)` from `utilities/icons.js`.
-- **Inputs**: `.input-base` + modifiers (`.input-lg`, `.input-sm`, `.input-inline`,
-  `.input-title`, `.input-short`). `dom_builders.js` auto-prepends `input-base`.
-- **Buttons**: `.btn` + modifiers (`.btn-primary`, `.btn-danger`, `.btn-sm`,
-  `.btn-ghost`, `.btn-link`, `.btn-icon-round`, `.btn-pill`).
-- **Collapse**: `<details class="collapse-header">` + `<summary>` with sibling
-  `<div class="collapse-body"><div class="collapse-inner">`. Animated via CSS
-  `grid-template-rows: 0fr → 1fr`. Use `+` for adjacent siblings, `~` when
-  intervening elements exist.
-- **Errors**: Inline errors (`editor_utils.showErrors`) for dialog validation;
-  toast notifications (`notify.show`) for page-level mutations.
+- **Inputs**: `.input-base` + modifiers (`-lg`, `-sm`, `-inline`, `-title`,
+  `-short`). `dom_builders.js` auto-prepends `input-base`.
+- **Buttons**: `.btn` + modifiers (`-primary`, `-danger`, `-sm`, `-ghost`,
+  `-link`, `-icon-round`, `-pill`).
+- **Collapse**: `<details class="collapse-header">` + `<summary>` with
+  `.collapse-body > .collapse-inner`. CSS `grid-template-rows: 0fr → 1fr`.
+  Use `+` for adjacent siblings, `~` when intervening elements exist.
+- **Errors**: Inline `editor_utils.showErrors` for dialogs; `notify.show`
+  toasts for page-level mutations.
 
 **CSS color tokens.** The canonical tokens are defined in `base.css` `:root`.
 Key names: `--ground` (background), `--text`, `--text-soft`, `--text-light`
@@ -203,19 +202,20 @@ collision. Parser pipeline: `LineClassifier` → `RecipeBuilder` →
 - `default_url_options` auto-injects `kitchen_slug` — always use `_path`
   helpers, never hard-code URL strings.
 - Use `home_path` (not `kitchen_root_path`) for homepage links.
-- `MealPlan` (one row per kitchen) is a thin coordinator for the menu,
-  groceries, and dinner picker. Delegates to four normalized AR models:
-  MealPlanSelection, OnHandEntry, CustomGroceryItem, CookHistoryEntry.
-  `QuickBite` models (normalized AR, not text blob) live within
-  `Category` alongside recipes — the menu page renders both per-category.
-  `MealPlanSelection` references QBs by stringified integer PK;
-  `quick_bite_ids_for` returns integers for consumer use. Three-zone
-  grocery model: Inventory Check (new/expired items, "Have It"/"Need It"
-  buttons), To Buy (depleted items, checkboxes), On Hand (active items,
-  collapsed). SM-2-inspired adaptive ease with anchor fix — "Have It"
-  preserves `confirmed_at` at the purchase date so depletion observations
-  capture the full consumption period. See
-  `docs/superpowers/specs/2026-03-22-inventory-check-design.md`.
+
+**Grocery & meal plan domain.** `MealPlan` (one row per kitchen) is a thin
+coordinator for the menu, groceries, and dinner picker. Delegates to four
+normalized AR models: MealPlanSelection, OnHandEntry, CustomGroceryItem,
+CookHistoryEntry. `QuickBite` models (normalized AR, not text blob) live
+within `Category` alongside recipes — the menu page renders both per-category.
+`MealPlanSelection` references QBs by stringified integer PK;
+`quick_bite_ids_for` returns integers for consumer use. Three-zone grocery
+model: Inventory Check (new/expired items, "Have It"/"Need It" buttons),
+To Buy (depleted items, checkboxes), On Hand (active items, collapsed).
+SM-2-inspired adaptive ease with anchor fix — "Have It" preserves
+`confirmed_at` at the purchase date so depletion observations capture the
+full consumption period. See
+`docs/superpowers/specs/2026-03-22-inventory-check-design.md`.
 - `POST /groceries/need` — search overlay quick-add: resolves ingredient
   name, adds unrecognized items as `CustomGroceryItem` AR records,
   marks item as needed. `SearchDataHelper` exposes
@@ -285,6 +285,11 @@ broadcast). Don't call `MarkdownImporter` directly for web operations.
 - `Kitchen.batch_writes(kitchen)` — defers finalization to one pass on
   block exit.
 - `MealPlanActions` concern provides `rescue_from StaleObjectError`.
+
+**Other services.** `ShoppingListBuilder` (grocery list from selections +
+aisles), `RecipeAvailabilityCalculator` (ingredient on-hand check for menu),
+`CrossReferenceUpdater` (re-links cross-references after renames/deletes),
+`MarkdownValidator` (validates recipe markdown before save).
 
 **Adding a new setting.** 5 touch points: migration,
 `settings/_editor_frame.html.erb` (form field with value),
