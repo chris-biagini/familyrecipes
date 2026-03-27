@@ -10,9 +10,10 @@
  */
 import { Controller } from "@hotwired/stimulus"
 import ListenerManager from "../utilities/listener_manager"
+import { buildIcon } from "../utilities/icons"
 
 export default class extends Controller {
-  static targets = ["pills", "input", "dropdown"]
+  static targets = ["pills", "input", "dropdown", "addBtn"]
   static values = {
     tags: { type: Array, default: [] },
     allTags: { type: Array, default: [] }
@@ -26,6 +27,7 @@ export default class extends Controller {
     this.tagNames = this.allTagsValue.map(([name]) => name)
     this.loadSmartTags()
     this.renderPills()
+    this.renderAddIcon()
 
     this.listeners = new ListenerManager()
     const editor = this.element.closest("[data-controller~='editor']")
@@ -73,11 +75,7 @@ export default class extends Controller {
   onKeydown(event) {
     if (event.key === "Enter" || event.key === "Tab") {
       event.preventDefault()
-      if (this.highlightedIndex >= 0) {
-        this.selectHighlighted()
-      } else {
-        this.addCurrentInput()
-      }
+      this.commitTag()
     } else if (event.key === "ArrowDown") {
       event.preventDefault()
       this.moveHighlight(1)
@@ -90,6 +88,19 @@ export default class extends Controller {
       this.currentTags.pop()
       this.renderPills()
     }
+  }
+
+  commitTag() {
+    if (this.highlightedIndex >= 0) {
+      this.selectHighlighted()
+    } else {
+      this.addCurrentInput()
+    }
+  }
+
+  renderAddIcon() {
+    if (!this.hasAddBtnTarget) return
+    this.addBtnTarget.appendChild(buildIcon("plus", 14))
   }
 
   addCurrentInput() {

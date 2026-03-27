@@ -279,6 +279,16 @@
 }
 .tag-text-input::placeholder { color: var(--text-light); }
 
+.tag-input-row {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.tag-input-row .tag-input-field {
+  flex: 1;
+}
+
 .tag-autocomplete-wrapper { position: relative; }
 
 .tag-autocomplete {
