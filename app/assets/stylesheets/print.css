@@ -2,12 +2,13 @@
 /* Styles for print */
 /********************/
 
-/* Recipe pages use 1in/1.5in margins (set here, loaded globally).
-   Menu and grocery pages override to 0.5in/0.6in via page-specific
-   stylesheets loaded after this one via content_for(:head). */
+/* Default @page margins set here (loaded globally). Menu and grocery
+   pages override via page-specific stylesheets loaded after this one
+   via content_for(:head). Keep margins ≤ 0.75in — Safari misrenders
+   larger @page margins as blank space at the top of page 1. */
 @media print {
   @page {
-    margin: 1in 1.5in;
+    margin: 0.5in 0.75in;
   }
 
   html {
@@ -46,7 +47,8 @@
     min-height: 0;
   }
 
-  main::before {
+  main::before,
+  body::after {
     display: none;
   }
 
@@ -81,10 +83,12 @@
     margin-top: 0;
   }
 
-  /* Hide interactive elements */
+  /* Hide interactive elements and screen-only content */
   .scale-bar,
   .recipe-actions,
-  .recipe-tags {
+  .recipe-tags,
+  .nutrition-label,
+  .nutrition-footnote {
     display: none !important;
   }
 
@@ -150,50 +154,7 @@
     top: -0.05em;
   }
 
-  /* --- Nutrition label: float right alongside recipe content --- */
-  .nutrition-print-wrap {
-    float: right;
-    width: 14rem;
-    margin: 0 0 1rem 1.5rem;
-    break-inside: avoid;
-  }
-
-  .nutrition-print-wrap .nutrition-label {
-    width: 100%;
-    margin: 0;
-    background: white;
-    color: black;
-    border-color: black;
-  }
-
-  .nutrition-print-wrap .nutrition-label .serving-size,
-  .nutrition-print-wrap .nutrition-label .calories-row,
-  .nutrition-print-wrap .nutrition-label .dv-header,
-  .nutrition-print-wrap .nutrition-label .nutrient-row,
-  .nutrition-print-wrap .nutrition-label .nutrient-row:last-child {
-    border-color: black;
-  }
-
-  .nutrition-print-wrap .nutrition-footnote {
-    max-width: none;
-    color: black;
-  }
-
-  article.recipe::after {
-    content: "";
-    display: block;
-    clear: both;
-  }
-
-  /* --- Pagination --- */
-  article.recipe section {
-    break-inside: avoid;
-  }
-
-  article.recipe section:first-of-type {
-    break-before: avoid;
-  }
-
+  /* --- Pagination: keep headings with following content --- */
   article.recipe section h2,
   article.recipe section h3 {
     break-after: avoid;
