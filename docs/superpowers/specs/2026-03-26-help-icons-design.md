@@ -91,7 +91,7 @@ In the header actions block:
 ```erb
 <% if help_path %>
   <a href="<%= help_url(help_path) %>"
-     class="btn editor-help"
+     class="editor-help-link"
      title="Help"
      aria-label="Help"
      target="_blank"
@@ -125,8 +125,10 @@ Add the `?` link manually in its header actions, same pattern, pointing to
 
 ## CSS for dialog help button
 
-Add `.editor-help` to `editor.css` — a small ghost icon button, same style as
-`.editor-mode-toggle` (no background, subtle border on hover).
+Add `.editor-help-link` to `editor.css` — a small ghost icon button, same style as
+`.editor-mode-toggle` (no background, subtle border on hover). Note: `.editor-help`
+already exists in editor.css as a text-copy style; use `.editor-help-link` for the
+button to avoid collision.
 
 ---
 
