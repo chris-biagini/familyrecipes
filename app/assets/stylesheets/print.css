@@ -2,6 +2,9 @@
 /* Styles for print */
 /********************/
 
+/* Recipe pages use 1in/1.5in margins (set here, loaded globally).
+   Menu and grocery pages override to 0.5in/0.6in via page-specific
+   stylesheets loaded after this one via content_for(:head). */
 @media print {
   @page {
     margin: 1in 1.5in;
@@ -15,47 +18,205 @@
   }
 
   body {
-    margin: 0 auto;
+    margin: 0;
     padding: 0;
-    background-color: white;
+    background: white;
     color: black;
-    background: none;
   }
 
+  /* --- Global hides: interactive chrome --- */
   nav,
   .notify-bar,
   .editor-dialog,
-  #export-actions {
-    display: none;
+  .search-overlay,
+  .app-version,
+  #export-actions,
+  [data-open-editor] {
+    display: none !important;
   }
 
-  h1 {
-    margin-top: 0;
-  }
-
+  /* --- Main content card: strip decoration --- */
   main {
     margin: 0;
     padding: 0;
     border: none;
-    background-color: white;
+    background: white;
     box-shadow: none;
     max-width: none;
+    min-height: 0;
   }
 
   main::before {
     display: none;
   }
 
+  /* --- Links: plain black text --- */
   a {
     color: black;
     text-decoration: none;
   }
 
-  .scalable.scaled {
-    background-color: transparent;
+  /* --- Recipe-specific print styles --- */
+
+  article.recipe {
+    font-size: 11pt;
+  }
+
+  /* Kill blank space: header margins and decorative rule */
+  article.recipe header {
+    margin-bottom: 0.5rem;
+  }
+
+  article.recipe header::after {
+    display: none;
+  }
+
+  article.recipe header h1 {
+    font-size: 2rem;
+    margin: 0 0 0.25rem;
+  }
+
+  article.recipe header p {
+    font-size: 1rem;
+    margin-top: 0;
+  }
+
+  /* Hide interactive elements */
+  .scale-bar,
+  .recipe-actions,
+  .recipe-tags {
+    display: none !important;
+  }
+
+  /* --- Compact spacing --- */
+  article.recipe section {
+    margin-top: 1.5rem;
+  }
+
+  article.recipe section h2 {
+    margin-bottom: 0.5rem;
+  }
+
+  article.recipe .instructions p {
+    line-height: 1.5;
+  }
+
+  article.recipe footer {
+    margin-top: 2rem;
+    padding-top: 1rem;
+  }
+
+  article.recipe footer::after {
+    display: none;
+  }
+
+  /* --- Checkbox bullets on ingredients --- */
+  .ingredients li::before {
+    content: "";
+    display: inline-block;
+    width: 0.7rem;
+    height: 0.7rem;
+    border: 1px solid black;
+    border-radius: 1px;
+    margin-right: 0.4rem;
+    vertical-align: middle;
+    position: relative;
+    top: -0.05em;
+  }
+
+  /* --- Checkbox bullets on instruction paragraphs --- */
+  .instructions p::before {
+    content: "";
+    float: left;
+    width: 0.7rem;
+    height: 0.7rem;
+    border: 1px solid black;
+    border-radius: 1px;
+    margin: 0.25em 0.4rem 0 0;
+  }
+
+  /* --- Checkbox bullets on section headings --- */
+  article.recipe section h2::before,
+  article.recipe section h3::before {
+    content: "";
+    display: inline-block;
+    width: 0.7rem;
+    height: 0.7rem;
+    border: 1px solid black;
+    border-radius: 1px;
+    margin-right: 0.4rem;
+    vertical-align: middle;
+    position: relative;
+    top: -0.05em;
+  }
+
+  /* --- Nutrition label: float right alongside recipe content --- */
+  .nutrition-print-wrap {
+    float: right;
+    width: 14rem;
+    margin: 0 0 1rem 1.5rem;
+    break-inside: avoid;
+  }
+
+  .nutrition-print-wrap .nutrition-label {
+    width: 100%;
+    margin: 0;
+    background: white;
+    color: black;
+    border-color: black;
+  }
+
+  .nutrition-print-wrap .nutrition-label .serving-size,
+  .nutrition-print-wrap .nutrition-label .calories-row,
+  .nutrition-print-wrap .nutrition-label .dv-header,
+  .nutrition-print-wrap .nutrition-label .nutrient-row,
+  .nutrition-print-wrap .nutrition-label .nutrient-row:last-child {
+    border-color: black;
+  }
+
+  .nutrition-print-wrap .nutrition-footnote {
+    max-width: none;
+    color: black;
+  }
+
+  article.recipe::after {
+    content: "";
+    display: block;
+    clear: both;
+  }
+
+  /* --- Pagination --- */
+  article.recipe section {
+    break-inside: avoid;
+  }
+
+  article.recipe section:first-of-type {
+    break-before: avoid;
+  }
+
+  article.recipe section h2,
+  article.recipe section h3 {
+    break-after: avoid;
   }
 
   .embedded-recipe {
+    break-inside: avoid;
     box-shadow: none;
+    border: 1px solid #ccc;
+  }
+
+  /* Embedded recipe headings are informational, not actionable steps */
+  .embedded-recipe h3::before {
+    content: none;
+  }
+
+  /* Hide "go to recipe" links on embedded recipes */
+  .embedded-recipe-link {
+    display: none;
+  }
+
+  /* Scaled quantity highlight: transparent in print */
+  .scalable.scaled {
+    background-color: transparent;
   }
 }
