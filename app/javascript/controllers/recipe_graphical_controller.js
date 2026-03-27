@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { buildButton, buildInput, buildFieldGroup, buildTextareaGroup, buildIconButton } from "../utilities/dom_builders"
+import { buildInput, buildFieldGroup, buildTextareaGroup, buildIconButton } from "../utilities/dom_builders"
 import { structureChanged } from "../utilities/editor_utils"
 import {
   expandItem, toggleItem,

@@ -10,15 +10,6 @@
 
 import { buildIcon } from "./icons"
 
-export function buildButton(text, onClick, className) {
-  const btn = document.createElement("button")
-  btn.type = "button"
-  if (className) btn.className = className
-  btn.textContent = text
-  btn.addEventListener("click", onClick)
-  return btn
-}
-
 export function buildIconButton(iconName, onClick, { className = "", label = "", size = 14 } = {}) {
   const btn = document.createElement("button")
   btn.type = "button"

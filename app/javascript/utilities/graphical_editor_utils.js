@@ -6,7 +6,7 @@
  *
  * - recipe_graphical_controller: recipe step/ingredient editing
  * - quickbites_graphical_controller: category/item editing
- * - dom_builders: low-level element factories (buildButton, buildInput)
+ * - dom_builders: low-level element factories (buildIconButton, buildPillButton, buildInput)
  */
 
 import { buildIconButton, buildPillButton } from "./dom_builders"

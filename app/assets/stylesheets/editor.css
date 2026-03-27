@@ -811,9 +811,10 @@ textarea.input-base {
   padding: 14px;
 }
 
-.graphical-step-summary {
-  opacity: 0.4;
-  font-size: 0.8em;
+.graphical-ingredient-summary {
+  font-size: 0.7rem;
+  color: var(--text-light);
+  font-weight: 400;
 }
 
 .graphical-step-controls {
@@ -888,38 +889,6 @@ textarea.input-base {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 0.5rem;
-}
-
-/* Buttons */
-.graphical-btn {
-  padding: 4px 10px;
-  font-size: 0.8em;
-  font-family: var(--font-body);
-  border: 1px solid var(--rule);
-  border-radius: 4px;
-  background: transparent;
-  cursor: pointer;
-  color: inherit;
-  line-height: 1.5;
-  transition: border-color var(--duration-fast) ease, color var(--duration-fast) ease;
-}
-
-.graphical-btn:hover {
-  border-color: var(--text);
-}
-
-.graphical-btn:focus-visible {
-  outline: 2px solid var(--red);
-  outline-offset: 2px;
-}
-
-.graphical-btn-danger {
-  color: var(--danger-color);
-  border-color: var(--danger-color);
-}
-
-.graphical-btn-danger:hover {
-  background: var(--danger-hover-bg);
 }
 
 /* Editor header — mode toggle and actions */
