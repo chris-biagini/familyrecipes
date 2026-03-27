@@ -34,7 +34,9 @@ jobs:
         run: gem install jekyll kramdown-parser-gfm
 
       - name: Build
-        run: jekyll build --source docs/help --destination _site
+        run: |
+          cd /tmp
+          jekyll build --source $GITHUB_WORKSPACE/docs/help --destination $GITHUB_WORKSPACE/_site
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
