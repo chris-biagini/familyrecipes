@@ -297,7 +297,7 @@
 
 
 @media print {
-  /* Page margins for grocery list */
+  /* Override global 1in/1.5in margins from print.css — groceries is denser */
   @page {
     margin: 0.5in 0.6in;
   }
@@ -352,9 +352,10 @@
     display: none !important;
   }
 
-  /* Aisle header in print */
+  /* Aisle header in print — break-after prevents orphaned headers */
   .aisle-header {
     padding: 0.2rem 0;
+    break-after: avoid;
   }
 
   /* Exclude checked-off items from print */
