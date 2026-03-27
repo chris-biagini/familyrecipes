@@ -156,6 +156,6 @@ class SettingsControllerTest < ActionDispatch::IntegrationTest
     @kitchen.reload
 
     assert_equal 'OK', @kitchen.site_title
-    assert_equal 'test-kitchen', @kitchen.slug
+    assert_equal kitchen_slug, @kitchen.slug
   end
 end

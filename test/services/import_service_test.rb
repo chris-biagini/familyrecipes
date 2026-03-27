@@ -299,12 +299,19 @@ class ImportServiceTest < ActiveSupport::TestCase
   # --- ZIP entry count limits ---
 
   test 'ZIP with too many entries reports error and stops' do
-    entries = (1..501).to_h { |i| ["Recipe#{i}.md", simple_recipe("Recipe #{i}")] }
+    original = ImportService::MAX_ZIP_ENTRIES
+    ImportService.send(:remove_const, :MAX_ZIP_ENTRIES)
+    ImportService.const_set(:MAX_ZIP_ENTRIES, 5)
+
+    entries = (1..6).to_h { |i| ["Recipe#{i}.md", simple_recipe("Recipe #{i}")] }
     zip = build_zip(entries)
     result = import_files(uploaded_file('huge.zip', zip))
 
     assert(result.errors.any? { |e| e.include?('entry limit') })
-    assert_operator @kitchen.recipes.count, :<=, ImportService::MAX_ZIP_ENTRIES
+    assert_operator @kitchen.recipes.count, :<=, 5
+  ensure
+    ImportService.send(:remove_const, :MAX_ZIP_ENTRIES)
+    ImportService.const_set(:MAX_ZIP_ENTRIES, original)
   end
 
   # --- Encoding ---

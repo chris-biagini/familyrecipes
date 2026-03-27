@@ -44,8 +44,8 @@ if aisle_order_path.exist?
   puts 'Aisle order loaded.'
 end
 
-# Sample content — first boot only
-if Recipe.none?
+# Sample content — first boot only (skip in test env)
+if Recipe.none? && !Rails.env.test?
   recipes_dir = seeds_dir.join('recipes')
   quick_bites_filename = 'Quick Bites.md'
 

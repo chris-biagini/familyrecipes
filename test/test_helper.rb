@@ -27,10 +27,9 @@ module ActiveSupport
     private
 
     def setup_test_kitchen
-      ActsAsTenant.without_tenant do
-        Kitchen.where.not(slug: 'test-kitchen').destroy_all
-      end
-      @kitchen = Kitchen.find_or_create_by!(name: 'Test Kitchen', slug: 'test-kitchen')
+      @kitchen = Kitchen.first || Kitchen.create!(name: 'Test Kitchen', slug: 'test-kitchen')
+      defaults = Kitchen.column_defaults.slice('aisle_order', 'site_title', 'show_nutrition', 'decorate_tags')
+      @kitchen.update_columns(defaults) # rubocop:disable Rails/SkipsModelValidations
       ActsAsTenant.current_tenant = @kitchen
       cleanup_meal_plan_tables
     end
