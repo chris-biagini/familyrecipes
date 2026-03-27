@@ -5,7 +5,8 @@ import {
   expandItem,
   removeFromList, moveInList, rebuildContainer,
   buildCardShell, buildCardDetails, buildCardTitle, buildCountSummary,
-  buildCardActions, buildCollapseBody, buildRowsSection, updateTitleDisplay
+  buildCardActions, buildCollapseBody, buildRowsSection, updateTitleDisplay,
+  updateMoveButtons
 } from "../utilities/graphical_editor_utils"
 
 /**
@@ -84,6 +85,7 @@ export default class extends Controller {
 
   rebuildCategories() {
     rebuildContainer(this.categoriesContainerTarget, this.categories, (i, cat) => this.buildCategoryCard(i, cat))
+    updateMoveButtons(this.categoriesContainerTarget)
   }
 
   appendCategoryCard(index, catData) {
@@ -103,7 +105,9 @@ export default class extends Controller {
   }
 
   moveItem(catIndex, itemIndex, direction) {
-    moveInList(this.categories[catIndex].items, itemIndex, direction, null, () => this.rebuildItemRows(catIndex))
+    const container = this.categoriesContainerTarget
+      .querySelector(`.graphical-ingredient-rows[data-cat-index="${catIndex}"]`)
+    moveInList(this.categories[catIndex].items, itemIndex, direction, container, () => this.rebuildItemRows(catIndex))
   }
 
   rebuildItemRows(catIndex) {
@@ -112,6 +116,7 @@ export default class extends Controller {
     if (!container) return
     rebuildContainer(container, this.categories[catIndex].items || [],
       (i, item) => this.buildItemRow(catIndex, i, item))
+    updateMoveButtons(container)
   }
 
   // --- Serialization ---
@@ -158,7 +163,7 @@ export default class extends Controller {
     return buildCardDetails(
       buildCardTitle(catData.name, `Category ${index + 1}`),
       buildCountSummary((catData.items || []).length, "item", "items"),
-      buildCardActions(index, (i, dir) => this.moveCategory(i, dir), (i) => this.removeCategory(i))
+      buildCardActions(index, (i, dir) => this.moveCategory(i, dir), (i) => this.removeCategory(i), { total: this.categories.length })
     )
   }
 
@@ -198,10 +203,14 @@ export default class extends Controller {
       this.categories[catIndex].items[itemIndex].ingredientsText = val
     }, "graphical-input--prep"))
 
+    const total = this.categories[catIndex].items.length
     const actions = document.createElement("div")
     actions.className = "graphical-ingredient-actions"
-    actions.appendChild(buildIconButton("chevron", () => this.moveItem(catIndex, itemIndex, -1), { label: "Move up" }))
-    const downBtn = buildIconButton("chevron", () => this.moveItem(catIndex, itemIndex, 1), { className: "aisle-icon--flipped", label: "Move down" })
+    const upBtn = buildIconButton("chevron", () => this.moveItem(catIndex, itemIndex, -1), { className: "btn-move-up", label: "Move up" })
+    if (itemIndex === 0) upBtn.disabled = true
+    actions.appendChild(upBtn)
+    const downBtn = buildIconButton("chevron", () => this.moveItem(catIndex, itemIndex, 1), { className: "aisle-icon--flipped btn-move-down", label: "Move down" })
+    if (itemIndex >= total - 1) downBtn.disabled = true
     actions.appendChild(downBtn)
     actions.appendChild(buildIconButton("delete", () => this.removeItem(catIndex, itemIndex), { className: "btn-danger", label: "Remove" }))
     row.appendChild(actions)

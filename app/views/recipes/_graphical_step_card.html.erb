@@ -15,8 +15,10 @@
   <div class="graphical-step-card">
     <details class="collapse-header"<%= " open" if index == 0 %>>
       <summary class="graphical-step-header">
-        <span class="graphical-step-title"><%= step[:tldr] || "Step #{index + 1}" %></span>
-        <span class="graphical-ingredient-summary"><%= ingredient_summary(step[:ingredients]) %></span>
+        <span class="graphical-step-title-area">
+          <span class="graphical-step-title"><%= step[:tldr] || "Step #{index + 1}" %></span>
+          <span class="graphical-ingredient-summary"><%= ingredient_summary(step[:ingredients]) %></span>
+        </span>
       </summary>
     </details>
     <div class="collapse-body">

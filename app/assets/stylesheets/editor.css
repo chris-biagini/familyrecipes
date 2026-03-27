@@ -813,15 +813,25 @@ textarea.input-base {
   padding: 14px;
 }
 
+.graphical-step-title-area {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+}
+
 .graphical-ingredient-summary {
   font-size: 0.7rem;
   color: var(--text-light);
   font-weight: 400;
 }
 
-.graphical-step-controls {
+.graphical-step-actions,
+.graphical-ingredient-actions {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.35rem;
+  flex-shrink: 0;
 }
 
 .graphical-step-readonly {
@@ -874,9 +884,9 @@ textarea.input-base {
   min-width: 0;
 }
 
-.graphical-ing-name { flex: 3; }
-.graphical-ing-qty { flex: 1; min-width: 4.5rem; max-width: 6rem; text-align: center; }
-.graphical-ing-prep { flex: 2; font-style: italic; border-color: var(--rule-faint); }
+.graphical-ing-name { flex: 3; font-weight: 600; }
+.graphical-ing-qty { flex: 1; min-width: 4.5rem; max-width: 6rem; text-align: center; color: var(--text-soft); }
+.graphical-ing-prep { flex: 2; font-style: italic; color: var(--text-soft); border-color: var(--rule-faint); }
 .graphical-ing-prep::placeholder { font-style: italic; }
 
 .graphical-ingredient-reorder {

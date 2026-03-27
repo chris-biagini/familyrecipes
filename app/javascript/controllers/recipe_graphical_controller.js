@@ -5,7 +5,8 @@ import {
   expandItem, toggleItem,
   removeFromList, moveInList, rebuildContainer,
   buildCardShell, buildCardDetails, buildCardTitle, buildCountSummary,
-  buildCardActions, buildCollapseBody, buildRowsSection, updateTitleDisplay
+  buildCardActions, buildCollapseBody, buildRowsSection, updateTitleDisplay,
+  updateMoveButtons
 } from "../utilities/graphical_editor_utils"
 
 /**
@@ -202,6 +203,7 @@ export default class extends Controller {
 
   rebuildSteps() {
     rebuildContainer(this.stepsContainerTarget, this.steps, (i, step) => this.buildStepCard(i, step))
+    updateMoveButtons(this.stepsContainerTarget)
   }
 
   appendStepCard(index, stepData) {
@@ -245,7 +247,7 @@ export default class extends Controller {
     hint.textContent = "edit in </> mode"
     header.appendChild(hint)
 
-    header.appendChild(buildCardActions(index, (i, dir) => this.moveStep(i, dir), (i) => this.removeStep(i)))
+    header.appendChild(buildCardActions(index, (i, dir) => this.moveStep(i, dir), (i) => this.removeStep(i), { total: this.steps.length }))
     card.appendChild(header)
     return card
   }
@@ -262,7 +264,7 @@ export default class extends Controller {
     return buildCardDetails(
       buildCardTitle(stepData.tldr, `Step ${index + 1}`),
       buildCountSummary((stepData.ingredients || []).length, "ingredient", "ingredients"),
-      buildCardActions(index, (i, dir) => this.moveStep(i, dir), (i) => this.removeStep(i))
+      buildCardActions(index, (i, dir) => this.moveStep(i, dir), (i) => this.removeStep(i), { total: this.steps.length })
     )
   }
 
@@ -314,10 +316,14 @@ export default class extends Controller {
 
     card.appendChild(fields)
 
+    const total = this.steps[stepIndex].ingredients.length
     const actions = document.createElement("div")
     actions.className = "graphical-ingredient-actions"
-    actions.appendChild(buildIconButton("chevron", () => this.moveIngredient(stepIndex, ingIndex, -1), { label: "Move up" }))
-    const downBtn = buildIconButton("chevron", () => this.moveIngredient(stepIndex, ingIndex, 1), { className: "aisle-icon--flipped", label: "Move down" })
+    const upBtn = buildIconButton("chevron", () => this.moveIngredient(stepIndex, ingIndex, -1), { className: "btn-move-up", label: "Move up" })
+    if (ingIndex === 0) upBtn.disabled = true
+    actions.appendChild(upBtn)
+    const downBtn = buildIconButton("chevron", () => this.moveIngredient(stepIndex, ingIndex, 1), { className: "aisle-icon--flipped btn-move-down", label: "Move down" })
+    if (ingIndex >= total - 1) downBtn.disabled = true
     actions.appendChild(downBtn)
     actions.appendChild(buildIconButton("delete", () => this.removeIngredient(stepIndex, ingIndex), { className: "btn-danger", label: "Remove" }))
     card.appendChild(actions)
@@ -336,7 +342,9 @@ export default class extends Controller {
   }
 
   moveIngredient(stepIndex, ingIndex, direction) {
-    moveInList(this.steps[stepIndex].ingredients, ingIndex, direction, null, () => this.rebuildIngredientRows(stepIndex))
+    const container = this.stepsContainerTarget
+      .querySelector(`.graphical-ingredient-rows[data-step-index="${stepIndex}"]`)
+    moveInList(this.steps[stepIndex].ingredients, ingIndex, direction, container, () => this.rebuildIngredientRows(stepIndex))
   }
 
   rebuildIngredientRows(stepIndex) {
@@ -345,6 +353,7 @@ export default class extends Controller {
     if (!container) return
     rebuildContainer(container, this.steps[stepIndex].ingredients || [],
       (i, ing) => this.buildIngredientRow(stepIndex, i, ing))
+    updateMoveButtons(container)
   }
 
   // --- Serialization ---
