@@ -2,6 +2,7 @@
   <%= stylesheet_link_tag 'ingredients', "data-turbo-track": "reload" %>
 <% end %>
 <% content_for(:title) { "#{current_kitchen.name}: Ingredients" } %>
+<% content_for :help_path, '/ingredients/' %>
 
 <%= turbo_stream_from current_kitchen, :updates %>
 
@@ -28,6 +29,7 @@
   <% if current_member? %>
     <%= render layout: 'shared/editor_dialog',
         locals: { title: 'Edit Nutrition',
+                  help_path: '/ingredients/nutrition-data/',
                   id: 'nutrition-editor',
                   dialog_data: { extra_controllers: 'nutrition-editor',
                                  editor_on_success: 'close' },
