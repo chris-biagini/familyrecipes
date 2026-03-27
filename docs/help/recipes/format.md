@@ -75,6 +75,15 @@ Each step starts with a `##` heading. The heading text is a short label —
 it appears as a section header on the recipe page. The heading should end
 with a period.
 
+Numbers in step text can be made scalable by appending `*`:
+
+```
+Divide the dough into 8* equal pieces.
+```
+
+When the recipe is scaled, `8*` updates to reflect the new quantity. See
+[Scaling]({{ site.baseurl }}/recipes/scaling/) for details.
+
 ## Ingredients
 
 Ingredient lines start with `- `. The format is:

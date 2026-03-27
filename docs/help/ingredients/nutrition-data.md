@@ -24,19 +24,20 @@ calories, fat, saturated fat, carbohydrates, sugar, fiber, protein, and sodium.
 You don't need to fill in all fields — partial data is used for whatever
 nutrients are present.
 
-## Density
+## Volume conversions
 
-If recipes use volume measurements for this ingredient (cups, tbsp, ml),
-set a **density** (grams per ml). This lets the app convert volume quantities
-to grams for nutrition calculations.
+If recipes measure this ingredient by volume (cups, tbsp, ml), set a
+conversion: how much does one unit of volume weigh? For example,
+"1 cup = 120 g". This lets the app convert volume quantities to grams
+for nutrition calculations.
 
-Without a density value, volume-measured quantities can't be calculated.
+Without a volume conversion, volume-measured quantities can't be calculated.
 
-## Portions
+## Unit weights
 
-For ingredients measured by count ("2 eggs", "1 avocado"), define a portion:
-the weight in grams of one unit. Common portions (small / medium / large)
-can be defined separately.
+For ingredients measured by count ("2 eggs", "1 avocado"), set a unit
+weight: how many grams does one unit weigh? Click **+ Add unit weight**
+to define named units (e.g., "large", "stick").
 
 ## Unit aliases
 
@@ -47,7 +48,7 @@ tablespoon, "oz" for ounces), add them as aliases so the app recognizes them.
 
 If a [USDA API key]({{ site.baseurl }}/settings/) is configured, an inline
 search panel appears in the editor. Search by ingredient name, click a
-result to import its nutrient values, density, and portions automatically.
+result to import its nutrient values, volume conversions, and unit weights automatically.
 
 USDA data imports as a starting point — review and adjust values as needed
 before saving.

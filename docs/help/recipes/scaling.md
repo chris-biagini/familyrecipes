@@ -34,13 +34,25 @@ Type any number into the input field. Fractions are accepted:
 
 - Ingredient quantities
 - The Makes / Serves line in the recipe header
+- Numbers in step text marked with `*` (see below)
 
 ## What doesn't get scaled
 
-Step text, temperatures, and times are not scaled. A recipe that says
+Temperatures and times are not scaled by default. A recipe that says
 "bake at 200°C for 30 minutes" will still say that at 2× — those values
-don't change with batch size. If you scale up significantly, use your
-judgment on timing.
+don't change with batch size.
+
+## Scalable quantities in step text
+
+Numbers in step instructions can be made scalable by appending `*`:
+
+```
+Divide the dough into 8* equal pieces.
+Pour about 60* g of batter per pancake.
+```
+
+At 2×, these render as 16 and 120 g respectively. Word numbers work too:
+`eight*` scales the same as `8*`.
 
 ## Resetting
 
