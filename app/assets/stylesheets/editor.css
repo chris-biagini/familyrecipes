@@ -771,6 +771,8 @@ button.aisle-name:hover {
   flex: 1;
 }
 
+.graphical-new-category-row[hidden] { display: none; }
+
 /* Textarea overrides for graphical editors */
 textarea.input-base {
   resize: vertical;
