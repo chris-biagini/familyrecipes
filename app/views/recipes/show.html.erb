@@ -1,4 +1,5 @@
 <% content_for(:title) { "#{current_kitchen.name}: #{@recipe.title}" } %>
+<% content_for :help_path, '/recipes/' %>
 
 <% content_for(:body_attrs) do %>
   data-recipe-id="<%= @recipe.slug %>" data-version-hash="<%= @recipe.updated_at.to_i %>"
@@ -14,6 +15,7 @@
 <% if current_member? %>
 <%= render layout: 'shared/editor_dialog',
     locals: { title: 'Edit Nutrition',
+              help_path: '/recipes/nutrition/',
               id: 'nutrition-editor',
               dialog_data: { extra_controllers: 'nutrition-editor',
                              editor_on_success: 'close' },
@@ -32,6 +34,7 @@
 
 <%= render layout: 'shared/editor_dialog',
     locals: { title: "Editing: #{@recipe.title}",
+              help_path: '/recipes/editing/',
               id: 'recipe-editor',
               mode_toggle: true,
               dialog_data: { editor_open: '#edit-button',
