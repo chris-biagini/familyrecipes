@@ -120,6 +120,30 @@ nav > div:not(:first-child):not(.nav-drawer) {
   height: 1.1rem;
 }
 
+.nav-help-link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text);
+  padding: 0.5rem 0.6rem;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  border-radius: 0.4rem;
+  transition: color var(--duration-normal) ease, background-color var(--duration-slow) ease-out;
+}
+
+.nav-help-link:hover {
+  color: var(--red);
+  background-color: var(--hover-bg);
+}
+
+.nav-help-link .nav-icon {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
 nav a:hover,
 nav a:focus {
   color: var(--red);
