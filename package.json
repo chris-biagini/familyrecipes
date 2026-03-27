@@ -3,21 +3,23 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "node esbuild.config.mjs",
+    "build": "node esbuild.config.mjs && npm run build:css",
+    "build:css": "lightningcss --minify app/assets/stylesheets/*.css --output-dir app/assets/builds/",
     "build:watch": "node esbuild.config.mjs --watch",
     "test": "node --test test/javascript/*.mjs"
   },
   "devDependencies": {
-    "esbuild": "^0.25.0"
+    "esbuild": "^0.25.0",
+    "lightningcss-cli": "^1.32.0"
   },
   "dependencies": {
+    "@codemirror/commands": "^6.8.0",
+    "@codemirror/lang-markdown": "^6.3.0",
+    "@codemirror/language": "^6.10.0",
+    "@codemirror/state": "^6.5.0",
+    "@codemirror/view": "^6.36.0",
     "@hotwired/stimulus": "^3.2.0",
     "@hotwired/turbo-rails": "^8.0.0",
-    "@rails/actioncable": "^8.0.0",
-    "@codemirror/view": "^6.36.0",
-    "@codemirror/state": "^6.5.0",
-    "@codemirror/language": "^6.10.0",
-    "@codemirror/commands": "^6.8.0",
-    "@codemirror/lang-markdown": "^6.3.0"
+    "@rails/actioncable": "^8.0.0"
   }
 }

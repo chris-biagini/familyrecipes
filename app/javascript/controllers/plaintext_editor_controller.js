@@ -4,16 +4,17 @@
  * looked up by name from the codemirror registry, so the same controller
  * serves any content type that has a registered classifier.
  *
+ * CodeMirror is loaded lazily via dynamic import() — the ~513KB library
+ * only downloads when an editor actually mounts. The main bundle prefetches
+ * the chunk in the background so it's typically cached before the user
+ * opens an editor.
+ *
  * - dual_mode_editor_controller: coordinator, calls .content and .isModified()
  * - editor_setup.js: shared CodeMirror factory
  * - registry.js: maps string keys to classifier/fold-service extensions
  * - auto_dash.js: shared bullet-continuation keymap
  */
 import { Controller } from "@hotwired/stimulus"
-import { createEditor } from "../codemirror/editor_setup"
-import { classifiers, foldServices } from "../codemirror/registry"
-import { autoDashKeymap } from "../codemirror/auto_dash"
-import { foldAll, unfoldCode } from "@codemirror/language"
 
 export default class extends Controller {
   static targets = ["mount"]
@@ -24,8 +25,28 @@ export default class extends Controller {
     initial: String
   }
 
-  mountTargetConnected(element) {
+  async mountTargetConnected(element) {
     this.editorView?.destroy()
+
+    this._ready = this._mount(element)
+    await this._ready
+  }
+
+  async _mount(element) {
+    const [
+      { createEditor },
+      { classifiers, foldServices },
+      { autoDashKeymap },
+      { foldAll, unfoldCode }
+    ] = await Promise.all([
+      import("../codemirror/editor_setup"),
+      import("../codemirror/registry"),
+      import("../codemirror/auto_dash"),
+      import("@codemirror/language")
+    ])
+
+    this._foldAll = foldAll
+    this._unfoldCode = unfoldCode
 
     let doc = ""
     if (this.hasInitialValue) {
@@ -47,6 +68,10 @@ export default class extends Controller {
       placeholder: this.hasPlaceholderValue ? this.placeholderValue : "",
       extraExtensions: [autoDashKeymap]
     })
+  }
+
+  whenReady() {
+    return this._ready || Promise.resolve()
   }
 
   mountTargetDisconnected() {
@@ -76,11 +101,11 @@ export default class extends Controller {
   }
 
   focusCategory(name) {
-    if (!this.editorView) return
+    if (!this.editorView || !this._foldAll) return
     const view = this.editorView
 
     requestAnimationFrame(() => {
-      foldAll(view)
+      this._foldAll(view)
 
       const doc = view.state.doc
       const target = `## ${name}`
@@ -88,7 +113,7 @@ export default class extends Controller {
         const line = doc.line(i)
         if (line.text.trimEnd() === target) {
           view.dispatch({ selection: { anchor: line.from } })
-          unfoldCode(view)
+          this._unfoldCode(view)
           return
         }
       }

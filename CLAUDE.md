@@ -137,7 +137,7 @@ Update the CSP initializer before adding any.
 - Use semantic HTML. Recipes are **documents first** — marked-up text, not an
   app that happens to contain text.
 
-**CSS file structure.** Propshaft serves each file individually; no bundling.
+**CSS file structure.** CSS source files live in `app/assets/stylesheets/`; minified copies are written to `app/assets/builds/` by lightningcss, where Propshaft serves them with priority over the originals.
 - **Global** (loaded in layout): `base.css` (tokens, typography, buttons,
   inputs, collapse, scale, tags, notifications), `navigation.css` (nav,
   search overlay), `editor.css` (all editor dialogs, graphical editor),
@@ -254,6 +254,13 @@ jsbundling-rails + esbuild for JS bundling.
   for custom button actions handled by manual event listeners.
 - `npm run build` bundles JS to `app/assets/builds/`; `bin/dev` runs
   both Puma and esbuild watcher via foreman.
+- esbuild uses ESM format with code splitting. CodeMirror loads lazily
+  via dynamic `import()` in `plaintext_editor_controller`. Chunks write
+  to `public/chunks/` (bypassing Propshaft fingerprinting) and served
+  at `/chunks/`. `requestIdleCallback` prefetches the editor chunk
+  after page load.
+- CSS is minified by lightningcss into `app/assets/builds/`, where
+  Propshaft serves them with priority over source files.
 - CSP requires a nonce for both `<script>` and `<style>` tags — the nonce
   generator uses `request.session.id` (see `content_security_policy.rb`).
   The layout includes `<%= csp_meta_tag %>` which exposes the nonce via

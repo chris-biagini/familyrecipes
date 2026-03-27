@@ -76,3 +76,11 @@ document.addEventListener("turbo:before-cache", () => {
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/service-worker.js')
 }
+
+// Prefetch CodeMirror chunk in background so it's cached before editor opens
+const prefetchEditor = () => import("./codemirror/editor_setup")
+if (typeof requestIdleCallback === "function") {
+  requestIdleCallback(prefetchEditor)
+} else {
+  setTimeout(prefetchEditor, 1000)
+}
