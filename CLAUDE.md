@@ -364,8 +364,9 @@ the code or update the docs. To build locally:
 ```bash
 gem install jekyll kramdown-parser-gfm
 cp app/assets/images/favicon.svg docs/help/assets/favicon.svg
-jekyll build --source docs/help --destination _site
+cd /tmp && jekyll build --source ~/familyrecipes/docs/help --destination ~/familyrecipes/_site
 ```
+Note: must run `jekyll build` from outside the repo root — Jekyll picks up the Rails `Gemfile` and fails if run from within the project.
 
 **Test conventions.** Plain `Minitest::Test` files (parser-layer tests in
 `test/`) must be added to the `Rails/RefuteMethods` exclusion in `.rubocop.yml`
