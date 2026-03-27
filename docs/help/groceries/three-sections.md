@@ -20,9 +20,9 @@ Look in your kitchen:
 - Tap **Have It** if you still have it. The app notes this and waits longer before asking again.
 - Tap **Need It** if you're out. The item moves to **To Buy**.
 
-When there are many items to verify, an **All Stocked** button confirms
-everything at once — use it when you've already done a quick scan and have
-everything.
+When there are many items to verify, **Have All** and **Need All** buttons
+appear to confirm or deplete everything at once — use **Have All** when you've
+already done a quick scan and have everything.
 
 Items are sorted by how many of your selected recipes use them, so the most
 important ones appear first.
