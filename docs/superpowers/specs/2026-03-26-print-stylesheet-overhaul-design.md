@@ -27,7 +27,7 @@ but have minor gaps.
 
 - No JavaScript print logic — pure CSS `@media print`
 - No changes to the web/screen layout
-- No new HTML elements or view changes — work within existing markup
+- Minimal view changes — only where CSS alone cannot achieve the goal
 
 ## Design
 
@@ -74,30 +74,61 @@ grocery page pattern. Also add checkboxes before:
 
 Implementation: Use `::before` pseudo-elements to render unfilled checkbox
 squares. For ingredients, the list already has `list-style: none`, so add a
-`::before` on `.ingredients li`. For instructions and headings, prepend a
-checkbox via `::before` with appropriate spacing.
+`::before` on `.ingredients li`. For instructions, prepend a checkbox via
+`::before` on `.instructions p` using `float: left` to preserve block text
+flow (avoids disrupting the existing grid layout). For section headings,
+use `::before` on `article.recipe section h2, article.recipe section h3`
+(fully qualified selectors to avoid matching headings outside the recipe).
 
-Checkbox style: `1px solid black`, `0.7rem` square, `border-radius: 1px`,
-inline with text via `vertical-align` or flexbox alignment.
+Checkbox style:
+
+```css
+/* Shared checkbox pattern — float: left for block-level elements */
+content: "";
+display: inline-block;
+width: 0.7rem;
+height: 0.7rem;
+border: 1px solid black;
+border-radius: 1px;
+margin-right: 0.4rem;
+vertical-align: middle;
+flex-shrink: 0;
+```
+
+For `.instructions p`, use `float: left; margin: 0.25em 0.4rem 0 0` to keep
+text wrapping naturally around the checkbox.
 
 #### 1d. Nutrition label float
 
-Float `.nutrition-label` to the right so recipe content flows beside it:
+The nutrition label (`<aside class="nutrition-label">`) is currently the last
+child of `<article>` in the DOM, rendered after all steps and the footer.
+CSS `float: right` only affects content that flows *after* the floated element,
+so floating it in its current position would just push it right with nothing
+beside it.
 
-```
-.nutrition-label {
+**View change required:** Wrap the nutrition label and its footnotes in a
+`<div class="nutrition-print-wrap">` and move it to render *before* the
+recipe steps in `_recipe_content.html.erb`. This is invisible on screen
+(the wrapper has no screen styles) but allows the float to work in print.
+The existing centered layout on screen is preserved by not adding any screen
+styles to the wrapper.
+
+Print styles for the wrapper:
+
+```css
+.nutrition-print-wrap {
   float: right;
   width: 14rem;
   margin: 0 0 1rem 1.5rem;
 }
 ```
 
-Reduce from the screen `max-width: 16rem` to `14rem` to leave more room for
-text flow. Clear the float after the article.
+The `.nutrition-footnote` paragraphs move inside the wrapper so they stay
+with the label.
 
-The `.nutrition-footnote` below the label should also float right or be
-positioned to stay with the label. Use a wrapping container or make the
-footnote follow the label's float.
+Reduce label from the screen `max-width: 16rem` to `width: 100%` within the
+floated wrapper. Clear the float after the article via `article.recipe::after
+{ content: ""; display: block; clear: both; }`.
 
 Ensure dark-mode overrides don't apply in print — force white bg, black text
 and borders on the label.
@@ -118,10 +149,13 @@ and borders on the label.
 
 - The existing `@page { margin: 1in 1.5in }` provides good side margins for
   readability. Keep this for recipes.
-- `font-size: 11pt` (slightly smaller than current 12pt) for density
+- `article.recipe { font-size: 11pt }` — scoped to recipe only so menu and
+  grocery pages keep their own sizing. Internal units use `em` where needed.
 - Tighter line-height on instructions: `1.5` instead of `1.75`
-- Reduce section margins/padding for compactness
-- `header h1` at a smaller print size (e.g., `2rem` instead of `3.8rem`)
+- Section `margin-top`: `1.5rem` (down from `2.5rem`)
+- Section heading `margin-bottom`: `0.5rem`
+- `header h1` at `2rem` (down from `3.8rem`)
+- `header p` (description) at `1rem` (down from `1.3rem`)
 
 #### 1g. Embedded recipes
 
@@ -136,14 +170,16 @@ pseudo-element rule line above it). Tighten margins.
 
 #### 1i. Crossed-off state
 
-In print, ignore crossed-off state — show all items without strikethrough or
-fade. Users print fresh copies to work with.
+The crossed-off styles in `base.css` are already scoped to `@media screen`,
+so they never apply in print. No additional work needed — just noting this
+for completeness.
 
 ### 2. Menu Page — menu.css
 
 The menu print styles are already good. Minor improvements:
 
-- Hide help links and contextual help icons
+- Help links live inside `nav` (already hidden globally) — no additional hides
+  needed
 - Verify `break-inside: avoid` on `.category` blocks prevents orphaned headers
 - The two-column grid layout is already in place
 
@@ -155,7 +191,8 @@ The grocery print styles are the most polished. Minor improvements:
 
 - Verify aisle headers don't orphan from their item lists
   (`break-after: avoid` on `.aisle-header` if not already present)
-- Hide help links and contextual help icons
+- Help links live inside `nav` (already hidden globally) — no additional hides
+  needed
 
 No structural changes needed.
 
@@ -168,8 +205,11 @@ Consolidate global hide rules and add missing ones:
 **Add to hidden list:**
 - `.app-version` (footer version text)
 - `.search-overlay` (search dialog)
-- `#settings-dialog` (settings dialog)
-- Any help icons/links that aren't caught by hiding `nav`
+- `#settings-dialog` (settings dialog — verify it isn't already caught by
+  `.editor-dialog` class; if so, skip)
+
+Help links and contextual help icons are children of `nav` or `.editor-dialog`,
+both already hidden — no additional selectors needed.
 
 **Dark mode in print:** Force nutrition label to white bg / black borders
 regardless of `prefers-color-scheme`. The label's dark mode styles use CSS
@@ -183,10 +223,18 @@ custom properties — override with explicit `#000` / `#fff` in the print block.
 | File | Scope |
 |------|-------|
 | `app/assets/stylesheets/print.css` | Major — all recipe print rules, global hides |
-| `app/assets/stylesheets/menu.css` | Minor — add missing hides |
-| `app/assets/stylesheets/groceries.css` | Minor — verify orphan prevention |
+| `app/assets/stylesheets/menu.css` | Minor — verify category orphan prevention |
+| `app/assets/stylesheets/groceries.css` | Minor — verify aisle orphan prevention |
+| `app/views/recipes/_recipe_content.html.erb` | Minor — move nutrition block before steps, wrap in `.nutrition-print-wrap` |
 
-No view files, JavaScript, or controller changes.
+No JavaScript or controller changes.
+
+**Note on `@page` margins:** The recipe, menu, and grocery pages each declare
+`@page` margins. Because `@page` is global, the winning declaration depends on
+CSS load order. Currently this works correctly: `print.css` (loaded globally)
+sets `1in 1.5in`, then `menu.css` / `groceries.css` (loaded via
+`content_for(:head)`) override to `0.5in 0.6in` on their pages. This is
+fragile but functional — document it with a comment in each file.
 
 ## Testing
 
