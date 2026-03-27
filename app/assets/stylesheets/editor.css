@@ -821,6 +821,10 @@ textarea.input-base {
   min-width: 0;
 }
 
+.graphical-step-title {
+  font-weight: 600;
+}
+
 .graphical-ingredient-summary {
   font-size: 0.7rem;
   color: var(--text-light);

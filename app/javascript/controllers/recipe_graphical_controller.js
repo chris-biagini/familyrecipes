@@ -333,7 +333,7 @@ export default class extends Controller {
 
   addIngredient(stepIndex) {
     if (!this.steps[stepIndex].ingredients) this.steps[stepIndex].ingredients = []
-    this.steps[stepIndex].ingredients.push({ name: "", quantity: "", prep_note: "" })
+    this.steps[stepIndex].ingredients.unshift({ name: "", quantity: "", prep_note: "" })
     this.rebuildIngredientRows(stepIndex)
   }
 

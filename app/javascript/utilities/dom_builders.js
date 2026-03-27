@@ -68,7 +68,7 @@ export function buildTextareaGroup(labelText, value, onChange) {
   const textarea = document.createElement("textarea")
   textarea.className = "input-base"
   textarea.value = value
-  textarea.rows = 4
+  textarea.rows = 5
   textarea.addEventListener("input", () => onChange(textarea.value))
   group.appendChild(textarea)
 

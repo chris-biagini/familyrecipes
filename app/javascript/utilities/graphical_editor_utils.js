@@ -46,12 +46,12 @@ export function moveInList(list, index, direction, container, rebuildFn) {
   if (target < 0 || target >= list.length) return
 
   if (container) {
+    collapseAll(container)
     const rowA = container.children[index]
     const rowB = container.children[target]
     animateSwap(rowA, rowB, () => {
       swapItems(list, index, target)
       rebuildFn()
-      expandItem(container, target)
     })
   } else {
     swapItems(list, index, target)
@@ -146,7 +146,6 @@ export function buildRowsSection(label, items, onAdd, buildRowFn, containerAttrs
   labelEl.textContent = label
   headerRow.appendChild(labelEl)
 
-  headerRow.appendChild(buildPillButton("+ Add", onAdd))
   section.appendChild(headerRow)
 
   const rowsContainer = document.createElement("div")
@@ -158,6 +157,8 @@ export function buildRowsSection(label, items, onAdd, buildRowFn, containerAttrs
   }
   items.forEach((item, i) => rowsContainer.appendChild(buildRowFn(i, item)))
   section.appendChild(rowsContainer)
+
+  section.appendChild(buildPillButton("+ Add", onAdd))
 
   return section
 }
