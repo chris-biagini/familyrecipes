@@ -27,6 +27,13 @@ const ICONS = {
       { tag: "path", attrs: { d: "M4 9h11a4 4 0 0 1 0 8H11" } },
       { tag: "polyline", attrs: { points: "7 5 4 9 7 13" } }
     ]
+  },
+  plus: {
+    viewBox: "0 0 24 24",
+    children: [
+      { tag: "line", attrs: { x1: "12", y1: "5", x2: "12", y2: "19" } },
+      { tag: "line", attrs: { x1: "5", y1: "12", x2: "19", y2: "12" } }
+    ]
   }
 }
 

@@ -2,15 +2,37 @@
  * Shared DOM factory functions for graphical editors. Pure element
  * creators with no Stimulus or framework coupling.
  *
+ * - icons: SVG icon builder (buildIcon) for icon buttons
  * - graphical_editor_utils: higher-level card/section builders
  * - recipe_graphical_controller: recipe step/ingredient editing
  * - quickbites_graphical_controller: category/item editing
  */
 
+import { buildIcon } from "./icons"
+
 export function buildButton(text, onClick, className) {
   const btn = document.createElement("button")
   btn.type = "button"
   if (className) btn.className = className
+  btn.textContent = text
+  btn.addEventListener("click", onClick)
+  return btn
+}
+
+export function buildIconButton(iconName, onClick, { className = "", label = "", size = 14 } = {}) {
+  const btn = document.createElement("button")
+  btn.type = "button"
+  btn.className = `btn-icon-round ${className}`.trim()
+  if (label) btn.setAttribute("aria-label", label)
+  btn.appendChild(buildIcon(iconName, size))
+  btn.addEventListener("click", onClick)
+  return btn
+}
+
+export function buildPillButton(text, onClick, className) {
+  const btn = document.createElement("button")
+  btn.type = "button"
+  btn.className = className ? `btn-pill ${className}` : "btn-pill"
   btn.textContent = text
   btn.addEventListener("click", onClick)
   return btn
