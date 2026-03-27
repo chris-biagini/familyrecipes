@@ -203,9 +203,10 @@ collision. Parser pipeline: `LineClassifier` → `RecipeBuilder` →
 - `default_url_options` auto-injects `kitchen_slug` — always use `_path`
   helpers, never hard-code URL strings.
 - Use `home_path` (not `kitchen_root_path`) for homepage links.
-- `MealPlan` (one row per kitchen) backs the menu, groceries, and dinner
-  picker. Stores cook history (recency weighting) and on-hand ingredient
-  state. `QuickBite` models (normalized AR, not text blob) live within
+- `MealPlan` (one row per kitchen) is a thin coordinator for the menu,
+  groceries, and dinner picker. Delegates to four normalized AR models:
+  MealPlanSelection, OnHandEntry, CustomGroceryItem, CookHistoryEntry.
+  `QuickBite` models (normalized AR, not text blob) live within
   `Category` alongside recipes — the menu page renders both per-category.
   `MealPlanSelection` references QBs by stringified integer PK;
   `quick_bite_ids_for` returns integers for consumer use. Three-zone
@@ -216,8 +217,8 @@ collision. Parser pipeline: `LineClassifier` → `RecipeBuilder` →
   capture the full consumption period. See
   `docs/superpowers/specs/2026-03-22-inventory-check-design.md`.
 - `POST /groceries/need` — search overlay quick-add: resolves ingredient
-  name, adds unrecognized items as structured custom items (`{ name:,
-  added_at: }`), marks item as needed. `SearchDataHelper` exposes
+  name, adds unrecognized items as `CustomGroceryItem` AR records,
+  marks item as needed. `SearchDataHelper` exposes
   `ingredients` and `custom_items` keys so the overlay can match against
   the grocery corpus.
 
