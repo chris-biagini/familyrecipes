@@ -11,8 +11,10 @@
   <link rel="icon" type="image/svg+xml" href="{{ '/assets/favicon.svg' | relative_url }}">
 </head>
 <body>
+  <input type="checkbox" id="nav-toggle" class="nav-toggle-input" aria-hidden="true">
   {% include topbar.html %}
   <div class="layout">
+    <label for="nav-toggle" class="nav-backdrop" aria-hidden="true"></label>
     <nav class="sidebar" aria-label="Site navigation">
       {% include sidebar.html %}
     </nav>

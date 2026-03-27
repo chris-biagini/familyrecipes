@@ -57,19 +57,22 @@
       <label class="graphical-label">Tags</label>
       <div data-controller="tag-input"
            data-tag-input-all-tags-value="<%= current_kitchen.tags.left_joins(:recipe_tags).group(:name).order(:name).count.to_a.to_json %>">
-        <div class="tag-input-container">
-          <div class="tag-pills" data-tag-input-target="pills"></div>
-          <input type="text" class="tag-input-field" placeholder="Add tag..."
-                 data-tag-input-target="input"
-                 data-action="input->tag-input#onInput keydown->tag-input#onKeydown">
-        </div>
+        <div class="tag-pills" data-tag-input-target="pills"></div>
+          <div class="tag-input-row">
+            <input type="text" class="tag-input-field input-base" placeholder="Add tag..."
+                   data-tag-input-target="input"
+                   data-action="input->tag-input#onInput keydown->tag-input#onKeydown">
+            <button type="button" class="btn-icon-round" aria-label="Add tag"
+                    data-action="click->tag-input#commitTag"
+                    data-tag-input-target="addBtn"></button>
+          </div>
         <div class="tag-autocomplete" data-tag-input-target="dropdown" hidden></div>
       </div>
     </div>
 
     <div data-recipe-graphical-target="stepsContainer" class="graphical-steps-container"></div>
 
-    <button type="button" class="btn graphical-btn--add-step"
+    <button type="button" class="btn-pill"
             data-action="click->recipe-graphical#addStep">+ Add Step</button>
 
     <div class="graphical-field-group">

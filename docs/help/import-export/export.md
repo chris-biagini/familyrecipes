@@ -18,11 +18,14 @@ On the homepage, click **Export All Data**. Your browser downloads a
 ## What's included
 
 - **All recipes** — one `.md` file per recipe, in the [recipe format]({{ site.baseurl }}/recipes/format/)
+- **QuickBites** — all quick bite definitions
 - **Ingredient catalog** — nutrition data, aisle assignments, unit aliases
-- **Meal plan state** — current menu selections, grocery list state, pantry history
+- **Aisle and category ordering** — your custom sort orders
 
 ## What's not included
 
+- Meal plan state — menu selections, grocery check-off state, and pantry
+  history are not included in the export.
 - API keys — these are stored encrypted and are not exported. You'll need
   to re-enter your USDA and Anthropic API keys after importing on a new install.
 - User accounts — authentication is handled externally (Authelia) and is

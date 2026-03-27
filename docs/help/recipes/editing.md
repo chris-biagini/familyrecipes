@@ -52,7 +52,7 @@ Changes are saved when you click **Save** and take effect immediately.
 ## Deleting a recipe
 
 Open the recipe editor, scroll to the bottom of the editor dialog, and click
-**Delete Recipe**. You'll be asked to confirm. Deletion cannot be undone.
+**Delete**. You'll be asked to confirm. Deletion cannot be undone.
 
 Deleting a recipe removes it from the recipe list, from the menu, and from
 the grocery list. Any recipes that cross-reference the deleted recipe will

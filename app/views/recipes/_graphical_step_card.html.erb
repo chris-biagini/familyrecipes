@@ -15,8 +15,10 @@
   <div class="graphical-step-card">
     <details class="collapse-header"<%= " open" if index == 0 %>>
       <summary class="graphical-step-header">
-        <span class="graphical-step-title"><%= step[:tldr] || "Step #{index + 1}" %></span>
-        <span class="graphical-ingredient-summary"><%= ingredient_summary(step[:ingredients]) %></span>
+        <span class="graphical-step-title-area">
+          <span class="graphical-step-title"><%= step[:tldr] || "Step #{index + 1}" %></span>
+          <span class="graphical-ingredient-summary"><%= ingredient_summary(step[:ingredients]) %></span>
+        </span>
       </summary>
     </details>
     <div class="collapse-body">
@@ -31,17 +33,19 @@
           </div>
           <div class="graphical-ingredient-rows" data-step-index="<%= index %>">
             <% (step[:ingredients] || []).each do |ing| %>
-              <div class="graphical-ingredient-row">
-                <input type="text" placeholder="Name" value="<%= ing[:name] %>" class="graphical-input--name" data-field="name">
-                <input type="text" placeholder="Qty" value="<%= ing[:quantity] %>" class="graphical-input--qty" data-field="quantity">
-                <input type="text" placeholder="Prep note" value="<%= ing[:prep_note] %>" class="graphical-input--prep" data-field="prep_note">
+              <div class="graphical-ingredient-card">
+                <div class="graphical-ingredient-fields">
+                  <input type="text" placeholder="Name" value="<%= ing[:name] %>" class="input-base graphical-ing-name" data-field="name">
+                  <input type="text" placeholder="Qty" value="<%= ing[:quantity] %>" class="input-base graphical-ing-qty" data-field="quantity">
+                  <input type="text" placeholder="Prep note" value="<%= ing[:prep_note] %>" class="input-base graphical-ing-prep" data-field="prep_note">
+                </div>
               </div>
             <% end %>
           </div>
         </div>
         <div class="graphical-field-group">
           <label>Instructions</label>
-          <textarea rows="4" data-field="instructions"><%= step[:instructions] %></textarea>
+          <textarea rows="5" data-field="instructions"><%= step[:instructions] %></textarea>
         </div>
       </div>
     </div>

@@ -60,10 +60,11 @@ Some tags get automatic emoji and color treatment:
 
 | Tag examples | Decoration |
 |---|---|
-| `vegetarian`, `vegan`, `gluten-free` | green dietary badge |
-| `spicy`, `hot` | amber heat badge |
-| `italian`, `mexican`, `thai` | cuisine badge |
-| `quick`, `30-minutes` | blue speed badge |
+| `vegetarian`, `vegan` | green plant-based badge |
+| `gluten-free`, `dairy-free`, `nut-free` | amber dietary restriction badge |
+| `italian`, `mexican`, `thai` | cuisine flag badge |
+| `quick`, `easy`, `weeknight` | blue effort/speed badge |
+| `julia-child`, `grandma`, `holiday` | purple attribution/special badge |
 
 Smart tag decorations can be turned off in [Settings]({{ site.baseurl }}/settings/).
 

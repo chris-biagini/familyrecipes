@@ -6,10 +6,12 @@
  *
  * - recipe_graphical_controller: recipe step/ingredient editing
  * - quickbites_graphical_controller: category/item editing
- * - dom_builders: low-level element factories (buildButton, buildInput)
+ * - dom_builders: low-level element factories (buildIconButton, buildPillButton, buildInput)
+ * - ordered_list_editor_utils: animateSwap/swapItems for move animations
  */
 
-import { buildButton } from "./dom_builders"
+import { buildIconButton, buildPillButton } from "./dom_builders"
+import { animateSwap, swapItems } from "./ordered_list_editor_utils"
 
 // --- Accordion helpers ---
 
@@ -43,10 +45,18 @@ export function moveInList(list, index, direction, container, rebuildFn) {
   const target = index + direction
   if (target < 0 || target >= list.length) return
 
-  const [moved] = list.splice(index, 1)
-  list.splice(target, 0, moved)
-  rebuildFn()
-  if (container) expandItem(container, target)
+  if (container) {
+    collapseAll(container)
+    const rowA = container.children[index]
+    const rowB = container.children[target]
+    animateSwap(rowA, rowB, () => {
+      swapItems(list, index, target)
+      rebuildFn()
+    })
+  } else {
+    swapItems(list, index, target)
+    rebuildFn()
+  }
 }
 
 export function rebuildContainer(container, items, buildFn) {
@@ -70,8 +80,13 @@ export function buildCardDetails(titleEl, summaryEl, actionsEl) {
 
   const summary = document.createElement("summary")
   summary.className = "graphical-step-header"
-  summary.appendChild(titleEl)
-  summary.appendChild(summaryEl)
+
+  const titleArea = document.createElement("span")
+  titleArea.className = "graphical-step-title-area"
+  titleArea.appendChild(titleEl)
+  titleArea.appendChild(summaryEl)
+  summary.appendChild(titleArea)
+
   summary.appendChild(actionsEl)
 
   details.appendChild(summary)
@@ -92,12 +107,19 @@ export function buildCountSummary(count, singular, plural) {
   return span
 }
 
-export function buildCardActions(index, onMove, onRemove) {
+export function buildCardActions(index, onMove, onRemove, { total = 0 } = {}) {
   const actions = document.createElement("div")
   actions.className = "graphical-step-actions"
-  actions.appendChild(buildButton("\u2191", () => onMove(index, -1), "graphical-btn--icon"))
-  actions.appendChild(buildButton("\u2193", () => onMove(index, 1), "graphical-btn--icon"))
-  actions.appendChild(buildButton("\u00D7", () => onRemove(index), "graphical-btn--icon graphical-btn--danger"))
+
+  const upBtn = buildIconButton("chevron", () => onMove(index, -1), { className: "btn-move-up", label: "Move up" })
+  if (index === 0) upBtn.disabled = true
+  actions.appendChild(upBtn)
+
+  const downBtn = buildIconButton("chevron", () => onMove(index, 1), { className: "aisle-icon--flipped btn-move-down", label: "Move down" })
+  if (total > 0 && index >= total - 1) downBtn.disabled = true
+  actions.appendChild(downBtn)
+
+  actions.appendChild(buildIconButton("delete", () => onRemove(index), { className: "btn-danger", label: "Remove" }))
   return actions
 }
 
@@ -124,7 +146,6 @@ export function buildRowsSection(label, items, onAdd, buildRowFn, containerAttrs
   labelEl.textContent = label
   headerRow.appendChild(labelEl)
 
-  headerRow.appendChild(buildButton("+ Add", onAdd, "graphical-btn--small"))
   section.appendChild(headerRow)
 
   const rowsContainer = document.createElement("div")
@@ -137,7 +158,20 @@ export function buildRowsSection(label, items, onAdd, buildRowFn, containerAttrs
   items.forEach((item, i) => rowsContainer.appendChild(buildRowFn(i, item)))
   section.appendChild(rowsContainer)
 
+  section.appendChild(buildPillButton("+ Add", onAdd))
+
   return section
+}
+
+export function updateMoveButtons(container) {
+  const children = Array.from(container.children)
+  const last = children.length - 1
+  children.forEach((el, i) => {
+    const up = el.querySelector(".btn-move-up")
+    const down = el.querySelector(".btn-move-down")
+    if (up) up.disabled = i === 0
+    if (down) down.disabled = i >= last
+  })
 }
 
 export function updateTitleDisplay(container, index, text, fallback) {
