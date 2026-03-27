@@ -59,7 +59,7 @@ export default class extends Controller {
   }
 
   readIngredientsFromCard(card) {
-    const rows = card.querySelectorAll(".graphical-ingredient-row")
+    const rows = card.querySelectorAll(".graphical-ingredient-card")
     return Array.from(rows).map(row => ({
       name: row.querySelector("[data-field='name']")?.value || "",
       quantity: row.querySelector("[data-field='quantity']")?.value || "",
@@ -291,20 +291,25 @@ export default class extends Controller {
   }
 
   buildIngredientRow(stepIndex, ingIndex, ing) {
-    const row = document.createElement("div")
-    row.className = "graphical-ingredient-row"
+    const card = document.createElement("div")
+    card.className = "graphical-ingredient-card"
 
-    row.appendChild(buildInput("Name", ing.name || "", (val) => {
+    const fields = document.createElement("div")
+    fields.className = "graphical-ingredient-fields"
+
+    fields.appendChild(buildInput("Name", ing.name || "", (val) => {
       this.steps[stepIndex].ingredients[ingIndex].name = val
-    }, "graphical-input--name"))
+    }, "graphical-ing-name"))
 
-    row.appendChild(buildInput("Qty", ing.quantity || "", (val) => {
+    fields.appendChild(buildInput("Qty", ing.quantity || "", (val) => {
       this.steps[stepIndex].ingredients[ingIndex].quantity = val
-    }, "graphical-input--qty"))
+    }, "graphical-ing-qty"))
 
-    row.appendChild(buildInput("Prep note", ing.prep_note || "", (val) => {
+    fields.appendChild(buildInput("Prep note", ing.prep_note || "", (val) => {
       this.steps[stepIndex].ingredients[ingIndex].prep_note = val
-    }, "graphical-input--prep"))
+    }, "graphical-ing-prep"))
+
+    card.appendChild(fields)
 
     const actions = document.createElement("div")
     actions.className = "graphical-ingredient-actions"
@@ -312,9 +317,9 @@ export default class extends Controller {
     const downBtn = buildIconButton("chevron", () => this.moveIngredient(stepIndex, ingIndex, 1), { className: "aisle-icon--flipped", label: "Move down" })
     actions.appendChild(downBtn)
     actions.appendChild(buildIconButton("delete", () => this.removeIngredient(stepIndex, ingIndex), { className: "btn-danger", label: "Remove" }))
-    row.appendChild(actions)
+    card.appendChild(actions)
 
-    return row
+    return card
   }
 
   addIngredient(stepIndex) {

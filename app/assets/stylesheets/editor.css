@@ -818,11 +818,36 @@ textarea.input-base {
   gap: 6px;
 }
 
+/* Quick Bites item rows — recipe steps use .graphical-ingredient-card instead */
 .graphical-ingredient-row {
   display: flex;
   gap: 6px;
   align-items: center;
 }
+
+/* Recipe ingredient cards — card treatment with proportional field widths */
+.graphical-ingredient-card {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  padding: 6px 8px;
+  background: var(--surface-alt);
+  border: 1px solid var(--rule-faint);
+  border-radius: 6px;
+}
+
+.graphical-ingredient-fields {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+  align-items: center;
+  min-width: 0;
+}
+
+.graphical-ing-name { flex: 3; }
+.graphical-ing-qty { flex: 1; min-width: 4.5rem; max-width: 6rem; text-align: center; }
+.graphical-ing-prep { flex: 2; font-style: italic; border-color: var(--rule-faint); }
+.graphical-ing-prep::placeholder { font-style: italic; }
 
 .graphical-ingredient-reorder {
   display: flex;

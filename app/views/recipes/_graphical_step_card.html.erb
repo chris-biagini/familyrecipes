@@ -31,10 +31,12 @@
           </div>
           <div class="graphical-ingredient-rows" data-step-index="<%= index %>">
             <% (step[:ingredients] || []).each do |ing| %>
-              <div class="graphical-ingredient-row">
-                <input type="text" placeholder="Name" value="<%= ing[:name] %>" class="graphical-input--name" data-field="name">
-                <input type="text" placeholder="Qty" value="<%= ing[:quantity] %>" class="graphical-input--qty" data-field="quantity">
-                <input type="text" placeholder="Prep note" value="<%= ing[:prep_note] %>" class="graphical-input--prep" data-field="prep_note">
+              <div class="graphical-ingredient-card">
+                <div class="graphical-ingredient-fields">
+                  <input type="text" placeholder="Name" value="<%= ing[:name] %>" class="input-base graphical-ing-name" data-field="name">
+                  <input type="text" placeholder="Qty" value="<%= ing[:quantity] %>" class="input-base graphical-ing-qty" data-field="quantity">
+                  <input type="text" placeholder="Prep note" value="<%= ing[:prep_note] %>" class="input-base graphical-ing-prep" data-field="prep_note">
+                </div>
               </div>
             <% end %>
           </div>

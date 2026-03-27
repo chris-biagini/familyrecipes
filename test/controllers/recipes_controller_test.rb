@@ -1022,7 +1022,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     assert_select '.graphical-step-card', count: 2
     assert_select '.graphical-step-title', text: 'Make the dough (combine ingredients)'
     assert_select '.graphical-step-title', text: 'Bake (put it in the oven)'
-    assert_select '.graphical-ingredient-row', count: 3
+    assert_select '.graphical-ingredient-card', count: 3
   end
 
   test 'editor_frame pre-populates front matter fields' do
