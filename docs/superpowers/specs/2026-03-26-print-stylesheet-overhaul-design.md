@@ -58,11 +58,10 @@ Elements to hide in print:
   scale-bar contains it, but explicit for safety
 - `.recipe-tags` (clickable filter pills, not informational in print)
 - `.search-overlay` (dialog)
-- `#settings-dialog` (dialog)
+- `#settings-editor` (dialog)
 - `.app-version` (footer version badge)
-- `[data-open-editor]` buttons in nutrition footnotes
-- Nutrition footnote editor buttons should be hidden but the footnote text
-  itself should remain
+- `[data-open-editor]` buttons in nutrition footnotes (hide the buttons but
+  keep the footnote text)
 
 #### 1c. Checkbox bullets
 
@@ -92,7 +91,6 @@ border: 1px solid black;
 border-radius: 1px;
 margin-right: 0.4rem;
 vertical-align: middle;
-flex-shrink: 0;
 ```
 
 For `.instructions p`, use `float: left; margin: 0.25em 0.4rem 0 0` to keep
@@ -123,8 +121,8 @@ Print styles for the wrapper:
 }
 ```
 
-The `.nutrition-footnote` paragraphs move inside the wrapper so they stay
-with the label.
+The `.nutrition-footnote` paragraphs are already children of the `<aside>`,
+so wrapping the entire `<aside>` in the wrapper naturally includes them.
 
 Reduce label from the screen `max-width: 16rem` to `width: 100%` within the
 floated wrapper. Clear the float after the article via `article.recipe::after
@@ -205,8 +203,9 @@ Consolidate global hide rules and add missing ones:
 **Add to hidden list:**
 - `.app-version` (footer version text)
 - `.search-overlay` (search dialog)
-- `#settings-dialog` (settings dialog — verify it isn't already caught by
+- `#settings-editor` (settings dialog — verify it isn't already caught by
   `.editor-dialog` class; if so, skip)
+- `[data-open-editor]` (nutrition footnote editor buttons)
 
 Help links and contextual help icons are children of `nav` or `.editor-dialog`,
 both already hidden — no additional selectors needed.
