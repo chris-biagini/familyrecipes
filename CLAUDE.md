@@ -356,6 +356,17 @@ ruby test/sim/grocery_convergence.rb   # standalone convergence simulation (excl
 
 The default `rake` task runs both lint and test.
 
+**Help site.** User-facing documentation lives in `docs/help/` as a Jekyll static
+site deployed to GitHub Pages via `.github/workflows/docs.yml`. Design spec:
+`docs/superpowers/specs/2026-03-26-help-site-design.md`. The docs are a
+behavioral contract — if a feature doesn't match the docs, decide whether to fix
+the code or update the docs. To build locally:
+```bash
+gem install jekyll kramdown-parser-gfm
+cp app/assets/images/favicon.svg docs/help/assets/favicon.svg
+jekyll build --source docs/help --destination _site
+```
+
 **Test conventions.** Plain `Minitest::Test` files (parser-layer tests in
 `test/`) must be added to the `Rails/RefuteMethods` exclusion in `.rubocop.yml`
 — they don't have `assert_not`. RuboCop also enforces blank lines before

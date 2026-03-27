@@ -1,0 +1,14 @@
+title: familyrecipes help
+# Adjust baseurl to match your GitHub Pages repo path.
+# If repo is github.com/<org>/familyrecipes → "/familyrecipes"
+# If user/org site at <user>.github.io → ""
+baseurl: "/familyrecipes"
+url: ""
+markdown: kramdown
+kramdown:
+  input: GFM
+theme: null
+plugins: []
+exclude:
+  - "*.sh"
+  - ".gitignore"

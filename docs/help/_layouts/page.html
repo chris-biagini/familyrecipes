@@ -1,0 +1,27 @@
+---
+layout: default
+---
+{% if page.section %}
+<nav class="breadcrumb" aria-label="breadcrumb">
+  <a href="{{ site.baseurl }}/">Help</a>
+  <span aria-hidden="true">›</span>
+  <a href="{{ site.baseurl }}/{{ page.section }}/">{{ page.section | capitalize }}</a>
+  <span aria-hidden="true">›</span>
+  <span>{{ page.title }}</span>
+</nav>
+{% endif %}
+
+{{ content }}
+
+{% if page.prev or page.next %}
+<nav class="page-nav" aria-label="page navigation">
+  {% if page.prev %}
+    <a href="{{ page.prev | relative_url }}" class="page-nav-prev">← Previous</a>
+  {% else %}
+    <span></span>
+  {% endif %}
+  {% if page.next %}
+    <a href="{{ page.next | relative_url }}" class="page-nav-next">Next →</a>
+  {% endif %}
+</nav>
+{% endif %}
