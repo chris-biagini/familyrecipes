@@ -397,6 +397,7 @@
 }
 
 @media print {
+  /* Override global 1in/1.5in margins from print.css — menu is denser */
   @page {
     margin: 0.5in 0.6in;
   }
