@@ -735,12 +735,29 @@ button.aisle-name:hover {
 
 .graphical-front-matter-row {
   display: flex;
-  gap: 1rem;
+  gap: 0.75rem;
   flex-wrap: wrap;
+  align-items: flex-end;
 }
 
-.graphical-front-matter-row > * {
-  min-width: 120px;
+.graphical-fm-field--narrow {
+  flex: 0 0 auto;
+  width: 5.5rem;
+}
+
+.graphical-fm-field--wide {
+  flex: 1;
+  min-width: 10rem;
+}
+
+.graphical-new-category-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.35rem;
+}
+
+.graphical-new-category-row .input-base {
   flex: 1;
 }
 
@@ -949,6 +966,11 @@ textarea.input-base {
 @media (max-width: 600px) {
   .graphical-front-matter-row {
     flex-direction: column;
+  }
+
+  .graphical-fm-field--narrow {
+    width: auto;
+    flex: 1;
   }
 
   .graphical-ingredient-row {

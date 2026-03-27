@@ -36,23 +36,23 @@
         </div>
 
         <div class="graphical-front-matter-row">
-          <div class="graphical-field-group graphical-field-group--inline">
+          <div class="graphical-field-group graphical-fm-field graphical-fm-field--narrow">
             <label class="graphical-label" for="graphical-serves">Serves</label>
-            <input type="text" id="graphical-serves" class="input-base input-short"
+            <input type="text" id="graphical-serves" class="input-base"
                    data-recipe-graphical-target="serves"
                    placeholder="e.g. 4"
                    value="<%= structure.dig(:front_matter, :serves) %>">
           </div>
 
-          <div class="graphical-field-group graphical-field-group--inline">
+          <div class="graphical-field-group graphical-fm-field graphical-fm-field--narrow">
             <label class="graphical-label" for="graphical-makes">Makes</label>
-            <input type="text" id="graphical-makes" class="input-base input-short"
+            <input type="text" id="graphical-makes" class="input-base"
                    data-recipe-graphical-target="makes"
                    placeholder="e.g. 12 rolls"
                    value="<%= structure.dig(:front_matter, :makes) %>">
           </div>
 
-          <div class="graphical-field-group graphical-field-group--inline">
+          <div class="graphical-field-group graphical-fm-field graphical-fm-field--wide">
             <label class="graphical-label" for="graphical-category">Category</label>
             <select id="graphical-category" class="input-base"
                     data-recipe-graphical-target="categorySelect"
@@ -64,11 +64,17 @@
               <% end %>
               <option value="__new__">New category...</option>
             </select>
-            <input type="text" class="input-base input-short" hidden
-                   data-recipe-graphical-target="categoryInput"
-                   data-action="keydown->recipe-graphical#categoryInputKeydown"
-                   placeholder="New category name">
           </div>
+        </div>
+
+        <div class="graphical-new-category-row" hidden
+             data-recipe-graphical-target="categoryRow">
+          <input type="text" class="input-base"
+                 data-recipe-graphical-target="categoryInput"
+                 data-action="keydown->recipe-graphical#categoryInputKeydown"
+                 placeholder="New category name">
+          <button type="button" class="btn-link"
+                  data-action="click->recipe-graphical#cancelNewCategory">cancel</button>
         </div>
 
         <div class="graphical-field-group">

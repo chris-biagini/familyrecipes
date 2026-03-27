@@ -21,7 +21,7 @@ import {
 export default class extends Controller {
   static targets = [
     "title", "description", "serves", "makes",
-    "categorySelect", "categoryInput",
+    "categorySelect", "categoryInput", "categoryRow",
     "stepsContainer", "footer"
   ]
 
@@ -146,26 +146,29 @@ export default class extends Controller {
 
   showNewCategoryInput(value) {
     this.categorySelectTarget.value = "__new__"
-    if (this.hasCategoryInputTarget) {
-      this.categoryInputTarget.value = value || ""
-      this.categoryInputTarget.hidden = false
-      this.categorySelectTarget.hidden = true
-    }
+    if (!this.hasCategoryRowTarget) return
+    this.categoryInputTarget.value = value || ""
+    this.categoryRowTarget.hidden = false
   }
 
   categoryChanged() {
-    if (!this.hasCategoryInputTarget) return
+    if (!this.hasCategoryRowTarget) return
     if (this.categorySelectTarget.value === "__new__") {
-      this.categoryInputTarget.hidden = false
-      this.categorySelectTarget.hidden = true
+      this.categoryRowTarget.hidden = false
       this.categoryInputTarget.focus()
+    } else {
+      this.categoryRowTarget.hidden = true
     }
   }
 
   categoryInputKeydown(event) {
     if (event.key !== "Escape") return
-    this.categoryInputTarget.hidden = true
-    this.categorySelectTarget.hidden = false
+    this.cancelNewCategory()
+  }
+
+  cancelNewCategory() {
+    if (!this.hasCategoryRowTarget) return
+    this.categoryRowTarget.hidden = true
     this.categorySelectTarget.value = ""
   }
 
