@@ -9,7 +9,7 @@
  * - dom_builders: low-level element factories (buildButton, buildInput)
  */
 
-import { buildButton } from "./dom_builders"
+import { buildIconButton, buildPillButton } from "./dom_builders"
 
 // --- Accordion helpers ---
 
@@ -95,9 +95,14 @@ export function buildCountSummary(count, singular, plural) {
 export function buildCardActions(index, onMove, onRemove) {
   const actions = document.createElement("div")
   actions.className = "graphical-step-actions"
-  actions.appendChild(buildButton("\u2191", () => onMove(index, -1), "graphical-btn--icon"))
-  actions.appendChild(buildButton("\u2193", () => onMove(index, 1), "graphical-btn--icon"))
-  actions.appendChild(buildButton("\u00D7", () => onRemove(index), "graphical-btn--icon graphical-btn--danger"))
+
+  const upBtn = buildIconButton("chevron", () => onMove(index, -1), { label: "Move up" })
+  actions.appendChild(upBtn)
+
+  const downBtn = buildIconButton("chevron", () => onMove(index, 1), { className: "aisle-icon--flipped", label: "Move down" })
+  actions.appendChild(downBtn)
+
+  actions.appendChild(buildIconButton("delete", () => onRemove(index), { className: "btn-danger", label: "Remove" }))
   return actions
 }
 
@@ -124,7 +129,7 @@ export function buildRowsSection(label, items, onAdd, buildRowFn, containerAttrs
   labelEl.textContent = label
   headerRow.appendChild(labelEl)
 
-  headerRow.appendChild(buildButton("+ Add", onAdd, "graphical-btn--small"))
+  headerRow.appendChild(buildPillButton("+ Add", onAdd))
   section.appendChild(headerRow)
 
   const rowsContainer = document.createElement("div")

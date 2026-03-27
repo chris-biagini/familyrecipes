@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { buildButton, buildInput, buildFieldGroup, buildTextareaGroup } from "../utilities/dom_builders"
+import { buildButton, buildInput, buildFieldGroup, buildTextareaGroup, buildIconButton } from "../utilities/dom_builders"
 import { structureChanged } from "../utilities/editor_utils"
 import {
   expandItem, toggleItem,
@@ -308,9 +308,10 @@ export default class extends Controller {
 
     const actions = document.createElement("div")
     actions.className = "graphical-ingredient-actions"
-    actions.appendChild(buildButton("\u2191", () => this.moveIngredient(stepIndex, ingIndex, -1), "graphical-btn--icon"))
-    actions.appendChild(buildButton("\u2193", () => this.moveIngredient(stepIndex, ingIndex, 1), "graphical-btn--icon"))
-    actions.appendChild(buildButton("\u00D7", () => this.removeIngredient(stepIndex, ingIndex), "graphical-btn--icon graphical-btn--danger"))
+    actions.appendChild(buildIconButton("chevron", () => this.moveIngredient(stepIndex, ingIndex, -1), { label: "Move up" }))
+    const downBtn = buildIconButton("chevron", () => this.moveIngredient(stepIndex, ingIndex, 1), { className: "aisle-icon--flipped", label: "Move down" })
+    actions.appendChild(downBtn)
+    actions.appendChild(buildIconButton("delete", () => this.removeIngredient(stepIndex, ingIndex), { className: "btn-danger", label: "Remove" }))
     row.appendChild(actions)
 
     return row

@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { buildButton, buildInput, buildFieldGroup } from "../utilities/dom_builders"
+import { buildButton, buildInput, buildFieldGroup, buildIconButton } from "../utilities/dom_builders"
 import { structureChanged } from "../utilities/editor_utils"
 import {
   expandItem,
@@ -200,9 +200,10 @@ export default class extends Controller {
 
     const actions = document.createElement("div")
     actions.className = "graphical-ingredient-actions"
-    actions.appendChild(buildButton("\u2191", () => this.moveItem(catIndex, itemIndex, -1), "graphical-btn--icon"))
-    actions.appendChild(buildButton("\u2193", () => this.moveItem(catIndex, itemIndex, 1), "graphical-btn--icon"))
-    actions.appendChild(buildButton("\u00D7", () => this.removeItem(catIndex, itemIndex), "graphical-btn--icon graphical-btn--danger"))
+    actions.appendChild(buildIconButton("chevron", () => this.moveItem(catIndex, itemIndex, -1), { label: "Move up" }))
+    const downBtn = buildIconButton("chevron", () => this.moveItem(catIndex, itemIndex, 1), { className: "aisle-icon--flipped", label: "Move down" })
+    actions.appendChild(downBtn)
+    actions.appendChild(buildIconButton("delete", () => this.removeItem(catIndex, itemIndex), { className: "btn-danger", label: "Remove" }))
     row.appendChild(actions)
 
     return row
