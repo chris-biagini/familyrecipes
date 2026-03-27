@@ -1,3 +1,4 @@
+<% content_for :help_path, '/recipes/' %>
 <% content_for(:title) { current_kitchen.site_title } %>
 
 <% if current_member? %>
@@ -53,6 +54,7 @@
 <% if current_member? %>
 <%= render layout: 'shared/editor_dialog',
     locals: { title: 'Categories',
+              help_path: '/recipes/tags-and-categories/',
               id: 'category-order-editor',
               dialog_data: { extra_controllers: 'ordered-list-editor',
                              editor_on_success: 'reload',
@@ -83,6 +85,7 @@
 
 <%= render layout: 'shared/editor_dialog',
     locals: { title: 'Tags',
+              help_path: '/recipes/tags-and-categories/',
               id: 'tag-order-editor',
               dialog_data: { extra_controllers: 'ordered-list-editor',
                              editor_on_success: 'reload',
@@ -115,6 +118,7 @@
 <% if current_member? %>
 <%= render layout: 'shared/editor_dialog',
     locals: { title: 'New Recipe',
+              help_path: '/recipes/editing/',
               id: 'recipe-editor',
               mode_toggle: true,
               dialog_data: { editor_open: '#new-recipe-button',
@@ -169,6 +173,14 @@ Optional notes or source." %>
         data-ai-import-editor-dialog-id-value="recipe-editor">
   <div class="editor-header">
     <h2>Import with AI</h2>
+    <a href="<%= help_url('/import-export/ai-import/') %>"
+       class="editor-help-link"
+       title="Help"
+       aria-label="Help"
+       target="_blank"
+       rel="noopener noreferrer">
+      <%= icon(:help, size: 14) %>
+    </a>
     <button type="button" class="btn editor-close" data-action="click->ai-import#close" aria-label="Close">&times;</button>
   </div>
   <div class="editor-errors" data-ai-import-target="errors" hidden></div>
