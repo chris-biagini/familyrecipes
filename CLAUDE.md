@@ -286,7 +286,7 @@ jsbundling-rails + esbuild for JS bundling.
 
 **ActionCable.** Kitchen-wide stream `[kitchen, :updates]` powers all
 page-refresh morphs via `Kitchen#broadcast_update`. `RecipeBroadcaster`
-handles only delete/rename targeted notifications. No async jobs needed.
+handles only delete/rename targeted notifications.
 
 **Write path.** Controllers are thin adapters: param parsing → service call →
 response rendering. Services own all post-write side effects (reconcile,
@@ -309,7 +309,10 @@ broadcast). Don't call `MarkdownImporter` directly for web operations.
 **Other services.** `ShoppingListBuilder` (grocery list from selections +
 aisles), `RecipeAvailabilityCalculator` (ingredient on-hand check for menu),
 `CrossReferenceUpdater` (re-links cross-references after renames/deletes),
-`MarkdownValidator` (validates recipe markdown before save).
+`MarkdownValidator` (validates recipe markdown before save),
+`UsdaImportService` (transforms USDA API responses → editor form values).
+`UsdaSearchController` provides the JSON API (`/usda/search`, `/usda/:fdc_id`);
+reads API key from `Kitchen#usda_api_key` (encrypted).
 
 **Adding a new setting.** 5 touch points: migration,
 `settings/_editor_frame.html.erb` (form field with value),
@@ -322,7 +325,10 @@ driven by `FamilyRecipes::SmartTagRegistry` in `lib/familyrecipes/`.
 
 **Nutrition pipeline.** `IngredientCatalog` → `IngredientResolver` →
 `UnitResolver` → `NutritionCalculator`. Read their header comments for
-details. `rake catalog:sync` pushes YAML seed changes into the database.
+details. `RecipeNutritionJob` recalculates a single recipe's nutrition
+(called synchronously on save); `CascadeNutritionJob` re-runs all affected
+recipes when a catalog entry changes (called async). `rake catalog:sync`
+pushes YAML seed changes into the database.
 
 **Dinner picker.** Weighted random recipe suggestion on the menu page.
 `CookHistoryWeighter` applies quadratic recency decay so recently cooked
