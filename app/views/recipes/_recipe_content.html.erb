@@ -63,6 +63,12 @@
       </div>
     </header>
 
+    <%- if current_kitchen.show_nutrition && nutrition && nutrition['totals']&.values&.any? { |v| v.to_f > 0 } -%>
+      <div class="nutrition-print-wrap">
+        <%= render 'recipes/nutrition_table', nutrition: nutrition %>
+      </div>
+    <%- end -%>
+
     <% ingredient_info = nutrition&.slice('ingredient_details', 'missing_ingredients', 'partial_ingredients') %>
     <% recipe.steps.each do |step| %>
       <%= render 'recipes/step', step: step, embedded: false, heading_level: 2, scale_factor: 1.0, ingredient_info: ingredient_info %>
@@ -72,10 +78,6 @@
     <footer>
       <%= render_markdown(recipe.footer) %>
     </footer>
-    <%- end -%>
-
-    <%- if current_kitchen.show_nutrition && nutrition && nutrition['totals']&.values&.any? { |v| v.to_f > 0 } -%>
-      <%= render 'recipes/nutrition_table', nutrition: nutrition %>
     <%- end -%>
   </article>
 </div>
