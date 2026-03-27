@@ -1,4 +1,5 @@
 <% content_for(:title) { "#{current_kitchen.name}: Menu" } %>
+<% content_for :help_path, '/menu/' %>
 
 <% content_for(:head) do %>
   <%= stylesheet_link_tag 'menu', "data-turbo-track": "reload" %>
@@ -38,6 +39,7 @@
 <% if current_member? %>
 <%= render layout: 'shared/editor_dialog',
     locals: { title: 'Edit QuickBites',
+              help_path: '/menu/quickbites/',
               id: 'quickbites-editor',
               mode_toggle: true,
               dialog_data: { editor_open: '.qb-edit-trigger',

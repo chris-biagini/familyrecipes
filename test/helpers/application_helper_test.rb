@@ -18,4 +18,12 @@ class ApplicationHelperTest < ActionView::TestCase
   test 'format_numeric handles integer input' do
     assert_equal '12', format_numeric(12)
   end
+
+  test 'help_url prepends base URL to path' do
+    assert_equal 'https://chris-biagini.github.io/familyrecipes/recipes/', help_url('/recipes/')
+  end
+
+  test 'help_url works with nested path' do
+    assert_equal 'https://chris-biagini.github.io/familyrecipes/recipes/editing/', help_url('/recipes/editing/')
+  end
 end

@@ -34,4 +34,14 @@
       <%= icon(:settings, class: 'nav-icon', size: nil) %>
     </button>
   <% end %>
+  <% if content_for?(:help_path) %>
+    <a href="<%= help_url(yield(:help_path)) %>"
+       class="nav-help-link"
+       title="Help"
+       aria-label="Help"
+       target="_blank"
+       rel="noopener noreferrer">
+      <%= icon(:help, class: 'nav-icon', size: nil) %>
+    </a>
+  <% end %>
 </nav>

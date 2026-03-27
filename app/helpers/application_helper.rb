@@ -5,6 +5,11 @@
 # build time (falls back to "dev" in development).
 module ApplicationHelper
   APP_VERSION = Rails.root.join('REVISION').then { |f| f.exist? ? f.read.strip : 'dev' }.freeze
+  HELP_BASE_URL = 'https://chris-biagini.github.io/familyrecipes'
+
+  def help_url(path)
+    "#{HELP_BASE_URL}#{path}"
+  end
 
   def format_numeric(value)
     value == value.to_i ? value.to_i.to_s : value.to_s

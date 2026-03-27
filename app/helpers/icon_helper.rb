@@ -83,7 +83,11 @@ module IconHelper
              content: '<path d="M4 12l6 6L20 6"/>' },
     alert: { view_box: '0 0 24 24', attrs: { 'stroke-width' => '2' },
              content: '<path d="M12 3L2 21h20L12 3z"/><line x1="12" y1="10" x2="12" y2="15"/>' \
-                      '<path d="M12 18.5h.01"/>' }
+                      '<path d="M12 18.5h.01"/>' },
+    help: { view_box: '0 0 24 24', attrs: { 'stroke-width' => '1.8' },
+            content: '<circle cx="12" cy="12" r="9"/>' \
+                     '<path d="M9.5 9.5a2.5 2.5 0 0 1 5 0c0 2-2.5 2.5-2.5 4.5"/>' \
+                     '<path d="M12 17.5h.01"/>' }
   }.tap { |h| h.each_value(&:freeze) }.freeze
 
   def icon(name, size: 24, **attrs)
