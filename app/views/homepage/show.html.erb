@@ -173,15 +173,17 @@ Optional notes or source." %>
         data-ai-import-editor-dialog-id-value="recipe-editor">
   <div class="editor-header">
     <h2>Import with AI</h2>
-    <a href="<%= help_url('/import-export/ai-import/') %>"
-       class="editor-help-link"
-       title="Help"
-       aria-label="Help"
-       target="_blank"
-       rel="noopener noreferrer">
-      <%= icon(:help, size: 14) %>
-    </a>
-    <button type="button" class="btn editor-close" data-action="click->ai-import#close" aria-label="Close">&times;</button>
+    <div class="editor-header-actions">
+      <a href="<%= help_url('/import-export/ai-import/') %>"
+         class="editor-help-link"
+         title="Help"
+         aria-label="Help"
+         target="_blank"
+         rel="noopener noreferrer">
+        <%= icon(:help, size: 14) %>
+      </a>
+      <button type="button" class="btn editor-close" data-action="click->ai-import#close" aria-label="Close">&times;</button>
+    </div>
   </div>
   <div class="editor-errors" data-ai-import-target="errors" hidden></div>
   <div class="editor-body">
