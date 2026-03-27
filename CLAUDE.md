@@ -191,6 +191,15 @@ covers only cross-cutting concerns that no single file explains.
 `current_kitchen` (e.g., `current_kitchen.recipes.find_by!`). Never use
 unscoped model queries like `Recipe.find_by`.
 
+**`has_many :through` bypasses preloaded data.** When `steps:
+[:ingredients]` is preloaded, `recipe.ingredients` (the through-
+association) still issues its own SQL. Always traverse the preloaded
+chain directly: `steps.flat_map(&:ingredients)`.
+
+**IngredientResolver is stateless per-call but not per-instance.**
+`@uncataloged` accumulates during use. Cache the lookup hash
+(`Current.resolver_lookup`), not the resolver instance.
+
 **Two namespaces.** Rails app module: `Familyrecipes` (lowercase r). Domain
 parser module: `FamilyRecipes` (uppercase R). Different constants, no
 collision. Parser pipeline: `LineClassifier` → `RecipeBuilder` →
@@ -258,7 +267,11 @@ jsbundling-rails + esbuild for JS bundling.
   via dynamic `import()` in `plaintext_editor_controller`. Chunks write
   to `public/chunks/` (bypassing Propshaft fingerprinting) and served
   at `/chunks/`. `requestIdleCallback` prefetches the editor chunk
-  after page load.
+  after page load. Propshaft only serves digested (fingerprinted)
+  paths — never use Propshaft for dynamically-referenced assets where
+  the URL is hardcoded in JS. The chunk relocation post-build step in
+  `esbuild.config.mjs` handles this; read it before changing the build
+  pipeline.
 - CSS is minified by lightningcss into `app/assets/builds/`, where
   Propshaft serves them with priority over source files.
 - CSP requires a nonce for both `<script>` and `<style>` tags — the nonce
