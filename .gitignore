@@ -41,3 +41,6 @@ docker-compose.yml
 /app/assets/builds/*
 !/app/assets/builds/.keep
 /node_modules
+
+# Security test seed output (machine-generated)
+test/security/user_ids.json

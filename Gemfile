@@ -21,6 +21,7 @@ gem 'stimulus-rails'
 gem 'turbo-rails'
 
 group :development do
+  gem 'brakeman', require: false
   gem 'bullet'
   gem 'rubocop', require: false
   gem 'rubocop-minitest', require: false

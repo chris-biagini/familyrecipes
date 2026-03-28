@@ -352,6 +352,16 @@ bin/dev            # Puma + esbuild watcher (port 3030)
 If a test fails with a Bullet::Notification::UnoptimizedQueryError, add
 `includes` or `preload` to the query — don't disable Bullet for that test.
 
+**Security.** `rake security` runs Brakeman static analysis (medium+ confidence
+warnings fail). `rake security:verbose` for full detail. False positives go in
+`config/brakeman.ignore`. Playwright pen tests in `test/security/` require a
+running dev server:
+```bash
+MULTI_KITCHEN=true bin/rails runner test/security/seed_security_kitchens.rb
+npx playwright test test/security/              # all security specs
+npx playwright test test/security/tenant_isolation.spec.mjs  # single spec
+```
+
 ```bash
 npm install                # install JS dependencies
 npm run build              # bundle JS (esbuild)
