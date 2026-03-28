@@ -340,6 +340,14 @@ recipes are deprioritized. Tag preferences bias selection further.
 **AI import.** `AiImportService` + `AiImportController`. API key stored
 encrypted on Kitchen (`anthropic_api_key`); button hidden when no key set.
 
+**Performance profiling.** Dev-only tooling: rack-mini-profiler (always-on
+badge), Bullet (N+1 detection in log + page footer), stackprof/vernier
+(flamegraphs on demand via `?pp=flamegraph`). CI gates JS bundle size via
+`size-limit`. `rake profile:baseline` captures per-page query counts, response
+times, and asset sizes — run it before releases and when investigating
+regressions. During feature work, watch the mini-profiler badge for query
+count or timing jumps; check `log/bullet.log` for N+1 warnings before merging.
+
 ## Recipe & Data Formats
 
 Recipe source is Markdown with custom syntax. The parser pipeline is the
