@@ -126,12 +126,14 @@ class ProfileBaseline
   end
 
   def page_table(results)
-    header = "## Baseline — #{Time.zone.now.strftime('%Y-%m-%d %H:%M')}\n\n"
-    rows = results.map do |r|
-      "| #{r[:name]} | #{r[:time_ms].round}ms | #{r[:queries]} | #{format_bytes(r[:html_bytes])} |"
-    end
-    header + "| Page | Time (avg) | Queries | HTML size |\n|------|-----------|---------|-----------|" \
-             "\n#{rows.join("\n")}"
+    rows = results.map { |r| page_row(r) }
+    "## Baseline — #{Time.zone.now.strftime('%Y-%m-%d %H:%M')}\n\n" \
+      "| Page | Time (avg) | Queries | HTML size |\n|------|-----------|---------|-----------|" \
+      "\n#{rows.join("\n")}"
+  end
+
+  def page_row(row)
+    "| #{row[:name]} | #{row[:time_ms].round}ms | #{row[:queries]} | #{format_bytes(row[:html_bytes])} |"
   end
 
   def asset_table(results)
