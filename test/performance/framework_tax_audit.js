@@ -62,7 +62,7 @@ function pagesFor(kitchen) {
  * the collected entries after the page settles.
  */
 async function installLongTaskObserver(page) {
-  await page.evaluateOnNewDocument(() => {
+  await page.addInitScript(() => {
     window.__longTasks = []
     const observer = new PerformanceObserver((list) => {
       for (const entry of list.getEntries()) {
@@ -329,8 +329,8 @@ function generateReport(results) {
         const domComplete = pageResult.js?.timings.domComplete ?? 0
         const verdict =
           latestEnd > domComplete
-            ? "AFTER DomComplete — contributes to framework tax"
-            : "BEFORE DomComplete — may contribute to framework tax"
+            ? "AFTER DomComplete — does not inflate DomComplete directly"
+            : "BEFORE DomComplete — contributes to framework tax measurement"
         lines.push(
           `- **${pageResult.name}:** Loaded ${names}. Last response at ${latestEnd}ms, DomComplete at ${domComplete}ms. ${verdict}`
         )
