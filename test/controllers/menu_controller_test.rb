@@ -198,6 +198,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     assert_response :ok
     assert_equal 'application/json', response.media_type
     weights = response.parsed_body
+
     assert weights.key?('focaccia')
   end
 
