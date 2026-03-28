@@ -52,6 +52,7 @@
               footer_extra: render('recipes/editor_delete_button', recipe: @recipe) } do %>
   <turbo-frame id="recipe-editor-content"
                src="<%= recipe_editor_frame_path(@recipe.slug) %>"
+               loading="lazy"
                data-editor-target="frame">
     <p class="loading-placeholder">Loading&hellip;</p>
   </turbo-frame>
