@@ -43,6 +43,13 @@ class OnHandEntry < ApplicationRecord # rubocop:disable Metrics/ClassLength
   scope :depleted, -> { where.not(depleted_at: nil) }
   scope :orphaned, -> { where.not(orphaned_at: nil) }
 
+  def on_hand?(now = Date.current)
+    return false if depleted_at.present?
+    return true if interval.nil?
+
+    confirmed_at + (interval * SAFETY_MARGIN).to_i.days >= now
+  end
+
   def have_it!(now: Date.current) # rubocop:disable Naming/PredicatePrefix
     return if on_hand?(now)
 
@@ -91,13 +98,6 @@ class OnHandEntry < ApplicationRecord # rubocop:disable Metrics/ClassLength
 
   def sentinel?
     confirmed_at == Date.parse(ORPHAN_SENTINEL)
-  end
-
-  def on_hand?(now)
-    return false if depleted_at.present?
-    return true if interval.nil?
-
-    confirmed_at + (interval * SAFETY_MARGIN).to_i.days >= now
   end
 
   def already_active?(now)

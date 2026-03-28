@@ -5,11 +5,12 @@ require_relative '../profile_baseline'
 namespace :profile do
   desc 'Run performance baseline: measure key pages and asset sizes'
   task baseline: :environment do
-    kitchen = Kitchen.find_by!(slug: 'our-kitchen')
+    slug = ENV.fetch('KITCHEN', 'our-kitchen')
+    kitchen = Kitchen.find_by!(slug:)
     ActsAsTenant.current_tenant = kitchen
     user = kitchen.memberships.first&.user || User.first
 
-    abort 'No kitchen or user found. Run db:seed first.' unless kitchen && user
+    abort "No kitchen '#{slug}' or user found. Run db:seed first." unless kitchen && user
 
     baseline = ProfileBaseline.new(kitchen, user)
 

@@ -352,6 +352,12 @@ them. Allowlist with `Bullet.add_safelist` in `config/initializers/bullet.rb`
 if the pattern is intentional. Bump `.size-limit.json` threshold when
 intentionally adding JS dependencies.
 
+**Performance feel patterns.** Menu availability is cached per
+`kitchen.updated_at` via `Rails.cache.fetch`. Dinner picker weights are
+lazy-loaded via JSON endpoint on button click, not embedded in page HTML.
+`rake profile:generate_stress_data` populates a stress kitchen for scaling
+tests; `rake profile:baseline KITCHEN=stress-kitchen` measures against it.
+
 ## Recipe & Data Formats
 
 Recipe source is Markdown with custom syntax. The parser pipeline is the
@@ -386,6 +392,7 @@ rake lint:html_safe # audit .html_safe / raw() calls against allowlist
 rake test          # all tests via Minitest
 rake catalog:sync  # push ingredient-catalog.yaml changes into the database
 rake profile:baseline  # performance baseline: page timing, queries, asset sizes (run quarterly + before releases)
+rake profile:generate_stress_data  # stress data: 200 recipes, full grocery state (configurable via RECIPE_COUNT)
 ruby -Itest test/controllers/recipes_controller_test.rb              # single file
 ruby -Itest test/models/recipe_test.rb -n test_requires_title        # single test
 bin/dev            # Puma + esbuild watcher (port 3030)
