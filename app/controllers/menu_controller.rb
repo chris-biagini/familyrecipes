@@ -19,11 +19,7 @@ class MenuController < ApplicationController
     @selected_recipes = selected_ids_for('Recipe')
     @selected_quick_bites = selected_ids_for('QuickBite').to_set(&:to_i)
     @availability = compute_availability
-  end
-
-  def dinner_weights
-    weights = CookHistoryWeighter.call(CookHistoryEntry.where(kitchen_id: current_kitchen.id).recent)
-    render json: weights
+    @cook_weights = CookHistoryWeighter.call(CookHistoryEntry.where(kitchen_id: current_kitchen.id).recent)
   end
 
   def select
@@ -86,11 +82,9 @@ class MenuController < ApplicationController
   end
 
   def compute_availability
-    Rails.cache.fetch(['menu_availability', current_kitchen.id, current_kitchen.updated_at.to_f]) do
-      on_hand_names = OnHandEntry.where(kitchen_id: current_kitchen.id).active.pluck(:ingredient_name)
-      recipes = @categories.flat_map(&:recipes)
-      RecipeAvailabilityCalculator.new(kitchen: current_kitchen, checked_off: on_hand_names, recipes:).call
-    end
+    on_hand_names = OnHandEntry.where(kitchen_id: current_kitchen.id).active.pluck(:ingredient_name)
+    recipes = @categories.flat_map(&:recipes)
+    RecipeAvailabilityCalculator.new(kitchen: current_kitchen, checked_off: on_hand_names, recipes:).call
   end
 
   def recipe_selector_categories

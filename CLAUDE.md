@@ -137,7 +137,7 @@ Update the CSP initializer before adding any.
 - Use semantic HTML. Recipes are **documents first** — marked-up text, not an
   app that happens to contain text.
 
-**CSS file structure.** CSS source files live in `app/assets/stylesheets/`; minified copies are written to `app/assets/builds/` by lightningcss, where Propshaft serves them with priority over the originals.
+**CSS file structure.** Propshaft serves each file individually; no bundling.
 - **Global** (loaded in layout): `base.css` (tokens, typography, buttons,
   inputs, collapse, scale, tags, notifications), `navigation.css` (nav,
   search overlay), `editor.css` (all editor dialogs, graphical editor),
@@ -155,15 +155,16 @@ Update the CSP initializer before adding any.
   markup. `size: nil` omits width/height for CSS-sized icons. Pass
   `'aria-hidden': nil` + `'aria-label'` for non-decorative icons. JS-side:
   `buildIcon(name, size)` from `utilities/icons.js`.
-- **Inputs**: `.input-base` + modifiers (`-lg`, `-sm`, `-inline`, `-title`,
-  `-short`). `dom_builders.js` auto-prepends `input-base`.
-- **Buttons**: `.btn` + modifiers (`-primary`, `-danger`, `-sm`, `-ghost`,
-  `-link`, `-icon-round`, `-pill`).
-- **Collapse**: `<details class="collapse-header">` + `<summary>` with
-  `.collapse-body > .collapse-inner`. CSS `grid-template-rows: 0fr → 1fr`.
-  Use `+` for adjacent siblings, `~` when intervening elements exist.
-- **Errors**: Inline `editor_utils.showErrors` for dialogs; `notify.show`
-  toasts for page-level mutations.
+- **Inputs**: `.input-base` + modifiers (`.input-lg`, `.input-sm`, `.input-inline`,
+  `.input-title`, `.input-short`). `dom_builders.js` auto-prepends `input-base`.
+- **Buttons**: `.btn` + modifiers (`.btn-primary`, `.btn-danger`, `.btn-sm`,
+  `.btn-ghost`, `.btn-link`, `.btn-icon-round`, `.btn-pill`).
+- **Collapse**: `<details class="collapse-header">` + `<summary>` with sibling
+  `<div class="collapse-body"><div class="collapse-inner">`. Animated via CSS
+  `grid-template-rows: 0fr → 1fr`. Use `+` for adjacent siblings, `~` when
+  intervening elements exist.
+- **Errors**: Inline errors (`editor_utils.showErrors`) for dialog validation;
+  toast notifications (`notify.show`) for page-level mutations.
 
 **CSS color tokens.** The canonical tokens are defined in `base.css` `:root`.
 Key names: `--ground` (background), `--text`, `--text-soft`, `--text-light`
@@ -191,15 +192,6 @@ covers only cross-cutting concerns that no single file explains.
 `current_kitchen` (e.g., `current_kitchen.recipes.find_by!`). Never use
 unscoped model queries like `Recipe.find_by`.
 
-**`has_many :through` bypasses preloaded data.** When `steps:
-[:ingredients]` is preloaded, `recipe.ingredients` (the through-
-association) still issues its own SQL. Always traverse the preloaded
-chain directly: `steps.flat_map(&:ingredients)`.
-
-**IngredientResolver is stateless per-call but not per-instance.**
-`@uncataloged` accumulates during use. Cache the lookup hash
-(`Current.resolver_lookup`), not the resolver instance.
-
 **Two namespaces.** Rails app module: `Familyrecipes` (lowercase r). Domain
 parser module: `FamilyRecipes` (uppercase R). Different constants, no
 collision. Parser pipeline: `LineClassifier` → `RecipeBuilder` →
@@ -211,20 +203,19 @@ collision. Parser pipeline: `LineClassifier` → `RecipeBuilder` →
 - `default_url_options` auto-injects `kitchen_slug` — always use `_path`
   helpers, never hard-code URL strings.
 - Use `home_path` (not `kitchen_root_path`) for homepage links.
-
-**Grocery & meal plan domain.** `MealPlan` (one row per kitchen) is a thin
-coordinator for the menu, groceries, and dinner picker. Delegates to four
-normalized AR models: MealPlanSelection, OnHandEntry, CustomGroceryItem,
-CookHistoryEntry. `QuickBite` models (normalized AR, not text blob) live
-within `Category` alongside recipes — the menu page renders both per-category.
-`MealPlanSelection` references QBs by stringified integer PK;
-`quick_bite_ids_for` returns integers for consumer use. Three-zone grocery
-model: Inventory Check (new/expired items, "Have It"/"Need It" buttons),
-To Buy (depleted items, checkboxes), On Hand (active items, collapsed).
-SM-2-inspired adaptive ease with anchor fix — "Have It" preserves
-`confirmed_at` at the purchase date so depletion observations capture the
-full consumption period. See
-`docs/superpowers/specs/2026-03-22-inventory-check-design.md`.
+- `MealPlan` (one row per kitchen) is a thin coordinator for the menu,
+  groceries, and dinner picker. Delegates to four normalized AR models:
+  MealPlanSelection, OnHandEntry, CustomGroceryItem, CookHistoryEntry.
+  `QuickBite` models (normalized AR, not text blob) live within
+  `Category` alongside recipes — the menu page renders both per-category.
+  `MealPlanSelection` references QBs by stringified integer PK;
+  `quick_bite_ids_for` returns integers for consumer use. Three-zone
+  grocery model: Inventory Check (new/expired items, "Have It"/"Need It"
+  buttons), To Buy (depleted items, checkboxes), On Hand (active items,
+  collapsed). SM-2-inspired adaptive ease with anchor fix — "Have It"
+  preserves `confirmed_at` at the purchase date so depletion observations
+  capture the full consumption period. See
+  `docs/superpowers/specs/2026-03-22-inventory-check-design.md`.
 - `POST /groceries/need` — search overlay quick-add: resolves ingredient
   name, adds unrecognized items as `CustomGroceryItem` AR records,
   marks item as needed. `SearchDataHelper` exposes
@@ -263,17 +254,6 @@ jsbundling-rails + esbuild for JS bundling.
   for custom button actions handled by manual event listeners.
 - `npm run build` bundles JS to `app/assets/builds/`; `bin/dev` runs
   both Puma and esbuild watcher via foreman.
-- esbuild uses ESM format with code splitting. CodeMirror loads lazily
-  via dynamic `import()` in `plaintext_editor_controller`. Chunks write
-  to `public/chunks/` (bypassing Propshaft fingerprinting) and served
-  at `/chunks/`. CodeMirror chunks load on-demand when the editor
-  dialog opens — no eager prefetch. Propshaft only serves digested (fingerprinted)
-  paths — never use Propshaft for dynamically-referenced assets where
-  the URL is hardcoded in JS. The chunk relocation post-build step in
-  `esbuild.config.mjs` handles this; read it before changing the build
-  pipeline.
-- CSS is minified by lightningcss into `app/assets/builds/`, where
-  Propshaft serves them with priority over source files.
 - CSP requires a nonce for both `<script>` and `<style>` tags — the nonce
   generator uses `request.session.id` (see `content_security_policy.rb`).
   The layout includes `<%= csp_meta_tag %>` which exposes the nonce via
@@ -286,7 +266,7 @@ jsbundling-rails + esbuild for JS bundling.
 
 **ActionCable.** Kitchen-wide stream `[kitchen, :updates]` powers all
 page-refresh morphs via `Kitchen#broadcast_update`. `RecipeBroadcaster`
-handles only delete/rename targeted notifications.
+handles only delete/rename targeted notifications. No async jobs needed.
 
 **Write path.** Controllers are thin adapters: param parsing → service call →
 response rendering. Services own all post-write side effects (reconcile,
@@ -306,14 +286,6 @@ broadcast). Don't call `MarkdownImporter` directly for web operations.
   block exit.
 - `MealPlanActions` concern provides `rescue_from StaleObjectError`.
 
-**Other services.** `ShoppingListBuilder` (grocery list from selections +
-aisles), `RecipeAvailabilityCalculator` (ingredient on-hand check for menu),
-`CrossReferenceUpdater` (re-links cross-references after renames/deletes),
-`MarkdownValidator` (validates recipe markdown before save),
-`UsdaImportService` (transforms USDA API responses → editor form values).
-`UsdaSearchController` provides the JSON API (`/usda/search`, `/usda/:fdc_id`);
-reads API key from `Kitchen#usda_api_key` (encrypted).
-
 **Adding a new setting.** 5 touch points: migration,
 `settings/_editor_frame.html.erb` (form field with value),
 `SettingsController` (`editor_frame` + `update` params),
@@ -325,10 +297,7 @@ driven by `FamilyRecipes::SmartTagRegistry` in `lib/familyrecipes/`.
 
 **Nutrition pipeline.** `IngredientCatalog` → `IngredientResolver` →
 `UnitResolver` → `NutritionCalculator`. Read their header comments for
-details. `RecipeNutritionJob` recalculates a single recipe's nutrition
-(called synchronously on save); `CascadeNutritionJob` re-runs all affected
-recipes when a catalog entry changes (called async). `rake catalog:sync`
-pushes YAML seed changes into the database.
+details. `rake catalog:sync` pushes YAML seed changes into the database.
 
 **Dinner picker.** Weighted random recipe suggestion on the menu page.
 `CookHistoryWeighter` applies quadratic recency decay so recently cooked
@@ -339,28 +308,6 @@ recipes are deprioritized. Tag preferences bias selection further.
 
 **AI import.** `AiImportService` + `AiImportController`. API key stored
 encrypted on Kitchen (`anthropic_api_key`); button hidden when no key set.
-
-**Performance profiling.** Dev-only tooling: rack-mini-profiler (always-on
-badge), Bullet (N+1 detection in log + page footer), stackprof/vernier
-(flamegraphs on demand via `?pp=flamegraph`). CI gates JS bundle size via
-`size-limit`. `rake profile:baseline` captures per-page query counts, response
-times, and asset sizes — run it before releases and when investigating
-regressions. During feature work, watch the mini-profiler badge for query
-count or timing jumps; check `log/bullet.log` for N+1 warnings before merging.
-Bullet raises in test mode — new N+1 queries will fail the test that triggers
-them. Allowlist with `Bullet.add_safelist` in `config/initializers/bullet.rb`
-if the pattern is intentional. Bump `.size-limit.json` threshold when
-intentionally adding JS dependencies.
-`node test/performance/framework_tax_audit.js` measures client-side framework
-tax (JS-enabled vs JS-disabled DomComplete) with long task and resource timing
-breakdowns. Run before releases and after JS bundle changes. See
-`test/performance/README.md` for methodology and interpretation.
-
-**Performance feel patterns.** Menu availability is cached per
-`kitchen.updated_at` via `Rails.cache.fetch`. Dinner picker weights are
-lazy-loaded via JSON endpoint on button click, not embedded in page HTML.
-`rake profile:generate_stress_data` populates a stress kitchen for scaling
-tests; `rake profile:baseline KITCHEN=stress-kitchen` measures against it.
 
 ## Recipe & Data Formats
 
@@ -395,9 +342,6 @@ rake lint          # RuboCop — always use `bundle exec rubocop`, not bare `rub
 rake lint:html_safe # audit .html_safe / raw() calls against allowlist
 rake test          # all tests via Minitest
 rake catalog:sync  # push ingredient-catalog.yaml changes into the database
-rake profile:baseline  # performance baseline: page timing, queries, asset sizes (run quarterly + before releases)
-rake profile:generate_stress_data  # stress data: 200 recipes, full grocery state (configurable via RECIPE_COUNT)
-node test/performance/framework_tax_audit.js  # client-side framework tax audit (needs bin/dev running)
 ruby -Itest test/controllers/recipes_controller_test.rb              # single file
 ruby -Itest test/models/recipe_test.rb -n test_requires_title        # single test
 bin/dev            # Puma + esbuild watcher (port 3030)
@@ -409,12 +353,6 @@ npm install                # install JS dependencies
 npm run build              # bundle JS (esbuild)
 npm test                   # run JS classifier tests
 ruby test/sim/grocery_convergence.rb   # standalone convergence simulation (excluded from RuboCop)
-```
-
-```bash
-bundle exec rake security       # Brakeman static analysis (local, no server needed)
-node --test test/security/*.spec.mjs  # Playwright security tests (needs bin/dev + seeded kitchens)
-MULTI_KITCHEN=true bin/rails runner test/security/seed_security_kitchens.rb  # seed security test kitchens
 ```
 
 The default `rake` task runs both lint and test.
@@ -500,11 +438,6 @@ caching, no fetch interception. The browser handles all requests normally.
 **JS changes.** Adding npm packages requires `npm install`. Adding new
 Stimulus controllers requires registering them in `application.js`.
 The esbuild watcher (`bin/dev`) auto-rebuilds on file changes.
-
-**Security tests.** When adding new endpoints, add corresponding tests in
-`test/security/`: tenant isolation for new controllers, XSS payloads for new
-form fields, malicious input for new file processing. `rake security` runs
-Brakeman locally; Playwright security tests run in CI.
 
 **Visual companion.** The brainstorming visual companion server must bind to
 `0.0.0.0` (`--host 0.0.0.0`) — the default `127.0.0.1` is unreachable from

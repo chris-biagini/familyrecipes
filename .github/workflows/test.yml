@@ -43,9 +43,6 @@ jobs:
       - name: JS tests
         run: npm test
 
-      - name: Check JS bundle size
-        run: npx size-limit
-
       - name: Set up database
         run: bin/rails db:create db:migrate
 

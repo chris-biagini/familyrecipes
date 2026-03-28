@@ -28,13 +28,12 @@ const QUIPS = [
 
 export default class extends Controller {
   static targets = ["tagState", "slotDisplay", "resultArea"]
-  static values = { weightsUrl: String, recipeBasePath: String }
+  static values = { weights: Object, recipeBasePath: String }
 
   connect() {
     this.tagPreferences = {}
     this.declinePenalties = {}
     this.animationTimer = null
-    this.weights = null
 
     const data = loadSearchData()
     this.recipes = data.recipes || []
@@ -57,7 +56,6 @@ export default class extends Controller {
     this.cancelAnimation()
     this.tagPreferences = {}
     this.declinePenalties = {}
-    this.weights = null
   }
 
   cancelAnimation() {
@@ -138,19 +136,9 @@ export default class extends Controller {
     else pill.classList.add("tag-neutral")
   }
 
-  async loadWeights() {
-    if (this.weights) return this.weights
-
-    const response = await fetch(this.weightsUrlValue, {
-      headers: { "Accept": "application/json" }
-    })
-    this.weights = await response.json()
-    return this.weights
-  }
-
-  async spin() {
+  spin() {
     const weights = computeFinalWeights(
-      this.recipes, await this.loadWeights(), this.tagPreferences, this.declinePenalties
+      this.recipes, this.weightsValue, this.tagPreferences, this.declinePenalties
     )
     const pick = weightedRandomPick(weights)
     if (!pick) return

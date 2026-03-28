@@ -22,17 +22,6 @@ require 'action_cable/test_helper'
 require 'action_cable/channel/test_case'
 require 'minitest/autorun'
 
-# Bullet integration: start/end tracking around each test so N+1 queries
-# introduced by new code are caught automatically.
-if defined?(Bullet)
-  module ActiveSupport
-    class TestCase
-      setup { Bullet.start_request }
-      teardown { Bullet.end_request }
-    end
-  end
-end
-
 module ActiveSupport
   class TestCase
     private

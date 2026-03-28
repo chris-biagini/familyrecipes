@@ -44,10 +44,8 @@ class ApplicationController < ActionController::Base
   end
 
   def resolve_sole_kitchen
-    return @sole_kitchen if defined?(@sole_kitchen)
-
     kitchens = ActsAsTenant.without_tenant { Kitchen.limit(2).to_a }
-    @sole_kitchen = kitchens.first if kitchens.size == 1
+    kitchens.first if kitchens.size == 1
   end
 
   def current_kitchen = ActsAsTenant.current_tenant

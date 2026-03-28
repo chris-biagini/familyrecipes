@@ -23,6 +23,7 @@ nav::before {
   bottom: calc(-1 * var(--drawer-height, 0px));
   background-color: rgba(250, 248, 245, 0.82);
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   z-index: -1;
 }
 

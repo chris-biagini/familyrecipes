@@ -106,7 +106,7 @@ class EndToEndTest < ActionDispatch::IntegrationTest
   test 'layout includes bundled javascript' do
     get kitchen_root_path(kitchen_slug: kitchen_slug)
 
-    assert_select 'script[src*="application"][type="module"]'
+    assert_select 'script[src*="application"][defer="defer"]'
   end
 
   # -- Homepage --

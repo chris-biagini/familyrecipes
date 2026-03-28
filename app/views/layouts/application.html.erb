@@ -19,14 +19,14 @@
   <%= stylesheet_link_tag 'editor', "data-turbo-track": "reload" %>
   <%= stylesheet_link_tag 'nutrition', "data-turbo-track": "reload" %>
   <%= stylesheet_link_tag 'recipe', "data-turbo-track": "reload" %>
-  <%= stylesheet_link_tag 'print', "data-turbo-track": "reload", media: "print" %>
+  <%= stylesheet_link_tag 'print', "data-turbo-track": "reload" %>
   <link rel="icon" type="image/svg+xml" href="<%= asset_path('favicon.svg') %>">
   <link rel="icon" type="image/png" sizes="32x32" href="<%= versioned_icon_path('favicon-32.png') %>">
   <link rel="icon" type="image/png" sizes="32x32" href="<%= versioned_icon_path('favicon-32-dark.png') %>" media="(prefers-color-scheme: dark)">
   <link rel="apple-touch-icon" sizes="180x180" href="<%= versioned_icon_path('apple-touch-icon.png') %>">
   <link rel="apple-touch-icon" sizes="180x180" href="<%= versioned_icon_path('apple-touch-icon-dark.png') %>" media="(prefers-color-scheme: dark)">
   <link rel="manifest" href="/manifest.json">
-  <%= javascript_include_tag "application", type: "module" %>
+  <%= javascript_include_tag "application", defer: true %>
   <%= yield :head %>
 </head>
 <body data-controller="search-overlay" data-search-overlay-base-path="<%= params[:kitchen_slug] ? "/kitchens/#{params[:kitchen_slug]}" : '' %>" data-search-overlay-need-url="<%= groceries_need_path %>" <%= yield :body_attrs %>>
@@ -34,7 +34,6 @@
   <main>
     <%= yield %>
   </main>
-  <svg class="svg-defs" aria-hidden="true"><filter id="paper-texture"><feTurbulence type="fractalNoise" baseFrequency="0.5" numOctaves="4" stitchTiles="stitch"/><feDiffuseLighting lighting-color="white" surfaceScale="1.2"><feDistantLight azimuth="45" elevation="55"/></feDiffuseLighting></filter></svg>
   <div id="notifications"></div>
   <footer class="app-version">v<%= app_version %></footer>
   <%= render 'shared/search_overlay' %>

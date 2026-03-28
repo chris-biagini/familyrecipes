@@ -122,9 +122,8 @@ export default class extends Controller {
     }
   }
 
-  async handleOpened() {
+  handleOpened() {
     if (this.originalContent !== null) return
-    await this.plaintextController.whenReady()
     this.originalContent = this.plaintextController.content
     this.showActiveMode()
   }

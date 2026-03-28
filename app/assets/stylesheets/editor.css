@@ -114,13 +114,6 @@
   background: none;
 }
 
-.editor-header .editor-close:hover {
-  color: var(--text-soft);
-  border: none;
-  background: none;
-  box-shadow: none;
-}
-
 .editor-errors {
   padding: 0.75rem 1.5rem;
   color: var(--danger-color);

@@ -113,22 +113,6 @@ class RecipeAggregationTest < ActiveSupport::TestCase
     assert_in_delta 5.0, flour_cup.value, 0.01
   end
 
-  test 'own_ingredients_aggregated uses preloaded associations' do
-    recipe = Recipe.find_or_create_by!(
-      title: 'Focaccia', slug: 'focaccia',
-      category: @category
-    )
-    step1 = recipe.steps.find_or_create_by!(title: 'Mix', position: 1)
-    step1.ingredients.find_or_create_by!(
-      name: 'Flour', quantity: '2', quantity_low: 2.0, unit: 'cups', position: 1
-    )
-
-    loaded = @kitchen.recipes.includes(steps: :ingredients).find_by!(title: 'Focaccia')
-    query_count = count_queries { loaded.own_ingredients_aggregated }
-
-    assert_equal 0, query_count, 'Should not issue queries when associations are preloaded'
-  end
-
   test 'all_ingredients_with_quantities skips unresolved cross-references' do
     recipe = Recipe.find_or_create_by!(
       title: 'Bread', slug: 'bread',
@@ -150,16 +134,5 @@ class RecipeAggregationTest < ActiveSupport::TestCase
     names = result.map(&:first)
 
     assert_equal ['Flour'], names
-  end
-
-  private
-
-  def count_queries(&)
-    count = 0
-    counter = lambda { |_name, _start, _finish, _id, payload|
-      count += 1 unless payload[:name] == 'SCHEMA' || payload[:cached]
-    }
-    ActiveSupport::Notifications.subscribed(counter, 'sql.active_record', &)
-    count
   end
 end

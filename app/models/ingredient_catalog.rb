@@ -15,9 +15,6 @@ class IngredientCatalog < ApplicationRecord # rubocop:disable Metrics/ClassLengt
 
   belongs_to :kitchen, optional: true
 
-  after_save { Current.resolver_lookup = nil }
-  after_destroy { Current.resolver_lookup = nil }
-
   NUTRIENT_COLUMNS = FamilyRecipes::NutritionConstraints::NUTRIENT_KEYS
 
   NUTRIENT_DISPLAY = FamilyRecipes::NutritionConstraints::NUTRIENT_DEFS.map do |d|
@@ -62,7 +59,7 @@ class IngredientCatalog < ApplicationRecord # rubocop:disable Metrics/ClassLengt
   end
 
   def self.resolver_for(kitchen)
-    IngredientResolver.new(Current.resolver_lookup ||= lookup_for(kitchen))
+    IngredientResolver.new(lookup_for(kitchen))
   end
 
   def self.attrs_from_yaml(entry)

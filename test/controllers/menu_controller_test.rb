@@ -178,28 +178,16 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     assert_select 'details.collapse-header.all-on-hand summary', text: %r{2/2}
   end
 
-  test 'show includes dinner picker weights url' do
+  test 'show embeds cook history weights' do
     log_in
+    CookHistoryEntry.create!(kitchen: @kitchen, recipe_slug: 'focaccia', cooked_at: 1.day.ago)
 
     get menu_path(kitchen_slug:)
 
     assert_response :ok
     assert_select '[data-controller*="dinner-picker"]' do
-      assert_select '[data-dinner-picker-weights-url-value]'
+      assert_select '[data-dinner-picker-weights-value]'
     end
-  end
-
-  test 'dinner_weights returns cook history weights as json' do
-    log_in
-    CookHistoryEntry.create!(kitchen: @kitchen, recipe_slug: 'focaccia', cooked_at: 1.day.ago)
-
-    get menu_dinner_weights_path(kitchen_slug:)
-
-    assert_response :ok
-    assert_equal 'application/json', response.media_type
-    weights = response.parsed_body
-
-    assert weights.key?('focaccia')
   end
 
   test 'show renders have and missing ingredient lists in detail' do

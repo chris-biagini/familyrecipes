@@ -41,15 +41,3 @@ docker-compose.yml
 /app/assets/builds/*
 !/app/assets/builds/.keep
 /node_modules
-
-# Jekyll help site build output
-/_site/
-
-# esbuild code-split chunks (served from public/, bypassing Propshaft)
-/public/chunks/
-
-# Performance audit raw data (machine-generated, not committed)
-test/performance/results/*.json
-
-# Security test seed output (machine-generated)
-test/security/user_ids.json

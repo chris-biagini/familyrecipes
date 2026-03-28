@@ -16,9 +16,9 @@ class GroceriesController < ApplicationController
 
   def show
     @shopping_list = ShoppingListBuilder.new(kitchen: current_kitchen).build
-    all_entries = OnHandEntry.where(kitchen_id: current_kitchen.id).to_a
-    @on_hand_names = all_entries.select(&:on_hand?).to_set(&:ingredient_name)
-    @on_hand_data = all_entries.index_by { |e| e.ingredient_name.downcase }
+    entries = OnHandEntry.where(kitchen_id: current_kitchen.id)
+    @on_hand_names = entries.active.pluck(:ingredient_name).to_set
+    @on_hand_data = entries.index_by { |e| e.ingredient_name.downcase }
     @custom_names = CustomGroceryItem.where(kitchen_id: current_kitchen.id).pluck(:name).to_set(&:downcase)
   end
 

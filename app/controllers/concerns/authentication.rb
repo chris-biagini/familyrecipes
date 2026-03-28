@@ -33,11 +33,10 @@ module Authentication
   end
 
   def find_session_by_cookie
-    Session.active.find_by(id: cookies.signed[:session_id])
+    Session.find_by(id: cookies.signed[:session_id])
   end
 
   def start_new_session_for(user)
-    Session.cleanup_stale
     user.sessions.create!(
       user_agent: request.user_agent,
       ip_address: request.remote_ip
