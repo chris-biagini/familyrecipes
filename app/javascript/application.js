@@ -3,6 +3,7 @@
  * controllers, and manages global Turbo lifecycle handlers: morph protection
  * for open dialogs and pre-cache cleanup. Also registers the service worker.
  */
+import { recentlyActed } from "./utilities/turbo_fetch"
 import { Turbo } from "@hotwired/turbo-rails"
 import { Application } from "@hotwired/stimulus"
 
@@ -71,6 +72,15 @@ document.addEventListener("turbo:before-morph-element", (event) => {
 // snapshots from restoring stale open dialogs with detached listeners.
 document.addEventListener("turbo:before-cache", () => {
   document.querySelectorAll("dialog[open]").forEach(dialog => dialog.close())
+})
+
+// Suppress broadcast morphs that follow the acting client's own action.
+// The optimistic UI already reflects the correct state — the morph is a
+// redundant full-page fetch + DOM diff.
+document.addEventListener("turbo:before-stream-render", (event) => {
+  if (event.target.getAttribute("action") === "refresh" && recentlyActed()) {
+    event.preventDefault()
+  }
 })
 
 if ('serviceWorker' in navigator) {
