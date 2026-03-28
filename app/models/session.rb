@@ -11,7 +11,7 @@ class Session < ApplicationRecord
   before_create :set_default_expiry
 
   def self.cleanup_stale
-    where('expires_at <= ?', Time.current).delete_all
+    where(expires_at: ..Time.current).delete_all
   end
 
   private

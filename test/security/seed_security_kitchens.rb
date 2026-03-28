@@ -60,6 +60,6 @@ require 'json'
 ids = { alice_id: alice.id, bob_id: bob.id }
 File.write(File.join(__dir__, 'user_ids.json'), JSON.pretty_generate(ids))
 
-puts "Security test kitchens seeded."
+puts 'Security test kitchens seeded.'
 puts "  Kitchen Alpha: slug=kitchen-alpha, user=alice (id=#{alice.id})"
 puts "  Kitchen Beta:  slug=kitchen-beta,  user=bob   (id=#{bob.id})"
