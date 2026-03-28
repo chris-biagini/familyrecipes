@@ -340,6 +340,14 @@ recipes are deprioritized. Tag preferences bias selection further.
 **AI import.** `AiImportService` + `AiImportController`. API key stored
 encrypted on Kitchen (`anthropic_api_key`); button hidden when no key set.
 
+**Performance profiling.** Dev-only tooling: rack-mini-profiler (always-on
+badge), Bullet (N+1 detection in log + page footer), stackprof/vernier
+(flamegraphs on demand via `?pp=flamegraph`). CI gates JS bundle size via
+`size-limit`. `rake profile:baseline` captures per-page query counts, response
+times, and asset sizes — run it before releases and when investigating
+regressions. During feature work, watch the mini-profiler badge for query
+count or timing jumps; check `log/bullet.log` for N+1 warnings before merging.
+
 ## Recipe & Data Formats
 
 Recipe source is Markdown with custom syntax. The parser pipeline is the
@@ -373,6 +381,7 @@ rake lint          # RuboCop — always use `bundle exec rubocop`, not bare `rub
 rake lint:html_safe # audit .html_safe / raw() calls against allowlist
 rake test          # all tests via Minitest
 rake catalog:sync  # push ingredient-catalog.yaml changes into the database
+rake profile:baseline  # performance baseline: page timing, queries, asset sizes (run quarterly + before releases)
 ruby -Itest test/controllers/recipes_controller_test.rb              # single file
 ruby -Itest test/models/recipe_test.rb -n test_requires_title        # single test
 bin/dev            # Puma + esbuild watcher (port 3030)
