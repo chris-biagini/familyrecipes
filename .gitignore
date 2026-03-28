@@ -47,3 +47,6 @@ docker-compose.yml
 
 # esbuild code-split chunks (served from public/, bypassing Propshaft)
 /public/chunks/
+
+# Performance audit raw data (machine-generated, not committed)
+test/performance/results/*.json
