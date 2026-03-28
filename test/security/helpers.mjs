@@ -20,6 +20,18 @@ const USER_IDS = JSON.parse(
 
 export { BASE_URL, USER_IDS }
 
+const csrfCache = new WeakMap()
+
+async function getCsrfToken(context) {
+  if (csrfCache.has(context)) return csrfCache.get(context)
+  const page = await context.newPage()
+  await page.goto(`${BASE_URL}/`)
+  const token = await page.locator('meta[name="csrf-token"]').getAttribute("content")
+  await page.close()
+  csrfCache.set(context, token)
+  return token
+}
+
 /**
  * Launch a browser and authenticate as a specific user via dev login.
  * Returns { browser, context, page } — caller must close browser.
@@ -30,6 +42,10 @@ export async function authenticatedBrowser(userId) {
   const page = await context.newPage()
   await page.goto(`${BASE_URL}/dev/login/${userId}`)
   await page.waitForLoadState("networkidle")
+  if (page.url().includes('/dev/login')) {
+    await browser.close()
+    throw new Error('Dev login failed — is the server running in development mode?')
+  }
   return { browser, context, page }
 }
 
@@ -40,12 +56,7 @@ export async function authenticatedBrowser(userId) {
 export async function fetchWithSession(context, url, options = {}) {
   const cookies = await context.cookies()
   const cookieHeader = cookies.map((c) => `${c.name}=${c.value}`).join("; ")
-  const csrfPage = await context.newPage()
-  await csrfPage.goto(`${BASE_URL}/`)
-  const csrfToken = await csrfPage
-    .locator('meta[name="csrf-token"]')
-    .getAttribute("content")
-  await csrfPage.close()
+  const csrfToken = await getCsrfToken(context)
 
   const headers = {
     Cookie: cookieHeader,
@@ -72,6 +83,7 @@ export async function collectConsoleMessages(page, callback) {
   const handler = (msg) => messages.push({ type: msg.type(), text: msg.text() })
   page.on("console", handler)
   await callback()
+  await page.waitForTimeout(200)
   page.off("console", handler)
   return messages
 }
