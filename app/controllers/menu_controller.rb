@@ -82,9 +82,11 @@ class MenuController < ApplicationController
   end
 
   def compute_availability
-    on_hand_names = OnHandEntry.where(kitchen_id: current_kitchen.id).active.pluck(:ingredient_name)
-    recipes = @categories.flat_map(&:recipes)
-    RecipeAvailabilityCalculator.new(kitchen: current_kitchen, checked_off: on_hand_names, recipes:).call
+    Rails.cache.fetch(['menu_availability', current_kitchen.id, current_kitchen.updated_at.to_f]) do
+      on_hand_names = OnHandEntry.where(kitchen_id: current_kitchen.id).active.pluck(:ingredient_name)
+      recipes = @categories.flat_map(&:recipes)
+      RecipeAvailabilityCalculator.new(kitchen: current_kitchen, checked_off: on_hand_names, recipes:).call
+    end
   end
 
   def recipe_selector_categories
