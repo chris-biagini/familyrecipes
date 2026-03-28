@@ -266,8 +266,8 @@ jsbundling-rails + esbuild for JS bundling.
 - esbuild uses ESM format with code splitting. CodeMirror loads lazily
   via dynamic `import()` in `plaintext_editor_controller`. Chunks write
   to `public/chunks/` (bypassing Propshaft fingerprinting) and served
-  at `/chunks/`. `requestIdleCallback` prefetches the editor chunk
-  after page load. Propshaft only serves digested (fingerprinted)
+  at `/chunks/`. CodeMirror chunks load on-demand when the editor
+  dialog opens — no eager prefetch. Propshaft only serves digested (fingerprinted)
   paths — never use Propshaft for dynamically-referenced assets where
   the URL is hardcoded in JS. The chunk relocation post-build step in
   `esbuild.config.mjs` handles this; read it before changing the build
