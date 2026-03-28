@@ -347,6 +347,10 @@ badge), Bullet (N+1 detection in log + page footer), stackprof/vernier
 times, and asset sizes — run it before releases and when investigating
 regressions. During feature work, watch the mini-profiler badge for query
 count or timing jumps; check `log/bullet.log` for N+1 warnings before merging.
+Bullet raises in test mode — new N+1 queries will fail the test that triggers
+them. Allowlist with `Bullet.add_safelist` in `config/initializers/bullet.rb`
+if the pattern is intentional. Bump `.size-limit.json` threshold when
+intentionally adding JS dependencies.
 
 ## Recipe & Data Formats
 
