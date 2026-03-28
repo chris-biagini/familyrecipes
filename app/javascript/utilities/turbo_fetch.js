@@ -23,15 +23,7 @@ async function extractErrorMessage(response) {
   return "Something went wrong. Please try again."
 }
 
-let lastActionAt = 0
-const MORPH_SUPPRESS_MS = 2000
-
-export function recentlyActed() {
-  return Date.now() - lastActionAt < MORPH_SUPPRESS_MS
-}
-
 export function sendAction(url, params, { method = "PATCH", retries = 3 } = {}) {
-  lastActionAt = Date.now()
   return fetch(url, {
     method,
     headers: {
@@ -50,7 +42,6 @@ export function sendAction(url, params, { method = "PATCH", retries = 3 } = {}) 
     })
     .catch(error => {
       if (error instanceof ServerError) {
-        lastActionAt = 0  // Allow morph to fix state on error
         notifyShow(error.message)
         return
       }

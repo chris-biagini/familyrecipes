@@ -234,8 +234,8 @@ full consumption period. See
 **Editor dialogs.** Use `render layout: 'shared/editor_dialog'` with Stimulus
 data attributes — no JS needed. Custom dialogs hook in via lifecycle events
 (`editor:content-loaded`, `editor:collect`, `editor:save`, `editor:modified`,
-`editor:reset`). All editor bodies load via Turbo Frames with `loading="lazy"` —
-content fetches when the user opens the dialog, not on page load.
+`editor:reset`). All editor bodies load via Turbo Frames — content preloads
+eagerly on page load and is ready before the user opens the dialog.
 - Open `<dialog>` elements are protected from Turbo morph via
   `turbo:before-morph-element` in `application.js`.
 - `turbo:before-cache` closes all open dialogs before page snapshots.
@@ -352,11 +352,8 @@ them. Allowlist with `Bullet.add_safelist` in `config/initializers/bullet.rb`
 if the pattern is intentional. Bump `.size-limit.json` threshold when
 intentionally adding JS dependencies.
 
-**Performance feel patterns.** Turbo Frame editor dialogs use `loading="lazy"`
-to defer HTTP fetches until the dialog opens. `sendAction` (turbo_fetch.js)
-suppresses incoming broadcast morphs for 2s after a user action — the
-optimistic UI already reflects the correct state. Menu availability is cached
-per `kitchen.updated_at` via `Rails.cache.fetch`. Dinner picker weights are
+**Performance feel patterns.** Menu availability is cached per
+`kitchen.updated_at` via `Rails.cache.fetch`. Dinner picker weights are
 lazy-loaded via JSON endpoint on button click, not embedded in page HTML.
 `rake profile:generate_stress_data` populates a stress kitchen for scaling
 tests; `rake profile:baseline KITCHEN=stress-kitchen` measures against it.
