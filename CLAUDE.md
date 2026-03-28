@@ -411,6 +411,12 @@ npm test                   # run JS classifier tests
 ruby test/sim/grocery_convergence.rb   # standalone convergence simulation (excluded from RuboCop)
 ```
 
+```bash
+bundle exec rake security       # Brakeman static analysis (local, no server needed)
+node --test test/security/*.spec.mjs  # Playwright security tests (needs bin/dev + seeded kitchens)
+MULTI_KITCHEN=true bin/rails runner test/security/seed_security_kitchens.rb  # seed security test kitchens
+```
+
 The default `rake` task runs both lint and test.
 
 **Help site.** User-facing documentation lives in `docs/help/` as a Jekyll static
@@ -494,6 +500,11 @@ caching, no fetch interception. The browser handles all requests normally.
 **JS changes.** Adding npm packages requires `npm install`. Adding new
 Stimulus controllers requires registering them in `application.js`.
 The esbuild watcher (`bin/dev`) auto-rebuilds on file changes.
+
+**Security tests.** When adding new endpoints, add corresponding tests in
+`test/security/`: tenant isolation for new controllers, XSS payloads for new
+form fields, malicious input for new file processing. `rake security` runs
+Brakeman locally; Playwright security tests run in CI.
 
 **Visual companion.** The brainstorming visual companion server must bind to
 `0.0.0.0` (`--host 0.0.0.0`) — the default `127.0.0.1` is unreachable from
