@@ -2,6 +2,10 @@
  * Tenant isolation tests — verifies that a member of kitchen-alpha cannot
  * access kitchen-beta's data through URL manipulation or direct API calls.
  *
+ * Known gap: ActionCable stream scoping (kitchen A shouldn't receive kitchen B's
+ * broadcasts) is better tested as a Rails channel integration test since Playwright
+ * can't easily inspect WebSocket frames.
+ *
  * Requires: seed_security_kitchens.rb seeded, server running on port 3030.
  */
 import { describe, it, before, after } from "node:test"

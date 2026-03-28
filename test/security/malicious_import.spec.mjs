@@ -2,7 +2,8 @@
  * Malicious import tests — uploads dangerous file payloads via the import
  * endpoint and verifies graceful rejection (no 5xx errors).
  *
- * Covers: oversized files, path traversal filenames, binary garbage.
+ * Covers: oversized files, path traversal filenames, binary garbage,
+ * non-recipe content, deeply nested directory structures.
  * Requires: seed_security_kitchens.rb seeded, server running on port 3030.
  */
 import { describe, it, before, after } from "node:test"
@@ -62,5 +63,20 @@ describe("Malicious Import", () => {
     const resp = await uploadFile("garbage.bin", binaryGarbage, "application/octet-stream")
 
     assert.ok(resp.status < 500, `Server error on binary payload: ${resp.status}`)
+  })
+
+  it("handles non-recipe content gracefully", async () => {
+    const jsonContent = JSON.stringify({ not: "a recipe", data: [1, 2, 3] })
+    const resp = await uploadFile("data.json", jsonContent, "application/json")
+
+    assert.ok(resp.status < 500, `Server error on non-recipe content: ${resp.status}`)
+  })
+
+  it("handles deeply nested directory structure in filename", async () => {
+    const nestedPath = "a/".repeat(100) + "recipe.md"
+    const content = "# Nested Recipe\n\n## Step 1\n\n- 1 cup flour"
+    const resp = await uploadFile(nestedPath, content)
+
+    assert.ok(resp.status < 500, `Server error on deeply nested path: ${resp.status}`)
   })
 })
