@@ -1,0 +1,8 @@
+[
+  {
+    "name": "Main JS bundle",
+    "path": "app/assets/builds/application.js",
+    "limit": "75 kB",
+    "gzip": true
+  }
+]

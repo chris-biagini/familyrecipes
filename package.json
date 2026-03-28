@@ -6,11 +6,15 @@
     "build": "node esbuild.config.mjs && npm run build:css",
     "build:css": "lightningcss --minify app/assets/stylesheets/*.css --output-dir app/assets/builds/",
     "build:watch": "node esbuild.config.mjs --watch",
-    "test": "node --test test/javascript/*.mjs"
+    "test": "node --test test/javascript/*.mjs",
+    "size": "size-limit",
+    "size:report": "size-limit --json"
   },
   "devDependencies": {
+    "@size-limit/file": "^12.0.1",
     "esbuild": "^0.25.0",
-    "lightningcss-cli": "^1.32.0"
+    "lightningcss-cli": "^1.32.0",
+    "size-limit": "^12.0.1"
   },
   "dependencies": {
     "@codemirror/commands": "^6.8.0",
