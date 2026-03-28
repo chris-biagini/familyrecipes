@@ -381,6 +381,7 @@ rake lint          # RuboCop — always use `bundle exec rubocop`, not bare `rub
 rake lint:html_safe # audit .html_safe / raw() calls against allowlist
 rake test          # all tests via Minitest
 rake catalog:sync  # push ingredient-catalog.yaml changes into the database
+rake profile:baseline  # performance baseline: page timing, queries, asset sizes (run quarterly + before releases)
 ruby -Itest test/controllers/recipes_controller_test.rb              # single file
 ruby -Itest test/models/recipe_test.rb -n test_requires_title        # single test
 bin/dev            # Puma + esbuild watcher (port 3030)
