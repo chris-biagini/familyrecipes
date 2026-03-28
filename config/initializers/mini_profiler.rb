@@ -11,7 +11,7 @@
 if defined?(Rack::MiniProfiler)
   Rack::MiniProfiler.config.tap do |c|
     c.position = 'bottom-left'
-    c.content_security_policy_nonce = ->(env, headers) {
+    c.content_security_policy_nonce = lambda { |env, _headers|
       ActionDispatch::Request.new(env).content_security_policy_nonce
     }
   end
