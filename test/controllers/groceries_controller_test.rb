@@ -1006,6 +1006,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
     # First have_it then travel forward so it expires into IC
     check_have_it('Flour')
     travel 365.days do
+      log_in
       post groceries_need_path(kitchen_slug: kitchen_slug),
            params: { item: 'Flour' },
            as: :json
