@@ -1228,7 +1228,6 @@ html:has(dialog[open]) {
   padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
   background: var(--ground);
   backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   border-top: 1px solid var(--rule);
   box-shadow: var(--shadow-nav-up);
   font-family: var(--font-body);
