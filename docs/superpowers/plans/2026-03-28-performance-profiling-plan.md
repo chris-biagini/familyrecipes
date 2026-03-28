@@ -17,11 +17,12 @@
 | Modify | `Gemfile` | Add profiling gems to dev group |
 | Create | `config/initializers/mini_profiler.rb` | rack-mini-profiler config + CSP nonce wiring |
 | Create | `config/initializers/bullet.rb` | Bullet N+1 detection config |
-| Create | `lib/tasks/profile.rake` | `rake profile:baseline` task |
+| Create | `lib/profile_baseline.rb` | ProfileBaseline class (page + asset profiling) |
+| Create | `lib/tasks/profile.rake` | `rake profile:baseline` task (thin wrapper) |
 | Modify | `package.json` | Add size-limit devDependencies + scripts |
 | Create | `.size-limit.json` | Bundle size thresholds |
 | Modify | `.github/workflows/test.yml` | Add size-limit CI step |
-| Create | `test/lib/tasks/profile_baseline_test.rb` | Test for the baseline rake task |
+| Create | `test/lib/profile_baseline_test.rb` | Test for the baseline profiler |
 | Modify | `.rubocop.yml` | Exclude profile rake task from Rails/Output |
 
 ---
@@ -216,7 +217,7 @@ is the baseline.
 - [ ] **Step 4: Create `.size-limit.json`**
 
 Create `.size-limit.json` in the project root. Set the `limit` to the current
-gzipped size rounded up to the nearest 10 KB + 10% headroom. For example, if
+gzipped size rounded up to the nearest 10 KB + ~15% headroom. For example, if
 the current size is 176 KB gzipped, set the limit to `"200 kB"`:
 
 ```json
@@ -290,18 +291,20 @@ git commit -m "Add JS bundle size gate to CI"
 ### Task 6: Baseline Profiling Rake Task
 
 **Files:**
+- Create: `lib/profile_baseline.rb`
 - Create: `lib/tasks/profile.rake`
-- Create: `test/lib/tasks/profile_baseline_test.rb`
+- Create: `test/lib/profile_baseline_test.rb`
 - Modify: `.rubocop.yml` (add profile.rake to Rails/Output exclusion)
 
-- [ ] **Step 1: Write a test for the baseline task**
+- [ ] **Step 1: Write a test for the baseline profiler**
 
-Create `test/lib/tasks/profile_baseline_test.rb`:
+Create `test/lib/profile_baseline_test.rb`:
 
 ```ruby
 # frozen_string_literal: true
 
 require 'test_helper'
+require_relative '../../lib/profile_baseline'
 
 class ProfileBaselineTest < ActiveSupport::TestCase
   setup do
@@ -312,8 +315,8 @@ class ProfileBaselineTest < ActiveSupport::TestCase
   end
 
   test 'page_profiles returns timing and query data for key pages' do
-    task = ProfileBaseline.new(@kitchen, @user)
-    results = task.page_profiles
+    profiler = ProfileBaseline.new(@kitchen, @user)
+    results = profiler.page_profiles
 
     assert_kind_of Array, results
     assert results.size >= 4, "Expected at least 4 pages profiled, got #{results.size}"
@@ -328,15 +331,17 @@ class ProfileBaselineTest < ActiveSupport::TestCase
     end
   end
 
-  test 'asset_profiles returns bundle size data' do
-    task = ProfileBaseline.new(@kitchen, @user)
-    results = task.asset_profiles
+  test 'asset_profiles returns bundle size data with gzipped sizes' do
+    profiler = ProfileBaseline.new(@kitchen, @user)
+    results = profiler.asset_profiles
 
     assert_kind_of Array, results
 
     results.each do |result|
       assert result[:name].present?
       assert result[:raw_bytes].is_a?(Integer)
+      assert result[:gzipped_bytes].is_a?(Integer)
+      assert result[:gzipped_bytes] <= result[:raw_bytes], "#{result[:name]} gzipped should be <= raw"
     end
   end
 end
@@ -344,22 +349,22 @@ end
 
 - [ ] **Step 2: Run the test to verify it fails**
 
-Run: `ruby -Itest test/lib/tasks/profile_baseline_test.rb`
+Run: `ruby -Itest test/lib/profile_baseline_test.rb`
 Expected: FAIL — `ProfileBaseline` is not defined.
 
-- [ ] **Step 3: Write the ProfileBaseline class and rake task**
+- [ ] **Step 3: Write the ProfileBaseline class**
 
-Create `lib/tasks/profile.rake`:
+Create `lib/profile_baseline.rb`:
 
 ```ruby
 # frozen_string_literal: true
+
+require 'zlib'
 
 # Repeatable performance baseline for key pages and assets. Measures response
 # time, SQL query count, and HTML size per page; raw and gzipped sizes for JS
 # and CSS bundles. Output is a markdown table printed to stdout and appended
 # to tmp/profile_baselines.log.
-#
-# Usage: rake profile:baseline
 #
 # Collaborators:
 # - ActionDispatch::Integration::Session — makes requests without a running server
@@ -367,7 +372,7 @@ Create `lib/tasks/profile.rake`:
 # - db/seeds.rb — baseline reuses the seed kitchen/user pattern
 class ProfileBaseline
   PAGES = [
-    { name: 'Homepage', path: ->(ks) { "/" } },
+    { name: 'Homepage', path: ->(_ks) { '/' } },
     { name: 'Menu', path: ->(ks) { "/kitchens/#{ks}/menu" } },
     { name: 'Groceries', path: ->(ks) { "/kitchens/#{ks}/groceries" } },
     { name: 'Recipe', path: ->(ks) { :recipe } }
@@ -391,49 +396,11 @@ class ProfileBaseline
   end
 
   def asset_profiles
-    builds = Rails.root.join('app/assets/builds')
-    chunks = Rails.root.join('public/chunks')
-
-    results = []
-
-    main_js = builds.join('application.js')
-    results << asset_entry('JS (main)', main_js) if main_js.exist?
-
-    if chunks.exist?
-      cm_chunks = Dir.glob(chunks.join('*.js'))
-      total = cm_chunks.sum { |f| File.size(f) }
-      gzipped = cm_chunks.sum { |f| gzip_size(File.read(f)) }
-      results << { name: 'JS (CM chunk)', raw_bytes: total, gzipped_bytes: gzipped }
-    end
-
-    css_files = Dir.glob(builds.join('*.css'))
-    if css_files.any?
-      total = css_files.sum { |f| File.size(f) }
-      gzipped = css_files.sum { |f| gzip_size(File.read(f)) }
-      results << { name: 'CSS (total)', raw_bytes: total, gzipped_bytes: gzipped }
-    end
-
-    results
+    asset_candidates.filter_map { |candidate| measure_asset(candidate) }
   end
 
   def format_report(page_results, asset_results)
-    timestamp = Time.now.strftime('%Y-%m-%d %H:%M')
-    lines = ["## Baseline — #{timestamp}", ""]
-
-    lines << "| Page | Time (avg) | Queries | HTML size |"
-    lines << "|------|-----------|---------|-----------|"
-    page_results.each do |r|
-      lines << "| #{r[:name]} | #{r[:time_ms].round}ms | #{r[:queries]} | #{format_bytes(r[:html_bytes])} |"
-    end
-
-    lines << ""
-    lines << "| Asset | Raw | Gzipped |"
-    lines << "|-------|-----|---------|"
-    asset_results.each do |r|
-      lines << "| #{r[:name]} | #{format_bytes(r[:raw_bytes])} | #{format_bytes(r[:gzipped_bytes])} |"
-    end
-
-    lines.join("\n")
+    [page_table(page_results), asset_table(asset_results)].join("\n\n")
   end
 
   private
@@ -442,32 +409,38 @@ class ProfileBaseline
     ActionDispatch::Integration::Session.new(Rails.application)
   end
 
+  # Path helpers are unavailable in Integration::Session outside tests
   def log_in_session(session)
     session.get "/dev_login/#{user.id}"
   end
 
   def profile_page(session, page)
     path = resolve_path(page)
+    warmup(session, path)
+    samples = collect_samples(session, path)
+    summarize_samples(page[:name], samples)
+  end
 
+  def warmup(session, path)
     WARMUP_RUNS.times { session.get(path) }
+  end
 
-    timings = []
-    query_counts = []
-    html_sizes = []
-
-    TIMED_RUNS.times do
+  def collect_samples(session, path)
+    Array.new(TIMED_RUNS) do
       queries = count_queries { session.get(path) }
-      timings << session.response.headers['X-Runtime'].to_f * 1000
-      query_counts << queries
-      html_sizes << session.response.body.bytesize
+      { time_ms: extract_runtime(session), queries: queries, html_bytes: session.response.body.bytesize }
     end
+  end
 
-    {
-      name: page[:name],
-      time_ms: timings.sum / timings.size,
-      queries: query_counts.min,
-      html_bytes: html_sizes.last
-    }
+  def extract_runtime(session)
+    session.response.headers['X-Runtime'].to_f * 1000
+  end
+
+  def summarize_samples(name, samples)
+    { name: name,
+      time_ms: samples.sum { |s| s[:time_ms] } / samples.size,
+      queries: samples.map { |s| s[:queries] }.min,
+      html_bytes: samples.last[:html_bytes] }
   end
 
   def resolve_path(page)
@@ -487,6 +460,23 @@ class ProfileBaseline
     count
   end
 
+  def asset_candidates
+    builds = Rails.root.join('app/assets/builds')
+    chunks = Rails.root.join('public/chunks')
+
+    [{ name: 'JS (main)', paths: [builds.join('application.js')].select(&:exist?) },
+     { name: 'JS (CM chunk)', paths: chunks.exist? ? Dir.glob(chunks.join('*.js')) : [] },
+     { name: 'CSS (total)', paths: Dir.glob(builds.join('*.css')) }]
+  end
+
+  def measure_asset(candidate)
+    return if candidate[:paths].empty?
+
+    raw = candidate[:paths].sum { |f| File.size(f) }
+    gzipped = candidate[:paths].sum { |f| gzip_size(File.read(f)) }
+    { name: candidate[:name], raw_bytes: raw, gzipped_bytes: gzipped }
+  end
+
   def gzip_size(content)
     io = StringIO.new
     gz = Zlib::GzipWriter.new(io)
@@ -495,9 +485,17 @@ class ProfileBaseline
     io.string.bytesize
   end
 
-  def asset_entry(name, path)
-    raw = File.size(path)
-    { name: name, raw_bytes: raw, gzipped_bytes: gzip_size(File.read(path)) }
+  def page_table(results)
+    header = "## Baseline — #{Time.now.strftime('%Y-%m-%d %H:%M')}\n\n"
+    rows = results.map { |r| "| #{r[:name]} | #{r[:time_ms].round}ms | #{r[:queries]} | #{format_bytes(r[:html_bytes])} |" }
+    header + "| Page | Time (avg) | Queries | HTML size |\n|------|-----------|---------|-----------|" \
+      "\n#{rows.join("\n")}"
+  end
+
+  def asset_table(results)
+    rows = results.map { |r| "| #{r[:name]} | #{format_bytes(r[:raw_bytes])} | #{format_bytes(r[:gzipped_bytes])} |" }
+    "| Asset | Raw | Gzipped |\n|-------|-----|---------|" \
+      "\n#{rows.join("\n")}"
   end
 
   def format_bytes(bytes)
@@ -506,12 +504,20 @@ class ProfileBaseline
     "#{(bytes / 1024.0).round(1)} KB"
   end
 end
+```
+
+- [ ] **Step 4: Write the rake task wrapper**
+
+Create `lib/tasks/profile.rake`:
+
+```ruby
+# frozen_string_literal: true
+
+require_relative '../profile_baseline'
 
 namespace :profile do
   desc 'Run performance baseline: measure key pages and asset sizes'
   task baseline: :environment do
-    require 'zlib'
-
     kitchen = Kitchen.find_by!(slug: 'our-kitchen')
     user = kitchen.memberships.first&.user || User.first
 
@@ -535,30 +541,30 @@ namespace :profile do
 end
 ```
 
-- [ ] **Step 4: Add profile.rake to Rails/Output exclusion**
+- [ ] **Step 5: Add profile.rake to Rails/Output exclusion**
 
 In `.rubocop.yml`, find the `Rails/Output` exclusion list (which already
 includes `build_validator.rb` and `db/seeds.rb`) and add `lib/tasks/profile.rake`.
 
-- [ ] **Step 5: Run the test to verify it passes**
+- [ ] **Step 6: Run the test to verify it passes**
 
-Run: `ruby -Itest test/lib/tasks/profile_baseline_test.rb`
+Run: `ruby -Itest test/lib/profile_baseline_test.rb`
 Expected: Both tests pass.
 
-- [ ] **Step 6: Run the full test suite**
+- [ ] **Step 7: Run the full test suite**
 
 Run: `bundle exec rake test`
 Expected: All tests pass, including the new profile baseline tests.
 
-- [ ] **Step 7: Run lint**
+- [ ] **Step 8: Run lint**
 
 Run: `bundle exec rubocop`
 Expected: No offenses.
 
-- [ ] **Step 8: Commit**
+- [ ] **Step 9: Commit**
 
 ```bash
-git add lib/tasks/profile.rake test/lib/tasks/profile_baseline_test.rb .rubocop.yml
+git add lib/profile_baseline.rb lib/tasks/profile.rake test/lib/profile_baseline_test.rb .rubocop.yml
 git commit -m "Add rake profile:baseline for repeatable performance measurement"
 ```
 
@@ -598,7 +604,7 @@ generate a flamegraph. Kill the server.
 Add `rake profile:baseline` to the commands block in CLAUDE.md:
 
 ```bash
-rake profile:baseline  # performance baseline: page timing, queries, asset sizes
+rake profile:baseline  # performance baseline: page timing, queries, asset sizes (run quarterly + before releases)
 ```
 
 - [ ] **Step 6: Final commit**
