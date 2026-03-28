@@ -35,6 +35,7 @@ Rails.application.routes.draw do
     get 'menu/quickbites_editor_frame', to: 'menu#quickbites_editor_frame', as: :menu_quickbites_editor_frame
     post 'menu/parse_quick_bites', to: 'menu#parse_quick_bites', as: :menu_parse_quick_bites
     post 'menu/serialize_quick_bites', to: 'menu#serialize_quick_bites', as: :menu_serialize_quick_bites
+    get 'menu/dinner_weights', to: 'menu#dinner_weights', as: :menu_dinner_weights
     get 'groceries', to: 'groceries#show', as: :groceries
     patch 'groceries/check', to: 'groceries#check', as: :groceries_check
     patch 'groceries/have_it', to: 'groceries#have_it', as: :groceries_have_it

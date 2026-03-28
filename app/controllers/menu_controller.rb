@@ -19,7 +19,11 @@ class MenuController < ApplicationController
     @selected_recipes = selected_ids_for('Recipe')
     @selected_quick_bites = selected_ids_for('QuickBite').to_set(&:to_i)
     @availability = compute_availability
-    @cook_weights = CookHistoryWeighter.call(CookHistoryEntry.where(kitchen_id: current_kitchen.id).recent)
+  end
+
+  def dinner_weights
+    weights = CookHistoryWeighter.call(CookHistoryEntry.where(kitchen_id: current_kitchen.id).recent)
+    render json: weights
   end
 
   def select
