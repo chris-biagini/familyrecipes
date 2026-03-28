@@ -6,6 +6,7 @@ namespace :profile do
   desc 'Run performance baseline: measure key pages and asset sizes'
   task baseline: :environment do
     kitchen = Kitchen.find_by!(slug: 'our-kitchen')
+    ActsAsTenant.current_tenant = kitchen
     user = kitchen.memberships.first&.user || User.first
 
     abort 'No kitchen or user found. Run db:seed first.' unless kitchen && user
