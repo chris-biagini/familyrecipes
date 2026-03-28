@@ -348,6 +348,10 @@ bin/dev            # Puma + esbuild watcher (port 3030)
 # test helpers: create_kitchen_and_user, log_in, kitchen_slug (see test/test_helper.rb)
 ```
 
+**Bullet.** Enabled in dev (page footer + Rails log) and test (raises on N+1).
+If a test fails with a Bullet::Notification::UnoptimizedQueryError, add
+`includes` or `preload` to the query — don't disable Bullet for that test.
+
 ```bash
 npm install                # install JS dependencies
 npm run build              # bundle JS (esbuild)
