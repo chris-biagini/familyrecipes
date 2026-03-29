@@ -149,34 +149,12 @@ Update the CSP initializer before adding any.
   use `editor-` prefix (e.g. `.editor-form-row`, `.editor-portion-row`,
   `.editor-alias-chip`).
 
-**CSS interaction patterns.** Shared base classes for common UI elements:
-- **Icons**: `IconHelper#icon(name, size:, **attrs)` renders inline SVGs from
-  a frozen registry. Use `<%= icon(:edit, size: 12) %>` — never paste raw SVG
-  markup. `size: nil` omits width/height for CSS-sized icons. Pass
-  `'aria-hidden': nil` + `'aria-label'` for non-decorative icons. JS-side:
-  `buildIcon(name, size)` from `utilities/icons.js`.
-- **Inputs**: `.input-base` + modifiers (`.input-lg`, `.input-sm`, `.input-inline`,
-  `.input-title`, `.input-short`). `dom_builders.js` auto-prepends `input-base`.
-- **Buttons**: `.btn` + modifiers (`.btn-primary`, `.btn-danger`, `.btn-sm`,
-  `.btn-ghost`, `.btn-link`, `.btn-icon-round`, `.btn-pill`).
-- **Collapse**: `<details class="collapse-header">` + `<summary>` with sibling
-  `<div class="collapse-body"><div class="collapse-inner">`. Animated via CSS
-  `grid-template-rows: 0fr → 1fr`. Use `+` for adjacent siblings, `~` when
-  intervening elements exist.
-- **Errors**: Inline errors (`editor_utils.showErrors`) for dialog validation;
-  toast notifications (`notify.show`) for page-level mutations.
-
-**CSS color tokens.** The canonical tokens are defined in `base.css` `:root`.
-Key names: `--ground` (background), `--text`, `--text-soft`, `--text-light`
-(foreground), `--surface-alt` (offset bg), `--rule`/`--rule-faint` (borders),
-`--red` (accent/links), `--dialog-backdrop`, `--shadow-dialog`. Never invent
-generic names like `--bg`, `--fg`, `--fg-muted` — always check `:root` first.
-
-**Embedded JSON blobs.** `SearchDataHelper` and smart tag data are embedded as
-`<script type="application/json">` tags read via `el.textContent`, not as
-`data-` attributes. Search data target: `[data-search-overlay-target="data"]`.
-Smart tags: `[data-smart-tags]`. Always check the actual partial before
-assuming how data is embedded.
+**CSS conventions.** Icons: `IconHelper#icon(name, size:)` / JS `buildIcon(name, size)`
+— never paste raw SVG. Inputs: `.input-base` + modifiers. Buttons: `.btn` +
+modifiers. Collapse: `<details class="collapse-header">` pattern. Color tokens
+live in `base.css :root` — always check before inventing names. Data is embedded
+via `<script type="application/json">` + `el.textContent`, not `data-` attributes
+— check partials before assuming how data is embedded.
 
 **`hidden` attribute gotcha.** Explicit CSS `display` values (flex, grid)
 override the `[hidden]` user-agent style. When using `el.hidden = true` on
@@ -203,111 +181,38 @@ collision. Parser pipeline: `LineClassifier` → `RecipeBuilder` →
 - `default_url_options` auto-injects `kitchen_slug` — always use `_path`
   helpers, never hard-code URL strings.
 - Use `home_path` (not `kitchen_root_path`) for homepage links.
-- `MealPlan` (one row per kitchen) is a thin coordinator for the menu,
-  groceries, and dinner picker. Delegates to four normalized AR models:
-  MealPlanSelection, OnHandEntry, CustomGroceryItem, CookHistoryEntry.
-  `QuickBite` models (normalized AR, not text blob) live within
-  `Category` alongside recipes — the menu page renders both per-category.
-  `MealPlanSelection` references QBs by stringified integer PK;
-  `quick_bite_ids_for` returns integers for consumer use. Three-zone
-  grocery model: Inventory Check (new/expired items, "Have It"/"Need It"
-  buttons), To Buy (depleted items, checkboxes), On Hand (active items,
-  collapsed). SM-2-inspired adaptive ease with anchor fix — "Have It"
-  preserves `confirmed_at` at the purchase date so depletion observations
-  capture the full consumption period. See
-  `docs/superpowers/specs/2026-03-22-inventory-check-design.md`.
-- `POST /groceries/need` — search overlay quick-add: resolves ingredient
-  name, adds unrecognized items as `CustomGroceryItem` AR records,
-  marks item as needed. `SearchDataHelper` exposes
-  `ingredients` and `custom_items` keys so the overlay can match against
-  the grocery corpus.
+- `MealPlan` (one row per kitchen) coordinates menu, groceries, and dinner
+  picker — read its header comment for delegation details.
+  `QuickBite` models live within `Category` alongside recipes.
 
 **Editor dialogs.** Use `render layout: 'shared/editor_dialog'` with Stimulus
 data attributes — no JS needed. Custom dialogs hook in via lifecycle events
 (`editor:content-loaded`, `editor:collect`, `editor:save`, `editor:modified`,
-`editor:reset`). All editor bodies load via Turbo Frames — content preloads
-eagerly on page load and is ready before the user opens the dialog.
+`editor:reset`). All editor bodies load via Turbo Frames (eager preload).
 - Open `<dialog>` elements are protected from Turbo morph via
   `turbo:before-morph-element` in `application.js`.
 - `turbo:before-cache` closes all open dialogs before page snapshots.
 - Do NOT use `data-turbo-permanent` on dialogs.
-- To add a new plaintext editor type: create a classifier ViewPlugin in
-  `codemirror/`, register it in `codemirror/registry.js`, then use
-  `plaintext-editor` controller with the registry key as the `classifier` value.
-- `ordered_list_editor_controller` is a single parameterized controller for
-  aisle, category, and tag editors. It's a companion controller that delegates
-  lifecycle to `editor_controller` via events.
-- **Dual-mode editors** (recipe + Quick Bites) use a coordinator/child pattern:
-  `editor_controller` → `dual_mode_editor_controller` → child controller.
-  Coordinator manages mode toggle, routes lifecycle events, handles
-  mode-switch serialization via `/parse` and `/serialize` endpoints.
 - AR records are the sole source of truth — no stored `markdown_source`.
   `RecipeSerializer` / `QuickBitesSerializer` handle IR ↔ text conversion.
+- Read `editor_controller.js` and `dual_mode_editor_controller.js` header
+  comments for the coordinator/child pattern and lifecycle routing.
 
 **Hotwire stack.** Turbo Drive + Turbo Streams, Stimulus controllers,
 jsbundling-rails + esbuild for JS bundling.
 - New JS modules go in `app/javascript/`; shared utilities live in
-  `app/javascript/utilities/` (dom_builders, editor_utils, notify, etc.).
-  New Stimulus controllers must be imported and registered in
-  `app/javascript/application.js`. Stimulus reserves `data-action` for its
-  own dispatch syntax — use a prefixed attribute (e.g. `data-grocery-action`)
-  for custom button actions handled by manual event listeners.
-- `npm run build` bundles JS to `app/assets/builds/`; `bin/dev` runs
-  both Puma and esbuild watcher via foreman.
-- CSP requires a nonce for both `<script>` and `<style>` tags — the nonce
-  generator uses `request.session.id` (see `content_security_policy.rb`).
-  The layout includes `<%= csp_meta_tag %>` which exposes the nonce via
-  `<meta name="csp-nonce">` so JS libraries (CodeMirror) can read it at
-  runtime for injected `<style>` tags. Without this meta tag, CodeMirror's
-  layout styles are blocked by CSP and the editor breaks silently.
-- Turbo's progress bar styles live in `base.css` (not Turbo's dynamic
-  `<style>` injection) to satisfy strict CSP — the harmless console error
-  from Turbo's blocked injection is expected.
-
-**ActionCable.** Kitchen-wide stream `[kitchen, :updates]` powers all
-page-refresh morphs via `Kitchen#broadcast_update`. `RecipeBroadcaster`
-handles only delete/rename targeted notifications. No async jobs needed.
+  `app/javascript/utilities/`. New Stimulus controllers must be registered
+  in `app/javascript/application.js`.
+- Stimulus reserves `data-action` for its own dispatch syntax — use a
+  prefixed attribute (e.g. `data-grocery-action`) for custom button actions.
+- CSP nonce: see `content_security_policy.rb` header comment. The layout's
+  `<%= csp_meta_tag %>` exposes the nonce for JS libraries (CodeMirror).
 
 **Write path.** Controllers are thin adapters: param parsing → service call →
 response rendering. Services own all post-write side effects (reconcile,
 broadcast). Don't call `MarkdownImporter` directly for web operations.
-- Write services: `RecipeWriteService`, `CatalogWriteService`,
-  `MealPlanWriteService`, `QuickBitesWriteService`, `AisleWriteService`,
-  `CategoryWriteService`, `TagWriteService`. Read their header comments.
-- `ListWriteService` is the template method base class for
-  `AisleWriteService`, `CategoryWriteService`, and `TagWriteService`.
-  Subclasses override `validate_changeset`, `apply_renames`,
-  `apply_deletes`, and `apply_ordering` hooks.
-- `MarkdownImporter` has two entry points: `import` (markdown string) and
-  `import_from_structure` (IR hash). AR records are the sole source of truth.
-- `Kitchen.finalize_writes(kitchen)` — single post-write entry point:
-  orphan cleanup, meal plan reconciliation, broadcast.
-- `Kitchen.batch_writes(kitchen)` — defers finalization to one pass on
-  block exit.
-- `MealPlanActions` concern provides `rescue_from StaleObjectError`.
-
-**Adding a new setting.** 5 touch points: migration,
-`settings/_editor_frame.html.erb` (form field with value),
-`SettingsController` (`editor_frame` + `update` params),
-`settings_editor_controller.js` (target + collect/modified/reset handlers).
-`multi_kitchen` is an env var, not a DB setting.
-
-**Tags.** Single-word (`[a-zA-Z-]`), stored lowercase. Smart tag decorations
-driven by `FamilyRecipes::SmartTagRegistry` in `lib/familyrecipes/`.
-
-**Nutrition pipeline.** `IngredientCatalog` → `IngredientResolver` →
-`UnitResolver` → `NutritionCalculator`. Read their header comments for
-details. `rake catalog:sync` pushes YAML seed changes into the database.
-
-**Dinner picker.** Weighted random recipe suggestion on the menu page.
-`CookHistoryWeighter` applies quadratic recency decay so recently cooked
-recipes are deprioritized. Tag preferences bias selection further.
-
-**Import/Export.** `ExportService` builds a ZIP of all kitchen data;
-`ImportService` consumes it. Roundtrip-safe data portability.
-
-**AI import.** `AiImportService` + `AiImportController`. API key stored
-encrypted on Kitchen (`anthropic_api_key`); button hidden when no key set.
+Read write service header comments for details. `multi_kitchen` is an env
+var, not a DB setting.
 
 ## Recipe & Data Formats
 
@@ -446,13 +351,8 @@ tmp/pids/server.pid` then `bin/dev`). Domain classes in `lib/` are loaded once
 at boot — they do not hot-reload.
 
 **PWA.** `rake pwa:icons` generates PNGs from `app/assets/images/favicon.svg`
-(requires `rsvg-convert`/`librsvg2-bin`). Service worker
-(`app/views/pwa/service_worker.js.erb`) is a minimal PWA-install stub — no
-caching, no fetch interception. The browser handles all requests normally.
-
-**JS changes.** Adding npm packages requires `npm install`. Adding new
-Stimulus controllers requires registering them in `application.js`.
-The esbuild watcher (`bin/dev`) auto-rebuilds on file changes.
+(requires `rsvg-convert`/`librsvg2-bin`). Service worker is a minimal
+install stub — see its header comment.
 
 **Visual companion.** The brainstorming visual companion server must bind to
 `0.0.0.0` (`--host 0.0.0.0`) — the default `127.0.0.1` is unreachable from
