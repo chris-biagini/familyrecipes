@@ -44,7 +44,7 @@ module FamilyRecipes
     end
 
     recipe_files.map do |file|
-      source = File.read(file)
+      source = File.read(file, encoding: 'utf-8')
       id = slugify(File.basename(file, '.*'))
       Recipe.new(markdown_source: source, id: id)
     end
@@ -77,7 +77,7 @@ module FamilyRecipes
 
   def self.parse_quick_bites(recipes_dir)
     file_path = File.join(recipes_dir, CONFIG[:quick_bites_filename])
-    parse_quick_bites_content(File.read(file_path)).quick_bites
+    parse_quick_bites_content(File.read(file_path, encoding: 'utf-8')).quick_bites
   end
 end
 

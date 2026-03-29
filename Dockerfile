@@ -36,6 +36,7 @@ RUN apt-get update -qq && \
 
 WORKDIR /app
 
+ENV LANG=C.UTF-8
 ENV RAILS_ENV=production
 
 COPY --from=builder /usr/local/bundle /usr/local/bundle

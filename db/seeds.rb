@@ -40,7 +40,7 @@ Rake::Task['catalog:sync'].invoke
 seeds_dir = Rails.root.join('db/seeds')
 aisle_order_path = seeds_dir.join('resources/aisle-order.txt')
 if aisle_order_path.exist?
-  kitchen.update!(aisle_order: File.read(aisle_order_path).strip)
+  kitchen.update!(aisle_order: File.read(aisle_order_path, encoding: 'utf-8').strip)
   puts 'Aisle order loaded.'
 end
 
@@ -56,7 +56,7 @@ if Recipe.none? && !Rails.env.test?
   puts "Importing #{recipe_files.size} sample recipes..."
 
   recipe_files.each do |path|
-    result = MarkdownImporter.import(File.read(path), kitchen: kitchen, category: nil)
+    result = MarkdownImporter.import(File.read(path, encoding: 'utf-8'), kitchen: kitchen, category: nil)
     sync_front_matter_tags(kitchen, result)
     puts "  #{result.recipe.title} (#{result.recipe.category.name})"
   end
@@ -67,7 +67,7 @@ if Recipe.none? && !Rails.env.test?
 
   quick_bites_path = recipes_dir.join(quick_bites_filename)
   if quick_bites_path.exist?
-    QuickBitesWriteService.update(kitchen: kitchen, content: File.read(quick_bites_path))
+    QuickBitesWriteService.update(kitchen: kitchen, content: File.read(quick_bites_path, encoding: 'utf-8'))
     puts 'Quick Bites content loaded.'
   end
 
