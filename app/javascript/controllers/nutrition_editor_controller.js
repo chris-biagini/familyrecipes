@@ -637,9 +637,6 @@ export default class extends Controller {
   }
 
   onFrameLoad() {
-    const staleKeys = ["density", "portions", "recipe-units", "grocery-aisle", "aliases", "nutrition-conversions"]
-    staleKeys.forEach(key => sessionStorage.removeItem(`editor:section:${key}`))
-
     this._originalAisle = this.currentAisle()
     this.originalSnapshot = JSON.stringify(this.collectFormData())
     this.moveResetButtonToFooter()

@@ -21,8 +21,6 @@ export default class extends Controller {
     this.listeners = new ListenerManager()
     this.pendingMoves = new Set()
 
-    this.cleanupOldStorage()
-    this.cleanupCartStorage()
     this.bindShoppingListEvents()
     this.bindInventoryCheckButtons()
     this.bindCustomItemInput()
@@ -197,12 +195,6 @@ export default class extends Controller {
 
   // --- Collapse persistence ---
 
-  cleanupOldStorage() {
-    try {
-      localStorage.removeItem(`grocery-aisles-${this.element.dataset.kitchenSlug}`)
-    } catch { /* ignore */ }
-  }
-
   bindCollapseToggle() {
     this.listeners.add(this.element, "toggle", (e) => {
       if (!e.target.matches("details.to-buy-section, details.on-hand-section, details.inventory-check-section")) return
@@ -260,10 +252,7 @@ export default class extends Controller {
       const aisle = group.dataset.aisle
       if (!aisle) return
 
-      let entry = state[aisle]
-      if (typeof entry === "boolean") {
-        entry = { to_buy: true, on_hand: entry }
-      }
+      const entry = state[aisle]
 
       const toBuy = group.querySelector("details.to-buy-section")
       const onHand = group.querySelector("details.on-hand-section")
@@ -292,12 +281,6 @@ export default class extends Controller {
       this.restoreCollapseState()
       this.applyPendingMoves()
     }
-  }
-
-  cleanupCartStorage() {
-    try {
-      sessionStorage.removeItem(`grocery-in-cart-${this.element.dataset.kitchenSlug}`)
-    } catch { /* ignore */ }
   }
 
   // --- Zone transition animations ---

@@ -100,7 +100,7 @@ export default class extends Controller {
     })
 
     if (scaleFactor && !this.embeddedValue) {
-      const factor = typeof scaleFactor === 'string' ? parseFloat(scaleFactor) : scaleFactor
+      const factor = scaleFactor
       if (factor && isFinite(factor)) {
         this.scaleFactor = factor
         this.applyScale(factor)
