@@ -70,24 +70,17 @@ export function positionAtTime(keyframes, t) {
 }
 
 export function buildReelItems(recipes, winner, winnerIndex, totalItems) {
-  const items = []
-  for (let i = 0; i < totalItems; i++) {
-    if (i === winnerIndex) {
-      items.push(winner)
-    } else {
-      items.push(recipes[i % recipes.length])
-    }
-  }
-  return items
+  return Array.from({ length: totalItems }, (_, i) =>
+    i === winnerIndex ? winner : recipes[i % recipes.length]
+  )
 }
 
-export function applyCylinderWarp(distFromCenter, containerHeight) {
+export function applyCylinderWarp(distFromCenter, itemHeight) {
   const absDist = Math.abs(distFromCenter)
   if (absDist > 1.5) return null
 
   const foreshorten = Math.max(0, 1 - Math.pow(absDist, 1.3))
   const scaleY = 0.15 + 0.85 * foreshorten
-  const itemHeight = 30
   const yShift = distFromCenter * (1 - scaleY) * itemHeight * 0.5
 
   return { scaleY, yShift }

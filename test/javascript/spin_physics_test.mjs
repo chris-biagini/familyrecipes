@@ -88,25 +88,25 @@ test("buildReelItems loops recipes to fill reel", () => {
 })
 
 test("applyCylinderWarp returns scaleY 1.0 at center", () => {
-  const result = applyCylinderWarp(0, 76)
+  const result = applyCylinderWarp(0, 30)
   assertCloseTo(result.scaleY, 1.0, 0.01)
   assertCloseTo(result.yShift, 0, 0.1)
 })
 
 test("applyCylinderWarp compresses at edges", () => {
-  const result = applyCylinderWarp(1.0, 76)
+  const result = applyCylinderWarp(1.0, 30)
   assert.ok(result.scaleY < 0.5, `scaleY at edge should be < 0.5, got ${result.scaleY}`)
 })
 
 test("applyCylinderWarp returns null for off-screen items", () => {
-  const result = applyCylinderWarp(2.0, 76)
+  const result = applyCylinderWarp(2.0, 30)
   assert.equal(result, null)
 })
 
 test("applyCylinderWarp foreshortening is gradual from center", () => {
-  const center = applyCylinderWarp(0, 76)
-  const nearby = applyCylinderWarp(0.2, 76)
-  const mid = applyCylinderWarp(0.5, 76)
+  const center = applyCylinderWarp(0, 30)
+  const nearby = applyCylinderWarp(0.2, 30)
+  const mid = applyCylinderWarp(0.5, 30)
   assert.ok(nearby.scaleY < center.scaleY, "Items near center should already be slightly compressed")
   assert.ok(mid.scaleY < nearby.scaleY, "Compression should increase toward edges")
 })
