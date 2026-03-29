@@ -28,7 +28,7 @@ const tacos = makeRecipe({
   ingredients: ["cod", "tortillas", "cabbage", "lime"]
 })
 
-// Single token — backward compatible
+// Single token
 test("single token matching title returns tier 0", () => {
   assert.equal(matchTier(pancakes, ["pancakes"]), 0)
 })

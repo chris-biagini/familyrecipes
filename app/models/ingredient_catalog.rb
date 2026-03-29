@@ -72,11 +72,8 @@ class IngredientCatalog < ApplicationRecord # rubocop:disable Metrics/ClassLengt
     attrs
   end
 
-  # Backward compat: old-format imports use aisle='omit' instead of the boolean
   def self.aisle_attrs_from_yaml(entry)
-    aisle = entry['aisle']
-    omit = entry['omit_from_shopping'] || aisle == 'omit'
-    { aisle: (aisle == 'omit' ? nil : aisle), omit_from_shopping: omit || false }
+    { aisle: entry['aisle'], omit_from_shopping: entry['omit_from_shopping'] || false }
   end
 
   def self.nutrient_attrs_from_yaml(entry)

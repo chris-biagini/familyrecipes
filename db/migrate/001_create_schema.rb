@@ -2,133 +2,255 @@
 
 class CreateSchema < ActiveRecord::Migration[8.1]
   def change
-    create_table :kitchens do |t|
-      t.string :name, null: false
-      t.string :slug, null: false
-      t.text :quick_bites_content
-      t.text :aisle_order
-      t.timestamps
-      t.index :slug, unique: true
+    create_table "categories", force: :cascade do |t|
+      t.datetime "created_at", null: false
+      t.integer "kitchen_id", null: false
+      t.string "name", null: false
+      t.integer "position", default: 0, null: false
+      t.string "slug", null: false
+      t.datetime "updated_at", null: false
+      t.index ["kitchen_id", "name"], name: "index_categories_on_kitchen_id_and_name", unique: true
+      t.index ["kitchen_id", "slug"], name: "index_categories_on_kitchen_id_and_slug", unique: true
+      t.index ["kitchen_id"], name: "index_categories_on_kitchen_id"
+      t.index ["position"], name: "index_categories_on_position"
     end
 
-    create_table :users do |t|
-      t.string :name, null: false
-      t.string :email, null: false
-      t.timestamps
-      t.index :email, unique: true
+    create_table "cook_history_entries", force: :cascade do |t|
+      t.datetime "cooked_at", null: false
+      t.integer "kitchen_id", null: false
+      t.string "recipe_slug", null: false
+      t.index ["kitchen_id", "recipe_slug", "cooked_at"], name: "idx_cook_history_entries_lookup"
     end
 
-    create_table :memberships do |t|
-      t.references :kitchen, null: false, foreign_key: true
-      t.references :user, null: false, foreign_key: true
-      t.string :role, null: false, default: 'member'
-      t.timestamps
-      t.index %i[kitchen_id user_id], unique: true
+    create_table "cross_references", force: :cascade do |t|
+      t.datetime "created_at", null: false
+      t.integer "kitchen_id", null: false
+      t.decimal "multiplier", precision: 8, scale: 2, default: "1.0", null: false
+      t.integer "position", null: false
+      t.string "prep_note"
+      t.integer "step_id", null: false
+      t.integer "target_recipe_id"
+      t.string "target_slug", null: false
+      t.string "target_title", null: false
+      t.datetime "updated_at", null: false
+      t.index ["kitchen_id"], name: "index_cross_references_on_kitchen_id"
+      t.index ["step_id", "position"], name: "index_cross_references_on_step_id_and_position", unique: true
+      t.index ["step_id"], name: "index_cross_references_on_step_id"
+      t.index ["target_recipe_id"], name: "index_cross_references_on_target_recipe_id"
     end
 
-    create_table :sessions do |t|
-      t.references :user, null: false, foreign_key: true
-      t.string :ip_address
-      t.string :user_agent
-      t.timestamps
+    create_table "custom_grocery_items", force: :cascade do |t|
+      t.string "aisle", default: "Miscellaneous", null: false
+      t.datetime "created_at", null: false
+      t.integer "kitchen_id", null: false
+      t.date "last_used_at", null: false
+      t.string "name", null: false, collation: "NOCASE"
+      t.date "on_hand_at"
+      t.index ["kitchen_id", "name"], name: "idx_custom_grocery_items_unique", unique: true
     end
 
-    create_table :categories do |t|
-      t.references :kitchen, null: false, foreign_key: true
-      t.string :name, null: false
-      t.string :slug, null: false
-      t.integer :position, null: false, default: 0
-      t.timestamps
-      t.index %i[kitchen_id name], unique: true
-      t.index %i[kitchen_id slug], unique: true
-      t.index :position
+    create_table "ingredient_catalog", force: :cascade do |t|
+      t.decimal "added_sugars"
+      t.string "aisle"
+      t.json "aliases", default: []
+      t.decimal "basis_grams"
+      t.decimal "calories"
+      t.decimal "carbs"
+      t.decimal "cholesterol"
+      t.datetime "created_at", null: false
+      t.decimal "density_grams"
+      t.string "density_unit"
+      t.decimal "density_volume"
+      t.decimal "fat"
+      t.decimal "fiber"
+      t.string "ingredient_name", null: false, collation: "NOCASE"
+      t.integer "kitchen_id"
+      t.boolean "omit_from_shopping", default: false, null: false
+      t.json "portions", default: {}
+      t.decimal "protein"
+      t.decimal "saturated_fat"
+      t.decimal "sodium"
+      t.json "sources", default: []
+      t.decimal "total_sugars"
+      t.decimal "trans_fat"
+      t.datetime "updated_at", null: false
+      t.index ["ingredient_name"], name: "index_ingredient_catalog_global_unique", unique: true, where: "kitchen_id IS NULL"
+      t.index ["kitchen_id", "ingredient_name"], name: "index_ingredient_catalog_on_kitchen_id_and_ingredient_name", unique: true
+      t.index ["kitchen_id"], name: "index_ingredient_catalog_on_kitchen_id"
     end
 
-    create_table :recipes do |t|
-      t.references :kitchen, null: false, foreign_key: true
-      t.references :category, null: false, foreign_key: true
-      t.string :title, null: false
-      t.string :slug, null: false
-      t.text :description
-      t.text :footer
-      t.text :markdown_source, null: false
-      t.decimal :makes_quantity
-      t.string :makes_unit_noun
-      t.integer :serves
-      t.json :nutrition_data
-      t.datetime :edited_at
-      t.timestamps
-      t.index %i[kitchen_id slug], unique: true
+    create_table "ingredients", force: :cascade do |t|
+      t.datetime "created_at", null: false
+      t.string "name", null: false
+      t.integer "position", null: false
+      t.string "prep_note"
+      t.string "quantity"
+      t.decimal "quantity_high"
+      t.decimal "quantity_low"
+      t.integer "step_id", null: false
+      t.string "unit"
+      t.datetime "updated_at", null: false
+      t.index ["step_id", "position"], name: "index_ingredients_on_step_id_and_position", unique: true
+      t.index ["step_id"], name: "index_ingredients_on_step_id"
     end
 
-    create_table :steps do |t|
-      t.references :recipe, null: false, foreign_key: true
-      t.string :title
-      t.integer :position, null: false
-      t.text :instructions
-      t.text :processed_instructions
-      t.timestamps
-      t.index %i[recipe_id position], unique: true
+    create_table "kitchens", force: :cascade do |t|
+      t.text "aisle_order"
+      t.string "anthropic_api_key"
+      t.datetime "created_at", null: false
+      t.boolean "decorate_tags", default: true, null: false
+      t.string "homepage_heading", default: "Our Recipes"
+      t.string "homepage_subtitle", default: "A collection of our family's favorite recipes."
+      t.string "name", null: false
+      t.boolean "show_nutrition", default: false, null: false
+      t.string "site_title", default: "Family Recipes"
+      t.string "slug", null: false
+      t.datetime "updated_at", null: false
+      t.string "usda_api_key"
+      t.index ["slug"], name: "index_kitchens_on_slug", unique: true
     end
 
-    create_table :ingredients do |t|
-      t.references :step, null: false, foreign_key: true
-      t.string :name, null: false
-      t.string :quantity
-      t.string :unit
-      t.string :prep_note
-      t.integer :position, null: false
-      t.timestamps
-      t.index %i[step_id position], unique: true
+    create_table "meal_plan_selections", force: :cascade do |t|
+      t.datetime "created_at", null: false
+      t.integer "kitchen_id", null: false
+      t.string "selectable_id", null: false
+      t.string "selectable_type", null: false
+      t.index ["kitchen_id", "selectable_type", "selectable_id"], name: "idx_meal_plan_selections_unique", unique: true
     end
 
-    create_table :cross_references do |t|
-      t.references :kitchen, null: false, foreign_key: true
-      t.references :step, null: false, foreign_key: true
-      t.references :target_recipe, foreign_key: { to_table: :recipes }
-      t.string :target_title, null: false
-      t.string :target_slug, null: false
-      t.decimal :multiplier, precision: 8, scale: 2, null: false, default: 1.0
-      t.string :prep_note
-      t.integer :position, null: false
-      t.timestamps
-      t.index %i[step_id position], unique: true
+    create_table "meal_plans", force: :cascade do |t|
+      t.datetime "created_at", null: false
+      t.integer "kitchen_id", null: false
+      t.datetime "updated_at", null: false
+      t.index ["kitchen_id"], name: "index_meal_plans_on_kitchen_id", unique: true
     end
 
-    create_table :ingredient_catalog do |t|
-      t.references :kitchen, foreign_key: true
-      t.string :ingredient_name, null: false, collation: 'NOCASE'
-      t.string :aisle
-      t.boolean :omit_from_shopping, default: false, null: false
-      t.decimal :basis_grams
-      t.decimal :calories
-      t.decimal :fat
-      t.decimal :saturated_fat
-      t.decimal :trans_fat
-      t.decimal :cholesterol
-      t.decimal :sodium
-      t.decimal :carbs
-      t.decimal :fiber
-      t.decimal :total_sugars
-      t.decimal :added_sugars
-      t.decimal :protein
-      t.decimal :density_grams
-      t.decimal :density_volume
-      t.string :density_unit
-      t.json :portions, default: {}
-      t.json :sources, default: []
-      t.json :aliases, default: []
-      t.timestamps
-      t.index :ingredient_name, unique: true, where: 'kitchen_id IS NULL',
-              name: 'index_ingredient_catalog_global_unique'
-      t.index %i[kitchen_id ingredient_name], unique: true
+    create_table "memberships", force: :cascade do |t|
+      t.datetime "created_at", null: false
+      t.integer "kitchen_id", null: false
+      t.string "role", default: "member", null: false
+      t.datetime "updated_at", null: false
+      t.integer "user_id", null: false
+      t.index ["kitchen_id", "user_id"], name: "index_memberships_on_kitchen_id_and_user_id", unique: true
+      t.index ["kitchen_id"], name: "index_memberships_on_kitchen_id"
+      t.index ["user_id"], name: "index_memberships_on_user_id"
     end
 
-    create_table :meal_plans do |t|
-      t.references :kitchen, null: false, foreign_key: true, index: { unique: true }
-      t.json :state, null: false, default: {}
-      t.integer :lock_version, null: false, default: 0
-      t.timestamps
+    create_table "on_hand_entries", force: :cascade do |t|
+      t.date "confirmed_at", null: false
+      t.datetime "created_at", null: false
+      t.date "depleted_at"
+      t.float "ease"
+      t.string "ingredient_name", null: false, collation: "NOCASE"
+      t.float "interval"
+      t.integer "kitchen_id", null: false
+      t.date "orphaned_at"
+      t.datetime "updated_at", null: false
+      t.index ["kitchen_id", "ingredient_name"], name: "idx_on_hand_entries_unique", unique: true
     end
+
+    create_table "quick_bite_ingredients", force: :cascade do |t|
+      t.datetime "created_at", null: false
+      t.string "name", null: false
+      t.integer "position", default: 0, null: false
+      t.integer "quick_bite_id", null: false
+      t.datetime "updated_at", null: false
+      t.index ["quick_bite_id"], name: "index_quick_bite_ingredients_on_quick_bite_id"
+    end
+
+    create_table "quick_bites", force: :cascade do |t|
+      t.integer "category_id", null: false
+      t.datetime "created_at", null: false
+      t.integer "kitchen_id", null: false
+      t.integer "position", default: 0, null: false
+      t.string "title", null: false
+      t.datetime "updated_at", null: false
+      t.index ["kitchen_id", "category_id"], name: "index_quick_bites_on_kitchen_id_and_category_id"
+      t.index ["kitchen_id", "title"], name: "index_quick_bites_on_kitchen_id_and_title", unique: true
+    end
+
+    create_table "recipe_tags", force: :cascade do |t|
+      t.datetime "created_at", null: false
+      t.integer "recipe_id", null: false
+      t.integer "tag_id", null: false
+      t.datetime "updated_at", null: false
+      t.index ["recipe_id", "tag_id"], name: "index_recipe_tags_on_recipe_id_and_tag_id", unique: true
+      t.index ["recipe_id"], name: "index_recipe_tags_on_recipe_id"
+      t.index ["tag_id"], name: "index_recipe_tags_on_tag_id"
+    end
+
+    create_table "recipes", force: :cascade do |t|
+      t.integer "category_id", null: false
+      t.datetime "created_at", null: false
+      t.text "description"
+      t.datetime "edited_at"
+      t.text "footer"
+      t.integer "kitchen_id", null: false
+      t.decimal "makes_quantity"
+      t.string "makes_unit_noun"
+      t.json "nutrition_data"
+      t.integer "serves"
+      t.string "slug", null: false
+      t.string "title", null: false
+      t.datetime "updated_at", null: false
+      t.index ["category_id"], name: "index_recipes_on_category_id"
+      t.index ["kitchen_id", "slug"], name: "index_recipes_on_kitchen_id_and_slug", unique: true
+      t.index ["kitchen_id"], name: "index_recipes_on_kitchen_id"
+    end
+
+    create_table "sessions", force: :cascade do |t|
+      t.datetime "created_at", null: false
+      t.string "ip_address"
+      t.datetime "updated_at", null: false
+      t.string "user_agent"
+      t.integer "user_id", null: false
+      t.index ["user_id"], name: "index_sessions_on_user_id"
+    end
+
+    create_table "steps", force: :cascade do |t|
+      t.datetime "created_at", null: false
+      t.text "instructions"
+      t.integer "position", null: false
+      t.text "processed_instructions"
+      t.integer "recipe_id", null: false
+      t.string "title"
+      t.datetime "updated_at", null: false
+      t.index ["recipe_id", "position"], name: "index_steps_on_recipe_id_and_position", unique: true
+      t.index ["recipe_id"], name: "index_steps_on_recipe_id"
+    end
+
+    create_table "tags", force: :cascade do |t|
+      t.datetime "created_at", null: false
+      t.integer "kitchen_id", null: false
+      t.string "name", null: false
+      t.datetime "updated_at", null: false
+      t.index ["kitchen_id", "name"], name: "index_tags_on_kitchen_id_and_name", unique: true
+      t.index ["kitchen_id"], name: "index_tags_on_kitchen_id"
+    end
+
+    create_table "users", force: :cascade do |t|
+      t.datetime "created_at", null: false
+      t.string "email", null: false
+      t.string "name", null: false
+      t.datetime "updated_at", null: false
+      t.index ["email"], name: "index_users_on_email", unique: true
+    end
+
+    add_foreign_key "categories", "kitchens"
+    add_foreign_key "cross_references", "kitchens"
+    add_foreign_key "cross_references", "recipes", column: "target_recipe_id"
+    add_foreign_key "cross_references", "steps"
+    add_foreign_key "ingredient_catalog", "kitchens"
+    add_foreign_key "ingredients", "steps"
+    add_foreign_key "meal_plans", "kitchens"
+    add_foreign_key "memberships", "kitchens"
+    add_foreign_key "memberships", "users"
+    add_foreign_key "recipe_tags", "recipes"
+    add_foreign_key "recipe_tags", "tags"
+    add_foreign_key "recipes", "categories"
+    add_foreign_key "recipes", "kitchens"
+    add_foreign_key "sessions", "users"
+    add_foreign_key "steps", "recipes"
+    add_foreign_key "tags", "kitchens"
   end
 end

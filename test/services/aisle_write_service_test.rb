@@ -88,7 +88,7 @@ class AisleWriteServiceTest < ActiveSupport::TestCase
 
   test 'update rejects rename target exceeding MAX_AISLE_NAME_LENGTH' do
     IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Apples', aisle: 'Produce')
-    long_name = 'a' * (Kitchen::MAX_AISLE_NAME_LENGTH + 1)
+    long_name = 'a' * (FamilyRecipes::NutritionConstraints::AISLE_MAX_LENGTH + 1)
 
     result = AisleWriteService.update(
       kitchen: @kitchen, aisle_order: 'Produce',

@@ -372,17 +372,6 @@ class CatalogWriteServiceTest < ActiveSupport::TestCase
     assert_includes order, 'Produce'
   end
 
-  test 'bulk_import converts old aisle omit to omit_from_shopping' do
-    CatalogWriteService.bulk_import(kitchen: @kitchen, entries_hash: {
-                                      'vanilla' => { 'aisle' => 'omit' }
-                                    })
-
-    entry = IngredientCatalog.find_by(kitchen: @kitchen, ingredient_name: 'vanilla')
-
-    assert entry.omit_from_shopping
-    assert_nil entry.aisle
-  end
-
   test 'bulk_import does not duplicate existing aisles' do
     @kitchen.update!(aisle_order: "Produce\nBaking")
 
