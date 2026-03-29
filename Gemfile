@@ -23,6 +23,7 @@ gem 'turbo-rails'
 group :development do
   gem 'brakeman', require: false
   gem 'bullet'
+  gem 'bundler-audit', require: false
   gem 'rubocop', require: false
   gem 'rubocop-minitest', require: false
   gem 'rubocop-performance', require: false

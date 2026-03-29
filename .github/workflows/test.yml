@@ -49,6 +49,12 @@ jobs:
       - name: Lint and test
         run: bundle exec rake
 
+      - name: Security scan (Brakeman)
+        run: bundle exec brakeman --no-pager -q
+
+      - name: Dependency audit (bundler-audit)
+        run: bundle exec bundle-audit check --update
+
       - name: Verify clean migration and seed
         env:
           RAILS_ENV: production

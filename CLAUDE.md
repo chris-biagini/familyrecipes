@@ -361,6 +361,7 @@ MULTI_KITCHEN=true bin/rails runner test/security/seed_security_kitchens.rb
 npx playwright test test/security/              # all security specs
 npx playwright test test/security/tenant_isolation.spec.mjs  # single spec
 ```
+CI runs Brakeman and `bundler-audit` automatically on every push and PR.
 
 ```bash
 npm install                # install JS dependencies
