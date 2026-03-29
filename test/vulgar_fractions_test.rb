@@ -153,7 +153,7 @@ class VulgarFractionsTest < Minitest::Test
     assert_equal "\u00BD", FamilyRecipes::VulgarFractions.format(0.5, unit: 'cloves')
   end
 
-  def test_backward_compatible_without_unit
+  def test_format_without_unit
     assert_equal "\u00BD", FamilyRecipes::VulgarFractions.format(0.5)
   end
 

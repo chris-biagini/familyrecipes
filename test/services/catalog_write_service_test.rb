@@ -372,7 +372,6 @@ class CatalogWriteServiceTest < ActiveSupport::TestCase
     assert_includes order, 'Produce'
   end
 
-
   test 'bulk_import does not duplicate existing aisles' do
     @kitchen.update!(aisle_order: "Produce\nBaking")
 
