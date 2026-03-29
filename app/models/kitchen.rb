@@ -30,7 +30,6 @@ class Kitchen < ApplicationRecord
   encrypts :usda_api_key
   encrypts :anthropic_api_key
 
-  MAX_AISLE_NAME_LENGTH = FamilyRecipes::NutritionConstraints::AISLE_MAX_LENGTH
   MAX_AISLES = 50
   AI_MODEL = 'claude-sonnet-4-6'
 
