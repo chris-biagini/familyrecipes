@@ -71,9 +71,26 @@
   <div class="dinner-picker-content">
     <button type="button" class="dinner-picker-close"
             data-action="click->editor#close" aria-label="Close">&times;</button>
-    <div data-dinner-picker-target="tagState" class="dinner-picker-tags"></div>
-    <div data-dinner-picker-target="slotDisplay" class="dinner-picker-slot" hidden></div>
-    <div data-dinner-picker-target="resultArea" class="dinner-picker-result" hidden></div>
+    <h2 class="dinner-picker-heading">What's for Dinner?</h2>
+    <p class="dinner-picker-subtitle">Tap tags to steer the pick, or just spin.</p>
+    <div data-dinner-picker-target="tagPills" class="dinner-picker-tag-pills"></div>
+    <div class="dinner-picker-drum">
+      <div data-dinner-picker-target="reel" class="dinner-picker-reel">
+        <div class="dinner-picker-reel-item">&mdash;</div>
+      </div>
+    </div>
+    <div data-dinner-picker-target="resultDetails" class="dinner-picker-result-details">
+      <p data-dinner-picker-target="resultDescription" class="dinner-picker-result-description"></p>
+      <a data-dinner-picker-target="resultLink" class="dinner-picker-result-link" href="#"></a>
+    </div>
+    <div class="dinner-picker-actions">
+      <button data-dinner-picker-target="spinBtn"
+              data-action="click->dinner-picker#spin"
+              class="btn btn-primary dinner-picker-spin-btn">I'm feeling lucky</button>
+      <button data-dinner-picker-target="acceptBtn"
+              data-action="click->dinner-picker#accept"
+              class="btn btn-primary" hidden>Add to Menu</button>
+    </div>
   </div>
 </dialog>
 <% end %>
