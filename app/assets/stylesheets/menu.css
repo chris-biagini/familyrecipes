@@ -303,11 +303,12 @@
   border-radius: 8px;
   height: 76px;
   overflow: hidden;
+  clip-path: inset(0 round 8px);
   position: relative;
   margin: 0 auto 0.8rem;
   border: 1px solid var(--rule);
   background: var(--surface-alt);
-  perspective: 150px;
+  perspective: 800px;
   width: fit-content;
 }
 
@@ -369,6 +370,7 @@
   font-weight: 600;
   color: var(--red);
   white-space: nowrap;
+  -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
 }
 
