@@ -13,7 +13,7 @@ class SmartTagHelperTest < ActionView::TestCase
     attrs = smart_tag_pill_attrs('vegetarian', kitchen: @kitchen)
 
     assert_includes attrs[:class], 'tag-pill--green'
-    assert_equal '🌿', attrs[:data][:smart_emoji]
+    assert_equal '🥕', attrs[:data][:smart_emoji]
   end
 
   test 'returns crossout class for crossout tag' do

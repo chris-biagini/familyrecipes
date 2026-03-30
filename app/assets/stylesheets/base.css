@@ -53,6 +53,7 @@
   --smart-green-bg: #d4edda;    --smart-green-text: #1b5e20;
   --smart-amber-bg: #fff3cd;    --smart-amber-text: #7a5d00;
   --smart-blue-bg: #d6eaf8;     --smart-blue-text: #1a4a6e;
+  --smart-rose-bg: #f5e0d0;     --smart-rose-text: #6e3222;
   --smart-purple-bg: #e8daf5;   --smart-purple-text: #4a2080;
   --smart-cuisine-bg: #f5ddd0;  --smart-cuisine-text: #6e3a22;
 
@@ -121,6 +122,7 @@
     --smart-green-bg: #1a3a1e;    --smart-green-text: #a8d8a0;
     --smart-amber-bg: #3a3018;    --smart-amber-text: #d8c070;
     --smart-blue-bg: #1a2e3e;     --smart-blue-text: #90c0e0;
+    --smart-rose-bg: #3a2420;     --smart-rose-text: #d8a890;
     --smart-purple-bg: #2a1e3a;   --smart-purple-text: #c0a8e0;
     --smart-cuisine-bg: #3a2820;  --smart-cuisine-text: #d8b0a0;
 
@@ -1168,6 +1170,7 @@ html:has(dialog[open]) {
 .tag-pill--green   { background: var(--smart-green-bg);   color: var(--smart-green-text); }
 .tag-pill--amber   { background: var(--smart-amber-bg);   color: var(--smart-amber-text); }
 .tag-pill--blue    { background: var(--smart-blue-bg);     color: var(--smart-blue-text); }
+.tag-pill--rose    { background: var(--smart-rose-bg);     color: var(--smart-rose-text); }
 .tag-pill--purple  { background: var(--smart-purple-bg);   color: var(--smart-purple-text); }
 .tag-pill--cuisine { background: var(--smart-cuisine-bg);  color: var(--smart-cuisine-text); }
 

@@ -13,7 +13,7 @@ class SmartTagsDisplayTest < ActionDispatch::IntegrationTest
     get recipe_path(result.recipe.slug, kitchen_slug:)
 
     assert_select 'button.tag-pill--green' do
-      assert_select '.smart-icon', text: '🌿'
+      assert_select '.smart-icon', text: '🥕'
     end
   end
 
