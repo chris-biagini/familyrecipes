@@ -297,16 +297,18 @@
   min-width: 180px;
 }
 
-/* -- Drum (faux-cylinder slot window) -- */
+/* -- Drum (3D cylinder slot window) -- */
 
 .dinner-picker-drum {
   border-radius: 8px;
   height: 76px;
   overflow: hidden;
   position: relative;
-  margin-bottom: 0.8rem;
+  margin: 0 auto 0.8rem;
   border: 1px solid var(--rule);
   background: var(--surface-alt);
+  perspective: 150px;
+  width: fit-content;
 }
 
 .dinner-picker-drum::before {
@@ -326,53 +328,60 @@
     );
 }
 
-.dinner-picker-drum::after {
-  content: '';
+.dinner-picker-chevron {
   position: absolute;
-  left: 0;
-  right: 0;
   top: 50%;
   transform: translateY(-50%);
-  height: 30px;
   z-index: 3;
   pointer-events: none;
-  border-top: 1px solid rgba(179, 58, 58, 0.2);
-  border-bottom: 1px solid rgba(179, 58, 58, 0.2);
+  color: var(--red);
+  font-size: 0.7rem;
+  opacity: 0.6;
+  line-height: 1;
+}
+
+.dinner-picker-chevron-left {
+  left: 4px;
+}
+
+.dinner-picker-chevron-right {
+  right: 4px;
 }
 
 .dinner-picker-reel {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
   will-change: transform;
-  padding-top: 22px;
 }
 
 .dinner-picker-reel-item {
-  height: 30px;
+  position: absolute;
+  width: 100%;
+  height: 26px;
+  top: 50%;
+  left: 0;
+  margin-top: -13px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: var(--red);
   white-space: nowrap;
-  flex-shrink: 0;
-  padding: 0 1rem;
+  backface-visibility: hidden;
 }
 
 /* -- Result details (slides in below drum) -- */
 
 .dinner-picker-result-details {
   text-align: center;
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.4s ease, opacity 0.3s ease;
+  min-height: 4rem;
+  transition: opacity 0.3s ease;
   opacity: 0;
 }
 
 .dinner-picker-result-details.visible {
-  max-height: 200px;
   opacity: 1;
 }
 

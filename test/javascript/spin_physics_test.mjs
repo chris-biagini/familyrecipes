@@ -3,8 +3,7 @@ import { test } from "node:test"
 import {
   simulateCurve,
   buildKeyframes,
-  applyCylinderWarp,
-  buildReelItems
+  positionAtTime
 } from "../../app/javascript/utilities/spin_physics.js"
 
 function assertCloseTo(actual, expected, delta) {
@@ -40,73 +39,42 @@ test("simulateCurve with pure constant friction", () => {
   assertCloseTo(last.t, 2.0, 0.1)
 })
 
-test("buildKeyframes lands exactly on target position", () => {
+test("buildKeyframes lands exactly on a slot boundary", () => {
   const result = buildKeyframes(1200, 275, 0.75, 30)
   const last = result.keyframes[result.keyframes.length - 1]
-  assertCloseTo(last.pos, result.targetPos, 0.01)
+  assertCloseTo(last.pos, result.targetAngle, 0.01)
+  assert.equal(result.targetAngle % 30, 0)
 })
 
-test("buildKeyframes target is a multiple of itemHeight", () => {
-  const result = buildKeyframes(1200, 275, 0.75, 30)
-  assert.equal(result.targetPos % 30, 0)
-})
-
-test("buildKeyframes ensures minimum travel", () => {
+test("buildKeyframes ensures minimum 720 degrees of travel", () => {
   const result = buildKeyframes(50, 275, 0.75, 30)
-  assert.ok(result.targetItems >= 5, `Should travel at least 5 items, got ${result.targetItems}`)
+  assert.ok(result.targetAngle >= 720,
+    `Should travel at least 720°, got ${result.targetAngle}`)
 })
 
-test("buildKeyframes returns winnerIndex within reel bounds", () => {
+test("buildKeyframes returns winnerSlot as index into 12 slots", () => {
   const result = buildKeyframes(1200, 275, 0.75, 30)
-  assert.equal(result.winnerIndex, result.targetItems)
-  assert.ok(result.winnerIndex > 0)
+  assert.ok(result.winnerSlot >= 0 && result.winnerSlot < 12,
+    `winnerSlot should be 0-11, got ${result.winnerSlot}`)
 })
 
-test("buildReelItems places winner at winnerIndex", () => {
-  const recipes = [
-    { title: "A", slug: "a" },
-    { title: "B", slug: "b" },
-    { title: "C", slug: "c" }
-  ]
-  const winner = recipes[1]
-  const items = buildReelItems(recipes, winner, 10, 15)
-  assert.equal(items[10].title, "B")
-  assert.equal(items.length, 15)
+test("buildKeyframes winnerSlot matches target angle", () => {
+  const result = buildKeyframes(1200, 275, 0.75, 30)
+  const expectedSlot = (result.targetAngle / 30) % 12
+  assert.equal(result.winnerSlot, expectedSlot)
 })
 
-test("buildReelItems loops recipes to fill reel", () => {
-  const recipes = [
-    { title: "A", slug: "a" },
-    { title: "B", slug: "b" }
-  ]
-  const winner = recipes[0]
-  const items = buildReelItems(recipes, winner, 5, 8)
-  assert.equal(items[0].title, "A")
-  assert.equal(items[1].title, "B")
-  assert.equal(items[2].title, "A")
-  assert.equal(items[5].title, "A")
+test("positionAtTime interpolates correctly at midpoint", () => {
+  const result = buildKeyframes(1200, 275, 0.75, 30)
+  const totalTime = result.keyframes[result.keyframes.length - 1].t
+  const mid = positionAtTime(result.keyframes, totalTime / 2)
+  assert.ok(mid.pos > 0, "Should have traveled some distance at midpoint")
+  assert.ok(mid.pos < result.targetAngle, "Should not have reached target at midpoint")
 })
 
-test("applyCylinderWarp returns scaleY 1.0 at center", () => {
-  const result = applyCylinderWarp(0, 30)
-  assertCloseTo(result.scaleY, 1.0, 0.01)
-  assertCloseTo(result.yShift, 0, 0.1)
-})
-
-test("applyCylinderWarp compresses at edges", () => {
-  const result = applyCylinderWarp(1.0, 30)
-  assert.ok(result.scaleY < 0.5, `scaleY at edge should be < 0.5, got ${result.scaleY}`)
-})
-
-test("applyCylinderWarp returns null for off-screen items", () => {
-  const result = applyCylinderWarp(2.0, 30)
-  assert.equal(result, null)
-})
-
-test("applyCylinderWarp foreshortening is gradual from center", () => {
-  const center = applyCylinderWarp(0, 30)
-  const nearby = applyCylinderWarp(0.2, 30)
-  const mid = applyCylinderWarp(0.5, 30)
-  assert.ok(nearby.scaleY < center.scaleY, "Items near center should already be slightly compressed")
-  assert.ok(mid.scaleY < nearby.scaleY, "Compression should increase toward edges")
+test("positionAtTime returns last keyframe at end", () => {
+  const result = buildKeyframes(1200, 275, 0.75, 30)
+  const totalTime = result.keyframes[result.keyframes.length - 1].t
+  const end = positionAtTime(result.keyframes, totalTime + 1)
+  assertCloseTo(end.pos, result.targetAngle, 0.01)
 })

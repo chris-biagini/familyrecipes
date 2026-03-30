@@ -1,27 +1,29 @@
 import { Controller } from "@hotwired/stimulus"
 import { computeFinalWeights, weightedRandomPick } from "../utilities/dinner_picker_logic"
-import { buildKeyframes, positionAtTime, buildReelItems, applyCylinderWarp } from "../utilities/spin_physics"
+import { buildKeyframes, positionAtTime } from "../utilities/spin_physics"
 import { loadSearchData, loadSmartTagData } from "../utilities/search_data"
 
 /**
- * Single-page dinner picker with physics-based drum animation. Tags, drum,
- * result details, and action buttons are always visible — no state transitions.
- * Paired with editor_controller on the same <dialog> for open/close lifecycle.
+ * Single-page dinner picker with a real CSS 3D spinning cylinder. 12 recipe
+ * labels positioned around a cylinder via rotateX/translateZ. Idle rotation on
+ * open; physics-based spin on demand. Tags, drum, result details, and action
+ * buttons are always visible.
  *
- * - spin_physics.js: physics simulation, keyframe generation, cylinder warp
+ * - spin_physics.js: angular physics simulation and keyframe generation
  * - dinner_picker_logic.js: weight computation and random selection
  * - search_data.js: provides recipe and tag data
  * - editor_controller: dialog open/close, bloop animation
  * - menu_controller.js: handles checkbox change events for recipe selection
  */
 
+const SLOT_COUNT = 12
+const SLOT_ANGLE = 30
+const ITEM_HEIGHT = 26
 const SPIN_FORCE = 1200
 const TOTAL_FRICTION = 275
 const DRAG_BLEND = 0.75
-const ITEM_HEIGHT = 30
-const CONTAINER_HEIGHT = 76
-const CONTAINER_CENTER = CONTAINER_HEIGHT / 2
-const REEL_PADDING_TOP = 22
+const IDLE_SPEED = 0.06
+const DRUM_PADDING = 56
 
 const QUIPS = [
   "I'm feeling lucky",
@@ -55,6 +57,9 @@ export default class extends Controller {
     this.animFrame = null
     this.isSpinning = false
     this.currentWinner = null
+    this.currentAngle = 0
+    this.slotRecipes = []
+    this.cylinderRadius = 0
 
     const data = loadSearchData()
     this.recipes = data.recipes || []
@@ -72,10 +77,13 @@ export default class extends Controller {
     this.declinePenalties = {}
     this.currentWinner = null
     this.isSpinning = false
+    this.currentAngle = 0
     this.resultDetailsTarget.classList.remove("visible")
     this.acceptBtnTarget.hidden = true
     this.spinBtnTarget.textContent = this.randomQuip(QUIPS)
     this.buildTagPills()
+    this.populateCylinder()
+    this.startIdle()
   }
 
   reset() {
@@ -91,6 +99,87 @@ export default class extends Controller {
       this.animFrame = null
     }
   }
+
+  // -- Cylinder DOM --
+
+  populateCylinder() {
+    this.slotRecipes = this.sampleRecipes(SLOT_COUNT)
+    this.cylinderRadius = (ITEM_HEIGHT / 2) / Math.tan(Math.PI / SLOT_COUNT)
+
+    const reel = this.reelTarget
+    reel.textContent = ""
+
+    for (let i = 0; i < SLOT_COUNT; i++) {
+      const div = document.createElement("div")
+      div.className = "dinner-picker-reel-item"
+      div.textContent = this.slotRecipes[i].title
+      const angle = i * SLOT_ANGLE
+      div.style.transform =
+        `rotateX(${angle}deg) translateZ(${this.cylinderRadius}px)`
+      reel.appendChild(div)
+    }
+
+    this.applyCylinderRotation(this.currentAngle)
+    this.sizeDrum()
+  }
+
+  sizeDrum() {
+    const drum = this.reelTarget.parentElement
+    const titles = this.slotRecipes.map(r => r.title)
+    const canvas = document.createElement("canvas").getContext("2d")
+    const item = this.reelTarget.firstElementChild
+    canvas.font = getComputedStyle(item).font
+    const maxWidth = Math.max(...titles.map(t => canvas.measureText(t).width))
+    drum.style.width = `${Math.ceil(maxWidth) + DRUM_PADDING}px`
+  }
+
+  applyCylinderRotation(angle) {
+    this.reelTarget.style.transform = `rotateX(${-angle}deg)`
+  }
+
+  sampleRecipes(count) {
+    if (this.recipes.length === 0) return []
+
+    const weights = computeFinalWeights(
+      this.recipes, this.weightsValue, this.tagPreferences, this.declinePenalties
+    )
+
+    const picked = []
+    const remaining = { ...weights }
+
+    for (let i = 0; i < count; i++) {
+      let slug = weightedRandomPick(remaining)
+      if (!slug) {
+        Object.assign(remaining, weights)
+        slug = weightedRandomPick(remaining)
+      }
+      picked.push(this.recipes.find(r => r.slug === slug))
+      delete remaining[slug]
+    }
+
+    return picked
+  }
+
+  // -- Idle rotation --
+
+  startIdle() {
+    this.cancelAnimation()
+    let lastTimestamp = null
+
+    const frame = (timestamp) => {
+      if (!lastTimestamp) lastTimestamp = timestamp
+      const dt = (timestamp - lastTimestamp) / 1000
+      lastTimestamp = timestamp
+
+      this.currentAngle += IDLE_SPEED * dt * 360
+      this.applyCylinderRotation(this.currentAngle)
+      this.animFrame = requestAnimationFrame(frame)
+    }
+
+    this.animFrame = requestAnimationFrame(frame)
+  }
+
+  // -- Tag pills --
 
   buildTagPills() {
     const container = this.tagPillsTarget
@@ -129,6 +218,8 @@ export default class extends Controller {
     else pill.classList.add("tag-neutral")
   }
 
+  // -- Spin --
+
   spin() {
     if (this.isSpinning) return
     this.isSpinning = true
@@ -142,45 +233,29 @@ export default class extends Controller {
     this.acceptBtnTarget.hidden = true
     this.spinBtnTarget.textContent = "Spinning\u2026"
 
-    const weights = computeFinalWeights(
-      this.recipes, this.weightsValue, this.tagPreferences, this.declinePenalties
-    )
-    const pick = weightedRandomPick(weights)
-    if (!pick) {
-      this.isSpinning = false
-      return
-    }
-
-    const winner = this.recipes.find(r => r.slug === pick)
-    this.currentWinner = winner
+    this.currentAngle = 0
+    this.populateCylinder()
 
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      const winner = this.slotRecipes[0]
+      this.currentWinner = winner
       this.showResult(winner)
       return
     }
 
-    this.animateDrum(winner)
+    this.animateSpin()
   }
 
-  animateDrum(winner) {
-    const { keyframes, targetPos, targetItems } =
-      buildKeyframes(SPIN_FORCE, TOTAL_FRICTION, DRAG_BLEND, ITEM_HEIGHT)
+  animateSpin() {
+    this.cancelAnimation()
+
+    const startAngle = this.currentAngle
+    const { keyframes, targetAngle, winnerSlot } =
+      buildKeyframes(SPIN_FORCE, TOTAL_FRICTION, DRAG_BLEND, SLOT_ANGLE)
     const totalTime = keyframes[keyframes.length - 1].t
 
-    const reelItems = buildReelItems(
-      this.recipes, winner, targetItems, targetItems + 5
-    )
-
-    const reel = this.reelTarget
-    reel.textContent = ""
-    for (const recipe of reelItems) {
-      const div = document.createElement("div")
-      div.className = "dinner-picker-reel-item"
-      div.textContent = recipe.title
-      reel.appendChild(div)
-    }
-    reel.style.transform = "translateY(0)"
-    this.warpItems(0)
+    const winner = this.slotRecipes[winnerSlot]
+    this.currentWinner = winner
 
     let startTimestamp = null
     const frame = (timestamp) => {
@@ -189,12 +264,12 @@ export default class extends Controller {
       const elapsed = (timestamp - startTimestamp) / 1000
       const state = positionAtTime(keyframes, elapsed)
 
-      reel.style.transform = `translateY(-${state.pos}px)`
-      this.warpItems(state.pos)
+      this.currentAngle = startAngle + state.pos
+      this.applyCylinderRotation(this.currentAngle)
 
       if (elapsed >= totalTime) {
-        reel.style.transform = `translateY(-${targetPos}px)`
-        this.warpItems(targetPos)
+        this.currentAngle = startAngle + targetAngle
+        this.applyCylinderRotation(this.currentAngle)
         this.showResult(winner)
         return
       }
@@ -202,27 +277,10 @@ export default class extends Controller {
       this.animFrame = requestAnimationFrame(frame)
     }
 
-    this.cancelAnimation()
     this.animFrame = requestAnimationFrame(frame)
   }
 
-  warpItems(scrollPos) {
-    const items = this.reelTarget.children
-    for (let i = 0; i < items.length; i++) {
-      const itemTop = REEL_PADDING_TOP + i * ITEM_HEIGHT - scrollPos
-      const itemCenter = itemTop + ITEM_HEIGHT / 2
-      const distFromCenter = (itemCenter - CONTAINER_CENTER) / CONTAINER_CENTER
-
-      const warp = applyCylinderWarp(distFromCenter, ITEM_HEIGHT)
-      if (!warp) {
-        items[i].style.transform = ""
-        continue
-      }
-
-      items[i].style.transform =
-        `scaleY(${warp.scaleY.toFixed(3)}) translateY(${warp.yShift.toFixed(1)}px)`
-    }
-  }
+  // -- Result --
 
   showResult(winner) {
     this.isSpinning = false
