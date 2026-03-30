@@ -378,8 +378,10 @@ migrations into a single `001_create_schema.rb` to keep things clean.
   building the Docker image.
 
 **Releases.** Tag pushes (`v0.2.5`) trigger `docker.yml`: build → smoke test
-(`/up` health check) → push to GHCR. No redundant test job — `test.yml` already
-ran on the push to main. The `REVISION` build arg bakes the version into the
-image (read by `ApplicationHelper#app_version`). Only tag when code is
-known-good — in-between commits on main are not built. The pre-push hook runs
-lint on all files (~5s); tests run exclusively in CI.
+(`/up` health check) → push to GHCR → auto-create GitHub Release with
+`--generate-notes`. Auto-generated notes only include merged PRs — direct
+commits won't appear, so prefer PRs for non-trivial changes. The `REVISION`
+build arg bakes the version into the image (read by
+`ApplicationHelper#app_version`). Only tag when code is known-good —
+in-between commits on main are not built. The pre-push hook runs lint on all
+files (~5s); tests run exclusively in CI.
