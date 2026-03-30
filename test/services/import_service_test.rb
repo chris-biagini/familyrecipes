@@ -316,6 +316,22 @@ class ImportServiceTest < ActiveSupport::TestCase
 
   # --- Encoding ---
 
+  test 'preserves non-ASCII UTF-8 characters' do
+    content = simple_recipe('Gougères')
+    result = import_files(uploaded_file('Gougères.md', content))
+
+    assert_equal 1, result.recipes
+    assert_equal 'Gougères', @kitchen.recipes.last.title
+  end
+
+  test 'preserves non-ASCII UTF-8 characters in ZIP' do
+    zip = build_zip('Bread/Gougères.md' => simple_recipe('Gougères'))
+    result = import_files(uploaded_file('export.zip', zip))
+
+    assert_equal 1, result.recipes
+    assert_equal 'Gougères', @kitchen.recipes.last.title
+  end
+
   test 'handles non-UTF-8 content gracefully' do
     # Latin-1 encoded string with a non-UTF-8 byte
     content = simple_recipe('Cr\xe8me').dup.force_encoding('BINARY')

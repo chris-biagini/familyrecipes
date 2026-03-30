@@ -35,7 +35,7 @@ class Recipe < ApplicationRecord
 
   scope :alphabetical, -> { order(:title) }
   scope :with_full_tree, lambda {
-    includes(:category, :tags,
+    includes(:category,
              steps: [:ingredients,
                      { cross_references: { target_recipe: { steps: %i[ingredients cross_references] } } }])
   }

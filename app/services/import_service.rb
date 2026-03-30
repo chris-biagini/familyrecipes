@@ -198,6 +198,6 @@ class ImportService # rubocop:disable Metrics/ClassLength
   end
 
   def sanitize_encoding(str)
-    str.encode('UTF-8', invalid: :replace, undef: :replace)
+    str.force_encoding('UTF-8').scrub
   end
 end
