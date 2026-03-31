@@ -309,8 +309,8 @@ body {
 }
 
 .btn-danger:hover {
-  background: var(--danger-color);
-  color: white;
+  background: var(--danger-hover-bg);
+  color: var(--danger-color);
   border-color: var(--danger-color);
 }
 
@@ -606,6 +606,7 @@ header .recipe-meta {
 
 header .recipe-yield {
   font-family: var(--font-body);
+  font-style: normal;
   font-size: 0.72rem;
   font-weight: 500;
   letter-spacing: 0.12em;
