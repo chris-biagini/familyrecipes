@@ -216,4 +216,29 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
 
     assert_select 'section .back-to-top'
   end
+
+  test 'tag filter bar renders when recipes have tags' do
+    bread = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    create_recipe(
+      "# Tagged\n\nCategory: #{bread.name}\nTags: weeknight\n\n- Flour, 1 cup",
+      category_name: bread.name, kitchen: @kitchen
+    )
+
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
+
+    assert_select '.tag-filter-bar .tag-filter-pill', count: 1
+    assert_select '.tag-filter-pill', text: /weeknight/
+  end
+
+  test 'tag filter bar absent when no tags exist' do
+    bread = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    create_recipe(
+      "# Plain\n\nCategory: #{bread.name}\n\n- Flour, 1 cup",
+      category_name: bread.name, kitchen: @kitchen
+    )
+
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
+
+    assert_select '.tag-filter-bar', count: 0
+  end
 end
