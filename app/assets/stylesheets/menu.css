@@ -261,37 +261,6 @@
   text-align: center;
 }
 
-.dinner-picker-tag-pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  justify-content: center;
-  margin-bottom: 1.2rem;
-}
-
-.dinner-picker-tag {
-  padding: 0.3rem 0.6rem;
-  border-radius: 12px;
-  font-size: 0.8rem;
-  cursor: pointer;
-  border: 1px solid transparent;
-  transition: background var(--duration-fast), color var(--duration-fast);
-}
-
-.dinner-picker-tag.tag-neutral {
-  background: var(--rule);
-  color: var(--text);
-}
-
-.dinner-picker-tag.tag-up {
-  background: var(--smart-green-bg);
-  color: var(--smart-green-text);
-}
-
-.dinner-picker-tag.tag-down {
-  background: var(--red-light);
-  color: var(--red);
-}
 
 .dinner-picker-spin-btn {
   min-width: 180px;
