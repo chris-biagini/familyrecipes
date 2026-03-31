@@ -1018,10 +1018,18 @@ section:first-of-type h2 {
 
 /* Cookbook index: recipe cards */
 .recipe-card {
+  position: relative;
   padding: 0.625rem 0.75rem;
   border-left: 3px solid transparent;
+  border-bottom: 1px solid var(--rule-faint);
   border-radius: 0 4px 4px 0;
-  transition: opacity var(--duration-normal), border-left-color var(--duration-normal);
+  transition: opacity var(--duration-normal), border-left-color var(--duration-normal),
+              background var(--duration-normal), box-shadow var(--duration-normal);
+}
+
+.recipe-card:hover {
+  background: var(--hover-bg);
+  box-shadow: var(--shadow-sm);
 }
 
 .recipe-card.filter-match {
@@ -1036,8 +1044,15 @@ section:first-of-type h2 {
   transition: color var(--duration-normal);
 }
 
-.recipe-card-title:hover {
+.recipe-card:hover .recipe-card-title {
   color: var(--accent-hover);
+}
+
+/* Stretched link: makes the whole card clickable */
+.recipe-card-title::after {
+  content: "";
+  position: absolute;
+  inset: 0;
 }
 
 .recipe-description {
@@ -1058,9 +1073,8 @@ section:first-of-type h2 {
   display: inline-block;
   padding: 0.06rem 0.44rem;
   border-radius: 0.625rem;
-  font-size: 0.7rem;
-  background: var(--rule-faint);
-  color: var(--text-soft);
+  font-size: 0.68rem;
+  color: var(--text-light);
 }
 
 /* Cookbook index: filter states */
