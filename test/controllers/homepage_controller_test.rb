@@ -165,7 +165,8 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
 
   test 'recipe cards display tag pills' do
     Category.create!(name: 'Weeknight', slug: 'weeknight', position: 0, kitchen: @kitchen)
-    create_recipe("# Tagged Recipe\n\nCategory: Weeknight\nTags: weeknight, italian\n\n## Cook it\n\nDo the thing.", category_name: 'Weeknight', kitchen: @kitchen)
+    create_recipe("# Tagged Recipe\n\nCategory: Weeknight\nTags: weeknight, italian\n\n## Cook it\n\nDo the thing.",
+                  category_name: 'Weeknight', kitchen: @kitchen)
 
     get kitchen_root_path(kitchen_slug: kitchen_slug)
 
@@ -176,19 +177,21 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
 
   test 'recipe listings render as cards with descriptions' do
     bread = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
-    create_recipe("# Tasty Pasta\n\nA simple weeknight meal.\n\nCategory: #{bread.name}\n\n- Pasta, 400 g", category_name: bread.name, kitchen: @kitchen)
+    create_recipe("# Tasty Pasta\n\nA simple weeknight meal.\n\nCategory: #{bread.name}\n\n- Pasta, 400 g",
+                  category_name: bread.name, kitchen: @kitchen)
 
     get kitchen_root_path(kitchen_slug: kitchen_slug)
 
     assert_select '.recipe-card' do |cards|
-      assert cards.size >= 1
+      assert_operator cards.size, :>=, 1
     end
     assert_select '.recipe-card .recipe-description', text: /simple weeknight/
   end
 
   test 'recipe cards omit description when blank' do
     bread = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
-    create_recipe("# No Desc Recipe\n\nCategory: #{bread.name}\n\n- Flour, 1 cup", category_name: bread.name, kitchen: @kitchen)
+    create_recipe("# No Desc Recipe\n\nCategory: #{bread.name}\n\n- Flour, 1 cup", category_name: bread.name,
+                                                                                   kitchen: @kitchen)
 
     get kitchen_root_path(kitchen_slug: kitchen_slug)
 
@@ -197,7 +200,8 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
 
   test 'recipe cards carry data-tags attribute' do
     bread = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
-    create_recipe("# Tagged\n\nCategory: #{bread.name}\nTags: weeknight, comfort-food\n\n- Flour, 1 cup", category_name: bread.name, kitchen: @kitchen)
+    create_recipe("# Tagged\n\nCategory: #{bread.name}\nTags: weeknight, comfort-food\n\n- Flour, 1 cup",
+                  category_name: bread.name, kitchen: @kitchen)
 
     get kitchen_root_path(kitchen_slug: kitchen_slug)
 
