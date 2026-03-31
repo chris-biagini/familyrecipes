@@ -1,6 +1,6 @@
 /**
- * Pure computation functions for the dinner picker: weight composition and
- * weighted random selection. Extracted from the controller for testability.
+ * Pure computation functions for the dinner picker: recency-weighted selection
+ * with decline penalties. Extracted from the controller for testability.
  *
  * - dinner_picker_controller.js: consumes these functions
  * - test/javascript/dinner_picker_test.mjs: unit tests
@@ -8,16 +8,12 @@
 
 const DECLINE_FACTOR = 0.3
 
-export function computeFinalWeights(recipes, recencyWeights, tagPrefs, declines) {
+export function computeFinalWeights(recipes, recencyWeights, declines) {
   const weights = {}
   for (const recipe of recipes) {
     const base = recencyWeights[recipe.slug] ?? 1.0
-    let tagFactor = 1.0
-    for (const tag of recipe.tags) {
-      tagFactor *= (tagPrefs[tag] ?? 1.0)
-    }
     const declineCount = declines[recipe.slug] ?? 0
-    weights[recipe.slug] = base * tagFactor * (DECLINE_FACTOR ** declineCount)
+    weights[recipe.slug] = base * (DECLINE_FACTOR ** declineCount)
   }
   return weights
 }

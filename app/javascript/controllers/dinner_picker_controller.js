@@ -1,17 +1,17 @@
 import { Controller } from "@hotwired/stimulus"
 import { computeFinalWeights, weightedRandomPick } from "../utilities/dinner_picker_logic"
 import { buildKeyframes, positionAtTime } from "../utilities/spin_physics"
-import { loadSearchData, loadSmartTagData } from "../utilities/search_data"
+import { loadSearchData } from "../utilities/search_data"
 
 /**
  * Single-page dinner picker with a real CSS 3D spinning cylinder. 12 recipe
  * labels positioned around a cylinder via rotateX/translateZ. Idle rotation on
- * open; physics-based spin on demand. Tags, drum, result details, and action
- * buttons are always visible.
+ * open; physics-based spin on demand. Recency weighting deprioritizes recently
+ * cooked recipes; declining a pick penalizes it for the session.
  *
  * - spin_physics.js: angular physics simulation and keyframe generation
  * - dinner_picker_logic.js: weight computation and random selection
- * - search_data.js: provides recipe and tag data
+ * - search_data.js: provides recipe data
  * - editor_controller: dialog open/close, bloop animation
  * - menu_controller.js: handles checkbox change events for recipe selection
  */
@@ -47,12 +47,11 @@ const RESPIN_QUIPS = [
 ]
 
 export default class extends Controller {
-  static targets = ["tagPills", "reel", "resultDetails", "resultDescription",
+  static targets = ["reel", "resultDetails", "resultDescription",
                      "resultLink", "spinBtn", "acceptBtn"]
   static values = { weights: Object, recipeBasePath: String }
 
   connect() {
-    this.tagPreferences = {}
     this.declinePenalties = {}
     this.animFrame = null
     this.isSpinning = false
@@ -63,7 +62,6 @@ export default class extends Controller {
 
     const data = loadSearchData()
     this.recipes = data.recipes || []
-    this.allTags = data.all_tags || []
 
     this.element.addEventListener("close", () => this.reset())
   }
@@ -73,7 +71,6 @@ export default class extends Controller {
   }
 
   onOpen() {
-    this.tagPreferences = {}
     this.declinePenalties = {}
     this.currentWinner = null
     this.isSpinning = false
@@ -81,14 +78,12 @@ export default class extends Controller {
     this.resultDetailsTarget.classList.remove("visible")
     this.acceptBtnTarget.hidden = true
     this.spinBtnTarget.textContent = this.randomQuip(QUIPS)
-    this.buildTagPills()
     this.populateCylinder()
     this.startIdle()
   }
 
   reset() {
     this.cancelAnimation()
-    this.tagPreferences = {}
     this.declinePenalties = {}
     this.currentWinner = null
   }
@@ -141,7 +136,7 @@ export default class extends Controller {
     if (this.recipes.length === 0) return []
 
     const weights = computeFinalWeights(
-      this.recipes, this.weightsValue, this.tagPreferences, this.declinePenalties
+      this.recipes, this.weightsValue, this.declinePenalties
     )
 
     const picked = []
@@ -177,45 +172,6 @@ export default class extends Controller {
     }
 
     this.animFrame = requestAnimationFrame(frame)
-  }
-
-  // -- Tag pills --
-
-  buildTagPills() {
-    const container = this.tagPillsTarget
-    container.textContent = ""
-    const smartTags = loadSmartTagData()
-
-    for (const tag of this.allTags) {
-      const pill = document.createElement("button")
-      pill.className = "dinner-picker-tag"
-      pill.dataset.tag = tag
-      this.applyTagState(pill, tag, smartTags)
-      pill.addEventListener("click", () => this.cycleTag(pill, tag, smartTags))
-      container.appendChild(pill)
-    }
-  }
-
-  cycleTag(pill, tag, smartTags) {
-    const current = this.tagPreferences[tag] ?? 1
-    if (current === 1) this.tagPreferences[tag] = 2
-    else if (current === 2) this.tagPreferences[tag] = 0.25
-    else delete this.tagPreferences[tag]
-    this.applyTagState(pill, tag, smartTags)
-  }
-
-  applyTagState(pill, tag, smartTags) {
-    const pref = this.tagPreferences[tag] ?? 1
-    const prefixMap = { 2: "\u{1F44D} ", 0.25: "\u{1F44E} " }
-    const prefix = prefixMap[pref] || ""
-    const smart = smartTags[tag]
-    const emoji = smart?.emoji ? smart.emoji + " " : ""
-    pill.textContent = prefix + emoji + tag
-
-    pill.classList.remove("tag-up", "tag-down", "tag-neutral")
-    if (pref === 2) pill.classList.add("tag-up")
-    else if (pref === 0.25) pill.classList.add("tag-down")
-    else pill.classList.add("tag-neutral")
   }
 
   // -- Spin --

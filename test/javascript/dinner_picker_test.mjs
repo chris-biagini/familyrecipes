@@ -17,55 +17,27 @@ test("computeFinalWeights with no adjustments returns recency weights", () => {
   ]
   const recencyWeights = { tacos: 0.5 }
 
-  const result = computeFinalWeights(recipes, recencyWeights, {}, {})
+  const result = computeFinalWeights(recipes, recencyWeights, {})
 
   assert.equal(result.tacos, 0.5)
   assert.equal(result.bagels, 1.0)
 })
 
-test("computeFinalWeights applies tag up multiplier", () => {
-  const recipes = [
-    { slug: "tacos", tags: ["quick"] },
-    { slug: "stew", tags: ["slow"] }
-  ]
-
-  const result = computeFinalWeights(recipes, {}, { quick: 2 }, {})
-
-  assert.equal(result.tacos, 2.0)
-  assert.equal(result.stew, 1.0)
-})
-
-test("computeFinalWeights applies tag down multiplier", () => {
-  const recipes = [{ slug: "fish", tags: ["seafood"] }]
-
-  const result = computeFinalWeights(recipes, {}, { seafood: 0.25 }, {})
-
-  assert.equal(result.fish, 0.25)
-})
-
-test("computeFinalWeights compounds multiple tag multipliers", () => {
-  const recipes = [{ slug: "tacos", tags: ["quick", "mexican"] }]
-
-  const result = computeFinalWeights(recipes, {}, { quick: 2, mexican: 2 }, {})
-
-  assert.equal(result.tacos, 4.0)
-})
-
 test("computeFinalWeights applies decline penalty", () => {
   const recipes = [{ slug: "tacos", tags: [] }]
 
-  const result = computeFinalWeights(recipes, {}, {}, { tacos: 1 })
+  const result = computeFinalWeights(recipes, {}, { tacos: 1 })
 
   assertCloseTo(result.tacos, 0.3, 0.001)
 })
 
-test("computeFinalWeights compounds all factors", () => {
+test("computeFinalWeights compounds recency and decline", () => {
   const recipes = [{ slug: "tacos", tags: ["quick"] }]
 
-  const result = computeFinalWeights(recipes, { tacos: 0.5 }, { quick: 2 }, { tacos: 1 })
+  const result = computeFinalWeights(recipes, { tacos: 0.5 }, { tacos: 1 })
 
-  // 0.5 * 2 * 0.3 = 0.3
-  assertCloseTo(result.tacos, 0.3, 0.001)
+  // 0.5 * 0.3 = 0.15
+  assertCloseTo(result.tacos, 0.15, 0.001)
 })
 
 test("weightedRandomPick selects from weighted pool", () => {
