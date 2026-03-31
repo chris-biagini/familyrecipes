@@ -8,18 +8,6 @@
       <%- end -%>
       <p class="recipe-meta">
         <span><%= link_to recipe.category.name, home_path(anchor: recipe.category.slug) %></span>
-        <%- if recipe.makes_quantity -%>
-        <span>&middot;</span>
-        <%- if nutrition&.dig('makes_unit_singular') -%>
-        <span>Makes <%= format_yield_with_unit(format_makes(recipe), nutrition['makes_unit_singular'], nutrition['makes_unit_plural']) %></span>
-        <%- else -%>
-        <span>Makes <%= format_yield_line(format_makes(recipe)) %></span>
-        <%- end -%>
-        <%- end -%>
-        <%- if recipe.serves -%>
-        <span>&middot;</span>
-        <span>Serves <%= format_yield_line(recipe.serves.to_s) %></span>
-        <%- end -%>
       </p>
       <% if recipe.tags.any? %>
         <p class="recipe-tags">
@@ -32,6 +20,20 @@
           <% end %>
         </p>
       <% end %>
+      <%- if recipe.makes_quantity || recipe.serves -%>
+      <p class="recipe-yield">
+        <%- if recipe.makes_quantity -%>
+        <%- if nutrition&.dig('makes_unit_singular') -%>
+        Makes <%= format_yield_with_unit(format_makes(recipe), nutrition['makes_unit_singular'], nutrition['makes_unit_plural']) %>
+        <%- else -%>
+        Makes <%= format_yield_line(format_makes(recipe)) %>
+        <%- end -%>
+        <%- end -%>
+        <%- if recipe.serves -%>
+        <%= ' · ' if recipe.makes_quantity %>Serves <%= format_yield_line(recipe.serves.to_s) %>
+        <%- end -%>
+      </p>
+      <%- end -%>
       <div class="scale-bar" data-scale-panel-target="panel">
         <div class="recipe-actions">
           <%- if current_member? -%>

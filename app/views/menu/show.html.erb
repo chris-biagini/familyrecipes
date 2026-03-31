@@ -79,17 +79,17 @@
       <span class="dinner-picker-chevron dinner-picker-chevron-right">&#9664;</span>
       <div data-dinner-picker-target="reel" class="dinner-picker-reel"></div>
     </div>
+    <button data-dinner-picker-target="spinBtn"
+            data-action="click->dinner-picker#spin"
+            class="btn btn-primary dinner-picker-spin-btn">I'm feeling lucky</button>
     <div data-dinner-picker-target="resultDetails" class="dinner-picker-result-details">
-      <p data-dinner-picker-target="resultDescription" class="dinner-picker-result-description"></p>
-      <a data-dinner-picker-target="resultLink" class="dinner-picker-result-link" href="#"></a>
-    </div>
-    <div class="dinner-picker-actions">
-      <button data-dinner-picker-target="spinBtn"
-              data-action="click->dinner-picker#spin"
-              class="btn btn-primary dinner-picker-spin-btn">I'm feeling lucky</button>
-      <button data-dinner-picker-target="acceptBtn"
-              data-action="click->dinner-picker#accept"
-              class="btn btn-primary" hidden>Add to Menu</button>
+      <div class="dinner-picker-result-inner">
+        <a data-dinner-picker-target="resultLink" class="dinner-picker-result-link" href="#"></a>
+        <p data-dinner-picker-target="resultDescription" class="dinner-picker-result-description"></p>
+        <button data-dinner-picker-target="acceptBtn"
+                data-action="click->dinner-picker#accept"
+                class="btn-ghost" hidden>Add to Menu</button>
+      </div>
     </div>
   </div>
 </dialog>

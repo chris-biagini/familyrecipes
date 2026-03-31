@@ -41,7 +41,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select 'h1', 'Focaccia'
     assert_select '.recipe-meta', /Bread/
-    assert_select '.recipe-meta', /Serves 8/
+    assert_select '.recipe-yield', /Serves 8/
     assert_select 'h2', 'Make the dough (combine ingredients)'
     assert_select '.ingredients li', 3
     assert_select 'b', 'Flour'
@@ -667,7 +667,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select 'h1', 'Focaccia'
-    assert_select '.recipe-meta', /Serves 12/
+    assert_select '.recipe-yield', /Serves 12/
     assert_select '.ingredients li', 4
     assert_select 'b', 'Olive oil'
   end

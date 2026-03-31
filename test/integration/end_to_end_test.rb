@@ -164,14 +164,14 @@ class EndToEndTest < ActionDispatch::IntegrationTest
   test 'recipe page renders Makes metadata' do
     get recipe_path('pizza-dough', kitchen_slug: kitchen_slug)
 
-    assert_select '.recipe-meta', /Makes/
-    assert_select '.recipe-meta', /dough balls/
+    assert_select '.recipe-yield', /Makes/
+    assert_select '.recipe-yield', /dough balls/
   end
 
   test 'recipe page renders Serves metadata' do
     get recipe_path('focaccia', kitchen_slug: kitchen_slug)
 
-    assert_select '.recipe-meta', /Serves/
+    assert_select '.recipe-yield', /Serves/
   end
 
   test 'recipe page renders category link in metadata' do

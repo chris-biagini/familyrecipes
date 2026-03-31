@@ -601,27 +601,18 @@ header .recipe-meta {
   text-transform: uppercase;
   margin-top: 1rem;
   color: var(--text-light);
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: baseline;
-  gap: 0 0.35em;
+  text-align: center;
 }
 
-header .recipe-meta > :first-child { justify-self: end; }
-header .recipe-meta > :last-child  { justify-self: start; }
-
-header .recipe-meta > :only-child {
-  grid-column: 1 / -1;
-  justify-self: center;
-}
-
-/* 5+ children: item · item · item */
-header .recipe-meta:has(> :nth-child(4)) {
-  grid-template-columns: 1fr auto auto auto 1fr;
-}
-
-header .recipe-meta:has(> :nth-child(6)) {
-  grid-template-columns: 1fr auto auto auto auto auto 1fr;
+header .recipe-yield {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-light);
+  text-align: center;
+  margin-top: 0.25rem;
 }
 
 header .recipe-meta a {
@@ -832,7 +823,8 @@ header > .recipe-actions {
   padding: 0 1px;
 }
 
-.recipe-meta .scalable.scaled {
+.recipe-meta .scalable.scaled,
+.recipe-yield .scalable.scaled {
   background-color: transparent;
 }
 
@@ -1121,13 +1113,6 @@ footer small {
 
   header h1 { font-size: 2.6rem; }
 
-  /* Flex fallback for recipe-meta on narrow screens (grid doesn't wrap) */
-  header .recipe-meta {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0 0.35em;
-  }
 
   .instructions {
     border-left: none;

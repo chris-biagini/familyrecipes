@@ -279,8 +279,8 @@
 }
 
 .dinner-picker-tag.tag-neutral {
-  background: var(--surface-alt);
-  color: var(--text-soft);
+  background: var(--rule);
+  color: var(--text);
 }
 
 .dinner-picker-tag.tag-up {
@@ -295,6 +295,8 @@
 
 .dinner-picker-spin-btn {
   min-width: 180px;
+  display: block;
+  margin: 0 auto 0.8rem;
 }
 
 /* -- Drum (3D cylinder slot window) -- */
@@ -377,39 +379,39 @@
 /* -- Result details (slides in below drum) -- */
 
 .dinner-picker-result-details {
-  text-align: center;
-  min-height: 4rem;
-  transition: opacity 0.3s ease;
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s ease, opacity 0.3s ease;
   opacity: 0;
 }
 
-.dinner-picker-result-details.visible {
-  opacity: 1;
+.dinner-picker-result-inner {
+  overflow: hidden;
+  text-align: center;
 }
 
-.dinner-picker-result-description {
-  color: var(--text-soft);
-  font-size: 0.85rem;
-  margin-bottom: 0.6rem;
-  line-height: 1.4;
+.dinner-picker-result-details.visible {
+  grid-template-rows: 1fr;
+  opacity: 1;
 }
 
 .dinner-picker-result-link {
   display: block;
   text-align: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 0.1rem;
+}
+
+.dinner-picker-result-description {
   color: var(--text-soft);
-  font-size: 0.8rem;
-  margin-bottom: 0.2rem;
+  font-size: 0.85rem;
+  margin-top: 0;
+  margin-bottom: 0.6rem;
+  line-height: 1.4;
 }
 
-.dinner-picker-actions {
-  display: flex;
-  gap: 0.5rem;
-  justify-content: center;
-  margin-top: 0.8rem;
-}
-
-.dinner-picker-actions [hidden] {
+.dinner-picker-result-details [hidden] {
   display: none;
 }
 
