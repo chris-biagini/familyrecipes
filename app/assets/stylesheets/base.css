@@ -838,40 +838,7 @@ header::after {
 }
 
 
-.toc_nav {
-  text-align: center;
-  margin-bottom: 3rem;
-  padding: 0;
-}
 
-.toc_nav ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  line-height: 2;
-}
-
-.toc_nav ul li {
-  display: inline;
-  margin: 0;
-}
-
-.toc_nav ul li:not(:last-child)::after {
-  content: " \00b7 ";
-  color: var(--text-light);
-}
-
-.toc_nav ul li a {
-  font-style: normal;
-  font-size: 0.84rem;
-  color: var(--text-light);
-  text-decoration: none;
-  transition: color var(--duration-normal);
-}
-
-.toc_nav ul li a:hover {
-  color: var(--red);
-}
 
 section {
   margin-top: 2.5rem;
@@ -921,25 +888,25 @@ section:first-of-type h2 {
 }
 
 .homepage section h2 {
-  font-family: var(--font-body);
-  font-size: 0.68rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
-  color: var(--text-light);
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--text);
   margin: 3rem 0 0.9rem;
   padding-bottom: 0.7rem;
   border-bottom: 1px solid var(--rule-faint);
 }
 
-/* Cookbook index: tag filter bar */
-.tag-filter-bar {
+/* Cookbook index: unified navigation (categories + tag filters) */
+.index-nav {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 0.5rem;
   flex-wrap: wrap;
-  padding: 0.75rem 0;
-  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  margin-bottom: 1.5rem;
   border-bottom: 1px solid var(--rule);
   position: sticky;
   top: var(--nav-height, 0px);
@@ -947,19 +914,37 @@ section:first-of-type h2 {
   background: var(--content-card-bg);
 }
 
-.tag-filter-label {
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+.index-nav-link a {
+  font-family: var(--font-display);
+  font-size: 0.88rem;
+  color: var(--red);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color var(--duration-normal);
+}
+
+.index-nav-link a:hover {
+  color: var(--accent-hover);
+}
+
+.index-nav-link:not(:last-of-type)::after {
+  content: " \00b7 ";
   color: var(--text-light);
-  font-weight: 500;
+}
+
+.index-nav-divider {
+  width: 1px;
+  height: 1rem;
+  background: var(--rule);
+  align-self: center;
+  margin: 0 0.25rem;
 }
 
 .tag-filter-pill {
   display: inline-block;
-  padding: 0.25rem 0.75rem;
+  padding: 0.15rem 0.6rem;
   border-radius: 1.25rem;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-family: var(--font-body);
   background: var(--tag-bg);
   color: var(--tag-text);
@@ -1009,7 +994,7 @@ section:first-of-type h2 {
     grid-template-columns: 1fr;
   }
 
-  .tag-filter-bar {
+  .index-nav {
     flex-wrap: nowrap;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
@@ -1086,7 +1071,7 @@ section.filtered-empty {
   opacity: 0.3;
 }
 
-.toc_nav li.filtered-empty a {
+.index-nav-link.filtered-empty a {
   opacity: 0.4;
 }
 

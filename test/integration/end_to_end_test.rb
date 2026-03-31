@@ -141,8 +141,8 @@ class EndToEndTest < ActionDispatch::IntegrationTest
 
     assert_select 'section#bread h2', 'Bread'
     assert_select 'section#pizza h2', 'Pizza'
-    assert_select '.toc_nav a[href="#bread"]', 'Bread'
-    assert_select '.toc_nav a[href="#pizza"]', 'Pizza'
+    assert_select '.index-nav-link a[href="#bread"]', 'Bread'
+    assert_select '.index-nav-link a[href="#pizza"]', 'Pizza'
   end
 
   # -- Recipe --

@@ -2,9 +2,14 @@
 <% all_tags = categories.flat_map { |c| c.recipes.flat_map(&:tags) }.uniq(&:name).sort_by(&:name) %>
 
 <div id="recipe-listings" data-controller="recipe-filter">
-  <% if all_tags.any? %>
-    <div class="tag-filter-bar">
-      <span class="tag-filter-label">Filter by tag:</span>
+  <div class="index-nav">
+    <% categories.each do |category| %>
+      <span class="index-nav-link" data-recipe-filter-target="tocLink" data-category="<%= category.slug %>">
+        <%= link_to category.name, "##{category.slug}" %>
+      </span>
+    <% end %>
+    <% if all_tags.any? %>
+      <span class="index-nav-divider"></span>
       <% all_tags.each do |tag| %>
         <button type="button"
                 class="tag-filter-pill"
@@ -14,17 +19,7 @@
           <%= tag.name %>
         </button>
       <% end %>
-    </div>
-  <% end %>
-
-  <div class="toc_nav">
-    <ul>
-      <% categories.each do |category| %>
-        <li data-recipe-filter-target="tocLink" data-category="<%= category.slug %>">
-          <%= link_to category.name, "##{category.slug}" %>
-        </li>
-      <% end %>
-    </ul>
+    <% end %>
   </div>
 
   <% categories.each do |category| %>

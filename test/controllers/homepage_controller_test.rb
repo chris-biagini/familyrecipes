@@ -62,7 +62,7 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
     get kitchen_root_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
-    assert_select '.toc_nav a', count: 2
+    assert_select '.index-nav-link a', count: 2
     assert_select 'section#bread h2', 'Bread'
     assert_select 'section#pasta h2', 'Pasta'
   end
@@ -226,7 +226,7 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
 
     get kitchen_root_path(kitchen_slug: kitchen_slug)
 
-    assert_select '.tag-filter-bar .tag-filter-pill', count: 1
+    assert_select '.index-nav .tag-filter-pill', count: 1
     assert_select '.tag-filter-pill', text: /weeknight/
   end
 
@@ -239,6 +239,6 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
 
     get kitchen_root_path(kitchen_slug: kitchen_slug)
 
-    assert_select '.tag-filter-bar', count: 0
+    assert_select '.tag-filter-pill', count: 0
   end
 end
