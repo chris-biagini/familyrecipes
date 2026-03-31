@@ -214,7 +214,7 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
 
     get kitchen_root_path(kitchen_slug: kitchen_slug)
 
-    assert_select 'section .back-to-top'
+    assert_select 'section .category-top-link'
   end
 
   test 'tag filter bar renders when recipes have tags' do
