@@ -23,6 +23,7 @@ import NutritionEditorController from "./controllers/nutrition_editor_controller
 import OrderedListEditorController from "./controllers/ordered_list_editor_controller"
 import PlaintextEditorController from "./controllers/plaintext_editor_controller"
 import QuickbitesGraphicalController from "./controllers/quickbites_graphical_controller"
+import RecipeFilterController from "./controllers/recipe_filter_controller"
 import RecipeGraphicalController from "./controllers/recipe_graphical_controller"
 import RecipeStateController from "./controllers/recipe_state_controller"
 import RevealController from "./controllers/reveal_controller"
@@ -46,6 +47,7 @@ application.register("nutrition-editor", NutritionEditorController)
 application.register("ordered-list-editor", OrderedListEditorController)
 application.register("plaintext-editor", PlaintextEditorController)
 application.register("quickbites-graphical", QuickbitesGraphicalController)
+application.register("recipe-filter", RecipeFilterController)
 application.register("recipe-graphical", RecipeGraphicalController)
 application.register("recipe-state", RecipeStateController)
 application.register("reveal", RevealController)
