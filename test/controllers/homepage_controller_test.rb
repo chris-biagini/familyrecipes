@@ -161,4 +161,15 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
 
     assert_select 'a[title="A simple flatbread."]', text: 'Focaccia'
   end
+
+  test 'recipe cards display tag pills' do
+    Category.create!(name: 'Weeknight', slug: 'weeknight', position: 0, kitchen: @kitchen)
+    create_recipe("# Tagged Recipe\n\nCategory: Weeknight\nTags: weeknight, italian\n\n## Cook it\n\nDo the thing.", category_name: 'Weeknight', kitchen: @kitchen)
+
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
+
+    assert_select '.recipe-card .recipe-tag', count: 2
+    assert_select '.recipe-card .recipe-tag', text: 'weeknight'
+    assert_select '.recipe-card .recipe-tag', text: 'italian'
+  end
 end

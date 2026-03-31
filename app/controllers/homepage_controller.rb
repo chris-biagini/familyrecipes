@@ -10,6 +10,6 @@ class HomepageController < ApplicationController
   before_action :prevent_html_caching, only: :show
 
   def show
-    @categories = current_kitchen.categories.with_recipes.ordered.includes(:recipes)
+    @categories = current_kitchen.categories.with_recipes.ordered.includes(recipes: :tags)
   end
 end
