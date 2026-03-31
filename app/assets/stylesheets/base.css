@@ -889,34 +889,45 @@ section:first-of-type h2 {
 
 .homepage section h2 {
   font-family: var(--font-display);
-  font-size: 1.15rem;
-  font-weight: 400;
+  font-size: 1.3rem;
+  font-weight: 600;
   text-transform: none;
   letter-spacing: normal;
   color: var(--text);
-  margin: 3rem 0 0.9rem;
-  padding-bottom: 0.7rem;
-  border-bottom: 1px solid var(--rule-faint);
+  margin: 3rem 0 0;
+  padding-bottom: 0;
+  border-bottom: none;
 }
 
 /* Cookbook index: unified navigation (categories + tag filters) */
 .index-nav {
   display: flex;
   align-items: baseline;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  padding-bottom: 0.75rem;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0;
   margin-bottom: 1.5rem;
-  border-bottom: 1px solid var(--rule);
-  position: sticky;
-  top: var(--nav-height, 0px);
-  z-index: 5;
-  background: var(--content-card-bg);
+}
+
+.index-nav-categories {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  justify-content: flex-end;
+  flex: 1 1 0;
+}
+
+.index-nav-tags {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  flex: 1 1 0;
 }
 
 .index-nav-link a {
   font-family: var(--font-display);
-  font-size: 0.88rem;
+  font-size: 1rem;
   color: var(--red);
   text-decoration: underline;
   text-underline-offset: 2px;
@@ -927,17 +938,18 @@ section:first-of-type h2 {
   color: var(--accent-hover);
 }
 
-.index-nav-link:not(:last-of-type)::after {
-  content: " \00b7 ";
+.index-nav-link + .index-nav-link::before {
+  content: " \00b7  ";
   color: var(--text-light);
+  text-decoration: none;
 }
 
 .index-nav-divider {
   width: 1px;
-  height: 1rem;
+  height: 0.9rem;
   background: var(--rule);
   align-self: center;
-  margin: 0 0.25rem;
+  margin: 0 0.15rem;
 }
 
 .tag-filter-pill {
@@ -968,7 +980,7 @@ section:first-of-type h2 {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.4rem;
 }
 
 .back-to-top {
@@ -995,9 +1007,7 @@ section:first-of-type h2 {
   }
 
   .index-nav {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    gap: 0.3rem;
   }
 }
 
@@ -1005,10 +1015,9 @@ section:first-of-type h2 {
 .recipe-card {
   position: relative;
   padding: 0.625rem 0.75rem;
-  border-left: 3px solid transparent;
   border-bottom: 1px solid var(--rule-faint);
-  border-radius: 0 4px 4px 0;
-  transition: opacity var(--duration-normal), border-left-color var(--duration-normal),
+  border-radius: 4px;
+  transition: opacity var(--duration-normal),
               background var(--duration-normal), box-shadow var(--duration-normal);
 }
 
@@ -1018,7 +1027,12 @@ section:first-of-type h2 {
 }
 
 .recipe-card.filter-match {
-  border-left-color: var(--red);
+  background: var(--content-card-bg);
+  box-shadow: var(--shadow-sm);
+}
+
+.recipe-card.filter-match:hover {
+  background: var(--hover-bg);
 }
 
 .recipe-card-title {
@@ -1062,18 +1076,7 @@ section:first-of-type h2 {
   color: var(--text-light);
 }
 
-/* Cookbook index: filter states */
-.recipe-card.filtered-out {
-  opacity: 0.3;
-}
-
-section.filtered-empty {
-  opacity: 0.3;
-}
-
-.index-nav-link.filtered-empty a {
-  opacity: 0.4;
-}
+/* Cookbook index: filter states — matched cards elevate, unmatched unchanged */
 
 .homepage section:first-of-type h2 {
   margin-top: 0;
