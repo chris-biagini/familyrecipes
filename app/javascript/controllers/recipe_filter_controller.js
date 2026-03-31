@@ -39,13 +39,14 @@ export default class extends Controller {
 
     this.cardTargets.forEach(card => {
       if (!filtering) {
-        card.classList.remove('filtered-out')
+        card.classList.remove('filtered-out', 'filter-match')
         return
       }
 
       const cardTags = (card.dataset.tags || '').split(',').filter(Boolean)
       const matches = [...active].every(tag => cardTags.includes(tag))
       card.classList.toggle('filtered-out', !matches)
+      card.classList.toggle('filter-match', matches)
     })
 
     this.categoryTargets.forEach(section => {
