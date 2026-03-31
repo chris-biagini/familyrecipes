@@ -1,21 +1,57 @@
 <%# locals: (categories:) %>
-<div id="recipe-listings">
-  <div class="toc_nav">
-    <ul>
-      <%- categories.each do |category| -%>
-      <li><%= link_to category.name, "##{category.slug}" %></li>
-      <%- end -%>
-    </ul>
+<% all_tags = categories.flat_map { |c| c.recipes.flat_map(&:tags) }.uniq(&:name).sort_by(&:name) %>
+
+<div id="recipe-listings" data-controller="recipe-filter">
+  <div class="index-nav">
+    <div class="index-nav-categories">
+      <% categories.each do |category| %>
+        <span class="index-nav-link" data-recipe-filter-target="tocLink" data-category="<%= category.slug %>">
+          <%= link_to category.name, "##{category.slug}" %>
+        </span>
+      <% end %>
+    </div>
+    <% if all_tags.any? %>
+      <span class="index-nav-divider"></span>
+      <div class="index-nav-tags">
+        <% all_tags.each do |tag| %>
+          <button type="button"
+                  class="tag-filter-pill"
+                  data-recipe-filter-target="tag"
+                  data-tag="<%= tag.name %>"
+                  data-action="click->recipe-filter#toggle">
+            <%= tag.name %>
+          </button>
+        <% end %>
+      </div>
+    <% end %>
   </div>
 
-  <%- categories.each do |category| -%>
-  <section id="<%= category.slug %>">
-    <h2><%= category.name %></h2>
-    <ul>
-      <%- category.recipes.sort_by(&:title).each do |recipe| -%>
-      <li><%= link_to recipe.title, recipe_path(recipe.slug), title: recipe.description %></li>
-      <%- end -%>
-    </ul>
-  </section>
-  <%- end -%>
+  <% categories.each do |category| %>
+    <section id="<%= category.slug %>" data-recipe-filter-target="category">
+      <div class="category-heading">
+        <h2><%= category.name %></h2>
+        <a href="#recipe-listings" class="back-to-top">&uarr; top</a>
+      </div>
+      <div class="recipe-card-grid">
+        <% category.recipes.sort_by(&:title).each do |recipe| %>
+          <% sorted_tags = recipe.tags.sort_by(&:name) %>
+          <div class="recipe-card"
+               data-recipe-filter-target="card"
+               data-tags="<%= sorted_tags.map(&:name).join(',') %>">
+            <%= link_to recipe.title, recipe_path(recipe.slug), class: 'recipe-card-title' %>
+            <% if recipe.description.present? %>
+              <p class="recipe-description"><%= recipe.description %></p>
+            <% end %>
+            <% if sorted_tags.any? %>
+              <div class="recipe-tag-list">
+                <% sorted_tags.each do |tag| %>
+                  <span class="recipe-tag"><%= tag.name %></span>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </section>
+  <% end %>
 </div>

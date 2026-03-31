@@ -62,7 +62,7 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
     get kitchen_root_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
-    assert_select '.toc_nav a', count: 2
+    assert_select '.index-nav-link a', count: 2
     assert_select 'section#bread h2', 'Bread'
     assert_select 'section#pasta h2', 'Pasta'
   end
@@ -142,7 +142,7 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
     assert_select 'header p', 'Custom Sub'
   end
 
-  test 'recipe links include description as title attribute' do
+  test 'recipe cards show description as visible text' do
     bread = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
     MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: bread)
       # Focaccia
@@ -159,6 +159,86 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
 
     get kitchen_root_path(kitchen_slug: kitchen_slug)
 
-    assert_select 'a[title="A simple flatbread."]', text: 'Focaccia'
+    assert_select '.recipe-card .recipe-card-title', text: 'Focaccia'
+    assert_select '.recipe-card .recipe-description', text: 'A simple flatbread.'
+  end
+
+  test 'recipe cards display tag pills' do
+    Category.create!(name: 'Weeknight', slug: 'weeknight', position: 0, kitchen: @kitchen)
+    create_recipe("# Tagged Recipe\n\nCategory: Weeknight\nTags: weeknight, italian\n\n## Cook it\n\nDo the thing.",
+                  category_name: 'Weeknight', kitchen: @kitchen)
+
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
+
+    assert_select '.recipe-card .recipe-tag', count: 2
+    assert_select '.recipe-card .recipe-tag', text: 'weeknight'
+    assert_select '.recipe-card .recipe-tag', text: 'italian'
+  end
+
+  test 'recipe listings render as cards with descriptions' do
+    bread = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    create_recipe("# Tasty Pasta\n\nA simple weeknight meal.\n\nCategory: #{bread.name}\n\n- Pasta, 400 g",
+                  category_name: bread.name, kitchen: @kitchen)
+
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
+
+    assert_select '.recipe-card' do |cards|
+      assert_operator cards.size, :>=, 1
+    end
+    assert_select '.recipe-card .recipe-description', text: /simple weeknight/
+  end
+
+  test 'recipe cards omit description when blank' do
+    bread = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    create_recipe("# No Desc Recipe\n\nCategory: #{bread.name}\n\n- Flour, 1 cup", category_name: bread.name,
+                                                                                   kitchen: @kitchen)
+
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
+
+    assert_select '.recipe-card .recipe-description', count: 0
+  end
+
+  test 'recipe cards carry data-tags attribute' do
+    bread = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    create_recipe("# Tagged\n\nCategory: #{bread.name}\nTags: weeknight, comfort-food\n\n- Flour, 1 cup",
+                  category_name: bread.name, kitchen: @kitchen)
+
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
+
+    assert_select '.recipe-card[data-recipe-filter-target="card"][data-tags="comfort-food,weeknight"]'
+  end
+
+  test 'category sections have back-to-top link' do
+    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    create_recipe("# Something\n\nCategory: Bread\n\n- Flour, 1 cup", category_name: 'Bread', kitchen: @kitchen)
+
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
+
+    assert_select 'section .back-to-top'
+  end
+
+  test 'tag filter bar renders when recipes have tags' do
+    bread = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    create_recipe(
+      "# Tagged\n\nCategory: #{bread.name}\nTags: weeknight\n\n- Flour, 1 cup",
+      category_name: bread.name, kitchen: @kitchen
+    )
+
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
+
+    assert_select '.index-nav .tag-filter-pill', count: 1
+    assert_select '.tag-filter-pill', text: /weeknight/
+  end
+
+  test 'tag filter bar absent when no tags exist' do
+    bread = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    create_recipe(
+      "# Plain\n\nCategory: #{bread.name}\n\n- Flour, 1 cup",
+      category_name: bread.name, kitchen: @kitchen
+    )
+
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
+
+    assert_select '.tag-filter-pill', count: 0
   end
 end

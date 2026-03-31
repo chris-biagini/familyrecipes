@@ -838,40 +838,7 @@ header::after {
 }
 
 
-.toc_nav {
-  text-align: center;
-  margin-bottom: 3rem;
-  padding: 0;
-}
 
-.toc_nav ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  line-height: 2;
-}
-
-.toc_nav ul li {
-  display: inline;
-  margin: 0;
-}
-
-.toc_nav ul li:not(:last-child)::after {
-  content: " \00b7 ";
-  color: var(--text-light);
-}
-
-.toc_nav ul li a {
-  font-style: normal;
-  font-size: 0.84rem;
-  color: var(--text-light);
-  text-decoration: none;
-  transition: color var(--duration-normal);
-}
-
-.toc_nav ul li a:hover {
-  color: var(--red);
-}
 
 section {
   margin-top: 2.5rem;
@@ -921,16 +888,195 @@ section:first-of-type h2 {
 }
 
 .homepage section h2 {
-  font-family: var(--font-body);
-  font-size: 0.68rem;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
-  color: var(--text-light);
-  margin: 3rem 0 0.9rem;
-  padding-bottom: 0.7rem;
-  border-bottom: 1px solid var(--rule-faint);
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--text);
+  margin: 3rem 0 0;
+  padding-bottom: 0;
+  border-bottom: none;
 }
+
+/* Cookbook index: unified navigation (categories + tag filters) */
+.index-nav {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0;
+  margin-bottom: 1.5rem;
+}
+
+.index-nav-categories {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  justify-content: flex-end;
+  flex: 1 1 0;
+}
+
+.index-nav-tags {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  flex: 1 1 0;
+}
+
+.index-nav-link a {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  color: var(--red);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color var(--duration-normal);
+}
+
+.index-nav-link a:hover {
+  color: var(--accent-hover);
+}
+
+.index-nav-link + .index-nav-link::before {
+  content: " \00b7  ";
+  color: var(--text-light);
+  text-decoration: none;
+}
+
+.index-nav-divider {
+  width: 1px;
+  height: 0.9rem;
+  background: var(--rule);
+  align-self: center;
+  margin: 0 0.15rem;
+}
+
+.tag-filter-pill {
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  border-radius: 1.25rem;
+  font-size: 0.78rem;
+  font-family: var(--font-body);
+  background: var(--tag-bg);
+  color: var(--tag-text);
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: background var(--duration-fast), border-color var(--duration-fast);
+}
+
+.tag-filter-pill:hover {
+  background: var(--hover-bg-strong);
+}
+
+.tag-filter-pill.active {
+  background: var(--red);
+  color: white;
+  border-color: currentColor;
+}
+
+/* Cookbook index: category heading with back-to-top */
+.category-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.4rem;
+}
+
+.back-to-top {
+  font-size: 0.75rem;
+  color: var(--text-light);
+  text-decoration: none;
+  padding-bottom: 0.25rem;
+}
+
+.back-to-top:hover {
+  color: var(--red);
+}
+
+/* Cookbook index: recipe card grid */
+.recipe-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+
+@media (max-width: 599px) {
+  .recipe-card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .index-nav {
+    gap: 0.3rem;
+  }
+}
+
+/* Cookbook index: recipe cards */
+.recipe-card {
+  position: relative;
+  padding: 0.625rem 0.75rem;
+  border-bottom: 1px solid var(--rule-faint);
+  border-radius: 4px;
+  transition: opacity var(--duration-normal),
+              background var(--duration-normal), box-shadow var(--duration-normal);
+}
+
+.recipe-card:hover {
+  background: var(--hover-bg);
+  box-shadow: var(--shadow-sm);
+}
+
+.recipe-card.filter-match {
+  background: var(--content-card-bg);
+  box-shadow: var(--shadow-sm);
+}
+
+.recipe-card.filter-match:hover {
+  background: var(--hover-bg);
+}
+
+.recipe-card-title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  color: var(--red);
+  text-decoration: none;
+  transition: color var(--duration-normal);
+}
+
+.recipe-card:hover .recipe-card-title {
+  color: var(--accent-hover);
+}
+
+/* Stretched link: makes the whole card clickable */
+.recipe-card-title::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.recipe-description {
+  margin: 0.2rem 0 0.4rem;
+  font-size: 0.84rem;
+  color: var(--text-soft);
+  line-height: 1.35;
+}
+
+.recipe-tag-list {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+  margin-top: 0.25rem;
+}
+
+.recipe-tag {
+  display: inline-block;
+  padding: 0.06rem 0.44rem;
+  border-radius: 0.625rem;
+  font-size: 0.68rem;
+  color: var(--text-light);
+}
+
+/* Cookbook index: filter states — matched cards elevate, unmatched unchanged */
 
 .homepage section:first-of-type h2 {
   margin-top: 0;
