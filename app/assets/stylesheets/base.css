@@ -1072,10 +1072,6 @@ section.filtered-empty {
   opacity: 0.3;
 }
 
-.filter-empty-msg {
-  display: none;
-}
-
 .toc_nav li.filtered-empty a {
   opacity: 0.4;
 }
