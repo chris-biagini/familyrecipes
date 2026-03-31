@@ -43,7 +43,7 @@ class Recipe < ApplicationRecord
   before_validation :generate_slug, if: -> { slug.blank? && title.present? }
 
   def own_ingredients_aggregated
-    ingredients.group_by(&:name).transform_values do |group|
+    steps.flat_map(&:ingredients).group_by(&:name).transform_values do |group|
       IngredientAggregator.aggregate_amounts(group)
     end
   end
