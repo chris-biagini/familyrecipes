@@ -1,8 +1,8 @@
 <%# locals: (categories:) %>
 <% all_tags = categories.flat_map { |c| c.recipes.flat_map(&:tags) }.uniq(&:name).sort_by(&:name) %>
 
-<div id="recipe-listings" data-controller="recipe-filter">
-  <div class="index-nav">
+<div data-controller="recipe-filter">
+  <div id="recipe-listings" class="index-nav">
     <div class="index-nav-categories">
       <% categories.each do |category| %>
         <span class="index-nav-link" data-recipe-filter-target="tocLink" data-category="<%= category.slug %>">
@@ -30,7 +30,7 @@
     <section id="<%= category.slug %>" data-recipe-filter-target="category">
       <div class="category-heading">
         <h2><%= category.name %></h2>
-        <a href="#recipe-listings" class="back-to-top">&uarr; top</a>
+        <a href="#recipe-listings" class="category-top-link">&uarr; top</a>
       </div>
       <div class="recipe-card-grid">
         <% category.recipes.sort_by(&:title).each do |recipe| %>

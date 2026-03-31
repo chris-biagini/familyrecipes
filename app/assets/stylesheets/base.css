@@ -975,6 +975,12 @@ section:first-of-type h2 {
   border-color: currentColor;
 }
 
+/* Anchor targets: offset for sticky nav so headers stay visible */
+#recipe-listings,
+[data-recipe-filter-target="category"] {
+  scroll-margin-top: 3.5rem;
+}
+
 /* Cookbook index: category heading with back-to-top */
 .category-heading {
   display: flex;
@@ -983,14 +989,20 @@ section:first-of-type h2 {
   margin-bottom: 0.4rem;
 }
 
-.back-to-top {
+.category-heading h2 {
+  margin: 0;
+}
+
+.category-top-link {
+  flex-shrink: 0;
   font-size: 0.75rem;
   color: var(--text-light);
   text-decoration: none;
   padding-bottom: 0.25rem;
+  white-space: nowrap;
 }
 
-.back-to-top:hover {
+.category-top-link:hover {
   color: var(--red);
 }
 
