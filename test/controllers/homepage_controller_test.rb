@@ -244,7 +244,7 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
 
   test 'tag filter pills show smart decoration when decorate_tags enabled' do
     @kitchen.update!(decorate_tags: true)
-    bread = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
     create_recipe(
       "# Tagged\n\nCategory: Bread\nTags: vegetarian\n\n- Flour, 1 cup",
       category_name: 'Bread', kitchen: @kitchen
@@ -258,7 +258,7 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
 
   test 'tag filter pills are plain when decorate_tags disabled' do
     @kitchen.update!(decorate_tags: false)
-    bread = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
     create_recipe(
       "# Tagged\n\nCategory: Bread\nTags: vegetarian\n\n- Flour, 1 cup",
       category_name: 'Bread', kitchen: @kitchen
