@@ -11,16 +11,6 @@
     <p><%= current_kitchen.homepage_subtitle %></p>
     <%- if current_member? -%>
     <div class="recipe-actions">
-      <button type="button" id="edit-categories-button" class="btn-ghost">
-        <%= icon(:edit, size: 12) %>
-        Edit Categories
-      </button>
-      <span class="recipe-actions-dot">&middot;</span>
-      <button type="button" id="edit-tags-button" class="btn-ghost">
-        <%= icon(:tag, size: 14) %>
-        Edit Tags
-      </button>
-      <span class="recipe-actions-dot">&middot;</span>
       <button type="button" id="new-recipe-button" class="btn-ghost">
         <%= icon(:plus, size: 12, 'stroke-width': '2.5') %>
         Add Recipe
