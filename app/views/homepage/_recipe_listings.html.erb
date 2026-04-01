@@ -3,24 +3,35 @@
 
 <div data-controller="recipe-filter">
   <div id="recipe-listings" class="index-nav">
-    <div class="index-nav-categories section-rule">
-      <div>
+    <div class="index-nav-section">
+      <div class="index-nav-zone-header">
+        <span class="index-nav-zone-label">Categories</span>
+        <% if current_member? %>
+          <button type="button" id="edit-categories-button" class="index-nav-zone-edit">
+            <%= icon(:edit, size: 10) %> edit
+          </button>
+        <% end %>
+      </div>
+      <div class="index-nav-categories">
         <% categories.each do |category| %>
           <span class="index-nav-link" data-recipe-filter-target="tocLink" data-category="<%= category.slug %>">
             <%= link_to category.name, "##{category.slug}" %>
           </span>
         <% end %>
       </div>
-      <% if current_member? %>
-        <button type="button" id="edit-categories-button" class="btn-ghost">
-          <%= icon(:edit, size: 12) %>
-          Edit Categories
-        </button>
-      <% end %>
     </div>
     <% if all_tags.any? %>
-      <div class="index-nav-tags section-rule">
-        <div>
+      <div class="index-nav-divider"></div>
+      <div class="index-nav-section">
+        <div class="index-nav-zone-header">
+          <span class="index-nav-zone-label">Tags</span>
+          <% if current_member? %>
+            <button type="button" id="edit-tags-button" class="index-nav-zone-edit">
+              <%= icon(:tag, size: 10) %> edit
+            </button>
+          <% end %>
+        </div>
+        <div class="index-nav-tags">
           <% all_tags.each do |tag| %>
             <% smart = smart_tag_pill_attrs(tag.name) %>
             <button type="button"
@@ -30,12 +41,6 @@
                     data-action="click->recipe-filter#toggle"><% if smart.dig(:data, :smart_emoji) %><span class="smart-icon<%= ' smart-icon--crossout' if smart.dig(:class)&.include?('tag-pill--crossout') %>"><%= smart.dig(:data, :smart_emoji) %></span><% end %><%= tag.name %></button>
           <% end %>
         </div>
-        <% if current_member? %>
-          <button type="button" id="edit-tags-button" class="btn-ghost">
-            <%= icon(:tag, size: 14) %>
-            Edit Tags
-          </button>
-        <% end %>
       </div>
     <% end %>
   </div>
