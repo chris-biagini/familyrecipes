@@ -377,11 +377,16 @@ migrations into a single `001_create_schema.rb` to keep things clean.
 - CI verifies migrations from scratch (`db:create db:migrate db:seed`) before
   building the Docker image.
 
-**Releases.** Tag pushes (`v0.2.5`) trigger `docker.yml`: build → smoke test
-(`/up` health check) → push to GHCR → auto-create GitHub Release with
-`--generate-notes`. Auto-generated notes only include merged PRs — direct
-commits won't appear, so prefer PRs for non-trivial changes. The `REVISION`
-build arg bakes the version into the image (read by
+**Releases.** Tag pushes trigger `docker.yml`: build → smoke test (`/up`
+health check) → push to GHCR → create GitHub Release. Three tiers based on
+tag format:
+- **Patch** (`vX.Y.Z`): auto-published with commit bullet list.
+- **Minor** (`vX.Y`): draft release — a Claude Code hook fires on push,
+  prompting you to draft curated notes and update via `gh release edit`.
+- **Major** (`vX`): draft release — same hook, but prompts for
+  marketing-quality notes with highlights, breaking changes, and upgrade
+  notes.
+The `REVISION` build arg bakes the version into the image (read by
 `ApplicationHelper#app_version`). Only tag when code is known-good —
-in-between commits on main are not built. The pre-push hook runs lint on all
-files (~5s); tests run exclusively in CI.
+in-between commits on main are not built. The pre-push hook runs lint on
+all files (~5s); tests run exclusively in CI.
