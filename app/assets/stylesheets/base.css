@@ -16,6 +16,7 @@
   --text-light: #a09788;
   --red: #b33a3a;
   --red-light: rgba(179, 58, 58, 0.08);
+  --tag-filter-active-bg: rgba(179, 58, 58, 0.15);
   --rule: #e4dfd8;
   --rule-faint: #eee9e3;
 
@@ -83,6 +84,7 @@
     --text-light: #706960;
     --red: #c85050;
     --red-light: rgba(200, 80, 80, 0.12);
+    --tag-filter-active-bg: rgba(200, 80, 80, 0.2);
     --rule: #3a3530;
     --rule-faint: #2e2a26;
 
@@ -841,6 +843,8 @@ header::after {
 
 
 
+
+
 section {
   margin-top: 2.5rem;
   break-inside: avoid;
@@ -904,12 +908,10 @@ section:first-of-type h2 {
 .index-nav {
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 0;
+  padding: 0.5rem 0 0.5rem 0.75rem;
   margin-bottom: 1.5rem;
-  max-width: 66%;
-  margin-inline: auto;
+  border-left: 2px solid var(--rule-faint);
 }
 
 .index-nav-categories {
@@ -917,7 +919,6 @@ section:first-of-type h2 {
   align-items: baseline;
   gap: 0.4rem;
   flex-wrap: wrap;
-  justify-content: center;
 }
 
 .index-nav-tags {
@@ -925,7 +926,40 @@ section:first-of-type h2 {
   align-items: baseline;
   gap: 0.4rem;
   flex-wrap: wrap;
-  justify-content: center;
+}
+
+.index-nav-zone-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+
+.index-nav-zone-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-light);
+}
+
+.index-nav-zone-edit {
+  background: none;
+  border: none;
+  color: var(--text-light);
+  font-size: 0.7rem;
+  font-family: var(--font-body);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+}
+
+.index-nav-zone-edit:hover {
+  color: var(--red);
+  background: var(--hover-bg);
 }
 
 .index-nav-link a {
@@ -947,11 +981,8 @@ section:first-of-type h2 {
 }
 
 .index-nav-divider {
-  width: 1px;
-  height: 0.9rem;
-  background: var(--rule);
-  align-self: center;
-  margin: 0 0.15rem;
+  height: 1px;
+  background: var(--rule-faint);
 }
 
 .tag-filter-pill {
@@ -972,9 +1003,9 @@ section:first-of-type h2 {
 }
 
 .tag-filter-pill.active {
-  background: var(--red);
-  color: white;
-  border-color: currentColor;
+  background: var(--tag-filter-active-bg);
+  color: var(--red);
+  border-color: var(--red);
 }
 
 /* Anchor targets: offset for sticky nav so headers stay visible */

@@ -112,19 +112,6 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
     assert_select '#recipe-editor select.category-select', count: 0
   end
 
-  test 'homepage renders Edit Categories button for members' do
-    log_in
-    get kitchen_root_path(kitchen_slug: kitchen_slug)
-
-    assert_select '#edit-categories-button'
-  end
-
-  test 'homepage does not render Edit Categories for non-members' do
-    get kitchen_root_path(kitchen_slug: kitchen_slug)
-
-    assert_select '#edit-categories-button', count: 0
-  end
-
   test 'homepage uses kitchen site_title in page title' do
     log_in
     @kitchen.update!(site_title: 'Our Family Kitchen')
@@ -164,6 +151,7 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'recipe cards display tag pills' do
+    @kitchen.update!(decorate_tags: false)
     Category.create!(name: 'Weeknight', slug: 'weeknight', position: 0, kitchen: @kitchen)
     create_recipe("# Tagged Recipe\n\nCategory: Weeknight\nTags: weeknight, italian\n\n## Cook it\n\nDo the thing.",
                   category_name: 'Weeknight', kitchen: @kitchen)
@@ -240,5 +228,90 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
     get kitchen_root_path(kitchen_slug: kitchen_slug)
 
     assert_select '.tag-filter-pill', count: 0
+  end
+
+  test 'tag filter pills show smart decoration when decorate_tags enabled' do
+    @kitchen.update!(decorate_tags: true)
+    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    create_recipe(
+      "# Tagged\n\nCategory: Bread\nTags: vegetarian\n\n- Flour, 1 cup",
+      category_name: 'Bread', kitchen: @kitchen
+    )
+
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
+
+    assert_select '.tag-filter-pill.tag-pill--green'
+    assert_select '.tag-filter-pill .smart-icon', text: /🥕/
+  end
+
+  test 'tag filter pills are plain when decorate_tags disabled' do
+    @kitchen.update!(decorate_tags: false)
+    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    create_recipe(
+      "# Tagged\n\nCategory: Bread\nTags: vegetarian\n\n- Flour, 1 cup",
+      category_name: 'Bread', kitchen: @kitchen
+    )
+
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
+
+    assert_select '.tag-filter-pill.tag-pill--green', count: 0
+    assert_select '.tag-filter-pill .smart-icon', count: 0
+  end
+
+  test 'recipe card tags show smart decoration when decorate_tags enabled' do
+    @kitchen.update!(decorate_tags: true)
+    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    create_recipe(
+      "# Tagged\n\nCategory: Bread\nTags: vegetarian\n\n- Flour, 1 cup",
+      category_name: 'Bread', kitchen: @kitchen
+    )
+
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
+
+    assert_select '.recipe-card .recipe-tag.tag-pill--green'
+    assert_select '.recipe-card .recipe-tag .smart-icon', text: /🥕/
+  end
+
+  test 'recipe card tags are plain when decorate_tags disabled' do
+    @kitchen.update!(decorate_tags: false)
+    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    create_recipe(
+      "# Tagged\n\nCategory: Bread\nTags: vegetarian\n\n- Flour, 1 cup",
+      category_name: 'Bread', kitchen: @kitchen
+    )
+
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
+
+    assert_select '.recipe-card .recipe-tag.tag-pill--green', count: 0
+    assert_select '.recipe-card .recipe-tag .smart-icon', count: 0
+  end
+
+  test 'homepage renders edit buttons in zone headers for members' do
+    log_in
+    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    create_recipe(
+      "# Tagged\n\nCategory: Bread\nTags: weeknight\n\n- Flour, 1 cup",
+      category_name: 'Bread', kitchen: @kitchen
+    )
+
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
+
+    assert_select '.index-nav-zone-header #edit-categories-button'
+    assert_select '.index-nav-zone-header #edit-tags-button'
+  end
+
+  test 'homepage renders zone labels but no edit buttons for non-members' do
+    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    create_recipe(
+      "# Tagged\n\nCategory: Bread\nTags: weeknight\n\n- Flour, 1 cup",
+      category_name: 'Bread', kitchen: @kitchen
+    )
+
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
+
+    assert_select '.index-nav-zone-label', text: 'Categories'
+    assert_select '.index-nav-zone-label', text: 'Tags'
+    assert_select '#edit-categories-button', count: 0
+    assert_select '#edit-tags-button', count: 0
   end
 end
