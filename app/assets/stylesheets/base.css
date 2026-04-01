@@ -911,8 +911,6 @@ section:first-of-type h2 {
   gap: 0.5rem;
   padding: 0.5rem 0 0.5rem 0.75rem;
   margin-bottom: 1.5rem;
-  max-width: 66%;
-  margin-inline: auto;
   border-left: 2px solid var(--rule-faint);
 }
 
