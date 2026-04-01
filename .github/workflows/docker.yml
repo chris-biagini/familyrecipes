@@ -19,6 +19,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Compute version
         id: version
@@ -97,4 +99,53 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ github.ref_name }}
-        run: gh release create "$TAG" --generate-notes
+          REPO: ${{ github.repository }}
+        run: |
+          # Strip optional letter suffix for classification (v0.5.4a → v0.5.4)
+          BASE_TAG=$(echo "$TAG" | sed 's/[a-zA-Z]*$//')
+
+          # Reject four-part tags (v0.6.8.1) — build the image but skip release
+          if echo "$BASE_TAG" | grep -qE '^v[0-9]+(\.[0-9]+){3,}$'; then
+            echo "::warning::Skipping release for unsupported tag format: $TAG"
+            exit 0
+          fi
+
+          # Classify: vX.Y.Z = patch, vX.Y = minor, vX = major
+          if echo "$BASE_TAG" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            TIER="patch"
+          elif echo "$BASE_TAG" | grep -qE '^v[0-9]+\.[0-9]+$'; then
+            TIER="minor"
+          elif echo "$BASE_TAG" | grep -qE '^v[0-9]+$'; then
+            TIER="major"
+          else
+            echo "::warning::Skipping release for unrecognized tag format: $TAG"
+            exit 0
+          fi
+
+          echo "Tag: $TAG (base: $BASE_TAG, tier: $TIER)"
+
+          # Find previous tag — use fixed-string whole-line match to avoid regex dot bug
+          PREV_TAG=$(git tag --sort=-v:refname | grep -Fx -A1 "$TAG" | tail -1)
+
+          if [ "$PREV_TAG" = "$TAG" ] || [ -z "$PREV_TAG" ]; then
+            RANGE="$TAG"
+          else
+            RANGE="${PREV_TAG}..${TAG}"
+          fi
+
+          # Generate commit list (cap at 100 to handle first-ever tag gracefully)
+          git log --format="- %s" --no-merges -100 "$RANGE" > /tmp/release-notes.md
+
+          # Add changelog comparison link only when a previous tag exists
+          if [ "$RANGE" != "$TAG" ]; then
+            echo "" >> /tmp/release-notes.md
+            echo "**Full Changelog**: https://github.com/${REPO}/compare/${PREV_TAG}...${TAG}" >> /tmp/release-notes.md
+          fi
+
+          DRAFT_FLAG=""
+          if [ "$TIER" != "patch" ]; then
+            DRAFT_FLAG="--draft"
+          fi
+
+          # $DRAFT_FLAG intentionally unquoted — empty string must vanish, not pass ""
+          gh release create "$TAG" $DRAFT_FLAG --notes-file /tmp/release-notes.md
