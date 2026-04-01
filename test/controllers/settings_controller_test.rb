@@ -63,13 +63,13 @@ class SettingsControllerTest < ActionDispatch::IntegrationTest
     log_in
     get kitchen_root_path(kitchen_slug: kitchen_slug)
 
-    assert_select 'nav button.nav-settings-link'
+    assert_select 'nav button#settings-button'
   end
 
   test 'gear button hidden when not logged in' do
     get kitchen_root_path(kitchen_slug: kitchen_slug)
 
-    assert_select 'nav button.nav-settings-link', count: 0
+    assert_select 'nav button#settings-button', count: 0
   end
 
   test 'show returns show_nutrition setting' do

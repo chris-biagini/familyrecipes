@@ -22,7 +22,7 @@
   </div>
   <%= yield :extra_nav if content_for?(:extra_nav) %>
   <% if current_kitchen %>
-    <button type="button" class="nav-search-btn"
+    <button type="button" class="nav-icon-btn"
             data-action="search-overlay#open"
             title="Search recipes (press /)"
             aria-label="Search recipes">
@@ -30,13 +30,13 @@
     </button>
   <% end %>
   <% if logged_in? %>
-    <button type="button" id="settings-button" class="nav-settings-link" title="Settings" aria-label="Settings">
+    <button type="button" id="settings-button" class="nav-icon-btn" title="Settings" aria-label="Settings">
       <%= icon(:settings, class: 'nav-icon', size: nil) %>
     </button>
   <% end %>
   <% if content_for?(:help_path) %>
     <a href="<%= help_url(yield(:help_path)) %>"
-       class="nav-help-link"
+       class="nav-icon-btn"
        title="Help"
        aria-label="Help"
        target="_blank"

@@ -41,6 +41,6 @@ class SearchOverlayTest < ActionDispatch::IntegrationTest
   test 'nav includes search button' do
     get root_path
 
-    assert_select 'button.nav-search-btn'
+    assert_select 'button.nav-icon-btn'
   end
 end

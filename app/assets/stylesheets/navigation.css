@@ -97,30 +97,10 @@ nav > div:not(:first-child):not(.nav-drawer) {
 }
 
 
-.nav-settings-link {
+.nav-icon-btn {
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--text);
-  padding: 0.5rem 0.6rem;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  border-radius: 0.4rem;
-  transition: color var(--duration-normal) ease, background-color var(--duration-slow) ease-out;
-}
-
-.nav-settings-link:hover {
-  color: var(--red);
-  background-color: var(--hover-bg);
-}
-
-.nav-settings-link .nav-icon {
-  width: 1.1rem;
-  height: 1.1rem;
-}
-
-.nav-help-link {
   color: var(--text);
   padding: 0.5rem 0.6rem;
   flex-shrink: 0;
@@ -131,14 +111,9 @@ nav > div:not(:first-child):not(.nav-drawer) {
   transition: color var(--duration-normal) ease, background-color var(--duration-slow) ease-out;
 }
 
-.nav-help-link:hover {
+.nav-icon-btn:hover {
   color: var(--red);
   background-color: var(--hover-bg);
-}
-
-.nav-help-link .nav-icon {
-  width: 1.1rem;
-  height: 1.1rem;
 }
 
 nav a:hover,
@@ -153,8 +128,8 @@ nav a:focus-visible {
 }
 
 .nav-icon {
-  width: 1.15rem;
-  height: 1.15rem;
+  width: 1.1rem;
+  height: 1.1rem;
   flex-shrink: 0;
 }
 
@@ -404,24 +379,6 @@ nav a:focus-visible {
   font-size: 0.9rem;
 }
 
-/* Nav search button */
-
-.nav-search-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0.25rem;
-  color: var(--text);
-  display: flex;
-  align-items: center;
-  border-radius: 0.4rem;
-  transition: color var(--duration-normal) ease, background-color var(--duration-slow) ease-out;
-}
-
-.nav-search-btn:hover {
-  color: var(--red);
-  background-color: var(--hover-bg);
-}
 
 /************************/
 /* Grocery Section      */
