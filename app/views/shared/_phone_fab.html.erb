@@ -1,0 +1,48 @@
+<%# Phone FAB — bottom-center floating action button for phone-sized screens.
+    Hidden by default via CSS; shown by the phone media query in navigation.css.
+    Renders _nav_links (shared with top nav) to prevent content drift. Icon
+    buttons are wired through phone_fab_controller for close-then-delegate.
+    - Collaborators: phone_fab_controller.js, navigation.css (.phone-fab) %>
+<div data-controller="phone-fab" class="phone-fab"
+     data-action="keydown.esc@document->phone-fab#close turbo:before-visit@document->phone-fab#close">
+  <div class="fab-overlay" data-phone-fab-target="overlay"
+       data-action="click->phone-fab#close" hidden></div>
+  <div class="fab-panel" data-phone-fab-target="panel"
+       role="dialog" aria-label="Navigation" hidden>
+    <div class="fab-nav-links">
+      <%= render 'shared/nav_links' %>
+    </div>
+    <hr class="fab-divider">
+    <div class="fab-icon-buttons">
+      <% if current_kitchen %>
+        <button type="button" class="nav-icon-btn"
+                data-action="phone-fab#openSearch"
+                title="Search recipes" aria-label="Search recipes">
+          <%= icon(:search, class: 'nav-icon', size: nil) %>
+        </button>
+      <% end %>
+      <% if logged_in? %>
+        <button type="button" class="nav-icon-btn"
+                data-action="phone-fab#openSettings"
+                title="Settings" aria-label="Settings">
+          <%= icon(:settings, class: 'nav-icon', size: nil) %>
+        </button>
+      <% end %>
+      <% if content_for?(:help_path) %>
+        <a href="<%= help_url(yield(:help_path)) %>" class="nav-icon-btn"
+           data-action="phone-fab#closeOnNavigate"
+           title="Help" aria-label="Help" target="_blank" rel="noopener noreferrer">
+          <%= icon(:help, class: 'nav-icon', size: nil) %>
+        </a>
+      <% end %>
+    </div>
+  </div>
+  <button type="button" class="fab-button" data-phone-fab-target="button"
+          data-action="phone-fab#toggle" aria-label="Menu" aria-expanded="false">
+    <svg class="hamburger-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <rect class="hamburger-top" x="3" y="11" width="18" height="2" rx="1" fill="currentColor"/>
+      <rect class="hamburger-mid" x="3" y="11" width="18" height="2" rx="1" fill="currentColor"/>
+      <rect class="hamburger-bot" x="3" y="11" width="18" height="2" rx="1" fill="currentColor"/>
+    </svg>
+  </button>
+</div>
