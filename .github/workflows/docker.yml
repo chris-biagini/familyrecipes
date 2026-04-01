@@ -97,4 +97,33 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ github.ref_name }}
-        run: gh release create "$TAG" --generate-notes
+          REPO: ${{ github.repository }}
+        run: |
+          PREV_TAG=$(git tag --sort=-v:refname | grep -A1 "^${TAG}$" | tail -1)
+          if [ "$PREV_TAG" = "$TAG" ]; then
+            RANGE="$TAG"
+          else
+            RANGE="${PREV_TAG}..${TAG}"
+          fi
+
+          # Classify: vX.Y.Z = patch, vX.Y = minor, vX = major
+          if echo "$TAG" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            TIER="patch"
+          elif echo "$TAG" | grep -qE '^v[0-9]+\.[0-9]+$'; then
+            TIER="minor"
+          else
+            TIER="major"
+          fi
+
+          {
+            git log --format="- %s" --no-merges "$RANGE"
+            echo ""
+            echo "**Full Changelog**: https://github.com/${REPO}/compare/${PREV_TAG}...${TAG}"
+          } > /tmp/release-notes.md
+
+          DRAFT_FLAG=""
+          if [ "$TIER" != "patch" ]; then
+            DRAFT_FLAG="--draft"
+          fi
+
+          gh release create "$TAG" $DRAFT_FLAG --notes-file /tmp/release-notes.md
