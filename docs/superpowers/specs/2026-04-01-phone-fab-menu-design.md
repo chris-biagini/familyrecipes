@@ -40,6 +40,11 @@ Both nav systems render these same partials. Only the layout CSS differs.
 
 All phone-specific styles and visibility toggles live inside this query.
 
+**Landscape phones:** Most phones in landscape exceed 600px (iPhone SE: 667px,
+iPhone 14: 844px), so they fall out of the phone query and get the top nav.
+This is intentional — landscape is wide enough for the horizontal nav, and
+switching paradigms on rotation is acceptable.
+
 ## FAB Button
 
 A circular button fixed to the bottom center of the viewport.
@@ -47,7 +52,8 @@ A circular button fixed to the bottom center of the viewport.
 - **Position:** `fixed; bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%)`
 - **Size:** ~48px diameter
 - **Appearance:** Frosted glass (`backdrop-filter: blur(10px)` + semi-transparent
-  background matching the existing nav treatment), subtle box-shadow
+  background matching the existing nav treatment), subtle box-shadow. Dark
+  mode uses same `prefers-color-scheme` overrides as the nav
 - **Icon:** Same hamburger SVG (3 rects) used in the top nav. Reuses the
   existing `.hamburger-top/mid/bot` rotation transforms for the hamburger→X
   animation, driven by `aria-expanded`
@@ -68,9 +74,12 @@ Top to bottom:
 ### Positioning
 
 - `position: fixed; bottom: calc(4rem + env(safe-area-inset-bottom, 0px))`
-- `left: 50%; transform: translateX(-50%)`
-- `width: min(85vw, 18rem)`
+- `left: 0; right: 0; margin: 0 auto; width: min(85vw, 18rem)` — centered
+  via auto margins, not `translateX(-50%)`, because the `transform` property
+  is reserved for the genie animation
 - Rounded corners, frosted glass background matching the FAB
+- Dark mode: same `prefers-color-scheme` overrides as the existing nav
+  (`rgba(30, 27, 24, 0.82)` background)
 
 ### Open Animation (Genie — Scale + Slide Up)
 
@@ -85,7 +94,8 @@ Top to bottom:
 ### Close Animation (Reverse Genie)
 
 - Same transition in reverse — panel scales down and fades toward the FAB
-- No stagger on close — all items fade out together, then the panel shrinks
+- No stagger on close — controller resets all `--stagger` values to 0 before
+  triggering the close transition, so items fade out together
 
 ### Overlay
 
@@ -179,12 +189,14 @@ per the existing project convention.
 
 ### Search Button
 
-Close FAB menu first, wait for `transitionend`, then dispatch to
-`search-overlay#open`. Prevents visual collision between the two animations.
+Close FAB menu first, then dispatch to `search-overlay#open`. To avoid
+perceived lag, skip the close animation — immediately hide the panel/overlay
+and open search. The genie-out animation is satisfying on its own, but not
+worth a 250ms delay when the user wants to search.
 
 ### Settings Button
 
-Same close-then-dispatch pattern. Uses class-based selector or Stimulus
+Same instant-close pattern as search. Uses class-based selector or Stimulus
 action instead of duplicate ID.
 
 ### Help Link
