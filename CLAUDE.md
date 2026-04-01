@@ -214,6 +214,26 @@ broadcast). Don't call `MarkdownImporter` directly for web operations.
 Read write service header comments for details. `multi_kitchen` is an env
 var, not a DB setting.
 
+**Import/export.** ZIP-based backup/restore via `ExportService` and
+`ImportService`. AI recipe import (`AiImportController` → `AiImportService`)
+sends pasted text to the Anthropic API and returns recipe Markdown; requires
+`Kitchen#anthropic_api_key`.
+
+**Settings.** Kitchen-scoped branding (title, heading, subtitle), API keys
+(USDA, Anthropic), and feature flags (`show_nutrition`, `decorate_tags`)
+— all columns on `Kitchen`, edited via the settings dialog.
+
+**Tags.** Tag management dialog supports bulk rename/delete via
+`TagWriteService`. Tags are also auto-synced from recipe front matter on save.
+
+**Dinner picker.** 3D CSS cylinder with physics-based spin. Recency weighting
+via `CookHistoryEntry` deprioritizes recently cooked recipes. Logic lives in
+`dinner_picker_logic.js` and `spin_physics.js`.
+
+**Wake lock.** `wake_lock_controller.js` keeps the screen on during cooking
+via the Screen Wake Lock API. Auto-releases after 10 minutes of inactivity
+with a toast warning. No-op on unsupported browsers.
+
 ## Recipe & Data Formats
 
 Recipe source is Markdown with custom syntax. The parser pipeline is the
