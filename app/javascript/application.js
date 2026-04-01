@@ -20,6 +20,7 @@ import IngredientTableController from "./controllers/ingredient_table_controller
 import MenuController from "./controllers/menu_controller"
 import NavMenuController from "./controllers/nav_menu_controller"
 import NutritionEditorController from "./controllers/nutrition_editor_controller"
+import PhoneFabController from "./controllers/phone_fab_controller"
 import OrderedListEditorController from "./controllers/ordered_list_editor_controller"
 import PlaintextEditorController from "./controllers/plaintext_editor_controller"
 import QuickbitesGraphicalController from "./controllers/quickbites_graphical_controller"
@@ -44,6 +45,7 @@ application.register("ingredient-table", IngredientTableController)
 application.register("menu", MenuController)
 application.register("nav-menu", NavMenuController)
 application.register("nutrition-editor", NutritionEditorController)
+application.register("phone-fab", PhoneFabController)
 application.register("ordered-list-editor", OrderedListEditorController)
 application.register("plaintext-editor", PlaintextEditorController)
 application.register("quickbites-graphical", QuickbitesGraphicalController)
