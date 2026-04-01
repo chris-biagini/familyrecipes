@@ -298,4 +298,27 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
     assert_select '.recipe-card .tag-pill.tag-pill--green', count: 0
     assert_select '.recipe-card .recipe-tag', text: 'vegetarian'
   end
+
+  test 'Edit Categories button is inside index-nav-categories section' do
+    log_in
+    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    create_recipe("# Bread\n\nCategory: Bread\n\n- Flour, 1 cup", category_name: 'Bread', kitchen: @kitchen)
+
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
+
+    assert_select '.index-nav-categories #edit-categories-button'
+  end
+
+  test 'Edit Tags button is inside index-nav-tags section' do
+    log_in
+    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    create_recipe(
+      "# Tagged\n\nCategory: Bread\nTags: weeknight\n\n- Flour, 1 cup",
+      category_name: 'Bread', kitchen: @kitchen
+    )
+
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
+
+    assert_select '.index-nav-tags #edit-tags-button'
+  end
 end

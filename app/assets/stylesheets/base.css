@@ -914,6 +914,13 @@ section:first-of-type h2 {
 
 .index-nav-categories {
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.index-nav-categories > div {
+  display: flex;
   align-items: baseline;
   gap: 0.4rem;
   flex-wrap: wrap;
@@ -921,6 +928,13 @@ section:first-of-type h2 {
 }
 
 .index-nav-tags {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.index-nav-tags > div {
   display: flex;
   align-items: baseline;
   gap: 0.4rem;
