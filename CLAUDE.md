@@ -303,6 +303,8 @@ Docker builds.
 
 **Commit directly to `main` when:** the change is small, self-contained, and
 low-risk — a single-file bug fix, doc update, CLAUDE.md edit, or cleanup.
+**Push immediately** — unpushed commits on local main cause rebase conflicts
+after squash-merging PRs that touch the same files.
 
 **Use a feature branch + PR when:** the change touches multiple files, adds a
 feature, refactors code, or is anything the user would want to review first.
@@ -321,6 +323,8 @@ git push -u origin feature/short-description # push to GitHub
 gh pr create --title "..." --body "..."      # open PR for review
 # after merge on GitHub:
 git checkout main && git pull && git branch -D feature/short-description
+# if pull conflicts (unpushed local commits subsumed by squash merge):
+git fetch origin && git reset --hard origin/main
 ```
 
 **Key rules:**
