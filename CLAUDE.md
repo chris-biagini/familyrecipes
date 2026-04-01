@@ -379,13 +379,18 @@ migrations into a single `001_create_schema.rb` to keep things clean.
 
 **Releases.** Tag pushes trigger `docker.yml`: build → smoke test (`/up`
 health check) → push to GHCR → create GitHub Release. Three tiers based on
-tag format:
+tag format (optional letter suffix like `a` is stripped before classifying):
 - **Patch** (`vX.Y.Z`): auto-published with commit bullet list.
-- **Minor** (`vX.Y`): draft release — a Claude Code hook fires on push,
-  prompting you to draft curated notes and update via `gh release edit`.
-- **Major** (`vX`): draft release — same hook, but prompts for
-  marketing-quality notes with highlights, breaking changes, and upgrade
-  notes.
+- **Minor** (`vX.Y`): draft release. After pushing, wait for the CI
+  workflow to create the draft (`gh release view TAG`), then write curated
+  release notes organized by theme (features, fixes, polish) and update
+  via `gh release edit TAG --notes-file <file>`.
+- **Major** (`vX`): draft release. After pushing, wait for the CI workflow
+  to create the draft, then write marketing-quality release notes with
+  sections: Highlights, Breaking changes, What's new, Fixes, Upgrade
+  notes. Update via `gh release edit TAG --notes-file <file>`.
+- Four-part tags (`vX.Y.Z.W`) are not supported — CI skips release
+  creation for these.
 The `REVISION` build arg bakes the version into the image (read by
 `ApplicationHelper#app_version`). Only tag when code is known-good —
 in-between commits on main are not built. The pre-push hook runs lint on
