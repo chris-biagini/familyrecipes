@@ -164,6 +164,7 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'recipe cards display tag pills' do
+    @kitchen.update!(decorate_tags: false)
     Category.create!(name: 'Weeknight', slug: 'weeknight', position: 0, kitchen: @kitchen)
     create_recipe("# Tagged Recipe\n\nCategory: Weeknight\nTags: weeknight, italian\n\n## Cook it\n\nDo the thing.",
                   category_name: 'Weeknight', kitchen: @kitchen)
@@ -268,5 +269,33 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
 
     assert_select '.tag-filter-pill.tag-pill--green', count: 0
     assert_select '.tag-filter-pill .smart-icon', count: 0
+  end
+
+  test 'recipe card tags show smart decoration when decorate_tags enabled' do
+    @kitchen.update!(decorate_tags: true)
+    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    create_recipe(
+      "# Tagged\n\nCategory: Bread\nTags: vegetarian\n\n- Flour, 1 cup",
+      category_name: 'Bread', kitchen: @kitchen
+    )
+
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
+
+    assert_select '.recipe-card .tag-pill.tag-pill--green'
+    assert_select '.recipe-card .smart-icon', text: /🥕/
+  end
+
+  test 'recipe card tags are plain when decorate_tags disabled' do
+    @kitchen.update!(decorate_tags: false)
+    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    create_recipe(
+      "# Tagged\n\nCategory: Bread\nTags: vegetarian\n\n- Flour, 1 cup",
+      category_name: 'Bread', kitchen: @kitchen
+    )
+
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
+
+    assert_select '.recipe-card .tag-pill.tag-pill--green', count: 0
+    assert_select '.recipe-card .recipe-tag', text: 'vegetarian'
   end
 end

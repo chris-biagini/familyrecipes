@@ -43,7 +43,8 @@
             <% if sorted_tags.any? %>
               <div class="recipe-tag-list">
                 <% sorted_tags.each do |tag| %>
-                  <span class="recipe-tag"><%= tag.name %></span>
+                  <% smart = smart_tag_pill_attrs(tag.name) %>
+                  <span class="recipe-tag tag-pill tag-pill--tag <%= smart.dig(:class)&.join(' ') %>"><% if smart.dig(:data, :smart_emoji) %><span class="smart-icon<%= ' smart-icon--crossout' if smart.dig(:class)&.include?('tag-pill--crossout') %>"><%= smart.dig(:data, :smart_emoji) %></span><% end %><%= tag.name %></span>
                 <% end %>
               </div>
             <% end %>
