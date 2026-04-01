@@ -16,6 +16,7 @@
   --text-light: #a09788;
   --red: #b33a3a;
   --red-light: rgba(179, 58, 58, 0.08);
+  --tag-filter-active-bg: rgba(179, 58, 58, 0.15);
   --rule: #e4dfd8;
   --rule-faint: #eee9e3;
 
@@ -83,6 +84,7 @@
     --text-light: #706960;
     --red: #c85050;
     --red-light: rgba(200, 80, 80, 0.12);
+    --tag-filter-active-bg: rgba(200, 80, 80, 0.2);
     --rule: #3a3530;
     --rule-faint: #2e2a26;
 
@@ -995,9 +997,9 @@ section:first-of-type h2 {
 }
 
 .tag-filter-pill.active {
-  background: var(--red);
-  color: white;
-  border-color: currentColor;
+  background: var(--tag-filter-active-bg);
+  color: var(--red);
+  border-color: var(--red);
 }
 
 /* Anchor targets: offset for sticky nav so headers stay visible */
