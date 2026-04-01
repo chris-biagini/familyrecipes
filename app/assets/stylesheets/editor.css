@@ -666,13 +666,13 @@ button.aisle-name:hover {
   }
 
   .btn-icon-round {
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 2rem;
+    height: 2rem;
   }
 
   .btn-icon-round-lg {
-    width: 2.75rem;
-    height: 2.75rem;
+    width: 2.25rem;
+    height: 2.25rem;
   }
 
   .aisle-add-row .input-base {
@@ -986,10 +986,31 @@ textarea.input-base {
   align-items: center;
 }
 
+/* Responsive — ingredient card wrapping for narrow dialogs */
+@media (max-width: 50rem) {
+  .graphical-ingredient-card {
+    flex-wrap: wrap;
+  }
+
+  .graphical-ingredient-fields {
+    flex-basis: 100%;
+    flex-wrap: wrap;
+  }
+
+  .graphical-ing-name { flex-basis: 100%; }
+  .graphical-ing-qty { flex: 0 0 5rem; }
+  .graphical-ing-prep { flex: 1; min-width: 6rem; }
+
+  .graphical-ingredient-actions {
+    margin-left: auto;
+  }
+}
+
 /* Responsive — mobile stacking */
 @media (max-width: 600px) {
   .graphical-front-matter-row {
     flex-direction: column;
+    align-items: stretch;
   }
 
   .graphical-fm-field--narrow {
@@ -1000,4 +1021,5 @@ textarea.input-base {
   .graphical-ingredient-row {
     flex-wrap: wrap;
   }
+
 }

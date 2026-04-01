@@ -385,13 +385,16 @@
 }
 
 @media (max-width: 720px) {
-  #dinner-picker-dialog.editor-dialog {
+  #dinner-picker-dialog.editor-dialog,
+  #dinner-picker-dialog.editor-dialog[open] {
+    inset: 0;
     width: 90vw;
     height: fit-content;
     max-width: 28rem;
     max-height: 90vh;
     border-radius: 0.25rem;
     border: 1px solid var(--text);
+    margin: auto;
     padding: 1.5rem;
   }
 }
