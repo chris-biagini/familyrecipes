@@ -13,13 +13,12 @@
     <% if all_tags.any? %>
       <div class="index-nav-tags">
         <% all_tags.each do |tag| %>
+          <% smart = smart_tag_pill_attrs(tag.name) %>
           <button type="button"
-                  class="tag-filter-pill"
+                  class="tag-filter-pill <%= smart.dig(:class)&.join(' ') %>"
                   data-recipe-filter-target="tag"
                   data-tag="<%= tag.name %>"
-                  data-action="click->recipe-filter#toggle">
-            <%= tag.name %>
-          </button>
+                  data-action="click->recipe-filter#toggle"><% if smart.dig(:data, :smart_emoji) %><span class="smart-icon<%= ' smart-icon--crossout' if smart.dig(:class)&.include?('tag-pill--crossout') %>"><%= smart.dig(:data, :smart_emoji) %></span><% end %><%= tag.name %></button>
         <% end %>
       </div>
     <% end %>

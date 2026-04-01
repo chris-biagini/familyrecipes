@@ -241,4 +241,32 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
 
     assert_select '.tag-filter-pill', count: 0
   end
+
+  test 'tag filter pills show smart decoration when decorate_tags enabled' do
+    @kitchen.update!(decorate_tags: true)
+    bread = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    create_recipe(
+      "# Tagged\n\nCategory: Bread\nTags: vegetarian\n\n- Flour, 1 cup",
+      category_name: 'Bread', kitchen: @kitchen
+    )
+
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
+
+    assert_select '.tag-filter-pill.tag-pill--green'
+    assert_select '.tag-filter-pill .smart-icon', text: /🥕/
+  end
+
+  test 'tag filter pills are plain when decorate_tags disabled' do
+    @kitchen.update!(decorate_tags: false)
+    bread = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    create_recipe(
+      "# Tagged\n\nCategory: Bread\nTags: vegetarian\n\n- Flour, 1 cup",
+      category_name: 'Bread', kitchen: @kitchen
+    )
+
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
+
+    assert_select '.tag-filter-pill.tag-pill--green', count: 0
+    assert_select '.tag-filter-pill .smart-icon', count: 0
+  end
 end
