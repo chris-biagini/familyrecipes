@@ -67,10 +67,10 @@ export default class extends Controller {
     }
 
     this.panelTarget.addEventListener("transitionend", (e) => {
-      if (e.propertyName === "transform" || e.propertyName === "opacity") cleanup()
+      if (e.propertyName === "opacity") cleanup()
     }, { once: true })
 
-    this.closeTimer = setTimeout(cleanup, 400)
+    this.closeTimer = setTimeout(cleanup, 250)
     this.buttonTarget.focus()
   }
 
@@ -121,12 +121,12 @@ export default class extends Controller {
   }
 
   setStaggerDelays() {
-    const items = this.panelTarget.querySelectorAll("a, .nav-icon-btn")
+    const items = this.panelTarget.querySelectorAll(".fab-nav-links a, .fab-icon-buttons")
     items.forEach((el, i) => el.style.setProperty("--fab-stagger", i))
   }
 
   resetStaggerDelays() {
-    const items = this.panelTarget.querySelectorAll("a, .nav-icon-btn")
+    const items = this.panelTarget.querySelectorAll(".fab-nav-links a, .fab-icon-buttons")
     items.forEach(el => el.style.setProperty("--fab-stagger", "0"))
   }
 

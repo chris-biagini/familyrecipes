@@ -167,7 +167,7 @@ nav a:focus-visible {
 
 .hamburger-icon rect {
   transform-origin: 12px 12px;
-  transition: transform var(--duration-slow) ease, opacity var(--duration-normal) ease;
+  transition: transform 250ms ease, opacity var(--duration-normal) ease;
 }
 
 .hamburger-top {
@@ -471,8 +471,8 @@ nav a:focus-visible {
     width: 3rem;
     height: 3rem;
     border-radius: 50%;
-    border: none;
-    background-color: rgba(250, 248, 245, 0.82);
+    border: 1px solid var(--rule);
+    background-color: rgba(250, 248, 245, 0.92);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     display: flex;
@@ -480,7 +480,7 @@ nav a:focus-visible {
     justify-content: center;
     cursor: pointer;
     color: var(--text);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.04);
     -webkit-tap-highlight-color: transparent;
     transition: color var(--duration-normal) ease;
   }
@@ -528,15 +528,12 @@ nav a:focus-visible {
     -webkit-backdrop-filter: blur(10px);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     padding: 0.5rem;
-    transform: scale(0.3) translateY(20px);
     opacity: 0;
-    transform-origin: bottom center;
-    transition: transform var(--duration-slow) cubic-bezier(0.16, 0.75, 0.40, 1),
-                opacity var(--duration-normal) ease;
+    transition: opacity 150ms ease;
   }
 
   .fab-panel.fab-open {
-    transform: scale(1) translateY(0);
+    animation: bloop 250ms cubic-bezier(0.16, 0.75, 0.40, 1);
     opacity: 1;
   }
 
@@ -601,26 +598,32 @@ nav a:focus-visible {
     padding: 0.6rem 0.75rem;
   }
 
-  /* Stagger fade-in for panel items */
-  .fab-panel a,
-  .fab-panel .nav-icon-btn {
+  /* Stagger fade-in for panel items — icon buttons fade as a group */
+  .fab-panel .fab-nav-links a,
+  .fab-panel .fab-icon-buttons {
     opacity: 0;
-    transition: opacity 150ms ease,
-                color var(--duration-normal) ease,
-                background-color var(--duration-slow) ease-out;
+    transition: opacity 150ms ease;
     transition-delay: calc(var(--fab-stagger, 0) * 30ms);
   }
 
-  .fab-panel.fab-open a,
-  .fab-panel.fab-open .nav-icon-btn {
+  .fab-panel.fab-open .fab-nav-links a,
+  .fab-panel.fab-open .fab-icon-buttons {
     opacity: 1;
+  }
+
+  .fab-nav-links a {
+    transition: opacity 150ms ease,
+                color var(--duration-normal) ease,
+                background-color var(--duration-slow) ease-out;
   }
 }
 
 /* Dark mode FAB */
 @media (pointer: coarse) and (hover: none) and (max-width: 600px) and (prefers-color-scheme: dark) {
   .fab-button {
-    background-color: rgba(30, 27, 24, 0.82);
+    background-color: rgba(30, 27, 24, 0.92);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.06);
   }
 
   .fab-panel {
@@ -630,8 +633,8 @@ nav a:focus-visible {
 
 /* Reduced motion: zero stagger delays (global rule handles transition-duration) */
 @media (pointer: coarse) and (hover: none) and (max-width: 600px) and (prefers-reduced-motion: reduce) {
-  .fab-panel a,
-  .fab-panel .nav-icon-btn {
+  .fab-panel .fab-nav-links a,
+  .fab-panel .fab-icon-buttons {
     transition-delay: 0ms !important;
   }
 }
