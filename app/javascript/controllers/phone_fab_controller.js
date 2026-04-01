@@ -36,8 +36,6 @@ export default class extends Controller {
     this.overlayTarget.hidden = false
     this.panelTarget.hidden = false
 
-    this.setStaggerDelays()
-
     requestAnimationFrame(() => {
       this.panelTarget.classList.add("fab-open")
       this.overlayTarget.classList.add("fab-open")
@@ -53,7 +51,6 @@ export default class extends Controller {
   close() {
     if (!this.isOpen) return
 
-    this.resetStaggerDelays()
     this.panelTarget.classList.remove("fab-open")
     this.overlayTarget.classList.remove("fab-open")
     this.buttonTarget.setAttribute("aria-expanded", "false")
@@ -118,16 +115,6 @@ export default class extends Controller {
 
   get firstFocusable() {
     return this.panelTarget.querySelector("a, button")
-  }
-
-  setStaggerDelays() {
-    const items = this.panelTarget.querySelectorAll(".fab-nav-links a, .fab-icon-buttons")
-    items.forEach((el, i) => el.style.setProperty("--fab-stagger", i))
-  }
-
-  resetStaggerDelays() {
-    const items = this.panelTarget.querySelectorAll(".fab-nav-links a, .fab-icon-buttons")
-    items.forEach(el => el.style.setProperty("--fab-stagger", "0"))
   }
 
   trapFocus(event) {

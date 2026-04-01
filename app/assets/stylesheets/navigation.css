@@ -598,22 +598,8 @@ nav a:focus-visible {
     padding: 0.6rem 0.75rem;
   }
 
-  /* Stagger fade-in for panel items — icon buttons fade as a group */
-  .fab-panel .fab-nav-links a,
-  .fab-panel .fab-icon-buttons {
-    opacity: 0;
-    transition: opacity 150ms ease;
-    transition-delay: calc(var(--fab-stagger, 0) * 30ms);
-  }
-
-  .fab-panel.fab-open .fab-nav-links a,
-  .fab-panel.fab-open .fab-icon-buttons {
-    opacity: 1;
-  }
-
   .fab-nav-links a {
-    transition: opacity 150ms ease,
-                color var(--duration-normal) ease,
+    transition: color var(--duration-normal) ease,
                 background-color var(--duration-slow) ease-out;
   }
 }
@@ -631,11 +617,4 @@ nav a:focus-visible {
   }
 }
 
-/* Reduced motion: zero stagger delays (global rule handles transition-duration) */
-@media (pointer: coarse) and (hover: none) and (max-width: 600px) and (prefers-reduced-motion: reduce) {
-  .fab-panel .fab-nav-links a,
-  .fab-panel .fab-icon-buttons {
-    transition-delay: 0ms !important;
-  }
-}
 
