@@ -3,7 +3,7 @@
 
 <div data-controller="recipe-filter">
   <div id="recipe-listings" class="index-nav">
-    <div class="index-nav-categories">
+    <div class="index-nav-categories section-rule">
       <div>
         <% categories.each do |category| %>
           <span class="index-nav-link" data-recipe-filter-target="tocLink" data-category="<%= category.slug %>">
@@ -19,7 +19,7 @@
       <% end %>
     </div>
     <% if all_tags.any? %>
-      <div class="index-nav-tags">
+      <div class="index-nav-tags section-rule">
         <div>
           <% all_tags.each do |tag| %>
             <% smart = smart_tag_pill_attrs(tag.name) %>

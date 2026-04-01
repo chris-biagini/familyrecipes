@@ -321,4 +321,17 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
 
     assert_select '.index-nav-tags #edit-tags-button'
   end
+
+  test 'categories and tags sections have section-rule class' do
+    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    create_recipe(
+      "# Tagged\n\nCategory: Bread\nTags: weeknight\n\n- Flour, 1 cup",
+      category_name: 'Bread', kitchen: @kitchen
+    )
+
+    get kitchen_root_path(kitchen_slug: kitchen_slug)
+
+    assert_select '.index-nav-categories.section-rule'
+    assert_select '.index-nav-tags.section-rule'
+  end
 end

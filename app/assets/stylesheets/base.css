@@ -838,6 +838,15 @@ header::after {
   margin: 1.5rem auto 0;
 }
 
+.section-rule::after {
+  content: "";
+  display: block;
+  width: 40px;
+  height: 1px;
+  background: var(--red);
+  margin: 0.6rem auto 0;
+}
+
 
 
 
