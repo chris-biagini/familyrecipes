@@ -273,6 +273,8 @@ rake lint          # RuboCop — always use `bundle exec rubocop`, not bare `rub
 rake lint:html_safe # audit .html_safe / raw() calls against allowlist
 rake test          # all tests via Minitest
 rake catalog:sync  # push ingredient-catalog.yaml changes into the database
+rake release:audit       # Tier 2 quality gate (before any release)
+rake release:audit:full  # Tier 2 + Tier 3 (before minor/major releases)
 ruby -Itest test/controllers/recipes_controller_test.rb              # single file
 ruby -Itest test/models/recipe_test.rb -n test_requires_title        # single test
 bin/dev            # Puma + esbuild watcher (port 3030)
@@ -319,6 +321,38 @@ Note: must run `jekyll build` from outside the repo root — Jekyll picks up the
 `test/`) must be added to the `Rails/RefuteMethods` exclusion in `.rubocop.yml`
 — they don't have `assert_not`. RuboCop also enforces blank lines before
 assertions (`Minitest/EmptyLineBeforeAssertionMethods`).
+
+## Release Audit
+
+Three-tier quality gate system. Tier 1 (CI) runs automatically. Tier 2 and 3
+are run before tagging releases.
+
+**Tier 2 — every release (`rake release:audit`):**
+Code coverage floor, dead code detection, dependency health + license audit,
+database schema integrity, doc-vs-app contract verification. Writes a
+SHA-stamped marker to `tmp/release_audit_pass.txt`.
+
+**Tier 3 — minor/major releases (`rake release:audit:full`):**
+Tier 2 + Playwright security pen tests, exploratory QA walkthrough,
+accessibility spot-check (axe-core), performance baseline. Requires a running
+dev server (`MULTI_KITCHEN=true bin/dev`). Writes marker to
+`tmp/release_audit_full_pass.txt`.
+
+**Enforcement:** Pre-push hook (installed by `bin/setup`) blocks tag pushes
+unless the matching audit marker exists, is fresh (< 48h), and matches HEAD.
+CI also runs Tier 2 on tag pushes as a safety net.
+
+**Config:** `config/release_audit.yml` (thresholds), `config/debride_allowlist.txt`
+(dead code false positives), `config/license_allowlist.yml` (license overrides).
+
+```bash
+rake release:audit           # Tier 2 (before any release)
+rake release:audit:full      # Tier 2 + Tier 3 (before minor/major)
+rake release:audit:security  # just security pen tests
+rake release:audit:explore   # just exploratory QA
+rake release:audit:a11y      # just accessibility check
+rake release:audit:perf      # just performance baseline
+```
 
 ## Workflow
 
@@ -421,6 +455,10 @@ tag format (optional letter suffix like `a` is stripped before classifying):
   notes. Update via `gh release edit TAG --notes-file <file>`.
 - Four-part tags (`vX.Y.Z.W`) are not supported — CI skips release
   creation for these.
+- **Run `rake release:audit` before tagging any release.** For minor/major
+  releases, run `rake release:audit:full` (requires a running dev server).
+  The pre-push hook enforces this — tag pushes are blocked without a fresh
+  audit marker.
 The `REVISION` build arg bakes the version into the image (read by
 `ApplicationHelper#app_version`). Only tag when code is known-good —
 in-between commits on main are not built. The pre-push hook runs lint on

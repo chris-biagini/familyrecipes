@@ -12,11 +12,7 @@
 # - Kitchen: tenant container receiving imported data
 # - ExportService: produces the ZIP format this service consumes
 class ImportService # rubocop:disable Metrics/ClassLength
-  Result = Data.define(:recipes, :ingredients, :quick_bites, :errors) do
-    def self.empty
-      new(recipes: 0, ingredients: 0, quick_bites: false, errors: [])
-    end
-  end
+  Result = Data.define(:recipes, :ingredients, :quick_bites, :errors)
 
   MAX_FILE_SIZE = 10.megabytes
   MAX_ZIP_ENTRIES = 500

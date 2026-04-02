@@ -44,3 +44,9 @@ docker-compose.yml
 
 # Security test seed output (machine-generated)
 test/security/user_ids.json
+
+# SimpleCov coverage reports
+/coverage/
+
+# Playwright test artifacts
+/test-results/

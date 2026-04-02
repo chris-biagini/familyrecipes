@@ -1,0 +1,151 @@
+# Debride false-positive allowlist for familyrecipes.
+# One method name per line. These are methods debride flags as unreachable
+# but are actually invoked dynamically by Rails, from ERB templates, or
+# via framework conventions.
+
+# --- Rails controller callbacks and before_actions ---
+connect
+authenticate_from_headers
+auto_join_sole_kitchen
+auto_login_in_development
+default_url_options
+flush_broadcast
+prevent_html_caching
+record_not_found
+require_membership
+set_kitchen_from_path
+require_authentication
+require_non_production_environment
+require_api_key
+handle_stale_record
+
+# --- ActiveJob / background jobs ---
+perform
+
+# --- Rails route actions (invoked by router, not called in Ruby) ---
+show
+edit
+order_content
+update_order
+check
+confirm_all
+deplete_all
+have_it
+need_it
+update_aisle_order
+update_custom_items
+aisle_order_content
+show_html
+show_markdown
+editor_frame
+parse_quick_bites
+quick_bites_content
+quickbites_editor_frame
+serialize_quick_bites
+update_quick_bites
+update_tags
+manifest
+service_worker
+
+# --- ActiveRecord callbacks ---
+generate_slug
+normalize_portion_keys
+downcase_name
+enforce_single_kitchen_mode
+
+# --- ActiveRecord validations (invoked via `validate`) ---
+nutrients_require_basis_grams
+nutrient_values_in_range
+density_completeness
+portion_values_positive
+aliases_do_not_collide
+
+# --- ActiveRecord associations (generates accessor methods) ---
+step
+recipe_tags
+cook_history_entries
+custom_grocery_items
+meal_plan
+meal_plan_selections
+on_hand_entries
+users
+quick_bite
+
+# --- ActiveRecord scopes ---
+with_content
+resolved
+depleted
+
+# --- Data.define / attr_reader accessors on value objects ---
+# FamilyRecipes::Recipe
+makes
+source
+
+# FamilyRecipes::Step
+ingredient_list_items
+tldr
+
+# FamilyRecipes::QuickBite
+text_source
+
+# MealPlanWriteService::QuickAddResult / Result
+success?
+
+# --- ERB template helpers ---
+app_version
+help_url
+icon
+format_amounts
+on_hand_freshness_class
+on_hand_sort_key
+restock_tooltip
+shopping_list_count_text
+ingredients_display_text
+item_summary
+display_aisle
+format_resolution_method
+format_unit_name
+NUTRIENT_DISPLAY
+calories_per_serving
+cross_ref_label
+format_makes
+format_yield_line
+format_yield_with_unit
+ingredient_data_attrs
+ingredient_summary
+nutrition_missing_ingredients
+nutrition_partial_ingredients
+nutrition_skipped_ingredients
+percent_daily_value
+render_markdown
+scalable_instructions
+scaled_quantity_display
+serving_size_text
+servings_per_recipe_text
+NUTRITION_ROWS
+search_data_json
+smart_tag_pill_attrs
+smart_tags_json
+
+# --- AR model query methods used in templates/services ---
+pending?
+cross_reference_block
+cross_reference_step?
+
+# --- BuildValidator public API (called from db/seeds.rb) ---
+validate_cross_references
+validate_ingredients
+validate_nutrition
+
+# --- Service/resolver methods called dynamically or from controllers ---
+cataloged?
+next_needing_attention
+need
+apply_check
+apply_custom_items
+apply_have_it
+apply_need_it
+apply_select
+
+# --- Constants referenced from ERB templates (invisible to debride) ---
+DENSITY_UNITS

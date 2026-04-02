@@ -36,20 +36,6 @@ module FamilyRecipes
     str.tr("\u2018\u2019\u201C\u201D", "''\"\"")
   end
 
-  def self.parse_recipes(recipes_dir)
-    quick_bites_filename = CONFIG[:quick_bites_filename]
-
-    recipe_files = Dir.glob(File.join(recipes_dir, '**', '*')).select do |file|
-      File.file?(file) && File.basename(file) != quick_bites_filename
-    end
-
-    recipe_files.map do |file|
-      source = File.read(file, encoding: 'utf-8')
-      id = slugify(File.basename(file, '.*'))
-      Recipe.new(markdown_source: source, id: id)
-    end
-  end
-
   QuickBitesResult = Data.define(:quick_bites, :warnings)
 
   def self.parse_quick_bites_content(content) # rubocop:disable Metrics/MethodLength
