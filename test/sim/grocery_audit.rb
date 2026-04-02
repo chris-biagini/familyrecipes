@@ -827,6 +827,77 @@ module GroceryAudit
                                 schedule:)
     end
   end
+  # Randomized parameter sweep over 5,000 synthetic personas to surface
+  # edge cases that handcrafted scenarios miss. Seeds are derived from a
+  # single master RNG so results are fully reproducible.
+  # Collaborators: Persona.build, GroceryAudit.run_scenario, Reporter.
+  module MonteCarlo
+    SWEEP_SIZE  = 5_000
+    MASTER_SEED = 12_345
+
+    PARAM_RANGES = {
+      shop_interval_mean:          2..21,
+      shop_interval_std:           0..5,
+      ic_attention:                0.3..1.0,
+      depletion_report_chance:     0.0..1.0,
+      depletion_report_delay_mean: 0..7,
+      depletion_report_delay_std:  0..2,
+      vacation_count:              0..3,
+      vacation_length:             7..21,
+      burst_count:                 0..4,
+      accident_rate:               0.0..0.1,
+      ghost_shop_chance:           0.0..0.3,
+      fuzz_std:                    0..4
+    }.freeze
+
+    def self.run!(size: SWEEP_SIZE)
+      master_rng = Random.new(MASTER_SEED)
+
+      results = (1..size).map do |i|
+        seed    = master_rng.rand(1..999_999)
+        persona = random_persona(master_rng)
+        result  = GroceryAudit.run_scenario(name: "MC-#{i}", persona:, seed:)
+        result[:persona] = persona
+        $stderr.print "\r  Sweep: #{i}/#{size}" if (i % 500).zero? || i == size
+        result
+      end
+      $stderr.puts
+
+      results.sort_by! { |r| [-r[:scorecard][:miss_rate], -r[:scorecard][:annoyance_rate]] }
+      results
+    end
+
+    def self.random_persona(rng)
+      vac_count = rng.rand(PARAM_RANGES[:vacation_count])
+      vac_len   = PARAM_RANGES[:vacation_length]
+      vacations = (1..vac_count).map do
+        start  = rng.rand(30..300)
+        length = rng.rand(vac_len)
+        [start, length]
+      end
+
+      burst_count = rng.rand(PARAM_RANGES[:burst_count])
+      bursts      = (1..burst_count).map { rng.rand(30..330) }
+
+      Persona.build(
+        shop_interval_mean:          rng.rand(PARAM_RANGES[:shop_interval_mean]),
+        shop_interval_std:           rng.rand(PARAM_RANGES[:shop_interval_std]),
+        ic_attention:                rand_float(rng, PARAM_RANGES[:ic_attention]),
+        depletion_report_chance:     rand_float(rng, PARAM_RANGES[:depletion_report_chance]),
+        depletion_report_delay_mean: rng.rand(PARAM_RANGES[:depletion_report_delay_mean]),
+        depletion_report_delay_std:  rng.rand(PARAM_RANGES[:depletion_report_delay_std]),
+        vacation_gaps:               vacations,
+        burst_days:                  bursts,
+        accident_rate:               rand_float(rng, PARAM_RANGES[:accident_rate]),
+        ghost_shop_chance:           rand_float(rng, PARAM_RANGES[:ghost_shop_chance]),
+        fuzz_std:                    rng.rand(PARAM_RANGES[:fuzz_std])
+      )
+    end
+
+    def self.rand_float(rng, range)
+      range.begin + rng.rand * (range.end - range.begin)
+    end
+  end
 end
 
 if __FILE__ == $PROGRAM_NAME
@@ -834,9 +905,16 @@ if __FILE__ == $PROGRAM_NAME
 
   puts 'Grocery Algorithm Audit'
   puts "#{GroceryAudit::SIM_DAYS} simulated days, #{GroceryAudit::DEFAULT_ITEMS.size} items"
-  puts
 
+  # ---- Handcrafted scenarios ----
+  puts "\n--- HANDCRAFTED SCENARIOS ---"
   results = GroceryAudit::Scenarios.all
   results.each { |r| GroceryAudit::Reporter.scenario_report(r[:name], r[:scorer], r[:sim].ic_loads) }
   GroceryAudit::Reporter.comparison_table(results)
+
+  # ---- Monte Carlo sweep ----
+  puts "\n\n--- MONTE CARLO SWEEP ---"
+  sweep = GroceryAudit::MonteCarlo.run!
+  GroceryAudit::Reporter.sweep_report(sweep)
+  GroceryAudit::Reporter.sweep_summary(sweep)
 end
