@@ -17,6 +17,7 @@ module GroceryAudit
   MAX_EASE          = 2.5
   EASE_BONUS        = 0.03
   EASE_PENALTY      = 0.20
+  BLEND_WEIGHT      = 0.65
   SAFETY_MARGIN     = 0.78
   MIN_BUFFER        = 2
   SENTINEL          = -999_999
@@ -104,7 +105,7 @@ module GroceryAudit
     # before blending — this is where the old sims diverged.
     def deplete_observed(day)
       observed      = day - confirmed_at
-      blended       = (observed + interval) / 2.0
+      blended       = observed * BLEND_WEIGHT + interval * (1 - BLEND_WEIGHT)
       @interval     = [blended, STARTING_INTERVAL.to_f].max
       @ease         = [(ease || STARTING_EASE) * (1 - EASE_PENALTY), MIN_EASE].max
       @confirmed_at = SENTINEL

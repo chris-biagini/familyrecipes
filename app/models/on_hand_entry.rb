@@ -25,6 +25,7 @@ class OnHandEntry < ApplicationRecord # rubocop:disable Metrics/ClassLength
   MAX_EASE = 2.5
   EASE_BONUS = 0.03
   EASE_PENALTY = 0.20
+  BLEND_WEIGHT = 0.65
 
   # Items surface in Inventory Check before predicted depletion.
   # SAFETY_MARGIN gives proportional buffer; MIN_BUFFER ensures short-cycle
@@ -136,7 +137,7 @@ class OnHandEntry < ApplicationRecord # rubocop:disable Metrics/ClassLength
   # blending converges to ~10.5d). Also halves delay-inflated observations.
   def deplete_observed(now)
     observed = (now - confirmed_at).to_i
-    blended = (observed + interval) / 2.0
+    blended = observed * BLEND_WEIGHT + interval * (1 - BLEND_WEIGHT)
     self.interval = [blended, STARTING_INTERVAL].max
     self.ease = [(ease || STARTING_EASE) * (1 - EASE_PENALTY), MIN_EASE].max
     self.confirmed_at = Date.parse(ORPHAN_SENTINEL)
