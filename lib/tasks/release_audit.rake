@@ -92,9 +92,27 @@ namespace :release do
       end
     end
 
-    desc 'Security pen tests (Tier 3 — not yet implemented)'
+    desc 'Security pen tests (Tier 3 — requires a running dev server on port 3030)'
     task security: :environment do
-      raise 'not yet implemented'
+      puts '=== Security Pen Tests ==='
+      puts 'Assumes a dev server is already running on port 3030.'
+      puts ''
+
+      puts '--- Seeding security kitchens ---'
+      unless system({ 'MULTI_KITCHEN' => 'true' }, 'bin/rails runner test/security/seed_security_kitchens.rb')
+        abort "\nFailed to seed security kitchens."
+      end
+
+      puts ''
+      puts '--- Running Playwright security specs ---'
+      passed = system('npx playwright test test/security/ --reporter=list')
+
+      puts ''
+      if passed && $CHILD_STATUS.success?
+        puts 'Security pen tests: PASS'
+      else
+        abort 'Security pen tests: FAIL'
+      end
     end
 
     desc 'Exploratory QA flows (Tier 3 — not yet implemented)'
