@@ -69,7 +69,9 @@ class ShoppingListBuilder # rubocop:disable Metrics/ClassLength
 
   def selected_recipes
     slugs = MealPlanSelection.recipe_slugs_for(@kitchen)
-    @kitchen.recipes.with_full_tree.where(slug: slugs)
+    @kitchen.recipes
+            .includes(steps: [:ingredients, { cross_references: { target_recipe: { steps: :ingredients } } }])
+            .where(slug: slugs)
   end
 
   def selected_quick_bites

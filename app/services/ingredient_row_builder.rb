@@ -17,7 +17,7 @@ class IngredientRowBuilder # rubocop:disable Metrics/ClassLength
 
   def initialize(kitchen:, recipes: nil, resolver: nil)
     @kitchen = kitchen
-    @recipes = recipes || kitchen.recipes.select(:id, :title, :slug).includes(steps: :ingredients)
+    @recipes = recipes || kitchen.recipes.select(:id, :title, :slug).includes(:ingredients, steps: :ingredients)
     @resolver = resolver || IngredientCatalog.resolver_for(kitchen)
   end
 

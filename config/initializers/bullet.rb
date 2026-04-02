@@ -9,4 +9,8 @@ if defined?(Bullet)
   Bullet.rails_logger = true
   Bullet.add_footer = true
   Bullet.raise = Rails.env.test?
+
+  # Cross references are conditionally used — recipes may or may not have
+  # them, but we need them preloaded when they exist.
+  Bullet.add_safelist type: :unused_eager_loading, class_name: 'Step', association: :cross_references
 end
