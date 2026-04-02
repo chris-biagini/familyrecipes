@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 1) do
+ActiveRecord::Schema[8.1].define(version: 2) do
   create_table "categories", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "kitchen_id", null: false
@@ -246,14 +246,21 @@ ActiveRecord::Schema[8.1].define(version: 1) do
   end
 
   add_foreign_key "categories", "kitchens"
+  add_foreign_key "cook_history_entries", "kitchens"
   add_foreign_key "cross_references", "kitchens"
   add_foreign_key "cross_references", "recipes", column: "target_recipe_id"
   add_foreign_key "cross_references", "steps"
+  add_foreign_key "custom_grocery_items", "kitchens"
   add_foreign_key "ingredient_catalog", "kitchens"
   add_foreign_key "ingredients", "steps"
+  add_foreign_key "meal_plan_selections", "kitchens"
   add_foreign_key "meal_plans", "kitchens"
   add_foreign_key "memberships", "kitchens"
   add_foreign_key "memberships", "users"
+  add_foreign_key "on_hand_entries", "kitchens"
+  add_foreign_key "quick_bite_ingredients", "quick_bites"
+  add_foreign_key "quick_bites", "categories"
+  add_foreign_key "quick_bites", "kitchens"
   add_foreign_key "recipe_tags", "recipes"
   add_foreign_key "recipe_tags", "tags"
   add_foreign_key "recipes", "categories"
