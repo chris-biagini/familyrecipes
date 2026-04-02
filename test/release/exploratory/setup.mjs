@@ -10,7 +10,7 @@ import { expect } from '@playwright/test';
  */
 export async function loginAs(page, userId) {
   await page.goto(`/dev/login/${userId}`);
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState('domcontentloaded');
 }
 
 /**

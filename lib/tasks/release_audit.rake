@@ -108,7 +108,7 @@ namespace :release do # rubocop:disable Metrics/BlockLength
 
       puts ''
       puts '--- Running Playwright security specs ---'
-      specs = Dir['test/security/*.spec.mjs'].sort
+      specs = Dir['test/security/*.spec.mjs']
       failures = specs.reject { |spec| system("node --test #{spec}") }
 
       puts ''
@@ -126,13 +126,11 @@ namespace :release do # rubocop:disable Metrics/BlockLength
       puts 'NOTE: Requires a running dev server (MULTI_KITCHEN=true bin/dev)'
 
       specs = %w[recipe_flows menu_grocery_flows ingredients_flows settings_flows
-                  multi_tenant import_export navigation].map { |s| "test/release/exploratory/#{s}.spec.mjs" }
+                 multi_tenant import_export navigation].map { |s| "test/release/exploratory/#{s}.spec.mjs" }
       cmd = "npx playwright test #{specs.join(' ')} " \
             '--config=test/release/exploratory/playwright.config.mjs ' \
             '--reporter=list'
-      unless system(cmd)
-        abort 'Exploratory QA failed — see above.'
-      end
+      abort 'Exploratory QA failed — see above.' unless system(cmd)
 
       puts 'Exploratory QA: PASS ✓'
     end
