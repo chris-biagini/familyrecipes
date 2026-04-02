@@ -21,15 +21,15 @@ class OnHandEntry < ApplicationRecord # rubocop:disable Metrics/ClassLength
   ORPHAN_SENTINEL = '1970-01-01'
 
   STARTING_EASE = 1.5
-  MIN_EASE = 1.1
+  MIN_EASE = 1.05
   MAX_EASE = 2.5
-  EASE_BONUS = 0.05
+  EASE_BONUS = 0.03
   EASE_PENALTY = 0.20
 
   # Items surface in Inventory Check before predicted depletion.
   # SAFETY_MARGIN gives proportional buffer; MIN_BUFFER ensures short-cycle
   # items (eggs, milk) get at least 2 days of warning.
-  SAFETY_MARGIN = 0.8
+  SAFETY_MARGIN = 0.78
   MIN_BUFFER = 2
 
   validates :ingredient_name, presence: true,
@@ -38,7 +38,8 @@ class OnHandEntry < ApplicationRecord # rubocop:disable Metrics/ClassLength
   scope :active, lambda { |now: Date.current|
     where(depleted_at: nil).where(
       'interval IS NULL OR date(confirmed_at, ' \
-      "'+' || MIN(CAST(interval * #{SAFETY_MARGIN} AS INTEGER), CAST(interval AS INTEGER) - #{MIN_BUFFER}) || ' days') >= date(?)",
+      "'+' || MIN(CAST(interval * #{SAFETY_MARGIN} AS INTEGER), " \
+      "CAST(interval AS INTEGER) - #{MIN_BUFFER}) || ' days') >= date(?)",
       now.iso8601
     )
   }

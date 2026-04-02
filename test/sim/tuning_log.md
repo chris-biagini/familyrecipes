@@ -67,3 +67,30 @@ miss, 22% annoy. Butter: 57% hit but 19% annoy. Flour/pepper: >60% hit.
 **Next:** Try a two-tier buffer formula using `max(MB, log2(interval) * scale)`
 that gives larger absolute buffer for medium intervals (where eggs oscillate)
 while using the SM cap to prevent annoyance for properly-converged long items.
+
+## Iteration 3
+
+**Hypothesis:** Explored many formula and constant variants to break the miss/annoyance
+tradeoff. Key finding: SM=0.78 gives effective=10 for interval=14 (catches butter
+depletions) while SM=0.79+ gives effective=11 (misses them). EB=0.03 slows post-first-
+cycle growth, tightening eggs oscillation from 8.6-10.2 to 8.3-9.6. ME=1.05 lets ease
+drop lower faster. Tested: log2 formula, tapered extra buffer, SM+offset formula,
+STARTING_INTERVAL=8 (conformance failure), ME=1.0 (hurt S9).
+**Changes:** Best config found:
+- SAFETY_MARGIN=0.78, MIN_BUFFER=2
+- STARTING_EASE=1.5, EASE_BONUS=0.03, EASE_PENALTY=0.20, MIN_EASE=1.05
+- Formula: `min(interval * 0.78, interval - 2)`
+**Results:**
+- S1 (Perfect user): hit=45.1% miss=39.2% annoy=15.7%
+- S7 (Vacation): hit=45.5% miss=40.6% annoy=13.9%
+- S9 (Holiday baker): hit=41.3% miss=42.3% annoy=16.3%
+- Guardrail worst: S6 at 64.0% miss
+**Assessment:** S1 miss rate now passes (39.2% ≤ 40%)! But S1 annoyance is 15.7%
+(0.7pp over 15% target). S7 miss is 0.6pp over, S9 needs both miss and annoyance
+work. The miss/annoyance tradeoff is fundamentally tied to butter at interval=14:
+effective=10 gives buffer=4 days (28.6% of 14 → annoying) but catches fuzz-early
+depletions. No formula change can fix both without changing the core algorithm.
+**Next:** The last 3 iterations have all hovered around the same miss/annoyance
+tradeoff boundary. Constants are fine-tuned. The remaining gap (0.7pp annoyance
+on S1, ~2pp miss on S7/S9) appears structural given the constraint that only
+constants and the safety margin formula can change. Stalling.

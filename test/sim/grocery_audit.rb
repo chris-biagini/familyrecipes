@@ -13,11 +13,11 @@ module GroceryAudit
   STARTING_INTERVAL = 7
   MAX_INTERVAL      = 180
   STARTING_EASE     = 1.5
-  MIN_EASE          = 1.1
+  MIN_EASE          = 1.05
   MAX_EASE          = 2.5
-  EASE_BONUS        = 0.05
+  EASE_BONUS        = 0.03
   EASE_PENALTY      = 0.20
-  SAFETY_MARGIN     = 0.8
+  SAFETY_MARGIN     = 0.78
   MIN_BUFFER        = 2
   SENTINEL          = -999_999
   SIM_DAYS          = 365
