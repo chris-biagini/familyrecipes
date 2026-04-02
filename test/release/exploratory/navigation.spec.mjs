@@ -21,21 +21,13 @@ test.describe('Navigation flows', () => {
       await expect(link).toBeVisible();
     }
 
-    // Navigate to each page and verify it loads
-    await page.locator('nav').getByRole('link', { name: 'Menu' }).first().click();
-    await page.waitForLoadState('networkidle');
-    await expect(page.locator('h1')).toContainText('Menu');
-
-    await page.locator('nav').getByRole('link', { name: 'Groceries' }).first().click();
-    await page.waitForLoadState('networkidle');
-    await expect(page.locator('h1')).toContainText('Groceries');
-
-    await page.locator('nav').getByRole('link', { name: 'Ingredients' }).first().click();
-    await page.waitForLoadState('networkidle');
-    await expect(page.locator('h1')).toContainText('Ingredients');
+    // Navigate to each page via Turbo Drive and verify content
+    for (const [label, heading] of [['Menu', 'Menu'], ['Groceries', 'Groceries'], ['Ingredients', 'Ingredients']]) {
+      await page.locator('nav').getByRole('link', { name: label }).first().click();
+      await expect(page.locator('h1')).toContainText(heading);
+    }
 
     await page.locator('nav').getByRole('link', { name: 'Recipes' }).first().click();
-    await page.waitForLoadState('networkidle');
     await expect(page.locator('h1')).toBeVisible();
 
     assertNoConsoleErrors();
@@ -110,11 +102,17 @@ test.describe('Navigation flows', () => {
     assertNoNetworkErrors();
   });
 
-  test('mobile FAB renders on small viewport', async ({ page }) => {
+  test('mobile FAB renders on small viewport', async ({ browser }) => {
+    // FAB requires touch device media queries: (pointer: coarse) and (hover: none)
+    const context = await browser.newContext({
+      viewport: { width: 375, height: 667 },
+      hasTouch: true,
+      isMobile: true,
+    });
+    const page = await context.newPage();
+
     const assertNoConsoleErrors = trackConsoleErrors(page);
     const assertNoNetworkErrors = trackNetworkErrors(page);
-
-    await page.setViewportSize({ width: 375, height: 667 });
 
     await loginAs(page, userIds.alice_id);
     await page.goto('/kitchens/kitchen-alpha');
@@ -128,16 +126,16 @@ test.describe('Navigation flows', () => {
     const fabPanel = page.locator('.fab-panel');
     await expect(fabPanel).toBeVisible();
 
-    // FAB panel should contain nav links
     const fabNavLinks = fabPanel.locator('.fab-nav-links');
     await expect(fabNavLinks).toBeVisible();
 
-    // Close FAB
     await page.keyboard.press('Escape');
     await expect(fabPanel).toBeHidden();
 
     assertNoConsoleErrors();
     assertNoNetworkErrors();
+
+    await context.close();
   });
 
   test('help link is present in nav', async ({ page }) => {

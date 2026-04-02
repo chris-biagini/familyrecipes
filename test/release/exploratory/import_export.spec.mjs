@@ -38,7 +38,7 @@ test.describe('Import and export flows', () => {
     await page.goto('/kitchens/kitchen-alpha');
     await page.waitForLoadState('networkidle');
 
-    const importButton = page.getByRole('button', { name: 'Import' });
+    const importButton = page.getByRole('button', { name: 'Import', exact: true });
     await expect(importButton).toBeVisible();
 
     // The hidden file input should exist
@@ -78,18 +78,13 @@ test.describe('Import and export flows', () => {
   });
 
   test('export and import are not visible to non-members', async ({ page }) => {
-    const assertNoConsoleErrors = trackConsoleErrors(page);
-    const assertNoNetworkErrors = trackNetworkErrors(page);
-
-    // Bob is not a member of kitchen-alpha
+    // No console/network error tracking here — non-members trigger expected
+    // 403s on protected Turbo Frames (editor dialogs, settings frame).
     await loginAs(page, userIds.bob_id);
     await page.goto('/kitchens/kitchen-alpha');
     await page.waitForLoadState('networkidle');
 
     const exportActions = page.locator('#export-actions');
     await expect(exportActions).toHaveCount(0);
-
-    assertNoConsoleErrors();
-    assertNoNetworkErrors();
   });
 });
