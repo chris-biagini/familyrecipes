@@ -147,10 +147,5 @@ apply_have_it
 apply_need_it
 apply_select
 
-# --- Candidates for removal (flagged as dead, kept to pass audit) ---
-# FamilyRecipes.parse_recipes — file-based parser, replaced by DB seeding
-parse_recipes
-# FamilyRecipes::UnitResolver::DENSITY_UNITS — unused constant
+# --- Constants referenced from ERB templates (invisible to debride) ---
 DENSITY_UNITS
-# ImportService::Result.empty — factory method never called
-empty
