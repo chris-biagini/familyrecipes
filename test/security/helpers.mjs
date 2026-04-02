@@ -41,7 +41,7 @@ export async function authenticatedBrowser(userId) {
   const context = await browser.newContext()
   const page = await context.newPage()
   await page.goto(`${BASE_URL}/dev/login/${userId}`)
-  await page.waitForLoadState("networkidle")
+  await page.waitForLoadState("domcontentloaded")
   if (page.url().includes('/dev/login')) {
     await browser.close()
     throw new Error('Dev login failed — is the server running in development mode?')
