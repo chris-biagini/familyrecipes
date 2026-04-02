@@ -909,14 +909,20 @@ section:first-of-type h2 {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  padding: 0.5rem 0 0.5rem 0.75rem;
   margin-bottom: 1.5rem;
-  border-left: 2px solid var(--rule-faint);
+}
+
+.index-nav-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
 }
 
 .index-nav-categories {
   display: flex;
   align-items: baseline;
+  justify-content: center;
   gap: 0.4rem;
   flex-wrap: wrap;
 }
@@ -924,23 +930,9 @@ section:first-of-type h2 {
 .index-nav-tags {
   display: flex;
   align-items: baseline;
+  justify-content: center;
   gap: 0.4rem;
   flex-wrap: wrap;
-}
-
-.index-nav-zone-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.25rem;
-}
-
-.index-nav-zone-label {
-  font-size: 0.65rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--text-light);
 }
 
 .index-nav-zone-edit {
@@ -965,14 +957,18 @@ section:first-of-type h2 {
 .index-nav-link a {
   font-family: var(--font-display);
   font-size: 1rem;
-  color: var(--red);
+  color: var(--text);
   text-decoration: underline;
   text-underline-offset: 2px;
-  transition: color var(--duration-normal);
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.3rem;
+  transition: color var(--duration-normal) ease,
+              background-color var(--duration-slow) ease-out;
 }
 
 .index-nav-link a:hover {
-  color: var(--accent-hover);
+  color: var(--red);
+  background-color: var(--hover-bg);
 }
 
 .index-nav-link:not(:last-child)::after {
@@ -1009,6 +1005,10 @@ section:first-of-type h2 {
 }
 
 /* Anchor targets: offset for sticky nav so headers stay visible */
+html {
+  scroll-behavior: smooth;
+}
+
 #recipe-listings,
 [data-recipe-filter-target="category"] {
   scroll-margin-top: 3.5rem;

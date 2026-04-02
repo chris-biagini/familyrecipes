@@ -150,7 +150,7 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
     assert_select '.recipe-card .recipe-description', text: 'A simple flatbread.'
   end
 
-  test 'recipe cards display tag pills' do
+  test 'recipe cards do not display tag pills' do
     @kitchen.update!(decorate_tags: false)
     Category.create!(name: 'Weeknight', slug: 'weeknight', position: 0, kitchen: @kitchen)
     create_recipe("# Tagged Recipe\n\nCategory: Weeknight\nTags: weeknight, italian\n\n## Cook it\n\nDo the thing.",
@@ -158,9 +158,7 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
 
     get kitchen_root_path(kitchen_slug: kitchen_slug)
 
-    assert_select '.recipe-card .recipe-tag', count: 2
-    assert_select '.recipe-card .recipe-tag', text: 'weeknight'
-    assert_select '.recipe-card .recipe-tag', text: 'italian'
+    assert_select '.recipe-card .recipe-tag', count: 0
   end
 
   test 'recipe listings render as cards with descriptions' do
@@ -258,35 +256,7 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
     assert_select '.tag-filter-pill .smart-icon', count: 0
   end
 
-  test 'recipe card tags show smart decoration when decorate_tags enabled' do
-    @kitchen.update!(decorate_tags: true)
-    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
-    create_recipe(
-      "# Tagged\n\nCategory: Bread\nTags: vegetarian\n\n- Flour, 1 cup",
-      category_name: 'Bread', kitchen: @kitchen
-    )
-
-    get kitchen_root_path(kitchen_slug: kitchen_slug)
-
-    assert_select '.recipe-card .recipe-tag.tag-pill--green'
-    assert_select '.recipe-card .recipe-tag .smart-icon', text: /🥕/
-  end
-
-  test 'recipe card tags are plain when decorate_tags disabled' do
-    @kitchen.update!(decorate_tags: false)
-    Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
-    create_recipe(
-      "# Tagged\n\nCategory: Bread\nTags: vegetarian\n\n- Flour, 1 cup",
-      category_name: 'Bread', kitchen: @kitchen
-    )
-
-    get kitchen_root_path(kitchen_slug: kitchen_slug)
-
-    assert_select '.recipe-card .recipe-tag.tag-pill--green', count: 0
-    assert_select '.recipe-card .recipe-tag .smart-icon', count: 0
-  end
-
-  test 'homepage renders edit buttons in zone headers for members' do
+  test 'homepage renders edit buttons for members' do
     log_in
     Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
     create_recipe(
@@ -296,11 +266,11 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
 
     get kitchen_root_path(kitchen_slug: kitchen_slug)
 
-    assert_select '.index-nav-zone-header #edit-categories-button'
-    assert_select '.index-nav-zone-header #edit-tags-button'
+    assert_select '.index-nav-section #edit-categories-button'
+    assert_select '.index-nav-section #edit-tags-button'
   end
 
-  test 'homepage renders zone labels but no edit buttons for non-members' do
+  test 'homepage renders no edit buttons for non-members' do
     Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
     create_recipe(
       "# Tagged\n\nCategory: Bread\nTags: weeknight\n\n- Flour, 1 cup",
@@ -309,8 +279,6 @@ class HomepageControllerTest < ActionDispatch::IntegrationTest
 
     get kitchen_root_path(kitchen_slug: kitchen_slug)
 
-    assert_select '.index-nav-zone-label', text: 'Categories'
-    assert_select '.index-nav-zone-label', text: 'Tags'
     assert_select '#edit-categories-button', count: 0
     assert_select '#edit-tags-button', count: 0
   end
