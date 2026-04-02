@@ -242,7 +242,7 @@ class OnHandEntryTest < ActiveSupport::TestCase
     entry.reload
 
     observed = 10
-    blended = observed * 0.65 + 14.0 * 0.35
+    blended = (observed * 0.65) + (14.0 * 0.35)
 
     assert_in_delta blended, entry.interval
     assert_in_delta 1.5 * (1 - 0.20), entry.ease
@@ -401,7 +401,7 @@ class OnHandEntryTest < ActiveSupport::TestCase
     entry.uncheck!(now:)
     entry.reload
 
-    blended = 10 * 0.65 + 14.0 * 0.35
+    blended = (10 * 0.65) + (14.0 * 0.35)
 
     assert_in_delta blended, entry.interval
     assert_in_delta 1.5 * (1 - 0.20), entry.ease
