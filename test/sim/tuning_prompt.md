@@ -39,16 +39,18 @@ Three "Core tier" scenarios must ALL meet these targets:
 
 ### Constants
 
-Seven constants in `OnHandEntry` (file: `app/models/on_hand_entry.rb`):
+Nine constants in `OnHandEntry` (file: `app/models/on_hand_entry.rb`):
 
 ```ruby
 STARTING_INTERVAL = 7    # Initial interval for new items (days)
 STARTING_EASE = 1.5      # Initial ease factor
-MIN_EASE = 1.1           # Floor for ease factor
+MIN_EASE = 1.05          # Floor for ease factor
 MAX_EASE = 2.5           # Ceiling for ease factor
-EASE_BONUS = 0.05        # Ease bump on "Have It" confirmation
-EASE_PENALTY = 0.15      # Ease penalty on "Need It" depletion
-SAFETY_MARGIN = 0.9      # Fraction of interval before IC fires
+EASE_BONUS = 0.03        # Ease bump on "Have It" confirmation
+EASE_PENALTY = 0.20      # Ease penalty on "Need It" depletion
+SAFETY_MARGIN = 0.78     # Proportional fraction for IC timing
+BLEND_WEIGHT = 0.65      # Observation weight in depletion blending (0.5–0.8)
+MAX_GROWTH_FACTOR = 1.3  # Max interval multiplier per have_it! cycle (1.2–1.5)
 ```
 
 ### Safety Margin Formula
@@ -62,7 +64,7 @@ def on_hand?(now)
   return false if depleted_at.present?
   return true if interval.nil?
 
-  confirmed_at + (interval * SAFETY_MARGIN).to_i.days >= now
+  confirmed_at + [interval * SAFETY_MARGIN, interval - MIN_BUFFER].min.to_i.days >= now
 end
 ```
 
@@ -71,7 +73,8 @@ end
 scope :active, lambda { |now: Date.current|
   where(depleted_at: nil).where(
     'interval IS NULL OR date(confirmed_at, ' \
-    "'+' || CAST(interval * #{SAFETY_MARGIN} AS INTEGER) || ' days') >= date(?)",
+    "'+' || MIN(CAST(interval * #{SAFETY_MARGIN} AS INTEGER), " \
+    "CAST(interval AS INTEGER) - #{MIN_BUFFER}) || ' days') >= date(?)",
     now.iso8601
   )
 }
@@ -81,30 +84,62 @@ scope :active, lambda { |now: Date.current|
 ```ruby
 def on_hand?(day)
   return false if depleted_at
-  confirmed_at + (interval * SAFETY_MARGIN).to_i >= day
+  confirmed_at + [interval * SAFETY_MARGIN, interval - MIN_BUFFER].min.to_i >= day
 end
 ```
 
-You may change the formula (e.g., add a minimum absolute buffer, use a
-different function of interval, etc.). All three locations must produce
-identical results for the same inputs.
+You may change the formula (e.g., adjust MIN_BUFFER, use a different function
+of interval, etc.). All three locations must produce identical results for the
+same inputs.
 
 If you change the formula, also update `ic_fires_on` in the sim's Entry
 class — it must reflect the new formula:
 ```ruby
 def ic_fires_on
   return nil if sentinel? || depleted?
-  confirmed_at + (interval * SAFETY_MARGIN).to_i + 1
+  confirmed_at + [interval * SAFETY_MARGIN, interval - MIN_BUFFER].min.to_i + 1
 end
+```
+
+### Blending Formula
+
+The blending formula appears in TWO places that must stay in sync:
+
+**1. Ruby `deplete_observed`** (on_hand_entry.rb):
+```ruby
+blended = (observed * BLEND_WEIGHT) + (interval * (1 - BLEND_WEIGHT))
+```
+
+**2. Sim `deplete_observed`** (test/sim/grocery_audit.rb, Entry class):
+```ruby
+blended = observed * BLEND_WEIGHT + interval * (1 - BLEND_WEIGHT)
+```
+
+### Growth Cap
+
+The growth cap appears in FOUR places that must stay in sync:
+
+**1-2. Ruby `grow_standard` and `grow_anchored`** (on_hand_entry.rb):
+```ruby
+self.interval = [interval * [ease, MAX_GROWTH_FACTOR].min, MAX_INTERVAL].min
+```
+
+**3-4. Sim `grow_standard` and `grow_anchored`** (grocery_audit.rb, Entry class):
+```ruby
+@interval = [interval * [ease, MAX_GROWTH_FACTOR].min, MAX_INTERVAL].min
 ```
 
 ### What NOT to Change
 
 Do not modify: `FaithfulSim`, `CycleTracker`, `Scorer`, scenario definitions,
-Monte Carlo sweep, the conformance test, or the structure of growth/depletion
-methods (`grow_anchored`, `grow_standard`, `deplete_observed`, etc.).
+Monte Carlo sweep, the conformance test, or methods other than `deplete_observed`,
+`grow_standard`, and `grow_anchored`.
 
-Only change constants and the safety margin formula.
+Within those three methods, only change the blending formula and growth cap
+formula. Do not restructure the methods or change their other behavior (ease
+updates, sentinel handling, floor clamping, etc.).
+
+Only change constants and the formulas documented above.
 
 ## Process (Each Iteration)
 
@@ -112,8 +147,8 @@ Only change constants and the safety margin formula.
 
 Read `test/sim/tuning_log.md`. If it has previous entries, read the last
 entry's "Next" field for your starting hypothesis. If it's the first
-iteration, start by addressing the safety margin formula — the audit showed
-this is the primary bottleneck (1 day buffer for 7-day items is insufficient).
+iteration, start with the baseline and consider which constants need adjustment
+now that blending and growth cap are in place.
 
 ### Step 2: Read current code
 
@@ -122,8 +157,8 @@ Read `app/models/on_hand_entry.rb` and the Entry class in
 
 ### Step 3: Make changes
 
-Modify constants and/or the safety margin formula in BOTH files. Keep them
-in sync. Remember to update the SQL `active` scope if the formula changes.
+Modify constants and/or formulas in BOTH files. Keep them in sync. Remember
+to update the SQL `active` scope if the safety margin formula changes.
 
 ### Step 4: Run conformance test
 
@@ -192,13 +227,20 @@ Otherwise, continue to the next iteration.
 
 ## Tips
 
-- The biggest lever is the safety margin. `floor(interval * 0.9)` gives only
-  1 day of buffer for a 7-day item. Consider: a minimum absolute buffer
-  (e.g., `interval - [interval * margin, interval - 2].min`), or a non-linear
-  formula that gives more buffer to short intervals.
-- Changing SAFETY_MARGIN from 0.9 to 0.8 would give 2 days buffer for 7-day
-  items but 6 days for 30-day items — the annoyance rate for long-cycle items
-  might spike.
+- **BLEND_WEIGHT** controls convergence speed. Higher values (toward 0.8) make
+  the interval track observations faster, reducing oscillation. But too high
+  means the interval overreacts to fuzz-induced outliers.
+- **MAX_GROWTH_FACTOR** caps per-cycle growth. Lower values (toward 1.2)
+  prevent overshoot but slow convergence for long-cycle items (flour, pepper).
+  Higher values (toward 1.5) converge faster but cause oscillation.
+- **SAFETY_MARGIN** and **MIN_BUFFER** control the IC timing buffer. The
+  formula `min(interval * SM, interval - MB)` gives a proportional buffer
+  capped at a minimum absolute buffer.
+- The previous tuning round (round 1) found SAFETY_MARGIN=0.78 and
+  MIN_BUFFER=2 optimal for the safety margin formula. These may shift now
+  that convergence is faster.
+- STARTING_EASE=1.5 was previously problematic (55% first-cycle overshoot)
+  but is now safe thanks to MAX_GROWTH_FACTOR capping growth.
 - Small constant changes compound: EASE_BONUS and EASE_PENALTY control how
   fast the algorithm adapts. Faster adaptation means quicker convergence but
   more oscillation.
