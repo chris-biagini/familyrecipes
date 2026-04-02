@@ -690,67 +690,153 @@ module GroceryAudit
     sc     = scorer.scorecard_with_ic_load(sim.ic_loads)
     { name:, scorer:, scorecard: sc, persona:, sim:, schedule: }
   end
+
+  # The 15 handcrafted audit scenarios, covering baseline behavior, cadence
+  # variation, life disruptions, inattentive users, and edge cases.
+  # Each method returns a result hash from run_scenario.
+  module Scenarios
+    def self.all
+      [s1_perfect_user, s2_frequent_shopper, s3_biweekly_shopper,
+       s4_alternating_cadence, s5_gradual_drift, s6_random_intervals,
+       s7_two_week_vacation, s8_repeated_vacations,
+       s9_holiday_baker, s10_post_vacation_burst,
+       s11_ic_ignorer, s12_delayed_reporter, s13_ghost_shopper,
+       s14_butterfingers, s15_binge_and_forget]
+    end
+
+    # --- Baseline ---
+
+    def self.s1_perfect_user
+      GroceryAudit.run_scenario(name: 'S1: Perfect user (weekly, fuzz±2)',
+                                persona: Persona.default)
+    end
+
+    def self.s2_frequent_shopper
+      GroceryAudit.run_scenario(name: 'S2: Frequent shopper (every 3d)',
+                                persona: Persona.build(shop_interval_mean: 3))
+    end
+
+    def self.s3_biweekly_shopper
+      GroceryAudit.run_scenario(name: 'S3: Biweekly shopper (every 14d)',
+                                persona: Persona.build(shop_interval_mean: 14))
+    end
+
+    # --- Inconsistent cadence ---
+
+    def self.s4_alternating_cadence
+      schedule = {}
+      day = 0
+      interval_toggle = [3, 14].cycle
+      while day < SIM_DAYS
+        day += interval_toggle.next
+        schedule[day] = :shop if day <= SIM_DAYS
+      end
+      GroceryAudit.run_scenario(name: 'S4: Alternating cadence (3d/14d)',
+                                persona: Persona.default,
+                                schedule:)
+    end
+
+    def self.s5_gradual_drift
+      schedule = {}
+      day = 0
+      (1..SIM_DAYS).each do |d|
+        interval = if d <= 90 then 7
+                   elsif d <= 150 then 7 + ((d - 90).to_f / 60 * 7).round
+                   elsif d <= 240 then 14
+                   elsif d <= 300 then 14 - ((d - 240).to_f / 60 * 7).round
+                   else 7
+                   end
+        if d > day
+          day = d
+          schedule[day] = :shop
+          day += interval - 1
+        end
+      end
+      GroceryAudit.run_scenario(name: 'S5: Gradual drift (7d→14d→7d)',
+                                persona: Persona.default,
+                                schedule:)
+    end
+
+    def self.s6_random_intervals
+      GroceryAudit.run_scenario(name: 'S6: Random intervals (mean=8d, std=4)',
+                                persona: Persona.build(shop_interval_mean: 8, shop_interval_std: 4))
+    end
+
+    # --- Life disruptions ---
+
+    def self.s7_two_week_vacation
+      GroceryAudit.run_scenario(name: 'S7: Two-week vacation (day 100)',
+                                persona: Persona.build(vacation_gaps: [[100, 14]]))
+    end
+
+    def self.s8_repeated_vacations
+      GroceryAudit.run_scenario(name: 'S8: Repeated vacations (3×10d)',
+                                persona: Persona.build(vacation_gaps: [[80, 10], [180, 10], [280, 10]]))
+    end
+
+    def self.s9_holiday_baker
+      GroceryAudit.run_scenario(name: 'S9: Holiday baker (burst days 80, 170)',
+                                persona: Persona.build(burst_days: [80, 170]))
+    end
+
+    def self.s10_post_vacation_burst
+      GroceryAudit.run_scenario(name: 'S10: Post-vacation burst (vac day 100, burst day 115)',
+                                persona: Persona.build(vacation_gaps: [[100, 14]], burst_days: [115]))
+    end
+
+    # --- Inattentive users ---
+
+    def self.s11_ic_ignorer
+      GroceryAudit.run_scenario(name: 'S11: IC ignorer (50% attention)',
+                                persona: Persona.build(ic_attention: 0.5))
+    end
+
+    def self.s12_delayed_reporter
+      GroceryAudit.run_scenario(name: 'S12: Delayed reporter (80% chance, 4d delay)',
+                                persona: Persona.build(depletion_report_chance: 0.8,
+                                                       depletion_report_delay_mean: 4,
+                                                       depletion_report_delay_std: 1))
+    end
+
+    def self.s13_ghost_shopper
+      GroceryAudit.run_scenario(name: 'S13: Ghost shopper (20% untracked trips)',
+                                persona: Persona.build(ghost_shop_chance: 0.2))
+    end
+
+    # --- Mistakes and edge cases ---
+
+    def self.s14_butterfingers
+      GroceryAudit.run_scenario(name: 'S14: Butterfingers (5% accident rate)',
+                                persona: Persona.build(accident_rate: 0.05))
+    end
+
+    def self.s15_binge_and_forget
+      schedule = {}
+      day = 0
+      while day < 60
+        day += 5
+        schedule[day] = :shop
+      end
+      day = 90
+      while day < SIM_DAYS
+        day += 7
+        schedule[day] = :shop if day <= SIM_DAYS
+      end
+      GroceryAudit.run_scenario(name: 'S15: Binge and forget (5d/60d, pause, weekly)',
+                                persona: Persona.default,
+                                schedule:)
+    end
+  end
 end
 
 if __FILE__ == $PROGRAM_NAME
-  puts 'Entry smoke test...'
+  require 'set'
 
-  e = GroceryAudit::Entry.new(confirmed_at: 0)
-  abort 'FAIL: initial interval' unless e.interval == 7.0
-  abort 'FAIL: initial ease' unless e.ease == 1.5
-  abort 'FAIL: on_hand?(6)' unless e.on_hand?(6)
-  abort 'FAIL: should be expired day 7' if e.on_hand?(7)
-  abort 'FAIL: ic_fires_on' unless e.ic_fires_on == 7
+  puts 'Grocery Algorithm Audit'
+  puts "#{GroceryAudit::SIM_DAYS} simulated days, #{GroceryAudit::DEFAULT_ITEMS.size} items"
+  puts
 
-  e2 = GroceryAudit::Entry.new(confirmed_at: GroceryAudit::SENTINEL)
-  e2.have_it!(10)
-  abort 'FAIL: grow_standard ease' unless (e2.ease - 1.55).abs < 0.001
-  abort 'FAIL: grow_standard interval' unless (e2.interval - 10.85).abs < 0.001
-
-  e3 = GroceryAudit::Entry.new(confirmed_at: 0, interval: 14.0, ease: 1.5)
-  e3.have_it!(14) # 0 + (14*1.55).to_i = 0 + 21 = 21 >= 14 → anchor holds
-  abort 'FAIL: anchored ease' unless (e3.ease - 1.55).abs < 0.001
-  abort 'FAIL: anchored confirmed_at stays' unless e3.confirmed_at == 0
-
-  e4 = GroceryAudit::Entry.new(confirmed_at: 0, interval: 7.0, ease: 1.5)
-  e4.have_it!(20) # 0 + (7*1.55).to_i = 0 + 10 = 10 < 20 → anchor breaks
-  abort 'FAIL: broken anchor ease stays' unless (e4.ease - 1.5).abs < 0.001
-  abort 'FAIL: broken anchor resets confirmed_at' unless e4.confirmed_at == 20
-
-  e5 = GroceryAudit::Entry.new(confirmed_at: 0, interval: 7.0, ease: 1.5)
-  e5.need_it!(14) # observed=14, blended=(14+7)/2=10.5, ease=1.5*0.85=1.275
-  abort 'FAIL: deplete interval' unless (e5.interval - 10.5).abs < 0.001
-  abort 'FAIL: deplete ease' unless (e5.ease - 1.275).abs < 0.001
-
-  e6 = GroceryAudit::Entry.new(confirmed_at: 0, interval: 7.0, ease: 1.5)
-  e6.need_it!(2) # observed=2, blended=(2+7)/2=4.5, floored to 7
-  abort 'FAIL: deplete floor' unless (e6.interval - 7.0).abs < 0.001
-
-  e7 = GroceryAudit::Entry.new(confirmed_at: 10, interval: 28.0, ease: 2.0)
-  e7.uncheck!(10) # same day → undo
-  abort 'FAIL: same-day interval preserved' unless (e7.interval - 28.0).abs < 0.001
-  abort 'FAIL: same-day ease preserved' unless (e7.ease - 2.0).abs < 0.001
-
-  puts 'Entry: all checks passed'
-
-  puts "\nFaithfulSim smoke test..."
-  result = GroceryAudit.run_scenario(
-    name: 'Smoke test',
-    persona: GroceryAudit::Persona.build(fuzz_std: 0),
-    days: 50
-  )
-  cycles = result[:scorer].cycles
-  abort 'FAIL: no cycles recorded' if cycles.empty?
-  egg_cycles = cycles.select { |c| c.item_name == 'Eggs' }
-  abort 'FAIL: no egg cycles' if egg_cycles.empty?
-  puts "FaithfulSim: #{cycles.size} cycles across #{GroceryAudit::DEFAULT_ITEMS.size} items"
-  puts 'FaithfulSim: all checks passed'
-
-  puts "\nScorer smoke test..."
-  sc = result[:scorecard]
-  abort 'FAIL: scorecard missing hit_rate' unless sc[:hit_rate]
-  total = sc[:hit_rate] + sc[:miss_rate] + sc[:annoyance_rate]
-  abort "FAIL: rates sum to #{total.round(1)}, expected ~100" unless (total - 100.0).abs < 1.0
-  puts "Scorer: hit=#{sc[:hit_rate].round(1)}% miss=#{sc[:miss_rate].round(1)}% annoy=#{sc[:annoyance_rate].round(1)}%"
-  puts 'Scorer: all checks passed'
+  results = GroceryAudit::Scenarios.all
+  results.each { |r| GroceryAudit::Reporter.scenario_report(r[:name], r[:scorer], r[:sim].ic_loads) }
+  GroceryAudit::Reporter.comparison_table(results)
 end
