@@ -21,13 +21,13 @@ class OnHandEntry < ApplicationRecord # rubocop:disable Metrics/ClassLength
   ORPHAN_SENTINEL = '1970-01-01'
 
   STARTING_EASE = 1.5
-  MIN_EASE = 1.05
+  MIN_EASE = 1.1
   MAX_EASE = 2.5
-  EASE_BONUS = 0.05
+  EASE_BONUS = 0.03
   EASE_PENALTY = 0.20
   BLEND_WEIGHT = 0.75
   MAX_GROWTH_FACTOR = 1.3
-  BURST_THRESHOLD = 0.5
+  BURST_THRESHOLD = 0.35
   MIN_ESTABLISHED_INTERVAL = 14
 
   # Items surface in Inventory Check before predicted depletion.
