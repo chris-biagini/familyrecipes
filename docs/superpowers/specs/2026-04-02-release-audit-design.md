@@ -393,11 +393,35 @@ licenses:
 **JavaScript (package.json, devDependencies):**
 - `@axe-core/playwright` — accessibility testing via Playwright
 
+### Git hooks
+
+The pre-push hook is critical infrastructure — it enforces lint on every
+push and release audit completion on tag pushes. Currently it lives only
+in `.git/hooks/pre-push` (untracked). This feature moves it into the repo:
+
+**`bin/hooks/pre-push`** — the canonical hook script, checked into git.
+
+**`bin/setup`** — enhanced (or created) to symlink `bin/hooks/pre-push` →
+`.git/hooks/pre-push` as part of project setup. This runs automatically
+on `bin/setup` (standard Rails convention) so new clones get the hook
+without manual steps.
+
+### CLAUDE.md updates
+
+A new "Release Audit" section in CLAUDE.md documenting the operational
+view: tiers, commands, release workflow. Keeps it concise — points to the
+spec for design rationale.
+
 ### File layout
 
 New files created by this feature:
 
 ```
+bin/
+  hooks/
+    pre-push                   # Canonical pre-push hook (symlinked into .git/hooks/)
+  setup                        # Project setup script (installs hooks, deps)
+
 lib/tasks/
   release_audit.rake           # Tier 2 orchestrator + individual tasks
   release_audit_schema.rake    # Schema integrity checks
