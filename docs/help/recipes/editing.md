@@ -44,8 +44,8 @@ not a finished import.
 
 ## Editing an existing recipe
 
-Open the recipe, then click **Edit** in the scale bar (just above the
-ingredients). The same editor dialog opens with the recipe's current content.
+Open the recipe, then click **Edit** below the recipe header. The same
+editor dialog opens with the recipe's current content.
 
 Changes are saved when you click **Save** and take effect immediately.
 

@@ -18,8 +18,9 @@ determines where it appears on the grocery list. See
 
 ## Nutrients
 
-Fill in the nutrient values per 100 g of the ingredient. The app uses
-calories, fat, saturated fat, carbohydrates, sugar, fiber, protein, and sodium.
+Fill in the nutrient values for a given weight of the ingredient (the
+default is 100 g, but you can change it). The app tracks calories, fat,
+saturated fat, carbohydrates, sugar, fiber, protein, and sodium.
 
 You don't need to fill in all fields — partial data is used for whatever
 nutrients are present.
@@ -39,10 +40,12 @@ For ingredients measured by count ("2 eggs", "1 avocado"), set a unit
 weight: how many grams does one unit weigh? Click **+ Add unit weight**
 to define named units (e.g., "large", "stick").
 
-## Unit aliases
+## Ingredient aliases
 
-If your recipes use shorthand or alternate names for units (e.g., "T" for
-tablespoon, "oz" for ounces), add them as aliases so the app recognizes them.
+If the same ingredient goes by different names in your recipes (e.g.,
+"cilantro" and "coriander," or "scallions" and "green onions"), add the
+alternate names as aliases. The app will treat them as the same ingredient
+for grocery and nutrition purposes.
 
 ## USDA search
 
@@ -53,7 +56,36 @@ result to import its nutrient values, volume conversions, and unit weights autom
 USDA data imports as a starting point — review and adjust values as needed
 before saving.
 
+If the USDA data includes multiple density measurements (different ways to
+convert volume to weight), the editor shows them as options so you can pick
+the one that fits best.
+
+## Omit from lists
+
+Check **Omit from grocery list and nutrition data** if you don't want this
+ingredient tracked at all — useful for things like "water" or "ice" that
+don't need to be on a shopping list or in nutrition calculations.
+
+## Recipe check
+
+Under the Conversions section of the editor, a **Recipe Check** list shows
+every unit your recipes use for this ingredient and whether each one can be
+converted to grams. This helps you spot gaps — if a recipe calls for "1
+bunch" and there's no conversion for "bunch," it'll be flagged here.
+
+## Derived conversions
+
+After entering a volume conversion (e.g., 1 cup = 120 g), the editor
+automatically shows what that works out to for other volume units (tablespoons,
+teaspoons, etc.). This is a quick way to sanity-check your numbers.
+
 ## Saving
 
 Click **Save** to apply changes. Updated nutrition data takes effect on all
 recipes that use this ingredient.
+
+## Resetting an ingredient
+
+If you've customized an ingredient and want to go back to the built-in
+catalog data, click **Reset to built-in** at the bottom of the editor.
+This removes your custom values and restores the defaults.

@@ -39,7 +39,7 @@ Check, or by using the **Need It** button on an On Hand item — adjusts the
 schedule based on how long you actually had the item. If you ran out sooner
 than expected, the app loses some confidence and asks sooner next time.
 
-## Pruning
+## When recipes are deselected
 
 When you deselect a recipe, its ingredients may no longer be needed by any
 selected recipe. When that happens, the ingredient is *pruned* — set aside

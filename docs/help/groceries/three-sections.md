@@ -53,10 +53,10 @@ strikethrough before sliding into On Hand, where they appear bold to confirm
 what you've just grabbed.
 
 If you checked something by mistake, uncheck it — same-day corrections are
-treated as an undo, and the item moves back to To Buy.
+treated as an undo, and the item moves back to To Buy with no effect on
+the learned schedule.
 
-You can also uncheck any On Hand item to return it to To Buy — useful when
-you realize you no longer actually have something.
-
-If you run out of something from On Hand (or discover you don't actually have
-it), use the **Need It** button next to the item to move it to To Buy.
+For older On Hand items — things you thought you had but have since run out
+of — use the **Need It** button to move them back to To Buy. This also
+tells the app to ask again sooner next time (see
+[How the system learns]({{ site.baseurl }}/groceries/learning/)).

@@ -15,18 +15,19 @@ exported from another familyrecipes installation.
 
 On the homepage, click **Import**. A file picker opens.
 
-Select one or more `.md`, `.txt`, or `.zip` files to import.
+Select one or more `.md`, `.txt`, `.text`, or `.zip` files to import.
 
 ## Single files (`.md` / `.txt`)
 
 Each file is imported as one recipe. The file must use the
-[recipe format]({{ site.baseurl }}/recipes/format/). The filename is used
-as the recipe title if no `#` title is present.
+[recipe format]({{ site.baseurl }}/recipes/format/) and include a
+`# Title` heading — files without one will fail to import.
 
 ## ZIP archives
 
 A `.zip` file is expected to come from familyrecipes [Export]({{ site.baseurl }}/import-export/export/).
-It can contain multiple recipe files, the ingredient catalog, and meal plan state.
+It can contain recipe files, QuickBites, the ingredient catalog, and
+aisle/category ordering.
 
 You can also assemble a ZIP manually from `.md` recipe files if you're
 migrating from another system.
@@ -34,12 +35,13 @@ migrating from another system.
 ## What happens on import
 
 - Recipes are created or updated based on their title.
-- Categories and tags in the front matter are created if they don't exist.
-- Nutrition catalog data in the ZIP is merged with existing entries —
-  existing entries are not overwritten.
-- Meal plan selections are restored if the ZIP includes them.
+- QuickBites are imported if the ZIP includes them.
+- Categories and tags from front matter are created if they don't exist.
+- Ingredient catalog data in the ZIP replaces existing entries with the
+  same name.
+- Aisle and category ordering is restored.
 
 ## Conflicts
 
 If a recipe with the same title already exists, the imported version
-replaces it. There's no merge — the existing recipe is overwritten.
+replaces it — there's no merge, the existing recipe is overwritten.

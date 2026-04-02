@@ -23,19 +23,22 @@ Each ingredient in the recipe is looked up in the [ingredient catalog]({{ site.b
 If the catalog has nutrition data for that ingredient, the amounts are scaled
 to the recipe's quantity and summed across all ingredients.
 
-The total is then divided by the number of servings (`Serves:` front matter)
-to get per-serving values.
+The total is divided by the number of servings to get per-serving values. If
+the recipe has a `Serves:` line, that's used. Otherwise, the number from
+`Makes:` is used (so "Makes: 12 pancakes" would divide by 12).
 
 ## Partial and missing data
 
-If some ingredients don't have catalog entries, the nutrition display shows
-what it can and notes which ingredients are missing.
+If some ingredients can't be fully calculated, the nutrition label shows what
+it can and notes which ingredients are affected.
 
-- **Missing**: no catalog entry for this ingredient — nutrition can't be calculated
-- **Partial**: the catalog entry exists but is missing some nutrients
+- **Missing**: no catalog entry for this ingredient — nutrition can't be calculated for it
+- **Partial**: the catalog entry exists, but the recipe's unit can't be converted to grams (e.g., "1 bunch" without a defined weight for that unit)
+- **Skipped**: the ingredient has no quantity (e.g., just "Salt" with no amount) — it's left out of the calculation entirely
 
-A recipe with all ingredients cataloged and complete data shows a full
-nutrition label. A recipe with no data shows nothing (even if the setting is on).
+A recipe with all ingredients cataloged and fully convertible shows a complete
+nutrition label. A recipe with no usable data shows nothing (even if the
+setting is on).
 
 ## Adding nutrition data
 

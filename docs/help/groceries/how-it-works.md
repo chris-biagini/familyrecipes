@@ -22,8 +22,8 @@ item, you'll see the change immediately without refreshing.
 
 ## Screen stays on
 
-The app requests a wake lock on the Groceries page, so your phone screen
-won't dim while you're shopping. This also applies when
+The app keeps your screen from dimming on the Groceries page, so you
+don't have to keep tapping while you're shopping. The same applies when
 [viewing a recipe]({{ site.baseurl }}/recipes/cooking/) while cooking.
 
 ## Building the list

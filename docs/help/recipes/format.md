@@ -63,7 +63,7 @@ Optional lines before the first step:
 | Line | Example | Notes |
 |------|---------|-------|
 | `Category:` | `Category: Breakfast` | One category per recipe. Overrides the category chosen when creating. |
-| `Tags:` | `Tags: quick, vegetarian` | Comma-separated. Single words only (`[a-zA-Z-]`). Stored lowercase. |
+| `Tags:` | `Tags: quick, vegetarian` | Comma-separated. Letters and hyphens only. Stored lowercase. |
 | `Makes:` | `Makes: 12 pancakes` | What the recipe produces. Used for nutrition scaling. |
 | `Serves:` | `Serves: 4` | Number of servings. Used for per-serving nutrition. |
 

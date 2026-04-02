@@ -25,17 +25,17 @@ the front matter value wins.
 
 ### Managing categories
 
-On the homepage, click **Edit Categories** to open the category editor:
+On the homepage, click the **edit** button next to Categories to open the
+category editor:
 
-- **Reorder**: drag categories up or down to change the order they appear on the homepage
+- **Reorder**: use the arrow buttons to move categories up or down
 - **Rename**: click a category name to edit it — all recipes in that category update automatically
-- **Add**: type a name in the input at the bottom and press Enter or click the + button
 - **Delete**: click the × on a category to remove it — its recipes move to Miscellaneous
 
 ## Tags
 
 Recipes can have multiple tags. Tags appear as clickable pills on the recipe
-page and are used to filter suggestions in the dinner picker.
+page and can be used to filter the homepage.
 
 Set tags in front matter:
 
@@ -44,15 +44,16 @@ Tags: quick, vegetarian, weeknight
 ```
 
 Tags are:
-- **Single-word** only: `[a-zA-Z-]`. Hyphens are allowed (`gluten-free`).
+- **Single-word** only — letters and hyphens (`gluten-free` is fine, but no spaces).
 - **Comma-separated** in front matter.
 - **Stored lowercase** — `Quick` and `quick` are the same tag.
 
 ### Managing tags
 
-On the homepage, click **Edit Tags** to see all tags across your recipes.
-Add new tags or delete unused ones. Renaming a tag updates all recipes
-that use it.
+On the homepage, click the **edit** button next to Tags to manage your tags.
+Renaming a tag updates every recipe that uses it. You can also delete tags
+you no longer need. New tags are created by adding them to a recipe's front
+matter.
 
 ### Smart tag decorations
 
@@ -60,11 +61,12 @@ Some tags get automatic emoji and color treatment:
 
 | Tag examples | Decoration |
 |---|---|
-| `vegetarian`, `vegan` | green plant-based badge |
-| `gluten-free`, `dairy-free`, `nut-free` | amber dietary restriction badge |
+| `vegetarian`, `vegan`, `plant-based` | green plant-based badge |
+| `gluten-free`, `dairy-free`, `keto` | amber dietary restriction badge |
 | `italian`, `mexican`, `thai` | cuisine flag badge |
 | `quick`, `easy`, `weeknight` | blue effort/speed badge |
-| `julia-child`, `grandma`, `holiday` | purple attribution/special badge |
+| `grilled`, `braised`, `slow-cooker` | rose cooking method badge |
+| `holiday`, `comfort-food`, `thanksgiving` | purple occasion/season badge |
 
 Smart tag decorations can be turned off in [Settings]({{ site.baseurl }}/settings/).
 
