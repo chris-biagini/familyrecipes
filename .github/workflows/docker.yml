@@ -10,7 +10,53 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
+  release-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      RAILS_ENV: test
+      CI: true
+      RELEASE_AUDIT: '1'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install JS dependencies
+        run: npm ci
+
+      - name: Build JS
+        run: npm run build
+
+      - name: Set up database
+        run: bin/rails db:create db:migrate
+
+      - name: Run tests with coverage
+        run: bundle exec rake test
+
+      - name: Release audit (Tier 2)
+        run: |
+          bundle exec rake release:audit:coverage
+          bundle exec rake release:audit:dead_code
+          bundle exec rake release:audit:deps
+          bundle exec rake release:audit:schema
+          bundle exec rake release:audit:docs
+
   build-and-push:
+    needs: release-audit
     runs-on: ubuntu-latest
     permissions:
       contents: write
