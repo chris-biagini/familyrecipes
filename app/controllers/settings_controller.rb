@@ -14,8 +14,8 @@ class SettingsController < ApplicationController
       site_title: current_kitchen.site_title,
       homepage_heading: current_kitchen.homepage_heading,
       homepage_subtitle: current_kitchen.homepage_subtitle,
-      usda_api_key: current_kitchen.usda_api_key,
-      anthropic_api_key: current_kitchen.anthropic_api_key,
+      usda_api_key_set: current_kitchen.usda_api_key.present?,
+      anthropic_api_key_set: current_kitchen.anthropic_api_key.present?,
       show_nutrition: current_kitchen.show_nutrition,
       decorate_tags: current_kitchen.decorate_tags
     }
@@ -26,7 +26,7 @@ class SettingsController < ApplicationController
   end
 
   def update
-    if current_kitchen.update(settings_params)
+    if current_kitchen.update(filtered_settings_params)
       current_kitchen.broadcast_update
       render json: { status: 'ok' }
     else
@@ -35,6 +35,13 @@ class SettingsController < ApplicationController
   end
 
   private
+
+  def filtered_settings_params
+    permitted = settings_params
+    permitted.delete(:usda_api_key) if permitted[:usda_api_key].blank?
+    permitted.delete(:anthropic_api_key) if permitted[:anthropic_api_key].blank?
+    permitted
+  end
 
   def settings_params
     params.expect(kitchen: %i[site_title homepage_heading homepage_subtitle usda_api_key anthropic_api_key

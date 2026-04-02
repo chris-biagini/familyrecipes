@@ -26,15 +26,20 @@ describe("Tenant Isolation", () => {
   })
 
   describe("GET requests — cross-tenant page access", () => {
-    const betaPages = [
-      "/kitchens/kitchen-beta/recipes/test-recipe",
+    // Recipe show pages are intentionally public (read-only for all visitors)
+    const protectedPages = [
       "/kitchens/kitchen-beta/menu",
       "/kitchens/kitchen-beta/groceries",
       "/kitchens/kitchen-beta/ingredients",
       "/kitchens/kitchen-beta/settings",
     ]
 
-    for (const path of betaPages) {
+    it("Alice can read a public recipe in kitchen-beta", async () => {
+      const resp = await fetchWithSession(alice.context, "/kitchens/kitchen-beta/recipes/test-recipe")
+      assert.equal(resp.status, 200, "Recipe show should be publicly readable")
+    })
+
+    for (const path of protectedPages) {
       it(`Alice cannot access ${path}`, async () => {
         const resp = await fetchWithSession(alice.context, path)
         assert.ok(

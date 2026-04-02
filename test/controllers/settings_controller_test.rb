@@ -23,7 +23,8 @@ class SettingsControllerTest < ActionDispatch::IntegrationTest
     assert_equal @kitchen.site_title, data['site_title']
     assert_equal @kitchen.homepage_heading, data['homepage_heading']
     assert_equal @kitchen.homepage_subtitle, data['homepage_subtitle']
-    assert data.key?('usda_api_key')
+    assert_not data.key?('usda_api_key'), 'raw API key must not appear in JSON'
+    assert data.key?('usda_api_key_set')
   end
 
   test 'requires membership to update settings' do
@@ -92,13 +93,15 @@ class SettingsControllerTest < ActionDispatch::IntegrationTest
     assert @kitchen.show_nutrition
   end
 
-  test 'show includes anthropic_api_key' do
+  test 'show returns key-set flags instead of raw keys' do
     log_in
+    @kitchen.update!(anthropic_api_key: 'sk-test')
 
     get settings_path(kitchen_slug: kitchen_slug), as: :json
 
     assert_response :success
-    assert response.parsed_body.key?('anthropic_api_key')
+    assert_not response.parsed_body.key?('anthropic_api_key'), 'raw key must not appear'
+    assert response.parsed_body['anthropic_api_key_set']
   end
 
   test 'update persists anthropic_api_key' do
@@ -112,6 +115,30 @@ class SettingsControllerTest < ActionDispatch::IntegrationTest
     @kitchen.reload
 
     assert_equal 'sk-ant-secret', @kitchen.anthropic_api_key
+  end
+
+  test 'blank API key on update preserves existing key' do
+    log_in
+    @kitchen.update!(usda_api_key: 'existing-key')
+
+    patch settings_path(kitchen_slug: kitchen_slug),
+          params: { kitchen: { site_title: 'Changed', usda_api_key: '' } }, as: :json
+
+    assert_response :success
+    @kitchen.reload
+
+    assert_equal 'Changed', @kitchen.site_title
+    assert_equal 'existing-key', @kitchen.usda_api_key
+  end
+
+  test 'editor_frame does not render raw API keys' do
+    log_in
+    @kitchen.update!(usda_api_key: 'secret-key-123')
+
+    get settings_editor_frame_path(kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_not_includes response.body, 'secret-key-123'
   end
 
   test 'editor_frame returns turbo frame with form values' do

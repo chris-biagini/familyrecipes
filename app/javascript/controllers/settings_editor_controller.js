@@ -38,32 +38,12 @@ export default class extends Controller {
 
   collect = (event) => {
     event.detail.handled = true
-    event.detail.data = {
-      kitchen: {
-        site_title: this.siteTitleTarget.value,
-        homepage_heading: this.homepageHeadingTarget.value,
-        homepage_subtitle: this.homepageSubtitleTarget.value,
-        usda_api_key: this.usdaApiKeyTarget.value,
-        anthropic_api_key: this.anthropicApiKeyTarget.value,
-        show_nutrition: this.showNutritionTarget.checked,
-        decorate_tags: this.decorateTagsTarget.checked
-      }
-    }
+    event.detail.data = this.#buildPayload()
   }
 
   provideSaveFn = (event) => {
     event.detail.handled = true
-    event.detail.saveFn = () => saveRequest(this.saveUrlValue, "PATCH", {
-      kitchen: {
-        site_title: this.siteTitleTarget.value,
-        homepage_heading: this.homepageHeadingTarget.value,
-        homepage_subtitle: this.homepageSubtitleTarget.value,
-        usda_api_key: this.usdaApiKeyTarget.value,
-        anthropic_api_key: this.anthropicApiKeyTarget.value,
-        show_nutrition: this.showNutritionTarget.checked,
-        decorate_tags: this.decorateTagsTarget.checked
-      }
-    })
+    event.detail.saveFn = () => saveRequest(this.saveUrlValue, "PATCH", this.#buildPayload())
   }
 
   checkModified = (event) => {
@@ -72,8 +52,8 @@ export default class extends Controller {
       this.siteTitleTarget.value !== this.originals.siteTitle ||
       this.homepageHeadingTarget.value !== this.originals.homepageHeading ||
       this.homepageSubtitleTarget.value !== this.originals.homepageSubtitle ||
-      this.usdaApiKeyTarget.value !== this.originals.usdaApiKey ||
-      this.anthropicApiKeyTarget.value !== this.originals.anthropicApiKey ||
+      this.usdaApiKeyTarget.value.length > 0 ||
+      this.anthropicApiKeyTarget.value.length > 0 ||
       this.showNutritionTarget.checked !== this.originals.showNutrition ||
       this.decorateTagsTarget.checked !== this.originals.decorateTags
   }
@@ -83,8 +63,8 @@ export default class extends Controller {
     this.siteTitleTarget.value = this.originals.siteTitle
     this.homepageHeadingTarget.value = this.originals.homepageHeading
     this.homepageSubtitleTarget.value = this.originals.homepageSubtitle
-    this.usdaApiKeyTarget.value = this.originals.usdaApiKey
-    this.anthropicApiKeyTarget.value = this.originals.anthropicApiKey
+    this.usdaApiKeyTarget.value = ""
+    this.anthropicApiKeyTarget.value = ""
     this.showNutritionTarget.checked = this.originals.showNutrition
     this.decorateTagsTarget.checked = this.originals.decorateTags
   }
@@ -94,10 +74,21 @@ export default class extends Controller {
       siteTitle: this.siteTitleTarget.value,
       homepageHeading: this.homepageHeadingTarget.value,
       homepageSubtitle: this.homepageSubtitleTarget.value,
-      usdaApiKey: this.usdaApiKeyTarget.value,
-      anthropicApiKey: this.anthropicApiKeyTarget.value,
       showNutrition: this.showNutritionTarget.checked,
       decorateTags: this.decorateTagsTarget.checked
     }
+  }
+
+  #buildPayload() {
+    const kitchen = {
+      site_title: this.siteTitleTarget.value,
+      homepage_heading: this.homepageHeadingTarget.value,
+      homepage_subtitle: this.homepageSubtitleTarget.value,
+      usda_api_key: this.usdaApiKeyTarget.value,
+      anthropic_api_key: this.anthropicApiKeyTarget.value,
+      show_nutrition: this.showNutritionTarget.checked,
+      decorate_tags: this.decorateTagsTarget.checked
+    }
+    return { kitchen }
   }
 }
