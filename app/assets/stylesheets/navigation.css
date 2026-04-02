@@ -50,9 +50,11 @@ nav a {
   transition: color var(--duration-normal) ease, background-color var(--duration-slow) ease-out;
 }
 
-nav a:hover {
-  color: var(--red);
-  background-color: var(--hover-bg);
+@media (hover: hover) {
+  nav a:hover {
+    color: var(--red);
+    background-color: var(--hover-bg);
+  }
 }
 
 nav a[aria-current="page"] {
@@ -60,8 +62,10 @@ nav a[aria-current="page"] {
   background-color: var(--hover-bg);
 }
 
-nav a[aria-current="page"]:hover {
-  background-color: var(--hover-bg-strong);
+@media (hover: hover) {
+  nav a[aria-current="page"]:hover {
+    background-color: var(--hover-bg-strong);
+  }
 }
 
 nav > div:first-child {
@@ -111,12 +115,25 @@ nav > div:not(:first-child):not(.nav-drawer) {
   transition: color var(--duration-normal) ease, background-color var(--duration-slow) ease-out;
 }
 
-.nav-icon-btn:hover {
-  color: var(--red);
-  background-color: var(--hover-bg);
+@media (hover: hover) {
+  .nav-icon-btn:hover {
+    color: var(--red);
+    background-color: var(--hover-bg);
+  }
 }
 
-nav a:hover,
+.nav-icon-btn:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+@media (hover: hover) {
+  nav a:hover {
+    color: var(--red);
+  }
+}
+
 nav a:focus {
   color: var(--red);
 }
@@ -149,9 +166,11 @@ nav a:focus-visible {
   -webkit-tap-highlight-color: transparent;
 }
 
-.hamburger-btn:hover {
-  color: var(--red);
-  background-color: var(--hover-bg);
+@media (hover: hover) {
+  .hamburger-btn:hover {
+    color: var(--red);
+    background-color: var(--hover-bg);
+  }
 }
 
 .hamburger-btn:focus-visible {
@@ -352,8 +371,10 @@ nav a:focus-visible {
   color: white;
 }
 
-.search-result:hover:not(.selected) {
-  background: var(--hover-bg);
+@media (hover: hover) {
+  .search-result:hover:not(.selected) {
+    background: var(--hover-bg);
+  }
 }
 
 .search-result.selected .search-result-title {
@@ -433,8 +454,10 @@ nav a:focus-visible {
   color: var(--text-soft);
 }
 
-.grocery-item-row:hover:not(.selected) {
-  background: color-mix(in srgb, var(--smart-green-text) 10%, var(--ground));
+@media (hover: hover) {
+  .grocery-item-row:hover:not(.selected) {
+    background: color-mix(in srgb, var(--smart-green-text) 10%, var(--ground));
+  }
 }
 
 .grocery-action-flash {
