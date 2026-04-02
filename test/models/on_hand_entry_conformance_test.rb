@@ -21,6 +21,8 @@ class OnHandEntryConformanceTest < ActiveSupport::TestCase
     assert_equal OnHandEntry::EASE_BONUS, GroceryAudit::EASE_BONUS
     assert_equal OnHandEntry::EASE_PENALTY, GroceryAudit::EASE_PENALTY
     assert_equal OnHandEntry::SAFETY_MARGIN, GroceryAudit::SAFETY_MARGIN
+    assert_equal OnHandEntry::BLEND_WEIGHT, GroceryAudit::BLEND_WEIGHT
+    assert_equal OnHandEntry::MAX_GROWTH_FACTOR, GroceryAudit::MAX_GROWTH_FACTOR
   end
 
   test 'check creates matching starting values' do
