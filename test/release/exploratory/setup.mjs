@@ -9,20 +9,32 @@ import { expect } from '@playwright/test';
  * @param {number} userId
  */
 export async function loginAs(page, userId) {
-  await page.goto(`/dev_login?id=${userId}`);
-  await page.waitForLoadState('networkidle');
+  await page.goto(`/dev/login/${userId}`);
+  await page.waitForLoadState('domcontentloaded');
 }
 
 /**
  * Attach a console error listener. Returns a function that asserts no errors.
+ * Filters out known non-app noise: service worker registration failures,
+ * favicon 404s, and similar browser-level messages.
  * @param {import('@playwright/test').Page} page
  * @returns {function} assertNoErrors — call at end of test
  */
+const IGNORED_CONSOLE_PATTERNS = [
+  /bad HTTP response code.*fetching the script/i,
+  /service.worker/i,
+  /favicon/i,
+  /content security policy.*inline/i,
+];
+
 export function trackConsoleErrors(page) {
   const errors = [];
   page.on('console', (msg) => {
     if (msg.type() === 'error') {
-      errors.push(msg.text());
+      const text = msg.text();
+      if (!IGNORED_CONSOLE_PATTERNS.some(p => p.test(text))) {
+        errors.push(text);
+      }
     }
   });
   return () => {

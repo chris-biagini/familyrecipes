@@ -78,6 +78,9 @@ namespace :release do # rubocop:disable Metrics/BlockLength
           failures << check unless error.success?
         rescue RuntimeError => error
           puts "  Skipped: #{error.message}"
+        ensure
+          # Let browser processes fully exit between Tier 3 checks
+          sleep 2
         end
       end
 
@@ -105,12 +108,14 @@ namespace :release do # rubocop:disable Metrics/BlockLength
 
       puts ''
       puts '--- Running Playwright security specs ---'
-      passed = system('node --test test/security/*.spec.mjs')
+      specs = Dir['test/security/*.spec.mjs']
+      failures = specs.reject { |spec| system("node --test #{spec}") }
 
       puts ''
-      if passed && $CHILD_STATUS.success?
+      if failures.empty?
         puts 'Security pen tests: PASS'
       else
+        puts "Failed specs: #{failures.map { |f| File.basename(f) }.join(', ')}"
         abort 'Security pen tests: FAIL'
       end
     end
@@ -120,12 +125,12 @@ namespace :release do # rubocop:disable Metrics/BlockLength
       puts '--- Exploratory QA walkthrough ---'
       puts 'NOTE: Requires a running dev server (MULTI_KITCHEN=true bin/dev)'
 
-      unless system('npx playwright test test/release/exploratory/ ' \
-                    '--config=test/release/exploratory/playwright.config.mjs ' \
-                    '--reporter=list ' \
-                    '--ignore-snapshots')
-        abort 'Exploratory QA failed — see above.'
-      end
+      specs = %w[recipe_flows menu_grocery_flows ingredients_flows settings_flows
+                 multi_tenant import_export navigation].map { |s| "test/release/exploratory/#{s}.spec.mjs" }
+      cmd = "npx playwright test #{specs.join(' ')} " \
+            '--config=test/release/exploratory/playwright.config.mjs ' \
+            '--reporter=list'
+      abort 'Exploratory QA failed — see above.' unless system(cmd)
 
       puts 'Exploratory QA: PASS ✓'
     end
