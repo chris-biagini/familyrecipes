@@ -23,9 +23,9 @@ class OnHandEntry < ApplicationRecord # rubocop:disable Metrics/ClassLength
   STARTING_EASE = 1.5
   MIN_EASE = 1.05
   MAX_EASE = 2.5
-  EASE_BONUS = 0.03
+  EASE_BONUS = 0.05
   EASE_PENALTY = 0.20
-  BLEND_WEIGHT = 0.65
+  BLEND_WEIGHT = 0.75
   MAX_GROWTH_FACTOR = 1.3
 
   # Items surface in Inventory Check before predicted depletion.

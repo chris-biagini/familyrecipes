@@ -28,3 +28,24 @@ converge faster. The tighter oscillation band means less buffer is needed.
 **Next:** Try raising SAFETY_MARGIN back toward 0.80–0.82 since the tighter
 convergence means less safety buffer is needed. Also explore BLEND_WEIGHT
 values between 0.60–0.75 to find the miss/annoyance sweet spot.
+
+## Iteration 1
+
+**Hypothesis:** Raise BLEND_WEIGHT to 0.75 for tighter convergence. Revert
+EASE_BONUS to 0.05 for faster post-depletion recovery. SM=0.80 and SM=0.82
+were tested and rejected (killed miss rates due to milk sensitivity at interval=10).
+**Changes:**
+- BLEND_WEIGHT=0.75 (was 0.65), EASE_BONUS=0.05 (was 0.03)
+- All other constants unchanged
+**Results:**
+- S1 (Perfect user): hit=46.1% miss=40.2% annoy=13.7%
+- S7 (Vacation): hit=48.5% miss=39.6% annoy=11.9%
+- S9 (Holiday baker): hit=32.7% miss=49.0% annoy=18.3%
+- Guardrail worst: S6 at 62.8% miss
+**Assessment:** S7 passes miss AND annoyance! S1 annoyance dropped from 15.7%
+to 13.7% (passes!). S1 miss is 40.2% — just 0.2pp over target. S9 remains
+difficult (burst consumption → slow recovery → persistent annoyance). Higher
+EASE_BONUS helped annoyance dramatically by speeding recovery from depletions.
+**Next:** Try STARTING_EASE=1.3 to reduce ease-after-first-depletion (1.24→1.08),
+which should shrink the second-cycle overshoot. The MGF=1.3 cap means first-cycle
+growth is identical regardless of STARTING_EASE, so long-cycle items don't suffer.
