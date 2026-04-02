@@ -155,24 +155,28 @@ class OnHandEntryConformanceTest < ActiveSupport::TestCase
     # Step 1: have_it on day 8 (anchor should hold: 0 + (7*1.55).to_i = 10 >= 8)
     ar.have_it!(now: base + 8)
     sim.have_it!(8)
+
     assert_in_delta ar.interval, sim.interval, 0.001, 'Step 1 interval'
     assert_in_delta ar.ease, sim.ease, 0.001, 'Step 1 ease'
 
     # Step 2: need_it on day 20
     ar.need_it!(now: base + 20)
     sim.need_it!(20)
+
     assert_in_delta ar.interval, sim.interval, 0.001, 'Step 2 interval'
     assert_in_delta ar.ease, sim.ease, 0.001, 'Step 2 ease'
 
     # Step 3: recheck on day 21
     ar.check!(now: base + 21)
     sim.check!(21)
+
     assert_in_delta ar.interval, sim.interval, 0.001, 'Step 3 interval'
     assert_in_delta ar.ease, sim.ease, 0.001, 'Step 3 ease'
 
     # Step 4: have_it on day 28
     ar.have_it!(now: base + 28)
     sim.have_it!(28)
+
     assert_in_delta ar.interval, sim.interval, 0.001, 'Step 4 interval'
     assert_in_delta ar.ease, sim.ease, 0.001, 'Step 4 ease'
   end
@@ -206,11 +210,12 @@ class OnHandEntryConformanceTest < ActiveSupport::TestCase
 
   def sentinel_date = Date.parse(OnHandEntry::ORPHAN_SENTINEL)
 
-  def assert_entries_match(ar, sim, ar_base, sim_base)
-    assert_in_delta ar.interval, sim.interval, 0.001, 'interval mismatch'
-    assert_in_delta ar.ease, sim.ease, 0.001, 'ease mismatch'
-    ar_offset = ar.confirmed_at == sentinel_date ? :sentinel : (ar.confirmed_at - ar_base).to_i
+  def assert_entries_match(record, sim, ar_base, sim_base)
+    assert_in_delta record.interval, sim.interval, 0.001, 'interval mismatch'
+    assert_in_delta record.ease, sim.ease, 0.001, 'ease mismatch'
+    ar_offset = record.confirmed_at == sentinel_date ? :sentinel : (record.confirmed_at - ar_base).to_i
     sim_offset = sim.confirmed_at == GroceryAudit::SENTINEL ? :sentinel : (sim.confirmed_at - sim_base)
+
     assert_equal ar_offset, sim_offset, 'confirmed_at offset mismatch'
   end
 end
