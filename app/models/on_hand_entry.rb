@@ -27,6 +27,8 @@ class OnHandEntry < ApplicationRecord # rubocop:disable Metrics/ClassLength
   EASE_PENALTY = 0.20
   BLEND_WEIGHT = 0.75
   MAX_GROWTH_FACTOR = 1.3
+  BURST_THRESHOLD = 0.5
+  MIN_ESTABLISHED_INTERVAL = 14
 
   # Items surface in Inventory Check before predicted depletion.
   # SAFETY_MARGIN gives proportional buffer; MIN_BUFFER ensures short-cycle
@@ -133,14 +135,20 @@ class OnHandEntry < ApplicationRecord # rubocop:disable Metrics/ClassLength
     end
   end
 
+  def burst?(observed)
+    interval >= MIN_ESTABLISHED_INTERVAL && observed < interval * BURST_THRESHOLD
+  end
+
   # Blends observed period with current interval to dampen oscillation from
   # quantized shopping cycles (e.g. weekly trips -> eggs alternate 7d/14d,
   # blending converges to ~10.5d). Also halves delay-inflated observations.
   def deplete_observed(now)
     observed = (now - confirmed_at).to_i
-    blended = (observed * BLEND_WEIGHT) + (interval * (1 - BLEND_WEIGHT))
-    self.interval = [blended, STARTING_INTERVAL].max
-    self.ease = [(ease || STARTING_EASE) * (1 - EASE_PENALTY), MIN_EASE].max
+    unless burst?(observed)
+      blended = (observed * BLEND_WEIGHT) + (interval * (1 - BLEND_WEIGHT))
+      self.interval = [blended, STARTING_INTERVAL].max
+      self.ease = [(ease || STARTING_EASE) * (1 - EASE_PENALTY), MIN_EASE].max
+    end
     self.confirmed_at = Date.parse(ORPHAN_SENTINEL)
     self.depleted_at = now
     self.orphaned_at = nil
