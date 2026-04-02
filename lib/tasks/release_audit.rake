@@ -130,9 +130,16 @@ namespace :release do
       puts 'Exploratory QA: PASS ✓'
     end
 
-    desc 'Accessibility spot-check (Tier 3 — not yet implemented)'
-    task a11y: :environment do
-      raise 'not yet implemented'
+    desc 'Run accessibility spot-check on key pages'
+    task :a11y do
+      puts '--- Accessibility spot-check ---'
+      puts 'NOTE: Requires a running dev server (MULTI_KITCHEN=true bin/dev)'
+      unless system('npx playwright test test/release/exploratory/accessibility.spec.mjs ' \
+                     '--config=test/release/exploratory/playwright.config.mjs ' \
+                     '--reporter=list')
+        abort 'Accessibility check failed — critical/serious violations found.'
+      end
+      puts 'Accessibility: PASS ✓'
     end
 
     desc 'Performance baseline capture (Tier 3 — not yet implemented)'
