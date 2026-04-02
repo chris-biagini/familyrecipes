@@ -3,7 +3,7 @@
 require 'test_helper'
 
 class PwaControllerTest < ActionDispatch::IntegrationTest
-  test 'manifest returns JSON with versioned icon URLs' do # rubocop:disable Minitest/MultipleAssertions
+  test 'manifest returns JSON with versioned icon URLs' do
     get '/manifest.json'
 
     assert_response :success

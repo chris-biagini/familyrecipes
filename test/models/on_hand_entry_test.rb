@@ -17,13 +17,13 @@ class OnHandEntryTest < ActiveSupport::TestCase
     assert_equal 180, OnHandEntry::ORPHAN_RETENTION
     assert_equal '1970-01-01', OnHandEntry::ORPHAN_SENTINEL
     assert_in_delta 1.5, OnHandEntry::STARTING_EASE
-    assert_in_delta 1.05, OnHandEntry::MIN_EASE
+    assert_in_delta 1.1, OnHandEntry::MIN_EASE
     assert_in_delta 2.5, OnHandEntry::MAX_EASE
-    assert_in_delta 0.05, OnHandEntry::EASE_BONUS
+    assert_in_delta 0.03, OnHandEntry::EASE_BONUS
     assert_in_delta 0.20, OnHandEntry::EASE_PENALTY
     assert_in_delta 0.75, OnHandEntry::BLEND_WEIGHT
     assert_in_delta 1.3, OnHandEntry::MAX_GROWTH_FACTOR
-    assert_in_delta 0.5, OnHandEntry::BURST_THRESHOLD
+    assert_in_delta 0.35, OnHandEntry::BURST_THRESHOLD
     assert_equal 14, OnHandEntry::MIN_ESTABLISHED_INTERVAL
     assert_in_delta 0.78, OnHandEntry::SAFETY_MARGIN
   end
@@ -143,7 +143,7 @@ class OnHandEntryTest < ActiveSupport::TestCase
     entry.have_it!(now:)
     entry.reload
 
-    new_ease = 1.5 + 0.05
+    new_ease = 1.5 + 0.03
     expected_interval = 10.0 * [new_ease, 1.3].min
 
     assert_equal now, entry.confirmed_at
@@ -159,12 +159,12 @@ class OnHandEntryTest < ActiveSupport::TestCase
 
     # Entry expires at: Mar 1 + MIN(14*0.78=10, 14-2=12) = Mar 1 + 10 = Mar 11.
     # Call have_it! on Mar 14 → not on hand, triggers anchored growth.
-    # Anchored growth: 14 * min(1.55, 1.3) = 14 * 1.3 = 18.2 → Mar 1 + 18 = Mar 19 >= Mar 14 → anchor holds.
+    # Anchored growth: 14 * min(1.53, 1.3) = 14 * 1.3 = 18.2 → Mar 1 + 18 = Mar 19 >= Mar 14 → anchor holds.
     entry.have_it!(now: today + 13)
     entry.reload
 
     assert_equal today, entry.confirmed_at
-    assert_in_delta 1.55, entry.ease
+    assert_in_delta 1.53, entry.ease
     assert_in_delta 14.0 * 1.3, entry.interval
   end
 

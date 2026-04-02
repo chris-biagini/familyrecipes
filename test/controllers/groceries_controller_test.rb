@@ -879,7 +879,7 @@ class GroceriesControllerTest < ActionDispatch::IntegrationTest
 
   # --- Full lifecycle integration ---
 
-  test 'inventory check full cycle: new → have it → expired → need it → buy → on hand' do # rubocop:disable Minitest/MultipleAssertions
+  test 'inventory check full cycle: new → have it → expired → need it → buy → on hand' do
     @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
     MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Focaccia
