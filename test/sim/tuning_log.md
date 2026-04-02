@@ -49,3 +49,39 @@ EASE_BONUS helped annoyance dramatically by speeding recovery from depletions.
 **Next:** Try STARTING_EASE=1.3 to reduce ease-after-first-depletion (1.24→1.08),
 which should shrink the second-cycle overshoot. The MGF=1.3 cap means first-cycle
 growth is identical regardless of STARTING_EASE, so long-cycle items don't suffer.
+
+## Iteration 2
+
+**Hypothesis:** Explored MIN_EASE as a lever to control burst recovery speed (S9).
+Tested SM=0.82 (annoy ✓ but miss ✗), SM=0.80 (same), BW=0.80 (too aggressive),
+SE=1.3 (hurt long-cycle items), ME=1.07/1.09/1.1. Found that ME=1.1 fixes S9
+annoyance (14.4%) but raises S1/S7 miss to 42.2%. Also tested ME=1.1+BW=0.78 —
+S9 annoy=13.5% ✓ but S1 miss=42.2% ✗.
+**Changes:** Explored many configs, reverted to iteration 1 best:
+- BW=0.75, EB=0.05, SM=0.78, SE=1.5, ME=1.05, MGF=1.3
+**Results:**
+- S1 (Perfect user): hit=46.1% miss=40.2% annoy=13.7%
+- S7 (Vacation): hit=48.5% miss=39.6% annoy=11.9%
+- S9 (Holiday baker): hit=32.7% miss=49.0% annoy=18.3%
+- Guardrail worst: S6 at 62.8% miss
+**Assessment:** Found a trilemma: MIN_EASE controls S1 miss ↔ S9 annoyance tradeoff.
+ME=1.05 gives tight oscillation (S1/S7 miss pass) but slow burst recovery (S9
+annoy 18.3%). ME=1.1 gives fast recovery (S9 annoy 14.4%) but wider oscillation
+(S1/S7 miss 42.2%). No intermediate ME value achieves both. The algorithm cannot
+distinguish "normal depletion" from "burst depletion" — a burst-aware mechanism
+would be needed.
+
+## Iteration 3 (Stalling)
+
+Last 3 iterations (1, 2, and this one) have explored SM, BW, ME, SE, EB, EP,
+and MGF across dozens of configurations. The best achievable config passes
+S1 annoyance + S7 miss + S7 annoyance but misses S1 miss by 0.2pp and S9
+annoyance by 3.3pp. The remaining gap is structural: MIN_EASE creates a
+S1-miss ↔ S9-annoyance tradeoff that constants alone cannot resolve.
+
+**Best final config:** BW=0.75, EB=0.05, SM=0.78, SE=1.5, ME=1.05, MGF=1.3, EP=0.20
+**Best final results:**
+- S1: hit=46.1% miss=40.2% annoy=13.7% (miss 0.2pp over)
+- S7: hit=48.5% miss=39.6% annoy=11.9% (miss ✓, annoy ✓)
+- S9: hit=32.7% miss=49.0% annoy=18.3% (both over)
+- Guardrail: S6 at 62.8% (✓, well under 85%)
