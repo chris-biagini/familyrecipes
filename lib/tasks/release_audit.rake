@@ -105,7 +105,7 @@ namespace :release do # rubocop:disable Metrics/BlockLength
 
       puts ''
       puts '--- Running Playwright security specs ---'
-      passed = system('npx playwright test test/security/ --reporter=list')
+      passed = system('node --test test/security/*.spec.mjs')
 
       puts ''
       if passed && $CHILD_STATUS.success?

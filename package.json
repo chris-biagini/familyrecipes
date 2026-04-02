@@ -9,6 +9,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.1",
+    "@playwright/test": "^1.59.1",
     "esbuild": "^0.25.0"
   },
   "dependencies": {
