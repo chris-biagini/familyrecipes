@@ -142,9 +142,18 @@ namespace :release do
       puts 'Accessibility: PASS ✓'
     end
 
-    desc 'Performance baseline capture (Tier 3 — not yet implemented)'
-    task perf: :environment do
-      raise 'not yet implemented'
+    desc 'Capture performance baseline for key pages'
+    task :perf do
+      puts '--- Performance baseline ---'
+      puts 'NOTE: Requires a running dev server (MULTI_KITCHEN=true bin/dev)'
+
+      sha = `git rev-parse HEAD`.strip
+      system({ 'GIT_SHA' => sha },
+        'npx playwright test test/release/exploratory/performance.spec.mjs ' \
+        '--config=test/release/exploratory/playwright.config.mjs ' \
+        '--reporter=list')
+
+      puts 'Performance baseline captured.'
     end
   end
 end
