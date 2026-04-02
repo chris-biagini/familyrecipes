@@ -26,9 +26,11 @@ class OnHandEntry < ApplicationRecord # rubocop:disable Metrics/ClassLength
   EASE_BONUS = 0.05
   EASE_PENALTY = 0.15
 
-  # Items surface in Inventory Check 10% before predicted depletion.
-  # Better to ask early than to miss a depleted staple.
+  # Items surface in Inventory Check before predicted depletion.
+  # SAFETY_MARGIN gives proportional buffer; MIN_BUFFER ensures short-cycle
+  # items (eggs, milk) get at least 2 days of warning.
   SAFETY_MARGIN = 0.9
+  MIN_BUFFER = 2
 
   validates :ingredient_name, presence: true,
                               uniqueness: { scope: :kitchen_id, case_sensitive: false }
@@ -36,7 +38,7 @@ class OnHandEntry < ApplicationRecord # rubocop:disable Metrics/ClassLength
   scope :active, lambda { |now: Date.current|
     where(depleted_at: nil).where(
       'interval IS NULL OR date(confirmed_at, ' \
-      "'+' || CAST(interval * #{SAFETY_MARGIN} AS INTEGER) || ' days') >= date(?)",
+      "'+' || MIN(CAST(interval * #{SAFETY_MARGIN} AS INTEGER), CAST(interval AS INTEGER) - #{MIN_BUFFER}) || ' days') >= date(?)",
       now.iso8601
     )
   }
@@ -97,7 +99,7 @@ class OnHandEntry < ApplicationRecord # rubocop:disable Metrics/ClassLength
     return false if depleted_at.present?
     return true if interval.nil?
 
-    confirmed_at + (interval * SAFETY_MARGIN).to_i.days >= now
+    confirmed_at + [interval * SAFETY_MARGIN, interval - MIN_BUFFER].min.to_i.days >= now
   end
 
   def already_active?(now)

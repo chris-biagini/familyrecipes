@@ -18,6 +18,7 @@ module GroceryAudit
   EASE_BONUS        = 0.05
   EASE_PENALTY      = 0.15
   SAFETY_MARGIN     = 0.9
+  MIN_BUFFER        = 2
   SENTINEL          = -999_999
   SIM_DAYS          = 365
 
@@ -42,7 +43,7 @@ module GroceryAudit
 
     def on_hand?(day)
       return false if depleted_at
-      confirmed_at + (interval * SAFETY_MARGIN).to_i >= day
+      confirmed_at + [interval * SAFETY_MARGIN, interval - MIN_BUFFER].min.to_i >= day
     end
 
     def depleted? = !depleted_at.nil?
@@ -51,7 +52,7 @@ module GroceryAudit
     def ic_fires_on
       return nil if sentinel? || depleted?
 
-      confirmed_at + (interval * SAFETY_MARGIN).to_i + 1
+      confirmed_at + [interval * SAFETY_MARGIN, interval - MIN_BUFFER].min.to_i + 1
     end
 
     # --- Public actions (match OnHandEntry's public interface) ---
