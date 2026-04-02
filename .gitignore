@@ -47,3 +47,6 @@ test/security/user_ids.json
 
 # SimpleCov coverage reports
 /coverage/
+
+# Playwright test artifacts
+/test-results/
