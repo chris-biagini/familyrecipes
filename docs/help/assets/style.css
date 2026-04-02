@@ -335,3 +335,100 @@ tr:last-child td { border-bottom: none; }
   table { font-size: 12.5px; }
   th, td { padding: 6px 8px; }
 }
+
+/* ── Dark mode ─────────────────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+  body {
+    background: #18181b;
+    color: #d4d4d8;
+  }
+
+  /* ── Topbar ── */
+  .topbar {
+    background: #27272a;
+    border-bottom-color: #3f3f46;
+  }
+  .topbar-name { color: #fafafa; }
+  .topbar-sub {
+    color: #a1a1aa;
+    border-left-color: #3f3f46;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    background: #27272a;
+    border-right-color: #3f3f46;
+  }
+  .sidebar-section-label { color: #a1a1aa; }
+  .sidebar-link { color: #a1a1aa; }
+  .sidebar-link:hover {
+    color: #c0522a;
+    background: rgba(192, 82, 42, 0.1);
+  }
+  .sidebar-link.active {
+    color: #c0522a;
+    background: rgba(192, 82, 42, 0.1);
+  }
+  .sidebar-divider { background: #3f3f46; }
+
+  /* ── Typography ── */
+  h1, h2 { color: #fafafa; }
+  h3 { color: #d4d4d8; }
+  p { color: #d4d4d8; }
+  p.lead { color: #a1a1aa; }
+  ul, ol { color: #d4d4d8; }
+
+  /* ── Links ── */
+  a { color: #c0522a; }
+
+  /* ── Code ── */
+  code {
+    background: #27272a;
+    color: #d4835a;
+  }
+  pre {
+    background: #2e2b28;
+  }
+
+  /* ── Breadcrumb ── */
+  .breadcrumb { color: #a1a1aa; }
+
+  /* ── Callout ── */
+  .callout {
+    background: #27272a;
+    border-color: #3f3f46;
+    border-left-color: #c0522a;
+  }
+  .callout p { color: #d4d4d8; }
+
+  /* ── Page nav ── */
+  .page-nav { border-top-color: #3f3f46; }
+
+  /* ── Section cards ── */
+  .section-card {
+    background: #27272a;
+    border-color: #3f3f46;
+  }
+  .section-card:hover {
+    border-color: #c0522a;
+    box-shadow: 0 2px 8px rgba(192, 82, 42, 0.15);
+  }
+  .section-card h3 { color: #fafafa; }
+  .section-card p { color: #a1a1aa; }
+
+  /* ── Tables ── */
+  th {
+    background: #27272a;
+    border-bottom-color: #3f3f46;
+    color: #d4d4d8;
+  }
+  td {
+    border-bottom-color: #3f3f46;
+    color: #d4d4d8;
+  }
+
+  /* ── Mobile ── */
+  .nav-toggle { color: #d4d4d8; }
+  .nav-toggle:hover { background: #3f3f46; }
+  .nav-backdrop { background: rgba(0, 0, 0, 0.5); }
+}
