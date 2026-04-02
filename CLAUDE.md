@@ -207,12 +207,18 @@ jsbundling-rails + esbuild for JS bundling.
   prefixed attribute (e.g. `data-grocery-action`) for custom button actions.
 - CSP nonce: see `content_security_policy.rb` header comment. The layout's
   `<%= csp_meta_tag %>` exposes the nonce for JS libraries (CodeMirror).
+- CodeMirror lives in `app/javascript/codemirror/` — a vendored integration
+  for the plaintext editor. It depends on the CSP nonce above.
+- Phone FAB (`phone_fab_controller.js`) provides a floating action button
+  menu on mobile — check it before adding mobile-specific navigation.
 
 **Write path.** Controllers are thin adapters: param parsing → service call →
 response rendering. Services own all post-write side effects (reconcile,
 broadcast). Don't call `MarkdownImporter` directly for web operations.
 Read write service header comments for details. `multi_kitchen` is an env
-var, not a DB setting.
+var, not a DB setting. Background jobs: `RecipeNutritionJob` recomputes
+nutrition after recipe saves; `CascadeNutritionJob` propagates catalog
+changes across all recipes that use an ingredient.
 
 **Import/export.** ZIP-based backup/restore via `ExportService` and
 `ImportService`. AI recipe import (`AiImportController` → `AiImportService`)
