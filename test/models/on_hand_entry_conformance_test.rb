@@ -23,6 +23,8 @@ class OnHandEntryConformanceTest < ActiveSupport::TestCase
     assert_equal OnHandEntry::SAFETY_MARGIN, GroceryAudit::SAFETY_MARGIN
     assert_equal OnHandEntry::BLEND_WEIGHT, GroceryAudit::BLEND_WEIGHT
     assert_equal OnHandEntry::MAX_GROWTH_FACTOR, GroceryAudit::MAX_GROWTH_FACTOR
+    assert_equal OnHandEntry::BURST_THRESHOLD, GroceryAudit::BURST_THRESHOLD
+    assert_equal OnHandEntry::MIN_ESTABLISHED_INTERVAL, GroceryAudit::MIN_ESTABLISHED_INTERVAL
   end
 
   test 'check creates matching starting values' do
