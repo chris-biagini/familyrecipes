@@ -1,5 +1,17 @@
 # frozen_string_literal: true
 
+if ENV['COVERAGE'] || ENV['RELEASE_AUDIT']
+  require 'simplecov'
+  SimpleCov.start 'rails' do
+    enable_coverage :branch
+    minimum_coverage line: 0
+    add_filter '/test/'
+    add_filter '/db/'
+    add_filter '/config/'
+    add_filter '/vendor/'
+  end
+end
+
 # Two test hierarchies coexist in this project:
 #
 # 1. Rails tests (test/controllers/, test/models/, test/services/, test/integration/,
