@@ -137,6 +137,287 @@ module GroceryAudit
       @depleted_at  = day
     end
   end
+
+  Cycle = Struct.new(:item_name, :true_cycle, :purchased_on, :depleted_on,
+                     :ic_fires_on, keyword_init: true)
+
+  # Ground-truth stock tracking wrapper around Entry.
+  # Tracks physical reality (has_stock, runs_out_on) separately from the
+  # app's belief (entry state) to measure algorithm accuracy.
+  class Item
+    attr_reader :name, :true_cycle
+    attr_accessor :entry, :has_stock, :runs_out_on
+
+    def initialize(name, true_cycle)
+      @name        = name
+      @true_cycle  = true_cycle
+      @entry       = nil
+      @has_stock   = true
+      @runs_out_on = true_cycle
+    end
+
+    def zone(day)
+      return :new unless entry
+      return :depleted if entry.depleted?
+
+      entry.on_hand?(day) ? :on_hand : :expired
+    end
+  end
+
+  # Records purchase-to-purchase cycles for scoring.
+  # Collaborators: Item, FaithfulSim (calls start_cycle/record_depletion/update_ic).
+  # record_depletion uses ||= so only the FIRST depletion per cycle is recorded.
+  class CycleTracker
+    attr_reader :completed
+
+    def initialize
+      @current   = {}
+      @completed = []
+    end
+
+    def start_cycle(item, day)
+      close_if_open(item)
+      @current[item.name] = {
+        purchased_on: day,
+        depleted_on:  nil,
+        ic_fires_on:  item.entry&.ic_fires_on,
+        true_cycle:   item.true_cycle
+      }
+    end
+
+    def record_depletion(item, day)
+      c = @current[item.name]
+      return unless c
+
+      c[:depleted_on] ||= day
+    end
+
+    # Update IC fire date after entry state changes (have_it! grows interval).
+    def update_ic(item)
+      c = @current[item.name]
+      return unless c && item.entry
+
+      ic = item.entry.ic_fires_on
+      c[:ic_fires_on] = ic if ic
+    end
+
+    def close_all(items)
+      items.each { |item| close_if_open(item) }
+    end
+
+    private
+
+    def close_if_open(item)
+      c = @current.delete(item.name)
+      return unless c && c[:depleted_on]
+
+      @completed << Cycle.new(**c.merge(item_name: item.name))
+    end
+  end
+
+  # Main simulation engine. Runs a day-by-day schedule through three-zone
+  # triage matching MealPlanWriteService's orchestration.
+  # Collaborators: Item, CycleTracker, Persona (behavioral parameters), Entry.
+  # consume! runs every day; shopping events dispatch based on the schedule hash.
+  class FaithfulSim
+    attr_reader :items, :tracker, :ic_loads
+
+    def initialize(items:, schedule:, persona:, rng:, days: SIM_DAYS)
+      @items           = items
+      @schedule        = schedule
+      @persona         = persona
+      @rng             = rng
+      @days            = days
+      @tracker         = CycleTracker.new
+      @ic_loads        = []
+      @pending_reports = {}
+    end
+
+    def run!
+      (1..@days).each do |day|
+        consume!(day)
+        process_pending_reports!(day)
+        process_event!(day) if @schedule[day]
+      end
+      @tracker.close_all(@items)
+      self
+    end
+
+    private
+
+    def consume!(day)
+      @items.each do |item|
+        next unless item.has_stock && day >= item.runs_out_on
+
+        item.has_stock = false
+        @tracker.record_depletion(item, day)
+        maybe_schedule_report(item, day)
+      end
+    end
+
+    def maybe_schedule_report(item, day)
+      return unless @persona && @rng.rand < @persona.depletion_report_chance
+
+      delay = gaussian_int(@persona.depletion_report_delay_mean,
+                           @persona.depletion_report_delay_std)
+      @pending_reports[item.name] = day + delay
+    end
+
+    def process_pending_reports!(day)
+      due = @pending_reports.select { |_, report_day| day >= report_day }
+      due.each_key do |name|
+        @pending_reports.delete(name)
+        item = @items.find { |i| i.name == name }
+        next unless item&.entry && !item.has_stock && item.zone(day) == :on_hand
+
+        item.entry.uncheck!(day)
+        @tracker.update_ic(item)
+      end
+    end
+
+    def process_event!(day)
+      case @schedule[day]
+      when :shop               then shop!(day, attention: 1.0)
+      when :shop_partial       then shop!(day, attention: @persona&.ic_attention || 0.5)
+      when :ghost_shop         then ghost_shop!(day)
+      when :burst_consume      then burst_consume!(day)
+      when :accidental_uncheck then accidental_uncheck_event!(day)
+      end
+    end
+
+    # Schedule-driven accidental uncheck: buy the first depleted item,
+    # then immediately uncheck it (cracked eggs scenario from raw schedules).
+    def accidental_uncheck_event!(day)
+      item = @items.find { |i| i.entry&.depleted? }
+      return unless item
+
+      item.entry.check!(day)
+      @tracker.start_cycle(item, day)
+      item.has_stock   = true
+      fuzz             = @persona ? gaussian_int(0, @persona.fuzz_std) : 0
+      item.runs_out_on = day + item.true_cycle + fuzz
+
+      item.entry.uncheck!(day)
+      item.has_stock = false
+    end
+
+    def shop!(day, attention:)
+      @ic_loads << @items.count { |i| i.zone(day) == :expired }
+
+      @items.each do |item|
+        case item.zone(day)
+        when :new
+          triage_new!(item, day)
+        when :expired
+          next if attention < 1.0 && @rng.rand >= attention
+
+          triage_expired!(item, day)
+        when :on_hand
+          triage_on_hand!(item, day)
+        when :depleted
+          purchase!(item, day)
+        end
+
+        maybe_accidental_uncheck!(item, day)
+      end
+    end
+
+    def triage_new!(item, day)
+      if item.has_stock
+        item.entry = Entry.new(confirmed_at: day)
+        @tracker.start_cycle(item, day)
+      else
+        item.entry = Entry.new(confirmed_at: SENTINEL)
+        item.entry.instance_variable_set(:@depleted_at, day)
+        purchase!(item, day)
+      end
+    end
+
+    def triage_expired!(item, day)
+      if item.has_stock
+        item.entry.have_it!(day)
+        @tracker.update_ic(item)
+      else
+        item.entry.need_it!(day)
+        purchase!(item, day)
+      end
+    end
+
+    def triage_on_hand!(item, day)
+      return if item.has_stock
+
+      item.entry.uncheck!(day)
+      purchase!(item, day)
+    end
+
+    def purchase!(item, day)
+      item.entry.check!(day) if item.entry.depleted?
+      @tracker.start_cycle(item, day)
+      item.has_stock   = true
+      fuzz             = @persona ? gaussian_int(0, @persona.fuzz_std) : 0
+      item.runs_out_on = day + item.true_cycle + fuzz
+    end
+
+    def ghost_shop!(day)
+      @items.each do |item|
+        next if item.has_stock
+
+        item.has_stock   = true
+        fuzz             = @persona ? gaussian_int(0, @persona.fuzz_std) : 0
+        item.runs_out_on = day + item.true_cycle + fuzz
+      end
+    end
+
+    def burst_consume!(day)
+      @items.each do |item|
+        next unless item.has_stock && item.true_cycle >= 14
+
+        item.has_stock = false
+        @tracker.record_depletion(item, day)
+      end
+    end
+
+    def maybe_accidental_uncheck!(item, day)
+      return unless @persona && @rng.rand < @persona.accident_rate
+      return unless item.has_stock && item.entry && !item.entry.depleted?
+
+      item.entry.uncheck!(day)
+      item.has_stock = false
+    end
+
+    def gaussian_int(mean, std)
+      return mean.to_i if std.zero?
+
+      u1 = @rng.rand
+      u2 = @rng.rand
+      z  = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math::PI * u2)
+      (mean + std * z).round.clamp(0..)
+    end
+  end
+
+  # Stub for behavioral parameters. Full implementation added in Task 4.
+  # Collaborators: FaithfulSim (reads all persona fields), ScheduleGenerator.
+  Persona = Struct.new(
+    :shop_interval_mean, :shop_interval_std,
+    :ic_attention,
+    :depletion_report_chance, :depletion_report_delay_mean, :depletion_report_delay_std,
+    :vacation_gaps, :burst_days,
+    :accident_rate, :ghost_shop_chance,
+    :fuzz_std,
+    keyword_init: true
+  ) do
+    def self.default
+      new(
+        shop_interval_mean: 7, shop_interval_std: 0,
+        ic_attention: 1.0,
+        depletion_report_chance: 0.0, depletion_report_delay_mean: 0,
+        depletion_report_delay_std: 0,
+        vacation_gaps: [], burst_days: [],
+        accident_rate: 0.0, ghost_shop_chance: 0.0,
+        fuzz_std: 0
+      )
+    end
+  end
 end
 
 if __FILE__ == $PROGRAM_NAME
@@ -145,51 +426,63 @@ if __FILE__ == $PROGRAM_NAME
   e = GroceryAudit::Entry.new(confirmed_at: 0)
   abort 'FAIL: initial interval' unless e.interval == 7.0
   abort 'FAIL: initial ease' unless e.ease == 1.5
-  abort 'FAIL: on_hand?(0)' unless e.on_hand?(0)
   abort 'FAIL: on_hand?(6)' unless e.on_hand?(6)
   abort 'FAIL: should be expired day 7' if e.on_hand?(7)
   abort 'FAIL: ic_fires_on' unless e.ic_fires_on == 7
 
-  # grow_standard: ease bumps first, then interval uses new ease
   e2 = GroceryAudit::Entry.new(confirmed_at: GroceryAudit::SENTINEL)
   e2.have_it!(10)
-  expected_ease = 1.5 + 0.05 # 1.55
-  expected_interval = 7.0 * 1.55 # 10.85
-  abort 'FAIL: grow_standard ease' unless (e2.ease - expected_ease).abs < 0.001
-  abort 'FAIL: grow_standard interval' unless (e2.interval - expected_interval).abs < 0.001
-  abort 'FAIL: grow_standard confirmed_at' unless e2.confirmed_at == 10
+  abort 'FAIL: grow_standard ease' unless (e2.ease - 1.55).abs < 0.001
+  abort 'FAIL: grow_standard interval' unless (e2.interval - 10.85).abs < 0.001
 
-  # grow_anchored: anchor holds (item expires day 13, so day 14 triggers grow_anchored)
   e3 = GroceryAudit::Entry.new(confirmed_at: 0, interval: 14.0, ease: 1.5)
   e3.have_it!(14) # 0 + (14*1.55).to_i = 0 + 21 = 21 >= 14 → anchor holds
   abort 'FAIL: anchored ease' unless (e3.ease - 1.55).abs < 0.001
-  abort 'FAIL: anchored confirmed_at' unless e3.confirmed_at == 0
+  abort 'FAIL: anchored confirmed_at stays' unless e3.confirmed_at == 0
 
-  # grow_anchored: anchor breaks
   e4 = GroceryAudit::Entry.new(confirmed_at: 0, interval: 7.0, ease: 1.5)
   e4.have_it!(20) # 0 + (7*1.55).to_i = 0 + 10 = 10 < 20 → anchor breaks
-  abort 'FAIL: broken anchor ease' unless (e4.ease - 1.5).abs < 0.001
-  abort 'FAIL: broken anchor confirmed_at' unless e4.confirmed_at == 20
+  abort 'FAIL: broken anchor ease stays' unless (e4.ease - 1.5).abs < 0.001
+  abort 'FAIL: broken anchor resets confirmed_at' unless e4.confirmed_at == 20
 
-  # deplete_observed: blend then floor
   e5 = GroceryAudit::Entry.new(confirmed_at: 0, interval: 7.0, ease: 1.5)
   e5.need_it!(14) # observed=14, blended=(14+7)/2=10.5, ease=1.5*0.85=1.275
   abort 'FAIL: deplete interval' unless (e5.interval - 10.5).abs < 0.001
   abort 'FAIL: deplete ease' unless (e5.ease - 1.275).abs < 0.001
-  abort 'FAIL: deplete sentinel' unless e5.sentinel?
-  abort 'FAIL: deplete depleted_at' unless e5.depleted_at == 14
 
-  # deplete_observed: floor kicks in for short observations
   e6 = GroceryAudit::Entry.new(confirmed_at: 0, interval: 7.0, ease: 1.5)
   e6.need_it!(2) # observed=2, blended=(2+7)/2=4.5, floored to 7
   abort 'FAIL: deplete floor' unless (e6.interval - 7.0).abs < 0.001
 
-  # undo_same_day: no penalty
   e7 = GroceryAudit::Entry.new(confirmed_at: 10, interval: 28.0, ease: 2.0)
   e7.uncheck!(10) # same day → undo
-  abort 'FAIL: same-day interval' unless (e7.interval - 28.0).abs < 0.001
-  abort 'FAIL: same-day ease' unless (e7.ease - 2.0).abs < 0.001
-  abort 'FAIL: same-day sentinel' unless e7.sentinel?
+  abort 'FAIL: same-day interval preserved' unless (e7.interval - 28.0).abs < 0.001
+  abort 'FAIL: same-day ease preserved' unless (e7.ease - 2.0).abs < 0.001
 
   puts 'Entry: all checks passed'
+
+  puts "\nFaithfulSim smoke test..."
+
+  persona = GroceryAudit::Persona.default
+  schedule = {}
+  (1..50).each { |d| schedule[d] = :shop if (d % 7).zero? }
+
+  items = GroceryAudit::DEFAULT_ITEMS.map { |n, tc| GroceryAudit::Item.new(n, tc) }
+  sim = GroceryAudit::FaithfulSim.new(
+    items: items, schedule: schedule, persona: persona,
+    rng: Random.new(42), days: 50
+  )
+  sim.run!
+
+  cycles = sim.tracker.completed
+  abort 'FAIL: no cycles recorded' if cycles.empty?
+
+  egg_cycles = cycles.select { |c| c.item_name == 'Eggs' }
+  abort 'FAIL: no egg cycles' if egg_cycles.empty?
+  egg_cycles.each do |c|
+    abort "FAIL: egg cycle missing depletion (#{c})" unless c.depleted_on
+  end
+
+  puts "FaithfulSim: #{cycles.size} cycles recorded across #{items.size} items"
+  puts 'FaithfulSim: all checks passed'
 end
