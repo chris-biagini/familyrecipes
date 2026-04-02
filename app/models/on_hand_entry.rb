@@ -26,6 +26,7 @@ class OnHandEntry < ApplicationRecord # rubocop:disable Metrics/ClassLength
   EASE_BONUS = 0.03
   EASE_PENALTY = 0.20
   BLEND_WEIGHT = 0.65
+  MAX_GROWTH_FACTOR = 1.3
 
   # Items surface in Inventory Check before predicted depletion.
   # SAFETY_MARGIN gives proportional buffer; MIN_BUFFER ensures short-cycle
@@ -112,7 +113,7 @@ class OnHandEntry < ApplicationRecord # rubocop:disable Metrics/ClassLength
   # entries where the original purchase date is meaningless.
   def grow_standard(now)
     self.ease = [ease + EASE_BONUS, MAX_EASE].min
-    self.interval = [interval * ease, MAX_INTERVAL].min
+    self.interval = [interval * [ease, MAX_GROWTH_FACTOR].min, MAX_INTERVAL].min
     self.confirmed_at = now
     self.orphaned_at = nil
   end
@@ -123,7 +124,7 @@ class OnHandEntry < ApplicationRecord # rubocop:disable Metrics/ClassLength
   # anchored growth succeeds.
   def grow_anchored(now)
     new_ease = [ease + EASE_BONUS, MAX_EASE].min
-    self.interval = [interval * new_ease, MAX_INTERVAL].min
+    self.interval = [interval * [new_ease, MAX_GROWTH_FACTOR].min, MAX_INTERVAL].min
 
     if confirmed_at + interval.to_i >= now
       self.ease = new_ease

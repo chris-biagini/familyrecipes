@@ -18,6 +18,7 @@ module GroceryAudit
   EASE_BONUS        = 0.03
   EASE_PENALTY      = 0.20
   BLEND_WEIGHT      = 0.65
+  MAX_GROWTH_FACTOR = 1.3
   SAFETY_MARGIN     = 0.78
   MIN_BUFFER        = 2
   SENTINEL          = -999_999
@@ -82,7 +83,7 @@ module GroceryAudit
     # NOTE: ease is bumped FIRST, then interval uses the new ease.
     def grow_standard(day)
       @ease         = [ease + EASE_BONUS, MAX_EASE].min
-      @interval     = [interval * ease, MAX_INTERVAL].min
+      @interval     = [interval * [ease, MAX_GROWTH_FACTOR].min, MAX_INTERVAL].min
       @confirmed_at = day
     end
 
@@ -91,7 +92,7 @@ module GroceryAudit
     # Ease only committed if anchor holds.
     def grow_anchored(day)
       new_ease  = [ease + EASE_BONUS, MAX_EASE].min
-      @interval = [interval * new_ease, MAX_INTERVAL].min
+      @interval = [interval * [new_ease, MAX_GROWTH_FACTOR].min, MAX_INTERVAL].min
 
       if confirmed_at + interval.to_i >= day
         @ease = new_ease
