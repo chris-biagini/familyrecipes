@@ -19,6 +19,8 @@ module GroceryAudit
   EASE_PENALTY      = 0.20
   BLEND_WEIGHT      = 0.75
   MAX_GROWTH_FACTOR = 1.3
+  BURST_THRESHOLD         = 0.5
+  MIN_ESTABLISHED_INTERVAL = 14
   SAFETY_MARGIN     = 0.78
   MIN_BUFFER        = 2
   SENTINEL          = -999_999
@@ -101,14 +103,20 @@ module GroceryAudit
       end
     end
 
+    def burst?(observed)
+      interval >= MIN_ESTABLISHED_INTERVAL && observed < interval * BURST_THRESHOLD
+    end
+
     # Blends observed period with current interval, then floors at
     # STARTING_INTERVAL. Production does max(blend, 7), NOT max(obs, 7)
     # before blending — this is where the old sims diverged.
     def deplete_observed(day)
-      observed      = day - confirmed_at
-      blended       = observed * BLEND_WEIGHT + interval * (1 - BLEND_WEIGHT)
-      @interval     = [blended, STARTING_INTERVAL.to_f].max
-      @ease         = [(ease || STARTING_EASE) * (1 - EASE_PENALTY), MIN_EASE].max
+      observed = day - confirmed_at
+      unless burst?(observed)
+        blended       = observed * BLEND_WEIGHT + interval * (1 - BLEND_WEIGHT)
+        @interval     = [blended, STARTING_INTERVAL.to_f].max
+        @ease         = [(ease || STARTING_EASE) * (1 - EASE_PENALTY), MIN_EASE].max
+      end
       @confirmed_at = SENTINEL
       @depleted_at  = day
     end
