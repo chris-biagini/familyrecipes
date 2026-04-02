@@ -8,9 +8,9 @@
 #   rake release:audit        — run all Tier 2 checks
 #   rake release:audit:full   — run Tier 2 + Tier 3 (security, exploratory, a11y, perf)
 
-namespace :release do
+namespace :release do # rubocop:disable Metrics/BlockLength
   desc 'Run all Tier 2 release audit checks'
-  task audit: :environment do
+  task audit: :environment do # rubocop:disable Metrics/BlockLength
     puts "=== Release Audit (Tier 2) ===\n\n"
 
     puts '--- Running test suite with coverage ---'
@@ -33,8 +33,8 @@ namespace :release do
       puts "\n--- #{check} ---"
       begin
         Rake::Task[check].invoke
-      rescue SystemExit => e
-        failures << check unless e.success?
+      rescue SystemExit => error
+        failures << check unless error.success?
       end
     end
 
@@ -54,9 +54,9 @@ namespace :release do
     end
   end
 
-  namespace :audit do
+  namespace :audit do # rubocop:disable Metrics/BlockLength
     desc 'Run full audit (Tier 2 + Tier 3: security, exploratory, a11y, perf)'
-    task full: :environment do
+    task full: :environment do # rubocop:disable Metrics/BlockLength
       Rake::Task['release:audit'].invoke
 
       puts "\n=== Tier 3: Structured Exploratory Review ===\n"
@@ -74,10 +74,10 @@ namespace :release do
         puts "\n--- #{check} ---"
         begin
           Rake::Task[check].invoke
-        rescue SystemExit => e
-          failures << check unless e.success?
-        rescue RuntimeError => e
-          puts "  Skipped: #{e.message}"
+        rescue SystemExit => error
+          failures << check unless error.success?
+        rescue RuntimeError => error
+          puts "  Skipped: #{error.message}"
         end
       end
 
@@ -116,14 +116,14 @@ namespace :release do
     end
 
     desc 'Run Playwright exploratory QA walkthrough'
-    task :explore do
+    task explore: :environment do
       puts '--- Exploratory QA walkthrough ---'
       puts 'NOTE: Requires a running dev server (MULTI_KITCHEN=true bin/dev)'
 
       unless system('npx playwright test test/release/exploratory/ ' \
-                     '--config=test/release/exploratory/playwright.config.mjs ' \
-                     '--reporter=list ' \
-                     '--ignore-snapshots')
+                    '--config=test/release/exploratory/playwright.config.mjs ' \
+                    '--reporter=list ' \
+                    '--ignore-snapshots')
         abort 'Exploratory QA failed — see above.'
       end
 
@@ -131,27 +131,27 @@ namespace :release do
     end
 
     desc 'Run accessibility spot-check on key pages'
-    task :a11y do
+    task a11y: :environment do
       puts '--- Accessibility spot-check ---'
       puts 'NOTE: Requires a running dev server (MULTI_KITCHEN=true bin/dev)'
       unless system('npx playwright test test/release/exploratory/accessibility.spec.mjs ' \
-                     '--config=test/release/exploratory/playwright.config.mjs ' \
-                     '--reporter=list')
+                    '--config=test/release/exploratory/playwright.config.mjs ' \
+                    '--reporter=list')
         abort 'Accessibility check failed — critical/serious violations found.'
       end
       puts 'Accessibility: PASS ✓'
     end
 
     desc 'Capture performance baseline for key pages'
-    task :perf do
+    task perf: :environment do
       puts '--- Performance baseline ---'
       puts 'NOTE: Requires a running dev server (MULTI_KITCHEN=true bin/dev)'
 
       sha = `git rev-parse HEAD`.strip
       system({ 'GIT_SHA' => sha },
-        'npx playwright test test/release/exploratory/performance.spec.mjs ' \
-        '--config=test/release/exploratory/playwright.config.mjs ' \
-        '--reporter=list')
+             'npx playwright test test/release/exploratory/performance.spec.mjs ' \
+             '--config=test/release/exploratory/playwright.config.mjs ' \
+             '--reporter=list')
 
       puts 'Performance baseline captured.'
     end

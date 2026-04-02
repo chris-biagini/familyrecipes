@@ -4,7 +4,7 @@ if ENV['COVERAGE'] || ENV['RELEASE_AUDIT']
   require 'simplecov'
   SimpleCov.start 'rails' do
     enable_coverage :branch
-    minimum_coverage line: 0  # Floor enforced by release audit task, not SimpleCov
+    minimum_coverage line: 0 # Floor enforced by release audit task, not SimpleCov
     add_filter '/test/'
     add_filter '/db/'
     add_filter '/config/'
