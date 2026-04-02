@@ -1,0 +1,21 @@
+# Release audit thresholds. Adjust as coverage improves.
+
+coverage:
+  floor: 80
+
+marker:
+  max_age_hours: 48
+
+schema:
+  fail_on_missing_fk: false
+  fail_on_orphaned_records: true
+
+licenses:
+  copyleft:
+    - GPL-2.0
+    - GPL-3.0
+    - AGPL-1.0
+    - AGPL-3.0
+    - SSPL-1.0
+    - EUPL-1.1
+    - EUPL-1.2
