@@ -138,7 +138,7 @@ class OnHandEntry < ApplicationRecord # rubocop:disable Metrics/ClassLength
   # blending converges to ~10.5d). Also halves delay-inflated observations.
   def deplete_observed(now)
     observed = (now - confirmed_at).to_i
-    blended = observed * BLEND_WEIGHT + interval * (1 - BLEND_WEIGHT)
+    blended = (observed * BLEND_WEIGHT) + (interval * (1 - BLEND_WEIGHT))
     self.interval = [blended, STARTING_INTERVAL].max
     self.ease = [(ease || STARTING_EASE) * (1 - EASE_PENALTY), MIN_EASE].max
     self.confirmed_at = Date.parse(ORPHAN_SENTINEL)

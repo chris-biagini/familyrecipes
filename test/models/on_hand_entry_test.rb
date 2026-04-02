@@ -17,11 +17,11 @@ class OnHandEntryTest < ActiveSupport::TestCase
     assert_equal 180, OnHandEntry::ORPHAN_RETENTION
     assert_equal '1970-01-01', OnHandEntry::ORPHAN_SENTINEL
     assert_in_delta 1.5, OnHandEntry::STARTING_EASE
-    assert_in_delta 1.1, OnHandEntry::MIN_EASE
+    assert_in_delta 1.05, OnHandEntry::MIN_EASE
     assert_in_delta 2.5, OnHandEntry::MAX_EASE
-    assert_in_delta 0.05, OnHandEntry::EASE_BONUS
-    assert_in_delta 0.15, OnHandEntry::EASE_PENALTY
-    assert_in_delta 0.9, OnHandEntry::SAFETY_MARGIN
+    assert_in_delta 0.03, OnHandEntry::EASE_BONUS
+    assert_in_delta 0.20, OnHandEntry::EASE_PENALTY
+    assert_in_delta 0.78, OnHandEntry::SAFETY_MARGIN
   end
 
   # --- Tenant scoping ---
@@ -63,8 +63,8 @@ class OnHandEntryTest < ActiveSupport::TestCase
     entry = OnHandEntry.create!(ingredient_name: 'Eggs',
                                 confirmed_at: today, interval: 10.0, ease: 1.5)
 
-    # 10 * 0.9 = 9 days effective. Day 9 should still be active.
-    assert_includes OnHandEntry.active(now: today + 9), entry
+    # MIN(10*0.78=7, 10-2=8) = 7 days effective. Day 7 should still be active.
+    assert_includes OnHandEntry.active(now: today + 7), entry
   end
 
   test 'active excludes entry past safety margin window' do
@@ -72,8 +72,8 @@ class OnHandEntryTest < ActiveSupport::TestCase
     OnHandEntry.create!(ingredient_name: 'Eggs',
                         confirmed_at: today, interval: 10.0, ease: 1.5)
 
-    # 10 * 0.9 = 9 days. Day 10 should be expired.
-    assert_empty OnHandEntry.active(now: today + 10)
+    # MIN(10*0.78=7, 10-2=8) = 7 days. Day 8 should be expired.
+    assert_empty OnHandEntry.active(now: today + 8)
   end
 
   test 'active excludes depleted entries' do
@@ -89,9 +89,9 @@ class OnHandEntryTest < ActiveSupport::TestCase
     entry = OnHandEntry.create!(ingredient_name: 'Milk',
                                 confirmed_at: today, interval: 7.0, ease: 1.5)
 
-    # 7 * 0.9 = 6.3, CAST to INT = 6. Day 6 active, day 7 expired.
-    assert_includes OnHandEntry.active(now: today + 6), entry
-    assert_empty OnHandEntry.active(now: today + 7)
+    # MIN(7*0.78=5.46→5, 7-2=5) = 5. Day 5 active, day 6 expired.
+    assert_includes OnHandEntry.active(now: today + 5), entry
+    assert_empty OnHandEntry.active(now: today + 6)
   end
 
   # --- Depleted scope ---
@@ -139,8 +139,8 @@ class OnHandEntryTest < ActiveSupport::TestCase
     entry.have_it!(now:)
     entry.reload
 
-    new_ease = 1.5 + 0.05
-    expected_interval = 10.0 * new_ease
+    new_ease = 1.5 + 0.03
+    expected_interval = 10.0 * [new_ease, 1.3].min
 
     assert_equal now, entry.confirmed_at
     assert_in_delta new_ease, entry.ease
@@ -153,15 +153,15 @@ class OnHandEntryTest < ActiveSupport::TestCase
     entry = OnHandEntry.create!(ingredient_name: 'Butter',
                                 confirmed_at: today, interval: 14.0, ease: 1.5)
 
-    # Entry expires at: Mar 1 + (14*0.9).to_i = Mar 1 + 12 = Mar 13.
+    # Entry expires at: Mar 1 + MIN(14*0.78=10, 14-2=12) = Mar 1 + 10 = Mar 11.
     # Call have_it! on Mar 14 → not on hand, triggers anchored growth.
-    # Anchored growth: 14 * 1.55 = 21.7 → Mar 1 + 21 = Mar 22 >= Mar 14 → anchor holds.
+    # Anchored growth: 14 * min(1.53, 1.3) = 14 * 1.3 = 18.2 → Mar 1 + 18 = Mar 19 >= Mar 14 → anchor holds.
     entry.have_it!(now: today + 13)
     entry.reload
 
     assert_equal today, entry.confirmed_at
-    assert_in_delta 1.55, entry.ease
-    assert_in_delta 14.0 * 1.55, entry.interval
+    assert_in_delta 1.53, entry.ease
+    assert_in_delta 14.0 * 1.3, entry.interval
   end
 
   test 'have_it! with real confirmed_at resets confirmed_at when anchor cannot cover today' do
@@ -169,7 +169,7 @@ class OnHandEntryTest < ActiveSupport::TestCase
     entry = OnHandEntry.create!(ingredient_name: 'Flour',
                                 confirmed_at: start, interval: 7.0, ease: 1.5)
 
-    # Anchored growth: 7 * 1.55 = 10.85 → start + 10 = Jan 11.
+    # Anchored growth: 7 * min(1.53, 1.3) = 7 * 1.3 = 9.1 → start + 9 = Jan 10.
     # Checking on Jan 20 can't cover → reset confirmed_at, no ease bump.
     now = Date.new(2026, 1, 20)
     entry.have_it!(now:)
@@ -177,7 +177,7 @@ class OnHandEntryTest < ActiveSupport::TestCase
 
     assert_equal now, entry.confirmed_at
     assert_in_delta 1.5, entry.ease
-    assert_in_delta 7.0 * 1.55, entry.interval
+    assert_in_delta 7.0 * 1.3, entry.interval
   end
 
   test 'have_it! is a no-op when already on hand' do
@@ -226,7 +226,7 @@ class OnHandEntryTest < ActiveSupport::TestCase
     entry.need_it!(now:)
     entry.reload
 
-    assert_in_delta 1.5 * (1 - 0.15), entry.ease
+    assert_in_delta 1.5 * (1 - 0.20), entry.ease
     assert_in_delta 10.0, entry.interval
     assert_equal now, entry.depleted_at
     assert_nil entry.orphaned_at
@@ -242,10 +242,10 @@ class OnHandEntryTest < ActiveSupport::TestCase
     entry.reload
 
     observed = 10
-    blended = (observed + 14.0) / 2.0
+    blended = observed * 0.65 + 14.0 * 0.35
 
     assert_in_delta blended, entry.interval
-    assert_in_delta 1.5 * (1 - 0.15), entry.ease
+    assert_in_delta 1.5 * (1 - 0.20), entry.ease
     assert_equal Date.parse('1970-01-01'), entry.confirmed_at
     assert_equal now, entry.depleted_at
   end
@@ -255,7 +255,7 @@ class OnHandEntryTest < ActiveSupport::TestCase
     entry = OnHandEntry.create!(ingredient_name: 'Cream',
                                 confirmed_at: start, interval: 7.0, ease: 1.5)
 
-    # observed=2, blended=(2+7)/2=4.5, clamped to STARTING_INTERVAL=7
+    # observed=2, blended=2*0.65+7*0.35=3.75, clamped to STARTING_INTERVAL=7
     entry.need_it!(now: start + 2)
     entry.reload
 
@@ -401,10 +401,10 @@ class OnHandEntryTest < ActiveSupport::TestCase
     entry.uncheck!(now:)
     entry.reload
 
-    blended = (10 + 14.0) / 2.0
+    blended = 10 * 0.65 + 14.0 * 0.35
 
     assert_in_delta blended, entry.interval
-    assert_in_delta 1.5 * (1 - 0.15), entry.ease
+    assert_in_delta 1.5 * (1 - 0.20), entry.ease
     assert_equal Date.parse('1970-01-01'), entry.confirmed_at
     assert_equal now, entry.depleted_at
   end
