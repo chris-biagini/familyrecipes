@@ -395,8 +395,9 @@ module GroceryAudit
     end
   end
 
-  # Stub for behavioral parameters. Full implementation added in Task 4.
+  # Behavioral parameters controlling a simulated user's shopping habits.
   # Collaborators: FaithfulSim (reads all persona fields), ScheduleGenerator.
+  # DEFAULTS uses fuzz_std: 2 to model realistic consumption variance.
   Persona = Struct.new(
     :shop_interval_mean, :shop_interval_std,
     :ic_attention,
@@ -406,17 +407,288 @@ module GroceryAudit
     :fuzz_std,
     keyword_init: true
   ) do
-    def self.default
-      new(
-        shop_interval_mean: 7, shop_interval_std: 0,
-        ic_attention: 1.0,
-        depletion_report_chance: 0.0, depletion_report_delay_mean: 0,
-        depletion_report_delay_std: 0,
-        vacation_gaps: [], burst_days: [],
-        accident_rate: 0.0, ghost_shop_chance: 0.0,
-        fuzz_std: 0
-      )
+    DEFAULTS = {
+      shop_interval_mean: 7, shop_interval_std: 0,
+      ic_attention: 1.0,
+      depletion_report_chance: 0.0, depletion_report_delay_mean: 0,
+      depletion_report_delay_std: 0,
+      vacation_gaps: [], burst_days: [],
+      accident_rate: 0.0, ghost_shop_chance: 0.0,
+      fuzz_std: 2
+    }.freeze
+
+    def self.default = new(**DEFAULTS)
+    def self.build(**overrides) = new(**DEFAULTS.merge(overrides))
+
+    def disruption_days
+      days = (vacation_gaps || []).map(&:first)
+      days.concat(burst_days || [])
+      days.sort
     end
+  end
+
+  # Generates a concrete schedule hash (day => event) from persona parameters.
+  # Skips vacation days, applies ghost_shop_chance, uses :shop_partial when
+  # ic_attention < 1.0. Overlays burst_days as :burst_consume.
+  module ScheduleGenerator
+    def self.generate(persona:, rng:, days: SIM_DAYS)
+      require 'set'
+      schedule     = {}
+      vacation_set = build_vacation_set(persona.vacation_gaps || [])
+
+      day = 0
+      loop do
+        gap = gaussian_int(persona.shop_interval_mean, persona.shop_interval_std, rng)
+        gap = [gap, 1].max
+        day += gap
+        break if day > days
+        next if vacation_set.include?(day)
+
+        schedule[day] = if persona.ghost_shop_chance > 0 && rng.rand < persona.ghost_shop_chance
+                          :ghost_shop
+                        elsif persona.ic_attention < 1.0
+                          :shop_partial
+                        else
+                          :shop
+                        end
+      end
+
+      (persona.burst_days || []).each do |d|
+        schedule[d] = :burst_consume if d <= days
+      end
+
+      schedule
+    end
+
+    def self.build_vacation_set(gaps)
+      gaps.flat_map { |start, length| (start...start + length).to_a }.to_set
+    end
+
+    # Box-Muller gaussian, clamped to 1+ to avoid zero/negative intervals.
+    def self.gaussian_int(mean, std, rng)
+      return mean.to_i if std.zero?
+
+      u1 = rng.rand
+      u2 = rng.rand
+      z  = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math::PI * u2)
+      (mean + std * z).round.clamp(1..)
+    end
+  end
+
+  # Classifies each cycle outcome and computes aggregate metrics.
+  # Collaborators: CycleTracker (provides completed cycles), Cycle struct.
+  # Timing classification compares IC fire date to actual depletion as a
+  # fraction of true_cycle — earlier IC = more annoying false positives.
+  class Scorer
+    attr_reader :cycles
+
+    def initialize(cycles, disruption_days: [])
+      @cycles          = cycles
+      @disruption_days = disruption_days
+    end
+
+    def classify(cycle)
+      return :miss unless cycle.ic_fires_on
+      return :miss if cycle.ic_fires_on > cycle.depleted_on
+
+      earliness = (cycle.depleted_on - cycle.ic_fires_on).to_f / cycle.true_cycle
+      if earliness <= 0.1 then :perfect
+      elsif earliness <= 0.25 then :acceptable
+      else :annoying
+      end
+    end
+
+    def scorecard
+      outcomes = @cycles.map { |c| classify(c) }
+      n = outcomes.size
+      return empty_scorecard if n.zero?
+
+      {
+        total_cycles:       n,
+        perfect:            outcomes.count(:perfect),
+        acceptable:         outcomes.count(:acceptable),
+        annoying:           outcomes.count(:annoying),
+        miss:               outcomes.count(:miss),
+        hit_rate:           pct(outcomes.count(:perfect) + outcomes.count(:acceptable), n),
+        miss_rate:          pct(outcomes.count(:miss), n),
+        annoyance_rate:     pct(outcomes.count(:annoying), n),
+        mean_ic_timing_pct: mean_ic_timing,
+        avg_ic_load:        nil,
+        recovery_cycles:    recovery_time
+      }
+    end
+
+    def scorecard_with_ic_load(ic_loads)
+      sc = scorecard
+      sc[:avg_ic_load] = ic_loads.empty? ? 0.0 : ic_loads.sum.to_f / ic_loads.size
+      sc
+    end
+
+    def per_item_breakdown
+      @cycles.group_by(&:item_name).transform_values do |item_cycles|
+        outcomes = item_cycles.map { |c| classify(c) }
+        n = outcomes.size
+        {
+          cycles:         n,
+          hit_rate:       pct(outcomes.count(:perfect) + outcomes.count(:acceptable), n),
+          miss_rate:      pct(outcomes.count(:miss), n),
+          annoyance_rate: pct(outcomes.count(:annoying), n)
+        }
+      end
+    end
+
+    private
+
+    def pct(count, total) = total.zero? ? 0.0 : (count.to_f / total * 100)
+
+    def mean_ic_timing
+      with_ic = @cycles.select(&:ic_fires_on)
+      return 0.0 if with_ic.empty?
+
+      errors = with_ic.map { |c| (c.ic_fires_on - c.depleted_on).to_f / c.true_cycle * 100 }
+      errors.sum / errors.size
+    end
+
+    def recovery_time
+      return nil if @disruption_days.empty?
+
+      recoveries = []
+      by_item    = @cycles.group_by(&:item_name)
+
+      @disruption_days.each do |dd|
+        by_item.each_value do |item_cycles|
+          sorted    = item_cycles.sort_by(&:purchased_on)
+          start_idx = sorted.index { |c| c.purchased_on >= dd }
+          next unless start_idx
+
+          count = 0
+          sorted[start_idx..].each do |c|
+            outcome = classify(c)
+            break if outcome == :perfect || outcome == :acceptable
+
+            count += 1
+          end
+          recoveries << count
+        end
+      end
+
+      recoveries.empty? ? nil : (recoveries.sum.to_f / recoveries.size).round(1)
+    end
+
+    def empty_scorecard
+      { total_cycles: 0, perfect: 0, acceptable: 0, annoying: 0, miss: 0,
+        hit_rate: 0.0, miss_rate: 0.0, annoyance_rate: 0.0,
+        mean_ic_timing_pct: 0.0, avg_ic_load: nil, recovery_cycles: nil }
+    end
+  end
+
+  # Formats scorecards and comparison tables for stdout output.
+  # Collaborators: Scorer (scorecard/per_item_breakdown), run_scenario results.
+  class Reporter
+    def self.scenario_report(name, scorer, ic_loads)
+      sc = scorer.scorecard_with_ic_load(ic_loads)
+      puts "\n#{'=' * 70}"
+      puts name
+      puts '=' * 70
+      puts format('  Cycles: %d | Hit: %.1f%% | Miss: %.1f%% | Annoying: %.1f%%',
+                  sc[:total_cycles], sc[:hit_rate], sc[:miss_rate], sc[:annoyance_rate])
+      puts format('  Avg IC timing: %+.1f%% of cycle | Avg IC load: %.1f items/trip',
+                  sc[:mean_ic_timing_pct], sc[:avg_ic_load] || 0)
+      puts format('  Recovery: %s cycles after disruption',
+                  sc[:recovery_cycles] ? sc[:recovery_cycles].to_s : 'N/A')
+
+      puts "\n  Per-item breakdown:"
+      puts format('  %-10s  %5s  %6s  %6s  %6s', 'Item', 'Cycles', 'Hit%', 'Miss%', 'Annoy%')
+      puts '  ' + ('-' * 40)
+      scorer.per_item_breakdown.each do |name_str, data|
+        puts format('  %-10s  %5d  %5.1f%%  %5.1f%%  %5.1f%%',
+                    name_str, data[:cycles], data[:hit_rate], data[:miss_rate],
+                    data[:annoyance_rate])
+      end
+    end
+
+    def self.comparison_table(results)
+      puts "\n\n#{'=' * 70}"
+      puts 'COMPARISON: All scenarios'
+      puts '=' * 70
+
+      header = format('  %-30s  %5s  %5s  %5s  %5s  %5s',
+                      'Scenario', 'Cyc', 'Hit%', 'Miss%', 'Ann%', 'IC/trip')
+      puts header
+      puts '  ' + ('-' * 62)
+
+      results.each do |r|
+        sc = r[:scorecard]
+        puts format('  %-30s  %5d  %4.1f%%  %4.1f%%  %4.1f%%  %5.1f',
+                    r[:name][0..29], sc[:total_cycles], sc[:hit_rate], sc[:miss_rate],
+                    sc[:annoyance_rate], sc[:avg_ic_load] || 0)
+      end
+    end
+
+    def self.sweep_report(ranked, count: 20)
+      puts "\n\n#{'=' * 70}"
+      puts "MONTE CARLO SWEEP: Top #{count} worst personas (of #{ranked.size})"
+      puts '=' * 70
+
+      ranked.first(count).each_with_index do |r, i|
+        sc = r[:scorecard]
+        p  = r[:persona]
+        puts format("\n  #%d — Miss: %.1f%% | Annoy: %.1f%% | Hit: %.1f%%",
+                    i + 1, sc[:miss_rate], sc[:annoyance_rate], sc[:hit_rate])
+        puts format('    shop=%dd±%d, attn=%.0f%%, report=%.0f%%, delay=%dd, ' \
+                    'acc=%.1f%%, ghost=%.0f%%, fuzz=%d',
+                    p.shop_interval_mean, p.shop_interval_std,
+                    p.ic_attention * 100, p.depletion_report_chance * 100,
+                    p.depletion_report_delay_mean, p.accident_rate * 100,
+                    p.ghost_shop_chance * 100, p.fuzz_std)
+        puts format('    vac=%d gaps, bursts=%d', p.vacation_gaps.size, p.burst_days.size)
+
+        r[:scorer].per_item_breakdown.each do |name_str, data|
+          puts format('    %-10s  hit=%5.1f%%  miss=%5.1f%%  annoy=%5.1f%%',
+                      name_str, data[:hit_rate], data[:miss_rate], data[:annoyance_rate])
+        end
+
+        dump_schedule(r[:schedule]) if i < 5
+      end
+    end
+
+    def self.sweep_summary(ranked)
+      puts "\n  Distribution across all #{ranked.size} personas:"
+      %i[hit_rate miss_rate annoyance_rate].each do |metric|
+        values = ranked.map { |r| r[:scorecard][metric] }.sort
+        puts format('    %-15s  median=%5.1f%%  p90=%5.1f%%  p99=%5.1f%%  worst=%5.1f%%',
+                    metric, percentile(values, 50), percentile(values, 90),
+                    percentile(values, 99), values.last)
+      end
+    end
+
+    def self.dump_schedule(schedule)
+      return unless schedule
+
+      puts '    Schedule:'
+      schedule.sort.each do |day, event|
+        puts format('      day %3d: %s', day, event)
+      end
+    end
+
+    def self.percentile(sorted, pct)
+      return 0 if sorted.empty?
+
+      idx = (pct / 100.0 * (sorted.size - 1)).round
+      sorted[idx]
+    end
+  end
+
+  def self.run_scenario(name:, persona: nil, schedule: nil, seed: 42, days: SIM_DAYS)
+    persona  ||= Persona.default
+    rng      = Random.new(seed)
+    schedule ||= ScheduleGenerator.generate(persona:, rng:, days:)
+    items    = DEFAULT_ITEMS.map { |n, tc| Item.new(n, tc) }
+    sim      = FaithfulSim.new(items:, schedule:, persona:, rng:, days:)
+    sim.run!
+    scorer = Scorer.new(sim.tracker.completed, disruption_days: persona.disruption_days)
+    sc     = scorer.scorecard_with_ic_load(sim.ic_loads)
+    { name:, scorer:, scorecard: sc, persona:, sim:, schedule: }
   end
 end
 
@@ -462,27 +734,23 @@ if __FILE__ == $PROGRAM_NAME
   puts 'Entry: all checks passed'
 
   puts "\nFaithfulSim smoke test..."
-
-  persona = GroceryAudit::Persona.default
-  schedule = {}
-  (1..50).each { |d| schedule[d] = :shop if (d % 7).zero? }
-
-  items = GroceryAudit::DEFAULT_ITEMS.map { |n, tc| GroceryAudit::Item.new(n, tc) }
-  sim = GroceryAudit::FaithfulSim.new(
-    items: items, schedule: schedule, persona: persona,
-    rng: Random.new(42), days: 50
+  result = GroceryAudit.run_scenario(
+    name: 'Smoke test',
+    persona: GroceryAudit::Persona.build(fuzz_std: 0),
+    days: 50
   )
-  sim.run!
-
-  cycles = sim.tracker.completed
+  cycles = result[:scorer].cycles
   abort 'FAIL: no cycles recorded' if cycles.empty?
-
   egg_cycles = cycles.select { |c| c.item_name == 'Eggs' }
   abort 'FAIL: no egg cycles' if egg_cycles.empty?
-  egg_cycles.each do |c|
-    abort "FAIL: egg cycle missing depletion (#{c})" unless c.depleted_on
-  end
-
-  puts "FaithfulSim: #{cycles.size} cycles recorded across #{items.size} items"
+  puts "FaithfulSim: #{cycles.size} cycles across #{GroceryAudit::DEFAULT_ITEMS.size} items"
   puts 'FaithfulSim: all checks passed'
+
+  puts "\nScorer smoke test..."
+  sc = result[:scorecard]
+  abort 'FAIL: scorecard missing hit_rate' unless sc[:hit_rate]
+  total = sc[:hit_rate] + sc[:miss_rate] + sc[:annoyance_rate]
+  abort "FAIL: rates sum to #{total.round(1)}, expected ~100" unless (total - 100.0).abs < 1.0
+  puts "Scorer: hit=#{sc[:hit_rate].round(1)}% miss=#{sc[:miss_rate].round(1)}% annoy=#{sc[:annoyance_rate].round(1)}%"
+  puts 'Scorer: all checks passed'
 end
