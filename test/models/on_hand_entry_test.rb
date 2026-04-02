@@ -19,8 +19,12 @@ class OnHandEntryTest < ActiveSupport::TestCase
     assert_in_delta 1.5, OnHandEntry::STARTING_EASE
     assert_in_delta 1.05, OnHandEntry::MIN_EASE
     assert_in_delta 2.5, OnHandEntry::MAX_EASE
-    assert_in_delta 0.03, OnHandEntry::EASE_BONUS
+    assert_in_delta 0.05, OnHandEntry::EASE_BONUS
     assert_in_delta 0.20, OnHandEntry::EASE_PENALTY
+    assert_in_delta 0.75, OnHandEntry::BLEND_WEIGHT
+    assert_in_delta 1.3, OnHandEntry::MAX_GROWTH_FACTOR
+    assert_in_delta 0.5, OnHandEntry::BURST_THRESHOLD
+    assert_equal 14, OnHandEntry::MIN_ESTABLISHED_INTERVAL
     assert_in_delta 0.78, OnHandEntry::SAFETY_MARGIN
   end
 
@@ -139,7 +143,7 @@ class OnHandEntryTest < ActiveSupport::TestCase
     entry.have_it!(now:)
     entry.reload
 
-    new_ease = 1.5 + 0.03
+    new_ease = 1.5 + 0.05
     expected_interval = 10.0 * [new_ease, 1.3].min
 
     assert_equal now, entry.confirmed_at
@@ -155,12 +159,12 @@ class OnHandEntryTest < ActiveSupport::TestCase
 
     # Entry expires at: Mar 1 + MIN(14*0.78=10, 14-2=12) = Mar 1 + 10 = Mar 11.
     # Call have_it! on Mar 14 → not on hand, triggers anchored growth.
-    # Anchored growth: 14 * min(1.53, 1.3) = 14 * 1.3 = 18.2 → Mar 1 + 18 = Mar 19 >= Mar 14 → anchor holds.
+    # Anchored growth: 14 * min(1.55, 1.3) = 14 * 1.3 = 18.2 → Mar 1 + 18 = Mar 19 >= Mar 14 → anchor holds.
     entry.have_it!(now: today + 13)
     entry.reload
 
     assert_equal today, entry.confirmed_at
-    assert_in_delta 1.53, entry.ease
+    assert_in_delta 1.55, entry.ease
     assert_in_delta 14.0 * 1.3, entry.interval
   end
 
@@ -169,7 +173,7 @@ class OnHandEntryTest < ActiveSupport::TestCase
     entry = OnHandEntry.create!(ingredient_name: 'Flour',
                                 confirmed_at: start, interval: 7.0, ease: 1.5)
 
-    # Anchored growth: 7 * min(1.53, 1.3) = 7 * 1.3 = 9.1 → start + 9 = Jan 10.
+    # Anchored growth: 7 * min(1.55, 1.3) = 7 * 1.3 = 9.1 → start + 9 = Jan 10.
     # Checking on Jan 20 can't cover → reset confirmed_at, no ease bump.
     now = Date.new(2026, 1, 20)
     entry.have_it!(now:)
@@ -242,7 +246,7 @@ class OnHandEntryTest < ActiveSupport::TestCase
     entry.reload
 
     observed = 10
-    blended = (observed * 0.65) + (14.0 * 0.35)
+    blended = (observed * 0.75) + (14.0 * 0.25)
 
     assert_in_delta blended, entry.interval
     assert_in_delta 1.5 * (1 - 0.20), entry.ease
@@ -255,7 +259,7 @@ class OnHandEntryTest < ActiveSupport::TestCase
     entry = OnHandEntry.create!(ingredient_name: 'Cream',
                                 confirmed_at: start, interval: 7.0, ease: 1.5)
 
-    # observed=2, blended=2*0.65+7*0.35=3.75, clamped to STARTING_INTERVAL=7
+    # observed=2, blended=2*0.75+7*0.25=3.25, clamped to STARTING_INTERVAL=7
     entry.need_it!(now: start + 2)
     entry.reload
 
@@ -401,7 +405,7 @@ class OnHandEntryTest < ActiveSupport::TestCase
     entry.uncheck!(now:)
     entry.reload
 
-    blended = (10 * 0.65) + (14.0 * 0.35)
+    blended = (10 * 0.75) + (14.0 * 0.25)
 
     assert_in_delta blended, entry.interval
     assert_in_delta 1.5 * (1 - 0.20), entry.ease
