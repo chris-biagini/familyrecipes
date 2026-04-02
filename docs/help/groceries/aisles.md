@@ -21,8 +21,8 @@ Reordering to match your store's layout can make shopping faster.
 
 ## Renaming aisles
 
-Click the rename button next to an aisle to edit its name. Renaming an
-aisle updates all ingredients assigned to it automatically.
+Click an aisle name to edit it. Renaming an aisle updates all ingredients
+assigned to it automatically.
 
 ## Adding and removing aisles
 

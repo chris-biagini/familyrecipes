@@ -29,7 +29,7 @@ On the homepage, click the **edit** button next to Categories to open the
 category editor:
 
 - **Reorder**: use the arrow buttons to move categories up or down
-- **Rename**: click the rename button next to a category name — all recipes in that category update automatically
+- **Rename**: click a category name to edit it — all recipes in that category update automatically
 - **Delete**: click the × on a category to remove it — its recipes move to Miscellaneous
 
 ## Tags
