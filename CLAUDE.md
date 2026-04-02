@@ -324,26 +324,11 @@ assertions (`Minitest/EmptyLineBeforeAssertionMethods`).
 
 ## Release Audit
 
-Three-tier quality gate system. Tier 1 (CI) runs automatically. Tier 2 and 3
-are run before tagging releases.
-
-**Tier 2 — every release (`rake release:audit`):**
-Code coverage floor, dead code detection, dependency health + license audit,
-database schema integrity, doc-vs-app contract verification. Writes a
-SHA-stamped marker to `tmp/release_audit_pass.txt`.
-
-**Tier 3 — minor/major releases (`rake release:audit:full`):**
-Tier 2 + Playwright security pen tests, exploratory QA walkthrough,
-accessibility spot-check (axe-core), performance baseline. Requires a running
-dev server (`MULTI_KITCHEN=true bin/dev`). Writes marker to
-`tmp/release_audit_full_pass.txt`.
-
-**Enforcement:** Pre-push hook (installed by `bin/setup`) blocks tag pushes
-unless the matching audit marker exists, is fresh (< 48h), and matches HEAD.
-CI also runs Tier 2 on tag pushes as a safety net.
-
-**Config:** `config/release_audit.yml` (thresholds), `config/debride_allowlist.txt`
-(dead code false positives), `config/license_allowlist.yml` (license overrides).
+Three-tier quality gate: Tier 1 (CI, automatic), Tier 2 (before any release),
+Tier 3 (before minor/major). Pre-push hook blocks tag pushes without a fresh
+(< 48h) audit marker matching HEAD. Tier 3 requires a running dev server
+(`MULTI_KITCHEN=true bin/dev`). Config: `config/release_audit.yml`,
+`config/debride_allowlist.txt`, `config/license_allowlist.yml`.
 
 ```bash
 rake release:audit           # Tier 2 (before any release)
@@ -417,13 +402,6 @@ at boot — they do not hot-reload.
 **PWA.** `rake pwa:icons` generates PNGs from `app/assets/images/favicon.svg`
 (requires `rsvg-convert`/`librsvg2-bin`). Service worker is a minimal
 install stub — see its header comment.
-
-**Visual companion.** The brainstorming visual companion server must bind to
-`0.0.0.0` (`--host 0.0.0.0`) — the default `127.0.0.1` is unreachable from
-the user's browser in this remote setup. When providing links to the
-companion, substitute your current LAN IP or hostname in place of `localhost`.
-You have explicit permission to use the visual companion server; you don't
-need to ask before spawning it.
 
 **Skills.** Always use the superpowers skill when getting ready to write code.
 
