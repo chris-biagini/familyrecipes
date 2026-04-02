@@ -229,8 +229,10 @@
   border-radius: 3px;
   transition: color var(--duration-fast) ease;
 }
-.usda-import-btn:hover {
-  color: var(--red);
+@media (hover: hover) {
+  .usda-import-btn:hover {
+    color: var(--red);
+  }
 }
 .usda-import-btn svg {
   display: block;
@@ -249,7 +251,11 @@
   font-size: 0.85rem;
   color: var(--red);
 }
-.usda-more-btn:hover { background: var(--hover-bg); }
+@media (hover: hover) {
+  .usda-more-btn:hover {
+    background: var(--hover-bg);
+  }
+}
 .usda-no-results {
   padding: 0.75rem;
   text-align: center;
@@ -352,7 +358,11 @@
   font-size: 0.85rem;
   cursor: pointer;
 }
-.editor-density-candidate-row:hover { color: var(--red); }
+@media (hover: hover) {
+  .editor-density-candidate-row:hover {
+    color: var(--red);
+  }
+}
 .editor-density-candidate-row input[type="radio"] { margin-right: 0.4rem; }
 
 .editor-form-row {
@@ -411,9 +421,11 @@
   border-radius: 3px;
 }
 
-.editor-btn-icon:hover {
-  color: var(--danger-color);
-  background: var(--danger-hover-bg);
+@media (hover: hover) {
+  .editor-btn-icon:hover {
+    color: var(--danger-color);
+    background: var(--danger-hover-bg);
+  }
 }
 
 .editor-add-portion {
@@ -454,8 +466,10 @@
   padding: 0 0.1rem;
 }
 
-.editor-alias-remove:hover {
-  color: var(--danger-color);
+@media (hover: hover) {
+  .editor-alias-remove:hover {
+    color: var(--danger-color);
+  }
 }
 
 .editor-alias-add-row {
@@ -580,7 +594,11 @@
   cursor: pointer;
   padding: 0.15rem 0;
 }
-.nf-disclosure summary:hover { color: var(--red); }
+@media (hover: hover) {
+  .nf-disclosure summary:hover {
+    color: var(--red);
+  }
+}
 .nf-disclosure-body {
   display: grid;
   grid-template-rows: 0fr;

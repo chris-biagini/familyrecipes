@@ -35,9 +35,11 @@
   border-left: 2px solid transparent;
 }
 
-#recipe-selector .category li:hover {
-  background-color: var(--hover-bg);
-  border-left-color: var(--red);
+@media (hover: hover) {
+  #recipe-selector .category li:hover {
+    background-color: var(--hover-bg);
+    border-left-color: var(--red);
+  }
 }
 
 #recipe-selector .category input[type="checkbox"] {
@@ -57,9 +59,11 @@
   transition: color var(--duration-fast) ease;
 }
 
-#recipe-selector .category .recipe-link:hover {
-  color: var(--red);
-  text-decoration: underline;
+@media (hover: hover) {
+  #recipe-selector .category .recipe-link:hover {
+    color: var(--red);
+    text-decoration: underline;
+  }
 }
 
 /* Availability badges — all states share the same red accent.
@@ -116,9 +120,11 @@
 .opacity-10 { opacity: 1; }
 
 /* Snap availability pill opacity to full on row hover */
-#recipe-selector li:hover .availability-single,
-#recipe-selector li:hover .collapse-header {
-  opacity: 1 !important;
+@media (hover: hover) {
+  #recipe-selector li:hover .availability-single,
+  #recipe-selector li:hover .collapse-header {
+    opacity: 1 !important;
+  }
 }
 
 .recipe-selector-item .collapse-body {
@@ -193,9 +199,11 @@
   border-radius: 3px;
 }
 
-.qb-zone-edit:hover {
-  color: var(--red);
-  background: var(--hover-bg);
+@media (hover: hover) {
+  .qb-zone-edit:hover {
+    color: var(--red);
+    background: var(--hover-bg);
+  }
 }
 
 .quick-bites-list {
@@ -245,8 +253,10 @@
   z-index: 1;
 }
 
-.dinner-picker-close:hover {
-  color: var(--text);
+@media (hover: hover) {
+  .dinner-picker-close:hover {
+    color: var(--text);
+  }
 }
 
 .dinner-picker-heading {

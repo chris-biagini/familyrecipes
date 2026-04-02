@@ -43,8 +43,10 @@ a.recipe-link {
   margin-left: auto;
 }
 
-.embedded-recipe-link:hover {
-  color: var(--red);
+@media (hover: hover) {
+  .embedded-recipe-link:hover {
+    color: var(--red);
+  }
 }
 
 .embedded-description {

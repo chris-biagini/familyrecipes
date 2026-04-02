@@ -114,11 +114,13 @@
   background: none;
 }
 
-.editor-header .editor-close:hover {
-  color: var(--text-soft);
-  border: none;
-  background: none;
-  box-shadow: none;
+@media (hover: hover) {
+  .editor-header .editor-close:hover {
+    color: var(--text-soft);
+    border: none;
+    background: none;
+    box-shadow: none;
+  }
 }
 
 .editor-errors {
@@ -328,7 +330,11 @@
   justify-content: space-between;
   align-items: center;
 }
-.tag-autocomplete__item:hover,
+@media (hover: hover) {
+  .tag-autocomplete__item:hover {
+    background: rgba(179, 58, 58, 0.06);
+  }
+}
 .tag-autocomplete__item--highlighted {
   background: rgba(179, 58, 58, 0.06);
 }
@@ -488,8 +494,10 @@
   width: 100%;
 }
 
-button.aisle-name:hover {
-  color: var(--red);
+@media (hover: hover) {
+  button.aisle-name:hover {
+    color: var(--red);
+  }
 }
 
 .aisle-rename-input {
@@ -950,9 +958,11 @@ textarea.input-base {
   transition: opacity var(--duration-fast) ease, border-color var(--duration-fast) ease;
 }
 
-.editor-mode-toggle:hover {
-  opacity: 1;
-  border-color: var(--text);
+@media (hover: hover) {
+  .editor-mode-toggle:hover {
+    opacity: 1;
+    border-color: var(--text);
+  }
 }
 
 .editor-mode-toggle:focus-visible {
@@ -971,8 +981,10 @@ textarea.input-base {
   transition: color var(--duration-fast) ease;
 }
 
-.editor-help-link:hover {
-  color: var(--red);
+@media (hover: hover) {
+  .editor-help-link:hover {
+    color: var(--red);
+  }
 }
 
 .editor-help-link svg {

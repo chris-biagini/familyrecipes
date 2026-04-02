@@ -27,8 +27,10 @@
   flex-shrink: 0;
 }
 
-.custom-item-remove:hover {
-  color: var(--danger-color);
+@media (hover: hover) {
+  .custom-item-remove:hover {
+    color: var(--danger-color);
+  }
 }
 
 /* Shopping List */
@@ -115,9 +117,11 @@
   color: var(--text-light);
 }
 
-.to-buy-section summary:hover,
-.on-hand-section summary:hover {
-  color: var(--text-soft);
+@media (hover: hover) {
+  .to-buy-section summary:hover,
+  .on-hand-section summary:hover {
+    color: var(--text-soft);
+  }
 }
 
 .aisle-check {
@@ -228,10 +232,12 @@
   color: var(--red);
 }
 
-.btn-need-it:hover,
-.btn-have-it:hover {
-  background: var(--red);
-  color: white;
+@media (hover: hover) {
+  .btn-need-it:hover,
+  .btn-have-it:hover {
+    background: var(--red);
+    color: white;
+  }
 }
 
 /* Check-off Items */

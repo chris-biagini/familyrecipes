@@ -283,10 +283,12 @@ body {
   transition: background-color var(--duration-fast) ease, border-color var(--duration-fast) ease, color var(--duration-fast) ease, box-shadow var(--duration-fast) ease;
 }
 
-.btn:hover {
-  color: var(--text);
-  border-color: var(--text);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+@media (hover: hover) {
+  .btn:hover {
+    color: var(--text);
+    border-color: var(--text);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
 }
 
 .btn:focus-visible {
@@ -300,9 +302,11 @@ body {
   border-color: var(--red);
 }
 
-.btn-primary:hover {
-  background: var(--accent-hover);
-  border-color: var(--accent-hover);
+@media (hover: hover) {
+  .btn-primary:hover {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+  }
 }
 
 .btn-danger {
@@ -310,10 +314,12 @@ body {
   border-color: var(--danger-color);
 }
 
-.btn-danger:hover {
-  background: var(--danger-hover-bg);
-  color: var(--danger-color);
-  border-color: var(--danger-color);
+@media (hover: hover) {
+  .btn-danger:hover {
+    background: var(--danger-hover-bg);
+    color: var(--danger-color);
+    border-color: var(--danger-color);
+  }
 }
 
 .btn-sm {
@@ -330,8 +336,10 @@ body {
   font-family: var(--font-body);
 }
 
-.btn-link:hover {
-  text-decoration-style: solid;
+@media (hover: hover) {
+  .btn-link:hover {
+    text-decoration-style: solid;
+  }
 }
 
 .btn-ghost {
@@ -349,9 +357,11 @@ body {
   transition: color var(--duration-fast) ease, background var(--duration-fast) ease;
 }
 
-.btn-ghost:hover {
-  color: var(--red);
-  background: var(--hover-bg);
+@media (hover: hover) {
+  .btn-ghost:hover {
+    color: var(--red);
+    background: var(--hover-bg);
+  }
 }
 
 .btn-ghost:focus-visible {
@@ -376,9 +386,11 @@ body {
   transition: color var(--duration-fast) ease, border-color var(--duration-fast) ease;
 }
 
-.btn-icon-round:hover {
-  color: var(--text-soft);
-  border-color: var(--rule);
+@media (hover: hover) {
+  .btn-icon-round:hover {
+    color: var(--text-soft);
+    border-color: var(--rule);
+  }
 }
 
 .btn-icon-round:disabled {
@@ -386,14 +398,18 @@ body {
   cursor: default;
 }
 
-.btn-icon-round.btn-danger:hover {
-  color: var(--danger-color);
-  border-color: var(--danger-color);
+@media (hover: hover) {
+  .btn-icon-round.btn-danger:hover {
+    color: var(--danger-color);
+    border-color: var(--danger-color);
+  }
 }
 
-.btn-icon-round.btn-primary:hover {
-  color: var(--red);
-  border-color: var(--red);
+@media (hover: hover) {
+  .btn-icon-round.btn-primary:hover {
+    color: var(--red);
+    border-color: var(--red);
+  }
 }
 
 .btn-icon-round-lg {
@@ -414,9 +430,11 @@ body {
   transition: background var(--duration-fast) ease, border-color var(--duration-fast) ease;
 }
 
-.btn-pill:hover {
-  background: var(--hover-bg);
-  border-color: var(--red);
+@media (hover: hover) {
+  .btn-pill:hover {
+    background: var(--hover-bg);
+    border-color: var(--red);
+  }
 }
 
 .btn-pill.active {
@@ -424,6 +442,12 @@ body {
   color: white;
   border-color: var(--red);
 }
+
+button:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+
 /* ── Input base ────────────────────────────────────────────── */
 
 .input-base {
@@ -446,6 +470,14 @@ body {
 
 .input-base::placeholder {
   color: var(--text-light);
+}
+
+@media (max-width: 600px) {
+  .input-base,
+  .input-base.input-sm,
+  select.input-base {
+    font-size: 16px;
+  }
 }
 
 .input-lg {
@@ -533,9 +565,11 @@ main a {
   transition: color var(--duration-normal) ease, text-decoration-color var(--duration-normal) ease;
 }
 
-main a:hover {
-  color: var(--red);
-  text-decoration-color: var(--red);
+@media (hover: hover) {
+  main a:hover {
+    color: var(--red);
+    text-decoration-color: var(--red);
+  }
 }
 
 main a:focus-visible {
@@ -623,8 +657,10 @@ header .recipe-meta a {
   text-decoration: none;
 }
 
-header .recipe-meta a:hover {
-  text-decoration: underline;
+@media (hover: hover) {
+  header .recipe-meta a:hover {
+    text-decoration: underline;
+  }
 }
 
 .recipe-tags {
@@ -642,7 +678,9 @@ header .recipe-meta a:hover {
   letter-spacing: 0.05em;
 }
 
-.recipe-tag-pill:hover { opacity: 0.8; }
+@media (hover: hover) {
+  .recipe-tag-pill:hover { opacity: 0.8; }
+}
 
 /* Scale bar — centered disclosure toggle + vertical reveal */
 .scale-bar {
@@ -666,9 +704,11 @@ header .recipe-meta a:hover {
   transition: color var(--duration-normal) ease, background-color var(--duration-slow) ease-out;
 }
 
-.scale-toggle:hover {
-  color: var(--red);
-  background-color: var(--hover-bg);
+@media (hover: hover) {
+  .scale-toggle:hover {
+    color: var(--red);
+    background-color: var(--hover-bg);
+  }
 }
 
 .scale-toggle::before {

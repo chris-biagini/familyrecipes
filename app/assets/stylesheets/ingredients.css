@@ -26,15 +26,21 @@
 }
 
 .sortable { cursor: pointer; user-select: none; white-space: nowrap; }
-.sortable:hover { color: var(--text); }
+@media (hover: hover) {
+  .sortable:hover {
+    color: var(--text);
+  }
+}
 .sort-arrow { font-size: 0.65rem; margin-left: 0.15em; }
 
 .ingredient-row {
   cursor: pointer;
   transition: background-color var(--duration-fast) ease;
 }
-.ingredient-row:hover {
-  background-color: var(--hover-bg);
+@media (hover: hover) {
+  .ingredient-row:hover {
+    background-color: var(--hover-bg);
+  }
 }
 .ingredient-row td {
   padding: 0.5rem;
