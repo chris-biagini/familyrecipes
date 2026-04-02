@@ -621,9 +621,10 @@
 /* Mobile: all editors fill screen, no horizontal scroll, bigger tap targets */
 @media (max-width: 720px) {
   .editor-dialog {
+    position: fixed;
     inset: 0;
     width: 100%;
-    height: 100dvh;
+    height: 100%;
     max-width: none;
     max-height: none;
     border-radius: 0;
