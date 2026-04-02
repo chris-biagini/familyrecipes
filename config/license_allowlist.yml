@@ -1,0 +1,7 @@
+# Gems whose detected license would otherwise trip the copyleft check.
+# Dev/test-only tools that never ship in the production image.
+#
+# Format: gem_name: reason
+
+bundler-audit: "Dev-only auditing tool; GPL-3.0 does not affect the application"
+brakeman: "Dev-only static analysis; Brakeman Public Use License is non-copyleft but non-standard"
