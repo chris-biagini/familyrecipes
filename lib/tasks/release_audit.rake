@@ -115,9 +115,19 @@ namespace :release do
       end
     end
 
-    desc 'Exploratory QA flows (Tier 3 — not yet implemented)'
-    task explore: :environment do
-      raise 'not yet implemented'
+    desc 'Run Playwright exploratory QA walkthrough'
+    task :explore do
+      puts '--- Exploratory QA walkthrough ---'
+      puts 'NOTE: Requires a running dev server (MULTI_KITCHEN=true bin/dev)'
+
+      unless system('npx playwright test test/release/exploratory/ ' \
+                     '--config=test/release/exploratory/playwright.config.mjs ' \
+                     '--reporter=list ' \
+                     '--ignore-snapshots')
+        abort 'Exploratory QA failed — see above.'
+      end
+
+      puts 'Exploratory QA: PASS ✓'
     end
 
     desc 'Accessibility spot-check (Tier 3 — not yet implemented)'
