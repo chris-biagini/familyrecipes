@@ -1313,6 +1313,23 @@ footer small {
   }
 
 }
+
+/* Phone FAB adjustments — no sticky nav to clear, need FAB clearance */
+@media (pointer: coarse) and (hover: none) and (max-width: 600px) {
+  main {
+    padding-top: 2rem;
+  }
+
+  #recipe-listings,
+  [data-recipe-filter-target="category"] {
+    scroll-margin-top: 0.5rem;
+  }
+
+  body {
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
+  }
+}
+
 html:has(dialog[open]) {
   overflow: hidden;
 }
