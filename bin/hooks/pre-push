@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+#
+# Pre-push hook: lint on every push, release audit enforcement on tag pushes.
+# Canonical location: bin/hooks/pre-push (symlinked to .git/hooks/pre-push).
+
+set -euo pipefail
+
+echo "Running pre-push lint..."
+bundle exec rake lint
+
+# Detect tag pushes from stdin (git passes refs being pushed)
+while read -r local_ref local_sha remote_ref remote_sha; do
+  if [[ "$remote_ref" == refs/tags/v* ]]; then
+    TAG="${remote_ref#refs/tags/}"
+    # Strip optional letter suffix for classification (v0.5.4a → v0.5.4)
+    BASE_TAG=$(echo "$TAG" | sed 's/[a-zA-Z]*$//')
+
+    # Classify tag tier
+    if echo "$BASE_TAG" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+      TIER="patch"
+    elif echo "$BASE_TAG" | grep -qE '^v[0-9]+(\.[0-9]+)?$'; then
+      TIER="minor_or_major"
+    else
+      continue
+    fi
+
+    HEAD_SHA=$(git rev-parse HEAD)
+
+    # Tier 2: require release:audit marker for all releases
+    MARKER="tmp/release_audit_pass.txt"
+    if [ ! -f "$MARKER" ]; then
+      echo ""
+      echo "ERROR: Release audit not run. Execute: rake release:audit"
+      exit 1
+    fi
+
+    # Verify marker matches current HEAD (no commits since audit)
+    MARKER_SHA=$(head -1 "$MARKER")
+    if [ "$MARKER_SHA" != "$HEAD_SHA" ]; then
+      echo ""
+      echo "ERROR: Release audit was run against a different commit."
+      echo "  Audit SHA: $MARKER_SHA"
+      echo "  HEAD SHA:  $HEAD_SHA"
+      echo "Re-run: rake release:audit"
+      exit 1
+    fi
+
+    # Check marker freshness (48 hours = 172800 seconds)
+    MARKER_AGE=$(( $(date +%s) - $(stat -c %Y "$MARKER" 2>/dev/null || echo 0) ))
+    if [ "$MARKER_AGE" -gt 172800 ]; then
+      echo ""
+      echo "ERROR: Release audit is stale (>48h). Re-run: rake release:audit"
+      exit 1
+    fi
+
+    # Tier 3: require full audit marker for minor/major
+    if [ "$TIER" = "minor_or_major" ]; then
+      FULL_MARKER="tmp/release_audit_full_pass.txt"
+      if [ ! -f "$FULL_MARKER" ]; then
+        echo ""
+        echo "ERROR: Full release audit not run for $TIER release."
+        echo "Execute: rake release:audit:full"
+        exit 1
+      fi
+      FULL_SHA=$(head -1 "$FULL_MARKER")
+      if [ "$FULL_SHA" != "$HEAD_SHA" ]; then
+        echo ""
+        echo "ERROR: Full audit was run against a different commit."
+        echo "Re-run: rake release:audit:full"
+        exit 1
+      fi
+      FULL_AGE=$(( $(date +%s) - $(stat -c %Y "$FULL_MARKER" 2>/dev/null || echo 0) ))
+      if [ "$FULL_AGE" -gt 172800 ]; then
+        echo ""
+        echo "ERROR: Full release audit is stale (>48h). Re-run: rake release:audit:full"
+        exit 1
+      fi
+    fi
+
+    echo "Release audit verified for $TAG ($TIER) ✓"
+  fi
+done
+
+echo "Pre-push checks passed."

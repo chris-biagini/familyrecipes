@@ -17,6 +17,15 @@ FileUtils.chdir APP_ROOT do
   puts '== Installing dependencies =='
   system('bundle check') || system!('bundle install')
 
+  puts "\n== Installing git hooks =="
+  hooks_dir = File.join(APP_ROOT, '.git', 'hooks')
+  source_hook = File.join(APP_ROOT, 'bin', 'hooks', 'pre-push')
+  target_hook = File.join(hooks_dir, 'pre-push')
+  if File.exist?(source_hook)
+    FileUtils.ln_sf(source_hook, target_hook)
+    puts "  Symlinked bin/hooks/pre-push → .git/hooks/pre-push"
+  end
+
   puts "\n== Removing old logs and tempfiles =="
   system! 'bin/rails log:clear tmp:clear'
 
