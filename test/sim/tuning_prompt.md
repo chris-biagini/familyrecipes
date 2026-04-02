@@ -39,18 +39,20 @@ Three "Core tier" scenarios must ALL meet these targets:
 
 ### Constants
 
-Nine constants in `OnHandEntry` (file: `app/models/on_hand_entry.rb`):
+Eleven constants in `OnHandEntry` (file: `app/models/on_hand_entry.rb`):
 
 ```ruby
 STARTING_INTERVAL = 7    # Initial interval for new items (days)
 STARTING_EASE = 1.5      # Initial ease factor
 MIN_EASE = 1.05          # Floor for ease factor
 MAX_EASE = 2.5           # Ceiling for ease factor
-EASE_BONUS = 0.03        # Ease bump on "Have It" confirmation
+EASE_BONUS = 0.05        # Ease bump on "Have It" confirmation
 EASE_PENALTY = 0.20      # Ease penalty on "Need It" depletion
 SAFETY_MARGIN = 0.78     # Proportional fraction for IC timing
-BLEND_WEIGHT = 0.65      # Observation weight in depletion blending (0.5–0.8)
+BLEND_WEIGHT = 0.75      # Observation weight in depletion blending (0.5–0.8)
 MAX_GROWTH_FACTOR = 1.3  # Max interval multiplier per have_it! cycle (1.2–1.5)
+BURST_THRESHOLD = 0.5    # Ratio below which depletion is classified as burst (0.3–0.7)
+MIN_ESTABLISHED_INTERVAL = 14  # Min interval before burst detection activates (10–21)
 ```
 
 ### Safety Margin Formula
@@ -129,15 +131,39 @@ self.interval = [interval * [ease, MAX_GROWTH_FACTOR].min, MAX_INTERVAL].min
 @interval = [interval * [ease, MAX_GROWTH_FACTOR].min, MAX_INTERVAL].min
 ```
 
+### Burst Detection
+
+The burst gate appears in TWO places that must stay in sync:
+
+**1. Ruby `burst?`** (on_hand_entry.rb, private method):
+```ruby
+def burst?(observed)
+  interval >= MIN_ESTABLISHED_INTERVAL && observed < interval * BURST_THRESHOLD
+end
+```
+
+**2. Sim `burst?`** (test/sim/grocery_audit.rb, Entry class):
+```ruby
+def burst?(observed)
+  interval >= MIN_ESTABLISHED_INTERVAL && observed < interval * BURST_THRESHOLD
+end
+```
+
+When `burst?` returns true, `deplete_observed` skips the blend and ease penalty
+entirely — the item is marked depleted but interval and ease are preserved.
+
+You may adjust BURST_THRESHOLD and MIN_ESTABLISHED_INTERVAL. Do not change the
+gate structure (the two conditions or the full-bypass behavior).
+
 ### What NOT to Change
 
 Do not modify: `FaithfulSim`, `CycleTracker`, `Scorer`, scenario definitions,
 Monte Carlo sweep, the conformance test, or methods other than `deplete_observed`,
 `grow_standard`, and `grow_anchored`.
 
-Within those three methods, only change the blending formula and growth cap
-formula. Do not restructure the methods or change their other behavior (ease
-updates, sentinel handling, floor clamping, etc.).
+Within those methods, only change formulas and constants. Do not restructure
+the methods, change the burst gate structure, or alter behavior outside the
+blend/ease/growth-cap/burst paths.
 
 Only change constants and the formulas documented above.
 
@@ -246,3 +272,10 @@ Otherwise, continue to the next iteration.
   more oscillation.
 - The conformance test is your safety net. If it fails, you broke something.
   Don't skip it.
+- **BURST_THRESHOLD** controls outlier sensitivity. Lower values (0.3) only
+  catch extreme bursts. Higher values (0.7) catch more but risk ignoring
+  genuine lifestyle changes. If S9 annoyance is too high, raise the threshold.
+  If other scenarios show slow adaptation, lower it.
+- **MIN_ESTABLISHED_INTERVAL** gates burst detection on item maturity. Lower
+  values (10) protect more items but risk suppressing learning for medium-cycle
+  items. Higher values (21) only protect long-cycle pantry staples.
