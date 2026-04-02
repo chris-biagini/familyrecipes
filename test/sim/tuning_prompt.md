@@ -178,14 +178,15 @@ git commit -m "Tuning iteration N: [brief description of change]"
 
 ### Step 8: Check completion
 
-**If ALL of these are true, output `TUNING_COMPLETE` and stop:**
+**If ALL of these are true, output `<promise>TUNING_COMPLETE</promise>` and stop:**
 - S1 hit rate ≥50% AND miss rate ≤40% AND annoyance rate ≤15%
 - S7 hit rate ≥50% AND miss rate ≤40% AND annoyance rate ≤15%
 - S9 hit rate ≥50% AND miss rate ≤40% AND annoyance rate ≤15%
 - No scenario has miss rate >85%
 
 **If the last 3 consecutive iterations showed no improvement on ANY Core
-tier metric, output `TUNING_STALLED` and stop.**
+tier metric, output `<promise>TUNING_COMPLETE</promise>` and stop** (with a
+note in the log that it stalled).
 
 Otherwise, continue to the next iteration.
 
