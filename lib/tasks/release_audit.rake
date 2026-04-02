@@ -78,6 +78,9 @@ namespace :release do # rubocop:disable Metrics/BlockLength
           failures << check unless error.success?
         rescue RuntimeError => error
           puts "  Skipped: #{error.message}"
+        ensure
+          # Let browser processes fully exit between Tier 3 checks
+          sleep 2
         end
       end
 
