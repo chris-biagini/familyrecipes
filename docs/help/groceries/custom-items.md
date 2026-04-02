@@ -17,10 +17,10 @@ have a recipe.
 **From the Groceries page:** Use the input at the bottom of the page. Type
 a name and press Enter.
 
-**From the search overlay:** Press `/` (or tap the search icon in the nav)
-anywhere in the app. Search for an ingredient or type a new item name, then
-press Enter or tap **Add to list**. The item is added directly to Groceries
-without leaving the current page.
+**From the search overlay:** Press `/` (or tap the search icon) anywhere in
+the app. Type the name of what you need. Under the **Add to grocery list**
+heading, click the item to add it straight to Groceries without leaving the
+current page.
 
 ## Placing items in a specific aisle
 
@@ -38,9 +38,10 @@ Without `@ Aisle`, the item also goes to Miscellaneous.
 
 ## Custom items and the schedule
 
-Custom items are not affected by the schedule system or by pruning. They
-stay in whatever state you put them in — To Buy or On Hand — until you
-remove them. They don't appear in Inventory Check.
+Custom items aren't part of the schedule system or the Inventory Check
+process. Items in To Buy stay there until you check them off or remove them.
+Once checked off, they disappear from the list the next day — handy for
+one-off purchases you don't need to track.
 
 ## Removing custom items
 

@@ -30,6 +30,18 @@ When the recipe is rendered, the referenced recipe's steps are embedded
 exactly as if they were written inline. Grocery quantities from embedded
 steps are included in the shopping list.
 
+### Multipliers and prep notes
+
+You can scale an embedded recipe and add a note:
+
+~~~
+> @[Pizza Dough], 2: Make a double batch.
+~~~
+
+The `, 2` multiplies the embedded recipe's quantities by 2. The text after
+the colon is a prep note that appears alongside the embedded steps. Both
+are optional — you can use just a multiplier or just a prep note.
+
 ## Linking to a recipe
 
 To insert a clickable link without embedding, use `@[Recipe Title]` in

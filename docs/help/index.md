@@ -16,7 +16,7 @@ The four main pages work together in a simple loop:
 1. **Recipes** — your recipe collection, organized by category
 2. **Menu** — choose what you're making this week
 3. **Groceries** — your shopping list, built from the Menu
-4. **Ingredients** — the ingredient database that powers nutrition and grocery tracking
+4. **Ingredients** — the ingredient catalog that powers nutrition and grocery tracking
 
 Start on the Recipes page. Add a few recipes, then go to Menu and check them
 off. The Groceries page will already have your list ready.
@@ -26,7 +26,7 @@ off. The Groceries page will already have your list ready.
 <div class="section-cards">
   <a href="{{ site.baseurl }}/recipes/format/" class="section-card">
     <h3>Recipe format</h3>
-    <p>Learn the simple Markdown syntax for writing recipes.</p>
+    <p>Learn the simple text format for writing recipes.</p>
   </a>
   <a href="{{ site.baseurl }}/recipes/editing/" class="section-card">
     <h3>Adding recipes</h3>

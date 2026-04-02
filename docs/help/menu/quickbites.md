@@ -18,8 +18,8 @@ QuickBites appear in an indented **Quick Bites** zone beneath each
 category's recipes. Check or uncheck them just like recipes.
 
 Each zone has a small **edit** button that opens the QuickBites editor
-focused on that category. There's also a global **Edit QuickBites** button
-in the page header that opens all categories at once.
+focused on that category. There's also an **Edit QuickBites** button in the
+page header that opens all categories at once.
 
 ## Format
 

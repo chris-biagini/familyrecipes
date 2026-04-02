@@ -16,9 +16,9 @@ household member checks a recipe, you'll see it checked too.
 
 ## Ingredient availability
 
-Each recipe row shows an availability indicator — a quick way to see how
-many of its ingredients you already have on hand (based on your Groceries
-On Hand list).
+Each recipe and QuickBite row shows an availability indicator — a quick way
+to see how many of its ingredients you already have on hand (based on your
+Groceries On Hand list).
 
 - **Single dot, filled**: you have the ingredient
 - **Single dot, hollow**: you don't have it

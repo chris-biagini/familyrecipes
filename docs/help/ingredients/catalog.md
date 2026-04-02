@@ -16,22 +16,22 @@ you don't add ingredients here manually.
 
 Use the search bar at the top to filter by name. Partial matches work.
 
-## Coverage filter
+## Filter pills
 
-The filter pills below the search bar let you focus on ingredients that
-need attention:
+The pills below the search bar let you filter the list and see counts at a
+glance:
 
-- **Not Resolvable** — ingredients that can't be used for nutrition
-  calculations. Usually this means no catalog entry, missing a density
-  value needed for unit conversion, or an unrecognized unit.
+| Pill | Shows |
+|------|-------|
+| **All** | Every ingredient |
+| **Complete** | Ingredients with full nutrition data and all conversions in place |
+| **Custom** | Ingredients where you've added or edited catalog data |
+| **No Aisle** | Ingredients without a grocery aisle assigned |
+| **No Nutrition** | Ingredients missing nutrient values |
+| **No Density** | Ingredients missing a volume-to-weight conversion |
+| **Not Resolvable** | Ingredients that can't be used for nutrition calculations (see below) |
 
-Click a pill to toggle the filter. Click again to clear it.
-
-## Coverage summary
-
-The bar above the ingredient table shows at a glance how many of your
-ingredients are fully resolvable for nutrition. This tells you roughly
-how complete your nutrition data is.
+Click a pill to filter the table. Click it again to go back to All.
 
 ## What "resolvable" means
 

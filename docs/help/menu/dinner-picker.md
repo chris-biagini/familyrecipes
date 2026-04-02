@@ -12,25 +12,17 @@ Not sure what to make? Click **What Should We Make?** on the Menu page.
 
 ## How it works
 
-The dinner picker suggests a recipe at random, but recent cooking history
-influences the draw. Recipes you've cooked recently are less likely to be
-suggested — so you don't end up making the same thing every week.
+The dinner picker suggests a recipe at random, weighted by your recent
+cooking history. Recipes you've cooked recently are less likely to come up,
+so you get more variety without having to think about it.
 
-Click the result to open the recipe. Click again to get a different
-suggestion. Each spin is independent.
+## Using the picker
 
-## Tag filters
+After a spin, you'll see the suggested recipe along with two options:
 
-Below the result, tag pills let you bias the draw. Each click cycles
-through three states:
+- **The recipe name** — click it to open the recipe and take a look
+- **Add to Menu** — accepts the suggestion and checks it off on the Menu page
 
-| State | Effect |
-|-------|--------|
-| (neutral) | No effect |
-| 👍 boost | Recipe is 2× as likely to be drawn |
-| 👎 suppress | Recipe is ¼ as likely to be drawn |
-
-Click a boosted tag again to suppress it. Click a suppressed tag to return
-it to neutral.
-
-Filters apply immediately — the next spin uses the current filter state.
+If you're not feeling it, hit the spin button again. The picker remembers
+what you've passed on and makes those recipes less likely to come up on
+the next spin, so you won't keep seeing the same suggestion.

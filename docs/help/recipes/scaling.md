@@ -8,8 +8,7 @@ next: /recipes/cross-references/
 
 # Scaling Recipes
 
-Click **Scale** in the recipe header (just above the ingredients) to open
-the scaling panel.
+Click **Scale** in the recipe header to open the scaling panel.
 
 ## Preset buttons
 
@@ -56,5 +55,5 @@ At 2×, these render as 16 and 120 g respectively. Word numbers work too:
 
 ## Resetting
 
-Click the **Reset** link that appears next to the input, or click the 1×
-preset. Scale returns to normal and the panel closes.
+Click the **Reset** button next to the input, or click the 1× preset. The
+scale factor returns to normal.
