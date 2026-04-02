@@ -24,12 +24,12 @@ class OnHandEntry < ApplicationRecord # rubocop:disable Metrics/ClassLength
   MIN_EASE = 1.1
   MAX_EASE = 2.5
   EASE_BONUS = 0.05
-  EASE_PENALTY = 0.15
+  EASE_PENALTY = 0.20
 
   # Items surface in Inventory Check before predicted depletion.
   # SAFETY_MARGIN gives proportional buffer; MIN_BUFFER ensures short-cycle
   # items (eggs, milk) get at least 2 days of warning.
-  SAFETY_MARGIN = 0.9
+  SAFETY_MARGIN = 0.8
   MIN_BUFFER = 2
 
   validates :ingredient_name, presence: true,

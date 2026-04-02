@@ -16,8 +16,8 @@ module GroceryAudit
   MIN_EASE          = 1.1
   MAX_EASE          = 2.5
   EASE_BONUS        = 0.05
-  EASE_PENALTY      = 0.15
-  SAFETY_MARGIN     = 0.9
+  EASE_PENALTY      = 0.20
+  SAFETY_MARGIN     = 0.8
   MIN_BUFFER        = 2
   SENTINEL          = -999_999
   SIM_DAYS          = 365
