@@ -100,8 +100,9 @@ after the title. Otherwise omit.
     Tags: comfort-food, baked
 
 - **Makes** — yield with a unit noun: "12 pancakes", "2 loaves", "1 loaf".
-  Must be a single number, not a range — "Makes: 4 loaves" not
-  "Makes: 3-4 loaves".
+  Must start with a number, not a range — "Makes: 4 loaves" not
+  "Makes: 3-4 loaves". Preserve weight descriptors from the source:
+  "Makes: 1 1/2-pound loaf" not "Makes: 1 loaf".
 - **Serves** — a plain number. If the source gives a range ("6-8"), use
   the lower number. Only include if the source specifies servings.
 - **Category** — one of: {{CATEGORIES}}. If none fit, use Miscellaneous.
@@ -141,8 +142,8 @@ Each step starts with a level-two heading:
 
 Step names: short imperative phrases, sentence case, ending with a period. "Make
 the sauce." not "Make the Sauce." When the source already uses heading-style
-labels ("For the dough:", "For the stew:"), adapt them to imperative form but
-keep the source's noun: "For the stew:" → "Make the stew." not "Build the stew."
+labels ("For the beef:", "For the stew:"), use "Make the [noun]." —
+"For the beef:" → "Make the beef." "For the stew:" → "Make the stew."
 
 **Ingredient ownership:** Each ingredient belongs to ONE step — the step where
 it's first introduced and primarily used. Don't re-list ingredients from earlier
