@@ -1,0 +1,39 @@
+# RecipeTin Eats - Roast Chicken Page Content
+
+## Page Overview
+This is a recipe page from RecipeTin Eats featuring a "Roast Chicken" recipe by Nagi. The page is heavily laden with analytics, advertising code, and tracking scripts.
+
+## Recipe Information
+
+**Title:** Roast Chicken
+
+**Author:** Nagi | RecipeTin Eats
+
+**Description:** A roast chicken "slathered with a garlic-herb-lemon butter then oven roasted to golden crispy perfection. Juicy on the inside" with "liquid gold pan juices loaded with flavour."
+
+**Yield:** 5 servings
+
+**Prep Time:** 15 minutes
+
+**Cook Time:** 90 minutes
+
+**Total Time:** 105 minutes
+
+## Key Ingredients
+- 1.75-2 kg whole chicken
+- Salt and pepper
+- Olive oil
+- Lemon, rosemary, butter
+- Garlic, sage, parsley
+- Dry white wine or chicken broth
+- Onion and garlic bulb
+
+## Basic Cooking Method
+The recipe involves preparing a garlic-herb-lemon butter, loosening the chicken skin, distributing the butter mixture underneath, and roasting at 220°C initially, then reducing to 180°C until internal temperature reaches 75°C.
+
+## Additional Content
+- 17 user reviews with ratings (mostly 5-star)
+- Navigation menus and site header elements
+- Multiple advertising integrations (AdThrive, Google Tag Manager)
+- Recipe schema markup for SEO
+- Social sharing functionality

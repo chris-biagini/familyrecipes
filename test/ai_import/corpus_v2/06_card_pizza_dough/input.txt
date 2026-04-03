@@ -1,0 +1,37 @@
+# Pizza Dough Recipe - RecipeTin Eats
+
+## Page Content Summary
+
+This is a recipe page for homemade pizza dough from RecipeTin Eats, authored by Nagi. The page includes comprehensive instructions for making Italian-style pizza crust.
+
+## Key Recipe Information
+
+**Yield:** 3 pizzas (30cm/12")
+
+**Time:** 30 minutes prep + 30 minutes cook
+
+**Main Ingredients:**
+- 600g bread or pizza flour
+- 2 tsp instant yeast
+- 2½ tsp salt
+- 4 tsp sugar
+- 4 tbsp olive oil
+- 330ml warm water
+
+## Instructions Overview
+
+The recipe offers two methods: hand-kneading (5 minutes) or food processor (40 seconds). The process includes:
+
+1. Mix dry ingredients, then add wet components
+2. First rise: 1-2 hours until doubled
+3. Optional: Refrigerate up to 5 days for flavor development
+4. Form three dough balls for second rise (1 hour)
+5. Stretch into 30cm bases
+6. Top with sauce, cheese, and preferred toppings
+7. Bake at 275°C for 10 minutes
+
+## Notable Features
+
+The page includes 18 user reviews with ratings averaging 4.96/5 stars. Users praise the recipe's effectiveness and detailed instructions. The description notes the dough produces "puffy edges with a chewy crumb" similar to Italian wood-fired pizzerias.
+
+The site uses analytics tracking and advertising infrastructure from AdThrive.
