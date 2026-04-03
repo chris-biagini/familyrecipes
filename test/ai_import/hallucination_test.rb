@@ -55,22 +55,22 @@ def run_comparison
     puts "=== [#{idx + 1}/#{dirs.size}] #{name} ==="
     puts
 
-    puts "  Haiku..."
+    puts '  Haiku...'
     haiku_output = call_model(client, HAIKU_MODEL, system_prompt, input_text)
     File.write(File.join(OUTPUT_DIR, "#{name}_haiku.md"), haiku_output)
 
-    puts "  Sonnet..."
+    puts '  Sonnet...'
     sonnet_output = call_model(client, SONNET_MODEL, system_prompt, input_text)
     File.write(File.join(OUTPUT_DIR, "#{name}_sonnet.md"), sonnet_output)
 
     puts
-    puts "  --- INPUT (first 10 lines) ---"
+    puts '  --- INPUT (first 10 lines) ---'
     input_text.lines.first(10).each { |l| puts "  #{l}" }
     puts
-    puts "  --- HAIKU OUTPUT ---"
+    puts '  --- HAIKU OUTPUT ---'
     haiku_output.lines.each { |l| puts "  #{l}" }
     puts
-    puts "  --- SONNET OUTPUT ---"
+    puts '  --- SONNET OUTPUT ---'
     sonnet_output.lines.each { |l| puts "  #{l}" }
     puts
     puts '=' * 60
