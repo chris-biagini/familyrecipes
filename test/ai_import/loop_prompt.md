@@ -41,8 +41,9 @@ Edit `lib/familyrecipes/ai_import_prompt_faithful.md`. Rules:
 prompt burns fewer tokens and gives the model less to misinterpret. Every
 line in the prompt should earn its place.
 
-- Make ONE targeted change based on the failure analysis — a fix, a
-  simplification, or a removal.
+- Bundle multiple targeted fixes per iteration when they address different,
+  non-overlapping issues. Don't waste iterations on changes you already know
+  you need. Save one-at-a-time discipline for later when gains are marginal.
 - If this is the first iteration, just verify the prompt looks correct and
   make no edits.
 - Never rewrite the prompt from scratch.

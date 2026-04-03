@@ -1,0 +1,14 @@
+{
+  "iterations": [
+    {
+      "label": "baseline_v3",
+      "avg": 94.6,
+      "worst": 89.3,
+      "prompt_sha": "1077df4bb412324121731470b38979cee34e62d4",
+      "prompt_lines": 428
+    }
+  ],
+  "best_iteration": "baseline_v3",
+  "best_avg": 94.6,
+  "patience": 0
+}
