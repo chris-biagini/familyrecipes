@@ -9,6 +9,10 @@ class AiImportServiceTest < ActiveSupport::TestCase
   setup do
     setup_test_kitchen
     @kitchen.update!(anthropic_api_key: 'sk-test-key-123')
+    Category.find_or_create_for(@kitchen, 'Baking')
+    Category.find_or_create_for(@kitchen, 'Mains')
+    Tag.find_or_create_by!(kitchen: @kitchen, name: 'easy')
+    Tag.find_or_create_by!(kitchen: @kitchen, name: 'weeknight')
   end
 
   test 'returns markdown on successful API call' do
@@ -29,37 +33,7 @@ class AiImportServiceTest < ActiveSupport::TestCase
     assert_equal 'no_api_key', result.error
   end
 
-  test 'builds multi-turn messages for try-again' do
-    captured_messages = nil
-    mock_response = MockResponse.new([MockContent.new(:text, '# Fixed')])
-
-    mock_messages = Object.new
-    mock_messages.define_singleton_method(:create) do |**kwargs|
-      captured_messages = kwargs[:messages]
-      mock_response
-    end
-
-    mock_client = Object.new
-    mock_client.define_singleton_method(:messages) { mock_messages }
-
-    Anthropic::Client.stub(:new, mock_client) do
-      AiImportService.call(
-        text: 'recipe for bagels',
-        kitchen: @kitchen,
-        previous_result: '# Bad Output',
-        feedback: 'Fix the ingredient amounts'
-      )
-    end
-
-    assert_equal 3, captured_messages.size
-    assert_equal 'user', captured_messages[0][:role]
-    assert_equal 'assistant', captured_messages[1][:role]
-    assert_equal '# Bad Output', captured_messages[1][:content]
-    assert_equal 'user', captured_messages[2][:role]
-    assert_includes captured_messages[2][:content], 'Fix the ingredient amounts'
-  end
-
-  test 'ignores previous_result when feedback is nil' do
+  test 'sends single user message' do
     captured_messages = nil
     mock_response = MockResponse.new([MockContent.new(:text, '# Simple')])
 
@@ -73,14 +47,74 @@ class AiImportServiceTest < ActiveSupport::TestCase
     mock_client.define_singleton_method(:messages) { mock_messages }
 
     Anthropic::Client.stub :new, mock_client do
-      AiImportService.call(
-        text: 'some recipe', kitchen: @kitchen,
-        previous_result: '# Old Output', feedback: nil
-      )
+      AiImportService.call(text: 'some recipe', kitchen: @kitchen)
     end
 
     assert_equal 1, captured_messages.size
     assert_equal 'user', captured_messages[0][:role]
+  end
+
+  test 'interpolates kitchen categories into prompt' do
+    captured_system = nil
+    mock_response = MockResponse.new([MockContent.new(:text, '# Test')])
+
+    mock_messages = Object.new
+    mock_messages.define_singleton_method(:create) do |**kwargs|
+      captured_system = kwargs[:system]
+      mock_response
+    end
+
+    mock_client = Object.new
+    mock_client.define_singleton_method(:messages) { mock_messages }
+
+    Anthropic::Client.stub :new, mock_client do
+      AiImportService.call(text: 'recipe', kitchen: @kitchen)
+    end
+
+    assert_includes captured_system, 'Baking'
+    assert_includes captured_system, 'Mains'
+    assert_includes captured_system, 'Miscellaneous'
+  end
+
+  test 'interpolates kitchen tags into prompt' do
+    captured_system = nil
+    mock_response = MockResponse.new([MockContent.new(:text, '# Test')])
+
+    mock_messages = Object.new
+    mock_messages.define_singleton_method(:create) do |**kwargs|
+      captured_system = kwargs[:system]
+      mock_response
+    end
+
+    mock_client = Object.new
+    mock_client.define_singleton_method(:messages) { mock_messages }
+
+    Anthropic::Client.stub :new, mock_client do
+      AiImportService.call(text: 'recipe', kitchen: @kitchen)
+    end
+
+    assert_includes captured_system, 'easy'
+    assert_includes captured_system, 'weeknight'
+  end
+
+  test 'uses haiku model' do
+    captured_model = nil
+    mock_response = MockResponse.new([MockContent.new(:text, '# Test')])
+
+    mock_messages = Object.new
+    mock_messages.define_singleton_method(:create) do |**kwargs|
+      captured_model = kwargs[:model]
+      mock_response
+    end
+
+    mock_client = Object.new
+    mock_client.define_singleton_method(:messages) { mock_messages }
+
+    Anthropic::Client.stub :new, mock_client do
+      AiImportService.call(text: 'recipe', kitchen: @kitchen)
+    end
+
+    assert_equal 'claude-haiku-4-5-20251001', captured_model
   end
 
   test 'strips code fences from response' do

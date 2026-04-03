@@ -31,7 +31,7 @@ class Kitchen < ApplicationRecord
   encrypts :anthropic_api_key
 
   MAX_AISLES = 50
-  AI_MODEL = 'claude-sonnet-4-6'
+  AI_MODEL = 'claude-haiku-4-5-20251001'
 
   def self.finalize_writes(kitchen)
     return if batching?

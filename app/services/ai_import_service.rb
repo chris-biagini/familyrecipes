@@ -2,29 +2,33 @@
 
 # Sends user-pasted text to the Anthropic API for conversion into the app's
 # Markdown recipe format. Pure function — no database writes or side effects.
-# Multi-turn support: pass previous_result + feedback for iterative refinement.
+# One-shot pipeline: text in, formatted recipe out.
+#
+# The system prompt is a template with {{CATEGORIES}} and {{TAGS}} placeholders
+# interpolated from the kitchen's current taxonomy at call time.
 #
 # - Kitchen#anthropic_api_key: encrypted API key for Anthropic
-# - Kitchen::AI_MODEL: model identifier (e.g. claude-sonnet-4-6)
-# - lib/familyrecipes/ai_import_prompt.md: system prompt defining output format
+# - Kitchen::AI_MODEL: model identifier (claude-haiku-4-5)
+# - lib/familyrecipes/ai_import_prompt.md: prompt template with dynamic slots
 class AiImportService
   Result = Data.define(:markdown, :error)
 
-  SYSTEM_PROMPT = Rails.root.join('lib/familyrecipes/ai_import_prompt.md').read.freeze
+  PROMPT_TEMPLATE = Rails.root.join('lib/familyrecipes/ai_import_prompt.md').read.freeze
   MAX_TOKENS = 8192
 
-  def self.call(text:, kitchen:, previous_result: nil, feedback: nil)
-    new(kitchen:).call(text:, previous_result:, feedback:)
+  def self.call(text:, kitchen:)
+    new(kitchen:).call(text:)
   end
 
   def initialize(kitchen:)
     @api_key = kitchen.anthropic_api_key
+    @kitchen = kitchen
   end
 
-  def call(text:, previous_result: nil, feedback: nil)
+  def call(text:)
     return Result.new(markdown: nil, error: 'no_api_key') if @api_key.blank?
 
-    markdown = fetch_completion(text:, previous_result:, feedback:)
+    markdown = fetch_completion(text:)
     Result.new(markdown: clean_output(markdown), error: nil)
   rescue Anthropic::Errors::AuthenticationError
     Result.new(markdown: nil, error: 'Invalid Anthropic API key. Check your key in Settings.')
@@ -40,22 +44,24 @@ class AiImportService
 
   private
 
-  def fetch_completion(text:, previous_result:, feedback:)
+  def fetch_completion(text:)
     response = client.messages.create(
       model: Kitchen::AI_MODEL,
       max_tokens: MAX_TOKENS,
-      system: SYSTEM_PROMPT,
-      messages: build_messages(text:, previous_result:, feedback:)
+      system: build_system_prompt,
+      messages: [{ role: 'user', content: text }]
     )
     response.content.find { |block| block.type == :text }&.text || ''
   end
 
-  def build_messages(text:, previous_result:, feedback:)
-    messages = [{ role: 'user', content: text }]
-    return messages unless previous_result && feedback
+  def build_system_prompt
+    categories = @kitchen.categories.pluck(:name).sort
+    categories << 'Miscellaneous' unless categories.include?('Miscellaneous')
+    tags = @kitchen.tags.pluck(:name).sort
 
-    messages << { role: 'assistant', content: previous_result }
-    messages << { role: 'user', content: feedback }
+    PROMPT_TEMPLATE
+      .gsub('{{CATEGORIES}}', categories.join(', '))
+      .gsub('{{TAGS}}', tags.empty? ? '(none yet)' : tags.join(', '))
   end
 
   def clean_output(text)
@@ -73,6 +79,6 @@ class AiImportService
   end
 
   def client
-    Anthropic::Client.new(api_key: @api_key, timeout: 90)
+    Anthropic::Client.new(api_key: @api_key, timeout: 30)
   end
 end

@@ -56,14 +56,17 @@ anything).
     Makes: 24 cookies
     Serves: 4
     Category: Baking
+    Tags: easy, dessert
 
 - **Makes** — yield with a unit noun: "12 pancakes", "2 loaves", "1 loaf".
   Must be a single number, not a range — "Makes: 4 loaves" not
   "Makes: 3-4 loaves".
 - **Serves** — a single plain number: "Serves: 4" not "Serves: 4-6".
   Only include if the source specifies servings. Don't fabricate a number.
-- **Category** — one of: Baking, Bread, Breakfast, Dessert, Drinks,
-Holiday, Mains, Pizza, Sides, Snacks. If none fit, use Miscellaneous.
+- **Category** — one of: {{CATEGORIES}}. If none fit, use Miscellaneous.
+- **Tags** — comma-separated lowercase tags from the kitchen's existing set:
+  {{TAGS}}. Use existing tags when they fit; only invent a new tag if nothing
+  existing applies. Omit the Tags line entirely if no tags fit.
 
 ### Steps
 
