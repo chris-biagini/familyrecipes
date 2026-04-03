@@ -153,7 +153,7 @@ end
 
 def append_failure_details(lines, scores, output_dir)
   fidelity_keys = %w[ingredients_missing ingredients_added quantities_changed instructions_dropped
-                     instructions_rewritten detritus_retained prep_leaked_into_name tags_invented]
+                     instructions_rewritten detritus_retained prep_leaked_into_name]
   scores.each do |name, data|
     failures = []
     failures << "PARSE FAILED: #{data[:parse][:details][:errors].join(', ')}" unless data[:parse][:pass]

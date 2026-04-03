@@ -90,6 +90,7 @@ after the title. Otherwise omit.
     Makes: 24 cookies
     Serves: 4
     Category: Baking
+    Tags: comfort-food, baked
 
 - **Makes** — yield with a unit noun: "12 pancakes", "2 loaves", "1 loaf".
   Must be a single number, not a range — "Makes: 4 loaves" not
@@ -97,7 +98,10 @@ after the title. Otherwise omit.
 - **Serves** — a single plain number: "Serves: 4" not "Serves: 4-6".
   Only include if the source specifies servings. Don't fabricate a number.
 - **Category** — one of: {{CATEGORIES}}. If none fit, use Miscellaneous.
-- Do NOT add a Tags line.
+- **Tags** — Choose from: {{TAGS}}. Apply a tag ONLY if the recipe's
+  cooking method or primary ingredient makes it undeniable (e.g., a recipe
+  that grills meat → "grilled"; a recipe with no animal products → "vegan").
+  When in doubt, omit the Tags line entirely.
 
 ### Steps
 

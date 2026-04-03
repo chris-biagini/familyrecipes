@@ -51,7 +51,6 @@ module Scorers
       checks << no_code_fences(output_text)
       checks << ingredient_names_concise(parsed)
       checks << no_en_dashes(output_text)
-      checks << no_tags_invented(parsed)
       checks << no_comment_bleed(output_text, parsed)
       checks << informal_quantities_preserved(input_text, output_text) if input_text
 

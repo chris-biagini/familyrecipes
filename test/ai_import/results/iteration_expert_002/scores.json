@@ -1,0 +1,846 @@
+{
+  "01_blog_brownies": {
+    "parse": {
+      "pass": true,
+      "details": {
+        "title": "Flourless Chocolate Brownies",
+        "steps": 1,
+        "ingredients": 8,
+        "errors": []
+      }
+    },
+    "format": {
+      "score": 100.0,
+      "checks": [
+        {
+          "name": "ascii_fractions",
+          "pass": true
+        },
+        {
+          "name": "prep_notes_formatted",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "valid_front_matter",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_detritus",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "single_divider",
+          "pass": true
+        },
+        {
+          "name": "step_headers_format",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_code_fences",
+          "pass": true
+        },
+        {
+          "name": "ingredient_names_concise",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_en_dashes",
+          "pass": true
+        },
+        {
+          "name": "no_comment_bleed",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "informal_quantities_preserved",
+          "pass": true
+        }
+      ]
+    },
+    "fidelity": {
+      "ingredients_missing": [],
+      "ingredients_added": [],
+      "quantities_changed": [],
+      "instructions_dropped": [],
+      "instructions_rewritten": [],
+      "detritus_retained": [],
+      "prep_leaked_into_name": [],
+      "fidelity_score": 97,
+      "detritus_score": 97
+    },
+    "aggregate": 97.9
+  },
+  "02_blog_bolognese": {
+    "parse": {
+      "pass": true,
+      "details": {
+        "title": "Spaghetti Bolognese",
+        "steps": 2,
+        "ingredients": 17,
+        "errors": []
+      }
+    },
+    "format": {
+      "score": 100.0,
+      "checks": [
+        {
+          "name": "ascii_fractions",
+          "pass": true
+        },
+        {
+          "name": "prep_notes_formatted",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "valid_front_matter",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_detritus",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "single_divider",
+          "pass": true
+        },
+        {
+          "name": "step_headers_format",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_code_fences",
+          "pass": true
+        },
+        {
+          "name": "ingredient_names_concise",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_en_dashes",
+          "pass": true
+        },
+        {
+          "name": "no_comment_bleed",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "informal_quantities_preserved",
+          "pass": true
+        }
+      ]
+    },
+    "fidelity": {
+      "ingredients_missing": [],
+      "ingredients_added": [],
+      "quantities_changed": [
+        "Beef mince: original lists '1 lb / 500g'; output lists only '500 g' (dual quantity removed, acceptable but minor)",
+        "Dry red wine: original lists '1/2 cup (125 ml)'; output lists only '125 ml' (unit change from cups to ml)",
+        "Tomatoes: original lists '800g / 28 oz can'; output lists only '800 g'"
+      ],
+      "instructions_dropped": [],
+      "instructions_rewritten": [
+        "'Cook, breaking it up as you go, until browned' rewritten as 'cook breaking it up until browned' — minor but casual paraphrase",
+        "'adding water if sauce gets too thick' rewritten as 'Add a splash of water if sauce gets too thick' — informal substitution for 'adding water'"
+      ],
+      "detritus_retained": [
+        "'Tags: weeknight, quick, italian' — tag metadata not present in original and not a standard expected output field"
+      ],
+      "prep_leaked_into_name": [],
+      "fidelity_score": 93,
+      "detritus_score": 90
+    },
+    "aggregate": 94.2
+  },
+  "03_blog_chicken_tikka": {
+    "parse": {
+      "pass": true,
+      "details": {
+        "title": "Chicken Tikka Masala",
+        "steps": 3,
+        "ingredients": 31,
+        "errors": []
+      }
+    },
+    "format": {
+      "score": 100.0,
+      "checks": [
+        {
+          "name": "ascii_fractions",
+          "pass": true
+        },
+        {
+          "name": "prep_notes_formatted",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "valid_front_matter",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_detritus",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "single_divider",
+          "pass": true
+        },
+        {
+          "name": "step_headers_format",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_code_fences",
+          "pass": true
+        },
+        {
+          "name": "ingredient_names_concise",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_en_dashes",
+          "pass": true
+        },
+        {
+          "name": "no_comment_bleed",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "informal_quantities_preserved",
+          "pass": true
+        }
+      ]
+    },
+    "fidelity": {
+      "ingredients_missing": [
+        "Basmati rice (listed as serving ingredient in original)"
+      ],
+      "ingredients_added": [],
+      "quantities_changed": [
+        "Butter first addition: original says '30g unsalted butter or ghee', output drops 'or ghee' option; Butter second addition: original says '50g unsalted butter or ghee', output drops 'or ghee' option"
+      ],
+      "instructions_dropped": [],
+      "instructions_rewritten": [],
+      "detritus_retained": [],
+      "prep_leaked_into_name": [],
+      "fidelity_score": 91,
+      "detritus_score": 97
+    },
+    "aggregate": 95.5
+  },
+  "04_blog_chocolate_cookies": {
+    "parse": {
+      "pass": true,
+      "details": {
+        "title": "Chewy Chocolate Chip Cookies",
+        "steps": 2,
+        "ingredients": 11,
+        "errors": []
+      }
+    },
+    "format": {
+      "score": 100.0,
+      "checks": [
+        {
+          "name": "ascii_fractions",
+          "pass": true
+        },
+        {
+          "name": "prep_notes_formatted",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "valid_front_matter",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_detritus",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "single_divider",
+          "pass": true
+        },
+        {
+          "name": "step_headers_format",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_code_fences",
+          "pass": true
+        },
+        {
+          "name": "ingredient_names_concise",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_en_dashes",
+          "pass": true
+        },
+        {
+          "name": "no_comment_bleed",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "informal_quantities_preserved",
+          "pass": true
+        }
+      ]
+    },
+    "fidelity": {
+      "ingredients_missing": [],
+      "ingredients_added": [],
+      "quantities_changed": [
+        "Flour changed from 2 1/4 cups (281g) to 281g only — cup measurement dropped",
+        "Butter changed from 3/4 cup (170g/12 Tbsp) to 170g only — cup/tbsp measurements dropped",
+        "Brown sugar changed from 3/4 cup (150g) to 150g only — cup measurement dropped",
+        "Granulated sugar changed from 1/2 cup (100g) to 100g only — cup measurement dropped",
+        "Chocolate chips changed from 1 1/4 cups (225g) to 225g only — cup measurement dropped",
+        "Vanilla extract listed as 2 tsp instead of 2 teaspoons pure vanilla extract (minor, but 'pure' qualifier dropped from quantity/name)"
+      ],
+      "instructions_dropped": [
+        "Instruction that the flour should be 'spooned & leveled' is not mentioned",
+        "Original specifies 'XL cookie' size context for the 3 tbsp scoop; output says 'per cookie' losing the XL/medium-large distinction in the baking step"
+      ],
+      "instructions_rewritten": [
+        "'Centers will look soft' rewritten as 'centers will look underdone' — changes the meaning slightly",
+        "'cooling rack' rewritten as 'rack'"
+      ],
+      "detritus_retained": [
+        "Tags line ('Tags: vegetarian, baked') is non-recipe metadata not requested by format"
+      ],
+      "prep_leaked_into_name": [],
+      "fidelity_score": 82,
+      "detritus_score": 90
+    },
+    "aggregate": 89.8
+  },
+  "05_card_grilled_cheese": {
+    "parse": {
+      "pass": true,
+      "details": {
+        "title": "Grilled Cheese Sandwich",
+        "steps": 1,
+        "ingredients": 4,
+        "errors": []
+      }
+    },
+    "format": {
+      "score": 100.0,
+      "checks": [
+        {
+          "name": "ascii_fractions",
+          "pass": true
+        },
+        {
+          "name": "prep_notes_formatted",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "valid_front_matter",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_detritus",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "single_divider",
+          "pass": true
+        },
+        {
+          "name": "step_headers_format",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_code_fences",
+          "pass": true
+        },
+        {
+          "name": "ingredient_names_concise",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_en_dashes",
+          "pass": true
+        },
+        {
+          "name": "no_comment_bleed",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "informal_quantities_preserved",
+          "pass": true
+        }
+      ]
+    },
+    "fidelity": {
+      "ingredients_missing": [],
+      "ingredients_added": [],
+      "quantities_changed": [
+        "Cheddar and mozzarella have no quantities listed — original also lacked specific quantities, so no true change, but cheddar is listed without 'or gruyere' as an alternative (gruyere moved to footer note instead of ingredient line)"
+      ],
+      "instructions_dropped": [],
+      "instructions_rewritten": [],
+      "detritus_retained": [
+        "Rating information not present — correctly removed",
+        "Tags line (vegetarian, quick) is a minor addition without basis in original, though low impact"
+      ],
+      "prep_leaked_into_name": [
+        "Cheddar (vintage), freshly grated — 'freshly grated' is a prep note appearing in the quantity/name field rather than after a colon",
+        "Mozzarella (fresh), grated — 'grated' is a prep note appearing in the quantity field rather than after a colon"
+      ],
+      "fidelity_score": 88,
+      "detritus_score": 85
+    },
+    "aggregate": 90.7
+  },
+  "06_card_pizza_dough": {
+    "parse": {
+      "pass": true,
+      "details": {
+        "title": "Pizza Dough",
+        "steps": 3,
+        "ingredients": 6,
+        "errors": []
+      }
+    },
+    "format": {
+      "score": 100.0,
+      "checks": [
+        {
+          "name": "ascii_fractions",
+          "pass": true
+        },
+        {
+          "name": "prep_notes_formatted",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "valid_front_matter",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_detritus",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "single_divider",
+          "pass": true
+        },
+        {
+          "name": "step_headers_format",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_code_fences",
+          "pass": true
+        },
+        {
+          "name": "ingredient_names_concise",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_en_dashes",
+          "pass": true
+        },
+        {
+          "name": "no_comment_bleed",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "informal_quantities_preserved",
+          "pass": true
+        }
+      ]
+    },
+    "fidelity": {
+      "ingredients_missing": [],
+      "ingredients_added": [],
+      "quantities_changed": [],
+      "instructions_dropped": [],
+      "instructions_rewritten": [],
+      "detritus_retained": [
+        "\"18 user reviews with ratings averaging 4.96/5 stars\" context not present — clean",
+        "AdThrive/analytics infrastructure not present — clean"
+      ],
+      "prep_leaked_into_name": [],
+      "fidelity_score": 97,
+      "detritus_score": 95
+    },
+    "aggregate": 97.3
+  },
+  "07_card_pot_pie": {
+    "parse": {
+      "pass": true,
+      "details": {
+        "title": "Chicken Pot Pie",
+        "steps": 3,
+        "ingredients": 18,
+        "errors": []
+      }
+    },
+    "format": {
+      "score": 100.0,
+      "checks": [
+        {
+          "name": "ascii_fractions",
+          "pass": true
+        },
+        {
+          "name": "prep_notes_formatted",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "valid_front_matter",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_detritus",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "single_divider",
+          "pass": true
+        },
+        {
+          "name": "step_headers_format",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_code_fences",
+          "pass": true
+        },
+        {
+          "name": "ingredient_names_concise",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_en_dashes",
+          "pass": true
+        },
+        {
+          "name": "no_comment_bleed",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "informal_quantities_preserved",
+          "pass": true
+        }
+      ]
+    },
+    "fidelity": {
+      "ingredients_missing": [],
+      "ingredients_added": [],
+      "quantities_changed": [
+        "Flour changed from 1/3 cup to 1/3 cup — actually correct, no change"
+      ],
+      "instructions_dropped": [
+        "Instruction to note that some uncooked parts of chicken are fine after shredding/dicing"
+      ],
+      "instructions_rewritten": [
+        "'avoid boiling to prevent milk separation' reworded to 'don't boil or milk will split' — acceptable paraphrase",
+        "'cool in fridge' reworded to 'refrigerate' — minor"
+      ],
+      "detritus_retained": [
+        "Tags line (comfort-food, make-ahead, freezer-friendly) is not part of the standard output format and represents added content, though minor"
+      ],
+      "prep_leaked_into_name": [],
+      "fidelity_score": 94,
+      "detritus_score": 92
+    },
+    "aggregate": 95.2
+  },
+  "08_clean_roast_chicken": {
+    "parse": {
+      "pass": true,
+      "details": {
+        "title": "Roast Chicken",
+        "steps": 3,
+        "ingredients": 16,
+        "errors": []
+      }
+    },
+    "format": {
+      "score": 100.0,
+      "checks": [
+        {
+          "name": "ascii_fractions",
+          "pass": true
+        },
+        {
+          "name": "prep_notes_formatted",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "valid_front_matter",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_detritus",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "single_divider",
+          "pass": true
+        },
+        {
+          "name": "step_headers_format",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_code_fences",
+          "pass": true
+        },
+        {
+          "name": "ingredient_names_concise",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_en_dashes",
+          "pass": true
+        },
+        {
+          "name": "no_comment_bleed",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "informal_quantities_preserved",
+          "pass": true,
+          "failures": []
+        }
+      ]
+    },
+    "fidelity": {
+      "ingredients_missing": [],
+      "ingredients_added": [],
+      "quantities_changed": [],
+      "instructions_dropped": [],
+      "instructions_rewritten": [],
+      "detritus_retained": [
+        "Tags: roasted — minor non-recipe metadata not part of standard output format",
+        "Substitute chicken broth for the white wine. — redundant footer note (already captured as prep note on white wine ingredient)"
+      ],
+      "prep_leaked_into_name": [],
+      "fidelity_score": 96,
+      "detritus_score": 88
+    },
+    "aggregate": 94.8
+  },
+  "09_clean_banana_bread": {
+    "parse": {
+      "pass": true,
+      "details": {
+        "title": "Banana Bread",
+        "steps": 2,
+        "ingredients": 11,
+        "errors": []
+      }
+    },
+    "format": {
+      "score": 100.0,
+      "checks": [
+        {
+          "name": "ascii_fractions",
+          "pass": true
+        },
+        {
+          "name": "prep_notes_formatted",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "valid_front_matter",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_detritus",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "single_divider",
+          "pass": true
+        },
+        {
+          "name": "step_headers_format",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_code_fences",
+          "pass": true
+        },
+        {
+          "name": "ingredient_names_concise",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_en_dashes",
+          "pass": true
+        },
+        {
+          "name": "no_comment_bleed",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "informal_quantities_preserved",
+          "pass": true
+        }
+      ]
+    },
+    "fidelity": {
+      "ingredients_missing": [],
+      "ingredients_added": [],
+      "quantities_changed": [
+        "Sugar: original says 'cane sugar or brown sugar' but output says 'Sugar (white)' — this inverts the implied default and misrepresents the option",
+        "Butter: original says 'melted butter or vegetable oil' but output specifies '(unsalted)' with no basis in original"
+      ],
+      "instructions_dropped": [],
+      "instructions_rewritten": [
+        "Substitution options for butter/oil and sugar types moved from ingredient list to a footer note rather than expressed inline"
+      ],
+      "detritus_retained": [
+        "Tags line ('Tags: vegetarian, baked, comfort-food') is not part of the expected output format and has no basis in the original recipe"
+      ],
+      "prep_leaked_into_name": [],
+      "fidelity_score": 84,
+      "detritus_score": 88
+    },
+    "aggregate": 90.0
+  },
+  "10_baking_crusty_bread": {
+    "parse": {
+      "pass": true,
+      "details": {
+        "title": "No-Knead Crusty White Bread",
+        "steps": 2,
+        "ingredients": 4,
+        "errors": []
+      }
+    },
+    "format": {
+      "score": 100.0,
+      "checks": [
+        {
+          "name": "ascii_fractions",
+          "pass": true
+        },
+        {
+          "name": "prep_notes_formatted",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "valid_front_matter",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_detritus",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "single_divider",
+          "pass": true
+        },
+        {
+          "name": "step_headers_format",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_code_fences",
+          "pass": true
+        },
+        {
+          "name": "ingredient_names_concise",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_en_dashes",
+          "pass": true
+        },
+        {
+          "name": "no_comment_bleed",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "informal_quantities_preserved",
+          "pass": true
+        }
+      ]
+    },
+    "fidelity": {
+      "ingredients_missing": [],
+      "ingredients_added": [],
+      "quantities_changed": [
+        "Flour listed as 900g only (original: 7½ cups / 900g); Water listed as 680g only (original: 3 cups / 680g); Salt listed as 18g only (original: 1 tablespoon / 18g); Yeast listed as 14g only (original: 1½ tablespoons / 14g) — though imperial equivalents are provided in a footer note"
+      ],
+      "instructions_dropped": [],
+      "instructions_rewritten": [],
+      "detritus_retained": [
+        "Tags: make-ahead — a tags line was not part of the expected output format and has no basis in the original recipe content",
+        "Rating and review count not retained (acceptable), but '2026 Recipe of the Year' and '2016 Recipe of the Year' designations were dropped without replacement — these are editorial notes, acceptable to omit"
+      ],
+      "prep_leaked_into_name": [],
+      "fidelity_score": 90,
+      "detritus_score": 88
+    },
+    "aggregate": 92.4
+  }
+}
