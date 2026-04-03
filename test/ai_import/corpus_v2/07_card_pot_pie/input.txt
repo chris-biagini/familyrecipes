@@ -1,0 +1,100 @@
+# Chicken Pot Pie - RecipeTin Eats
+
+## Navigation & Header
+RecipeTin Eats website with search functionality, social media links, and main navigation menu with categories like Collections and Winter Warmers.
+
+## Main Content
+
+**Title:** Chicken Pot Pie
+
+**Author:** Nagi | **Published:** October 22, 2018 | **Updated:** May 11, 2025
+
+**Description:** A creamy chicken and vegetable filling with thyme, topped with flaky puff pastry. The recipe makes 4 large, 6 medium, or 1 large pie and freezes well.
+
+### Recipe Stats
+- **Prep Time:** 15 minutes
+- **Cook Time:** 60 minutes
+- **Total Time:** 75 minutes
+- **Servings:** 4-6 people
+- **Rating:** 4.93/5 stars (170 ratings, 17 reviews)
+
+### Ingredients
+- 600g chicken breast or boneless thighs
+- 2 cups milk
+- 1 cup chicken broth
+- 2 tsp chicken/vegetable stock powder
+- 2 sprigs thyme (optional)
+- 1 large onion, chopped
+- 2 large carrots, chopped
+- 3 celery ribs, chopped
+- 2 garlic cloves, minced
+- 50g butter
+- 1 tsp dried thyme
+- 1/3 cup white wine
+- 1/3 cup flour
+- 1/2 cup grated parmesan
+- 1/2 tsp black pepper
+- 1 cup frozen peas
+- 2 sheets puff pastry
+- 1 egg, whisked
+
+### Instructions
+
+**Chicken:**
+1. Place milk, broth, and stock powder in large saucepan; bring to gentle simmer on medium heat. Add chicken and thyme sprigs.
+2. Cover and simmer gently on medium-low for 15 minutes (avoid boiling to prevent milk separation).
+3. Remove chicken, shred or dice (some uncooked parts are fine). Set poaching liquid aside.
+
+**Chicken Pot Pie:**
+1. Melt butter in large pot over medium-high heat. Add garlic and onion; cook 2 minutes. Add thyme, carrot, and celery; cook 3 minutes until softened.
+2. Add wine, stir, scraping pot bottom; cook 1.5 minutes until mostly evaporated.
+3. Add flour and stir for 1 minute.
+4. Add half the reserved poaching liquid, stirring until flour incorporates into thick sludge.
+5. Add remaining milk broth, parmesan, and pepper. Stir.
+6. Add chicken and peas; stir.
+7. Once heated (steam visible), cook 3 minutes, stirring regularly to thicken.
+8. Remove from heat. Spoon into oven-proof pots (4 large or 6 small). Cool in fridge at least 30 minutes.
+
+**Assembly & Baking:**
+1. Partially thaw puff pastry. Cut rounds 2.5cm wider than pots using a bowl as guide.
+2. Preheat oven to 180°C/350°F.
+3. Brush pot edges with egg. Top with pastry, folding down edges.
+4. Brush pastry with egg. Cut 2cm slit in center with small knife.
+5. Bake 35-40 minutes until deep golden.
+6. Serve immediately.
+
+### Nutrition Information (Per Serving)
+- Calories: 588 kcal
+- Carbs: 36g
+- Protein: 47g
+- Fat: 26g
+- Saturated Fat: 11g
+- Cholesterol: 144mg
+- Sodium: 1191mg
+- Fiber: 4g
+- Sugar: 12g
+
+## User Reviews (Selected)
+
+**Julie** ⭐⭐⭐⭐⭐
+"Absolutely delicious thank you. I added mushrooms, green beans, and frozen corn... So so good, and while there are a few steps, it's an easy recipe for a really yummy meal."
+
+**Monique** ⭐⭐⭐⭐⭐
+"This is a family favourite. We omit the onion, garlic, wine (sub for chicken bone broth) and peas... Also make this GF by using GF pastry and GF flour."
+
+**Sarah** ⭐⭐⭐⭐⭐
+"Great pie, so tasty. Definitely one to keep on rotation."
+
+**Hayley** ⭐⭐⭐⭐⭐
+"I made this but topped with cheesy mashed potato and it was the best thing I've put in my mouth. Seriously 12/10"
+
+**Annie** ⭐⭐⭐⭐⭐
+"This was excellent. The whole family loved it... The recipe itself was wonderfully seasoned and provided the perfect pot pie consistency."
+
+**Loren** ⭐⭐⭐⭐
+"Split the milk twice... It was fine but oily and grainy. I also needed to season it a lot... The total cooking time is also very underestimated."
+
+*Additional 11 five-star reviews from Karla, Jody M, Jade, Bridgette, Jo Navratil, Gloria Maley, Moya, Jess, and Fin praising variations and ease of preparation.*
+
+## Footer
+RecipeTin Eats branding, social links, copyright information, and additional navigation options.

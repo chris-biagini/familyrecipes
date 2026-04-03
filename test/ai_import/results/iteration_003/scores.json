@@ -1,0 +1,739 @@
+{
+  "01_blog_simple": {
+    "parse": {
+      "pass": true,
+      "details": {
+        "title": "Garlic Bread",
+        "steps": 1,
+        "ingredients": 5,
+        "errors": []
+      }
+    },
+    "format": {
+      "score": 100.0,
+      "checks": [
+        {
+          "name": "ascii_fractions",
+          "pass": true
+        },
+        {
+          "name": "prep_notes_formatted",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "valid_front_matter",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_detritus",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "single_divider",
+          "pass": true
+        },
+        {
+          "name": "step_headers_format",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_code_fences",
+          "pass": true
+        },
+        {
+          "name": "ingredient_names_concise",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_en_dashes",
+          "pass": true
+        }
+      ]
+    },
+    "fidelity": {
+      "ingredients_missing": [],
+      "ingredients_added": [],
+      "quantities_changed": [],
+      "instructions_dropped": [],
+      "instructions_rewritten": [],
+      "detritus_retained": [],
+      "prep_in_name": [
+        "Butter (unsalted), 4 tbsp: Softened.",
+        "Garlic, 3 cloves: Minced.",
+        "Parsley (fresh), 2 tbsp: Chopped."
+      ],
+      "fidelity_score": 97,
+      "detritus_score": 98
+    },
+    "aggregate": 98.2
+  },
+  "02_blog_medium": {
+    "parse": {
+      "pass": true,
+      "details": {
+        "title": "Easy Weeknight Chicken Stir-Fry",
+        "steps": 4,
+        "ingredients": 16,
+        "errors": []
+      }
+    },
+    "format": {
+      "score": 100.0,
+      "checks": [
+        {
+          "name": "ascii_fractions",
+          "pass": true
+        },
+        {
+          "name": "prep_notes_formatted",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "valid_front_matter",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_detritus",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "single_divider",
+          "pass": true
+        },
+        {
+          "name": "step_headers_format",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_code_fences",
+          "pass": true
+        },
+        {
+          "name": "ingredient_names_concise",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_en_dashes",
+          "pass": true
+        }
+      ]
+    },
+    "fidelity": {
+      "ingredients_missing": [],
+      "ingredients_added": [],
+      "quantities_changed": [],
+      "instructions_dropped": [],
+      "instructions_rewritten": [],
+      "detritus_retained": [
+        "Blog preamble snippet retained: 'Comes together in about 30 minutes.'",
+        "Extraneous metadata retained: 'Tags: weeknight, quick'"
+      ],
+      "prep_in_name": [],
+      "fidelity_score": 95,
+      "detritus_score": 82
+    },
+    "aggregate": 92.6
+  },
+  "03_blog_complex": {
+    "parse": {
+      "pass": true,
+      "details": {
+        "title": "Cinnamon Rolls",
+        "steps": 3,
+        "ingredients": 15,
+        "errors": []
+      }
+    },
+    "format": {
+      "score": 100.0,
+      "checks": [
+        {
+          "name": "ascii_fractions",
+          "pass": true
+        },
+        {
+          "name": "prep_notes_formatted",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "valid_front_matter",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_detritus",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "single_divider",
+          "pass": true
+        },
+        {
+          "name": "step_headers_format",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_code_fences",
+          "pass": true
+        },
+        {
+          "name": "ingredient_names_concise",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_en_dashes",
+          "pass": true
+        }
+      ]
+    },
+    "fidelity": {
+      "ingredients_missing": [],
+      "ingredients_added": [],
+      "quantities_changed": [],
+      "instructions_dropped": [],
+      "instructions_rewritten": [],
+      "detritus_retained": [
+        "Subtitle 'Soft, gooey, and perfect for Christmas morning' retained (minor, borderline acceptable)",
+        "Category listed as 'Breakfast' instead of recipe content — minor metadata issue"
+      ],
+      "prep_in_name": [
+        "Flour (all-purpose), 3 cups: Plus more for dusting — 'plus more for dusting' is prep/usage info in the ingredient entry, which is acceptable contextually but reference omits it from the name"
+      ],
+      "fidelity_score": 97,
+      "detritus_score": 95
+    },
+    "aggregate": 97.3
+  },
+  "04_card_simple": {
+    "parse": {
+      "pass": false,
+      "details": {
+        "title": "Creamy Tomato Soup",
+        "steps": 2,
+        "ingredients": 9,
+        "errors": [
+          "Only 9 ingredients (expected >= 10)"
+        ]
+      }
+    },
+    "format": {
+      "score": 100.0,
+      "checks": [
+        {
+          "name": "ascii_fractions",
+          "pass": true
+        },
+        {
+          "name": "prep_notes_formatted",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "valid_front_matter",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_detritus",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "single_divider",
+          "pass": true
+        },
+        {
+          "name": "step_headers_format",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_code_fences",
+          "pass": true
+        },
+        {
+          "name": "ingredient_names_concise",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_en_dashes",
+          "pass": true
+        }
+      ]
+    },
+    "fidelity": {
+      "ingredients_missing": [],
+      "ingredients_added": [],
+      "quantities_changed": [],
+      "instructions_dropped": [],
+      "instructions_rewritten": [],
+      "detritus_retained": [
+        "Pure comfort in a bowl. Rich, velvety, and ready in under 40 minutes. (intro/marketing copy from blog)"
+      ],
+      "prep_in_name": [
+        "Onion (medium), 1: Diced. — 'medium' is a size descriptor but acceptable; prep note style is fine",
+        "Tomatoes (canned, whole peeled), 1 can (28 oz) — 'canned' is an added descriptor not in original ingredient name"
+      ],
+      "fidelity_score": 93,
+      "detritus_score": 85
+    },
+    "aggregate": 0.0
+  },
+  "05_card_medium": {
+    "parse": {
+      "pass": true,
+      "details": {
+        "title": "Classic Beef Stew",
+        "steps": 3,
+        "ingredients": 16,
+        "errors": []
+      }
+    },
+    "format": {
+      "score": 100.0,
+      "checks": [
+        {
+          "name": "ascii_fractions",
+          "pass": true
+        },
+        {
+          "name": "prep_notes_formatted",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "valid_front_matter",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_detritus",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "single_divider",
+          "pass": true
+        },
+        {
+          "name": "step_headers_format",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_code_fences",
+          "pass": true
+        },
+        {
+          "name": "ingredient_names_concise",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_en_dashes",
+          "pass": true
+        }
+      ]
+    },
+    "fidelity": {
+      "ingredients_missing": [],
+      "ingredients_added": [],
+      "quantities_changed": [],
+      "instructions_dropped": [],
+      "instructions_rewritten": [],
+      "detritus_retained": [
+        "Slow cooker tip from author comment included in output (though presented as a recipe note rather than a comment, this content originated from the comments section, not the recipe itself)"
+      ],
+      "prep_in_name": [
+        "Beef chuck roast, 2 lbs: Cut into 1 1/2-inch cubes.",
+        "Onion, 1 large: Diced.",
+        "Garlic, 4 cloves: Minced.",
+        "Potatoes (Yukon Gold), 3 medium: Cut into 1-inch cubes.",
+        "Carrots, 3 large: Peeled and sliced into 1/2-inch rounds.",
+        "Celery, 2 stalks: Sliced."
+      ],
+      "fidelity_score": 97,
+      "detritus_score": 78
+    },
+    "aggregate": 92.2
+  },
+  "06_card_complex": {
+    "parse": {
+      "pass": false,
+      "details": {
+        "title": "Rustic Artisan Bread",
+        "steps": 4,
+        "ingredients": 5,
+        "errors": [
+          "Only 5 ingredients (expected >= 8)"
+        ]
+      }
+    },
+    "format": {
+      "score": 100.0,
+      "checks": [
+        {
+          "name": "ascii_fractions",
+          "pass": true
+        },
+        {
+          "name": "prep_notes_formatted",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "valid_front_matter",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_detritus",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "single_divider",
+          "pass": true
+        },
+        {
+          "name": "step_headers_format",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_code_fences",
+          "pass": true
+        },
+        {
+          "name": "ingredient_names_concise",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_en_dashes",
+          "pass": true
+        }
+      ]
+    },
+    "fidelity": {
+      "ingredients_missing": [],
+      "ingredients_added": [],
+      "quantities_changed": [],
+      "instructions_dropped": [],
+      "instructions_rewritten": [],
+      "detritus_retained": [],
+      "prep_in_name": [
+        "Water (warm), 350 g: Around 100°F — 'warm' folded into ingredient name; prep note placed in annotation",
+        "Rice flour, 30 g: For dusting the banneton — usage instruction placed in ingredient annotation rather than body text"
+      ],
+      "fidelity_score": 95,
+      "detritus_score": 97
+    },
+    "aggregate": 0.0
+  },
+  "07_ocr_simple": {
+    "parse": {
+      "pass": true,
+      "details": {
+        "title": "Drop Biscuits",
+        "steps": 1,
+        "ingredients": 7,
+        "errors": []
+      }
+    },
+    "format": {
+      "score": 100.0,
+      "checks": [
+        {
+          "name": "ascii_fractions",
+          "pass": true
+        },
+        {
+          "name": "prep_notes_formatted",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "valid_front_matter",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_detritus",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "single_divider",
+          "pass": true
+        },
+        {
+          "name": "step_headers_format",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_code_fences",
+          "pass": true
+        },
+        {
+          "name": "ingredient_names_concise",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_en_dashes",
+          "pass": true
+        }
+      ]
+    },
+    "fidelity": {
+      "ingredients_missing": [],
+      "ingredients_added": [],
+      "quantities_changed": [],
+      "instructions_dropped": [],
+      "instructions_rewritten": [],
+      "detritus_retained": [],
+      "prep_in_name": [
+        "Butter (cold), 1/3 cup: Cut into small pieces."
+      ],
+      "fidelity_score": 98,
+      "detritus_score": 99
+    },
+    "aggregate": 98.9
+  },
+  "08_ocr_medium": {
+    "parse": {
+      "pass": false,
+      "details": {
+        "title": "Pasta with Meat Sauce",
+        "steps": 2,
+        "ingredients": 13,
+        "errors": [
+          "Only 13 ingredients (expected >= 15)"
+        ]
+      }
+    },
+    "format": {
+      "score": 100.0,
+      "checks": [
+        {
+          "name": "ascii_fractions",
+          "pass": true
+        },
+        {
+          "name": "prep_notes_formatted",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "valid_front_matter",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_detritus",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "single_divider",
+          "pass": true
+        },
+        {
+          "name": "step_headers_format",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_code_fences",
+          "pass": true
+        },
+        {
+          "name": "ingredient_names_concise",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_en_dashes",
+          "pass": true
+        }
+      ]
+    },
+    "fidelity": {
+      "ingredients_missing": [],
+      "ingredients_added": [],
+      "quantities_changed": [],
+      "instructions_dropped": [],
+      "instructions_rewritten": [],
+      "detritus_retained": [
+        "'SUNDAY SUPPERS' section header retained as part of headnote framing is fine, but 'Parmesan cheese and fresh basil are for serving and garnish.' footer note is a minor structural oddity rather than detritus"
+      ],
+      "prep_in_name": [],
+      "fidelity_score": 93,
+      "detritus_score": 90
+    },
+    "aggregate": 0.0
+  },
+  "09_clean_simple": {
+    "parse": {
+      "pass": true,
+      "details": {
+        "title": "Classic Vinaigrette",
+        "steps": 1,
+        "ingredients": 6,
+        "errors": []
+      }
+    },
+    "format": {
+      "score": 100.0,
+      "checks": [
+        {
+          "name": "ascii_fractions",
+          "pass": true
+        },
+        {
+          "name": "prep_notes_formatted",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "valid_front_matter",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_detritus",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "single_divider",
+          "pass": true
+        },
+        {
+          "name": "step_headers_format",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_code_fences",
+          "pass": true
+        },
+        {
+          "name": "ingredient_names_concise",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_en_dashes",
+          "pass": true
+        }
+      ]
+    },
+    "fidelity": {
+      "ingredients_missing": [],
+      "ingredients_added": [],
+      "quantities_changed": [],
+      "instructions_dropped": [],
+      "instructions_rewritten": [],
+      "detritus_retained": [
+        "\"A go-to dressing for any salad. Adjust the ratio to taste.\" — preamble/description retained (though reference also keeps it, so borderline acceptable)"
+      ],
+      "prep_in_name": [
+        "Garlic, 1 small clove: Finely minced. — preparation note embedded in ingredient name/line (consistent with reference style, so acceptable)"
+      ],
+      "fidelity_score": 97,
+      "detritus_score": 90
+    },
+    "aggregate": 95.8
+  },
+  "10_clean_medium": {
+    "parse": {
+      "pass": true,
+      "details": {
+        "title": "Grilled Steak Tacos",
+        "steps": 3,
+        "ingredients": 13,
+        "errors": []
+      }
+    },
+    "format": {
+      "score": 100.0,
+      "checks": [
+        {
+          "name": "ascii_fractions",
+          "pass": true
+        },
+        {
+          "name": "prep_notes_formatted",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "valid_front_matter",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_detritus",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "single_divider",
+          "pass": true
+        },
+        {
+          "name": "step_headers_format",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_code_fences",
+          "pass": true
+        },
+        {
+          "name": "ingredient_names_concise",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_en_dashes",
+          "pass": true
+        }
+      ]
+    },
+    "fidelity": {
+      "ingredients_missing": [],
+      "ingredients_added": [],
+      "quantities_changed": [],
+      "instructions_dropped": [],
+      "instructions_rewritten": [],
+      "detritus_retained": [
+        "Blog preamble sentence retained implicitly via ingredient note 'give or take' kept in ingredient name, though this is minor"
+      ],
+      "prep_in_name": [
+        "Lime juice, juice of 2 limes — 'juice of' is redundant phrasing from original prose leaked into the ingredient name rather than being normalized"
+      ],
+      "fidelity_score": 97,
+      "detritus_score": 95
+    },
+    "aggregate": 97.3
+  }
+}

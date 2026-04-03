@@ -1,0 +1,83 @@
+# Chicken Tikka Masala Recipe - RecipeTin Eats
+
+## Header & Navigation
+The page displays the RecipeTin Eats logo and primary navigation menu, with search functionality and social sharing options available across desktop and mobile views.
+
+## Recipe Title & Meta Information
+**Chicken Tikka Masala** by Nagi
+- Published: April 6, 2018
+- Last Modified: May 9, 2025
+- Category: Chicken, Curries, Indian Recipes, Main Dishes
+- Rating: 4.97/5 stars (233 ratings, 13 reviews)
+
+## Recipe Description
+"Made-from-scratch Chicken Tikka Masala recipe with the signature yoghurt marinated chargrilled chicken smothered in an incredible spice infused curry sauce."
+
+The dish features low spice level with 3-24 hours marinating time required.
+
+## Ingredients
+
+**Chicken Tikka Marinade:**
+- 600g boneless, skinless chicken thighs, cubed
+- ½ cup plain yogurt
+- 6 cloves garlic, minced
+- 1 tbsp fresh ginger, grated
+- 1 tsp garam masala
+- 1 tsp each salt, cumin, ground coriander, paprika
+- 1 tbsp vegetable oil
+- ⅛ tsp cayenne pepper
+- Pinch black pepper
+- 2 tsp lemon juice
+
+**Curry Sauce Spices:**
+- 2 tsp turmeric
+- 1 tbsp garam masala
+- 2 tsp coriander
+- 1 tsp cumin
+- ⅛ tsp cardamom powder
+- ⅛ tsp cayenne pepper
+
+**Sauce Base:**
+- 3 tbsp vegetable oil
+- 30g unsalted butter or ghee
+- 1 onion, finely chopped
+- 1 tsp salt
+- 2 tbsp fresh ginger, grated
+- 6 cloves garlic, crushed
+- 1 tbsp paprika
+- 1⅔ cups tomato passata
+- 1⅔ cups water
+- 100ml cream
+- 1 tsp sugar
+- 50g unsalted butter or ghee
+- Basmati rice for serving
+
+## Instructions
+
+**Chicken Tikka:**
+1. Combine marinade ingredients and coat chicken pieces
+2. Cover and refrigerate minimum 3 hours (overnight preferred)
+3. Heat oil in non-stick pan over high heat until smoking
+4. Sear chicken in batches until charred, 2 minutes per side
+5. Remove and set aside
+
+**Sauce:**
+1. Wipe pan clean, reduce heat to medium-high
+2. Add oil and butter; sauté onions, ginger, and salt until golden (5-7 minutes)
+3. Add garlic and paprika; cook 2 minutes
+4. Add spices; cook 2 minutes, stirring
+5. Pour in tomato passata and water; bring to simmer
+6. Cover and simmer 15 minutes, stirring occasionally
+7. Blend sauce with stick blender until smooth
+8. Return to pan; add cream, sugar, and butter
+9. Add chicken and simmer until cooked through
+10. Serve over basmati rice with optional cilantro
+
+## Nutrition Information
+Per serving: 582 kcal
+
+## Reviews
+The recipe received numerous five-star reviews praising its authenticity and ease of preparation. Reviewers noted success with ingredient substitutions and serving variations.
+
+## Footer & Additional Information
+The page includes sharing buttons (Facebook, Pinterest, Email), related content recommendations, and standard website footer navigation with links to various recipe collections and site information.
