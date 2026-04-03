@@ -74,7 +74,7 @@ class AiImportServiceTest < ActiveSupport::TestCase
     assert_includes captured_system, 'Miscellaneous'
   end
 
-  test 'uses haiku model' do
+  test 'uses sonnet model' do
     captured_model = nil
     mock_response = MockResponse.new([MockContent.new(:text, '# Test')])
 
@@ -91,7 +91,7 @@ class AiImportServiceTest < ActiveSupport::TestCase
       AiImportService.call(text: 'recipe', kitchen: @kitchen)
     end
 
-    assert_equal 'claude-haiku-4-5-20251001', captured_model
+    assert_equal 'claude-sonnet-4-6', captured_model
   end
 
   test 'strips code fences from response' do

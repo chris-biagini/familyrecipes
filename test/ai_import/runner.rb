@@ -36,8 +36,8 @@ require 'anthropic'
 BASE_DIR = File.expand_path(__dir__)
 RESULTS_DIR = File.join(BASE_DIR, 'results')
 
-HAIKU_MODEL = 'claude-haiku-4-5-20251001'
-SONNET_MODEL = 'claude-sonnet-4-6'
+GENERATION_MODEL = 'claude-sonnet-4-6'
+JUDGE_MODEL = 'claude-sonnet-4-6'
 
 CATEGORIES = %w[Baking Bread Breakfast Dessert Drinks Holiday Mains Pizza Sides Snacks Miscellaneous].freeze
 
@@ -67,7 +67,7 @@ end
 
 def call_haiku(client, system_prompt, input_text)
   response = client.messages.create(
-    model: HAIKU_MODEL,
+    model: GENERATION_MODEL,
     max_tokens: 8192,
     system: system_prompt,
     messages: [{ role: 'user', content: input_text }]
@@ -86,7 +86,7 @@ def call_sonnet_judge(client, judge_prompt, original, output, expected)
                  end
 
   response = client.messages.create(
-    model: SONNET_MODEL,
+    model: JUDGE_MODEL,
     max_tokens: 4096,
     system: judge_prompt,
     messages: [{ role: 'user', content: user_content }]
@@ -246,4 +246,4 @@ def run_evaluation
   puts "Overall: #{avg} avg, #{worst} worst"
 end
 
-run_evaluation
+run_evaluation if $PROGRAM_NAME == __FILE__

@@ -8,7 +8,7 @@
 # interpolated from the kitchen's current taxonomy at call time.
 #
 # - Kitchen#anthropic_api_key: encrypted API key for Anthropic
-# - Kitchen::AI_MODEL: model identifier (claude-haiku-4-5)
+# - Kitchen::AI_MODEL: model identifier (claude-sonnet-4-6)
 # - lib/familyrecipes/ai_import_prompt.md: prompt template with dynamic slots
 class AiImportService
   Result = Data.define(:markdown, :error)
@@ -76,6 +76,6 @@ class AiImportService
   end
 
   def client
-    Anthropic::Client.new(api_key: @api_key, timeout: 30)
+    Anthropic::Client.new(api_key: @api_key, timeout: 60)
   end
 end
