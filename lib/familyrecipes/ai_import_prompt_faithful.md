@@ -207,16 +207,9 @@ to taste.` If the source uses informal quantities, keep them as-is:
 `- Olive oil, a generous pour`, `- Cilantro, a big handful`,
 `- Steak, about 2 lbs give or take`.
 
-- **Fractions:** Always use ASCII fraction notation: `1/2`, `3/4`, `1/3`.
-  Never output vulgar fraction characters (½, ¾, ⅓, etc.) — always
-  convert to ASCII. `½` → `1/2`. `¾` → `3/4`. `⅔` → `2/3`.
-- **Mixed numbers:** Whole number, space, fraction: `2 1/2 cups`,
-  `1 1/4 tsp`. Never `2-1/2` or `2½`.
-- **Ranges:** Low value, hyphen, high value — no spaces around the hyphen:
-  `2-3 cloves`, `1/2-1 cup`, `7/8-1 1/8 cups`. Both sides must be numbers.
-- **Metric fractional quantities:** Use decimals for metric units:
-  `0.5 g`, `2.5 mL`. Use fractions for imperial units: `1/2 cup`,
-  `1 1/2 tsp`.
+- **Fractions:** ASCII only: `1/2`, `3/4`. Never `½` or `¾`. Mixed
+  numbers: `2 1/2 cups`. Ranges: `2-3 cloves` (no spaces around hyphen).
+- **Metric:** Use decimals (`0.5 g`); imperial uses fractions (`1/2 cup`).
 
 **Prep note:** After colon, **always capitalized**, ending with period.
 `Minced.` not `minced`. `Diced.` not `diced`. `Drained.` not `drained`. This
@@ -291,17 +284,10 @@ or tips that are not present in the source text.
 - `- Onion, 1: diced` → capitalize prep: `- Onion, 1: Diced.`
 - State-change qualifiers: `Coconut oil (melted)` → prep note: `Coconut
   oil: Melted.`
-- `- Olive oil, 3 tbsp: Divided.` → split across steps with per-step quantities.
 - Re-listing ingredients from earlier steps. Ingredients carry forward.
 - Converting units: if the source says "1 cup", keep "1 cup".
 - `½ cup` → ASCII fractions only: `1/2 cup`.
-- `2½ cups` → mixed number with space: `2 1/2 cups`.
-- `2 - 3 cloves` → no spaces in ranges: `2-3 cloves`.
-- `1/2 g` → use decimals for metric: `0.5 g`.
-- En-dashes anywhere: `7–10 minutes` → always hyphens: `7-10 minutes`.
-- `Makes: 3-4 loaves` → single number: `Makes: 4 loaves`.
 - Two `---` dividers → use exactly one.
-- Category not in the approved list.
 
 ## Complete Example
 
@@ -421,8 +407,8 @@ scan for in a grocery store, plus a parenthetical for which variant to buy.
     →  - Tomatoes, 3: Roughly chopped.
 
     Source: "Salt and pepper to taste"
-    →  - Salt
-       - Black pepper
+    →  - Salt, to taste
+       - Pepper, to taste
 
     Source: "1/2 stick (4 tbsp) unsalted butter, melted and cooled"
     →  - Butter (unsalted), 4 tbsp: Melted and cooled.
@@ -433,7 +419,4 @@ scan for in a grocery store, plus a parenthetical for which variant to buy.
 ## OCR and Scan Recovery
 
 If the input appears to be from a scan or OCR, fix obvious artifacts:
-- `l/2` or `I/2` → `1/2` (letter ell/eye misread as digit one)
-- Run-together words: `saltand` → `salt and`
-- Missing line breaks between ingredients (infer from context)
-- Garbled punctuation: `35OoF` → `350°F`
+`l/2` → `1/2`, `saltand` → `salt and`, `35OoF` → `350°F`.
