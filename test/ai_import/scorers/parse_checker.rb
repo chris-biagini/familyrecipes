@@ -17,11 +17,11 @@ module Scorers
       begin
         tokens = LineClassifier.classify(output_text)
         parsed = RecipeBuilder.new(tokens).build
-      rescue FamilyRecipes::ParseError => e
+      rescue FamilyRecipes::ParseError => error
         return Result.new(pass: false, details: {
-          title: nil, steps: 0, ingredients: 0,
-          errors: ["Parse error: #{e.message}"]
-        })
+                            title: nil, steps: 0, ingredients: 0,
+                            errors: ["Parse error: #{error.message}"]
+                          })
       end
 
       title = parsed[:title]
@@ -35,7 +35,8 @@ module Scorers
       # ingredients or noted in the footer
       min_count = (expected_ingredient_count * 0.5).ceil
       if ingredient_count < min_count
-        errors << "Only #{ingredient_count} ingredients (expected >= #{min_count}, gold standard has #{expected_ingredient_count})"
+        errors << "Only #{ingredient_count} ingredients " \
+                  "(expected >= #{min_count}, gold standard has #{expected_ingredient_count})"
       end
 
       Result.new(

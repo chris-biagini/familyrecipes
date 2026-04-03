@@ -32,7 +32,7 @@ require_relative 'scorers/format_checker'
 # Anthropic SDK
 require 'anthropic'
 
-BASE_DIR = File.expand_path('..', __FILE__)
+BASE_DIR = File.expand_path(__dir__)
 CORPUS_DIR = File.join(BASE_DIR, 'corpus')
 RESULTS_DIR = File.join(BASE_DIR, 'results')
 
@@ -93,8 +93,8 @@ def call_sonnet_judge(client, judge_prompt, original, output, expected)
   # Strip code fences if Sonnet wraps the JSON
   text = text.gsub(/\A```\w*\n/, '').delete_suffix("\n```").strip
   JSON.parse(text)
-rescue JSON::ParserError => e
-  { 'error' => "JSON parse failed: #{e.message}", 'fidelity_score' => 0, 'detritus_score' => 0 }
+rescue JSON::ParserError => error
+  { 'error' => "JSON parse failed: #{error.message}", 'fidelity_score' => 0, 'detritus_score' => 0 }
 end
 
 def expected_ingredient_count(expected_text)
@@ -112,13 +112,13 @@ def compute_aggregate(parse_result, format_result, fidelity_result)
   detritus = (fidelity_result['detritus_score'] || 0).to_f
   format_score = format_result.score * 100.0
 
-  0.3 * format_score + 0.4 * fidelity + 0.3 * detritus
+  (0.3 * format_score) + (0.4 * fidelity) + (0.3 * detritus)
 end
 
 def write_summary(iter_dir, scores)
   lines = ["# Iteration #{File.basename(iter_dir)}\n"]
-  lines << "| Recipe | Parse | Format | Fidelity | Detritus | Aggregate |"
-  lines << "|--------|-------|--------|----------|----------|-----------|"
+  lines << '| Recipe | Parse | Format | Fidelity | Detritus | Aggregate |'
+  lines << '|--------|-------|--------|----------|----------|-----------|'
 
   scores.each do |name, data|
     parse = data[:parse][:pass] ? 'PASS' : 'FAIL'
@@ -130,10 +130,10 @@ def write_summary(iter_dir, scores)
   end
 
   avg = (scores.values.sum { |s| s[:aggregate] } / scores.size).round(1)
-  worst = scores.values.map { |s| s[:aggregate] }.min.round(1)
-  lines << ""
+  worst = scores.values.pluck(:aggregate).min.round(1)
+  lines << ''
   lines << "**Overall:** #{avg} avg, #{worst} worst"
-  lines << ""
+  lines << ''
 
   # List failures for ralph loop agent
   scores.each do |name, data|
@@ -145,10 +145,11 @@ def write_summary(iter_dir, scores)
       detail = check[:failures] ? " — #{check[:failures].join(', ')}" : ''
       failures << "FORMAT: #{check[:name]}#{detail}"
     end
-    %w[ingredients_missing ingredients_added quantities_changed instructions_dropped
-       instructions_rewritten detritus_retained prep_in_name].each do |key|
+    fidelity_keys = %w[ingredients_missing ingredients_added quantities_changed instructions_dropped
+                       instructions_rewritten detritus_retained prep_in_name]
+    fidelity_keys.each do |key|
       items = data[:fidelity][key]
-      next if items.nil? || items.empty?
+      next if items.nil? || items.empty? # rubocop:disable Rails/Blank -- no Rails in standalone script
 
       failures << "FIDELITY: #{key}: #{items.join(', ')}"
     end
@@ -157,7 +158,7 @@ def write_summary(iter_dir, scores)
 
     lines << "### #{name} — issues"
     failures.each { |f| lines << "- #{f}" }
-    lines << ""
+    lines << ''
   end
 
   File.write(File.join(iter_dir, 'summary.md'), lines.join("\n"))
@@ -193,14 +194,14 @@ def run_evaluation
     output_text = call_haiku(client, system_prompt, input_text)
     File.write(File.join(output_dir, "#{name}.md"), output_text)
 
-    puts "  Layer 1: parse check..."
+    puts '  Layer 1: parse check...'
     exp_count = expected_ingredient_count(expected_text)
     parse_result = Scorers::ParseChecker.check(output_text, expected_ingredient_count: exp_count)
 
-    puts "  Layer 2: format check..."
+    puts '  Layer 2: format check...'
     format_result = Scorers::FormatChecker.check(output_text, valid_categories: CATEGORIES)
 
-    puts "  Layer 3: Sonnet fidelity judge..."
+    puts '  Layer 3: Sonnet fidelity judge...'
     fidelity_result = call_sonnet_judge(client, judge_prompt, input_text, output_text, expected_text)
 
     aggregate = compute_aggregate(parse_result, format_result, fidelity_result)
@@ -222,7 +223,9 @@ def run_evaluation
   write_summary(iter_dir, scores)
 
   puts "\nResults saved to #{iter_dir}/"
-  puts "Overall: #{(scores.values.sum { |s| s[:aggregate] } / scores.size).round(1)} avg, #{scores.values.map { |s| s[:aggregate] }.min.round(1)} worst"
+  puts "Overall: #{(scores.values.sum do |s|
+    s[:aggregate]
+  end / scores.size).round(1)} avg, #{scores.values.pluck(:aggregate).min.round(1)} worst"
 end
 
 run_evaluation

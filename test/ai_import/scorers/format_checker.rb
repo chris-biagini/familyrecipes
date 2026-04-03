@@ -29,13 +29,11 @@ module Scorers
     # Steps: { tldr: "Step name.", ingredients: [...], instructions: "..." }
     # Ingredients: { name:, quantity:, prep_note: }
     def self.check(output_text, valid_categories:)
-      checks = []
       tokens = LineClassifier.classify(output_text)
-      parsed = begin
-        RecipeBuilder.new(tokens).build
-      rescue FamilyRecipes::ParseError
-        return Result.new(score: 0.0, checks: [{ name: 'parse', pass: false }])
-      end
+      parsed = safe_parse(tokens)
+      return Result.new(score: 0.0, checks: [{ name: 'parse', pass: false }]) unless parsed
+
+      checks = []
 
       checks << ascii_fractions(output_text)
       checks << prep_notes_formatted(parsed)
@@ -67,15 +65,15 @@ module Scorers
       cat = fm[:category]
       serves = fm[:serves]
       errors = []
-      errors << "Unknown category: #{cat}" if cat && !valid_categories.include?(cat)
+      errors << "Unknown category: #{cat}" if cat && valid_categories.exclude?(cat)
       errors << "Serves is not a number: #{serves}" if serves && !serves.to_s.match?(/\A\d+\z/)
       { name: 'valid_front_matter', pass: errors.empty?, failures: errors }
     end
 
     def self.no_detritus(text, parsed)
-      footer = parsed[:footer] || ''
+      parsed[:footer] || ''
       non_footer = text.sub(/^---\s*\n.*\z/m, '')
-      hits = DETRITUS_PATTERNS.select { |p| non_footer.match?(p) }
+      hits = DETRITUS_PATTERNS.grep(non_footer)
       { name: 'no_detritus', pass: hits.empty?, failures: hits.map(&:source) }
     end
 
@@ -95,7 +93,7 @@ module Scorers
     end
 
     def self.ingredient_names_concise(parsed)
-      names = parsed[:steps].flat_map { |s| s[:ingredients] }.map { |i| i[:name] }
+      names = parsed[:steps].flat_map { |s| s[:ingredients] }.pluck(:name)
       long = names.select { |n| n && n.size > 40 }
       { name: 'ingredient_names_concise', pass: long.empty?, failures: long }
     end
@@ -104,7 +102,13 @@ module Scorers
       { name: 'no_en_dashes', pass: !text.match?(EN_DASH) }
     end
 
-    private_class_method :ascii_fractions, :prep_notes_formatted,
+    def self.safe_parse(tokens)
+      RecipeBuilder.new(tokens).build
+    rescue FamilyRecipes::ParseError
+      nil
+    end
+
+    private_class_method :safe_parse, :ascii_fractions, :prep_notes_formatted,
                          :valid_front_matter, :no_detritus, :single_divider,
                          :step_headers_format, :no_code_fences,
                          :ingredient_names_concise, :no_en_dashes
