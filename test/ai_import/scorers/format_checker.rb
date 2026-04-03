@@ -35,7 +35,7 @@ module Scorers
 
     Result = Data.define(:score, :checks)
 
-    def self.check(output_text, valid_categories:, input_text: nil, metadata: nil)
+    def self.check(output_text, valid_categories:, valid_tags: nil, input_text: nil, metadata: nil)
       tokens = LineClassifier.classify(output_text)
       parsed = safe_parse(tokens)
       return Result.new(score: 0.0, checks: [{ name: 'parse', pass: false }]) unless parsed
@@ -54,6 +54,7 @@ module Scorers
       checks << no_comment_bleed(output_text, parsed)
       checks << informal_quantities_preserved(input_text, output_text) if input_text
       checks << step_splitting_appropriate(parsed, metadata) if metadata
+      checks << tags_from_valid_list(parsed, valid_tags) if valid_tags
 
       passed = checks.count { |c| c[:pass] }
       Result.new(score: passed.to_f / checks.size, checks: checks)
@@ -112,9 +113,13 @@ module Scorers
       { name: 'no_en_dashes', pass: !text.match?(EN_DASH) }
     end
 
-    def self.no_tags_invented(parsed)
+    def self.tags_from_valid_list(parsed, valid_tags)
       fm = parsed[:front_matter] || {}
-      { name: 'no_tags_invented', pass: fm[:tags].nil? || fm[:tags].empty? } # rubocop:disable Rails/Blank -- no Rails
+      tags = fm[:tags]
+      return { name: 'tags_from_valid_list', pass: true } if tags.nil? || tags.empty? # rubocop:disable Rails/Blank -- no Rails
+
+      invalid = tags.reject { |t| valid_tags.include?(t) }
+      { name: 'tags_from_valid_list', pass: invalid.empty?, failures: invalid }
     end
 
     def self.no_comment_bleed(text, _parsed)
@@ -163,7 +168,7 @@ module Scorers
                          :valid_front_matter, :no_detritus, :single_divider,
                          :step_headers_format, :no_code_fences,
                          :ingredient_names_concise, :no_en_dashes,
-                         :no_tags_invented, :no_comment_bleed,
+                         :tags_from_valid_list, :no_comment_bleed,
                          :informal_quantities_preserved,
                          :step_splitting_appropriate
   end

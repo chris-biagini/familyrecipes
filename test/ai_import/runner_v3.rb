@@ -45,6 +45,36 @@ TAGS = %w[vegetarian vegan gluten-free weeknight easy quick one-pot make-ahead
           freezer-friendly grilled roasted baked comfort-food holiday american
           italian mexican french japanese chinese indian thai].freeze
 
+FIDELITY_SCHEMA = {
+  type: 'object',
+  properties: {
+    ingredients_missing: { type: 'array', items: { type: 'string' } },
+    ingredients_added: { type: 'array', items: { type: 'string' } },
+    quantities_changed: { type: 'array', items: { type: 'string' } },
+    instructions_dropped: { type: 'array', items: { type: 'string' } },
+    instructions_rewritten: { type: 'array', items: { type: 'string' } },
+    detritus_retained: { type: 'array', items: { type: 'string' } },
+    prep_leaked_into_name: { type: 'array', items: { type: 'string' } },
+    fidelity_score: { type: 'integer' },
+    detritus_score: { type: 'integer' }
+  },
+  required: %w[fidelity_score detritus_score]
+}.freeze
+
+STEP_STRUCTURE_SCHEMA = {
+  type: 'object',
+  properties: {
+    split_decision: { type: 'string' },
+    expected_decision: { type: 'string' },
+    split_issues: { type: 'array', items: { type: 'string' } },
+    naming_issues: { type: 'array', items: { type: 'string' } },
+    ownership_issues: { type: 'array', items: { type: 'string' } },
+    flow_issues: { type: 'array', items: { type: 'string' } },
+    step_structure_score: { type: 'integer' }
+  },
+  required: %w[step_structure_score]
+}.freeze
+
 # --- CLI ---
 
 def parse_args
@@ -81,15 +111,23 @@ end
 
 # --- Claude CLI wrapper ---
 
-def call_claude(user_message, system_prompt: nil, model: nil, timeout: 600)
+def call_claude(user_message, system_prompt: nil, model: nil, timeout: 600, json_schema: nil)
   cmd = ['claude', '-p', '--no-session-persistence', '--tools', '']
   cmd += ['--system-prompt', system_prompt] if system_prompt
   cmd += ['--model', model] if model
+  if json_schema
+    cmd += ['--output-format', 'json']
+    cmd += ['--json-schema', JSON.generate(json_schema)]
+  end
   stdout, stderr, status = Timeout.timeout(timeout) {
     Open3.capture3(*cmd, stdin_data: user_message)
   }
   unless status.success?
     return { error: "claude exited #{status.exitstatus}: #{stderr.lines.first(3).join}" }
+  end
+  if json_schema
+    parsed = parse_structured_response(stdout)
+    return parsed.is_a?(Hash) && parsed['error'] ? parsed : { json: parsed }
   end
   { text: stdout }
 rescue Timeout::Error
@@ -98,21 +136,20 @@ rescue Errno::ENOENT
   { error: 'claude CLI not found on PATH' }
 end
 
+def parse_structured_response(stdout)
+  envelope = JSON.parse(stdout)
+  structured = envelope['structured_output']
+  return structured if structured.is_a?(Hash)
+
+  { 'error' => 'no structured_output in response' }
+rescue JSON::ParserError => e
+  { 'error' => "envelope JSON parse failed: #{e.message}" }
+end
+
 def clean_import_output(text)
   text = text.sub(/\A```\w*\n/, '').delete_suffix("\n```")
   heading_index = text.index(/^# /)
   heading_index ? text[heading_index..].rstrip + "\n" : text.rstrip + "\n"
-end
-
-def parse_json_response(text)
-  cleaned = text.strip.gsub(/\A```\w*\n/, '').delete_suffix("\n```").strip
-  start_idx = cleaned.index('{')
-  end_idx = cleaned.rindex('}')
-  return nil unless start_idx && end_idx
-
-  JSON.parse(cleaned[start_idx..end_idx])
-rescue JSON::ParserError
-  nil
 end
 
 # --- Scoring pipeline ---
@@ -126,20 +163,18 @@ end
 
 def judge_fidelity(rubric, original, output)
   user_msg = "## ORIGINAL\n\n#{original}\n\n## OUTPUT\n\n#{output}"
-  result = call_claude(user_msg, system_prompt: rubric)
+  result = call_claude(user_msg, system_prompt: rubric, json_schema: FIDELITY_SCHEMA)
   return default_fidelity_error(result[:error]) if result[:error]
 
-  parsed = parse_json_response(result[:text])
-  parsed || default_fidelity_error('JSON parse failed')
+  result[:json] || default_fidelity_error('structured response missing')
 end
 
 def judge_step_structure(rubric, original, output)
   user_msg = "## ORIGINAL\n\n#{original}\n\n## OUTPUT\n\n#{output}"
-  result = call_claude(user_msg, system_prompt: rubric)
+  result = call_claude(user_msg, system_prompt: rubric, json_schema: STEP_STRUCTURE_SCHEMA)
   return default_step_error(result[:error]) if result[:error]
 
-  parsed = parse_json_response(result[:text])
-  parsed || default_step_error('JSON parse failed')
+  result[:json] || default_step_error('structured response missing')
 end
 
 def default_fidelity_error(msg)
@@ -167,6 +202,7 @@ def process_recipe(dir, system_prompt, fidelity_rubric, step_rubric)
 
   puts "  [#{name}] Layer 2: format..."
   format = Scorers::FormatChecker.check(output_text, valid_categories: CATEGORIES,
+                                                      valid_tags: TAGS,
                                                       input_text: input_text, metadata: metadata)
 
   puts "  [#{name}] Layer 3: fidelity judge..."

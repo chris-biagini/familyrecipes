@@ -103,7 +103,7 @@ after the title. Otherwise omit.
   Must be a single number, not a range — "Makes: 4 loaves" not
   "Makes: 3-4 loaves".
 - **Serves** — a plain number. If the source gives a range ("6-8"), use
-  the higher number. Only include if the source specifies servings.
+  the lower number. Only include if the source specifies servings.
 - **Category** — one of: {{CATEGORIES}}. If none fit, use Miscellaneous.
 - **Tags** — Choose from: {{TAGS}}. Apply a tag ONLY if the recipe's
   cooking method or primary ingredient makes it undeniable (e.g., a recipe
@@ -292,7 +292,7 @@ or tips that are not present in the source text.
 - `2 - 3 cloves` → no spaces in ranges: `2-3 cloves`.
 - `1/2 g` → use decimals for metric: `0.5 g`.
 - En-dashes anywhere: `7–10 minutes` → always hyphens: `7-10 minutes`.
-- `Makes: 3-4 loaves` → single number: `Makes: 4 loaves`.
+- `Makes: 3-4 loaves` → single number: `Makes: 3 loaves`.
 - Two `---` dividers → use exactly one.
 - Category not in the approved list.
 

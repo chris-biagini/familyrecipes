@@ -41,6 +41,10 @@ Check specifically:
 - Informal quantities like "a generous pour" or "a big handful" in the
   quantity field are CORRECT if the source used that language. Do not penalize.
 - "to taste" as a quantity is CORRECT if the source used it. Do not penalize.
+- Serves/Makes ranges are collapsed to a single number: the lower bound of
+  the range. If the source says "Serves 6-8" and the output says "Serves: 6",
+  this is CORRECT — do not penalize. Only penalize if the number is outside
+  the original range.
 - If the source provides both metric and imperial measurements, the output
   should use the metric measurement in the ingredient line and note imperial
   equivalents in the footer. This is CORRECT — do not penalize it as
