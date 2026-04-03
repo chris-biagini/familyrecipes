@@ -59,6 +59,8 @@ Check specifically:
 - Ranges written with "to" in the source ("2 to 3 minutes") may be
   normalized to hyphens ("2-3 minutes"). This is a formatting convention,
   not content loss — do not penalize.
+- Dropping "about" from Makes/Serves lines (e.g., "about 10 biscuits" →
+  "10 biscuits") is acceptable — do not penalize.
 - "X degrees" → "X°F" or "X°C" is a trivial formatting normalization — do
   not penalize. Only penalize if the temperature value itself changed.
 - Invented footer notes (imperial equivalents the source did not provide,

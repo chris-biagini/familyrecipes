@@ -209,9 +209,7 @@ to taste.` If the source uses informal quantities, keep them as-is:
 `- Steak, about 2 lbs give or take`. Preserve weight equivalents in
 parentheses — if the source says "18 slices ham (18 ounces)" or
 "3 (8-ounce) loaves", keep the weight: `- Ham (deli, smoked), 18 slices
-(18 oz)` or `- Cuban bread, 3 loaves (8 oz each)`. Preserve approximate
-qualifiers like "about" — if source says "about 10 biscuits", write
-`Makes: about 10 biscuits`.
+(18 oz)` or `- Cuban bread, 3 loaves (8 oz each)`.
 
 - **Fractions:** Always use ASCII fraction notation: `1/2`, `3/4`, `1/3`.
   Never output vulgar fraction characters (½, ¾, ⅓, etc.) — always

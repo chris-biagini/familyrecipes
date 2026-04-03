@@ -75,9 +75,11 @@ module Scorers
       fm = parsed[:front_matter] || {}
       cat = fm[:category]
       serves = fm[:serves]
+      makes = fm[:makes]
       errors = []
       errors << "Unknown category: #{cat}" if cat && !valid_categories.include?(cat) # rubocop:disable Rails/NegateInclude -- no Rails
       errors << "Serves is not a number: #{serves}" if serves && !serves.to_s.match?(/\A\d+\z/)
+      errors << "Makes does not start with a number: #{makes}" if makes && !makes.to_s.match?(/\A\d/)
       { name: 'valid_front_matter', pass: errors.empty?, failures: errors }
     end
 
