@@ -102,8 +102,8 @@ after the title. Otherwise omit.
 - **Makes** — yield with a unit noun: "12 pancakes", "2 loaves", "1 loaf".
   Must be a single number, not a range — "Makes: 4 loaves" not
   "Makes: 3-4 loaves".
-- **Serves** — a single plain number: "Serves: 4" not "Serves: 4-6".
-  Only include if the source specifies servings. Don't fabricate a number.
+- **Serves** — a plain number. If the source gives a range ("6-8"), use
+  the higher number. Only include if the source specifies servings.
 - **Category** — one of: {{CATEGORIES}}. If none fit, use Miscellaneous.
 - **Tags** — Choose from: {{TAGS}}. Apply a tag ONLY if the recipe's
   cooking method or primary ingredient makes it undeniable (e.g., a recipe
@@ -150,13 +150,14 @@ Exception: ubiquitous ingredients (oil, salt, pepper) that serve *distinct
 roles* in multiple phases — e.g., oil for searing in one step and oil for a
 vinaigrette in another. List these in each step with per-step quantities.
 
-**Ingredient alternatives and substitutions:** If the source offers
-alternatives (e.g., "butter or ghee", "1 large onion or 2 small", "apricot jam
-or orange marmalade"), list the primary option in the ingredient line and note
-alternatives in the footer — do not silently drop any. If an ingredient is
-marked optional, still list it as a proper ingredient line (with quantity if
-given) and note in the footer that it is optional. Example footer: "Substitute
-orange marmalade for the apricot jam. Walnuts are optional."
+**Ingredient alternatives and substitutions:** If the source lists co-equal
+options ("butter or ghee", "gruyère or another Swiss-style cheese"), pick
+whichever appears first for the ingredient name and note the alternative in
+the footer using the source's own wording. Do NOT rephrase alternatives as
+"Substitute X for Y" — just state what the source said: "Or ghee in place
+of butter." "Or another Swiss-style cheese." If an ingredient is marked
+optional, keep it as a proper ingredient line with `Optional.` as the prep
+note.
 
 **Implicit steps:** If the recipe uses implicit-step format (rule 2, 3, or 4
 above), omit the `## Heading` and list ingredients and instructions directly
@@ -228,7 +229,9 @@ notes ("Room temperature."), or quick substitution hints ("Or ghee.").
 Do NOT use prep notes for:
 - Serving context ("for garnish", "for topping") — just list the ingredient
   bare; if the source says it's a garnish, note that in the footer
-- "Divided" — split the ingredient across steps instead
+- "Divided" — split the ingredient across steps with per-step quantities. If
+  the recipe uses implicit-step format (no `##` headings), keep "Divided." as
+  the prep note instead.
 
 **Optional ingredients:** Keep them as proper ingredient lines with
 `Optional.` as the prep note. Example: `- Walnuts, 1/2 cup: Optional.`
@@ -265,9 +268,10 @@ attribution) goes below it as a single block.
 If the source names an author or publication, credit them in the footer.
 
 **Preserve useful context from the source** in the footer: ingredient
-preferences, substitution options, storage tips.  These affect the outcome and
-shouldn't be silently dropped. Do not add substitution suggestions or tips
-that are not present in the source text.
+preferences, substitution options, storage tips, and timing metadata (prep
+time, cook time, total time) if the source provides them.  These affect the
+outcome and shouldn't be silently dropped. Do not add substitution suggestions
+or tips that are not present in the source text.
 
 ## Common Mistakes — Do Not Make These
 
