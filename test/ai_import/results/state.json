@@ -34,9 +34,30 @@
       "worst": 91.1,
       "prompt_sha": "2adce28fef8c2a5a4449f2c45c0db363ffb6845c",
       "prompt_lines": 432
+    },
+    {
+      "label": "011",
+      "avg": 96.4,
+      "worst": 92.6,
+      "prompt_sha": "0b74bce7a6bb46171776b43a9777146a0ed0d85e",
+      "prompt_lines": 437
+    },
+    {
+      "label": "012",
+      "avg": 96.7,
+      "worst": 94.3,
+      "prompt_sha": "9eeeb6130485f7824271f7892c16140cc9be6841",
+      "prompt_lines": 440
+    },
+    {
+      "label": "013",
+      "avg": 96.9,
+      "worst": 95.3,
+      "prompt_sha": "76770f8a441da9113ecaf5961e2ff808e0e3b7d6",
+      "prompt_lines": 441
     }
   ],
-  "best_iteration": "007",
-  "best_avg": 96.1,
-  "patience": 1
+  "best_iteration": "013",
+  "best_avg": 96.9,
+  "patience": 0
 }
