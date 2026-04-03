@@ -8,6 +8,9 @@ import ListenerManager from "../utilities/listener_manager"
  * the recipe editor via editor_controller.openWithContent(), which dispatches
  * editor:content-loaded for proper dual-mode editor integration.
  *
+ * Supports two import modes: faithful (preserve source wording) and expert
+ * (condense for experienced cooks), toggled by a checkbox in the dialog.
+ *
  * Collaborators:
  * - editor_controller (openWithContent for dialog lifecycle + content handoff)
  * - dual_mode_editor_controller (handles editor:content-loaded to populate editor)
@@ -15,7 +18,7 @@ import ListenerManager from "../utilities/listener_manager"
  * - ListenerManager: clean event listener teardown
  */
 export default class extends Controller {
-  static targets = ["textarea", "errors", "submitButton"]
+  static targets = ["textarea", "errors", "submitButton", "expertCheckbox"]
   static values = { url: String, editorDialogId: String }
 
   connect() {
@@ -46,8 +49,11 @@ export default class extends Controller {
     this.setLoading(true)
     this.clearErrors()
 
+    const mode = this.hasExpertCheckboxTarget && this.expertCheckboxTarget.checked
+      ? 'expert' : 'faithful'
+
     try {
-      const response = await saveRequest(this.urlValue, "POST", { text })
+      const response = await saveRequest(this.urlValue, "POST", { text, mode })
       const data = await response.json()
 
       if (!response.ok) {

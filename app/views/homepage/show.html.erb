@@ -183,10 +183,16 @@ Optional notes or source." %>
               rows="16" autofocus></textarea>
   </div>
   <div class="editor-footer">
-    <button type="button" class="btn editor-cancel" data-action="click->ai-import#close">Cancel</button>
-    <button type="button" class="btn btn-primary editor-save"
-            data-ai-import-target="submitButton"
-            data-action="click->ai-import#submit">Import</button>
+    <label class="settings-checkbox-label">
+      <input type="checkbox" data-ai-import-target="expertCheckbox">
+      Expert mode &mdash; condense for experienced cooks
+    </label>
+    <div class="editor-footer-actions">
+      <button type="button" class="btn editor-cancel" data-action="click->ai-import#close">Cancel</button>
+      <button type="button" class="btn btn-primary editor-save"
+              data-ai-import-target="submitButton"
+              data-action="click->ai-import#submit">Import</button>
+    </div>
   </div>
 </dialog>
 <% end %>
