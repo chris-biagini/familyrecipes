@@ -26,6 +26,12 @@ the recipe's instructions. If the source says "Cook the chicken over medium
 heat until the internal temperature reaches 165°F", write exactly that. Do
 not shorten it to "Cook chicken to 165°F."
 
+**Do NOT hallucinate.** If the source text is incomplete — missing quantities,
+vague on instructions, or only provides a summary — transcribe what is
+actually there. Do not fill in missing quantities from your knowledge, do not
+invent detailed instructions that aren't in the source. A recipe with missing
+quantities is better than a recipe with made-up quantities.
+
 **Preserve informal language.** If the source uses casual quantities like
 "a generous pour of olive oil", "a big handful of cilantro", or "about 2 lbs
 give or take" — keep that exact wording as the quantity. Do NOT clean up
@@ -84,7 +90,6 @@ after the title. Otherwise omit.
     Makes: 24 cookies
     Serves: 4
     Category: Baking
-    Tags: quick, weeknight
 
 - **Makes** — yield with a unit noun: "12 pancakes", "2 loaves", "1 loaf".
   Must be a single number, not a range — "Makes: 4 loaves" not
@@ -92,12 +97,7 @@ after the title. Otherwise omit.
 - **Serves** — a single plain number: "Serves: 4" not "Serves: 4-6".
   Only include if the source specifies servings. Don't fabricate a number.
 - **Category** — one of: {{CATEGORIES}}. If none fit, use Miscellaneous.
-- **Tags** — Choose from: {{TAGS}}. Apply a tag ONLY if the recipe's cooking
-  method or primary ingredient makes it undeniable (e.g., a recipe that grills
-  meat → "grilled"; a recipe with no animal products → "vegan"). Do NOT tag
-  based on blog metadata, "Keywords:" fields, or subjective impressions like
-  "this seems quick" or "this feels like comfort food." When in doubt, omit
-  the Tags line entirely.
+- Do NOT add a Tags line.
 
 ### Steps
 
@@ -178,7 +178,9 @@ Examples:
 
 **Quantity and units:** Number + unit with a space: "4 tbsp", "1 cup",
 "2 cloves". Omit quantity entirely for to-taste seasonings, oil for
-greasing, etc. Never write "to taste."
+greasing, etc. Never write "to taste." If the source uses informal
+quantities, keep them as-is: `- Olive oil, a generous pour`,
+`- Cilantro, a big handful`, `- Steak, about 2 lbs give or take`.
 
 - **Fractions:** Always use ASCII fraction notation: `1/2`, `3/4`, `1/3`.
   Never output vulgar fraction characters (½, ¾, ⅓, etc.) — always
@@ -196,11 +198,17 @@ greasing, etc. Never write "to taste."
 is a hard rule — every prep note starts uppercase and ends with a period.
 
 Prep notes describe physical actions done to the ingredient before use —
-cutting, melting, softening, grating, mashing, chopping. Do NOT use prep
-notes for:
+cutting, melting, softening, grating, mashing, chopping. Prep notes may
+also include brief ingredient-specific notes: "Optional.", temperature
+notes ("Room temperature."), or quick substitution hints ("Or ghee.").
+
+Do NOT use prep notes for:
 - Serving context ("for garnish", "for topping") — just list the ingredient
   bare; if the source says it's a garnish, note that in the footer
 - "Divided" — split the ingredient across steps instead
+
+**Optional ingredients:** Keep them as proper ingredient lines with
+`Optional.` as the prep note. Example: `- Walnuts, 1/2 cup: Optional.`
 
 **Units — preserve the source's units:**
 - Do NOT convert between unit systems. If the source says "1 cup flour", write
