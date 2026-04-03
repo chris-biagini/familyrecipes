@@ -6,6 +6,7 @@
 #
 # Collaborators:
 # - LineClassifier, RecipeBuilder — parse pipeline
+# - FamilyRecipes::RecipeSerializer — canonical serializer for round-trip
 # - FamilyRecipes::Ingredient — quantity splitting
 # - FamilyRecipes::NumericParsing — fraction parsing
 # - Scorers::ParseChecker — companion gate check (structural validity)
@@ -30,7 +31,7 @@ module Scorers
     end
 
     def self.check_round_trip(parsed)
-      reconstructed = reconstruct_markdown(parsed)
+      reconstructed = FamilyRecipes::RecipeSerializer.serialize(parsed)
 
       begin
         tokens2 = LineClassifier.classify(reconstructed)
@@ -46,9 +47,7 @@ module Scorers
       rt_count = ingredient_count(parsed2)
       errors << "Round-trip ingredient count: #{orig_count} vs #{rt_count}" if orig_count != rt_count
 
-      orig_steps = parsed[:steps].size
-      rt_steps = parsed2[:steps].size
-      errors << "Round-trip step count: #{orig_steps} vs #{rt_steps}" if orig_steps != rt_steps
+      errors << "Round-trip step count: #{parsed[:steps].size} vs #{parsed2[:steps].size}" if parsed[:steps].size != parsed2[:steps].size
 
       errors
     end
@@ -80,56 +79,7 @@ module Scorers
       parsed[:steps].sum { |s| (s[:ingredients] || []).size }
     end
 
-    def self.reconstruct_markdown(parsed)
-      lines = ["# #{parsed[:title]}"]
-      append_description(lines, parsed[:description])
-      append_front_matter(lines, parsed[:front_matter])
-      parsed[:steps].each { |step| append_step(lines, step) }
-      append_footer(lines, parsed[:footer])
-      lines.join("\n") + "\n"
-    end
-
-    def self.append_description(lines, desc)
-      return unless desc && !desc.strip.empty?
-
-      lines << '' << desc.strip
-    end
-
-    def self.append_front_matter(lines, fm)
-      return unless fm&.any? { |_k, v| v && (v.respond_to?(:empty?) ? !v.empty? : true) }
-
-      lines << ''
-      lines << "Makes: #{fm[:makes]}" if fm[:makes]
-      lines << "Serves: #{fm[:serves]}" if fm[:serves]
-      lines << "Category: #{fm[:category]}" if fm[:category]
-      lines << "Tags: #{fm[:tags].join(', ')}" if fm[:tags]&.size&.positive?
-    end
-
-    def self.append_step(lines, step)
-      lines << ''
-      lines << "## #{step[:tldr]}" if step[:tldr]
-      (step[:ingredients] || []).each { |ing| lines << ingredient_line(ing) }
-      return unless step[:instructions] && !step[:instructions].strip.empty?
-
-      lines << '' << step[:instructions].strip
-    end
-
-    def self.ingredient_line(ing)
-      line = "- #{ing[:name]}"
-      line += ", #{ing[:quantity]}" if ing[:quantity]
-      line += ": #{ing[:prep_note]}" if ing[:prep_note]
-      line
-    end
-
-    def self.append_footer(lines, footer)
-      return unless footer && !footer.strip.empty?
-
-      lines << '' << '---' << '' << footer.strip
-    end
-
     private_class_method :check_round_trip, :check_scaling, :scaling_error,
-                         :ingredient_count, :reconstruct_markdown,
-                         :append_description, :append_front_matter,
-                         :append_step, :ingredient_line, :append_footer
+                         :ingredient_count
   end
 end

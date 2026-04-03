@@ -22,6 +22,7 @@
 require 'json'
 require 'fileutils'
 require 'open3'
+require 'timeout'
 
 # ActiveSupport polyfill — parser uses .presence
 class Object
@@ -80,21 +81,25 @@ end
 
 # --- Claude CLI wrapper ---
 
-def call_claude(user_message, system_prompt: nil, model: nil)
+def call_claude(user_message, system_prompt: nil, model: nil, timeout: 180)
   cmd = ['claude', '-p', '--no-session-persistence', '--tools', '']
   cmd += ['--system-prompt', system_prompt] if system_prompt
   cmd += ['--model', model] if model
-  stdout, stderr, status = Open3.capture3(*cmd, stdin_data: user_message)
+  stdout, stderr, status = Timeout.timeout(timeout) {
+    Open3.capture3(*cmd, stdin_data: user_message)
+  }
   unless status.success?
     return { error: "claude exited #{status.exitstatus}: #{stderr.lines.first(3).join}" }
   end
   { text: stdout }
+rescue Timeout::Error
+  { error: "claude timed out after #{timeout}s" }
 rescue Errno::ENOENT
   { error: 'claude CLI not found on PATH' }
 end
 
 def clean_import_output(text)
-  text = text.gsub(/\A```\w*\n/, '').delete_suffix("\n```")
+  text = text.sub(/\A```\w*\n/, '').delete_suffix("\n```")
   heading_index = text.index(/^# /)
   heading_index ? text[heading_index..].rstrip + "\n" : text.rstrip + "\n"
 end
@@ -212,7 +217,11 @@ def parallel_map(items, concurrency)
     Thread.new do
       while (pair = queue.pop)
         item, index = pair
-        results[index] = yield(item)
+        results[index] = begin
+          yield(item)
+        rescue StandardError => e
+          error_scores("Unhandled error: #{e.message}")
+        end
       end
     end
   end
@@ -232,7 +241,8 @@ def next_label
 end
 
 def prompt_sha(path)
-  `git hash-object #{path}`.strip
+  stdout, _status = Open3.capture2('git', 'hash-object', path)
+  stdout.strip
 end
 
 def update_state(label, avg, worst, prompt_path)
@@ -258,17 +268,21 @@ def update_state(label, avg, worst, prompt_path)
   state
 end
 
-def write_summary(iter_dir, scores, output_dir)
-  lines = summary_header(iter_dir, scores)
-  append_failure_details(lines, scores, output_dir)
-  File.write(File.join(iter_dir, 'summary.md'), lines.join("\n"))
-
+def compute_overall(scores)
   avg = (scores.values.sum { |s| s[:aggregate] } / scores.size.to_f).round(1)
   worst = scores.values.map { |s| s[:aggregate] }.min.round(1)
   [avg, worst]
 end
 
-def summary_header(iter_dir, scores)
+def write_summary(iter_dir, scores, output_dir)
+  avg, worst = compute_overall(scores)
+  lines = summary_table(iter_dir, scores, avg, worst)
+  append_failure_details(lines, scores, output_dir)
+  File.write(File.join(iter_dir, 'summary.md'), lines.join("\n"))
+  [avg, worst]
+end
+
+def summary_table(iter_dir, scores, avg, worst)
   lines = ["# Iteration #{File.basename(iter_dir)}\n"]
   lines << '| Recipe | Parse | Compat | Format | Fidelity | Detritus | Steps | Aggregate |'
   lines << '|--------|-------|--------|--------|----------|----------|-------|-----------|'
@@ -283,8 +297,6 @@ def summary_header(iter_dir, scores)
     lines << "| #{name} | #{p} | #{c} | #{f} | #{fi} | #{d} | #{s} | #{data[:aggregate]} |"
   end
 
-  avg = (scores.values.sum { |s| s[:aggregate] } / scores.size.to_f).round(1)
-  worst = scores.values.map { |s| s[:aggregate] }.min.round(1)
   lines << '' << "**Overall:** #{avg} avg, #{worst} worst" << ''
   lines
 end
