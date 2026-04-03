@@ -15,9 +15,14 @@ module GroceryAudit
   STARTING_EASE     = 1.5
   MIN_EASE          = 1.1
   MAX_EASE          = 2.5
-  EASE_BONUS        = 0.05
-  EASE_PENALTY      = 0.15
-  SAFETY_MARGIN     = 0.9
+  EASE_BONUS        = 0.03
+  EASE_PENALTY      = 0.20
+  BLEND_WEIGHT      = 0.75
+  MAX_GROWTH_FACTOR = 1.3
+  BURST_THRESHOLD         = 0.35
+  MIN_ESTABLISHED_INTERVAL = 14
+  SAFETY_MARGIN     = 0.78
+  MIN_BUFFER        = 2
   SENTINEL          = -999_999
   SIM_DAYS          = 365
 
@@ -42,7 +47,7 @@ module GroceryAudit
 
     def on_hand?(day)
       return false if depleted_at
-      confirmed_at + (interval * SAFETY_MARGIN).to_i >= day
+      confirmed_at + [interval * SAFETY_MARGIN, interval - MIN_BUFFER].min.to_i >= day
     end
 
     def depleted? = !depleted_at.nil?
@@ -51,7 +56,7 @@ module GroceryAudit
     def ic_fires_on
       return nil if sentinel? || depleted?
 
-      confirmed_at + (interval * SAFETY_MARGIN).to_i + 1
+      confirmed_at + [interval * SAFETY_MARGIN, interval - MIN_BUFFER].min.to_i + 1
     end
 
     # --- Public actions (match OnHandEntry's public interface) ---
@@ -80,7 +85,7 @@ module GroceryAudit
     # NOTE: ease is bumped FIRST, then interval uses the new ease.
     def grow_standard(day)
       @ease         = [ease + EASE_BONUS, MAX_EASE].min
-      @interval     = [interval * ease, MAX_INTERVAL].min
+      @interval     = [interval * [ease, MAX_GROWTH_FACTOR].min, MAX_INTERVAL].min
       @confirmed_at = day
     end
 
@@ -89,7 +94,7 @@ module GroceryAudit
     # Ease only committed if anchor holds.
     def grow_anchored(day)
       new_ease  = [ease + EASE_BONUS, MAX_EASE].min
-      @interval = [interval * new_ease, MAX_INTERVAL].min
+      @interval = [interval * [new_ease, MAX_GROWTH_FACTOR].min, MAX_INTERVAL].min
 
       if confirmed_at + interval.to_i >= day
         @ease = new_ease
@@ -98,14 +103,20 @@ module GroceryAudit
       end
     end
 
+    def burst?(observed)
+      interval >= MIN_ESTABLISHED_INTERVAL && observed < interval * BURST_THRESHOLD
+    end
+
     # Blends observed period with current interval, then floors at
     # STARTING_INTERVAL. Production does max(blend, 7), NOT max(obs, 7)
     # before blending — this is where the old sims diverged.
     def deplete_observed(day)
-      observed      = day - confirmed_at
-      blended       = (observed + interval) / 2.0
-      @interval     = [blended, STARTING_INTERVAL.to_f].max
-      @ease         = [(ease || STARTING_EASE) * (1 - EASE_PENALTY), MIN_EASE].max
+      observed = day - confirmed_at
+      unless burst?(observed)
+        blended       = observed * BLEND_WEIGHT + interval * (1 - BLEND_WEIGHT)
+        @interval     = [blended, STARTING_INTERVAL.to_f].max
+        @ease         = [(ease || STARTING_EASE) * (1 - EASE_PENALTY), MIN_EASE].max
+      end
       @confirmed_at = SENTINEL
       @depleted_at  = day
     end

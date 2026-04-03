@@ -23,12 +23,18 @@ class OnHandEntry < ApplicationRecord # rubocop:disable Metrics/ClassLength
   STARTING_EASE = 1.5
   MIN_EASE = 1.1
   MAX_EASE = 2.5
-  EASE_BONUS = 0.05
-  EASE_PENALTY = 0.15
+  EASE_BONUS = 0.03
+  EASE_PENALTY = 0.20
+  BLEND_WEIGHT = 0.75
+  MAX_GROWTH_FACTOR = 1.3
+  BURST_THRESHOLD = 0.35
+  MIN_ESTABLISHED_INTERVAL = 14
 
-  # Items surface in Inventory Check 10% before predicted depletion.
-  # Better to ask early than to miss a depleted staple.
-  SAFETY_MARGIN = 0.9
+  # Items surface in Inventory Check before predicted depletion.
+  # SAFETY_MARGIN gives proportional buffer; MIN_BUFFER ensures short-cycle
+  # items (eggs, milk) get at least 2 days of warning.
+  SAFETY_MARGIN = 0.78
+  MIN_BUFFER = 2
 
   validates :ingredient_name, presence: true,
                               uniqueness: { scope: :kitchen_id, case_sensitive: false }
@@ -36,7 +42,8 @@ class OnHandEntry < ApplicationRecord # rubocop:disable Metrics/ClassLength
   scope :active, lambda { |now: Date.current|
     where(depleted_at: nil).where(
       'interval IS NULL OR date(confirmed_at, ' \
-      "'+' || CAST(interval * #{SAFETY_MARGIN} AS INTEGER) || ' days') >= date(?)",
+      "'+' || MIN(CAST(interval * #{SAFETY_MARGIN} AS INTEGER), " \
+      "CAST(interval AS INTEGER) - #{MIN_BUFFER}) || ' days') >= date(?)",
       now.iso8601
     )
   }
@@ -97,7 +104,7 @@ class OnHandEntry < ApplicationRecord # rubocop:disable Metrics/ClassLength
     return false if depleted_at.present?
     return true if interval.nil?
 
-    confirmed_at + (interval * SAFETY_MARGIN).to_i.days >= now
+    confirmed_at + [interval * SAFETY_MARGIN, interval - MIN_BUFFER].min.to_i.days >= now
   end
 
   def already_active?(now)
@@ -108,7 +115,7 @@ class OnHandEntry < ApplicationRecord # rubocop:disable Metrics/ClassLength
   # entries where the original purchase date is meaningless.
   def grow_standard(now)
     self.ease = [ease + EASE_BONUS, MAX_EASE].min
-    self.interval = [interval * ease, MAX_INTERVAL].min
+    self.interval = [interval * [ease, MAX_GROWTH_FACTOR].min, MAX_INTERVAL].min
     self.confirmed_at = now
     self.orphaned_at = nil
   end
@@ -119,7 +126,7 @@ class OnHandEntry < ApplicationRecord # rubocop:disable Metrics/ClassLength
   # anchored growth succeeds.
   def grow_anchored(now)
     new_ease = [ease + EASE_BONUS, MAX_EASE].min
-    self.interval = [interval * new_ease, MAX_INTERVAL].min
+    self.interval = [interval * [new_ease, MAX_GROWTH_FACTOR].min, MAX_INTERVAL].min
 
     if confirmed_at + interval.to_i >= now
       self.ease = new_ease
@@ -128,14 +135,20 @@ class OnHandEntry < ApplicationRecord # rubocop:disable Metrics/ClassLength
     end
   end
 
+  def burst?(observed)
+    interval >= MIN_ESTABLISHED_INTERVAL && observed < interval * BURST_THRESHOLD
+  end
+
   # Blends observed period with current interval to dampen oscillation from
   # quantized shopping cycles (e.g. weekly trips -> eggs alternate 7d/14d,
   # blending converges to ~10.5d). Also halves delay-inflated observations.
   def deplete_observed(now)
     observed = (now - confirmed_at).to_i
-    blended = (observed + interval) / 2.0
-    self.interval = [blended, STARTING_INTERVAL].max
-    self.ease = [(ease || STARTING_EASE) * (1 - EASE_PENALTY), MIN_EASE].max
+    unless burst?(observed)
+      blended = (observed * BLEND_WEIGHT) + (interval * (1 - BLEND_WEIGHT))
+      self.interval = [blended, STARTING_INTERVAL].max
+      self.ease = [(ease || STARTING_EASE) * (1 - EASE_PENALTY), MIN_EASE].max
+    end
     self.confirmed_at = Date.parse(ORPHAN_SENTINEL)
     self.depleted_at = now
     self.orphaned_at = nil

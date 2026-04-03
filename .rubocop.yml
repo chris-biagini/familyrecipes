@@ -79,7 +79,7 @@ Metrics/ModuleLength:
   Max: 100
 
 Minitest/MultipleAssertions:
-  Max: 12
+  Max: 15
 
 # Single-language homelab app — no i18n locale files
 Rails/I18nLocaleTexts:
