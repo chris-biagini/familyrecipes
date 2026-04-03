@@ -10,6 +10,7 @@ Read `test/ai_import/results/state.json`. Note:
 - Current iteration count
 - Best score and which iteration produced it
 - Patience counter (stops at 2)
+- Prompt line count trend — is the prompt growing or shrinking?
 
 If state.json does not exist, this is the first iteration. Skip to Step 3.
 
@@ -23,14 +24,31 @@ Focus on:
 - The worst-scoring recipe — what specifically went wrong?
 - Layer 4 step structure issues — are split decisions correct?
 
+Also look for **prompt trimming opportunities**:
+- Rules that have never been violated across any iteration — Sonnet may
+  follow the convention naturally without being told. These are candidates
+  for removal.
+- Redundant rules that say the same thing in different places.
+- Examples or explanations that could be shorter without losing clarity.
+- Rules from earlier tuning rounds that address problems Sonnet no longer
+  exhibits.
+
 ## Step 3: Edit the Prompt
 
 Edit `lib/familyrecipes/ai_import_prompt_faithful.md`. Rules:
-- Make ONE targeted change based on the failure analysis.
+
+**Prefer removing or simplifying rules over adding new ones.** A shorter
+prompt burns fewer tokens and gives the model less to misinterpret. Every
+line in the prompt should earn its place.
+
+- Make ONE targeted change based on the failure analysis — a fix, a
+  simplification, or a removal.
 - If this is the first iteration, just verify the prompt looks correct and
   make no edits.
 - Never rewrite the prompt from scratch.
 - Never add a rule that only helps one recipe — check if it could hurt others.
+- If adding a rule, check if an existing rule already covers the case and
+  just needs tightening.
 - Do not change the scoring system, runner script, or judge rubrics.
 
 Commit the change:

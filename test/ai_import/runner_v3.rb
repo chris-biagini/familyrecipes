@@ -253,7 +253,8 @@ def update_state(label, avg, worst, prompt_path)
 
   state['iterations'] << {
     'label' => label, 'avg' => avg, 'worst' => worst,
-    'prompt_sha' => prompt_sha(prompt_path)
+    'prompt_sha' => prompt_sha(prompt_path),
+    'prompt_lines' => File.readlines(prompt_path).size
   }
 
   if avg > state['best_avg']
