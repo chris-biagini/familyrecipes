@@ -140,7 +140,9 @@ Each step starts with a level-two heading:
     ## Make the dough.
 
 Step names: short imperative phrases, sentence case, ending with a period. "Make
-the sauce." not "Make the Sauce."
+the sauce." not "Make the Sauce." When the source already uses heading-style
+labels ("For the dough:", "For the stew:"), adapt them to imperative form but
+keep the source's noun: "For the stew:" → "Make the stew." not "Build the stew."
 
 **Ingredient ownership:** Each ingredient belongs to ONE step — the step where
 it's first introduced and primarily used. Don't re-list ingredients from earlier
@@ -202,9 +204,10 @@ Examples:
 
 **Quantity and units:** Number + unit with a space: "4 tbsp", "1 cup",
 "2 cloves". If the source says "to taste", write `to taste` as the
-quantity: `- Salt, to taste`. If a quantity has a "plus more to taste"
-modifier, keep it in the prep note: `- Chili powder, 1/4 cup: Plus more
-to taste.` If the source uses informal quantities, keep them as-is:
+quantity: `- Salt, to taste`. If a quantity has a modifier like "plus
+more" or "or more", keep the source's wording in the prep note:
+`- Mustard, 1 tbsp: Or more.` — do NOT change "or more" to "to taste".
+If the source uses informal quantities, keep them as-is:
 `- Olive oil, a generous pour`, `- Cilantro, a big handful`,
 `- Steak, about 2 lbs give or take`. Preserve weight equivalents in
 parentheses — if the source says "18 slices ham (18 ounces)" or
