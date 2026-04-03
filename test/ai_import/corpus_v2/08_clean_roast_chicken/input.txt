@@ -1,39 +1,45 @@
-# RecipeTin Eats - Roast Chicken Page Content
+# Roast Chicken Recipe - RecipeTin Eats
 
-## Page Overview
-This is a recipe page from RecipeTin Eats featuring a "Roast Chicken" recipe by Nagi. The page is heavily laden with analytics, advertising code, and tracking scripts.
+## Recipe Overview
+This is a garlic-herb-lemon butter roasted chicken recipe from RecipeTin Eats by Nagi. The dish yields 5 servings with a prep time of 15 minutes and cook time of 90 minutes (total 105 minutes).
 
-## Recipe Information
+## Ingredients
 
-**Title:** Roast Chicken
-
-**Author:** Nagi | RecipeTin Eats
-
-**Description:** A roast chicken "slathered with a garlic-herb-lemon butter then oven roasted to golden crispy perfection. Juicy on the inside" with "liquid gold pan juices loaded with flavour."
-
-**Yield:** 5 servings
-
-**Prep Time:** 15 minutes
-
-**Cook Time:** 90 minutes
-
-**Total Time:** 105 minutes
-
-## Key Ingredients
-- 1.75-2 kg whole chicken
+**For the Chicken:**
+- 1.75-2 kg (3.5-4 lb) whole chicken, patted dry
 - Salt and pepper
-- Olive oil
-- Lemon, rosemary, butter
-- Garlic, sage, parsley
-- Dry white wine or chicken broth
-- Onion and garlic bulb
+- 2 tsp olive oil
+- 1 lemon, quartered
+- 3 rosemary sprigs
 
-## Basic Cooking Method
-The recipe involves preparing a garlic-herb-lemon butter, loosening the chicken skin, distributing the butter mixture underneath, and roasting at 220°C initially, then reducing to 180°C until internal temperature reaches 75°C.
+**Garlic-Herb-Lemon Butter:**
+- 100 g (1 stick) unsalted butter, melted
+- 3 garlic cloves, minced
+- 1 tbsp sage, finely chopped
+- 2 tsp rosemary, finely chopped
+- 1 tbsp parsley, finely chopped
+- 1/2 tsp each salt and black pepper
 
-## Additional Content
-- 17 user reviews with ratings (mostly 5-star)
-- Navigation menus and site header elements
-- Multiple advertising integrations (AdThrive, Google Tag Manager)
-- Recipe schema markup for SEO
-- Social sharing functionality
+**Pan Ingredients:**
+- 1 cup (250 ml) dry white wine or low sodium chicken broth
+- 1 onion, quartered
+- 1 garlic bulb, halved horizontally
+
+## Instructions
+
+1. Remove chicken from fridge 30 minutes before cooking
+2. Preheat oven to 220 C/450 F (standard) or 200 C/430 F (fan/convection), placing shelf in middle
+3. Mix butter ingredients together, adding juice from 2 lemon wedges
+4. Place chicken in roasting pan and loosen skin using a spoon on the breast and drumsticks
+5. Prop chicken upright and drizzle herb butter under skin, reserving some for the surface
+6. Drizzle remaining butter over the chicken and squeeze lemon juice over it
+7. Stuff used lemon wedges and rosemary inside the chicken cavity
+8. Tie drumstick ends with string and tuck wing tips underneath
+9. Sprinkle salt and pepper over entire surface
+10. Place onion and garlic in pan, set chicken on top, pour wine around it, and drizzle with oil
+11. Roast for 10 minutes at high temperature, then reduce to 180 C/350 F for 1 hour 15 minutes, basting twice (at 30 min and 1 hr). Check that internal temperature reaches 75 C/165 F
+12. Rest for 15 minutes without covering (to maintain crispy skin)
+13. Serve with pan juices; discard onion but use roasted garlic
+
+## Nutrition
+Per serving: 505 kcal (based on 399g serving size)
