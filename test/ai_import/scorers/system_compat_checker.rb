@@ -20,8 +20,8 @@ module Scorers
       begin
         tokens = LineClassifier.classify(output_text)
         parsed = RecipeBuilder.new(tokens).build
-      rescue FamilyRecipes::ParseError => e
-        return Result.new(pass: false, details: { errors: ["Parse error: #{e.message}"] })
+      rescue FamilyRecipes::ParseError => error
+        return Result.new(pass: false, details: { errors: ["Parse error: #{error.message}"] })
       end
 
       errors.concat(check_round_trip(parsed))
@@ -36,26 +36,28 @@ module Scorers
       begin
         tokens2 = LineClassifier.classify(reconstructed)
         parsed2 = RecipeBuilder.new(tokens2).build
-      rescue FamilyRecipes::ParseError => e
-        return ["Round-trip re-parse failed: #{e.message}"]
+      rescue FamilyRecipes::ParseError => error
+        return ["Round-trip re-parse failed: #{error.message}"]
       end
 
       errors = []
-      errors << "Round-trip title mismatch" if parsed[:title] != parsed2[:title]
+      errors << 'Round-trip title mismatch' if parsed[:title] != parsed2[:title]
 
       orig_count = ingredient_count(parsed)
       rt_count = ingredient_count(parsed2)
       errors << "Round-trip ingredient count: #{orig_count} vs #{rt_count}" if orig_count != rt_count
 
-      errors << "Round-trip step count: #{parsed[:steps].size} vs #{parsed2[:steps].size}" if parsed[:steps].size != parsed2[:steps].size
+      if parsed[:steps].size != parsed2[:steps].size
+        errors << "Round-trip step count: #{parsed[:steps].size} vs #{parsed2[:steps].size}"
+      end
 
       errors
     end
 
     def self.check_scaling(parsed)
-      parsed[:steps].flat_map { |step|
+      parsed[:steps].flat_map do |step|
         (step[:ingredients] || []).filter_map { |ing| scaling_error(ing) }
-      }
+      end
     end
 
     def self.scaling_error(ingredient)

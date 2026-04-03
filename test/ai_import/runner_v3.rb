@@ -82,9 +82,9 @@ def parse_args
 
   ARGV.each do |arg|
     case arg
-    when /\A--corpus=(.+)/ then opts[:corpus] = $1
-    when /\A--prompt=(.+)/ then opts[:prompt] = $1
-    when /\A--concurrency=(\d+)/ then opts[:concurrency] = $1.to_i
+    when /\A--corpus=(.+)/ then opts[:corpus] = Regexp.last_match(1)
+    when /\A--prompt=(.+)/ then opts[:prompt] = Regexp.last_match(1)
+    when /\A--concurrency=(\d+)/ then opts[:concurrency] = Regexp.last_match(1).to_i
     else opts[:label] = arg
     end
   end
@@ -119,12 +119,11 @@ def call_claude(user_message, system_prompt: nil, model: nil, timeout: 600, json
     cmd += ['--output-format', 'json']
     cmd += ['--json-schema', JSON.generate(json_schema)]
   end
-  stdout, stderr, status = Timeout.timeout(timeout) {
+  stdout, stderr, status = Timeout.timeout(timeout) do
     Open3.capture3(*cmd, stdin_data: user_message)
-  }
-  unless status.success?
-    return { error: "claude exited #{status.exitstatus}: #{stderr.lines.first(3).join}" }
   end
+  return { error: "claude exited #{status.exitstatus}: #{stderr.lines.first(3).join}" } unless status.success?
+
   if json_schema
     parsed = parse_structured_response(stdout)
     return parsed.is_a?(Hash) && parsed['error'] ? parsed : { json: parsed }
@@ -142,14 +141,14 @@ def parse_structured_response(stdout)
   return structured if structured.is_a?(Hash)
 
   { 'error' => 'no structured_output in response' }
-rescue JSON::ParserError => e
-  { 'error' => "envelope JSON parse failed: #{e.message}" }
+rescue JSON::ParserError => error
+  { 'error' => "envelope JSON parse failed: #{error.message}" }
 end
 
 def clean_import_output(text)
   text = text.sub(/\A```\w*\n/, '').delete_suffix("\n```")
   heading_index = text.index(/^# /)
-  heading_index ? text[heading_index..].rstrip + "\n" : text.rstrip + "\n"
+  heading_index ? "#{text[heading_index..].rstrip}\n" : "#{text.rstrip}\n"
 end
 
 # --- Scoring pipeline ---
@@ -202,8 +201,8 @@ def process_recipe(dir, system_prompt, fidelity_rubric, step_rubric)
 
   puts "  [#{name}] Layer 2: format..."
   format = Scorers::FormatChecker.check(output_text, valid_categories: CATEGORIES,
-                                                      valid_tags: TAGS,
-                                                      input_text: input_text, metadata: metadata)
+                                                     valid_tags: TAGS,
+                                                     input_text: input_text, metadata: metadata)
 
   puts "  [#{name}] Layer 3: fidelity judge..."
   fidelity = judge_fidelity(fidelity_rubric, input_text, output_text)
@@ -249,14 +248,14 @@ def parallel_map(items, concurrency)
   items.each_with_index { |item, i| queue << [item, i] }
   concurrency.times { queue << nil }
 
-  workers = concurrency.times.map do
+  workers = Array.new(concurrency) do
     Thread.new do
       while (pair = queue.pop)
         item, index = pair
         results[index] = begin
           yield(item)
-        rescue StandardError => e
-          error_scores("Unhandled error: #{e.message}")
+        rescue StandardError => error
+          error_scores("Unhandled error: #{error.message}")
         end
       end
     end
@@ -271,7 +270,7 @@ end
 def next_label
   existing = Dir.glob(File.join(RESULTS_DIR, 'iteration_*'))
                 .map { |d| File.basename(d).delete_prefix('iteration_') }
-                .select { |l| l.match?(/\A\d+\z/) }
+                .grep(/\A\d+\z/)
                 .map(&:to_i)
   format('%03d', (existing.max || 0) + 1)
 end
@@ -283,9 +282,13 @@ end
 
 def update_state(label, avg, worst, prompt_path)
   state_path = File.join(RESULTS_DIR, 'state.json')
-  state = File.exist?(state_path) ? JSON.parse(File.read(state_path)) : {
-    'iterations' => [], 'best_iteration' => nil, 'best_avg' => 0.0, 'patience' => 0
-  }
+  state = if File.exist?(state_path)
+            JSON.parse(File.read(state_path))
+          else
+            {
+              'iterations' => [], 'best_iteration' => nil, 'best_avg' => 0.0, 'patience' => 0
+            }
+          end
 
   state['iterations'] << {
     'label' => label, 'avg' => avg, 'worst' => worst,
@@ -307,7 +310,7 @@ end
 
 def compute_overall(scores)
   avg = (scores.values.sum { |s| s[:aggregate] } / scores.size.to_f).round(1)
-  worst = scores.values.map { |s| s[:aggregate] }.min.round(1)
+  worst = scores.values.map { |s| s[:aggregate] }.min.round(1) # rubocop:disable Rails/Pluck -- no Rails
   [avg, worst]
 end
 

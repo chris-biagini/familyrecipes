@@ -154,7 +154,12 @@ module Scorers
       when 'explicit'
         pass = steps.size >= 2 && steps.all? { |s| s[:tldr] }
         { name: 'step_splitting_appropriate', pass: pass,
-          failures: pass ? nil : ["Expected explicit (2+ named steps) but got #{steps.size} steps, headers=#{has_headers}"] }
+          failures: if pass
+                      nil
+                    else
+                      ['Expected explicit (2+ named steps) but got ' \
+                       "#{steps.size} steps, headers=#{has_headers}"]
+                    end }
       else
         { name: 'step_splitting_appropriate', pass: true }
       end
