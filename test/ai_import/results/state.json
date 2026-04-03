@@ -27,9 +27,16 @@
       "worst": 50.0,
       "prompt_sha": "1a69edcc4ce18a62ee3df3a08b08c41650e84b9f",
       "prompt_lines": 422
+    },
+    {
+      "label": "010",
+      "avg": 96.1,
+      "worst": 91.1,
+      "prompt_sha": "2adce28fef8c2a5a4449f2c45c0db363ffb6845c",
+      "prompt_lines": 432
     }
   ],
   "best_iteration": "007",
   "best_avg": 96.1,
-  "patience": 2
+  "patience": 1
 }

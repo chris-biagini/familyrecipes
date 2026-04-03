@@ -189,7 +189,9 @@ Examples:
 - Preserve the source's descriptors. If the source says "1 large egg", keep
   "large": `- Egg (large), 1`. If it says "ground cumin", keep "ground":
   `- Cumin (ground), 1 tsp`. Do not strip descriptors that the source included.
-- Always qualify sugar — "Sugar (white)" or "Sugar (brown)".
+- Qualify sugar when the source specifies the type: "Sugar (brown)",
+  "Sugar (powdered)". If the source just says "sugar" with no qualifier,
+  write `- Sugar` — do not add "(white)".
 - Don't use qualifiers for preparation instructions, except where the
   qualifiers distinguish between variations that often are sold pre-prepared.
   For example, "Chicken thighs (boneless, skinless)" is appropriate, but "Apples
@@ -204,7 +206,12 @@ quantity: `- Salt, to taste`. If a quantity has a "plus more to taste"
 modifier, keep it in the prep note: `- Chili powder, 1/4 cup: Plus more
 to taste.` If the source uses informal quantities, keep them as-is:
 `- Olive oil, a generous pour`, `- Cilantro, a big handful`,
-`- Steak, about 2 lbs give or take`.
+`- Steak, about 2 lbs give or take`. Preserve weight equivalents in
+parentheses — if the source says "18 slices ham (18 ounces)" or
+"3 (8-ounce) loaves", keep the weight: `- Ham (deli, smoked), 18 slices
+(18 oz)` or `- Cuban bread, 3 loaves (8 oz each)`. Preserve approximate
+qualifiers like "about" — if source says "about 10 biscuits", write
+`Makes: about 10 biscuits`.
 
 - **Fractions:** Always use ASCII fraction notation: `1/2`, `3/4`, `1/3`.
   Never output vulgar fraction characters (½, ¾, ⅓, etc.) — always
@@ -334,7 +341,7 @@ or tips that are not present in the source text.
     - Garlic, 2 cloves: Sliced thinly.
     - Tomatoes (canned), 794 g
     - Salt
-    - Black pepper
+    - Pepper
 
     Add garlic to oil and cook gently over low heat. Add tomatoes to pan.
     Use stick blender to puree sauce. Reduce until thick. Season to taste.
@@ -415,7 +422,7 @@ scan for in a grocery store, plus a parenthetical for which variant to buy.
 
     Source: "Salt and pepper to taste"
     →  - Salt
-       - Black pepper
+       - Pepper
 
     Source: "1/2 stick (4 tbsp) unsalted butter, melted and cooled"
     →  - Butter (unsalted), 4 tbsp: Melted and cooled.

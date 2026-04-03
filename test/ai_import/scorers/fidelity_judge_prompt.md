@@ -56,6 +56,11 @@ Check specifically:
 - Extracting water or other ingredients from instructions into the ingredient
   list is acceptable when the source clearly uses them as ingredients but
   lists them only in the instructions.
+- Ranges written with "to" in the source ("2 to 3 minutes") may be
+  normalized to hyphens ("2-3 minutes"). This is a formatting convention,
+  not content loss — do not penalize.
+- "X degrees" → "X°F" or "X°C" is a trivial formatting normalization — do
+  not penalize. Only penalize if the temperature value itself changed.
 - Invented footer notes (imperial equivalents the source did not provide,
   substitution suggestions not in the source, summary notes that repackage
   inline information) are hallucinations — penalize under detritus.
