@@ -2,6 +2,7 @@
 
 # Thin JSON adapter for AI-powered recipe import. Accepts pasted recipe text,
 # delegates to AiImportService for Anthropic API call, returns generated Markdown.
+# Supports two modes: faithful (default) and expert (condensed for experienced cooks).
 # The no_api_key error returns 422; upstream API failures return 503.
 #
 # Collaborators:
@@ -14,7 +15,8 @@ class AiImportController < ApplicationController
     text = params[:text].to_s.strip
     return render json: { error: 'Text is required' }, status: :unprocessable_content if text.blank?
 
-    result = AiImportService.call(text:, kitchen: current_kitchen)
+    mode = params[:mode] == 'expert' ? :expert : :faithful
+    result = AiImportService.call(text:, kitchen: current_kitchen, mode:)
 
     if result.markdown
       render json: { markdown: result.markdown }

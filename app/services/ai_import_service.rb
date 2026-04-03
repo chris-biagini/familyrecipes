@@ -2,27 +2,33 @@
 
 # Sends user-pasted text to the Anthropic API for conversion into the app's
 # Markdown recipe format. Pure function — no database writes or side effects.
-# One-shot pipeline: text in, formatted recipe out.
+# One-shot pipeline: text in, formatted recipe out. Supports two modes:
+# :faithful (preserve source wording) and :expert (condense for experienced cooks).
 #
 # The system prompt is a template with {{CATEGORIES}} and {{TAGS}} placeholders
 # interpolated from the kitchen's current taxonomy at call time.
 #
 # - Kitchen#anthropic_api_key: encrypted API key for Anthropic
 # - Kitchen::AI_MODEL: model identifier (claude-sonnet-4-6)
-# - lib/familyrecipes/ai_import_prompt.md: prompt template with dynamic slots
+# - lib/familyrecipes/ai_import_prompt_faithful.md: faithful mode template
+# - lib/familyrecipes/ai_import_prompt_expert.md: expert mode template
 class AiImportService
   Result = Data.define(:markdown, :error)
 
-  PROMPT_TEMPLATE = Rails.root.join('lib/familyrecipes/ai_import_prompt.md').read.freeze
+  PROMPTS = {
+    faithful: Rails.root.join('lib/familyrecipes/ai_import_prompt_faithful.md').read.freeze,
+    expert: Rails.root.join('lib/familyrecipes/ai_import_prompt_expert.md').read.freeze
+  }.freeze
   MAX_TOKENS = 8192
 
-  def self.call(text:, kitchen:)
-    new(kitchen:).call(text:)
+  def self.call(text:, kitchen:, mode: :faithful)
+    new(kitchen:, mode:).call(text:)
   end
 
-  def initialize(kitchen:)
+  def initialize(kitchen:, mode:)
     @api_key = kitchen.anthropic_api_key
     @kitchen = kitchen
+    @mode = PROMPTS.key?(mode) ? mode : :faithful
   end
 
   def call(text:)
@@ -57,8 +63,11 @@ class AiImportService
   def build_system_prompt
     categories = @kitchen.categories.pluck(:name).sort
     categories << 'Miscellaneous' unless categories.include?('Miscellaneous')
+    tags = @kitchen.tags.pluck(:name).sort
 
-    PROMPT_TEMPLATE.gsub('{{CATEGORIES}}', categories.join(', '))
+    PROMPTS[@mode]
+      .gsub('{{CATEGORIES}}', categories.join(', '))
+      .gsub('{{TAGS}}', tags.empty? ? '(none yet)' : tags.join(', '))
   end
 
   def clean_output(text)

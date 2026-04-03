@@ -66,6 +66,35 @@ class AiImportControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.parsed_body['error'], 'Anthropic'
   end
 
+  test 'create passes expert mode to service' do
+    captured_mode = nil
+    original_call = AiImportService.method(:call)
+
+    AiImportService.define_singleton_method(:call) do |text:, kitchen:, mode: :faithful|
+      captured_mode = mode
+      original_call.call(text:, kitchen:, mode:)
+    end
+
+    mock_result = AiImportService::Result.new(markdown: '# Tacos', error: nil)
+    AiImportService.stub :call, mock_result do
+      post ai_import_path(kitchen_slug: kitchen_slug),
+           params: { text: 'taco recipe', mode: 'expert' }, as: :json
+    end
+
+    assert_response :success
+  end
+
+  test 'create defaults to faithful mode' do
+    mock_result = AiImportService::Result.new(markdown: '# Tacos', error: nil)
+
+    AiImportService.stub :call, mock_result do
+      post ai_import_path(kitchen_slug: kitchen_slug),
+           params: { text: 'taco recipe' }, as: :json
+    end
+
+    assert_response :success
+  end
+
   test 'create requires membership' do
     delete logout_path
 

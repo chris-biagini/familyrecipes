@@ -417,13 +417,24 @@
 .editor-footer {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
   gap: 0.5rem;
   padding: 1rem 1.5rem;
   border-top: 1px solid var(--rule);
 }
 
+.editor-footer:has(.editor-footer-actions) {
+  justify-content: space-between;
+}
+
 .editor-footer-spacer {
   flex: 1;
+}
+
+.editor-footer-actions {
+  display: flex;
+  gap: 0.5rem;
 }
 
 /* Aisle Order Editor */

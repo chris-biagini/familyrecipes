@@ -86,7 +86,6 @@ Respond with ONLY this JSON — no other text:
   "instructions_rewritten": ["cases where wording substantially changed"],
   "detritus_retained": ["any non-recipe content that leaked through"],
   "prep_leaked_into_name": ["ingredient names containing prep/substitution info"],
-  "tags_invented": ["any Tags: line present — tags should not be added"],
   "fidelity_score": 85,
   "detritus_score": 90
 }

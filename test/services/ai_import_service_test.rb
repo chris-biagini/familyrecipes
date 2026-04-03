@@ -11,6 +11,8 @@ class AiImportServiceTest < ActiveSupport::TestCase
     @kitchen.update!(anthropic_api_key: 'sk-test-key-123')
     Category.find_or_create_for(@kitchen, 'Baking')
     Category.find_or_create_for(@kitchen, 'Mains')
+    Tag.find_or_create_by!(kitchen: @kitchen, name: 'easy')
+    Tag.find_or_create_by!(kitchen: @kitchen, name: 'grilled')
   end
 
   test 'returns markdown on successful API call' do
@@ -31,28 +33,7 @@ class AiImportServiceTest < ActiveSupport::TestCase
     assert_equal 'no_api_key', result.error
   end
 
-  test 'sends single user message' do
-    captured_messages = nil
-    mock_response = MockResponse.new([MockContent.new(:text, '# Simple')])
-
-    mock_messages = Object.new
-    mock_messages.define_singleton_method(:create) do |**kwargs|
-      captured_messages = kwargs[:messages]
-      mock_response
-    end
-
-    mock_client = Object.new
-    mock_client.define_singleton_method(:messages) { mock_messages }
-
-    Anthropic::Client.stub :new, mock_client do
-      AiImportService.call(text: 'some recipe', kitchen: @kitchen)
-    end
-
-    assert_equal 1, captured_messages.size
-    assert_equal 'user', captured_messages[0][:role]
-  end
-
-  test 'interpolates kitchen categories into prompt' do
+  test 'defaults to faithful mode' do
     captured_system = nil
     mock_response = MockResponse.new([MockContent.new(:text, '# Test')])
 
@@ -69,18 +50,17 @@ class AiImportServiceTest < ActiveSupport::TestCase
       AiImportService.call(text: 'recipe', kitchen: @kitchen)
     end
 
-    assert_includes captured_system, 'Baking'
-    assert_includes captured_system, 'Mains'
-    assert_includes captured_system, 'Miscellaneous'
+    assert_includes captured_system, 'Recipe Transcription'
+    assert_not_includes captured_system, 'Expert Mode'
   end
 
-  test 'uses sonnet model' do
-    captured_model = nil
+  test 'uses expert prompt when mode is expert' do
+    captured_system = nil
     mock_response = MockResponse.new([MockContent.new(:text, '# Test')])
 
     mock_messages = Object.new
     mock_messages.define_singleton_method(:create) do |**kwargs|
-      captured_model = kwargs[:model]
+      captured_system = kwargs[:system]
       mock_response
     end
 
@@ -88,10 +68,55 @@ class AiImportServiceTest < ActiveSupport::TestCase
     mock_client.define_singleton_method(:messages) { mock_messages }
 
     Anthropic::Client.stub :new, mock_client do
-      AiImportService.call(text: 'recipe', kitchen: @kitchen)
+      AiImportService.call(text: 'recipe', kitchen: @kitchen, mode: :expert)
     end
 
-    assert_equal 'claude-sonnet-4-6', captured_model
+    assert_includes captured_system, 'Expert Mode'
+  end
+
+  test 'falls back to faithful for invalid mode' do
+    captured_system = nil
+    mock_response = MockResponse.new([MockContent.new(:text, '# Test')])
+
+    mock_messages = Object.new
+    mock_messages.define_singleton_method(:create) do |**kwargs|
+      captured_system = kwargs[:system]
+      mock_response
+    end
+
+    mock_client = Object.new
+    mock_client.define_singleton_method(:messages) { mock_messages }
+
+    Anthropic::Client.stub :new, mock_client do
+      AiImportService.call(text: 'recipe', kitchen: @kitchen, mode: :bogus)
+    end
+
+    assert_includes captured_system, 'Recipe Transcription'
+  end
+
+  test 'interpolates categories and tags in both modes' do
+    %i[faithful expert].each do |mode|
+      captured_system = nil
+      mock_response = MockResponse.new([MockContent.new(:text, '# Test')])
+
+      mock_messages = Object.new
+      mock_messages.define_singleton_method(:create) do |**kwargs|
+        captured_system = kwargs[:system]
+        mock_response
+      end
+
+      mock_client = Object.new
+      mock_client.define_singleton_method(:messages) { mock_messages }
+
+      Anthropic::Client.stub :new, mock_client do
+        AiImportService.call(text: 'recipe', kitchen: @kitchen, mode:)
+      end
+
+      assert_includes captured_system, 'Baking', "#{mode} mode should include categories"
+      assert_includes captured_system, 'Miscellaneous', "#{mode} mode should include Miscellaneous"
+      assert_includes captured_system, 'easy', "#{mode} mode should include tags"
+      assert_includes captured_system, 'grilled', "#{mode} mode should include tags"
+    end
   end
 
   test 'strips code fences from response' do
