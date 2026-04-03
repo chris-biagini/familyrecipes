@@ -16,10 +16,13 @@ The ONLY transformations you may make:
   capitalization)
 - Pick a category and tags from the provided lists
 
-**Strip non-recipe content:** blog preamble, life stories, navigation text,
-"Print" / "Pin" / "Save" / "Jump to Recipe" buttons, star ratings, comment
-sections, SEO paragraphs, newsletter signups, affiliate links, nutrition
-panels, "Did you make this?" prompts, video embed placeholders.
+**Strip non-recipe content:** The user has selected the recipe section from the
+page. You may see nearby buttons, a nutrition panel, or a few trailing
+comments — strip these. You will not typically see entire blog posts or dozens
+of reader comments. Strip: "Print" / "Pin" / "Save" / "Jump to Recipe"
+buttons, star ratings, comment sections, SEO paragraphs, newsletter signups,
+affiliate links, nutrition panels, "Did you make this?" prompts, video embed
+placeholders.
 
 **Do NOT rewrite.** Do not paraphrase, condense, expand, or editorialize
 the recipe's instructions. If the source says "Cook the chicken over medium
@@ -111,21 +114,22 @@ instructions that use them**.
 This is NOT the same as numbered steps in a conventional recipe. Think of each
 step as a *phase* — "Make the dough.", "Cook the sauce.", "Assemble and bake."
 
-**Preserve the source's structure.** Convert the source recipe's structure
-into this format — don't rewrite the recipe from scratch. Find the natural
-breakpoints already present in the source and use those as step boundaries.
-Don't reorganize the recipe's logic or reorder operations.
+**The source's ingredient grouping drives the step structure. If the source
+didn't group its ingredients, neither do you.**
 
-**How to split steps:**
-- Follow natural phase changes in the source: prep vs. cook vs. assemble, or
-  distinct components (dough vs. filling vs. glaze).
-- If the source already groups things into sections ("For the marinade", "For
-  the sauce"), those map naturally to steps.
-- A typical recipe has 2–5 steps. Fewer is fine. More than 5 is a smell.
-- If the recipe is straightforward with no natural breakpoints, use a single
-  step or even the implicit-step format (no ## heading).
-- **When in doubt, split into fewer steps.** A step should represent a
-  genuinely distinct phase, not just "the next few numbered instructions."
+**How to decide:**
+
+1. **Source groups ingredients under headings** ("For the dough:", "Filling:",
+   "Sauce ingredients:", "To serve:") — each group becomes a `## Step Name.`
+   The source already made the structural decision; map it.
+2. **Source has a single flat ingredient list** — use the implicit-step format
+   (no `##` heading). This applies regardless of how many numbered instructions
+   follow. Do NOT reorganize a flat ingredient list into phases.
+3. **Very simple recipes** (5 or fewer ingredients with brief instructions) —
+   always use implicit-step format.
+4. **Ambiguous groupings** (blank lines between ingredient clusters, but no
+   explicit headings) — lean toward implicit. Only split if the groupings are
+   unmistakably distinct components with different preparation methods.
 
 Each step starts with a level-two heading:
 
@@ -150,9 +154,18 @@ marked optional, still list it as a proper ingredient line (with quantity if
 given) and note in the footer that it is optional. Example footer: "Substitute
 orange marmalade for the apricot jam. Walnuts are optional."
 
-**Implicit steps:** If a recipe is very simple (≤ 5 ingredients, a sentence or
-two of instructions), omit the `## Heading` and list ingredients and
-instructions directly after the front matter.
+**Implicit steps:** If the recipe uses implicit-step format (rule 2, 3, or 4
+above), omit the `## Heading` and list ingredients and instructions directly
+after the front matter. Example:
+
+    # Toast
+
+    Serves: 2
+
+    - Bread, 2 slices
+    - Butter
+
+    Toast the bread until golden. Spread butter on each slice while still warm.
 
 ### Ingredient Lines
 
