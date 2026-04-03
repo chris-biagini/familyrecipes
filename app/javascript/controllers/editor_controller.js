@@ -23,7 +23,7 @@ import ListenerManager from "../utilities/listener_manager"
  * - notify: toast notifications for save success/failure feedback
  */
 export default class extends Controller {
-  static targets = ["textarea", "saveButton", "deleteButton", "errors", "frame"]
+  static targets = ["textarea", "saveButton", "deleteButton", "errors", "frame", "closeButton"]
 
   static values = {
     url: String,
@@ -76,12 +76,14 @@ export default class extends Controller {
     if (this.hasFrameTarget && !this.frameLoaded) {
       if (this.hasSaveButtonTarget) this.saveButtonTarget.disabled = true
       this.element.showModal()
+      this.focusDefault()
       this.frameTarget.addEventListener("turbo:frame-load", () => {
         this.onFrameReady(category)
       }, { once: true })
     } else {
       if (this.hasTextareaTarget) this.originalContent = this.textareaTarget.value
       this.element.showModal()
+      this.focusDefault()
       this.dispatchEditorEvent("editor:content-loaded", { category })
       this.dispatchEditorEvent("editor:opened")
     }
@@ -91,6 +93,7 @@ export default class extends Controller {
     this.clearErrorDisplay()
     this.resetSaveButton()
     this.element.showModal()
+    this.focusDefault()
     this.dispatchEditorEvent("editor:content-loaded", { ...data, category: null })
   }
 
@@ -243,6 +246,12 @@ export default class extends Controller {
     } else {
       this.element.close()
     }
+  }
+
+  focusDefault() {
+    const target = this.element.querySelector("[autofocus]")
+    if (target) { target.focus(); return }
+    if (this.hasCloseButtonTarget) this.closeButtonTarget.focus()
   }
 
   resetSaveButton() {

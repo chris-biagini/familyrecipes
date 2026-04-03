@@ -64,7 +64,7 @@
       <input type="text" id="new-category-input" class="input-base input-inline" placeholder="Add a category..."
              data-ordered-list-editor-target="newItemName"
              data-action="keydown->ordered-list-editor#addItemOnEnter"
-             maxlength="50">
+             maxlength="50" autofocus>
       <button type="button" class="btn-icon-round btn-icon-round-lg btn-primary" aria-label="Add category"
               data-action="click->ordered-list-editor#addItem">
         <%= icon(:plus, size: 18) %>
@@ -95,7 +95,7 @@
       <input type="text" id="new-tag-input" class="input-base input-inline" placeholder="Add a tag..."
              data-ordered-list-editor-target="newItemName"
              data-action="keydown->ordered-list-editor#addItemOnEnter"
-             maxlength="30">
+             maxlength="30" autofocus>
       <button type="button" class="btn-icon-round btn-icon-round-lg btn-primary" aria-label="Add tag"
               data-action="click->ordered-list-editor#addItem">
         <%= icon(:plus, size: 18) %>
@@ -180,7 +180,7 @@ Optional notes or source." %>
     <textarea class="editor-textarea"
               data-ai-import-target="textarea"
               placeholder="Paste a recipe from any source&#x2026;"
-              rows="16"></textarea>
+              rows="16" autofocus></textarea>
   </div>
   <div class="editor-footer">
     <button type="button" class="btn editor-cancel" data-action="click->ai-import#close">Cancel</button>
