@@ -75,7 +75,7 @@ module Scorers
       cat = fm[:category]
       serves = fm[:serves]
       errors = []
-      errors << "Unknown category: #{cat}" if cat && valid_categories.exclude?(cat)
+      errors << "Unknown category: #{cat}" if cat && !valid_categories.include?(cat)
       errors << "Serves is not a number: #{serves}" if serves && !serves.to_s.match?(/\A\d+\z/)
       { name: 'valid_front_matter', pass: errors.empty?, failures: errors }
     end
@@ -103,7 +103,7 @@ module Scorers
     end
 
     def self.ingredient_names_concise(parsed)
-      names = parsed[:steps].flat_map { |s| s[:ingredients] }.pluck(:name)
+      names = parsed[:steps].flat_map { |s| s[:ingredients] }.map { |i| i[:name] } # rubocop:disable Rails/Pluck -- no Rails
       long = names.select { |n| n && n.size > 40 }
       { name: 'ingredient_names_concise', pass: long.empty?, failures: long }
     end
@@ -114,7 +114,7 @@ module Scorers
 
     def self.no_tags_invented(parsed)
       fm = parsed[:front_matter] || {}
-      { name: 'no_tags_invented', pass: fm[:tags].blank? }
+      { name: 'no_tags_invented', pass: fm[:tags].nil? || fm[:tags].empty? } # rubocop:disable Rails/Blank -- no Rails
     end
 
     def self.no_comment_bleed(text, _parsed)

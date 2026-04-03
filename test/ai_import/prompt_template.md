@@ -26,6 +26,12 @@ the recipe's instructions. If the source says "Cook the chicken over medium
 heat until the internal temperature reaches 165°F", write exactly that. Do
 not shorten it to "Cook chicken to 165°F."
 
+**Do NOT hallucinate.** If the source text is incomplete — missing quantities,
+vague on instructions, or only provides a summary — transcribe what is
+actually there. Do not fill in missing quantities from your knowledge, do not
+invent detailed instructions that aren't in the source. A recipe with missing
+quantities is better than a recipe with made-up quantities.
+
 **Preserve informal language.** If the source uses casual quantities like
 "a generous pour of olive oil", "a big handful of cilantro", or "about 2 lbs
 give or take" — keep that exact wording as the quantity. Do NOT clean up

@@ -133,7 +133,7 @@ def write_summary(iter_dir, scores, output_dir)
   end
 
   avg = (scores.values.sum { |s| s[:aggregate] } / scores.size).round(1)
-  worst = scores.values.pluck(:aggregate).min.round(1)
+  worst = scores.values.map { |s| s[:aggregate] } # rubocop:disable Rails/Pluck -- no Rails.min.round(1)
   lines << ''
   lines << "**Overall:** #{avg} avg, #{worst} worst"
   lines << ''
@@ -241,7 +241,7 @@ def run_evaluation
   write_summary(iter_dir, scores, output_dir)
 
   avg = (scores.values.sum { |s| s[:aggregate] } / scores.size).round(1)
-  worst = scores.values.pluck(:aggregate).min.round(1)
+  worst = scores.values.map { |s| s[:aggregate] } # rubocop:disable Rails/Pluck -- no Rails.min.round(1)
   puts "\nResults saved to #{iter_dir}/"
   puts "Overall: #{avg} avg, #{worst} worst"
 end

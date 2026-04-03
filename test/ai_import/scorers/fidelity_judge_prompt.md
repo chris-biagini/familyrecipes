@@ -52,6 +52,13 @@ How well does the OUTPUT strip non-recipe content?
 - 20-49: Significant non-recipe content present.
 - 0-19: Most of the blog/page content was retained.
 
+**Do NOT penalize these — they are expected:**
+- A `Category:` line (the model is instructed to pick a category)
+- A `Makes:` or `Serves:` line (the model is instructed to include these)
+- A brief attribution in the footer like "Recipe from [Author]."
+- A one-line description after the title
+These are part of the output format, not retained detritus.
+
 ## Ingredient Name Quality
 
 Check whether preparation instructions or substitution notes leaked into
