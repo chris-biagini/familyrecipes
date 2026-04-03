@@ -37,7 +37,7 @@ CORPUS_DIR = File.join(BASE_DIR, 'corpus')
 RESULTS_DIR = File.join(BASE_DIR, 'results')
 
 HAIKU_MODEL = 'claude-haiku-4-5-20251001'
-SONNET_MODEL = 'claude-sonnet-4-6-20250514'
+SONNET_MODEL = 'claude-sonnet-4-6'
 
 CATEGORIES = %w[Baking Bread Breakfast Dessert Drinks Holiday Mains Pizza Sides Snacks Miscellaneous].freeze
 TAGS = %w[vegetarian vegan gluten-free weeknight easy quick one-pot make-ahead

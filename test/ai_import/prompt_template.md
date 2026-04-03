@@ -26,6 +26,17 @@ the recipe's instructions. If the source says "Cook the chicken over medium
 heat until the internal temperature reaches 165°F", write exactly that. Do
 not shorten it to "Cook chicken to 165°F."
 
+**Preserve informal language.** If the source uses casual quantities like
+"a generous pour of olive oil", "a big handful of cilantro", or "about 2 lbs
+give or take" — keep that exact wording as the quantity. Do NOT clean up
+informal quantities into standard measurements or drop approximation language.
+If the source says "room temp", write "room temp" — not "room temperature".
+
+**Detritus means non-recipe content only.** Reader comments, blog author
+replies to comments, and tips found in comment sections are NOT part of the
+recipe — strip them. Only include content that appears in the recipe itself
+(ingredient list, instructions, recipe notes section).
+
 Output ONLY the Markdown recipe. No commentary, no explanation, no code
 fences.
 
@@ -81,9 +92,12 @@ after the title. Otherwise omit.
 - **Serves** — a single plain number: "Serves: 4" not "Serves: 4-6".
   Only include if the source specifies servings. Don't fabricate a number.
 - **Category** — one of: {{CATEGORIES}}. If none fit, use Miscellaneous.
-- **Tags** — Choose from: {{TAGS}}. Apply tags only when they are an obvious
-  match for the recipe. Do not stretch. Omit the Tags line entirely if nothing
-  fits well.
+- **Tags** — Choose from: {{TAGS}}. Apply a tag ONLY if the recipe's cooking
+  method or primary ingredient makes it undeniable (e.g., a recipe that grills
+  meat → "grilled"; a recipe with no animal products → "vegan"). Do NOT tag
+  based on blog metadata, "Keywords:" fields, or subjective impressions like
+  "this seems quick" or "this feels like comfort food." When in doubt, omit
+  the Tags line entirely.
 
 ### Steps
 
@@ -128,8 +142,9 @@ vinaigrette in another. List these in each step with per-step quantities.
 alternatives (e.g., "butter or ghee", "1 large onion or 2 small", "apricot jam
 or orange marmalade"), list the primary option in the ingredient line and note
 alternatives in the footer — do not silently drop any. If an ingredient is
-marked optional, say so in the footer. Example footer: "Substitute orange
-marmalade for the apricot jam. Walnuts are optional."
+marked optional, still list it as a proper ingredient line (with quantity if
+given) and note in the footer that it is optional. Example footer: "Substitute
+orange marmalade for the apricot jam. Walnuts are optional."
 
 **Implicit steps:** If a recipe is very simple (≤ 5 ingredients, a sentence or
 two of instructions), omit the `## Heading` and list ingredients and
@@ -183,7 +198,8 @@ is a hard rule — every prep note starts uppercase and ends with a period.
 Prep notes describe physical actions done to the ingredient before use —
 cutting, melting, softening, grating, mashing, chopping. Do NOT use prep
 notes for:
-- Serving context ("for garnish")
+- Serving context ("for garnish", "for topping") — just list the ingredient
+  bare; if the source says it's a garnish, note that in the footer
 - "Divided" — split the ingredient across steps instead
 
 **Units — preserve the source's units:**
@@ -200,8 +216,10 @@ notes for:
 ### Instructions
 
 After the ingredients, write the source's instructions as prose paragraphs.
-Preserve the original wording. Normalize temperatures to "350°F" or "175°C"
-format. Use hyphens for numeric ranges: "3-5 minutes", never en-dashes.
+Preserve the original wording — every sentence from the source's instructions
+should appear in the output. Do not drop sentences, even casual asides or
+closing remarks. Normalize temperatures to "350°F" or "175°C" format. Use
+hyphens for numeric ranges: "3-5 minutes", never en-dashes.
 
 If the source uses numbered steps, convert to prose paragraphs. If the source
 addresses the reader as "you", keep it — do not rewrite to remove it.

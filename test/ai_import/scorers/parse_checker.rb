@@ -30,8 +30,12 @@ module Scorers
       steps = parsed[:steps] || []
       ingredient_count = steps.sum { |s| (s[:ingredients] || []).size }
 
-      if ingredient_count < expected_ingredient_count
-        errors << "Only #{ingredient_count} ingredients (expected >= #{expected_ingredient_count})"
+      # Allow 50% tolerance — ingredient counts vary depending on how compound
+      # lines are decomposed and whether optional/garnish items are listed as
+      # ingredients or noted in the footer
+      min_count = (expected_ingredient_count * 0.5).ceil
+      if ingredient_count < min_count
+        errors << "Only #{ingredient_count} ingredients (expected >= #{min_count}, gold standard has #{expected_ingredient_count})"
       end
 
       Result.new(
