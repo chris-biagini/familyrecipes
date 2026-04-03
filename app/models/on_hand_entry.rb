@@ -58,7 +58,13 @@ class OnHandEntry < ApplicationRecord # rubocop:disable Metrics/ClassLength
   end
 
   def need_it!(now: Date.current)
-    sentinel? ? deplete_sentinel(now) : deplete_observed(now)
+    if interval.nil?
+      deplete_custom(now)
+    elsif sentinel?
+      deplete_sentinel(now)
+    else
+      deplete_observed(now)
+    end
     save!
   end
 
@@ -150,6 +156,12 @@ class OnHandEntry < ApplicationRecord # rubocop:disable Metrics/ClassLength
       self.ease = [(ease || STARTING_EASE) * (1 - EASE_PENALTY), MIN_EASE].max
     end
     self.confirmed_at = Date.parse(ORPHAN_SENTINEL)
+    self.depleted_at = now
+    self.orphaned_at = nil
+  end
+
+  # Custom items have no learned interval — just mark depleted.
+  def deplete_custom(now)
     self.depleted_at = now
     self.orphaned_at = nil
   end

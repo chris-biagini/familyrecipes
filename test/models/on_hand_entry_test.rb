@@ -266,6 +266,21 @@ class OnHandEntryTest < ActiveSupport::TestCase
     assert_in_delta OnHandEntry::STARTING_INTERVAL, entry.interval
   end
 
+  test 'need_it! on custom item (nil interval) marks depleted without crashing' do
+    entry = OnHandEntry.create!(ingredient_name: 'Paper Towels',
+                                confirmed_at: Date.new(2026, 3, 1),
+                                interval: nil, ease: nil)
+    now = Date.new(2026, 3, 10)
+
+    entry.need_it!(now:)
+    entry.reload
+
+    assert_equal now, entry.depleted_at
+    assert_nil entry.interval
+    assert_nil entry.ease
+    assert_nil entry.orphaned_at
+  end
+
   test 'need_it! ease never falls below MIN_EASE' do
     entry = OnHandEntry.create!(ingredient_name: 'Vinegar',
                                 confirmed_at: Date.parse('1970-01-01'),
