@@ -423,14 +423,12 @@ migrations into a single `001_create_schema.rb` to keep things clean.
 health check) → push to GHCR → create GitHub Release. Three tiers based on
 tag format (optional letter suffix like `a` is stripped before classifying):
 - **Patch** (`vX.Y.Z`): auto-published with commit bullet list.
-- **Minor** (`vX.Y`): draft release. After pushing, wait for the CI
-  workflow to create the draft (`gh release view TAG`), then write curated
-  release notes organized by theme (features, fixes, polish) and update
-  via `gh release edit TAG --notes-file <file>`.
-- **Major** (`vX`): draft release. After pushing, wait for the CI workflow
-  to create the draft, then write marketing-quality release notes with
-  sections: Highlights, Breaking changes, What's new, Fixes, Upgrade
-  notes. Update via `gh release edit TAG --notes-file <file>`.
+- **Minor** (`vX.Y`): auto-published with curated release notes organized
+  by theme (features, fixes, polish). Claude generates the notes file
+  before tagging; CI publishes the release.
+- **Major** (`vX`): auto-published with marketing-quality release notes
+  with sections: Highlights, Breaking changes, What's new, Fixes, Upgrade
+  notes. Claude generates the notes file before tagging; CI publishes.
 - Four-part tags (`vX.Y.Z.W`) are not supported — CI skips release
   creation for these.
 - **Run `rake release:audit` before tagging any release.** For minor/major
