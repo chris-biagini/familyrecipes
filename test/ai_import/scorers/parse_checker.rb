@@ -5,13 +5,14 @@
 #
 # Usage:
 #   result = Scorers::ParseChecker.check(output_text, expected_ingredient_count: 6)
+#   result = Scorers::ParseChecker.check(output_text)  # no expected count
 #   result.pass        # => true/false
 #   result.details     # => { title: "...", steps: 3, ingredients: 6, errors: [] }
 module Scorers
   class ParseChecker
     Result = Data.define(:pass, :details)
 
-    def self.check(output_text, expected_ingredient_count:)
+    def self.check(output_text, expected_ingredient_count: nil)
       errors = []
 
       begin
@@ -30,13 +31,14 @@ module Scorers
       steps = parsed[:steps] || []
       ingredient_count = steps.sum { |s| (s[:ingredients] || []).size }
 
-      # Allow 50% tolerance — ingredient counts vary depending on how compound
-      # lines are decomposed and whether optional/garnish items are listed as
-      # ingredients or noted in the footer
-      min_count = (expected_ingredient_count * 0.5).ceil
-      if ingredient_count < min_count
-        errors << "Only #{ingredient_count} ingredients " \
-                  "(expected >= #{min_count}, gold standard has #{expected_ingredient_count})"
+      errors << 'No ingredients found' if ingredient_count.zero?
+
+      if expected_ingredient_count
+        min_count = (expected_ingredient_count * 0.5).ceil
+        if ingredient_count < min_count
+          errors << "Only #{ingredient_count} ingredients " \
+                    "(expected >= #{min_count}, gold standard has #{expected_ingredient_count})"
+        end
       end
 
       Result.new(

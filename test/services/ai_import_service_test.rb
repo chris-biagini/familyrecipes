@@ -11,8 +11,6 @@ class AiImportServiceTest < ActiveSupport::TestCase
     @kitchen.update!(anthropic_api_key: 'sk-test-key-123')
     Category.find_or_create_for(@kitchen, 'Baking')
     Category.find_or_create_for(@kitchen, 'Mains')
-    Tag.find_or_create_by!(kitchen: @kitchen, name: 'easy')
-    Tag.find_or_create_by!(kitchen: @kitchen, name: 'weeknight')
   end
 
   test 'returns markdown on successful API call' do
@@ -74,27 +72,6 @@ class AiImportServiceTest < ActiveSupport::TestCase
     assert_includes captured_system, 'Baking'
     assert_includes captured_system, 'Mains'
     assert_includes captured_system, 'Miscellaneous'
-  end
-
-  test 'interpolates kitchen tags into prompt' do
-    captured_system = nil
-    mock_response = MockResponse.new([MockContent.new(:text, '# Test')])
-
-    mock_messages = Object.new
-    mock_messages.define_singleton_method(:create) do |**kwargs|
-      captured_system = kwargs[:system]
-      mock_response
-    end
-
-    mock_client = Object.new
-    mock_client.define_singleton_method(:messages) { mock_messages }
-
-    Anthropic::Client.stub :new, mock_client do
-      AiImportService.call(text: 'recipe', kitchen: @kitchen)
-    end
-
-    assert_includes captured_system, 'easy'
-    assert_includes captured_system, 'weeknight'
   end
 
   test 'uses haiku model' do

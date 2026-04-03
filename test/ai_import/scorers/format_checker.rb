@@ -5,7 +5,7 @@
 # per-check details.
 #
 # Usage:
-#   result = Scorers::FormatChecker.check(output_text, valid_categories: [...])
+#   result = Scorers::FormatChecker.check(output_text, valid_categories: [...], input_text: "...")
 #   result.score        # => 0.89 (89% of checks passed)
 #   result.checks       # => [{ name: "ascii_fractions", pass: true }, ...]
 module Scorers
@@ -14,7 +14,7 @@ module Scorers
     EN_DASH = /–/
     CODE_FENCE = /^```/
     DETRITUS_PATTERNS = [
-      /\bPrint\b/i, /\bPin It\b/i, /\bJump to Recipe\b/i,
+      /\bPin It\b/i, /\bJump to Recipe\b/i,
       /\bDid you make this\b/i, /★|☆/, /\b\d+\s*reviews?\b/i,
       /\bSubscribe\b/i, /\bNewsletter\b/i, /\bTag me\b/i,
       /\bInstagram\b/i, /\bFollow\b/i, /\b\d+x\s*\d+x\b/,
@@ -22,13 +22,20 @@ module Scorers
       /\bWatch the Video\b/i
     ].freeze
 
+    INFORMAL_QUANTITY_PATTERNS = [
+      /\bgenerous\b/i, /\bhandful\b/i, /\ba\s+big\s+pinch\b/i,
+      /\bor\s+so\b/i, /\bgive\s+or\s+take\b/i, /\bheaping\b/i,
+      /\bscant\b/i, /\bsplash\b/i, /\bdrizzle\b/i, /\bglug\b/i
+    ].freeze
+
+    COMMENT_BLEED_PATTERNS = [
+      /\b\w+\s+says:/i, /\bReply\b/, /\bI made this\b/i,
+      /\bloved it\b/i, /\b\d+\s*comments?\b/i, /\bLeave a comment\b/i
+    ].freeze
+
     Result = Data.define(:score, :checks)
 
-    # RecipeBuilder#build returns:
-    #   { title:, description:, front_matter: { category:, serves:, ... }, steps:, footer: }
-    # Steps: { tldr: "Step name.", ingredients: [...], instructions: "..." }
-    # Ingredients: { name:, quantity:, prep_note: }
-    def self.check(output_text, valid_categories:)
+    def self.check(output_text, valid_categories:, input_text: nil)
       tokens = LineClassifier.classify(output_text)
       parsed = safe_parse(tokens)
       return Result.new(score: 0.0, checks: [{ name: 'parse', pass: false }]) unless parsed
@@ -44,6 +51,9 @@ module Scorers
       checks << no_code_fences(output_text)
       checks << ingredient_names_concise(parsed)
       checks << no_en_dashes(output_text)
+      checks << no_tags_invented(parsed)
+      checks << no_comment_bleed(output_text, parsed)
+      checks << informal_quantities_preserved(input_text, output_text) if input_text
 
       passed = checks.count { |c| c[:pass] }
       Result.new(score: passed.to_f / checks.size, checks: checks)
@@ -73,7 +83,7 @@ module Scorers
     def self.no_detritus(text, parsed)
       parsed[:footer] || ''
       non_footer = text.sub(/^---\s*\n.*\z/m, '')
-      hits = DETRITUS_PATTERNS.grep(non_footer)
+      hits = DETRITUS_PATTERNS.select { |p| non_footer.match?(p) } # rubocop:disable Style/SelectByRegexp -- reversed: array of regexps tested against string
       { name: 'no_detritus', pass: hits.empty?, failures: hits.map(&:source) }
     end
 
@@ -102,6 +112,25 @@ module Scorers
       { name: 'no_en_dashes', pass: !text.match?(EN_DASH) }
     end
 
+    def self.no_tags_invented(parsed)
+      fm = parsed[:front_matter] || {}
+      { name: 'no_tags_invented', pass: fm[:tags].blank? }
+    end
+
+    def self.no_comment_bleed(text, _parsed)
+      non_footer = text.sub(/^---\s*\n.*\z/m, '')
+      hits = COMMENT_BLEED_PATTERNS.select { |p| non_footer.match?(p) } # rubocop:disable Style/SelectByRegexp
+      { name: 'no_comment_bleed', pass: hits.empty?, failures: hits.map(&:source) }
+    end
+
+    def self.informal_quantities_preserved(input_text, output_text)
+      input_informals = INFORMAL_QUANTITY_PATTERNS.select { |p| input_text.match?(p) } # rubocop:disable Style/SelectByRegexp
+      return { name: 'informal_quantities_preserved', pass: true } if input_informals.empty?
+
+      missing = input_informals.reject { |p| output_text.match?(p) } # rubocop:disable Style/SelectByRegexp
+      { name: 'informal_quantities_preserved', pass: missing.empty?, failures: missing.map(&:source) }
+    end
+
     def self.safe_parse(tokens)
       RecipeBuilder.new(tokens).build
     rescue FamilyRecipes::ParseError
@@ -111,6 +140,8 @@ module Scorers
     private_class_method :safe_parse, :ascii_fractions, :prep_notes_formatted,
                          :valid_front_matter, :no_detritus, :single_divider,
                          :step_headers_format, :no_code_fences,
-                         :ingredient_names_concise, :no_en_dashes
+                         :ingredient_names_concise, :no_en_dashes,
+                         :no_tags_invented, :no_comment_bleed,
+                         :informal_quantities_preserved
   end
 end

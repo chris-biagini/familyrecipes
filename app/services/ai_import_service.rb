@@ -57,11 +57,8 @@ class AiImportService
   def build_system_prompt
     categories = @kitchen.categories.pluck(:name).sort
     categories << 'Miscellaneous' unless categories.include?('Miscellaneous')
-    tags = @kitchen.tags.pluck(:name).sort
 
-    PROMPT_TEMPLATE
-      .gsub('{{CATEGORIES}}', categories.join(', '))
-      .gsub('{{TAGS}}', tags.empty? ? '(none yet)' : tags.join(', '))
+    PROMPT_TEMPLATE.gsub('{{CATEGORIES}}', categories.join(', '))
   end
 
   def clean_output(text)

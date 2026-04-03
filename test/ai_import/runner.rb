@@ -5,6 +5,7 @@
 #
 # Usage:
 #   ANTHROPIC_API_KEY=sk-... ruby test/ai_import/runner.rb [iteration_label]
+#   ANTHROPIC_API_KEY=sk-... ruby test/ai_import/runner.rb --corpus=corpus_v2 [label]
 #
 # Runs each test corpus recipe through:
 #   1. Haiku generation (using current prompt_template.md)
@@ -33,25 +34,35 @@ require_relative 'scorers/format_checker'
 require 'anthropic'
 
 BASE_DIR = File.expand_path(__dir__)
-CORPUS_DIR = File.join(BASE_DIR, 'corpus')
 RESULTS_DIR = File.join(BASE_DIR, 'results')
 
 HAIKU_MODEL = 'claude-haiku-4-5-20251001'
 SONNET_MODEL = 'claude-sonnet-4-6'
 
 CATEGORIES = %w[Baking Bread Breakfast Dessert Drinks Holiday Mains Pizza Sides Snacks Miscellaneous].freeze
-TAGS = %w[vegetarian vegan gluten-free weeknight easy quick one-pot make-ahead
-          freezer-friendly grilled roasted baked comfort-food holiday american
-          italian mexican french japanese chinese indian thai].freeze
+
+def parse_args
+  corpus_name = 'corpus'
+  label = nil
+
+  ARGV.each do |arg|
+    if arg.start_with?('--corpus=')
+      corpus_name = arg.delete_prefix('--corpus=')
+    else
+      label = arg
+    end
+  end
+
+  [File.join(BASE_DIR, corpus_name), label]
+end
 
 def load_prompt_template
   template = File.read(File.join(BASE_DIR, 'prompt_template.md'))
   template.gsub('{{CATEGORIES}}', CATEGORIES.join(', '))
-          .gsub('{{TAGS}}', TAGS.join(', '))
 end
 
-def corpus_dirs
-  Dir.glob(File.join(CORPUS_DIR, '*')).select { |f| File.directory?(f) }.sort
+def corpus_dirs(corpus_dir)
+  Dir.glob(File.join(corpus_dir, '*')).select { |f| File.directory?(f) }.sort
 end
 
 def call_haiku(client, system_prompt, input_text)
@@ -62,26 +73,17 @@ def call_haiku(client, system_prompt, input_text)
     messages: [{ role: 'user', content: input_text }]
   )
   text = response.content.find { |block| block.type == :text }&.text || ''
-  # Strip code fences and leading preamble (same as AiImportService)
   text = text.gsub(/\A```\w*\n/, '').delete_suffix("\n```")
   heading_index = text.index(/^# /)
   heading_index ? text[heading_index..] : text
 end
 
 def call_sonnet_judge(client, judge_prompt, original, output, expected)
-  user_content = <<~MSG
-    ## ORIGINAL
-
-    #{original}
-
-    ## OUTPUT
-
-    #{output}
-
-    ## REFERENCE
-
-    #{expected}
-  MSG
+  user_content = if expected
+                   "## ORIGINAL\n\n#{original}\n\n## OUTPUT\n\n#{output}\n\n## REFERENCE\n\n#{expected}"
+                 else
+                   "## ORIGINAL\n\n#{original}\n\n## OUTPUT\n\n#{output}"
+                 end
 
   response = client.messages.create(
     model: SONNET_MODEL,
@@ -90,7 +92,6 @@ def call_sonnet_judge(client, judge_prompt, original, output, expected)
     messages: [{ role: 'user', content: user_content }]
   )
   text = response.content.find { |block| block.type == :text }&.text || '{}'
-  # Strip code fences if Sonnet wraps the JSON
   text = text.gsub(/\A```\w*\n/, '').delete_suffix("\n```").strip
   JSON.parse(text)
 rescue JSON::ParserError => error
@@ -98,11 +99,13 @@ rescue JSON::ParserError => error
 end
 
 def expected_ingredient_count(expected_text)
+  return nil unless expected_text
+
   tokens = LineClassifier.classify(expected_text)
   parsed = RecipeBuilder.new(tokens).build
   parsed[:steps].sum { |s| (s[:ingredients] || []).size }
 rescue FamilyRecipes::ParseError
-  0
+  nil
 end
 
 def compute_aggregate(parse_result, format_result, fidelity_result)
@@ -115,7 +118,7 @@ def compute_aggregate(parse_result, format_result, fidelity_result)
   (0.3 * format_score) + (0.4 * fidelity) + (0.3 * detritus)
 end
 
-def write_summary(iter_dir, scores)
+def write_summary(iter_dir, scores, output_dir)
   lines = ["# Iteration #{File.basename(iter_dir)}\n"]
   lines << '| Recipe | Parse | Format | Fidelity | Detritus | Aggregate |'
   lines << '|--------|-------|--------|----------|----------|-----------|'
@@ -135,7 +138,14 @@ def write_summary(iter_dir, scores)
   lines << "**Overall:** #{avg} avg, #{worst} worst"
   lines << ''
 
-  # List failures for ralph loop agent
+  append_failure_details(lines, scores, output_dir)
+
+  File.write(File.join(iter_dir, 'summary.md'), lines.join("\n"))
+end
+
+def append_failure_details(lines, scores, output_dir)
+  fidelity_keys = %w[ingredients_missing ingredients_added quantities_changed instructions_dropped
+                     instructions_rewritten detritus_retained prep_leaked_into_name tags_invented]
   scores.each do |name, data|
     failures = []
     failures << "PARSE FAILED: #{data[:parse][:details][:errors].join(', ')}" unless data[:parse][:pass]
@@ -145,8 +155,6 @@ def write_summary(iter_dir, scores)
       detail = check[:failures] ? " — #{check[:failures].join(', ')}" : ''
       failures << "FORMAT: #{check[:name]}#{detail}"
     end
-    fidelity_keys = %w[ingredients_missing ingredients_added quantities_changed instructions_dropped
-                       instructions_rewritten detritus_retained prep_in_name]
     fidelity_keys.each do |key|
       items = data[:fidelity][key]
       next if items.nil? || items.empty? # rubocop:disable Rails/Blank -- no Rails in standalone script
@@ -158,21 +166,33 @@ def write_summary(iter_dir, scores)
 
     lines << "### #{name} — issues"
     failures.each { |f| lines << "- #{f}" }
+
+    if data[:aggregate] < 90
+      output_file = File.join(output_dir, "#{name}.md")
+      if File.exist?(output_file)
+        snippet = File.readlines(output_file).first(20).join
+        lines << ''
+        lines << '**Output snippet (first 20 lines):**'
+        lines << '```'
+        lines << snippet
+        lines << '```'
+      end
+    end
+
     lines << ''
   end
-
-  File.write(File.join(iter_dir, 'summary.md'), lines.join("\n"))
 end
 
 def run_evaluation
   api_key = ENV.fetch('ANTHROPIC_API_KEY') { abort 'Set ANTHROPIC_API_KEY environment variable' }
   client = Anthropic::Client.new(api_key: api_key, timeout: 90)
 
+  corpus_dir, label = parse_args
+  puts "Corpus: #{corpus_dir}"
+
   system_prompt = load_prompt_template
   judge_prompt = File.read(File.join(BASE_DIR, 'scorers', 'fidelity_judge_prompt.md'))
 
-  # Determine iteration directory
-  label = ARGV[0]
   unless label
     existing = Dir.glob(File.join(RESULTS_DIR, 'iteration_*'))
                   .map { |d| File.basename(d).delete_prefix('iteration_').to_i }
@@ -183,12 +203,13 @@ def run_evaluation
   FileUtils.mkdir_p(output_dir)
 
   scores = {}
-  dirs = corpus_dirs
+  dirs = corpus_dirs(corpus_dir)
 
   dirs.each_with_index do |dir, idx|
     name = File.basename(dir)
     input_text = File.read(File.join(dir, 'input.txt'))
-    expected_text = File.read(File.join(dir, 'expected.md'))
+    expected_path = File.join(dir, 'expected.md')
+    expected_text = File.exist?(expected_path) ? File.read(expected_path) : nil
 
     puts "[#{idx + 1}/#{dirs.size}] #{name}: calling Haiku..."
     output_text = call_haiku(client, system_prompt, input_text)
@@ -199,7 +220,7 @@ def run_evaluation
     parse_result = Scorers::ParseChecker.check(output_text, expected_ingredient_count: exp_count)
 
     puts '  Layer 2: format check...'
-    format_result = Scorers::FormatChecker.check(output_text, valid_categories: CATEGORIES)
+    format_result = Scorers::FormatChecker.check(output_text, valid_categories: CATEGORIES, input_text: input_text)
 
     puts '  Layer 3: Sonnet fidelity judge...'
     fidelity_result = call_sonnet_judge(client, judge_prompt, input_text, output_text, expected_text)
@@ -216,16 +237,13 @@ def run_evaluation
     puts "  Aggregate: #{aggregate.round(1)}"
   end
 
-  # Write scores.json
   File.write(File.join(iter_dir, 'scores.json'), JSON.pretty_generate(scores))
+  write_summary(iter_dir, scores, output_dir)
 
-  # Write summary.md
-  write_summary(iter_dir, scores)
-
+  avg = (scores.values.sum { |s| s[:aggregate] } / scores.size).round(1)
+  worst = scores.values.pluck(:aggregate).min.round(1)
   puts "\nResults saved to #{iter_dir}/"
-  puts "Overall: #{(scores.values.sum do |s|
-    s[:aggregate]
-  end / scores.size).round(1)} avg, #{scores.values.pluck(:aggregate).min.round(1)} worst"
+  puts "Overall: #{avg} avg, #{worst} worst"
 end
 
 run_evaluation
