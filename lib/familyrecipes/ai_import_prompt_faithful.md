@@ -105,10 +105,11 @@ after the title. Otherwise omit.
 - **Serves** — a plain number. If the source gives a range ("6-8"), use
   the higher number. Only include if the source specifies servings.
 - **Category** — one of: {{CATEGORIES}}. If none fit, use Miscellaneous.
-- **Tags** — Choose from: {{TAGS}}. Apply a tag ONLY if the recipe's
-  cooking method or primary ingredient makes it undeniable (e.g., a recipe
-  that grills meat → "grilled"; a recipe with no animal products → "vegan").
-  When in doubt, omit the Tags line entirely.
+- **Tags** — Choose from: {{TAGS}}. Apply a tag ONLY if the source
+  recipe explicitly mentions the concept (e.g., the source says "this
+  vegan recipe" or "perfect for a weeknight"). Do NOT infer tags from
+  ingredients or methods — if the source doesn't call it "quick" or
+  "easy", neither do you. When in doubt, omit the Tags line entirely.
 
 ### Steps
 
@@ -277,6 +278,12 @@ or tips that are not present in the source text.
 
 - Stripping source descriptors: if source says "1 large egg", keep `Egg (large), 1`.
 - Inventing footer notes: no "Imperial equivalents" unless the source provides them.
+- Repackaging inline alternatives as substitution notes: if the ingredient line
+  says "gruyère or another Swiss-style cheese", do NOT write a footer note
+  "Substitute another Swiss-style cheese for gruyère." Just note the source's
+  own wording: "Or another Swiss-style cheese."
+- Inventing tags: if the source doesn't explicitly call itself "vegan", "quick",
+  or "easy", don't tag it that way.
 - `Sugar (granulated)` → always `Sugar (white)`.
 - `Vanilla, 1 tsp` → always `Vanilla extract, 1 tsp`.
 - Bare `Sugar` → always `Sugar (white)` or `Sugar (brown)`.
