@@ -222,12 +222,19 @@ changes across all recipes that use an ingredient.
 
 **Import/export.** ZIP-based backup/restore via `ExportService` and
 `ImportService`. AI recipe import (`AiImportController` → `AiImportService`)
-sends pasted text to the Anthropic API and returns recipe Markdown; requires
-`Kitchen#anthropic_api_key`.
+sends pasted text to the Anthropic API (Sonnet) and returns recipe Markdown;
+requires `Kitchen#anthropic_api_key`. Two modes: faithful (pure transcription,
+default) and expert (condensed for experienced cooks). Prompt templates live in
+`lib/familyrecipes/ai_import_prompt_{faithful,expert}.md` with `{{CATEGORIES}}`
+and `{{TAGS}}` slots interpolated from the kitchen at call time. Evaluation
+tooling in `test/ai_import/` (not part of `rake test`).
 
 **Settings.** Kitchen-scoped branding (title, heading, subtitle), API keys
 (USDA, Anthropic), and feature flags (`show_nutrition`, `decorate_tags`)
 — all columns on `Kitchen`, edited via the settings dialog.
+`Kitchen::AI_MODEL` defines the Anthropic model for AI import (currently
+`claude-sonnet-4-6`). Haiku was evaluated and rejected — it hallucinated
+quantities and instructions when inputs were incomplete.
 
 **Tags.** Tag management dialog supports bulk rename/delete via
 `TagWriteService`. Tags are also auto-synced from recipe front matter on save.
@@ -321,6 +328,14 @@ Note: must run `jekyll build` from outside the repo root — Jekyll picks up the
 `test/`) must be added to the `Rails/RefuteMethods` exclusion in `.rubocop.yml`
 — they don't have `assert_not`. RuboCop also enforces blank lines before
 assertions (`Minitest/EmptyLineBeforeAssertionMethods`).
+
+**Standalone Ruby scripts.** Scripts in `test/ai_import/` run without Rails.
+ActiveSupport methods (`blank?`, `present?`, `exclude?`, `pluck` on arrays)
+are unavailable — use plain Ruby equivalents with `rubocop:disable` comments.
+RuboCop's `Style/SelectByRegexp` cop suggests `grep` but this is WRONG when
+testing an array of Regexps against a string (reversed operands) — use
+`select { |p| str.match?(p) }` instead. Guard standalone scripts with
+`if $PROGRAM_NAME == __FILE__` to prevent `rake test` from loading them.
 
 ## Release Audit
 
