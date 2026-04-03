@@ -35,7 +35,7 @@ module Scorers
 
     Result = Data.define(:score, :checks)
 
-    def self.check(output_text, valid_categories:, input_text: nil)
+    def self.check(output_text, valid_categories:, input_text: nil, metadata: nil)
       tokens = LineClassifier.classify(output_text)
       parsed = safe_parse(tokens)
       return Result.new(score: 0.0, checks: [{ name: 'parse', pass: false }]) unless parsed
@@ -53,6 +53,7 @@ module Scorers
       checks << no_en_dashes(output_text)
       checks << no_comment_bleed(output_text, parsed)
       checks << informal_quantities_preserved(input_text, output_text) if input_text
+      checks << step_splitting_appropriate(parsed, metadata) if metadata
 
       passed = checks.count { |c| c[:pass] }
       Result.new(score: passed.to_f / checks.size, checks: checks)
@@ -130,6 +131,28 @@ module Scorers
       { name: 'informal_quantities_preserved', pass: missing.empty?, failures: missing.map(&:source) }
     end
 
+    def self.step_splitting_appropriate(parsed, metadata)
+      expected = metadata['expected_steps']
+      return { name: 'step_splitting_appropriate', pass: true } unless expected
+      return { name: 'step_splitting_appropriate', pass: true } if expected == 'ambiguous'
+
+      steps = parsed[:steps] || []
+      has_headers = steps.any? { |s| s[:tldr] }
+
+      case expected
+      when 'implicit'
+        pass = steps.size == 1 && !has_headers
+        { name: 'step_splitting_appropriate', pass: pass,
+          failures: pass ? nil : ["Expected implicit (1 step, no headers) but got #{steps.size} steps"] }
+      when 'explicit'
+        pass = steps.size >= 2 && steps.all? { |s| s[:tldr] }
+        { name: 'step_splitting_appropriate', pass: pass,
+          failures: pass ? nil : ["Expected explicit (2+ named steps) but got #{steps.size} steps, headers=#{has_headers}"] }
+      else
+        { name: 'step_splitting_appropriate', pass: true }
+      end
+    end
+
     def self.safe_parse(tokens)
       RecipeBuilder.new(tokens).build
     rescue FamilyRecipes::ParseError
@@ -141,6 +164,7 @@ module Scorers
                          :step_headers_format, :no_code_fences,
                          :ingredient_names_concise, :no_en_dashes,
                          :no_tags_invented, :no_comment_bleed,
-                         :informal_quantities_preserved
+                         :informal_quantities_preserved,
+                         :step_splitting_appropriate
   end
 end
