@@ -81,7 +81,7 @@ end
 
 # --- Claude CLI wrapper ---
 
-def call_claude(user_message, system_prompt: nil, model: nil, timeout: 180)
+def call_claude(user_message, system_prompt: nil, model: nil, timeout: 600)
   cmd = ['claude', '-p', '--no-session-persistence', '--tools', '']
   cmd += ['--system-prompt', system_prompt] if system_prompt
   cmd += ['--model', model] if model
