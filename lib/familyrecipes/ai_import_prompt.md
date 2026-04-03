@@ -219,7 +219,8 @@ Do NOT use prep notes for:
 - Normalize abbreviations: TBSP → tbsp, tsp. → tsp, Cups → cups.
 - Always put a space before the unit: "115 g" not "115g".
 - If a source offers both a metric and imperial measurement, use the metric.
-  Make a note of the imperial measurements in the footer.
+  Note the imperial equivalents in the footer, e.g., "Imperial equivalents:
+  7 1/2 cups flour, 3 cups water."
 
 ### Instructions
 
@@ -242,7 +243,8 @@ If the source names an author or publication, credit them in the footer.
 
 **Preserve useful context from the source** in the footer: ingredient
 preferences, substitution options, storage tips.  These affect the outcome and
-shouldn't be silently dropped.
+shouldn't be silently dropped. Do not add substitution suggestions or tips
+that are not present in the source text.
 
 ## Common Mistakes — Do Not Make These
 

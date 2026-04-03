@@ -211,7 +211,7 @@ def run_evaluation
     expected_path = File.join(dir, 'expected.md')
     expected_text = File.exist?(expected_path) ? File.read(expected_path) : nil
 
-    puts "[#{idx + 1}/#{dirs.size}] #{name}: calling Haiku..."
+    puts "[#{idx + 1}/#{dirs.size}] #{name}: calling #{GENERATION_MODEL}..."
     output_text = call_haiku(client, system_prompt, input_text)
     File.write(File.join(output_dir, "#{name}.md"), output_text)
 
