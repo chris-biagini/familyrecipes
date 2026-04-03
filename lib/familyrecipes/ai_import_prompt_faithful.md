@@ -33,7 +33,11 @@ not shorten it to "Cook chicken to 165°F."
 vague on instructions, or only provides a summary — transcribe what is
 actually there. Do not fill in missing quantities from your knowledge, do not
 invent detailed instructions that aren't in the source. A recipe with missing
-quantities is better than a recipe with made-up quantities.
+quantities is better than a recipe with made-up quantities. Do not invent
+footer notes that aren't in the source — no "Imperial equivalents" sections
+unless the source itself provides them, no summary notes that repackage
+inline information, no substitution suggestions you came up with yourself.
+The footer is for content FROM the source, not your helpful additions.
 
 **Preserve informal language.** If the source uses casual quantities like
 "a generous pour of olive oil", "a big handful of cilantro", or "about 2 lbs
@@ -181,9 +185,9 @@ Examples:
 **Name rules:**
 - Use parenthetical qualifiers only for disambiguation: "Sugar (brown)",
   "Flour (all-purpose)", "Butter (unsalted)", "Tomatoes (canned)".
-- Don't over-qualify defaults: "Onion" not "Onion (yellow)", "Egg" not "Egg
-  (large)", "Cinnamon" not "Cinnamon (ground)", "Cumin" not "Cumin (ground)".
-  Ground is the default for dry spices.
+- Preserve the source's descriptors. If the source says "1 large egg", keep
+  "large": `- Egg (large), 1`. If it says "ground cumin", keep "ground":
+  `- Cumin (ground), 1 tsp`. Do not strip descriptors that the source included.
 - Always qualify sugar — "Sugar (white)" or "Sugar (brown)".
 - Don't use qualifiers for preparation instructions, except where the
   qualifiers distinguish between variations that often are sold pre-prepared.
@@ -194,10 +198,12 @@ Examples:
   the most recognizable name; note alternatives in the footer if useful.
 
 **Quantity and units:** Number + unit with a space: "4 tbsp", "1 cup",
-"2 cloves". Omit quantity entirely for to-taste seasonings, oil for
-greasing, etc. Never write "to taste." If the source uses informal
-quantities, keep them as-is: `- Olive oil, a generous pour`,
-`- Cilantro, a big handful`, `- Steak, about 2 lbs give or take`.
+"2 cloves". If the source says "to taste", write `to taste` as the
+quantity: `- Salt, to taste`. If a quantity has a "plus more to taste"
+modifier, keep it in the prep note: `- Chili powder, 1/4 cup: Plus more
+to taste.` If the source uses informal quantities, keep them as-is:
+`- Olive oil, a generous pour`, `- Cilantro, a big handful`,
+`- Steak, about 2 lbs give or take`.
 
 - **Fractions:** Always use ASCII fraction notation: `1/2`, `3/4`, `1/3`.
   Never output vulgar fraction characters (½, ¾, ⅓, etc.) — always
@@ -265,8 +271,8 @@ that are not present in the source text.
 
 ## Common Mistakes — Do Not Make These
 
-- `- Salt, to taste` → just `- Salt`. Never "to taste."
-- Over-qualifying: `Onion (yellow)`, `Egg (large)`, `Cinnamon (ground)`.
+- Stripping source descriptors: if source says "1 large egg", keep `Egg (large), 1`.
+- Inventing footer notes: no "Imperial equivalents" unless the source provides them.
 - `Sugar (granulated)` → always `Sugar (white)`.
 - `Vanilla, 1 tsp` → always `Vanilla extract, 1 tsp`.
 - Bare `Sugar` → always `Sugar (white)` or `Sugar (brown)`.

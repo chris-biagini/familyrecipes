@@ -40,6 +40,21 @@ Check specifically:
 - Were any ingredients or instructions hallucinated (added without basis)?
 - Informal quantities like "a generous pour" or "a big handful" in the
   quantity field are CORRECT if the source used that language. Do not penalize.
+- "to taste" as a quantity is CORRECT if the source used it. Do not penalize.
+- If the source provides both metric and imperial measurements, the output
+  should use the metric measurement in the ingredient line and note imperial
+  equivalents in the footer. This is CORRECT — do not penalize it as
+  information loss. Only penalize if the imperial equivalents are missing
+  from the footer entirely.
+- If the source includes descriptors like "large", "ground", or "yellow"
+  on ingredients, the output should preserve them (e.g., "Egg (large)").
+  Penalize if the output drops descriptors the source included.
+- Extracting water or other ingredients from instructions into the ingredient
+  list is acceptable when the source clearly uses them as ingredients but
+  lists them only in the instructions.
+- Invented footer notes (imperial equivalents the source did not provide,
+  substitution suggestions not in the source, summary notes that repackage
+  inline information) are hallucinations — penalize under detritus.
 
 ## Detritus Removal (0-100)
 
