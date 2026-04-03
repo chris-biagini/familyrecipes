@@ -41,24 +41,32 @@ JUDGE_MODEL = 'claude-sonnet-4-6'
 
 CATEGORIES = %w[Baking Bread Breakfast Dessert Drinks Holiday Mains Pizza Sides Snacks Miscellaneous].freeze
 
+TAGS = %w[vegetarian vegan gluten-free weeknight easy quick one-pot make-ahead
+          freezer-friendly grilled roasted baked comfort-food holiday american
+          italian mexican french japanese chinese indian thai].freeze
+
 def parse_args
   corpus_name = 'corpus'
+  prompt_name = 'prompt_template.md'
   label = nil
 
   ARGV.each do |arg|
     if arg.start_with?('--corpus=')
       corpus_name = arg.delete_prefix('--corpus=')
+    elsif arg.start_with?('--prompt=')
+      prompt_name = arg.delete_prefix('--prompt=')
     else
       label = arg
     end
   end
 
-  [File.join(BASE_DIR, corpus_name), label]
+  [File.join(BASE_DIR, corpus_name), File.join(BASE_DIR, prompt_name), label]
 end
 
-def load_prompt_template
-  template = File.read(File.join(BASE_DIR, 'prompt_template.md'))
+def load_prompt_template(prompt_path)
+  template = File.read(prompt_path)
   template.gsub('{{CATEGORIES}}', CATEGORIES.join(', '))
+          .gsub('{{TAGS}}', TAGS.join(', '))
 end
 
 def corpus_dirs(corpus_dir)
@@ -187,10 +195,11 @@ def run_evaluation
   api_key = ENV.fetch('ANTHROPIC_API_KEY') { abort 'Set ANTHROPIC_API_KEY environment variable' }
   client = Anthropic::Client.new(api_key: api_key, timeout: 90)
 
-  corpus_dir, label = parse_args
+  corpus_dir, prompt_path, label = parse_args
   puts "Corpus: #{corpus_dir}"
+  puts "Prompt: #{prompt_path}"
 
-  system_prompt = load_prompt_template
+  system_prompt = load_prompt_template(prompt_path)
   judge_prompt = File.read(File.join(BASE_DIR, 'scorers', 'fidelity_judge_prompt.md'))
 
   unless label
