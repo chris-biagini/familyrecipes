@@ -16,10 +16,13 @@ The ONLY transformations you may make:
   capitalization)
 - Pick a category and tags from the provided lists
 
-**Strip non-recipe content:** blog preamble, life stories, navigation text,
-"Print" / "Pin" / "Save" / "Jump to Recipe" buttons, star ratings, comment
-sections, SEO paragraphs, newsletter signups, affiliate links, nutrition
-panels, "Did you make this?" prompts, video embed placeholders.
+**Strip non-recipe content:** The user has selected the recipe section from the
+page. You may see nearby buttons, a nutrition panel, or a few trailing
+comments — strip these. You will not typically see entire blog posts or dozens
+of reader comments. Strip: "Print" / "Pin" / "Save" / "Jump to Recipe"
+buttons, star ratings, comment sections, SEO paragraphs, newsletter signups,
+affiliate links, nutrition panels, "Did you make this?" prompts, video embed
+placeholders.
 
 **Do NOT rewrite.** Do not paraphrase, condense, expand, or editorialize
 the recipe's instructions. If the source says "Cook the chicken over medium
@@ -30,7 +33,11 @@ not shorten it to "Cook chicken to 165°F."
 vague on instructions, or only provides a summary — transcribe what is
 actually there. Do not fill in missing quantities from your knowledge, do not
 invent detailed instructions that aren't in the source. A recipe with missing
-quantities is better than a recipe with made-up quantities.
+quantities is better than a recipe with made-up quantities. Do not invent
+footer notes that aren't in the source — no "Imperial equivalents" sections
+unless the source itself provides them, no summary notes that repackage
+inline information, no substitution suggestions you came up with yourself.
+The footer is for content FROM the source, not your helpful additions.
 
 **Preserve informal language.** If the source uses casual quantities like
 "a generous pour of olive oil", "a big handful of cilantro", or "about 2 lbs
@@ -93,10 +100,11 @@ after the title. Otherwise omit.
     Tags: comfort-food, baked
 
 - **Makes** — yield with a unit noun: "12 pancakes", "2 loaves", "1 loaf".
-  Must be a single number, not a range — "Makes: 4 loaves" not
-  "Makes: 3-4 loaves".
-- **Serves** — a single plain number: "Serves: 4" not "Serves: 4-6".
-  Only include if the source specifies servings. Don't fabricate a number.
+  Must start with a number, not a range — "Makes: 4 loaves" not
+  "Makes: 3-4 loaves". Preserve weight descriptors from the source:
+  "Makes: 1 1/2-pound loaf" not "Makes: 1 loaf".
+- **Serves** — a plain number. If the source gives a range ("6-8"), use
+  the lower number. Only include if the source specifies servings.
 - **Category** — one of: {{CATEGORIES}}. If none fit, use Miscellaneous.
 - **Tags** — Choose from: {{TAGS}}. Apply a tag ONLY if the recipe's
   cooking method or primary ingredient makes it undeniable (e.g., a recipe
@@ -111,28 +119,31 @@ instructions that use them**.
 This is NOT the same as numbered steps in a conventional recipe. Think of each
 step as a *phase* — "Make the dough.", "Cook the sauce.", "Assemble and bake."
 
-**Preserve the source's structure.** Convert the source recipe's structure
-into this format — don't rewrite the recipe from scratch. Find the natural
-breakpoints already present in the source and use those as step boundaries.
-Don't reorganize the recipe's logic or reorder operations.
+**The source's ingredient grouping drives the step structure. If the source
+didn't group its ingredients, neither do you.**
 
-**How to split steps:**
-- Follow natural phase changes in the source: prep vs. cook vs. assemble, or
-  distinct components (dough vs. filling vs. glaze).
-- If the source already groups things into sections ("For the marinade", "For
-  the sauce"), those map naturally to steps.
-- A typical recipe has 2–5 steps. Fewer is fine. More than 5 is a smell.
-- If the recipe is straightforward with no natural breakpoints, use a single
-  step or even the implicit-step format (no ## heading).
-- **When in doubt, split into fewer steps.** A step should represent a
-  genuinely distinct phase, not just "the next few numbered instructions."
+**How to decide:**
+
+1. **Source groups ingredients under headings** ("For the dough:", "Filling:",
+   "Sauce ingredients:", "To serve:") — each group becomes a `## Step Name.`
+   The source already made the structural decision; map it.
+2. **Source has a single flat ingredient list** — use the implicit-step format
+   (no `##` heading). This applies regardless of how many numbered instructions
+   follow. Do NOT reorganize a flat ingredient list into phases.
+3. **Very simple recipes** (5 or fewer ingredients with brief instructions) —
+   always use implicit-step format.
+4. **Ambiguous groupings** (blank lines between ingredient clusters, but no
+   explicit headings) — lean toward implicit. Only split if the groupings are
+   unmistakably distinct components with different preparation methods.
 
 Each step starts with a level-two heading:
 
     ## Make the dough.
 
 Step names: short imperative phrases, sentence case, ending with a period. "Make
-the sauce." not "Make the Sauce."
+the sauce." not "Make the Sauce." When the source already uses heading-style
+labels ("For the beef:", "For the stew:"), use "Make the [noun]." —
+"For the beef:" → "Make the beef." "For the stew:" → "Make the stew."
 
 **Ingredient ownership:** Each ingredient belongs to ONE step — the step where
 it's first introduced and primarily used. Don't re-list ingredients from earlier
@@ -142,17 +153,27 @@ Exception: ubiquitous ingredients (oil, salt, pepper) that serve *distinct
 roles* in multiple phases — e.g., oil for searing in one step and oil for a
 vinaigrette in another. List these in each step with per-step quantities.
 
-**Ingredient alternatives and substitutions:** If the source offers
-alternatives (e.g., "butter or ghee", "1 large onion or 2 small", "apricot jam
-or orange marmalade"), list the primary option in the ingredient line and note
-alternatives in the footer — do not silently drop any. If an ingredient is
-marked optional, still list it as a proper ingredient line (with quantity if
-given) and note in the footer that it is optional. Example footer: "Substitute
-orange marmalade for the apricot jam. Walnuts are optional."
+**Ingredient alternatives and substitutions:** If the source lists co-equal
+options ("butter or ghee", "gruyère or another Swiss-style cheese"), pick
+whichever appears first for the ingredient name and note the alternative in
+the footer using the source's own wording. Do NOT rephrase alternatives as
+"Substitute X for Y" — just state what the source said: "Or ghee in place
+of butter." "Or another Swiss-style cheese." If an ingredient is marked
+optional, keep it as a proper ingredient line with `Optional.` as the prep
+note.
 
-**Implicit steps:** If a recipe is very simple (≤ 5 ingredients, a sentence or
-two of instructions), omit the `## Heading` and list ingredients and
-instructions directly after the front matter.
+**Implicit steps:** If the recipe uses implicit-step format (rule 2, 3, or 4
+above), omit the `## Heading` and list ingredients and instructions directly
+after the front matter. Example:
+
+    # Toast
+
+    Serves: 2
+
+    - Bread, 2 slices
+    - Butter
+
+    Toast the bread until golden. Spread butter on each slice while still warm.
 
 ### Ingredient Lines
 
@@ -168,10 +189,12 @@ Examples:
 **Name rules:**
 - Use parenthetical qualifiers only for disambiguation: "Sugar (brown)",
   "Flour (all-purpose)", "Butter (unsalted)", "Tomatoes (canned)".
-- Don't over-qualify defaults: "Onion" not "Onion (yellow)", "Egg" not "Egg
-  (large)", "Cinnamon" not "Cinnamon (ground)", "Cumin" not "Cumin (ground)".
-  Ground is the default for dry spices.
-- Always qualify sugar — "Sugar (white)" or "Sugar (brown)".
+- Preserve the source's descriptors. If the source says "1 large egg", keep
+  "large": `- Egg (large), 1`. If it says "ground cumin", keep "ground":
+  `- Cumin (ground), 1 tsp`. Do not strip descriptors that the source included.
+- Qualify sugar when the source specifies the type: "Sugar (brown)",
+  "Sugar (powdered)". If the source just says "sugar" with no qualifier,
+  write `- Sugar` — do not add "(white)".
 - Don't use qualifiers for preparation instructions, except where the
   qualifiers distinguish between variations that often are sold pre-prepared.
   For example, "Chicken thighs (boneless, skinless)" is appropriate, but "Apples
@@ -181,10 +204,16 @@ Examples:
   the most recognizable name; note alternatives in the footer if useful.
 
 **Quantity and units:** Number + unit with a space: "4 tbsp", "1 cup",
-"2 cloves". Omit quantity entirely for to-taste seasonings, oil for
-greasing, etc. Never write "to taste." If the source uses informal
-quantities, keep them as-is: `- Olive oil, a generous pour`,
-`- Cilantro, a big handful`, `- Steak, about 2 lbs give or take`.
+"2 cloves". If the source says "to taste", write `to taste` as the
+quantity: `- Salt, to taste`. If a quantity has a modifier like "plus
+more" or "or more", keep the source's wording in the prep note:
+`- Mustard, 1 tbsp: Or more.` — do NOT change "or more" to "to taste".
+If the source uses informal quantities, keep them as-is:
+`- Olive oil, a generous pour`, `- Cilantro, a big handful`,
+`- Steak, about 2 lbs give or take`. Preserve weight equivalents in
+parentheses — if the source says "18 slices ham (18 ounces)" or
+"3 (8-ounce) loaves", keep the weight: `- Ham (deli, smoked), 18 slices
+(18 oz)` or `- Cuban bread, 3 loaves (8 oz each)`.
 
 - **Fractions:** Always use ASCII fraction notation: `1/2`, `3/4`, `1/3`.
   Never output vulgar fraction characters (½, ¾, ⅓, etc.) — always
@@ -209,7 +238,9 @@ notes ("Room temperature."), or quick substitution hints ("Or ghee.").
 Do NOT use prep notes for:
 - Serving context ("for garnish", "for topping") — just list the ingredient
   bare; if the source says it's a garnish, note that in the footer
-- "Divided" — split the ingredient across steps instead
+- "Divided" — split the ingredient across steps with per-step quantities. If
+  the recipe uses implicit-step format (no `##` headings), keep "Divided." as
+  the prep note instead.
 
 **Optional ingredients:** Keep them as proper ingredient lines with
 `Optional.` as the prep note. Example: `- Walnuts, 1/2 cup: Optional.`
@@ -246,14 +277,15 @@ attribution) goes below it as a single block.
 If the source names an author or publication, credit them in the footer.
 
 **Preserve useful context from the source** in the footer: ingredient
-preferences, substitution options, storage tips.  These affect the outcome and
-shouldn't be silently dropped. Do not add substitution suggestions or tips
-that are not present in the source text.
+preferences, substitution options, storage tips, and timing metadata (prep
+time, cook time, total time) if the source provides them.  These affect the
+outcome and shouldn't be silently dropped. Do not add substitution suggestions
+or tips that are not present in the source text.
 
 ## Common Mistakes — Do Not Make These
 
-- `- Salt, to taste` → just `- Salt`. Never "to taste."
-- Over-qualifying: `Onion (yellow)`, `Egg (large)`, `Cinnamon (ground)`.
+- Stripping source descriptors: if source says "1 large egg", keep `Egg (large), 1`.
+- Inventing footer notes: no "Imperial equivalents" unless the source provides them.
 - `Sugar (granulated)` → always `Sugar (white)`.
 - `Vanilla, 1 tsp` → always `Vanilla extract, 1 tsp`.
 - Bare `Sugar` → always `Sugar (white)` or `Sugar (brown)`.
@@ -269,7 +301,7 @@ that are not present in the source text.
 - `2 - 3 cloves` → no spaces in ranges: `2-3 cloves`.
 - `1/2 g` → use decimals for metric: `0.5 g`.
 - En-dashes anywhere: `7–10 minutes` → always hyphens: `7-10 minutes`.
-- `Makes: 3-4 loaves` → single number: `Makes: 4 loaves`.
+- `Makes: 3-4 loaves` → single number: `Makes: 3 loaves`.
 - Two `---` dividers → use exactly one.
 - Category not in the approved list.
 
@@ -311,7 +343,7 @@ that are not present in the source text.
     - Garlic, 2 cloves: Sliced thinly.
     - Tomatoes (canned), 794 g
     - Salt
-    - Black pepper
+    - Pepper
 
     Add garlic to oil and cook gently over low heat. Add tomatoes to pan.
     Use stick blender to puree sauce. Reduce until thick. Season to taste.
@@ -392,7 +424,7 @@ scan for in a grocery store, plus a parenthetical for which variant to buy.
 
     Source: "Salt and pepper to taste"
     →  - Salt
-       - Black pepper
+       - Pepper
 
     Source: "1/2 stick (4 tbsp) unsalted butter, melted and cooled"
     →  - Butter (unsalted), 4 tbsp: Melted and cooled.

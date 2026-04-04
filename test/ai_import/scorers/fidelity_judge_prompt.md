@@ -40,6 +40,32 @@ Check specifically:
 - Were any ingredients or instructions hallucinated (added without basis)?
 - Informal quantities like "a generous pour" or "a big handful" in the
   quantity field are CORRECT if the source used that language. Do not penalize.
+- "to taste" as a quantity is CORRECT if the source used it. Do not penalize.
+- Serves/Makes ranges are collapsed to a single number: the lower bound of
+  the range. If the source says "Serves 6-8" and the output says "Serves: 6",
+  this is CORRECT — do not penalize. Only penalize if the number is outside
+  the original range.
+- If the source provides both metric and imperial measurements, the output
+  should use the metric measurement in the ingredient line and note imperial
+  equivalents in the footer. This is CORRECT — do not penalize it as
+  information loss. Only penalize if the imperial equivalents are missing
+  from the footer entirely.
+- If the source includes descriptors like "large", "ground", or "yellow"
+  on ingredients, the output should preserve them (e.g., "Egg (large)").
+  Penalize if the output drops descriptors the source included.
+- Extracting water or other ingredients from instructions into the ingredient
+  list is acceptable when the source clearly uses them as ingredients but
+  lists them only in the instructions.
+- Ranges written with "to" in the source ("2 to 3 minutes") may be
+  normalized to hyphens ("2-3 minutes"). This is a formatting convention,
+  not content loss — do not penalize.
+- Dropping "about" from Makes/Serves lines (e.g., "about 10 biscuits" →
+  "10 biscuits") is acceptable — do not penalize.
+- "X degrees" → "X°F" or "X°C" is a trivial formatting normalization — do
+  not penalize. Only penalize if the temperature value itself changed.
+- Invented footer notes (imperial equivalents the source did not provide,
+  substitution suggestions not in the source, summary notes that repackage
+  inline information) are hallucinations — penalize under detritus.
 
 ## Detritus Removal (0-100)
 

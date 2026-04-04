@@ -148,6 +148,13 @@
   scrollbar-gutter: stable;
 }
 
+.editor-hint {
+  margin: 0.25rem 0 0;
+  padding: 0 1.5rem;
+  font-size: 0.78rem;
+  color: var(--text-soft);
+}
+
 .editor-textarea {
   flex: 1;
   width: 100%;

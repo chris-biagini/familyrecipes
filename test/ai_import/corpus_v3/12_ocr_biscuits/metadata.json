@@ -1,0 +1,5 @@
+{
+  "source": "Hand-crafted OCR simulation of a simple biscuit recipe",
+  "expected_steps": "implicit",
+  "category": "ocr"
+}
