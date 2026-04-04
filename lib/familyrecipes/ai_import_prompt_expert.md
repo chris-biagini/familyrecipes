@@ -288,8 +288,10 @@ Use exactly ONE `---` divider — all footer content (garnish notes, alternative
 attribution) goes below it as a single block.
 
 If the source names an author or publication, credit them in the footer.
-Always use this exact phrasing: "Based on a recipe from [Source](URL)."
-Never "Adapted from" or "Inspired by."
+Always use this exact phrasing: "Based on a recipe from [Source Name]."
+or, if the source provides a URL: "Based on a recipe from [Source Name](URL)."
+Never "Adapted from" or "Inspired by." Never fabricate a URL — only include
+one if the source text contains it.
 
 **Preserve useful context from the source** in the footer: ingredient
 preferences, substitution options, storage tips. These affect the outcome and
