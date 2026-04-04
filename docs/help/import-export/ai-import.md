@@ -21,9 +21,34 @@ Once configured, an **AI Import** button appears on the homepage.
 1. Click **AI Import** on the homepage.
 2. Paste any recipe text into the dialog — from a website, a photo (as text),
    notes you've dictated, a cookbook scan, or anything else.
-3. Click **Import**.
-4. Claude parses the text and opens the result in the recipe editor.
-5. Review the recipe, make any corrections, then click **Save**.
+3. Choose an import mode (see below).
+4. Click **Import**.
+5. Claude parses the text and opens the result in the recipe editor.
+   You can switch between the graphical and plaintext editors to review.
+6. Review the recipe, make any corrections, then click **Save**.
+
+## Import modes
+
+AI Import has two modes, controlled by a checkbox in the import dialog.
+
+### Faithful (default)
+
+Preserves the original recipe's wording and style as closely as possible.
+Informal language, verbose descriptions, and the author's voice all come
+through intact. Use this when you want an accurate transcription of the
+source — for example, importing a family recipe where the exact phrasing
+matters.
+
+### Expert mode
+
+Check **Expert mode — condense for experienced cooks** to get a compact
+version that strips obvious basics and tutorial-style instructions. Steps
+are reorganized for clarity and written in a terse, confident voice.
+Use this when you already know your way around a kitchen and just want
+the essential information.
+
+Both modes preserve all ingredient quantities exactly and will not invent
+missing information.
 
 ## What it can handle
 
