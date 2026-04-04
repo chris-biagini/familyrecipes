@@ -9,19 +9,30 @@ dimension scores (0-100).
 
 ### 1. Voice (0-13)
 
-Instructions should use imperative mood with articles dropped aggressively.
+Instructions should use imperative mood. Drop articles where natural, but
+retain where dropping would sound robotic. Terse but human, not telegraphic.
 No hedging, no addressing the reader.
 
-- 13: Pure imperative, articles dropped, confident tone throughout.
-- 7-12: Mostly good but some lapses (stray articles, occasional "you").
-- 0-6: Conversational tone, frequent articles, hedging language.
+- 13: Confident imperative throughout. Articles dropped naturally — reads
+  like a skilled cook's notes, not a telegram.
+- 7-12: Mostly good but some lapses (stray "you", hedging, or articles
+  retained where they clearly should drop). OR over-corrected to robotic
+  single-word sentence chains.
+- 0-6: Conversational tone, frequent articles, hedging language. OR
+  telegraphic — reads like a robot, not a person.
 
-BAD: "You will want to add the butter to the pan and stir it until melted."
+BAD (too chatty): "You will want to add the butter to the pan and stir it
+until melted."
+BAD (too robotic): "Heat. Add. Stir. Season. Serve."
 GOOD: "Add butter to pan. Stir until melted."
+GOOD: "Correct for salt, sweetness, acid, and heat. Serve."
+GOOD: "Form into a neat ball, return to bowl, and cover."
+GOOD: "Allow to rest and spread again, repeating as necessary."
 
 Flag: any instance of "you/your/you'll", "feel free to", "you may want to",
 "if you like" (in instructions, not in footer notes), "be sure to",
-"don't forget to", "go ahead and".
+"don't forget to", "go ahead and". Also flag single-word sentence chains
+(three or more consecutive one-verb sentences).
 
 ### 2. Condensation (0-13)
 
@@ -77,6 +88,11 @@ for very simple recipes.
 
 Flag: descriptions over 15 words, food-blog cliches, SEO-style language.
 
+Good descriptions from the collection: "Vaguely Thai egg-fried rice.",
+"Mom's roasted vegetables on farro with a poached egg", "Just a little
+sweet.", "Worth the effort.", "Pasta and beans in a simple broth.",
+"The best pan pizza.", "Mom's famous baked pasta."
+
 ### 6. Instruction Prose (0-13)
 
 Instructions should read as natural prose paragraphs, not bullet points or
@@ -120,7 +136,9 @@ instead of "to", "make sure that" instead of just the instruction).
 
 ## Calibration Exemplars
 
-These are excerpts from the target style. Use them to calibrate your scoring.
+These are excerpts from the target recipe collection. Use them to calibrate
+your scoring. This is the voice to match — terse but human, economical but
+not robotic.
 
 **Multi-step recipe (terse, phase-based):**
 
@@ -151,6 +169,44 @@ These are excerpts from the target style. Use them to calibrate your scoring.
     to incorporate.
 
     Correct for salt, sweetness, acid, and heat. Serve.
+
+**Mid-range voice (economical but not maximally terse):**
+
+    ## Make dough and bulk ferment.
+
+    - Honey, 20 g
+    - Olive oil, 20 g
+    - Salt, 10 g
+    - Water, 300 g
+    - Yeast, 5 g
+    - Flour (all-purpose), 400 g
+
+    Add all ingredients except flour to bowl. Add half the flour and whisk
+    together. Add remaining flour, then mix until thoroughly combined.
+
+    Let rest for 20-30 minutes, then knead until smooth. Form into a neat
+    ball, return to bowl, and cover.
+
+    Bulk ferment until doubled in size.
+
+**Concise technique prose with semicolon naming:**
+
+    ## Brown butter and add to sugar mixture.
+
+    - Butter (unsalted), 140 g
+
+    Add butter to small saucepan. Cook gently over medium heat until solids
+    are browned, then immediately add to sugar mixture in mixer bowl and
+    allow to cool slightly.
+
+**Ideal final step (two sentences):**
+
+    ## Finish and serve.
+
+    - Salt
+    - Black pepper
+
+    Correct for seasoning. Serve.
 
 **Simple recipe (minimal, implicit-step):**
 
