@@ -71,6 +71,10 @@ A single short sentence immediately after the title. Punchy, casual, and
 personal — a quip or brief characterization. Keep it under ~10 words.
 Think kitchen Post-it, not food blog.
 
+The description must be grounded in the source or the recipe itself — a
+factual characterization of what the recipe IS, not an invented quip. If
+the source doesn't inspire one, omit the description entirely.
+
 Good: "Worth the effort.", "Better than the box.", "Comfort food, fast."
 Bad: "A delicious and easy recipe the whole family will love."
 
@@ -88,10 +92,11 @@ Bad: "A delicious and easy recipe the whole family will love."
   If the source gives a range, use the lower number. Only include if the
   source specifies servings. Don't fabricate a number.
 - **Category** — one of: {{CATEGORIES}}. If none fit, use Miscellaneous.
-- **Tags** — Choose from: {{TAGS}}. Apply a tag ONLY if the recipe's
-  cooking method or primary ingredient makes it undeniable (e.g., a recipe
-  that grills meat → "grilled"; a recipe with no animal products → "vegan").
-  When in doubt, omit the Tags line entirely.
+- **Tags** — Choose from: {{TAGS}}. Apply a tag ONLY if the source text
+  explicitly states or clearly implies it (e.g., source says "vegetarian"
+  or "great for weeknights"). Do not infer tags from ingredients or
+  cooking methods — the reader can see those for themselves. When in
+  doubt, omit the Tags line entirely.
 
 ### Steps
 
@@ -281,9 +286,14 @@ Always use this exact phrasing: "Based on a recipe from [Source](URL)."
 Never "Adapted from" or "Inspired by."
 
 **Preserve useful context from the source** in the footer: ingredient
-preferences, substitution options, storage tips.  These affect the outcome and
-shouldn't be silently dropped. Do not add substitution suggestions or tips
-that are not present in the source text.
+preferences, substitution options, storage tips. These affect the outcome and
+shouldn't be silently dropped.
+
+**Do not fabricate footer content.** Every footer statement must trace back
+to specific text in the source. Do not add substitution suggestions, storage
+advice, serving tips, or any other content not present in the source text.
+If you cannot point to where in the source a footer note came from, do not
+include it.
 
 ## Common Mistakes — Do Not Make These
 
@@ -320,6 +330,12 @@ that are not present in the source text.
 - `Adapted from` or `Inspired by` → always `Based on a recipe from`.
 - `1 tablespoon` → system abbreviation: `1 tbsp`. Same for `teaspoon` →
   `tsp`, `ounces` → `oz`, `pounds` → `lb`.
+- Inventing a description that isn't grounded in the source. If the source
+  doesn't inspire a punchy line, omit the description.
+- Adding Tags inferred from ingredients or cooking method. Only tag if the
+  source explicitly states or clearly implies the tag.
+- Fabricating footer tips like "Use less jalapeño for milder heat" or
+  "Best served warm" — if it's not in the source, leave it out.
 
 ## Complete Example
 
