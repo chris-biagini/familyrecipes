@@ -309,7 +309,6 @@ include it.
 - Over-qualifying: `Onion (yellow)`, `Egg (large)`, `Cinnamon (ground)`.
 - `Sugar (granulated)` → always `Sugar (white)`.
 - `Vanilla, 1 tsp` → always `Vanilla extract, 1 tsp`.
-- `Sugar (granulated)` → use `Sugar (white)` when the source specifies granulated.
 - `## Make the Dough.` → sentence case: `## Make the dough.`
 - `- Onion, 1: diced` → capitalize prep: `- Onion, 1: Diced.`
 - State-change qualifiers: `Coconut oil (melted)` → prep note: `Coconut
@@ -332,18 +331,11 @@ include it.
 - `Ground cinnamon` → just `Cinnamon`. `Fresh parsley` → just `Parsley`.
   Default-form adjectives are unnecessary.
 - Storage or make-ahead tips in step instructions → move to footer.
-- `Vanilla, 1 tsp` → always `Vanilla extract, 1 tsp`.
 - `Makes: 6 cups` without a noun → `Makes: 6 cups granola`. Always include
   a unit noun with Makes.
 - `Adapted from` or `Inspired by` → always `Based on a recipe from`.
 - `1 tablespoon` → system abbreviation: `1 tbsp`. Same for `teaspoon` →
   `tsp`, `ounces` → `oz`, `pounds` → `lb`.
-- Inventing a description that isn't grounded in the source. If the source
-  doesn't inspire a punchy line, omit the description.
-- Adding Tags inferred from ingredients or cooking method. Only tag if the
-  source explicitly states or clearly implies the tag.
-- Fabricating footer tips like "Use less jalapeño for milder heat" or
-  "Best served warm" — if it's not in the source, leave it out.
 
 ## Complete Example
 
