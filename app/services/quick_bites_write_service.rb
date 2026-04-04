@@ -93,7 +93,7 @@ class QuickBitesWriteService
         new_id = title_to_new_id[title]
         if new_id
           MealPlanSelection.where(selectable_type: 'QuickBite', selectable_id: old_id.to_s)
-                           .update_all(selectable_id: new_id.to_s)
+                           .update_all(selectable_id: new_id.to_s) # rubocop:disable Rails/SkipsModelValidations -- bulk ID remap, no callbacks needed
         end
       end
     end
