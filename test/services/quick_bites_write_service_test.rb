@@ -101,6 +101,55 @@ class QuickBitesWriteServiceTest < ActiveSupport::TestCase
     end
   end
 
+  test 'update_from_structure preserves meal plan selections across ID changes' do
+    cat = Category.find_or_create_for(@kitchen, 'Snacks')
+    qb1 = QuickBite.create!(title: 'PB&J', category: cat, position: 0)
+    qb2 = QuickBite.create!(title: 'Goldfish', category: cat, position: 1)
+
+    MealPlanSelection.create!(kitchen: @kitchen, selectable_type: 'QuickBite', selectable_id: qb1.id.to_s)
+    MealPlanSelection.create!(kitchen: @kitchen, selectable_type: 'QuickBite', selectable_id: qb2.id.to_s)
+
+    structure = {
+      categories: [
+        { name: 'Snacks', items: [
+          { name: 'PB&J', ingredients: ['Bread', 'Peanut Butter'] },
+          { name: 'Goldfish', ingredients: %w[Goldfish] },
+          { name: 'Trail Mix', ingredients: %w[Nuts Raisins] }
+        ] }
+      ]
+    }
+
+    QuickBitesWriteService.update_from_structure(kitchen: @kitchen, structure:)
+
+    new_pbj = @kitchen.quick_bites.find_by(title: 'PB&J')
+    new_goldfish = @kitchen.quick_bites.find_by(title: 'Goldfish')
+    selected_ids = MealPlanSelection.quick_bite_ids_for(@kitchen).to_set
+
+    assert_includes selected_ids, new_pbj.id
+    assert_includes selected_ids, new_goldfish.id
+    assert_equal 2, selected_ids.size
+  end
+
+  test 'update preserves meal plan selections for renamed quick bites that still exist' do
+    cat = Category.find_or_create_for(@kitchen, 'Snacks')
+    qb = QuickBite.create!(title: 'Old Name', category: cat, position: 0)
+    MealPlanSelection.create!(kitchen: @kitchen, selectable_type: 'QuickBite', selectable_id: qb.id.to_s)
+
+    structure = {
+      categories: [
+        { name: 'Snacks', items: [
+          { name: 'New Name', ingredients: %w[Stuff] }
+        ] }
+      ]
+    }
+
+    QuickBitesWriteService.update_from_structure(kitchen: @kitchen, structure:)
+
+    selected_ids = MealPlanSelection.quick_bite_ids_for(@kitchen)
+
+    assert_empty selected_ids, 'selection for deleted quick bite should not persist'
+  end
+
   test 'update skips broadcast when batching' do
     broadcast_count = 0
     @kitchen.define_singleton_method(:broadcast_update) { broadcast_count += 1 }

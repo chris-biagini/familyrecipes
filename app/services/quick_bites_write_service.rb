@@ -52,12 +52,15 @@ class QuickBitesWriteService
   end
 
   def persist_structure(structure)
+    old_selections = selected_qb_titles
     kitchen.quick_bites.destroy_all
     position = [0]
 
     structure[:categories].each do |cat_data|
       persist_category(cat_data, position)
     end
+
+    remap_selections(old_selections)
   end
 
   def persist_category(cat_data, position)
@@ -73,6 +76,26 @@ class QuickBitesWriteService
     qb = kitchen.quick_bites.create!(title: item[:name], category:, position:)
     item[:ingredients].each_with_index do |name, idx|
       qb.quick_bite_ingredients.create!(name:, position: idx)
+    end
+  end
+
+  def selected_qb_titles
+    selected_ids = MealPlanSelection.quick_bite_ids_for(kitchen).to_set
+    kitchen.quick_bites.where(id: selected_ids).pluck(:id, :title).to_h
+  end
+
+  def remap_selections(old_id_to_title)
+    return if old_id_to_title.empty?
+
+    title_to_new_id = kitchen.quick_bites.pluck(:title, :id).to_h
+    ActsAsTenant.with_tenant(kitchen) do
+      old_id_to_title.each do |old_id, title|
+        new_id = title_to_new_id[title]
+        if new_id
+          MealPlanSelection.where(selectable_type: 'QuickBite', selectable_id: old_id.to_s)
+                           .update_all(selectable_id: new_id.to_s)
+        end
+      end
     end
   end
 
