@@ -59,6 +59,10 @@ export default class extends Controller {
     this.editorView = null
   }
 
+  get initialContent() {
+    return this.hasInitialValue ? this.initialValue : null
+  }
+
   get content() {
     return this.editorView?.state.doc.toString() || ""
   }

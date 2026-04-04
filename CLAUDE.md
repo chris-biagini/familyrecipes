@@ -307,7 +307,7 @@ CI runs Brakeman and `bundler-audit` automatically on every push and PR.
 npm install                # install JS dependencies
 npm run build              # bundle JS (esbuild)
 npm test                   # run JS classifier tests
-ruby test/sim/grocery_convergence.rb   # standalone convergence simulation (excluded from RuboCop)
+ruby test/sim/grocery_audit.rb         # standalone grocery audit simulation (excluded from RuboCop)
 ```
 
 The default `rake` task runs both lint and test.

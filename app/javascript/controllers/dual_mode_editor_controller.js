@@ -63,7 +63,7 @@ export default class extends Controller {
           this.plaintextController.content = data[key]
         }
       } else {
-        if (!this.plaintextController.isModified(this.originalContent)) {
+        if (this.originalStructure && !this.plaintextController.isModified(this.originalContent)) {
           this.graphicalController.loadStructure(this.originalStructure)
         } else {
           const content = this.plaintextController.content
@@ -148,6 +148,8 @@ export default class extends Controller {
     if (!data[this.contentKeyValue]) {
       const jsonEl = this.element.querySelector("script[data-editor-markdown]")
       if (!jsonEl) {
+        const initial = this.plaintextController.initialContent
+        if (initial != null) this.plaintextController.content = initial
         this.originalContent = this.plaintextController.content
         this.originalStructure = this.graphicalController.toStructure()
         this.enableEditing()
