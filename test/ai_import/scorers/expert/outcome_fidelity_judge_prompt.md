@@ -48,6 +48,8 @@ Would a competent home cook following the OUTPUT produce the same dish?
 - Informal quantities preserved from source ("a generous pour", "a handful")
 - Extracting water or other ingredients from instructions into the
   ingredient list when the source clearly uses them as ingredients
+- Unit abbreviation normalization to system-recognized forms (e.g.,
+  "tablespoon" → "tbsp", "Cups" → "cups", "ounces" → "oz")
 
 ## Detritus Removal (0-100)
 
