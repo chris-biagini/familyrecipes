@@ -61,8 +61,9 @@ A recipe file has these sections, in order:
 ### Title (required)
 
 A level-one heading. Use the recipe's name — clean, concise, no "Recipe for"
-prefix, no superlatives ("The Best", "Amazing", "Easy"). Capitalize naturally
-(title case).
+prefix, no superlatives ("The Best", "Amazing", "Easy", "Ultimate",
+"Perfect"), no clickbait ("How to Make", "You Won't Believe"). Keep it short
+— the recipe name, nothing more. Capitalize naturally (title case).
 
 ### Description (optional, recommended)
 
@@ -81,10 +82,11 @@ Bad: "A delicious and easy recipe the whole family will love."
     Tags: comfort-food, baked
 
 - **Makes** — yield with a unit noun: "12 pancakes", "2 loaves", "1 loaf".
-  Must be a single number, not a range — "Makes: 4 loaves" not
-  "Makes: 3-4 loaves".
+  Must be a single number, not a range — "Makes: 3 loaves" not
+  "Makes: 3-4 loaves". Use the lower bound of ranges.
 - **Serves** — a single plain number: "Serves: 4" not "Serves: 4-6".
-  Only include if the source specifies servings. Don't fabricate a number.
+  If the source gives a range, use the lower number. Only include if the
+  source specifies servings. Don't fabricate a number.
 - **Category** — one of: {{CATEGORIES}}. If none fit, use Miscellaneous.
 - **Tags** — Choose from: {{TAGS}}. Apply a tag ONLY if the recipe's
   cooking method or primary ingredient makes it undeniable (e.g., a recipe
@@ -158,12 +160,18 @@ Examples:
 - Don't over-qualify defaults: "Onion" not "Onion (yellow)", "Egg" not "Egg
   (large)", "Cinnamon" not "Cinnamon (ground)", "Cumin" not "Cumin (ground)".
   Ground is the default for dry spices.
-- Always qualify sugar — "Sugar (white)" or "Sugar (brown)".
+- Qualify sugar when the source specifies the type: "Sugar (brown)",
+  "Sugar (powdered)". If the source just says "sugar" with no qualifier,
+  write `- Sugar` — do not add "(white)".
 - Don't use qualifiers for preparation instructions, except where the
   qualifiers distinguish between variations that often are sold pre-prepared.
   For example, "Chicken thighs (boneless, skinless)" is appropriate, but "Apples
   (peeled, cored)" is not.
 - Always "Vanilla extract", never bare "Vanilla".
+- Preserve the source's descriptors when they affect purchasing. If the
+  source says "bone-in, skin-on chicken thighs", keep both:
+  `Chicken thighs (bone-in, skin-on)`. If the source says "low-moisture
+  mozzarella", keep it: `Mozzarella (low-moisture)`.
 - Pick one name for a cut of meat — don't slash alternatives in the name.  Use
   the most recognizable name; note alternatives in the footer if useful.
 
@@ -172,6 +180,9 @@ Examples:
 greasing, etc. Never write "to taste." If the source uses informal
 quantities, keep them as-is: `- Olive oil, a generous pour`,
 `- Cilantro, a big handful`, `- Steak, about 2 lbs give or take`.
+Preserve weight equivalents in parentheses — if the source says
+"18 slices ham (18 ounces)" or "3 (8-ounce) loaves", keep the weight:
+`- Ham, 18 slices (18 oz)` or `- Bread, 3 loaves (8 oz each)`.
 
 - **Fractions:** Always use ASCII fraction notation: `1/2`, `3/4`, `1/3`.
   Never output vulgar fraction characters (½, ¾, ⅓, etc.) — always
@@ -238,6 +249,18 @@ mood. Condense for an experienced cook who doesn't need basics explained.
 
 **Temperatures:** Normalize to "350°F" or "175°C".
 
+**Strip what goes without saying:**
+- Technique tutorials: how to knead, how to dice an onion, how to judge
+  when oil is hot, what "al dente" means
+- Common-sense advice: open a window, use a sharp knife, be careful with
+  hot oil, wash your hands
+- Quality editorializing: "preferably homemade", "use the best quality you
+  can find", "freshly ground pepper is best"
+- Generic cooking advice: don't crowd the pan, season as you go, taste
+  before serving
+- Unnecessary preamble: "gather your ingredients", "read through the
+  recipe first"
+
 ### Footer (optional)
 
 A `---` divider followed by notes, tips, variations, storage, or substitutions.
@@ -257,7 +280,7 @@ that are not present in the source text.
 - Over-qualifying: `Onion (yellow)`, `Egg (large)`, `Cinnamon (ground)`.
 - `Sugar (granulated)` → always `Sugar (white)`.
 - `Vanilla, 1 tsp` → always `Vanilla extract, 1 tsp`.
-- Bare `Sugar` → always `Sugar (white)` or `Sugar (brown)`.
+- `Sugar (granulated)` → use `Sugar (white)` when the source specifies granulated.
 - `## Make the Dough.` → sentence case: `## Make the dough.`
 - `- Onion, 1: diced` → capitalize prep: `- Onion, 1: Diced.`
 - State-change qualifiers: `Coconut oil (melted)` → prep note: `Coconut
@@ -270,7 +293,7 @@ that are not present in the source text.
 - `2 - 3 cloves` → no spaces in ranges: `2-3 cloves`.
 - `1/2 g` → use decimals for metric: `0.5 g`.
 - En-dashes anywhere: `7–10 minutes` → always hyphens: `7-10 minutes`.
-- `Makes: 3-4 loaves` → single number: `Makes: 4 loaves`.
+- `Makes: 3-4 loaves` → use the lower bound: `Makes: 3 loaves`.
 - Two `---` dividers → use exactly one.
 - Category not in the approved list.
 - `"Add the butter to the pan"` → drop articles: `"Add butter to pan."`
