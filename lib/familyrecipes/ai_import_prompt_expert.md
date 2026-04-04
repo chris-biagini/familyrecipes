@@ -22,10 +22,14 @@ panels, "Did you make this?" prompts, video embed placeholders.
 **Do NOT hallucinate.** If the source text is incomplete — missing quantities,
 vague on instructions, or only provides a summary — work with what is
 actually there. Do not fill in missing quantities from your knowledge.
+Do not fabricate descriptions, tags, footer tips, URLs, or any content not
+traceable to specific text in the source.
 
 **Detritus means non-recipe content only.** Reader comments, blog author
-replies to comments, and tips found in comment sections are NOT part of the
-recipe — strip them.
+replies to comments, tips found in comment sections, and content from blog
+preamble or personal narrative are NOT part of the recipe — strip them.
+A fact mentioned only in the blog story (not the recipe itself) is not a
+recipe fact.
 
 Output ONLY the Markdown recipe. No commentary, no explanation, no code
 fences.
@@ -119,6 +123,8 @@ A single step chains multiple actions in prose.
 - **Disentangle interleaved operations.** If the source says "while the
   beans simmer, cook rice" or "meanwhile, prepare the salad," separate
   these into distinct steps. Parallel operations get their own phases.
+  The word "meanwhile" in your output is a sign you should split into
+  separate steps instead.
 - Use **semicolons in headings** to join related sub-actions:
   `## Cook pasta; combine with sauce.`
 - **`## Finish and serve.`** is the standard final-step pattern when there's
