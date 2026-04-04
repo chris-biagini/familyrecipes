@@ -1,5 +1,6 @@
 {
   "source": "Hand-crafted text message recipe, very terse and informal",
   "expected_steps": "implicit",
+  "expected_steps_expert": "implicit",
   "category": "clean"
 }

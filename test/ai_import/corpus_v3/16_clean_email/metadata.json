@@ -1,5 +1,6 @@
 {
   "source": "Hand-crafted email recipe with conversational tone",
   "expected_steps": "implicit",
+  "expected_steps_expert": "ambiguous",
   "category": "clean"
 }

@@ -1,5 +1,6 @@
 {
   "source": "https://www.seriouseats.com/ultimate-beef-wellington-recipe",
   "expected_steps": "ambiguous",
+  "expected_steps_expert": "explicit",
   "category": "blog"
 }

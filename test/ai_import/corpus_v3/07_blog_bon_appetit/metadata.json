@@ -1,5 +1,6 @@
 {
   "source": "https://www.bonappetit.com/recipe/popover-topped-pot-pie",
   "expected_steps": "ambiguous",
+  "expected_steps_expert": "explicit",
   "category": "blog"
 }
