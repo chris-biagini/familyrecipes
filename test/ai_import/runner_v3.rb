@@ -4,20 +4,25 @@
 # AI Import prompt evaluation runner (v3). Standalone script — no Rails boot.
 # Uses `claude -p` instead of direct API calls — runs on Max plan tokens.
 #
-# Key difference from runner.rb: `--system-prompt` replaces the Claude Code
-# default system prompt, and `--tools ""` disables all tools. This makes
-# the invocation behave like a bare API call.
+# Supports two modes, detected from the prompt filename:
+# - Faithful mode (default): scores text fidelity to source
+# - Expert mode (prompt contains "expert"): scores outcome fidelity + style
+#
+# Faithful aggregate: 0.20 * format + 0.50 * ((fidelity + detritus) / 2) + 0.30 * steps
+# Expert aggregate:   0.10 * format + 0.40 * ((outcome_fid + detritus) / 2) + 0.25 * steps + 0.25 * style
 #
 # Usage:
 #   ruby test/ai_import/runner_v3.rb [label]
+#   ruby test/ai_import/runner_v3.rb --prompt=ai_import_prompt_expert.md [label]
 #   ruby test/ai_import/runner_v3.rb --corpus=corpus_v3 [label]
-#   ruby test/ai_import/runner_v3.rb --prompt=ai_import_prompt_faithful.md [label]
 #   ruby test/ai_import/runner_v3.rb --concurrency=5 [label]
 #
 # Collaborators:
 # - claude CLI (`claude -p`) for import (Sonnet) and judging (default model)
 # - Scorers::ParseChecker, FormatChecker, SystemCompatChecker for algorithmic checks
-# - fidelity_judge_prompt.md, step_structure_judge_prompt.md for LLM judge rubrics
+# - fidelity_judge_prompt.md / outcome_fidelity_judge_prompt.md for fidelity judging
+# - step_structure_judge_prompt.md for step structure judging
+# - style_judge_prompt.md for expert style judging (expert mode only)
 
 require 'json'
 require 'fileutils'
@@ -61,6 +66,45 @@ FIDELITY_SCHEMA = {
   required: %w[fidelity_score detritus_score]
 }.freeze
 
+OUTCOME_FIDELITY_SCHEMA = {
+  type: 'object',
+  properties: {
+    ingredients_missing: { type: 'array', items: { type: 'string' } },
+    ingredients_added: { type: 'array', items: { type: 'string' } },
+    quantities_changed: { type: 'array', items: { type: 'string' } },
+    technique_lost: { type: 'array', items: { type: 'string' } },
+    outcome_affected: { type: 'array', items: { type: 'string' } },
+    detritus_retained: { type: 'array', items: { type: 'string' } },
+    outcome_fidelity_score: { type: 'integer' },
+    detritus_score: { type: 'integer' }
+  },
+  required: %w[outcome_fidelity_score detritus_score]
+}.freeze
+
+STYLE_SCHEMA = {
+  type: 'object',
+  properties: {
+    voice_score: { type: 'integer' },
+    voice_issues: { type: 'array', items: { type: 'string' } },
+    condensation_score: { type: 'integer' },
+    condensation_issues: { type: 'array', items: { type: 'string' } },
+    specificity_score: { type: 'integer' },
+    specificity_issues: { type: 'array', items: { type: 'string' } },
+    title_score: { type: 'integer' },
+    title_issues: { type: 'array', items: { type: 'string' } },
+    description_score: { type: 'integer' },
+    description_issues: { type: 'array', items: { type: 'string' } },
+    prose_score: { type: 'integer' },
+    prose_issues: { type: 'array', items: { type: 'string' } },
+    footer_score: { type: 'integer' },
+    footer_issues: { type: 'array', items: { type: 'string' } },
+    economy_score: { type: 'integer' },
+    economy_issues: { type: 'array', items: { type: 'string' } },
+    style_score: { type: 'integer' }
+  },
+  required: %w[style_score]
+}.freeze
+
 STEP_STRUCTURE_SCHEMA = {
   type: 'object',
   properties: {
@@ -92,6 +136,10 @@ def parse_args
   opts[:corpus_dir] = File.join(BASE_DIR, opts[:corpus])
   opts[:prompt_path] = File.join(LIB_DIR, opts[:prompt])
   opts
+end
+
+def expert_mode?(opts)
+  opts[:prompt].include?('expert')
 end
 
 def load_prompt(path)
@@ -176,22 +224,46 @@ def judge_step_structure(rubric, original, output)
   result[:json] || default_step_error('structured response missing')
 end
 
+def judge_outcome_fidelity(rubric, original, output)
+  user_msg = "## ORIGINAL\n\n#{original}\n\n## OUTPUT\n\n#{output}"
+  result = call_claude(user_msg, system_prompt: rubric, json_schema: OUTCOME_FIDELITY_SCHEMA)
+  return default_outcome_fidelity_error(result[:error]) if result[:error]
+
+  result[:json] || default_outcome_fidelity_error('structured response missing')
+end
+
+def judge_style(rubric, output)
+  result = call_claude(output, system_prompt: rubric, json_schema: STYLE_SCHEMA)
+  return default_style_error(result[:error]) if result[:error]
+
+  result[:json] || default_style_error('structured response missing')
+end
+
 def default_fidelity_error(msg)
   { 'error' => msg, 'fidelity_score' => 0, 'detritus_score' => 0 }
+end
+
+def default_outcome_fidelity_error(msg)
+  { 'error' => msg, 'outcome_fidelity_score' => 0, 'detritus_score' => 0 }
 end
 
 def default_step_error(msg)
   { 'error' => msg, 'step_structure_score' => 0 }
 end
 
-def process_recipe(dir, system_prompt, fidelity_rubric, step_rubric)
+def default_style_error(msg)
+  { 'error' => msg, 'style_score' => 0 }
+end
+
+def process_recipe(dir, system_prompt, rubrics, opts)
   name = File.basename(dir)
   input_text = File.read(File.join(dir, 'input.txt'))
   metadata = load_metadata(dir)
+  expert = expert_mode?(opts)
 
   puts "[#{name}] Importing..."
   import = import_recipe(system_prompt, input_text)
-  return error_scores(import[:error]) if import[:error]
+  return error_scores(import[:error], expert: expert) if import[:error]
 
   output_text = import[:text]
 
@@ -205,39 +277,64 @@ def process_recipe(dir, system_prompt, fidelity_rubric, step_rubric)
                                                      input_text: input_text, metadata: metadata)
 
   puts "  [#{name}] Layer 3: fidelity judge..."
-  fidelity = judge_fidelity(fidelity_rubric, input_text, output_text)
+  fidelity = if expert
+               judge_outcome_fidelity(rubrics[:fidelity], input_text, output_text)
+             else
+               judge_fidelity(rubrics[:fidelity], input_text, output_text)
+             end
 
   puts "  [#{name}] Layer 4: step structure judge..."
-  step = judge_step_structure(step_rubric, input_text, output_text)
+  step = judge_step_structure(rubrics[:step], input_text, output_text)
+
+  style = nil
+  if expert
+    puts "  [#{name}] Layer 5: style judge..."
+    style = judge_style(rubrics[:style], output_text)
+  end
 
   gate_pass = parse.pass && compat.pass
-  agg = aggregate_score(gate_pass, format, fidelity, step)
+  agg = aggregate_score(gate_pass, format, fidelity, step, style, expert: expert)
   puts "  [#{name}] Aggregate: #{agg.round(1)}"
 
-  { output_text: output_text,
-    parse: { pass: parse.pass, details: parse.details },
-    compat: { pass: compat.pass, details: compat.details },
-    format: { score: (format.score * 100).round(1), checks: format.checks },
-    fidelity: fidelity, step_structure: step, aggregate: agg.round(1) }
+  result = { output_text: output_text,
+             parse: { pass: parse.pass, details: parse.details },
+             compat: { pass: compat.pass, details: compat.details },
+             format: { score: (format.score * 100).round(1), checks: format.checks },
+             fidelity: fidelity, step_structure: step, aggregate: agg.round(1) }
+  result[:style] = style if style
+  result
 end
 
-def error_scores(msg)
-  { output_text: '', aggregate: 0.0,
-    parse: { pass: false, details: { errors: [msg] } },
-    compat: { pass: false, details: { errors: [msg] } },
-    format: { score: 0.0, checks: [] },
-    fidelity: { 'fidelity_score' => 0, 'detritus_score' => 0 },
-    step_structure: { 'step_structure_score' => 0 } }
+def error_scores(msg, expert: false)
+  result = { output_text: '', aggregate: 0.0,
+             parse: { pass: false, details: { errors: [msg] } },
+             compat: { pass: false, details: { errors: [msg] } },
+             format: { score: 0.0, checks: [] },
+             step_structure: { 'step_structure_score' => 0 } }
+  if expert
+    result[:fidelity] = { 'outcome_fidelity_score' => 0, 'detritus_score' => 0 }
+    result[:style] = { 'style_score' => 0 }
+  else
+    result[:fidelity] = { 'fidelity_score' => 0, 'detritus_score' => 0 }
+  end
+  result
 end
 
-def aggregate_score(gate_pass, format_result, fidelity, step)
+def aggregate_score(gate_pass, format_result, fidelity, step, style = nil, expert: false) # rubocop:disable Metrics/ParameterLists
   return 0.0 unless gate_pass
 
   fmt = format_result.score * 100.0
-  fid = (fidelity['fidelity_score'] || 0).to_f
   det = (fidelity['detritus_score'] || 0).to_f
   stp = (step['step_structure_score'] || 0).to_f
-  (0.20 * fmt) + (0.50 * ((fid + det) / 2.0)) + (0.30 * stp)
+
+  if expert
+    fid = (fidelity['outcome_fidelity_score'] || 0).to_f
+    sty = (style&.dig('style_score') || 0).to_f
+    (0.10 * fmt) + (0.40 * ((fid + det) / 2.0)) + (0.25 * stp) + (0.25 * sty)
+  else
+    fid = (fidelity['fidelity_score'] || 0).to_f
+    (0.20 * fmt) + (0.50 * ((fid + det) / 2.0)) + (0.30 * stp)
+  end
 end
 
 # --- Concurrency ---
@@ -314,27 +411,37 @@ def compute_overall(scores)
   [avg, worst]
 end
 
-def write_summary(iter_dir, scores, output_dir)
+def write_summary(iter_dir, scores, output_dir, expert: false)
   avg, worst = compute_overall(scores)
-  lines = summary_table(iter_dir, scores, avg, worst)
+  lines = summary_table(iter_dir, scores, avg, worst, expert: expert)
   append_failure_details(lines, scores, output_dir)
   File.write(File.join(iter_dir, 'summary.md'), lines.join("\n"))
   [avg, worst]
 end
 
-def summary_table(iter_dir, scores, avg, worst)
+def summary_table(iter_dir, scores, avg, worst, expert: false)
   lines = ["# Iteration #{File.basename(iter_dir)}\n"]
-  lines << '| Recipe | Parse | Compat | Format | Fidelity | Detritus | Steps | Aggregate |'
-  lines << '|--------|-------|--------|--------|----------|----------|-------|-----------|'
+  if expert
+    lines << '| Recipe | Parse | Compat | Format | Fidelity | Detritus | Steps | Style | Aggregate |'
+    lines << '|--------|-------|--------|--------|----------|----------|-------|-------|-----------|'
+  else
+    lines << '| Recipe | Parse | Compat | Format | Fidelity | Detritus | Steps | Aggregate |'
+    lines << '|--------|-------|--------|--------|----------|----------|-------|-----------|'
+  end
 
   scores.each do |name, data|
     p = data[:parse][:pass] ? 'PASS' : 'FAIL'
     c = data[:compat][:pass] ? 'PASS' : 'FAIL'
     f = "#{data[:format][:score]}%"
-    fi = data[:fidelity]['fidelity_score'] || 0
+    fi = data[:fidelity][expert ? 'outcome_fidelity_score' : 'fidelity_score'] || 0
     d = data[:fidelity]['detritus_score'] || 0
     s = data[:step_structure]['step_structure_score'] || 0
-    lines << "| #{name} | #{p} | #{c} | #{f} | #{fi} | #{d} | #{s} | #{data[:aggregate]} |"
+    if expert
+      sty = data[:style]&.dig('style_score') || 0
+      lines << "| #{name} | #{p} | #{c} | #{f} | #{fi} | #{d} | #{s} | #{sty} | #{data[:aggregate]} |"
+    else
+      lines << "| #{name} | #{p} | #{c} | #{f} | #{fi} | #{d} | #{s} | #{data[:aggregate]} |"
+    end
   end
 
   lines << '' << "**Overall:** #{avg} avg, #{worst} worst" << ''
@@ -366,11 +473,14 @@ def collect_issues(data)
   end
 
   %w[ingredients_missing ingredients_added quantities_changed instructions_dropped
-     instructions_rewritten detritus_retained prep_leaked_into_name].each do |key|
+     instructions_rewritten detritus_retained prep_leaked_into_name
+     technique_lost outcome_affected].each do |key|
     items = data[:fidelity][key]
     next if items.nil? || (items.respond_to?(:empty?) && items.empty?)
 
-    issues << "FIDELITY: #{key}: #{Array(items).join(', ')}"
+    outcome_keys = %w[technique_lost outcome_affected]
+    label = outcome_keys.include?(key) ? 'OUTCOME' : 'FIDELITY'
+    issues << "#{label}: #{key}: #{Array(items).join(', ')}"
   end
 
   %w[split_issues naming_issues ownership_issues flow_issues].each do |key|
@@ -378,6 +488,16 @@ def collect_issues(data)
     next if items.nil? || (items.respond_to?(:empty?) && items.empty?)
 
     issues << "STEPS: #{key}: #{Array(items).join(', ')}"
+  end
+
+  if data[:style]
+    %w[voice_issues condensation_issues specificity_issues title_issues
+       description_issues prose_issues footer_issues economy_issues].each do |key|
+      items = data[:style][key]
+      next if items.nil? || (items.respond_to?(:empty?) && items.empty?)
+
+      issues << "STYLE: #{key.delete_suffix('_issues')}: #{Array(items).join(', ')}"
+    end
   end
 
   issues
@@ -404,8 +524,12 @@ def run_evaluation
   puts "Label:       #{label}"
 
   system_prompt = load_prompt(opts[:prompt_path])
-  fidelity_rubric = File.read(File.join(BASE_DIR, 'scorers', 'fidelity_judge_prompt.md'))
-  step_rubric = File.read(File.join(BASE_DIR, 'scorers', 'step_structure_judge_prompt.md'))
+  fidelity_prompt = expert_mode?(opts) ? 'outcome_fidelity_judge_prompt.md' : 'fidelity_judge_prompt.md'
+  rubrics = {
+    fidelity: File.read(File.join(BASE_DIR, 'scorers', fidelity_prompt)),
+    step: File.read(File.join(BASE_DIR, 'scorers', 'step_structure_judge_prompt.md'))
+  }
+  rubrics[:style] = File.read(File.join(BASE_DIR, 'scorers', 'style_judge_prompt.md')) if expert_mode?(opts)
 
   iter_dir = File.join(RESULTS_DIR, "iteration_#{label}")
   output_dir = File.join(iter_dir, 'outputs')
@@ -415,7 +539,7 @@ def run_evaluation
   puts "Processing #{dirs.size} recipes...\n\n"
 
   results = parallel_map(dirs, opts[:concurrency]) do |dir|
-    process_recipe(dir, system_prompt, fidelity_rubric, step_rubric)
+    process_recipe(dir, system_prompt, rubrics, opts)
   end
 
   scores = {}
@@ -426,7 +550,7 @@ def run_evaluation
   end
 
   File.write(File.join(iter_dir, 'scores.json'), JSON.pretty_generate(scores))
-  avg, worst = write_summary(iter_dir, scores, output_dir)
+  avg, worst = write_summary(iter_dir, scores, output_dir, expert: expert_mode?(opts))
   state = update_state(label, avg, worst, opts[:prompt_path])
 
   puts "\nResults: #{iter_dir}/"
