@@ -249,8 +249,6 @@ export default class extends Controller {
   }
 
   focusDefault() {
-    const target = this.element.querySelector("[autofocus]")
-    if (target) { target.focus(); return }
     if (this.hasCloseButtonTarget) this.closeButtonTarget.focus()
   }
 
