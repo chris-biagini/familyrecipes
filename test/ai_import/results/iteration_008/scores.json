@@ -1,0 +1,1562 @@
+{
+  "03_blog_serious_eats_c": {
+    "parse": {
+      "pass": true,
+      "details": {
+        "title": "Beef Wellington",
+        "steps": 5,
+        "ingredients": 22,
+        "errors": []
+      }
+    },
+    "compat": {
+      "pass": true,
+      "details": {
+        "errors": []
+      }
+    },
+    "format": {
+      "score": 100.0,
+      "checks": [
+        {
+          "name": "ascii_fractions",
+          "pass": true
+        },
+        {
+          "name": "prep_notes_formatted",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "valid_front_matter",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_detritus",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "single_divider",
+          "pass": true
+        },
+        {
+          "name": "step_headers_format",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_code_fences",
+          "pass": true
+        },
+        {
+          "name": "ingredient_names_concise",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_en_dashes",
+          "pass": true
+        },
+        {
+          "name": "no_comment_bleed",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "informal_quantities_preserved",
+          "pass": true
+        },
+        {
+          "name": "step_splitting_appropriate",
+          "pass": true,
+          "failures": null
+        },
+        {
+          "name": "tags_from_valid_list",
+          "pass": true,
+          "failures": []
+        }
+      ]
+    },
+    "fidelity": {
+      "outcome_fidelity_score": 95,
+      "detritus_score": 95,
+      "ingredients_missing": [],
+      "ingredients_added": [],
+      "quantities_changed": [],
+      "technique_lost": [],
+      "outcome_affected": [],
+      "detritus_retained": []
+    },
+    "step_structure": {
+      "split_decision": "explicit",
+      "phase_design_issues": [
+        "Step 2 is quite dense — 9 ingredients and two distinct cooking operations (duxelles ~12 min, then foie gras searing in a separate pan) — but the foie gras fat → duxelles dependency and the semicolon name justify the grouping."
+      ],
+      "disentanglement_issues": [],
+      "ownership_issues": [
+        "Salt and pepper are listed only in step 1 but step 2 instructions say 'Season with salt and pepper' twice (for duxelles and foie gras); ubiquitous-ingredient exception applies but re-listing in step 2 would be cleaner."
+      ],
+      "naming_issues": [],
+      "step_structure_score": 98
+    },
+    "aggregate": 96.0,
+    "style": {
+      "voice_score": 13,
+      "voice_issues": [],
+      "condensation_score": 12,
+      "condensation_issues": [
+        "\"scraping up browned bits\" is a generic deglazing instruction, though brief enough to be minor"
+      ],
+      "specificity_score": 13,
+      "specificity_issues": [],
+      "title_score": 12,
+      "title_issues": [],
+      "description_score": 9,
+      "description_issues": [
+        "No description present — a punchy one-liner like \"Worth the effort.\" would be ideal for a complex holiday recipe; absence is more appropriate for simple recipes"
+      ],
+      "prose_score": 13,
+      "prose_issues": [],
+      "footer_score": 11,
+      "footer_issues": [
+        "Some substitution suggestions (spicy brown/hot English mustard, bourbon for cognac) may be AI-invented rather than sourced from the original Serious Eats recipe"
+      ],
+      "economy_score": 11,
+      "economy_issues": [
+        "\"stir to combine\" in the rendered fat instruction could be just \"stir in\"",
+        "\"Chill all components at least 30 minutes\" slightly redundant after multiple preceding \"refrigerate\" instructions"
+      ],
+      "style_score": 94
+    }
+  },
+  "04_blog_smitten_kitchen": {
+    "parse": {
+      "pass": true,
+      "details": {
+        "title": "Caramelized Onion and Gruyère Biscuits",
+        "steps": 2,
+        "ingredients": 13,
+        "errors": []
+      }
+    },
+    "compat": {
+      "pass": true,
+      "details": {
+        "errors": []
+      }
+    },
+    "format": {
+      "score": 100.0,
+      "checks": [
+        {
+          "name": "ascii_fractions",
+          "pass": true
+        },
+        {
+          "name": "prep_notes_formatted",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "valid_front_matter",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_detritus",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "single_divider",
+          "pass": true
+        },
+        {
+          "name": "step_headers_format",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_code_fences",
+          "pass": true
+        },
+        {
+          "name": "ingredient_names_concise",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_en_dashes",
+          "pass": true
+        },
+        {
+          "name": "no_comment_bleed",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "informal_quantities_preserved",
+          "pass": true
+        },
+        {
+          "name": "step_splitting_appropriate",
+          "pass": true,
+          "failures": null
+        },
+        {
+          "name": "tags_from_valid_list",
+          "pass": true
+        }
+      ]
+    },
+    "fidelity": {
+      "ingredients_missing": [],
+      "ingredients_added": [],
+      "quantities_changed": [],
+      "technique_lost": [],
+      "outcome_affected": [],
+      "detritus_retained": [
+        "\"Pretty much perfect.\" is condensed blog commentary about the author's opinion, not a description of the dish itself"
+      ],
+      "outcome_fidelity_score": 96,
+      "detritus_score": 95
+    },
+    "step_structure": {
+      "split_decision": "explicit",
+      "phase_design_issues": [
+        "Step 2 is quite dense — covers preheating, mixing dry ingredients, cutting butter, combining wet/dry, kneading, rolling/cutting, and baking — but these flow as one continuous biscuit-making workflow with no natural pause point, so the 2-step split is appropriate."
+      ],
+      "disentanglement_issues": [],
+      "ownership_issues": [],
+      "naming_issues": [],
+      "step_structure_score": 99
+    },
+    "aggregate": 96.7,
+    "style": {
+      "voice_score": 12,
+      "voice_issues": [
+        "\"a few floury spots are fine\" is slightly reassuring/hand-holdy, though it doubles as a useful visual cue"
+      ],
+      "condensation_score": 11,
+      "condensation_issues": [
+        "\"Buttermilk can be made at home\" in footer is generic advice without specifics",
+        "\"Line a baking sheet with parchment\" is a standard step most experienced cooks don't need"
+      ],
+      "specificity_score": 13,
+      "specificity_issues": [],
+      "title_score": 12,
+      "title_issues": [],
+      "description_score": 12,
+      "description_issues": [],
+      "prose_score": 13,
+      "prose_issues": [],
+      "footer_score": 10,
+      "footer_issues": [
+        "\"Buttermilk can be made at home\" is vague and generic — if from the source it would likely include the method (acid + milk ratio); as-is it reads like an invented addition"
+      ],
+      "economy_score": 12,
+      "economy_issues": [],
+      "style_score": 95
+    }
+  },
+  "05_blog_budget_bytes": {
+    "parse": {
+      "pass": true,
+      "details": {
+        "title": "Classic Meatloaf",
+        "steps": 2,
+        "ingredients": 14,
+        "errors": []
+      }
+    },
+    "compat": {
+      "pass": true,
+      "details": {
+        "errors": []
+      }
+    },
+    "format": {
+      "score": 100.0,
+      "checks": [
+        {
+          "name": "ascii_fractions",
+          "pass": true
+        },
+        {
+          "name": "prep_notes_formatted",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "valid_front_matter",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_detritus",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "single_divider",
+          "pass": true
+        },
+        {
+          "name": "step_headers_format",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_code_fences",
+          "pass": true
+        },
+        {
+          "name": "ingredient_names_concise",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_en_dashes",
+          "pass": true
+        },
+        {
+          "name": "no_comment_bleed",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "informal_quantities_preserved",
+          "pass": true
+        },
+        {
+          "name": "step_splitting_appropriate",
+          "pass": true,
+          "failures": null
+        },
+        {
+          "name": "tags_from_valid_list",
+          "pass": true
+        }
+      ]
+    },
+    "fidelity": {
+      "ingredients_missing": [],
+      "ingredients_added": [],
+      "quantities_changed": [
+        "Egg: '1 large egg' → 'Egg, 1' — dropped 'large' size specification"
+      ],
+      "technique_lost": [],
+      "outcome_affected": [
+        "Fabricated URL (budgetbytes.com) added to attribution — original only names Beth Moncel with no link"
+      ],
+      "detritus_retained": [
+        "Fabricated budgetbytes.com URL in attribution is non-source content"
+      ],
+      "outcome_fidelity_score": 94,
+      "detritus_score": 92
+    },
+    "step_structure": {
+      "split_decision": "explicit",
+      "phase_design_issues": [],
+      "disentanglement_issues": [],
+      "ownership_issues": [],
+      "naming_issues": [],
+      "step_structure_score": 99
+    },
+    "aggregate": 96.2,
+    "style": {
+      "voice_score": 13,
+      "voice_issues": [],
+      "condensation_score": 12,
+      "condensation_issues": [
+        "\"don't overwork\" is borderline generic meatloaf advice, though it's also recipe-specific enough to justify keeping"
+      ],
+      "specificity_score": 13,
+      "specificity_issues": [],
+      "title_score": 12,
+      "title_issues": [],
+      "description_score": 12,
+      "description_issues": [],
+      "prose_score": 13,
+      "prose_issues": [],
+      "footer_score": 10,
+      "footer_issues": [
+        "\"Use 80/20 ground beef — the fat content keeps the loaf from drying out\" is redundant with the ingredient list already specifying 80/20 and reads like an AI-added helpful tip",
+        "\"Reduce brown sugar to 1/2 tbsp if you prefer a less sweet glaze\" may be an invented substitution not present in the source"
+      ],
+      "economy_score": 12,
+      "economy_issues": [],
+      "style_score": 97
+    }
+  },
+  "06_blog_pioneer_woman": {
+    "parse": {
+      "pass": true,
+      "details": {
+        "title": "Beef-and-Bean Chili",
+        "steps": 2,
+        "ingredients": 14,
+        "errors": []
+      }
+    },
+    "compat": {
+      "pass": true,
+      "details": {
+        "errors": []
+      }
+    },
+    "format": {
+      "score": 100.0,
+      "checks": [
+        {
+          "name": "ascii_fractions",
+          "pass": true
+        },
+        {
+          "name": "prep_notes_formatted",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "valid_front_matter",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_detritus",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "single_divider",
+          "pass": true
+        },
+        {
+          "name": "step_headers_format",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_code_fences",
+          "pass": true
+        },
+        {
+          "name": "ingredient_names_concise",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_en_dashes",
+          "pass": true
+        },
+        {
+          "name": "no_comment_bleed",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "informal_quantities_preserved",
+          "pass": true
+        },
+        {
+          "name": "step_splitting_appropriate",
+          "pass": true,
+          "failures": null
+        },
+        {
+          "name": "tags_from_valid_list",
+          "pass": true
+        }
+      ]
+    },
+    "fidelity": {
+      "ingredients_missing": [],
+      "ingredients_added": [],
+      "quantities_changed": [],
+      "technique_lost": [],
+      "outcome_affected": [
+        "'ground cumin' simplified to 'cumin' and 'ground oregano' simplified to 'oregano' — an expert cook might use dried oregano leaves instead of ground, slightly changing texture"
+      ],
+      "detritus_retained": [],
+      "outcome_fidelity_score": 95,
+      "detritus_score": 95
+    },
+    "step_structure": {
+      "split_decision": "explicit",
+      "phase_design_issues": [
+        "Minor: the first step encompasses both browning (active work) and a 1-hour simmer (passive), which could justify a split, but combining them is defensible since the spice addition follows immediately in the same pot with no other work to do during the simmer."
+      ],
+      "disentanglement_issues": [],
+      "ownership_issues": [],
+      "naming_issues": [],
+      "step_structure_score": 99
+    },
+    "aggregate": 95.8,
+    "style": {
+      "voice_score": 12,
+      "voice_issues": [
+        "\"leaving a little for flavor\" is slightly explanatory/editorial, though still natural"
+      ],
+      "condensation_score": 11,
+      "condensation_issues": [
+        "\"Taste and adjust seasoning\" is generic cooking advice",
+        "\"leaving a little for flavor\" explains a common-sense rationale an experienced cook wouldn't need"
+      ],
+      "specificity_score": 13,
+      "specificity_issues": [],
+      "title_score": 12,
+      "title_issues": [],
+      "description_score": 10,
+      "description_issues": [
+        "No description present — chili is self-explanatory enough to justify absence, but a punchy one-liner (e.g. \"Ree Drummond's classic.\") would strengthen it"
+      ],
+      "prose_score": 13,
+      "prose_issues": [],
+      "footer_score": 10,
+      "footer_issues": [
+        "Cornmeal substitution may be AI-invented rather than from source",
+        "Attribution is clean and properly placed"
+      ],
+      "economy_score": 11,
+      "economy_issues": [
+        "\"leaving a little for flavor\" adds 5 words of rationale that could be cut — just \"Drain most fat\" implies keeping some"
+      ],
+      "style_score": 92
+    }
+  },
+  "07_blog_bon_appetit": {
+    "parse": {
+      "pass": true,
+      "details": {
+        "title": "Popover-Topped Pot Pie",
+        "steps": 3,
+        "ingredients": 25,
+        "errors": []
+      }
+    },
+    "compat": {
+      "pass": true,
+      "details": {
+        "errors": []
+      }
+    },
+    "format": {
+      "score": 100.0,
+      "checks": [
+        {
+          "name": "ascii_fractions",
+          "pass": true
+        },
+        {
+          "name": "prep_notes_formatted",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "valid_front_matter",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_detritus",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "single_divider",
+          "pass": true
+        },
+        {
+          "name": "step_headers_format",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_code_fences",
+          "pass": true
+        },
+        {
+          "name": "ingredient_names_concise",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_en_dashes",
+          "pass": true
+        },
+        {
+          "name": "no_comment_bleed",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "informal_quantities_preserved",
+          "pass": true
+        },
+        {
+          "name": "step_splitting_appropriate",
+          "pass": true,
+          "failures": null
+        },
+        {
+          "name": "tags_from_valid_list",
+          "pass": true,
+          "failures": []
+        }
+      ]
+    },
+    "fidelity": {
+      "ingredients_missing": [],
+      "ingredients_added": [],
+      "quantities_changed": [],
+      "technique_lost": [],
+      "outcome_affected": [],
+      "detritus_retained": [],
+      "outcome_fidelity_score": 97,
+      "detritus_score": 98
+    },
+    "step_structure": {
+      "split_decision": "explicit",
+      "phase_design_issues": [
+        "The 'Pour and bake' step has no ingredients and is relatively brief (two sentences), though it represents a genuinely distinct assembly/baking phase so this is a minor quibble."
+      ],
+      "disentanglement_issues": [],
+      "ownership_issues": [],
+      "naming_issues": [
+        "Both filling and batter steps use the generic 'Make the X' pattern; slightly more descriptive names like 'Cook vegetables; build the filling.' or 'Blend the popover batter.' would better convey the work involved."
+      ],
+      "step_structure_score": 97
+    },
+    "aggregate": 98.3,
+    "style": {
+      "voice_score": 13,
+      "voice_issues": [],
+      "condensation_score": 13,
+      "condensation_issues": [],
+      "specificity_score": 13,
+      "specificity_issues": [],
+      "title_score": 12,
+      "title_issues": [],
+      "description_score": 12,
+      "description_issues": [],
+      "prose_score": 13,
+      "prose_issues": [],
+      "footer_score": 12,
+      "footer_issues": [],
+      "economy_score": 12,
+      "economy_issues": [],
+      "style_score": 100
+    }
+  },
+  "08_agg_allrecipes": {
+    "parse": {
+      "pass": true,
+      "details": {
+        "title": "Cubano",
+        "steps": 3,
+        "ingredients": 17,
+        "errors": []
+      }
+    },
+    "compat": {
+      "pass": true,
+      "details": {
+        "errors": []
+      }
+    },
+    "format": {
+      "score": 100.0,
+      "checks": [
+        {
+          "name": "ascii_fractions",
+          "pass": true
+        },
+        {
+          "name": "prep_notes_formatted",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "valid_front_matter",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_detritus",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "single_divider",
+          "pass": true
+        },
+        {
+          "name": "step_headers_format",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_code_fences",
+          "pass": true
+        },
+        {
+          "name": "ingredient_names_concise",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_en_dashes",
+          "pass": true
+        },
+        {
+          "name": "no_comment_bleed",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "informal_quantities_preserved",
+          "pass": true
+        },
+        {
+          "name": "step_splitting_appropriate",
+          "pass": true,
+          "failures": null
+        },
+        {
+          "name": "tags_from_valid_list",
+          "pass": true
+        }
+      ]
+    },
+    "fidelity": {
+      "ingredients_missing": [],
+      "ingredients_added": [],
+      "quantities_changed": [
+        "ground coriander → Coriander (dropped 'ground' qualifier)"
+      ],
+      "technique_lost": [],
+      "outcome_affected": [],
+      "detritus_retained": [],
+      "outcome_fidelity_score": 96,
+      "detritus_score": 97
+    },
+    "step_structure": {
+      "split_decision": "explicit",
+      "phase_design_issues": [
+        "Step 1 is an optional sub-recipe (original offers 'or pulled pork' as alternative) presented as a regular mandatory step; the substitution note at the bottom partially mitigates this but the step itself gives no indication it can be skipped."
+      ],
+      "disentanglement_issues": [],
+      "ownership_issues": [],
+      "naming_issues": [],
+      "step_structure_score": 98
+    },
+    "aggregate": 97.6,
+    "style": {
+      "voice_score": 13,
+      "voice_issues": [],
+      "condensation_score": 12,
+      "condensation_issues": [
+        "\"for easier slicing\" is a minor explanatory aside, though it's recipe-specific (thin slicing requires chilled pork)"
+      ],
+      "specificity_score": 13,
+      "specificity_issues": [],
+      "title_score": 12,
+      "title_issues": [],
+      "description_score": 12,
+      "description_issues": [],
+      "prose_score": 13,
+      "prose_issues": [],
+      "footer_score": 11,
+      "footer_issues": [
+        "Cannot confirm the pulled pork substitution originates from the source recipe; may be invented"
+      ],
+      "economy_score": 12,
+      "economy_issues": [],
+      "style_score": 98
+    }
+  },
+  "10_agg_epicurious": {
+    "parse": {
+      "pass": true,
+      "details": {
+        "title": "Good Eats Beef Stew",
+        "steps": 2,
+        "ingredients": 12,
+        "errors": []
+      }
+    },
+    "compat": {
+      "pass": true,
+      "details": {
+        "errors": []
+      }
+    },
+    "format": {
+      "score": 100.0,
+      "checks": [
+        {
+          "name": "ascii_fractions",
+          "pass": true
+        },
+        {
+          "name": "prep_notes_formatted",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "valid_front_matter",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_detritus",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "single_divider",
+          "pass": true
+        },
+        {
+          "name": "step_headers_format",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_code_fences",
+          "pass": true
+        },
+        {
+          "name": "ingredient_names_concise",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_en_dashes",
+          "pass": true
+        },
+        {
+          "name": "no_comment_bleed",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "informal_quantities_preserved",
+          "pass": true
+        },
+        {
+          "name": "step_splitting_appropriate",
+          "pass": true,
+          "failures": null
+        },
+        {
+          "name": "tags_from_valid_list",
+          "pass": true
+        }
+      ]
+    },
+    "fidelity": {
+      "ingredients_missing": [],
+      "ingredients_added": [],
+      "quantities_changed": [
+        "Onion: '1 large yellow onion' → 'Onion, 1' — missing 'large' size and 'yellow' variety"
+      ],
+      "technique_lost": [],
+      "outcome_affected": [
+        "'freshly ground' dropped from black pepper descriptor — minor"
+      ],
+      "detritus_retained": [],
+      "outcome_fidelity_score": 93,
+      "detritus_score": 98
+    },
+    "step_structure": {
+      "split_decision": "explicit",
+      "phase_design_issues": [
+        "Step 1 covers a very long arc (paste → sear → 4-hour braise → drain → 2-hour cooling/freezing cycle) with multiple distinct sub-phases; separating the fat-separation/cooling into its own step or folding the meat prep into it would better match the natural rhythm of the recipe."
+      ],
+      "disentanglement_issues": [
+        "'Meanwhile, cut meat from bone' in step 2 preserves the source's interleaved structure — meat prep during the 30-minute potato simmer is a parallel operation that could have been placed at the end of step 1 (ribs are resting at room temperature) or given its own brief step."
+      ],
+      "ownership_issues": [],
+      "naming_issues": [],
+      "step_structure_score": 90
+    },
+    "aggregate": 94.7,
+    "style": {
+      "voice_score": 13,
+      "voice_issues": [],
+      "condensation_score": 13,
+      "condensation_issues": [],
+      "specificity_score": 13,
+      "specificity_issues": [],
+      "title_score": 12,
+      "title_issues": [],
+      "description_score": 8,
+      "description_issues": [
+        "No description present; this is a complex multi-hour braise-to-stew recipe that would benefit from a punchy one-liner (e.g. 'Short ribs braised into stew.')"
+      ],
+      "prose_score": 13,
+      "prose_issues": [],
+      "footer_score": 12,
+      "footer_issues": [],
+      "economy_score": 12,
+      "economy_issues": [],
+      "style_score": 96
+    }
+  },
+  "11_agg_nyt_style": {
+    "parse": {
+      "pass": true,
+      "details": {
+        "title": "No-Knead Bread",
+        "steps": 3,
+        "ingredients": 5,
+        "errors": []
+      }
+    },
+    "compat": {
+      "pass": true,
+      "details": {
+        "errors": []
+      }
+    },
+    "format": {
+      "score": 100.0,
+      "checks": [
+        {
+          "name": "ascii_fractions",
+          "pass": true
+        },
+        {
+          "name": "prep_notes_formatted",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "valid_front_matter",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_detritus",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "single_divider",
+          "pass": true
+        },
+        {
+          "name": "step_headers_format",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_code_fences",
+          "pass": true
+        },
+        {
+          "name": "ingredient_names_concise",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_en_dashes",
+          "pass": true
+        },
+        {
+          "name": "no_comment_bleed",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "informal_quantities_preserved",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "step_splitting_appropriate",
+          "pass": true,
+          "failures": null
+        },
+        {
+          "name": "tags_from_valid_list",
+          "pass": true
+        }
+      ]
+    },
+    "fidelity": {
+      "ingredients_missing": [],
+      "ingredients_added": [],
+      "quantities_changed": [
+        "Yield changed from 'One 1 1/2-pound loaf' to '1 loaf' — weight specification dropped"
+      ],
+      "technique_lost": [
+        "Original allows flour, wheat bran, or cornmeal for coating the towel and dusting the dough; OUTPUT narrows to only cornmeal (wheat bran offered as footer substitute, but flour option for towel coating is dropped)"
+      ],
+      "outcome_affected": [],
+      "detritus_retained": [],
+      "outcome_fidelity_score": 93,
+      "detritus_score": 97
+    },
+    "step_structure": {
+      "split_decision": "explicit",
+      "phase_design_issues": [],
+      "disentanglement_issues": [
+        "Preheating the oven (\"at least 30 minutes before dough is ready\") is a parallel operation that should begin during the 2-hour proof, but it's placed entirely in the Bake step. A cook reading linearly would finish the Shape/Proof step, wait 2 hours, then discover they should have started preheating 30 minutes ago. A note at the end of the proof step or a separate preheat mention would fully disentangle this."
+      ],
+      "ownership_issues": [],
+      "naming_issues": [
+        "\"Shape; proof.\" and \"Bake.\" are well-formed but quite terse — slightly more descriptive names like \"Shape dough; proof.\" or \"Bake in Dutch oven.\" would better describe the phase of work."
+      ],
+      "step_structure_score": 91
+    },
+    "aggregate": 94.8,
+    "style": {
+      "voice_score": 12,
+      "voice_issues": [
+        "\"it may look like a mess\" is slightly conversational/reassuring — borderline hedging"
+      ],
+      "condensation_score": 11,
+      "condensation_issues": [
+        "\"carefully remove pot\" — \"carefully\" is hand-holding",
+        "\"to prevent sticking\" explains the obvious",
+        "\"Cool on rack\" is generic/basic"
+      ],
+      "specificity_score": 13,
+      "specificity_issues": [],
+      "title_score": 12,
+      "title_issues": [],
+      "description_score": 12,
+      "description_issues": [],
+      "prose_score": 13,
+      "prose_issues": [],
+      "footer_score": 12,
+      "footer_issues": [],
+      "economy_score": 11,
+      "economy_issues": [
+        "\"carefully\" in \"carefully remove pot\" is filler",
+        "\"to prevent sticking\" is an unnecessary explanation",
+        "\"beautifully browned\" — \"beautifully\" is slightly editorializing"
+      ],
+      "style_score": 96
+    }
+  },
+  "12_ocr_biscuits": {
+    "parse": {
+      "pass": true,
+      "details": {
+        "title": "Buttermilk Biscuits",
+        "steps": 2,
+        "ingredients": 5,
+        "errors": []
+      }
+    },
+    "compat": {
+      "pass": true,
+      "details": {
+        "errors": []
+      }
+    },
+    "format": {
+      "score": 100.0,
+      "checks": [
+        {
+          "name": "ascii_fractions",
+          "pass": true
+        },
+        {
+          "name": "prep_notes_formatted",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "valid_front_matter",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_detritus",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "single_divider",
+          "pass": true
+        },
+        {
+          "name": "step_headers_format",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_code_fences",
+          "pass": true
+        },
+        {
+          "name": "ingredient_names_concise",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_en_dashes",
+          "pass": true
+        },
+        {
+          "name": "no_comment_bleed",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "informal_quantities_preserved",
+          "pass": true
+        },
+        {
+          "name": "step_splitting_appropriate",
+          "pass": true
+        },
+        {
+          "name": "tags_from_valid_list",
+          "pass": true
+        }
+      ]
+    },
+    "fidelity": {
+      "ingredients_missing": [],
+      "ingredients_added": [],
+      "quantities_changed": [],
+      "technique_lost": [],
+      "outcome_affected": [],
+      "detritus_retained": [],
+      "outcome_fidelity_score": 100,
+      "detritus_score": 100
+    },
+    "step_structure": {
+      "split_decision": "explicit",
+      "phase_design_issues": [
+        "Borderline implicit/explicit — recipe has exactly 5 ingredients, but the two distinct paragraphs of instructions (mix vs. shape/bake) justify explicit steps. Two steps is a reasonable fit."
+      ],
+      "disentanglement_issues": [],
+      "ownership_issues": [],
+      "naming_issues": [],
+      "step_structure_score": 97
+    },
+    "aggregate": 98.3,
+    "style": {
+      "voice_score": 13,
+      "voice_issues": [],
+      "condensation_score": 11,
+      "condensation_issues": [
+        "\"do not overmix\" is generic baking advice — an experienced cook knows not to overwork biscuit dough",
+        "\"lightly floured surface\" is standard/obvious for shaping any dough"
+      ],
+      "specificity_score": 13,
+      "specificity_issues": [],
+      "title_score": 12,
+      "title_issues": [],
+      "description_score": 11,
+      "description_issues": [
+        "No description present — acceptable for a simple classic, but a punchy one-liner would elevate it"
+      ],
+      "prose_score": 13,
+      "prose_issues": [],
+      "footer_score": 12,
+      "footer_issues": [],
+      "economy_score": 11,
+      "economy_issues": [
+        "\"stir just until dough comes together — do not overmix\" is slightly redundant — \"just until\" already implies minimal mixing"
+      ],
+      "style_score": 96
+    }
+  },
+  "13_ocr_beef_stew": {
+    "parse": {
+      "pass": true,
+      "details": {
+        "title": "Beef Stew",
+        "steps": 2,
+        "ingredients": 14,
+        "errors": []
+      }
+    },
+    "compat": {
+      "pass": true,
+      "details": {
+        "errors": []
+      }
+    },
+    "format": {
+      "score": 100.0,
+      "checks": [
+        {
+          "name": "ascii_fractions",
+          "pass": true
+        },
+        {
+          "name": "prep_notes_formatted",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "valid_front_matter",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_detritus",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "single_divider",
+          "pass": true
+        },
+        {
+          "name": "step_headers_format",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_code_fences",
+          "pass": true
+        },
+        {
+          "name": "ingredient_names_concise",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_en_dashes",
+          "pass": true
+        },
+        {
+          "name": "no_comment_bleed",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "informal_quantities_preserved",
+          "pass": true
+        },
+        {
+          "name": "step_splitting_appropriate",
+          "pass": true,
+          "failures": null
+        },
+        {
+          "name": "tags_from_valid_list",
+          "pass": true
+        }
+      ]
+    },
+    "fidelity": {
+      "ingredients_missing": [],
+      "ingredients_added": [],
+      "quantities_changed": [
+        "Onion: 'l large onion' → 'Onion, 1' — dropped 'large' size qualifier",
+        "Thyme: 'l teaspoon dried thyme' → 'Thyme, 1 tsp' — dropped 'dried' qualifier, ambiguous between fresh and dried"
+      ],
+      "technique_lost": [],
+      "outcome_affected": [],
+      "detritus_retained": [],
+      "outcome_fidelity_score": 93,
+      "detritus_score": 100
+    },
+    "step_structure": {
+      "split_decision": "explicit",
+      "phase_design_issues": [
+        "Minor: 'Remove bay leaves before serving' tacked onto the end of step 2 could justify a brief 'Finish and serve.' step (cf. calibration exemplar), but it's a single trivial instruction so folding it in is defensible."
+      ],
+      "disentanglement_issues": [],
+      "ownership_issues": [],
+      "naming_issues": [],
+      "step_structure_score": 99
+    },
+    "aggregate": 97.1,
+    "style": {
+      "voice_score": 13,
+      "voice_issues": [],
+      "condensation_score": 12,
+      "condensation_issues": [
+        "\"Remove bay leaves before serving\" is mild hand-holding — experienced cooks know to remove bay leaves"
+      ],
+      "specificity_score": 13,
+      "specificity_issues": [],
+      "title_score": 12,
+      "title_issues": [],
+      "description_score": 8,
+      "description_issues": [
+        "No description present — beef stew is a multi-step recipe with enough character to warrant a punchy one-liner (e.g. \"Classic Dutch oven comfort.\")"
+      ],
+      "prose_score": 13,
+      "prose_issues": [],
+      "footer_score": 12,
+      "footer_issues": [],
+      "economy_score": 12,
+      "economy_issues": [],
+      "style_score": 95
+    }
+  },
+  "15_clean_text_message": {
+    "parse": {
+      "pass": true,
+      "details": {
+        "title": "Guacamole",
+        "steps": 1,
+        "ingredients": 5,
+        "errors": []
+      }
+    },
+    "compat": {
+      "pass": true,
+      "details": {
+        "errors": []
+      }
+    },
+    "format": {
+      "score": 100.0,
+      "checks": [
+        {
+          "name": "ascii_fractions",
+          "pass": true
+        },
+        {
+          "name": "prep_notes_formatted",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "valid_front_matter",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_detritus",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "single_divider",
+          "pass": true
+        },
+        {
+          "name": "step_headers_format",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_code_fences",
+          "pass": true
+        },
+        {
+          "name": "ingredient_names_concise",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_en_dashes",
+          "pass": true
+        },
+        {
+          "name": "no_comment_bleed",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "informal_quantities_preserved",
+          "pass": true
+        },
+        {
+          "name": "step_splitting_appropriate",
+          "pass": true,
+          "failures": null
+        },
+        {
+          "name": "tags_from_valid_list",
+          "pass": true
+        }
+      ]
+    },
+    "fidelity": {
+      "ingredients_missing": [],
+      "ingredients_added": [],
+      "quantities_changed": [],
+      "technique_lost": [],
+      "outcome_affected": [],
+      "detritus_retained": [
+        "Footer note \"Use less jalapeño for milder heat\" — while traceable to the original's \"or less if u dont like spicy\", it's reformatted as a standalone tip/advice line rather than kept as part of the ingredient specification"
+      ],
+      "outcome_fidelity_score": 92,
+      "detritus_score": 88
+    },
+    "step_structure": {
+      "split_decision": "implicit",
+      "phase_design_issues": [],
+      "disentanglement_issues": [],
+      "ownership_issues": [],
+      "naming_issues": [],
+      "step_structure_score": 100
+    },
+    "aggregate": 94.5,
+    "style": {
+      "voice_score": 13,
+      "voice_issues": [],
+      "condensation_score": 11,
+      "condensation_issues": [
+        "Footer tip 'Use less jalapeño for milder heat' is common-sense advice — anyone who knows what a jalapeño is knows this"
+      ],
+      "specificity_score": 13,
+      "specificity_issues": [],
+      "title_score": 12,
+      "title_issues": [],
+      "description_score": 12,
+      "description_issues": [],
+      "prose_score": 13,
+      "prose_issues": [],
+      "footer_score": 10,
+      "footer_issues": [
+        "'Use less jalapeño for milder heat' reads like an AI-added common-sense tip rather than source content"
+      ],
+      "economy_score": 10,
+      "economy_issues": [
+        "'keep it chunky' appears in both the description and the instructions — redundant restatement"
+      ],
+      "style_score": 94
+    }
+  },
+  "16_clean_email": {
+    "parse": {
+      "pass": true,
+      "details": {
+        "title": "Mom's Chicken Soup",
+        "steps": 3,
+        "ingredients": 11,
+        "errors": []
+      }
+    },
+    "compat": {
+      "pass": true,
+      "details": {
+        "errors": []
+      }
+    },
+    "format": {
+      "score": 100.0,
+      "checks": [
+        {
+          "name": "ascii_fractions",
+          "pass": true
+        },
+        {
+          "name": "prep_notes_formatted",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "valid_front_matter",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_detritus",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "single_divider",
+          "pass": true
+        },
+        {
+          "name": "step_headers_format",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_code_fences",
+          "pass": true
+        },
+        {
+          "name": "ingredient_names_concise",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "no_en_dashes",
+          "pass": true
+        },
+        {
+          "name": "no_comment_bleed",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "name": "informal_quantities_preserved",
+          "pass": true
+        },
+        {
+          "name": "step_splitting_appropriate",
+          "pass": true
+        },
+        {
+          "name": "tags_from_valid_list",
+          "pass": true
+        }
+      ]
+    },
+    "fidelity": {
+      "ingredients_missing": [],
+      "ingredients_added": [],
+      "quantities_changed": [
+        "Onion: '1 large onion' → 'Onion, 1' — dropped 'large' qualifier"
+      ],
+      "technique_lost": [],
+      "outcome_affected": [
+        "Dill listed as 'Dill, a few sprigs' instead of 'fresh dill' — though 'sprigs' implies fresh, the explicit 'fresh' qualifier was dropped"
+      ],
+      "detritus_retained": [],
+      "outcome_fidelity_score": 92,
+      "detritus_score": 97
+    },
+    "step_structure": {
+      "split_decision": "explicit",
+      "phase_design_issues": [
+        "Step 2 packs several distinct operations (remove chicken, cool, shred, discard bones, optionally strain broth, add vegetables, cook, return chicken) — could arguably split 'shred chicken' from 'build soup', though they do flow as one continuous post-simmer phase."
+      ],
+      "disentanglement_issues": [],
+      "ownership_issues": [
+        "Lemon is listed as an ingredient in Step 3 but its only usage instruction appears in the footer note below the separator, slightly disconnecting the ingredient from its serving context."
+      ],
+      "naming_issues": [],
+      "step_structure_score": 98
+    },
+    "aggregate": 96.3,
+    "style": {
+      "voice_score": 11,
+      "voice_issues": [
+        "\"Strain broth if desired\" — \"if desired\" is hedging language, similar to flagged patterns like \"if you like\""
+      ],
+      "condensation_score": 12,
+      "condensation_issues": [
+        "\"to prevent mushiness\" is borderline explanatory, though it is recipe-specific advice about serving noodles separately"
+      ],
+      "specificity_score": 13,
+      "specificity_issues": [],
+      "title_score": 12,
+      "title_issues": [],
+      "description_score": 12,
+      "description_issues": [],
+      "prose_score": 13,
+      "prose_issues": [],
+      "footer_score": 11,
+      "footer_issues": [
+        "\"Lemon is squeezed at the table\" uses passive voice — imperative \"Squeeze lemon at the table\" would match the recipe's voice better"
+      ],
+      "economy_score": 12,
+      "economy_issues": [],
+      "style_score": 96
+    }
+  }
+}

@@ -1,5 +1,6 @@
 {
   "source": "https://smittenkitchen.com/caramelized-onion-and-gruyere-biscuits",
   "expected_steps": "implicit",
+  "expected_steps_expert": "explicit",
   "category": "blog"
 }

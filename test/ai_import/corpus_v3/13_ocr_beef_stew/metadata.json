@@ -1,5 +1,6 @@
 {
   "source": "Hand-crafted OCR simulation of a beef stew with ingredient groups",
   "expected_steps": "explicit",
+  "expected_steps_expert": "explicit",
   "category": "ocr"
 }

@@ -22,10 +22,14 @@ panels, "Did you make this?" prompts, video embed placeholders.
 **Do NOT hallucinate.** If the source text is incomplete — missing quantities,
 vague on instructions, or only provides a summary — work with what is
 actually there. Do not fill in missing quantities from your knowledge.
+Do not fabricate descriptions, tags, footer tips, URLs, or any content not
+traceable to specific text in the source.
 
 **Detritus means non-recipe content only.** Reader comments, blog author
-replies to comments, and tips found in comment sections are NOT part of the
-recipe — strip them.
+replies to comments, tips found in comment sections, and content from blog
+preamble or personal narrative are NOT part of the recipe — strip them.
+A fact mentioned only in the blog story (not the recipe itself) is not a
+recipe fact.
 
 Output ONLY the Markdown recipe. No commentary, no explanation, no code
 fences.
@@ -71,6 +75,10 @@ A single short sentence immediately after the title. Punchy, casual, and
 personal — a quip or brief characterization. Keep it under ~10 words.
 Think kitchen Post-it, not food blog.
 
+The description must be grounded in the source or the recipe itself — a
+factual characterization of what the recipe IS, not an invented quip. If
+the source doesn't inspire one, omit the description entirely.
+
 Good: "Worth the effort.", "Better than the box.", "Comfort food, fast."
 Bad: "A delicious and easy recipe the whole family will love."
 
@@ -88,10 +96,11 @@ Bad: "A delicious and easy recipe the whole family will love."
   If the source gives a range, use the lower number. Only include if the
   source specifies servings. Don't fabricate a number.
 - **Category** — one of: {{CATEGORIES}}. If none fit, use Miscellaneous.
-- **Tags** — Choose from: {{TAGS}}. Apply a tag ONLY if the recipe's
-  cooking method or primary ingredient makes it undeniable (e.g., a recipe
-  that grills meat → "grilled"; a recipe with no animal products → "vegan").
-  When in doubt, omit the Tags line entirely.
+- **Tags** — Choose from: {{TAGS}}. Apply a tag ONLY if the source text
+  explicitly states or clearly implies it (e.g., source says "vegetarian"
+  or "great for weeknights"). Do not infer tags from ingredients or
+  cooking methods — the reader can see those for themselves. When in
+  doubt, omit the Tags line entirely.
 
 ### Steps
 
@@ -105,16 +114,28 @@ step as a *phase* — "Make the dough.", "Cook the sauce.", "Assemble and bake."
 source scatters related operations across numbered steps, consolidate them.
 A typical recipe has 2–5 steps.
 
-**How to split steps:**
-- Follow natural phase changes in the source: prep vs. cook vs. assemble, or
-  distinct components (dough vs. filling vs. glaze).
-- If the source already groups things into sections ("For the marinade", "For
-  the sauce"), those map naturally to steps.
-- A typical recipe has 2–5 steps. Fewer is fine. More than 5 is a smell.
+**How to split steps:** Steps are phases of work, not individual actions.
+A single step chains multiple actions in prose.
+- Follow natural phase changes: prep vs. cook vs. assemble, or distinct
+  components (dough vs. filling vs. glaze).
+- If the source already groups things into sections ("For the marinade",
+  "For the sauce"), those map naturally to steps.
+- **Disentangle interleaved operations.** If the source says "while the
+  beans simmer, cook rice" or "meanwhile, prepare the salad," separate
+  these into distinct steps. Parallel operations get their own phases.
+  The word "meanwhile" in your output is a sign you should split into
+  separate steps instead.
+- Use **semicolons in headings** to join related sub-actions:
+  `## Cook pasta; combine with sauce.`
+- **`## Finish and serve.`** is the standard final-step pattern when there's
+  last-minute seasoning or plating.
+- **`## Advance prep:`** prefix for things done ahead of time (e.g.,
+  `## Advance prep: cook farro.`).
+- A typical recipe has 2-5 steps. Fewer is fine. More than 5 is a smell.
 - If the recipe is straightforward with no natural breakpoints, use a single
   step or even the implicit-step format (no ## heading).
-- **When in doubt, split into fewer steps.** A step should represent a
-  genuinely distinct phase, not just "the next few numbered instructions."
+- **When in doubt, fewer steps.** A step represents a genuinely distinct
+  phase, not just "the next few numbered instructions."
 
 Each step starts with a level-two heading:
 
@@ -160,9 +181,9 @@ Examples:
 - Don't over-qualify defaults: "Onion" not "Onion (yellow)", "Egg" not "Egg
   (large)", "Cinnamon" not "Cinnamon (ground)", "Cumin" not "Cumin (ground)".
   Ground is the default for dry spices.
-- Qualify sugar when the source specifies the type: "Sugar (brown)",
-  "Sugar (powdered)". If the source just says "sugar" with no qualifier,
-  write `- Sugar` — do not add "(white)".
+- Always qualify sugar: "Sugar (white)" or "Sugar (brown)". Never bare
+  "Sugar". If the source just says "sugar" with no qualifier, use
+  "Sugar (white)".
 - Don't use qualifiers for preparation instructions, except where the
   qualifiers distinguish between variations that often are sold pre-prepared.
   For example, "Chicken thighs (boneless, skinless)" is appropriate, but "Apples
@@ -212,17 +233,15 @@ Do NOT use prep notes for:
 **Optional ingredients:** Keep them as proper ingredient lines with
 `Optional.` as the prep note. Example: `- Walnuts, 1/2 cup: Optional.`
 
-**Units — preserve the source's units:**
-- Do NOT convert between unit systems. If the source says "1 cup flour", write
-  "1 cup". If it says "300 g flour", write "300 g". If it gives both, use
-  whichever appears first.
-- Do NOT convert the source's fraction forms to decimals. If the source says
-  "3/4 cm", keep "3/4 cm" — don't write "0.75 cm".
-- Normalize abbreviations: TBSP → tbsp, tsp. → tsp, Cups → cups.
+**Units — steer toward recognized forms:**
+- Normalize abbreviations to system-recognized forms: `tbsp`, `tsp`, `cup`,
+  `oz`, `lb`, `g`, `ml`, `fl oz`, `pt`, `qt`, `gal`. Write `1 tbsp` not
+  `1 tablespoon`, `2 cups` not `2 C.`, `8 oz` not `8 ounces`.
+- Do NOT convert between unit systems — if the source says cups, keep cups;
+  if grams, keep grams. If the source gives both, use whichever appears
+  first.
 - Always put a space before the unit: "115 g" not "115g".
-- If a source offers both a metric and imperial measurement, use the metric.
-  Note the imperial equivalents in the footer, e.g., "Imperial equivalents:
-  7 1/2 cups flour, 3 cups water."
+- Use `g` not `kg` — write `1350 g` not `1.35 kg`.
 
 ### Instructions
 
@@ -230,8 +249,9 @@ After the ingredients, write instructions as prose paragraphs in imperative
 mood. Condense for an experienced cook who doesn't need basics explained.
 
 **Voice — terse, confident, direct:**
-- Drop articles aggressively: "Add to skillet" not "Add to the skillet."
-  "Melt butter in large pan" not "Melt butter in a large pan."
+- Drop articles where natural: "Add to skillet" not "Add to the skillet."
+  But retain where dropping sounds robotic — "Allow to rest" is fine,
+  "Allow rest" is not. Terse but human, not telegraphic.
 - Compress verbose sequences: three paragraphs about dicing and sautéing an
   onion becomes "Dice onion. Sauté in oil until softened."
 - Omit obvious basics: "wash your hands", "gather your ingredients",
@@ -268,11 +288,20 @@ Use exactly ONE `---` divider — all footer content (garnish notes, alternative
 attribution) goes below it as a single block.
 
 If the source names an author or publication, credit them in the footer.
+Always use this exact phrasing: "Based on a recipe from [Source Name]."
+or, if the source provides a URL: "Based on a recipe from [Source Name](URL)."
+Never "Adapted from" or "Inspired by." Never fabricate a URL — only include
+one if the source text contains it.
 
 **Preserve useful context from the source** in the footer: ingredient
-preferences, substitution options, storage tips.  These affect the outcome and
-shouldn't be silently dropped. Do not add substitution suggestions or tips
-that are not present in the source text.
+preferences, substitution options, storage tips. These affect the outcome and
+shouldn't be silently dropped.
+
+**Do not fabricate footer content.** Every footer statement must trace back
+to specific text in the source. Do not add substitution suggestions, storage
+advice, serving tips, or any other content not present in the source text.
+If you cannot point to where in the source a footer note came from, do not
+include it.
 
 ## Common Mistakes — Do Not Make These
 
@@ -280,7 +309,6 @@ that are not present in the source text.
 - Over-qualifying: `Onion (yellow)`, `Egg (large)`, `Cinnamon (ground)`.
 - `Sugar (granulated)` → always `Sugar (white)`.
 - `Vanilla, 1 tsp` → always `Vanilla extract, 1 tsp`.
-- `Sugar (granulated)` → use `Sugar (white)` when the source specifies granulated.
 - `## Make the Dough.` → sentence case: `## Make the dough.`
 - `- Onion, 1: diced` → capitalize prep: `- Onion, 1: Diced.`
 - State-change qualifiers: `Coconut oil (melted)` → prep note: `Coconut
@@ -299,6 +327,15 @@ that are not present in the source text.
 - `"Add the butter to the pan"` → drop articles: `"Add butter to pan."`
 - `"you will want to"` → just the imperative: omit "you"
 - `"approximately 5 minutes"` → `"about 5 minutes"`
+- `1.35 kg` → use grams: `1350 g`. Always grams, never kilograms.
+- `Ground cinnamon` → just `Cinnamon`. `Fresh parsley` → just `Parsley`.
+  Default-form adjectives are unnecessary.
+- Storage or make-ahead tips in step instructions → move to footer.
+- `Makes: 6 cups` without a noun → `Makes: 6 cups granola`. Always include
+  a unit noun with Makes.
+- `Adapted from` or `Inspired by` → always `Based on a recipe from`.
+- `1 tablespoon` → system abbreviation: `1 tbsp`. Same for `teaspoon` →
+  `tsp`, `ounces` → `oz`, `pounds` → `lb`.
 
 ## Complete Example
 

@@ -1,5 +1,6 @@
 {
   "source": "https://cooking.nytimes.com/recipes/no-knead-bread",
   "expected_steps": "ambiguous",
+  "expected_steps_expert": "explicit",
   "category": "aggregator"
 }

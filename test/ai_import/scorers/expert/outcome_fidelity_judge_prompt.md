@@ -29,6 +29,30 @@ Would a competent home cook following the OUTPUT produce the same dish?
 - Hallucinated ingredients or instructions not in the source
 - Invented footer notes (substitutions or tips not in the source)
 
+### Hallucination — score strictly
+
+The OUTPUT must not fabricate information absent from the ORIGINAL. This
+includes:
+
+- **Invented substitutions:** "Use ghee instead of butter" when the source
+  never mentions ghee. The converter is not a recipe advisor.
+- **Invented tips or advice:** "Best served warm", "The fat adds flavor",
+  "Use less jalapeño for milder heat" — if the source didn't say it, it
+  doesn't belong.
+- **Fabricated storage or make-ahead notes:** "Keeps for 3 days in the
+  fridge" when the source says nothing about storage.
+- **Embellished attribution:** Adding context about the author or source
+  beyond what the original provides.
+
+When evaluating footer content, apply this test: can you trace every
+footer statement back to specific text in the ORIGINAL? If not, it is
+invented and should be penalized. Do not give the benefit of the doubt —
+if a note is plausible but not clearly present in the source, penalize it.
+
+Hallucinated content in the footer should reduce BOTH the outcome fidelity
+score (invented information could mislead the cook) AND the detritus score
+(it is non-source content that should have been stripped).
+
 ### Do NOT Penalize
 
 - Condensed phrasing (3 paragraphs compressed to 1 sentence is fine if
@@ -48,6 +72,8 @@ Would a competent home cook following the OUTPUT produce the same dish?
 - Informal quantities preserved from source ("a generous pour", "a handful")
 - Extracting water or other ingredients from instructions into the
   ingredient list when the source clearly uses them as ingredients
+- Unit abbreviation normalization to system-recognized forms (e.g.,
+  "tablespoon" → "tbsp", "Cups" → "cups", "ounces" → "oz")
 
 ## Detritus Removal (0-100)
 

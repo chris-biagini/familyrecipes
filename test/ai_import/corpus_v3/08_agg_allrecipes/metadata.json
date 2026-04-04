@@ -1,5 +1,6 @@
 {
   "source": "https://www.allrecipes.com/cubano-from-chef-recipe",
   "expected_steps": "implicit",
+  "expected_steps_expert": "explicit",
   "category": "aggregator"
 }

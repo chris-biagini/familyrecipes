@@ -1,0 +1,49 @@
+{
+  "iterations": [
+    {
+      "label": "001",
+      "avg": 95.0,
+      "worst": 92.7,
+      "prompt_sha": "8b69056657b92291bfda43e264f662b4e6171eb4",
+      "prompt_lines": 451
+    },
+    {
+      "label": "007",
+      "avg": 96.0,
+      "worst": 94.4,
+      "prompt_sha": "823443f40b46b23589170e83de0b18d9342ff6f9",
+      "prompt_lines": 467
+    },
+    {
+      "label": "008",
+      "avg": 96.4,
+      "worst": 94.5,
+      "prompt_sha": "79e69e4f24d0f97d04a6233ec52095e86fa1b79f",
+      "prompt_lines": 473
+    },
+    {
+      "label": "009",
+      "avg": 96.2,
+      "worst": 94.3,
+      "prompt_sha": "72e7fa20ad4d514906f1c3c4bb2168ace50ab06e",
+      "prompt_lines": 475
+    },
+    {
+      "label": "010",
+      "avg": 96.8,
+      "worst": 94.6,
+      "prompt_sha": "20ee33308bc23114f95ed3fbdc4c1f605cce9633",
+      "prompt_lines": 467
+    },
+    {
+      "label": "011",
+      "avg": 96.6,
+      "worst": 94.6,
+      "prompt_sha": "20ee33308bc23114f95ed3fbdc4c1f605cce9633",
+      "prompt_lines": 467
+    }
+  ],
+  "best_iteration": "010",
+  "best_avg": 96.8,
+  "patience": 1
+}
