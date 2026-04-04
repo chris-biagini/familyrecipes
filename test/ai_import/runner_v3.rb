@@ -119,6 +119,19 @@ STEP_STRUCTURE_SCHEMA = {
   required: %w[step_structure_score]
 }.freeze
 
+EXPERT_STEP_STRUCTURE_SCHEMA = {
+  type: 'object',
+  properties: {
+    split_decision: { type: 'string' },
+    phase_design_issues: { type: 'array', items: { type: 'string' } },
+    disentanglement_issues: { type: 'array', items: { type: 'string' } },
+    ownership_issues: { type: 'array', items: { type: 'string' } },
+    naming_issues: { type: 'array', items: { type: 'string' } },
+    step_structure_score: { type: 'integer' }
+  },
+  required: %w[step_structure_score]
+}.freeze
+
 # --- CLI ---
 
 def parse_args
@@ -216,9 +229,9 @@ def judge_fidelity(rubric, original, output)
   result[:json] || default_fidelity_error('structured response missing')
 end
 
-def judge_step_structure(rubric, original, output)
+def judge_step_structure(rubric, original, output, schema: STEP_STRUCTURE_SCHEMA)
   user_msg = "## ORIGINAL\n\n#{original}\n\n## OUTPUT\n\n#{output}"
-  result = call_claude(user_msg, system_prompt: rubric, json_schema: STEP_STRUCTURE_SCHEMA)
+  result = call_claude(user_msg, system_prompt: rubric, json_schema: schema)
   return default_step_error(result[:error]) if result[:error]
 
   result[:json] || default_step_error('structured response missing')
@@ -260,6 +273,7 @@ def process_recipe(dir, system_prompt, rubrics, opts)
   input_text = File.read(File.join(dir, 'input.txt'))
   metadata = load_metadata(dir)
   expert = expert_mode?(opts)
+  metadata['expected_steps'] = metadata['expected_steps_expert'] if expert && metadata.key?('expected_steps_expert')
 
   puts "[#{name}] Importing..."
   import = import_recipe(system_prompt, input_text)
@@ -284,7 +298,8 @@ def process_recipe(dir, system_prompt, rubrics, opts)
              end
 
   puts "  [#{name}] Layer 4: step structure judge..."
-  step = judge_step_structure(rubrics[:step], input_text, output_text)
+  step_schema = expert ? EXPERT_STEP_STRUCTURE_SCHEMA : STEP_STRUCTURE_SCHEMA
+  step = judge_step_structure(rubrics[:step], input_text, output_text, schema: step_schema)
 
   style = nil
   if expert
@@ -483,7 +498,8 @@ def collect_issues(data)
     issues << "#{label}: #{key}: #{Array(items).join(', ')}"
   end
 
-  %w[split_issues naming_issues ownership_issues flow_issues].each do |key|
+  %w[split_issues naming_issues ownership_issues flow_issues
+     phase_design_issues disentanglement_issues].each do |key|
     items = data[:step_structure][key]
     next if items.nil? || (items.respond_to?(:empty?) && items.empty?)
 
@@ -524,12 +540,13 @@ def run_evaluation
   puts "Label:       #{label}"
 
   system_prompt = load_prompt(opts[:prompt_path])
+  mode_dir = File.join(BASE_DIR, 'scorers', expert_mode?(opts) ? 'expert' : 'faithful')
   fidelity_prompt = expert_mode?(opts) ? 'outcome_fidelity_judge_prompt.md' : 'fidelity_judge_prompt.md'
   rubrics = {
-    fidelity: File.read(File.join(BASE_DIR, 'scorers', fidelity_prompt)),
-    step: File.read(File.join(BASE_DIR, 'scorers', 'step_structure_judge_prompt.md'))
+    fidelity: File.read(File.join(mode_dir, fidelity_prompt)),
+    step: File.read(File.join(mode_dir, 'step_structure_judge_prompt.md'))
   }
-  rubrics[:style] = File.read(File.join(BASE_DIR, 'scorers', 'style_judge_prompt.md')) if expert_mode?(opts)
+  rubrics[:style] = File.read(File.join(mode_dir, 'style_judge_prompt.md')) if expert_mode?(opts)
 
   iter_dir = File.join(RESULTS_DIR, "iteration_#{label}")
   output_dir = File.join(iter_dir, 'outputs')
