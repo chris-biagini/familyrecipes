@@ -7,7 +7,7 @@
 # Collaborators:
 # - All ERB templates that render icons (nav, editors, buttons)
 # - config/html_safe_allowlist.yml: the .html_safe call is audited
-module IconHelper
+module IconHelper # rubocop:disable Metrics/ModuleLength
   DEFAULTS = {
     'fill' => 'none',
     'stroke' => 'currentColor',
