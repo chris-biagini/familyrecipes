@@ -103,7 +103,7 @@ export default class extends Controller {
       case "all": return true
       case "complete": return row.dataset.status === "complete"
       case "custom": return row.dataset.source === "custom"
-      case "no_aisle": return !row.dataset.aisle
+      case "no_aisle": return !row.dataset.aisle && row.dataset.omit !== "true"
       case "no_nutrition": return row.dataset.hasNutrition === "false"
       case "no_density": return row.dataset.hasDensity === "false"
       case "not_resolvable": return row.dataset.resolvable === "false"

@@ -74,7 +74,7 @@ class IngredientRowBuilder # rubocop:disable Metrics/ClassLength
     { total: rows.size,
       complete: rows.count { |r| r[:status] == 'complete' },
       custom: rows.count { |r| r[:source] == 'custom' },
-      missing_aisle: rows.count { |r| r[:aisle].blank? },
+      missing_aisle: rows.count { |r| r[:aisle].blank? && !r[:omit_from_shopping] },
       missing_nutrition: rows.count { |r| !r[:has_nutrition] },
       missing_density: rows.count { |r| !r[:has_density] } }
   end
@@ -112,11 +112,12 @@ class IngredientRowBuilder # rubocop:disable Metrics/ClassLength
   def ingredient_row(name, recs)
     entry = @resolver.catalog_entry(name)
     units = collect_units_for(name)
-    all_resolvable = entry&.basis_grams.present? && units.all? { |u| unit_resolvable?(u, entry) }
+    all_resolvable = units.empty? || (entry&.basis_grams.present? && units.all? { |u| unit_resolvable?(u, entry) })
     { name:, entry:, recipe_count: recs.size, recipes: recs,
       has_nutrition: entry&.basis_grams.present?,
       has_density: entry&.density_grams.present?,
       aisle: entry&.aisle,
+      omit_from_shopping: entry&.omit_from_shopping || false,
       source: entry_source(entry),
       status: row_status(entry),
       resolvable: all_resolvable }
@@ -177,7 +178,8 @@ class IngredientRowBuilder # rubocop:disable Metrics/ClassLength
     recipes.each_with_object(Hash.new { |h, k| h[k] = Set.new }) do |recipe, map|
       recipe.ingredients.each do |ingredient|
         name = canonical_ingredient_name(ingredient.name)
-        map[name] << ingredient.quantity_unit
+        unit = ingredient.quantity_unit
+        map[name] << unit if unit || ingredient.quantity_low
       end
     end
   end

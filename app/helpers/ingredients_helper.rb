@@ -21,8 +21,8 @@ module IngredientsHelper
     when 'via density'          then 'volume conversion'
     when 'weight'               then 'standard weight'
     when 'no density'           then 'no volume conversion'
-    when 'no portion'           then 'no matching unit — add one above?'
-    when 'no ~unitless portion' then "no 'each' weight — add one above?"
+    when 'no portion'           then 'no matching unit — add one below'
+    when 'no ~unitless portion' then "no 'each' weight — add one below"
     when /\Avia (.+)\z/
       name = Regexp.last_match(1)
       grams = entry&.portions&.dig(name)

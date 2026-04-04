@@ -490,4 +490,38 @@ class IngredientRowBuilderTest < ActiveSupport::TestCase
     assert_not bare_entry[:resolvable]
     assert_equal 'no nutrition data', bare_entry[:method]
   end
+
+  test 'needed_units excludes unitless entry for ingredients with no quantity' do
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Simple Pasta
+
+      ## Cook (boil)
+
+      - Olive oil
+
+      Cook.
+    MD
+
+    builder = IngredientRowBuilder.new(kitchen: @kitchen)
+    units = builder.needed_units('Olive oil')
+
+    assert_empty units
+  end
+
+  test 'needed_units excludes unitless entry for descriptive quantities' do
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Tomato Sauce
+
+      ## Cook (simmer)
+
+      - Basil, a few leaves
+
+      Cook.
+    MD
+
+    builder = IngredientRowBuilder.new(kitchen: @kitchen)
+    units = builder.needed_units('Basil')
+
+    assert_empty units
+  end
 end

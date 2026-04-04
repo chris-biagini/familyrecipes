@@ -1,6 +1,7 @@
 <%# locals: (ingredient_name:, entry:, available_aisles:, sources: [], needed_units: [], has_usda_key: false) %>
 <% has_density = entry&.density_grams.present? %>
-<% all_resolved = needed_units.empty? || needed_units.all? { |nu| nu[:resolvable] } %>
+<% has_unresolved = needed_units.any? { |nu| !nu[:resolvable] } %>
+<% conversions_icon = has_unresolved ? :x_mark : (has_density ? :check : :alert) %>
 <turbo-frame id="nutrition-editor-form">
   <div class="editor-form" data-nutrition-editor-target="formContent">
 
@@ -143,7 +144,7 @@
         <summary>
           Conversions
           <span class="editor-summary-meta">
-            <%= icon(all_resolved ? :check : :alert, size: 14) %>
+            <%= icon(conversions_icon, size: 14) %>
           </span>
         </summary>
       </details>
@@ -197,7 +198,7 @@
                    aria-label="Weight in grams">
             <span class="editor-field-unit">g</span>
           </div>
-          <div class="derived-volumes" data-nutrition-editor-target="derivedVolumes"></div>
+
 
           <details class="editor-density-candidates" hidden data-nutrition-editor-target="densityCandidates">
             <summary class="editor-section-title">Other USDA densities</summary>

@@ -29,13 +29,13 @@ class IngredientsHelperTest < ActionView::TestCase
   end
 
   test "formats 'no portion' with actionable prompt" do
-    assert_equal 'no matching unit — add one above?', format_resolution_method('no portion', nil)
+    assert_equal 'no matching unit — add one below', format_resolution_method('no portion', nil)
   end
 
   test "formats 'no ~unitless portion' with each language" do
     result = format_resolution_method('no ~unitless portion', nil)
 
-    assert_equal "no 'each' weight — add one above?", result
+    assert_equal "no 'each' weight — add one below", result
   end
 
   test "formats 'via ~unitless' with gram weight from entry" do

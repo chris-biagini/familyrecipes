@@ -28,7 +28,7 @@ export default class extends Controller {
     "portionList", "portionRow", "portionName", "portionGrams",
     "aisleSelect", "aisleInput", "omitCheckbox",
     "aliasList", "aliasInput", "aliasChip", "aliasHint",
-    "nutrientSummary", "nutrientDetail", "derivedVolumes",
+    "nutrientSummary", "nutrientDetail",
     "usdaPanel", "usdaQuery", "usdaResults", "usdaSearchBtn",
     "densityCandidates", "densityCandidateList"
   ]
@@ -176,7 +176,7 @@ export default class extends Controller {
     const nameInput = document.createElement("input")
     nameInput.type = "text"
     nameInput.className = "input-base"
-    nameInput.placeholder = "e.g. stick, slice"
+    nameInput.placeholder = "e.g. stick, slice, each"
     nameInput.setAttribute("data-nutrition-editor-target", "portionName")
     nameInput.setAttribute("aria-label", "Portion name")
 
@@ -491,29 +491,6 @@ export default class extends Controller {
   }
 
   updateDerivedVolumes() {
-    if (!this.hasDerivedVolumesTarget) return
-
-    const container = this.derivedVolumesTarget
-    container.replaceChildren()
-
-    const grams = parseFloat(this.densityGramsTarget.value)
-    const volume = parseFloat(this.densityVolumeTarget.value)
-    const unit = this.densityUnitTarget.value
-
-    if (!grams || !volume || !unit || !VOLUME_TO_ML[unit]) return
-
-    const gramsPerMl = grams / (volume * VOLUME_TO_ML[unit])
-
-    Object.entries(VOLUME_TO_ML).forEach(([derivedUnit, ml]) => {
-      if (derivedUnit === unit) return
-
-      const derivedGrams = gramsPerMl * ml
-      if (derivedGrams < 0.1 || derivedGrams > 50000) return
-
-      const span = document.createElement('span')
-      span.textContent = `1 ${derivedUnit} \u2248 ${this.formatValue(derivedGrams)} g`
-      container.appendChild(span)
-    })
   }
 
   formatValue(num) {

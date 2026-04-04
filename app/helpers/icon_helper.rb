@@ -81,6 +81,8 @@ module IconHelper
                      '<path d="M8.5 8.5h.01"/><path d="M12 12h.01"/><path d="M15.5 15.5h.01"/>' },
     check: { view_box: '0 0 24 24', attrs: { 'stroke-width' => '2.5' },
              content: '<path d="M4 12l6 6L20 6"/>' },
+    x_mark: { view_box: '0 0 24 24', attrs: { 'stroke-width' => '2.5' },
+              content: '<line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/>' },
     alert: { view_box: '0 0 24 24', attrs: { 'stroke-width' => '2' },
              content: '<path d="M12 3L2 21h20L12 3z"/><line x1="12" y1="10" x2="12" y2="15"/>' \
                       '<path d="M12 18.5h.01"/>' },

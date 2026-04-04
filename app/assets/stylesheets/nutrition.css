@@ -610,15 +610,6 @@
 .nf-disclosure-body > * { overflow: hidden; }
 
 /* Derived volume conversions */
-.derived-volumes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.2rem 0.75rem;
-  margin: 0.15rem 0 0.4rem 0.5rem;
-  font-size: 0.8rem;
-  color: var(--text-light);
-}
-
 /* Recipe Check: unresolved row */
 .recipe-unit-unresolved {
   background: color-mix(in srgb, var(--red) 8%, transparent);

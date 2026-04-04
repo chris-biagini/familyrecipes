@@ -566,7 +566,7 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'summary .editor-summary-meta svg path[d="M4 12l6 6L20 6"]'
   end
 
-  test 'collapsed summary shows alert icon when some recipe units are unresolvable' do
+  test 'collapsed summary shows x icon when some recipe units are unresolvable' do
     IngredientCatalog.create!(
       kitchen: @kitchen, ingredient_name: 'Flour', basis_grams: 30, calories: 110
     )
@@ -585,7 +585,7 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
     get ingredient_edit_path('Flour', kitchen_slug: kitchen_slug)
 
     assert_response :success
-    assert_select 'summary .editor-summary-meta svg path[d^="M12 3L2 21"]'
+    assert_select 'summary .editor-summary-meta svg line[x1="6"][y1="6"]'
   end
 
   test 'edit requires membership' do
