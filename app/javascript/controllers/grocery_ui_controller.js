@@ -197,7 +197,7 @@ export default class extends Controller {
 
   bindCollapseToggle() {
     this.listeners.add(this.element, "toggle", (e) => {
-      if (!e.target.matches("details.to-buy-section, details.on-hand-section, details.inventory-check-section")) return
+      if (!e.target.matches("details.aisle-collapse, details.on-hand-section, details.inventory-check-section")) return
 
       this.saveCollapseState()
     }, true)
@@ -213,11 +213,11 @@ export default class extends Controller {
       const aisle = group.dataset.aisle
       if (!aisle) return
 
-      const toBuy = group.querySelector("details.to-buy-section")
+      const aisleDetails = group.querySelector("details.aisle-collapse")
       const onHand = group.querySelector("details.on-hand-section")
 
       state[aisle] = {
-        to_buy: toBuy ? toBuy.open : true,
+        aisle: aisleDetails ? aisleDetails.open : true,
         on_hand: onHand ? onHand.open : true
       }
     })
@@ -254,10 +254,10 @@ export default class extends Controller {
 
       const entry = state[aisle]
 
-      const toBuy = group.querySelector("details.to-buy-section")
+      const aisleDetails = group.querySelector("details.aisle-collapse")
       const onHand = group.querySelector("details.on-hand-section")
 
-      if (toBuy && entry?.to_buy === false) toBuy.open = false
+      if (aisleDetails && entry?.aisle === false) aisleDetails.open = false
       if (onHand && entry?.on_hand === false) onHand.open = false
     })
   }

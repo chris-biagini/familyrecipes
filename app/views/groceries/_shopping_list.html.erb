@@ -59,79 +59,71 @@
     <% next if to_buy.empty? && on_hand.empty? %>
 
     <section class="aisle-group" data-aisle="<%= aisle %>">
-      <h3 class="aisle-header">
-        <%= aisle %>
-        <% if to_buy.empty? %>
-          <span class="aisle-check">&#10003;</span>
-        <% end %>
-      </h3>
+      <details class="collapse-header aisle-collapse" open data-section="aisle">
+        <summary>
+          <span class="aisle-header"><%= aisle %></span>
+          <% if to_buy.empty? %>
+            <span class="aisle-check">&#10003;</span>
+          <% end %>
+        </summary>
+      </details>
+      <div class="collapse-body">
+        <div class="collapse-inner">
+          <% if to_buy.any? %>
+            <ul class="to-buy-items">
+              <% to_buy.each do |item| %>
+                <% is_custom = custom_names.include?(item[:name].downcase) %>
+                <% sources_tip = item[:sources].present? ? "Needed for: #{h item[:sources].join(', ')}" : nil %>
+                <% restock_tip = restock_tooltip(item[:name], on_hand_data, on_hand_names) %>
+                <% full_tip = [sources_tip, restock_tip].compact.join("\n") %>
+                <li data-item="<%= item[:name] %>"<%= " title=\"#{h full_tip}\"".html_safe if full_tip.present? %>>
+                  <label class="check-off">
+                    <input class="custom-checkbox" type="checkbox" data-item="<%= item[:name] %>">
+                    <span class="item-text"><%= item[:name] %><% amount_str = format_amounts(item[:amounts], uncounted: item[:uncounted]) %><% if amount_str.present? %> <span class="item-amount"><%= amount_str %></span><% end %></span>
+                  </label>
+                  <% if is_custom %>
+                    <button class="custom-item-remove" type="button" aria-label="Remove <%= item[:name] %>" data-item="<%= item[:name] %>">×</button>
+                  <% end %>
+                </li>
+              <% end %>
+            </ul>
+          <% end %>
 
-      <% if to_buy.any? %>
-        <div class="aisle-section">
-          <details class="collapse-header to-buy-section" open data-section="to-buy">
-            <summary>
-              <span class="section-count"><%= to_buy.size %> to buy</span>
-            </summary>
-          </details>
-          <div class="collapse-body">
-            <div class="collapse-inner">
-              <ul class="to-buy-items">
-                <% to_buy.each do |item| %>
-                  <% is_custom = custom_names.include?(item[:name].downcase) %>
-                  <% sources_tip = item[:sources].present? ? "Needed for: #{h item[:sources].join(', ')}" : nil %>
-                  <% restock_tip = restock_tooltip(item[:name], on_hand_data, on_hand_names) %>
-                  <% full_tip = [sources_tip, restock_tip].compact.join("\n") %>
-                  <li data-item="<%= item[:name] %>"<%= " title=\"#{h full_tip}\"".html_safe if full_tip.present? %>>
-                    <label class="check-off">
-                      <input class="custom-checkbox" type="checkbox" data-item="<%= item[:name] %>">
-                      <span class="item-text"><%= item[:name] %><% amount_str = format_amounts(item[:amounts], uncounted: item[:uncounted]) %><% if amount_str.present? %> <span class="item-amount"><%= amount_str %></span><% end %></span>
-                    </label>
-                    <% if is_custom %>
-                      <button class="custom-item-remove" type="button" aria-label="Remove <%= item[:name] %>" data-item="<%= item[:name] %>">×</button>
-                    <% end %>
-                  </li>
-                <% end %>
-              </ul>
-            </div>
-          </div>
-        </div>
-      <% end %>
-
-      <% if on_hand.any? %>
-        <div class="aisle-section">
-          <details class="collapse-header on-hand-section" open data-section="on-hand">
-            <summary>
-              <span class="section-count"><%= on_hand.size %> on hand</span>
-            </summary>
-          </details>
-          <div class="collapse-body on-hand-body">
-            <div class="collapse-inner">
-              <ul class="on-hand-items">
-                <% on_hand.each do |item| %>
-                  <% sources_tip = item[:sources].present? ? "Needed for: #{h item[:sources].join(', ')}" : nil %>
-                  <% restock_tip = restock_tooltip(item[:name], on_hand_data, on_hand_names) %>
-                  <% full_tip = [sources_tip, restock_tip].compact.join("\n") %>
-                  <% oh_entry = on_hand_data[item[:name].downcase] %>
-                  <% today = confirmed_today?(item[:name], on_hand_data) %>
-                  <% li_class = today ? nil : on_hand_freshness_class(oh_entry, now: Date.current) %>
-                  <li<%= raw(" class=\"#{li_class}\"") if li_class %> data-item="<%= item[:name] %>"<%= " title=\"#{h full_tip}\"".html_safe if full_tip.present? %>>
-                    <% if today %>
-                      <label class="check-off">
-                        <input class="custom-checkbox" type="checkbox" data-item="<%= item[:name] %>" checked>
+          <% if on_hand.any? %>
+            <details class="collapse-header on-hand-section" open data-section="on-hand">
+              <summary>
+                <span class="section-count"><%= on_hand.size %> on hand</span>
+              </summary>
+            </details>
+            <div class="collapse-body on-hand-body">
+              <div class="collapse-inner">
+                <ul class="on-hand-items">
+                  <% on_hand.each do |item| %>
+                    <% sources_tip = item[:sources].present? ? "Needed for: #{h item[:sources].join(', ')}" : nil %>
+                    <% restock_tip = restock_tooltip(item[:name], on_hand_data, on_hand_names) %>
+                    <% full_tip = [sources_tip, restock_tip].compact.join("\n") %>
+                    <% oh_entry = on_hand_data[item[:name].downcase] %>
+                    <% today = confirmed_today?(item[:name], on_hand_data) %>
+                    <% li_class = today ? nil : on_hand_freshness_class(oh_entry, now: Date.current) %>
+                    <li<%= raw(" class=\"#{li_class}\"") if li_class %> data-item="<%= item[:name] %>"<%= " title=\"#{h full_tip}\"".html_safe if full_tip.present? %>>
+                      <% if today %>
+                        <label class="check-off">
+                          <input class="custom-checkbox" type="checkbox" data-item="<%= item[:name] %>" checked>
+                          <span class="item-text"><%= item[:name] %><% amount_str = format_amounts(item[:amounts], uncounted: item[:uncounted]) %><% if amount_str.present? %> <span class="item-amount"><%= amount_str %></span><% end %></span>
+                        </label>
+                      <% else %>
+                        <button class="btn btn-sm btn-need-it" data-grocery-action="need-it"
+                                data-item="<%= item[:name] %>">Need It</button>
                         <span class="item-text"><%= item[:name] %><% amount_str = format_amounts(item[:amounts], uncounted: item[:uncounted]) %><% if amount_str.present? %> <span class="item-amount"><%= amount_str %></span><% end %></span>
-                      </label>
-                    <% else %>
-                      <button class="btn btn-sm btn-need-it" data-grocery-action="need-it"
-                              data-item="<%= item[:name] %>">Need It</button>
-                      <span class="item-text"><%= item[:name] %><% amount_str = format_amounts(item[:amounts], uncounted: item[:uncounted]) %><% if amount_str.present? %> <span class="item-amount"><%= amount_str %></span><% end %></span>
-                    <% end %>
-                  </li>
-                <% end %>
-              </ul>
+                      <% end %>
+                    </li>
+                  <% end %>
+                </ul>
+              </div>
             </div>
-          </div>
+          <% end %>
         </div>
-      <% end %>
+      </div>
     </section>
   <% end %>
 <% end %>

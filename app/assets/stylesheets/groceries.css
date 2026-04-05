@@ -76,10 +76,12 @@
   overflow: hidden;
 }
 
-/* Aisle header (always visible, non-interactive) */
-.aisle-header {
+/* Aisle-level collapse — wraps to-buy items + on-hand subsection */
+.aisle-collapse summary {
   padding: 0.6rem 0.75rem;
-  margin: 0;
+}
+
+.aisle-collapse > summary > .aisle-header {
   font-family: var(--font-body);
   font-size: 0.8rem;
   font-weight: 600;
@@ -108,8 +110,7 @@
   min-width: 0;
 }
 
-/* Per-section collapse summaries */
-.to-buy-section summary,
+/* On-hand subsection collapse summary */
 .on-hand-section summary {
   padding: 0.4rem 0.75rem;
   font-family: var(--font-body);
@@ -118,7 +119,6 @@
 }
 
 @media (hover: hover) {
-  .to-buy-section summary:hover,
   .on-hand-section summary:hover {
     color: var(--text-soft);
   }
@@ -349,17 +349,17 @@
     display: none !important;
   }
 
-  /* Force to-buy details open in print */
-  details.to-buy-section {
+  /* Force aisle details open in print, hide the disclosure triangle */
+  details.aisle-collapse {
     display: block !important;
   }
 
-  details.to-buy-section > summary {
+  details.aisle-collapse > summary::before {
     display: none !important;
   }
 
   /* Aisle header in print — break-after prevents orphaned headers */
-  .aisle-header {
+  .aisle-collapse summary {
     padding: 0.2rem 0;
     break-after: avoid;
   }
