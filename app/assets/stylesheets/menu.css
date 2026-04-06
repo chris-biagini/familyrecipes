@@ -66,20 +66,19 @@
   }
 }
 
-/* Availability badges — all states share the same red accent.
-   .on-hand / .not-on-hand / .all-on-hand modifiers exist in HTML
-   for JS hooks; they no longer need distinct styles. */
-.availability-single {
+/* Static pill for single-ingredient items (no disclosure triangle) */
+.availability-pill {
   flex-shrink: 0;
   margin-left: auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.25rem;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--red);
+  padding: 0.15rem 0.5rem;
+  white-space: nowrap;
   background: var(--surface-alt);
   border: 1px solid var(--red);
   border-radius: 6px;
-  color: var(--red);
   transition: opacity var(--duration-fast) ease;
 }
 
@@ -121,7 +120,7 @@
 
 /* Snap availability pill opacity to full on row hover */
 @media (hover: hover) {
-  #recipe-selector li:hover .availability-single,
+  #recipe-selector li:hover .availability-pill,
   #recipe-selector li:hover .collapse-header {
     opacity: 1 !important;
   }
@@ -463,7 +462,7 @@
     border-left: none;
   }
 
-  .availability-single,
+  .availability-pill,
   .recipe-selector-item .collapse-header,
   .recipe-selector-item .collapse-body {
     display: none;
