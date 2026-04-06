@@ -141,17 +141,17 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     assert_select 'details.collapse-header summary', text: %r{1/2}
   end
 
-  test 'show renders x for single-ingredient recipe when not on hand' do
+  test 'show renders 0/1 pill for single-ingredient recipe when not on hand' do
     log_in
     create_focaccia_recipe
     create_catalog_entry('Flour', basis_grams: 30, aisle: 'Baking')
 
     get menu_path(kitchen_slug: kitchen_slug)
 
-    assert_select 'span.availability-single.not-on-hand svg'
+    assert_select 'span.availability-pill', text: '0/1'
   end
 
-  test 'show renders checkmark for single-ingredient recipe when on hand' do
+  test 'show renders 1/1 pill for single-ingredient recipe when on hand' do
     log_in
     create_focaccia_recipe
     create_catalog_entry('Flour', basis_grams: 30, aisle: 'Baking')
@@ -160,7 +160,22 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
 
     get menu_path(kitchen_slug: kitchen_slug)
 
-    assert_select 'span.availability-single.on-hand svg'
+    assert_select 'span.availability-pill', text: '1/1'
+  end
+
+  test 'show clamps availability opacity to floor of 3' do
+    log_in
+    create_three_ingredient_recipe
+    create_catalog_entry('Flour', basis_grams: 30, aisle: 'Baking')
+    create_catalog_entry('Salt', basis_grams: 5, aisle: 'Baking')
+    create_catalog_entry('Olive Oil', basis_grams: 14, aisle: 'Oils')
+    # 1 of 3 on hand = 33% → old formula yields opacity-0, new formula clamps to opacity-3
+    OnHandEntry.create!(kitchen: @kitchen, ingredient_name: 'Flour',
+                        confirmed_at: Date.current, interval: 7, ease: 1.5)
+
+    get menu_path(kitchen_slug: kitchen_slug)
+
+    assert_select 'details.collapse-header.opacity-3'
   end
 
   test 'show renders checkmark-only pill when multi-ingredient recipe all on hand' do
@@ -471,6 +486,22 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
       ## Mix
 
       - Flour, 3 cups
+
+      Mix well.
+    MD
+  end
+
+  def create_three_ingredient_recipe
+    @category = Category.find_or_create_by!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Focaccia
+
+
+      ## Mix
+
+      - Flour, 3 cups
+      - Salt, 1 tsp
+      - Olive Oil, 2 tbsp
 
       Mix well.
     MD
