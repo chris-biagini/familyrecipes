@@ -21,6 +21,15 @@ export default class extends Controller {
     )
     this.boundMediaChange = this.handleMediaChange.bind(this)
     this.phoneQuery.addEventListener("change", this.boundMediaChange)
+
+    // Turbo may cache the page while close()'s deferred hidden-cleanup is
+    // still pending, leaving panel/overlay without the hidden attribute.
+    // Force them hidden on reconnect so a stale snapshot can't produce an
+    // invisible overlay that swallows taps on iOS.
+    if (!this.isOpen) {
+      this.panelTarget.hidden = true
+      this.overlayTarget.hidden = true
+    }
   }
 
   disconnect() {
@@ -72,8 +81,6 @@ export default class extends Controller {
   }
 
   instantClose() {
-    if (!this.isOpen) return
-
     clearTimeout(this.closeTimer)
     this.panelTarget.classList.remove("fab-open")
     this.overlayTarget.classList.remove("fab-open")

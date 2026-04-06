@@ -4,7 +4,7 @@
     buttons are wired through phone_fab_controller for close-then-delegate.
     - Collaborators: phone_fab_controller.js, navigation.css (.phone-fab) %>
 <div data-controller="phone-fab" class="phone-fab"
-     data-action="keydown.esc@document->phone-fab#close turbo:before-visit@document->phone-fab#close">
+     data-action="keydown.esc@document->phone-fab#close turbo:before-visit@document->phone-fab#instantClose">
   <div class="fab-overlay" data-phone-fab-target="overlay"
        data-action="click->phone-fab#close" hidden></div>
   <div class="fab-panel" data-phone-fab-target="panel"

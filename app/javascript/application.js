@@ -80,3 +80,9 @@ document.addEventListener("turbo:before-cache", () => {
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/service-worker.js')
 }
+
+// iOS standalone PWA workaround: WebKit skips touch event dispatch after
+// Turbo replaces the body during back-navigation when no document-level
+// touchstart listener exists. This empty listener keeps the touch pipeline
+// active so the first tap isn't swallowed. (GH #346)
+document.addEventListener("touchstart", () => {}, { passive: true, capture: true })
