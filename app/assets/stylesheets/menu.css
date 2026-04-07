@@ -148,6 +148,10 @@
   padding-bottom: 0;
 }
 
+.recipe-selector-item details[open] ~ .collapse-body {
+  grid-template-rows: 1fr;
+}
+
 .recipe-selector-item details[open] ~ .collapse-body > .collapse-inner {
   padding-top: 0.4rem;
   padding-bottom: 0.4rem;
