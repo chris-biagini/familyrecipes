@@ -66,62 +66,70 @@
   }
 }
 
-/* Static pill for single-ingredient items (no disclosure triangle) */
-.availability-pill {
-  flex-shrink: 0;
-  margin-left: auto;
-  font-family: var(--font-body);
-  font-size: 0.75rem;
-  font-weight: 400;
-  color: var(--red);
-  padding: 0.15rem 0.5rem;
-  white-space: nowrap;
-  background: var(--surface-alt);
-  border: 1px solid var(--red);
-  border-radius: 6px;
-  transition: opacity var(--duration-fast) ease;
-}
-
-.recipe-selector-item .collapse-header {
+/* Shared availability pill base (applied to all three tier classes) */
+.availability-ready,
+.availability-close,
+.availability-far {
   flex-shrink: 0;
   margin-left: auto;
   transition: opacity var(--duration-fast) ease;
 }
 
-.recipe-selector-item .collapse-header summary {
+.availability-ready summary,
+.availability-close summary,
+.availability-far summary {
   font-family: var(--font-body);
   font-size: 0.75rem;
-  font-weight: 400;
-  color: var(--red);
+  font-weight: 500;
   padding: 0.15rem 0.5rem;
   white-space: nowrap;
-  background: var(--surface-alt);
-  border: 1px solid var(--red);
   border-radius: 6px;
+  cursor: pointer;
+  list-style: none;
 }
 
-.recipe-selector-item .collapse-header summary::before {
-  border-width: 0.25rem 0 0.25rem 0.35rem;
-  border-color: transparent transparent transparent var(--red);
+.availability-ready summary::marker,
+.availability-close summary::marker,
+.availability-far summary::marker {
+  display: none;
 }
 
-/* Proportional opacity for availability pills (0/10 = invisible, 10/10 = full) */
-.opacity-0  { opacity: 0; }
-.opacity-1  { opacity: 0.1; }
-.opacity-2  { opacity: 0.2; }
-.opacity-3  { opacity: 0.3; }
-.opacity-4  { opacity: 0.4; }
-.opacity-5  { opacity: 0.5; }
-.opacity-6  { opacity: 0.6; }
-.opacity-7  { opacity: 0.7; }
-.opacity-8  { opacity: 0.8; }
-.opacity-9  { opacity: 0.9; }
-.opacity-10 { opacity: 1; }
+.availability-ready summary::-webkit-details-marker,
+.availability-close summary::-webkit-details-marker,
+.availability-far summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Ready tier — green */
+.availability-ready summary {
+  color: #4a8c3f;
+  background: rgba(74, 140, 63, 0.08);
+  border: 1px solid rgba(74, 140, 63, 0.25);
+}
+
+/* Close tier — amber */
+.availability-close summary {
+  color: #946b1a;
+  background: rgba(200, 160, 32, 0.08);
+  border: 1px solid rgba(200, 160, 32, 0.25);
+}
+
+/* Far tier — amber at reduced opacity */
+.availability-far {
+  opacity: 0.45;
+}
+
+.availability-far summary {
+  color: #946b1a;
+  background: rgba(200, 160, 32, 0.08);
+  border: 1px solid rgba(200, 160, 32, 0.25);
+}
 
 /* Snap availability pill opacity to full on row hover */
 @media (hover: hover) {
-  #recipe-selector li:hover .availability-pill,
-  #recipe-selector li:hover .collapse-header {
+  #recipe-selector li:hover .availability-ready,
+  #recipe-selector li:hover .availability-close,
+  #recipe-selector li:hover .availability-far {
     opacity: 1 !important;
   }
 }
@@ -140,7 +148,7 @@
   padding-bottom: 0;
 }
 
-.recipe-selector-item .collapse-header[open] ~ .collapse-body > .collapse-inner {
+.recipe-selector-item details[open] ~ .collapse-body > .collapse-inner {
   padding-top: 0.4rem;
   padding-bottom: 0.4rem;
 }
@@ -462,8 +470,9 @@
     border-left: none;
   }
 
-  .availability-pill,
-  .recipe-selector-item .collapse-header,
+  .availability-ready,
+  .availability-close,
+  .availability-far,
   .recipe-selector-item .collapse-body {
     display: none;
   }
