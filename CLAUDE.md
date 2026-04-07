@@ -424,8 +424,7 @@ install stub — see its header comment.
 
 **Migrations.** Use `db/migrate/` for all schema and data changes — never use
 one-off rake tasks for backfills.  Migrations are numbered sequentially
-(`001_`, `002_`, …).  When it is time to ship v1.0, consolidate all
-migrations into a single `001_create_schema.rb` to keep things clean.
+(`001_`, `002_`, …).  
 - **Never call application models, services, or jobs from migrations.** Use raw
   SQL or define bare model stubs inside the migration file. Application code
   may depend on schema that doesn't exist yet, causing migration ordering bugs.
