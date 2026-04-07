@@ -27,12 +27,13 @@ module SearchDataHelper
   end
 
   def build_search_data_json
-    recipes = current_kitchen.recipes.includes(:category, :ingredients, :tags).alphabetical
+    recipes = current_kitchen.recipes.includes(:ingredients, :tags).alphabetical
+    category_names = current_kitchen.categories.pluck(:id, :name).to_h
 
     {
       all_tags: current_kitchen.tags.order(:name).pluck(:name),
       all_categories: current_kitchen.categories.ordered.pluck(:name),
-      recipes: recipes.map { |r| search_entry_for(r) },
+      recipes: recipes.map { |r| search_entry_for(r, category_names) },
       ingredients: ingredient_corpus(recipes),
       custom_items: custom_item_corpus
     }.to_json
@@ -50,12 +51,12 @@ module SearchDataHelper
                      .map { |name, aisle| { name:, aisle: } }
   end
 
-  def search_entry_for(recipe)
+  def search_entry_for(recipe, category_names)
     {
       title: recipe.title,
       slug: recipe.slug,
       description: recipe.description.to_s,
-      category: recipe.category.name,
+      category: category_names[recipe.category_id],
       tags: recipe.tags.map(&:name).sort,
       ingredients: recipe.ingredients.map(&:name).uniq
     }
