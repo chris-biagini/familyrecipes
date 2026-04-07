@@ -128,7 +128,7 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
     assert_select '#recipe-selector input[checked]', count: 0
   end
 
-  test 'show renders M/N badge when partially available' do
+  test 'show renders Need N pill for close-tier recipe' do
     log_in
     create_two_ingredient_recipe
     create_catalog_entry('Flour', basis_grams: 30, aisle: 'Baking')
@@ -138,20 +138,20 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
 
     get menu_path(kitchen_slug: kitchen_slug)
 
-    assert_select 'details.collapse-header summary', text: %r{1/2}
+    assert_select 'details.availability-close summary', text: 'Need 1'
   end
 
-  test 'show renders 0/1 pill for single-ingredient recipe when not on hand' do
+  test 'show renders Need 1 pill for single-ingredient recipe when not on hand' do
     log_in
     create_focaccia_recipe
     create_catalog_entry('Flour', basis_grams: 30, aisle: 'Baking')
 
     get menu_path(kitchen_slug: kitchen_slug)
 
-    assert_select 'span.availability-pill', text: '0/1'
+    assert_select 'details.availability-close summary', text: 'Need 1'
   end
 
-  test 'show renders 1/1 pill for single-ingredient recipe when on hand' do
+  test 'show renders checkmark pill for single-ingredient recipe when on hand' do
     log_in
     create_focaccia_recipe
     create_catalog_entry('Flour', basis_grams: 30, aisle: 'Baking')
@@ -160,25 +160,22 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
 
     get menu_path(kitchen_slug: kitchen_slug)
 
-    assert_select 'span.availability-pill', text: '1/1'
+    assert_select 'details.availability-ready summary', text: '✓'
   end
 
-  test 'show clamps availability opacity to floor of 3' do
+  test 'show renders far-tier pill for recipe missing 3 or more' do
     log_in
     create_three_ingredient_recipe
     create_catalog_entry('Flour', basis_grams: 30, aisle: 'Baking')
     create_catalog_entry('Salt', basis_grams: 5, aisle: 'Baking')
     create_catalog_entry('Olive Oil', basis_grams: 14, aisle: 'Oils')
-    # 1 of 3 on hand = 33% → old formula yields opacity-0, new formula clamps to opacity-3
-    OnHandEntry.create!(kitchen: @kitchen, ingredient_name: 'Flour',
-                        confirmed_at: Date.current, interval: 7, ease: 1.5)
 
     get menu_path(kitchen_slug: kitchen_slug)
 
-    assert_select 'details.collapse-header.opacity-3'
+    assert_select 'details.availability-far summary', text: 'Need 3'
   end
 
-  test 'show renders checkmark-only pill when multi-ingredient recipe all on hand' do
+  test 'show renders checkmark pill when multi-ingredient recipe all on hand' do
     log_in
     create_two_ingredient_recipe
     create_catalog_entry('Flour', basis_grams: 30, aisle: 'Baking')
@@ -190,7 +187,21 @@ class MenuControllerTest < ActionDispatch::IntegrationTest
 
     get menu_path(kitchen_slug: kitchen_slug)
 
-    assert_select 'details.collapse-header.all-on-hand summary', text: %r{2/2}
+    assert_select 'details.availability-ready summary', text: '✓'
+  end
+
+  test 'show renders close-tier pill when missing exactly 2' do
+    log_in
+    create_three_ingredient_recipe
+    create_catalog_entry('Flour', basis_grams: 30, aisle: 'Baking')
+    create_catalog_entry('Salt', basis_grams: 5, aisle: 'Baking')
+    create_catalog_entry('Olive Oil', basis_grams: 14, aisle: 'Oils')
+    OnHandEntry.create!(kitchen: @kitchen, ingredient_name: 'Salt',
+                        confirmed_at: Date.current, interval: 7, ease: 1.5)
+
+    get menu_path(kitchen_slug: kitchen_slug)
+
+    assert_select 'details.availability-close summary', text: 'Need 2'
   end
 
   test 'show embeds cook history weights' do
