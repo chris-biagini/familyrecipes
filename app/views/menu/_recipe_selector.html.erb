@@ -11,20 +11,16 @@
         <label for="<%= recipe.slug %>-checkbox"><%= recipe.title %></label>
         <% info = availability[recipe.slug] %>
         <% if info %>
-          <% have_count = info[:ingredients].size - info[:missing] %>
-          <% total = info[:ingredients].size %>
-          <% fraction = total.positive? ? have_count.to_f / total : 0 %>
-          <% opacity_step = [(fraction <= 0.5 ? 0 : (fraction - 0.5) * 20).round, 3].max %>
-          <% if total == 1 %>
-            <span class="availability-pill opacity-<%= opacity_step %>"><%= have_count %>/<%= total %></span>
-          <% else %>
-            <details class="collapse-header<%= ' all-on-hand' if info[:missing].zero? %> opacity-<%= opacity_step %>">
-              <summary aria-label="Have <%= have_count %> of <%= total %><%= info[:missing_names].any? ? '; missing: ' + info[:missing_names].join(', ') : '' %>"><%= have_count %>/<%= total %></summary>
-            </details>
-          <% end %>
+          <% missing = info[:missing] %>
+          <% tier = missing.zero? ? 'ready' : missing <= 2 ? 'close' : 'far' %>
+          <% pill_text = missing.zero? ? '✓' : "Need #{missing}" %>
+          <details class="availability-<%= tier %>"
+                   aria-label="<%= missing.zero? ? 'All on hand' : "Need #{missing}; missing: #{info[:missing_names].join(', ')}" %>">
+            <summary><%= pill_text %></summary>
+          </details>
         <% end %>
         <%= link_to "\u2192", recipe_path(recipe.slug), class: 'recipe-link', title: "Open #{recipe.title} in new tab", target: '_blank' %>
-        <% if info && info[:ingredients].size > 1 %>
+        <% if info %>
           <div class="collapse-body">
             <div class="collapse-inner">
               <% have = info[:ingredients] - info[:missing_names] %>
@@ -59,19 +55,15 @@
             <label for="qb-<%= item.id %>-checkbox"><%= item.title %></label>
             <% info = availability[item.id] %>
             <% if info %>
-              <% have_count = info[:ingredients].size - info[:missing] %>
-              <% total = info[:ingredients].size %>
-              <% fraction = total.positive? ? have_count.to_f / total : 0 %>
-              <% opacity_step = [(fraction <= 0.5 ? 0 : (fraction - 0.5) * 20).round, 3].max %>
-              <% if total == 1 %>
-                <span class="availability-pill opacity-<%= opacity_step %>"><%= have_count %>/<%= total %></span>
-              <% else %>
-                <details class="collapse-header<%= ' all-on-hand' if info[:missing].zero? %> opacity-<%= opacity_step %>">
-                  <summary aria-label="Have <%= have_count %> of <%= total %><%= info[:missing_names].any? ? '; missing: ' + info[:missing_names].join(', ') : '' %>"><%= have_count %>/<%= total %></summary>
-                </details>
-              <% end %>
+              <% missing = info[:missing] %>
+              <% tier = missing.zero? ? 'ready' : missing <= 2 ? 'close' : 'far' %>
+              <% pill_text = missing.zero? ? '✓' : "Need #{missing}" %>
+              <details class="availability-<%= tier %>"
+                       aria-label="<%= missing.zero? ? 'All on hand' : "Need #{missing}; missing: #{info[:missing_names].join(', ')}" %>">
+                <summary><%= pill_text %></summary>
+              </details>
             <% end %>
-            <% if info && info[:ingredients].size > 1 %>
+            <% if info %>
               <div class="collapse-body">
                 <div class="collapse-inner">
                   <% have = info[:ingredients] - info[:missing_names] %>
