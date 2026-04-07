@@ -2,13 +2,13 @@
     Hidden by default via CSS; shown by the phone media query in navigation.css.
     Renders _nav_links (shared with top nav) to prevent content drift. Icon
     buttons are wired through phone_fab_controller for close-then-delegate.
+    Panel is always in DOM (opacity:0, pointer-events:none) to avoid layout
+    flash on open — toggling .fab-open animates it in without display changes.
     - Collaborators: phone_fab_controller.js, navigation.css (.phone-fab) %>
 <div data-controller="phone-fab" class="phone-fab"
      data-action="keydown.esc@document->phone-fab#close turbo:before-visit@document->phone-fab#instantClose">
-  <div class="fab-overlay" data-phone-fab-target="overlay"
-       data-action="click->phone-fab#close" hidden></div>
   <div class="fab-panel" data-phone-fab-target="panel"
-       role="dialog" aria-label="Navigation" hidden>
+       role="dialog" aria-label="Navigation">
     <div class="fab-nav-links">
       <%= render 'shared/nav_links' %>
     </div>

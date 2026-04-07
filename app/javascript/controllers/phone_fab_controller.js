@@ -2,18 +2,20 @@ import { Controller } from "@hotwired/stimulus"
 
 /**
  * Phone FAB — bottom-center floating action button for phone-sized screens.
- * Manages the panel open/close lifecycle, genie animation with staggered
- * item reveals, and cross-controller dispatch for search/settings.
+ * Manages the panel open/close lifecycle and cross-controller dispatch for
+ * search/settings. The panel is always in the DOM at opacity:0 /
+ * pointer-events:none; toggling .fab-open animates it in without display
+ * changes, eliminating the layout flash that hidden→visible caused.
  *
  * - Collaborators: _phone_fab.html.erb, navigation.css (.phone-fab),
  *   search_overlay_controller (dispatched via openSearch),
  *   editor_controller (settings button clicked programmatically)
  * - CSS phone media query controls visibility — this controller is inert
  *   on non-phone screens even though it connects to the DOM.
- * - Closes on: Escape, overlay click, Turbo navigation, orientation change
+ * - Closes on: Escape, outside tap, Turbo navigation, orientation change
  */
 export default class extends Controller {
-  static targets = ["button", "panel", "overlay"]
+  static targets = ["button", "panel"]
 
   connect() {
     this.phoneQuery = window.matchMedia(
@@ -22,19 +24,12 @@ export default class extends Controller {
     this.boundMediaChange = this.handleMediaChange.bind(this)
     this.phoneQuery.addEventListener("change", this.boundMediaChange)
 
-    // Turbo may cache the page while close()'s deferred hidden-cleanup is
-    // still pending, leaving panel/overlay without the hidden attribute.
-    // Force them hidden on reconnect so a stale snapshot can't produce an
-    // invisible overlay that swallows taps on iOS.
-    if (!this.isOpen) {
-      this.panelTarget.hidden = true
-      this.overlayTarget.hidden = true
-    }
+    this.boundOutsideTap = this.outsideTap.bind(this)
   }
 
   disconnect() {
     this.phoneQuery.removeEventListener("change", this.boundMediaChange)
-    clearTimeout(this.closeTimer)
+    document.removeEventListener("pointerdown", this.boundOutsideTap)
   }
 
   toggle() {
@@ -42,17 +37,12 @@ export default class extends Controller {
   }
 
   open() {
-    this.overlayTarget.hidden = false
-    this.panelTarget.hidden = false
-
-    requestAnimationFrame(() => {
-      this.panelTarget.classList.add("fab-open")
-      this.overlayTarget.classList.add("fab-open")
-    })
-
+    this.panelTarget.classList.add("fab-open")
     this.buttonTarget.setAttribute("aria-expanded", "true")
+
     this.trapFocusListener = this.trapFocus.bind(this)
     this.element.addEventListener("keydown", this.trapFocusListener)
+    document.addEventListener("pointerdown", this.boundOutsideTap)
 
     this.firstFocusable?.focus()
   }
@@ -61,33 +51,18 @@ export default class extends Controller {
     if (!this.isOpen) return
 
     this.panelTarget.classList.remove("fab-open")
-    this.overlayTarget.classList.remove("fab-open")
     this.buttonTarget.setAttribute("aria-expanded", "false")
 
     this.element.removeEventListener("keydown", this.trapFocusListener)
-
-    const cleanup = () => {
-      clearTimeout(this.closeTimer)
-      this.panelTarget.hidden = true
-      this.overlayTarget.hidden = true
-    }
-
-    this.panelTarget.addEventListener("transitionend", (e) => {
-      if (e.propertyName === "opacity") cleanup()
-    }, { once: true })
-
-    this.closeTimer = setTimeout(cleanup, 250)
+    document.removeEventListener("pointerdown", this.boundOutsideTap)
     this.buttonTarget.focus()
   }
 
   instantClose() {
-    clearTimeout(this.closeTimer)
     this.panelTarget.classList.remove("fab-open")
-    this.overlayTarget.classList.remove("fab-open")
-    this.panelTarget.hidden = true
-    this.overlayTarget.hidden = true
     this.buttonTarget.setAttribute("aria-expanded", "false")
     this.element.removeEventListener("keydown", this.trapFocusListener)
+    document.removeEventListener("pointerdown", this.boundOutsideTap)
   }
 
   openSearch() {
@@ -115,13 +90,17 @@ export default class extends Controller {
 
   get focusableItems() {
     return [
-      ...this.panelTarget.querySelectorAll("a:not([hidden]), button:not([hidden])"),
+      ...this.panelTarget.querySelectorAll("a, button"),
       this.buttonTarget
     ]
   }
 
   get firstFocusable() {
     return this.panelTarget.querySelector("a, button")
+  }
+
+  outsideTap(event) {
+    if (!this.element.contains(event.target)) this.close()
   }
 
   trapFocus(event) {

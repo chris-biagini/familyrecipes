@@ -520,23 +520,8 @@ nav a:focus-visible {
 
   .fab-button[hidden] { display: none; }
 
-  /* Overlay — dim backdrop behind panel */
-  .fab-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 18;
-    background: rgba(0, 0, 0, 0.3);
-    opacity: 0;
-    transition: opacity var(--duration-slow) ease;
-  }
-
-  .fab-overlay.fab-open {
-    opacity: 1;
-  }
-
-  .fab-overlay[hidden] { display: none; }
-
-  /* Panel — frosted glass menu above FAB */
+  /* Panel — frosted glass menu above FAB. Always in DOM at opacity:0 /
+     pointer-events:none to avoid layout flash from hidden→visible. */
   .fab-panel {
     position: fixed;
     bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
@@ -552,15 +537,17 @@ nav a:focus-visible {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     padding: 0.5rem;
     opacity: 0;
-    transition: opacity 150ms ease;
+    pointer-events: none;
+    transform: scale(0.95);
+    transition: opacity 150ms ease, transform 150ms ease;
   }
 
   .fab-panel.fab-open {
-    animation: bloop 250ms cubic-bezier(0.16, 0.75, 0.40, 1);
     opacity: 1;
+    pointer-events: auto;
+    transform: scale(1);
+    transition: opacity 150ms ease, transform 250ms cubic-bezier(0.16, 0.75, 0.40, 1);
   }
-
-  .fab-panel[hidden] { display: none; }
 
   /* Panel content: nav links stacked vertically */
   .fab-nav-links {

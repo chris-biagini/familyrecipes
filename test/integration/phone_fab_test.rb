@@ -13,7 +13,6 @@ class PhoneFabTest < ActionDispatch::IntegrationTest
     assert_select '.phone-fab' do
       assert_select '.fab-button[aria-label="Menu"]'
       assert_select '.fab-panel[role="dialog"]'
-      assert_select '.fab-overlay'
     end
   end
 
@@ -43,8 +42,7 @@ class PhoneFabTest < ActionDispatch::IntegrationTest
     get kitchen_root_path(kitchen_slug: kitchen_slug)
 
     assert_select '.fab-button[aria-expanded="false"]'
-    assert_select '.fab-panel[hidden]'
-    assert_select '.fab-overlay[hidden]'
+    assert_select '.fab-panel'
   end
 
   test 'top nav still renders alongside FAB' do
