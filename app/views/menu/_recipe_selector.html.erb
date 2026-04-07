@@ -14,9 +14,9 @@
           <% have_count = info[:ingredients].size - info[:missing] %>
           <% total = info[:ingredients].size %>
           <% fraction = total.positive? ? have_count.to_f / total : 0 %>
-          <% opacity_step = (fraction <= 0.5 ? 0 : (fraction - 0.5) * 20).round %>
+          <% opacity_step = [(fraction <= 0.5 ? 0 : (fraction - 0.5) * 20).round, 3].max %>
           <% if total == 1 %>
-            <span class="availability-single<%= have_count == 1 ? ' on-hand' : ' not-on-hand' %> opacity-<%= opacity_step %>"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><% if have_count == 1 %><circle cx="5" cy="5" r="4.5" fill="currentColor"/><% else %><circle cx="5" cy="5" r="3.5" fill="none" stroke="currentColor" stroke-width="1.5"/><% end %></svg></span>
+            <span class="availability-pill opacity-<%= opacity_step %>"><%= have_count %>/<%= total %></span>
           <% else %>
             <details class="collapse-header<%= ' all-on-hand' if info[:missing].zero? %> opacity-<%= opacity_step %>">
               <summary aria-label="Have <%= have_count %> of <%= total %><%= info[:missing_names].any? ? '; missing: ' + info[:missing_names].join(', ') : '' %>"><%= have_count %>/<%= total %></summary>
@@ -62,9 +62,9 @@
               <% have_count = info[:ingredients].size - info[:missing] %>
               <% total = info[:ingredients].size %>
               <% fraction = total.positive? ? have_count.to_f / total : 0 %>
-              <% opacity_step = (fraction <= 0.5 ? 0 : (fraction - 0.5) * 20).round %>
+              <% opacity_step = [(fraction <= 0.5 ? 0 : (fraction - 0.5) * 20).round, 3].max %>
               <% if total == 1 %>
-                <span class="availability-single<%= have_count == 1 ? ' on-hand' : ' not-on-hand' %> opacity-<%= opacity_step %>"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><% if have_count == 1 %><circle cx="5" cy="5" r="4.5" fill="currentColor"/><% else %><circle cx="5" cy="5" r="3.5" fill="none" stroke="currentColor" stroke-width="1.5"/><% end %></svg></span>
+                <span class="availability-pill opacity-<%= opacity_step %>"><%= have_count %>/<%= total %></span>
               <% else %>
                 <details class="collapse-header<%= ' all-on-hand' if info[:missing].zero? %> opacity-<%= opacity_step %>">
                   <summary aria-label="Have <%= have_count %> of <%= total %><%= info[:missing_names].any? ? '; missing: ' + info[:missing_names].join(', ') : '' %>"><%= have_count %>/<%= total %></summary>
