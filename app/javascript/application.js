@@ -81,6 +81,21 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/service-worker.js')
 }
 
+// Smooth-scroll only for in-page fragment links (e.g. href="#section").
+// Global scroll-behavior:smooth on <html> also animates Turbo's scroll
+// restoration on page navigation, causing a visible slide-to-top. (GH #350)
+document.addEventListener("click", (event) => {
+  const anchor = event.target.closest("a[href^='#']")
+  if (!anchor) return
+
+  const id = anchor.getAttribute("href").slice(1)
+  const target = document.getElementById(id)
+  if (target) {
+    event.preventDefault()
+    target.scrollIntoView({ behavior: "smooth" })
+  }
+})
+
 // iOS standalone PWA workaround: WebKit skips touch event dispatch after
 // Turbo replaces the body during back-navigation when no document-level
 // touchstart listener exists. This empty listener keeps the touch pipeline

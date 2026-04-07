@@ -1045,9 +1045,6 @@ section:first-of-type h2 {
 }
 
 /* Anchor targets: offset for sticky nav so headers stay visible */
-html {
-  scroll-behavior: smooth;
-}
 
 #recipe-listings,
 [data-recipe-filter-target="category"] {
