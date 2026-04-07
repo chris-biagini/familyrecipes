@@ -150,6 +150,10 @@
   scrollbar-gutter: stable;
 }
 
+.editor-body[hidden] {
+  display: none;
+}
+
 .editor-hint {
   margin: 0.25rem 0 0;
   padding: 0 1.5rem;
