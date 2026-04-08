@@ -178,7 +178,6 @@ class IngredientRowBuilderTest < ActiveSupport::TestCase
     assert_equal 3, summary[:total]
     assert_equal 1, summary[:complete]
     assert_equal 1, summary[:missing_nutrition]
-    assert_equal 2, summary[:missing_density]
   end
 
   test 'summary counts custom entries' do
@@ -324,6 +323,27 @@ class IngredientRowBuilderTest < ActiveSupport::TestCase
 
     assert row[:qb_only]
     assert_equal 'complete', row[:status]
+  end
+
+  test 'summary missing_nutrition excludes qb_only ingredients' do
+    create_quick_bite('Toast', ingredients: ['butter'])
+
+    focaccia = @kitchen.recipes.find_by!(slug: 'focaccia')
+    builder = IngredientRowBuilder.new(kitchen: @kitchen, recipes: [focaccia])
+
+    assert_equal 2, builder.summary[:missing_nutrition]
+    assert_equal 3, builder.summary[:total]
+  end
+
+  test 'coverage unresolvable list excludes qb_only ingredients' do
+    create_quick_bite('Toast', ingredients: ['butter'])
+
+    focaccia = @kitchen.recipes.find_by!(slug: 'focaccia')
+    builder = IngredientRowBuilder.new(kitchen: @kitchen, recipes: [focaccia])
+    unresolvable_names = builder.coverage[:unresolvable].pluck(:name)
+
+    assert_includes unresolvable_names, 'Flour'
+    assert_not_includes unresolvable_names, 'butter'
   end
 
   test 'ingredient in both recipe and quick bite is not qb_only' do

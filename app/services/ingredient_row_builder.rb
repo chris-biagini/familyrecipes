@@ -76,8 +76,7 @@ class IngredientRowBuilder # rubocop:disable Metrics/ClassLength
       complete: rows.count { |r| r[:status] == 'complete' },
       custom: rows.count { |r| r[:source] == 'custom' },
       missing_aisle: rows.count { |r| r[:aisle].blank? && !r[:omit_from_shopping] },
-      missing_nutrition: rows.count { |r| !r[:has_nutrition] },
-      missing_density: rows.count { |r| !r[:has_density] } }
+      missing_nutrition: rows.count { |r| !r[:has_nutrition] && !r[:qb_only] } }
   end
 
   def build_coverage
@@ -87,11 +86,12 @@ class IngredientRowBuilder # rubocop:disable Metrics/ClassLength
   end
 
   def partition_by_resolvability(units_map)
-    unresolvable = rows.filter_map do |row|
+    countable = rows.reject { |row| row[:qb_only] }
+    unresolvable = countable.filter_map do |row|
       unresolvable_units_for(row[:name], row[:entry], units_map[row[:name]])
     end
 
-    [rows.size - unresolvable.size, unresolvable]
+    [countable.size - unresolvable.size, unresolvable]
   end
 
   def unresolvable_units_for(name, entry, units)
