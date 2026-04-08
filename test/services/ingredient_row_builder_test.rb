@@ -290,6 +290,58 @@ class IngredientRowBuilderTest < ActiveSupport::TestCase
     assert_equal 'Hummus with Pretzels', hummus[:recipes].first.title
   end
 
+  test 'qb_only ingredient with aisle has status complete' do
+    IngredientCatalog.where(kitchen_id: nil).delete_all
+    create_catalog_entry('butter', aisle: 'Dairy')
+    create_quick_bite('Toast', ingredients: ['butter'])
+
+    builder = IngredientRowBuilder.new(kitchen: @kitchen, recipes: Recipe.none)
+    row = builder.rows.find { |r| r[:name] == 'butter' }
+
+    assert row[:qb_only]
+    assert_equal 'complete', row[:status]
+  end
+
+  test 'qb_only ingredient without aisle has status incomplete' do
+    IngredientCatalog.where(kitchen_id: nil).delete_all
+    create_catalog_entry('butter')
+    create_quick_bite('Toast', ingredients: ['butter'])
+
+    builder = IngredientRowBuilder.new(kitchen: @kitchen, recipes: Recipe.none)
+    row = builder.rows.find { |r| r[:name] == 'butter' }
+
+    assert row[:qb_only]
+    assert_equal 'incomplete', row[:status]
+  end
+
+  test 'qb_only ingredient omitted from shopping is complete without aisle' do
+    IngredientCatalog.where(kitchen_id: nil).delete_all
+    create_catalog_entry('butter', omit_from_shopping: true)
+    create_quick_bite('Toast', ingredients: ['butter'])
+
+    builder = IngredientRowBuilder.new(kitchen: @kitchen, recipes: Recipe.none)
+    row = builder.rows.find { |r| r[:name] == 'butter' }
+
+    assert row[:qb_only]
+    assert_equal 'complete', row[:status]
+  end
+
+  test 'ingredient in both recipe and quick bite is not qb_only' do
+    IngredientCatalog.where(kitchen_id: nil).delete_all
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Pancakes
+      ## Mix (combine)
+      - Butter, 2 tablespoons
+    MD
+    create_quick_bite('Toast', ingredients: ['Butter'])
+
+    builder = IngredientRowBuilder.new(kitchen: @kitchen)
+    row = builder.rows.find { |r| r[:name] == 'Butter' }
+
+    assert_not row[:qb_only]
+    assert_equal 'missing', row[:status]
+  end
+
   test 'quick bite ingredients are canonicalized through resolver' do
     create_catalog_entry('Eggs', basis_grams: 50)
     create_quick_bite('Quick Eggs', category_name: 'Breakfast', ingredients: %w[Egg Toast])

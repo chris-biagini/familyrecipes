@@ -30,11 +30,12 @@ class IngredientRowBuilder # rubocop:disable Metrics/ClassLength
   end
 
   def next_needing_attention(after:)
-    sorted = recipes_by_ingredient.keys.sort_by(&:downcase)
-    idx = sorted.index { |name| name.casecmp(after).zero? }
+    sorted = rows.sort_by { |r| r[:name].downcase }
+    idx = sorted.index { |r| r[:name].casecmp(after).zero? }
     return unless idx
 
-    sorted[(idx + 1)..].find { |name| row_status(@resolver.catalog_entry(name)) != 'complete' }
+    match = sorted[(idx + 1)..].find { |r| r[:status] != 'complete' }
+    match&.fetch(:name)
   end
 
   def needed_units(ingredient_name)
@@ -112,6 +113,7 @@ class IngredientRowBuilder # rubocop:disable Metrics/ClassLength
   def ingredient_row(name, recs)
     entry = @resolver.catalog_entry(name)
     units = collect_units_for(name)
+    qb_only = recs.all?(QuickBiteSource)
     all_resolvable = units.empty? || (entry&.basis_grams.present? && units.all? { |u| unit_resolvable?(u, entry) })
     { name:, entry:, recipe_count: recs.size, recipes: recs,
       has_nutrition: entry&.basis_grams.present?,
@@ -119,8 +121,9 @@ class IngredientRowBuilder # rubocop:disable Metrics/ClassLength
       aisle: entry&.aisle,
       omit_from_shopping: entry&.omit_from_shopping || false,
       source: entry_source(entry),
-      status: row_status(entry),
-      resolvable: all_resolvable }
+      status: row_status(entry, qb_only:, aisle: entry&.aisle, omit: entry&.omit_from_shopping),
+      resolvable: all_resolvable,
+      qb_only: }
   end
 
   def entry_source(entry)
@@ -129,11 +132,16 @@ class IngredientRowBuilder # rubocop:disable Metrics/ClassLength
     entry.custom? ? 'custom' : 'global'
   end
 
-  def row_status(entry)
+  def row_status(entry, qb_only: false, aisle: nil, omit: false)
+    return qb_only_status(aisle, omit) if qb_only
     return 'missing' if entry&.basis_grams.blank?
     return 'incomplete' if entry.density_grams.blank?
 
     'complete'
+  end
+
+  def qb_only_status(aisle, omit)
+    aisle.present? || omit ? 'complete' : 'incomplete'
   end
 
   def recipes_by_ingredient
