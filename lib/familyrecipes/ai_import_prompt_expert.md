@@ -31,6 +31,10 @@ preamble or personal narrative are NOT part of the recipe — strip them.
 A fact mentioned only in the blog story (not the recipe itself) is not a
 recipe fact.
 
+**Translate to English.** If the recipe is in a language other than English,
+translate the entire recipe — title, ingredients, instructions, and notes —
+into English. Ingredient names should use their common English equivalents.
+
 Output ONLY the Markdown recipe. No commentary, no explanation, no code
 fences.
 

@@ -94,6 +94,28 @@ class AiImportServiceTest < ActiveSupport::TestCase
     assert_includes captured_system, 'Recipe Transcription'
   end
 
+  test 'includes translation instruction in both modes' do
+    %i[faithful expert].each do |mode|
+      captured_system = nil
+      mock_response = MockResponse.new([MockContent.new(:text, '# Test')])
+
+      mock_messages = Object.new
+      mock_messages.define_singleton_method(:create) do |**kwargs|
+        captured_system = kwargs[:system]
+        mock_response
+      end
+
+      mock_client = Object.new
+      mock_client.define_singleton_method(:messages) { mock_messages }
+
+      Anthropic::Client.stub :new, mock_client do
+        AiImportService.call(text: 'recipe', kitchen: @kitchen, mode:)
+      end
+
+      assert_includes captured_system, 'Translate to English', "#{mode} mode should include translation instruction"
+    end
+  end
+
   test 'interpolates categories and tags in both modes' do
     %i[faithful expert].each do |mode|
       captured_system = nil

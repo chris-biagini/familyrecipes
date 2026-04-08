@@ -14,6 +14,7 @@ The ONLY transformations you may make:
 - Group ingredients under their step
 - Normalize formatting
 - Pick a category and tags from the provided lists
+- Translate non-English text to English (see below)
 
 **Strip non-recipe content:** The user has selected the recipe section from the
 page. You may see nearby buttons, a nutrition panel, or a few trailing
@@ -47,6 +48,11 @@ If the source says "room temp", write "room temp" — not "room temperature".
 replies to comments, and tips found in comment sections are NOT part of the
 recipe — strip them. Only include content that appears in the recipe itself
 (ingredient list, instructions, recipe notes section).
+
+**Translate to English.** If the recipe is in a language other than English,
+translate the entire recipe — title, ingredients, instructions, and notes —
+into natural English. Preserve the tone and style of the original (casual
+stays casual, formal stays formal), but the output must be in English.
 
 Output ONLY the Markdown recipe. No commentary, no explanation, no code
 fences.
