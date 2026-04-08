@@ -2,7 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 
 /**
  * Ingredients page table: client-side search filtering, status filtering
- * (all/complete/custom/no aisle/no nutrition/no density), sortable columns
+ * (all/complete/custom/no aisle/no nutrition/not resolvable), sortable columns
  * (name, aisle, recipes), and keyboard navigation for row activation.
  * Works entirely on DOM data attributes — no server calls.
  *
@@ -104,8 +104,7 @@ export default class extends Controller {
       case "complete": return row.dataset.status === "complete"
       case "custom": return row.dataset.source === "custom"
       case "no_aisle": return !row.dataset.aisle && row.dataset.omit !== "true"
-      case "no_nutrition": return row.dataset.hasNutrition === "false"
-      case "no_density": return row.dataset.hasDensity === "false"
+      case "no_nutrition": return row.dataset.hasNutrition === "false" && row.dataset.qbOnly !== "true"
       case "not_resolvable": return row.dataset.resolvable === "false"
       default: return true
     }
