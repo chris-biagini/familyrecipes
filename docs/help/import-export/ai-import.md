@@ -43,12 +43,9 @@ matters.
 
 Check **Expert mode — condense for experienced cooks** to get a compact
 version that strips obvious basics and tutorial-style instructions. Steps
-are reorganized for clarity and written in a terse, confident voice.
+are reorganized for clarity.
 Use this when you already know your way around a kitchen and just want
 the essential information.
-
-Both modes preserve all ingredient quantities exactly and will not invent
-missing information.
 
 ## What it can handle
 
@@ -56,8 +53,7 @@ AI Import is flexible about input format. You can paste:
 
 - Web page text copied from a recipe site (including extra navigation and ads — Claude ignores the noise)
 - A recipe dictated or typed in plain prose
-- A recipe in a foreign language (Claude will translate)
-- Multiple recipes at once (Claude imports the first one it finds)
+- A recipe in a foreign language (Claude translates it to English)
 
 ## Important: always review before saving
 

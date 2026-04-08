@@ -78,8 +78,9 @@
   {% for slug in ie_pages %}
     {% assign idx = forloop.index0 %}
     {% assign href = site.baseurl | append: "/import-export/" | append: slug | append: "/" %}
+    {% assign check_path = "/import-export/" | append: slug | append: "/" %}
     <a href="{{ href }}"
-       class="sidebar-link{% if page.url contains slug and page.section == 'import-export' %} active{% endif %}">
+       class="sidebar-link{% if page.url contains check_path and page.section == 'import-export' %} active{% endif %}">
       {{ ie_titles[idx] }}
     </a>
   {% endfor %}
