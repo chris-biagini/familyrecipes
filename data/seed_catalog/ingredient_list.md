@@ -1,0 +1,535 @@
+# Ingredient List
+
+## Produce — Vegetables
+- Onion
+- Onion (red)
+- Onion (sweet)
+- Shallot
+- Garlic
+- Green onions
+- Leeks
+- Celery
+- Carrot
+- Potato
+- Potato (sweet)
+- Potato (Yukon Gold)
+- Tomatoes (fresh)
+- Cherry tomatoes
+- Bell pepper (red)
+- Bell pepper (green)
+- Bell pepper (yellow)
+- Jalapeño
+- Serrano pepper
+- Poblano pepper
+- Habanero pepper
+- Broccoli
+- Cauliflower
+- Cabbage (green)
+- Cabbage (red)
+- Napa cabbage
+- Brussels sprouts
+- Asparagus
+- Green beans
+- Snap peas
+- Corn (fresh)
+- Zucchini
+- Yellow squash
+- Butternut squash
+- Acorn squash
+- Eggplant
+- Cucumber
+- Spinach
+- Baby spinach
+- Kale
+- Romaine lettuce
+- Arugula
+- Mixed greens
+- Swiss chard
+- Collard greens
+- Bok choy
+- Mushrooms (white)
+- Mushrooms (cremini)
+- Mushrooms (shiitake)
+- Artichokes (jarred)
+- Avocado
+- Beets
+- Radishes
+- Turnips
+- Parsnips
+- Fennel
+- Celery root
+- Ginger
+- Bean sprouts
+- Edamame
+- Watercress
+- Jicama
+- Tomatillos
+- Pumpkin
+- Okra
+- Daikon radish
+- Spaghetti squash
+- Iceberg lettuce
+- Endive
+- Radicchio
+
+## Produce — Fruits
+- Apples
+- Bananas
+- Lemons
+- Limes
+- Oranges
+- Grapefruits
+- Strawberries
+- Blueberries
+- Raspberries
+- Blackberries
+- Grapes
+- Peaches
+- Plums
+- Nectarines
+- Pears
+- Cherries
+- Mango
+- Pineapple
+- Watermelon
+- Cantaloupe
+- Honeydew
+- Kiwi
+- Pomegranate
+- Cranberries (fresh)
+- Figs (fresh)
+- Coconut (fresh)
+- Plantains
+- Papaya
+- Passion fruit
+- Rhubarb
+- Dates
+- Raisins
+- Dried cranberries
+- Dried apricots
+- Prunes
+- Apricots (fresh)
+
+## Produce — Fresh Herbs
+- Basil
+- Cilantro
+- Parsley (flat-leaf)
+- Parsley (curly)
+- Rosemary
+- Thyme
+- Sage
+- Dill
+- Mint
+- Chives
+- Oregano (fresh)
+- Tarragon
+- Lemongrass
+- Thai basil
+- Marjoram
+
+## Dairy & Eggs
+- Milk
+- Milk (2%)
+- Milk (skim)
+- Heavy cream
+- Half-and-half
+- Buttermilk
+- Sour cream
+- Cream cheese
+- Yogurt (plain)
+- Yogurt (Greek)
+- Butter
+- Butter (unsalted)
+- Eggs
+- Egg yolks
+- Egg whites
+- Cheddar
+- Mozzarella (low-moisture)
+- Mozzarella (fresh)
+- Parmesan
+- Pecorino
+- Gruyère
+- Swiss
+- Provolone
+- Monterey Jack
+- Pepper Jack
+- Gouda
+- Brie
+- Feta
+- Ricotta
+- Goat cheese
+- Cottage cheese
+- American cheese
+- Mascarpone
+- Whipped cream
+- Evaporated milk
+- Queso fresco
+- Blue cheese
+- Havarti
+- Muenster
+- Crème fraîche
+
+## Meat & Poultry
+- Chicken breast
+- Chicken thigh
+- Chicken (whole)
+- Chicken wings
+- Chicken drumsticks
+- Ground chicken
+- Turkey breast
+- Ground turkey
+- Ground beef
+- Beef (chuck roast)
+- Beef (stew meat)
+- Steak (ribeye)
+- Steak (sirloin)
+- Steak (flank)
+- Beef (short ribs)
+- Beef (brisket)
+- Pork chops
+- Pork tenderloin
+- Pork shoulder
+- Ground pork
+- Pork (ribs)
+- Bacon
+- Pancetta
+- Prosciutto
+- Ham
+- Sausage (Italian)
+- Sausage (breakfast)
+- Chorizo
+- Lamb (leg)
+- Lamb (ground)
+- Lamb chops
+- Veal
+- Duck breast
+- Pepperoni
+- Salami
+- Turkey (deli sliced)
+- Corned beef
+- Hot dogs
+- Pork belly
+- Bratwurst
+
+## Seafood
+- Salmon (fillet)
+- Tuna (fresh)
+- Shrimp
+- Cod
+- Halibut
+- Tilapia
+- Sea bass
+- Mahi-mahi
+- Swordfish
+- Trout
+- Scallops
+- Mussels
+- Clams
+- Crab
+- Lobster
+- Squid
+- Anchovies
+- Sardines (canned)
+- Tuna (canned)
+- Salmon (canned)
+
+## Pantry — Canned & Jarred
+- Black beans (canned)
+- Kidney beans (canned)
+- Pinto beans (canned)
+- Cannellini beans (canned)
+- Chickpeas (canned)
+- Tomatoes (canned, diced)
+- Tomatoes (canned, crushed)
+- Tomatoes (canned, whole)
+- Tomato paste
+- Tomato passata
+- Tomato sauce
+- Coconut milk (canned)
+- Coconut cream
+- Corn (canned)
+- Green chiles (canned)
+- Chipotles en adobo
+- Roasted red peppers (jarred)
+- Olives (black)
+- Olives (green)
+- Capers
+- Sun-dried tomatoes
+- Pumpkin (canned)
+- Pasta sauce (jarred)
+- Salsa (jarred)
+- Applesauce
+- Refried beans (canned)
+- Lentils (canned)
+- Hearts of palm
+- Artichoke hearts (canned)
+- Water chestnuts (canned)
+- Bamboo shoots (canned)
+- Jackfruit (canned)
+
+## Pantry — Grains, Pasta & Rice
+- Rice (white long-grain)
+- Rice (brown)
+- Jasmine rice
+- Basmati rice
+- Arborio rice
+- Quinoa
+- Couscous
+- Farro
+- Barley
+- Bulgur
+- Polenta
+- Rolled oats
+- Steel-cut oats
+- Spaghetti
+- Penne
+- Fettuccine
+- Rigatoni
+- Macaroni
+- Egg noodles
+- Ramen noodles
+- Rice noodles
+- Orzo
+- Lasagna noodles
+- Tortillas (flour)
+- Tortillas (corn)
+- Lentils (dry)
+- Dried black beans
+- Dried chickpeas
+- Grits
+- Soba noodles
+- Udon noodles
+- Vermicelli
+- Taco shells
+- Wonton wrappers
+
+## Pantry — Oils & Vinegars
+- Olive oil
+- Olive oil (extra-virgin)
+- Vegetable oil
+- Canola oil
+- Coconut oil
+- Sesame oil
+- Avocado oil
+- Vinegar (white)
+- Vinegar (apple cider)
+- Vinegar (balsamic)
+- Vinegar (red wine)
+- Vinegar (rice)
+- Vinegar (sherry)
+- Cooking spray
+- Ghee
+
+## Pantry — Nuts & Seeds
+- Almonds
+- Walnuts
+- Pecans
+- Cashews
+- Peanuts
+- Pine nuts
+- Pistachios
+- Hazelnuts
+- Macadamia nuts
+- Sesame seeds
+- Sunflower seeds
+- Pumpkin seeds
+- Chia seeds
+- Flaxseed
+- Hemp seeds
+
+## Baking
+- Flour (all-purpose)
+- Flour (bread)
+- Flour (whole wheat)
+- Flour (cake)
+- Flour (self-rising)
+- Sugar (white)
+- Sugar (brown)
+- Sugar (powdered)
+- Baking powder
+- Baking soda
+- Yeast
+- Cornstarch
+- Cornmeal
+- Cocoa powder
+- Chocolate chips
+- Chocolate (baking, unsweetened)
+- Chocolate (dark)
+- Vanilla extract
+- Almond extract
+- Cream of tartar
+- Gelatin
+- Coconut (shredded)
+- Condensed milk (sweetened)
+- Molasses
+- Meringue powder
+- Light corn syrup
+- Food coloring
+- Tapioca starch
+- Agave nectar
+- Sprinkles
+
+## Spices & Seasonings
+- Salt
+- Salt (kosher)
+- Black pepper
+- Cumin
+- Paprika
+- Smoked paprika
+- Chili powder
+- Cayenne
+- Red pepper flakes
+- Garlic powder
+- Onion powder
+- Cinnamon
+- Nutmeg
+- Ginger (ground)
+- Turmeric
+- Coriander (ground)
+- Oregano
+- Italian seasoning
+- Bay leaves
+- Cloves
+- Allspice
+- Cardamom
+- Fennel seeds
+- Mustard (dry)
+- Curry powder
+- Garam masala
+- Five-spice powder
+- Celery seed
+- White pepper
+- Saffron
+- Sumac
+- Za'atar
+- Chili flakes (Aleppo)
+- Ancho chili powder
+- Chipotle powder
+- Herbes de Provence
+- Old Bay seasoning
+- Taco seasoning
+- Everything bagel seasoning
+- MSG
+- Star anise
+- Szechuan peppercorns
+- Poppy seeds
+- Dill (dried)
+- Parsley (dried)
+- Mustard seeds
+- Sesame seeds (black)
+- Vanilla bean
+- Lemon pepper
+- Fenugreek
+- Chili-lime seasoning
+
+## Condiments & Sauces
+- Soy sauce
+- Ketchup
+- Mustard (yellow)
+- Mustard (Dijon)
+- Mustard (whole grain)
+- Mayonnaise
+- Hot sauce
+- Sriracha
+- Worcestershire sauce
+- Barbecue sauce
+- Hoisin sauce
+- Oyster sauce
+- Fish sauce
+- Teriyaki sauce
+- Tahini
+- Miso paste (white)
+- Miso paste (red)
+- Gochujang
+- Sambal oelek
+- Curry paste (red)
+- Curry paste (green)
+- Harissa
+- Honey
+- Maple syrup
+- Peanut butter
+- Almond butter
+- Jam
+- Tamarind paste
+- Chutney (mango)
+- Liquid smoke
+- Soy sauce (low-sodium)
+- Tamari
+- Coconut aminos
+- Pomegranate molasses
+- Mirin
+- Rice wine (shaoxing)
+- Chili oil
+- Chili crisp
+- Relish
+
+## Refrigerated
+- Tofu (firm)
+- Tofu (silken)
+- Tempeh
+- Pie crust (refrigerated)
+- Pizza dough
+- Fresh pasta
+- Kimchi
+- Pickles
+- Hummus
+- Guacamole
+- Salsa (fresh)
+- Crescent rolls
+- Biscuit dough
+
+## Frozen
+- Peas (frozen)
+- Corn (frozen)
+- Spinach (frozen)
+- Broccoli (frozen)
+- Mixed vegetables (frozen)
+- Berries (frozen, mixed)
+- Strawberries (frozen)
+- Mango (frozen)
+- French fries (frozen)
+- Hash browns (frozen)
+- Puff pastry (frozen)
+- Phyllo dough (frozen)
+- Shrimp (frozen)
+- Fish fillets (frozen)
+- Ice cream (vanilla)
+
+## Bread & Bakery
+- Bread (white)
+- Bread (whole wheat)
+- Sourdough bread
+- Baguette
+- Ciabatta
+- Pita bread
+- Naan
+- English muffins
+- Hamburger buns
+- Hot dog buns
+- Breadcrumbs
+- Panko breadcrumbs
+- Crackers (saltine)
+- Cornbread mix
+
+## Beverages & Cooking Liquids
+- Chicken broth
+- Beef broth
+- Vegetable broth
+- Bouillon
+- Water
+- Wine (white, dry)
+- Wine (red, dry)
+- Beer
+- Coffee
+- Tea
+- Lemon juice
+- Lime juice
+- Orange juice
+- Tomato juice
+- Clam juice
+- Coconut water
+- Sake
+- Marsala wine
+- Apple cider
+- Almond milk
+- Oat milk

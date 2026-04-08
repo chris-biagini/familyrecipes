@@ -26,6 +26,7 @@ Acorn squash:
     squash: 431.0
   aisle: Produce
   aliases:
+  - acorn squash
   - pepper squash
 Agave nectar:
   nutrients:
@@ -52,6 +53,7 @@ Agave nectar:
     unit: cup
   aisle: Baking
   aliases:
+  - agave nectar
   - agave syrup
   - agave
 Allspice:
@@ -79,6 +81,7 @@ Allspice:
     unit: tbsp
   aisle: Spices
   aliases:
+  - allspice
   - ground allspice
   - Jamaica pepper
 Almond butter:
@@ -166,28 +169,6 @@ Almonds:
   - sliced almonds
   - slivered almonds
   - whole almonds
-American cheese:
-  nutrients:
-    basis_grams: 100.0
-    calories: 366.0
-    fat: 30.71
-    saturated_fat: 18.057
-    trans_fat: 1.144
-    cholesterol: 100.0
-    sodium: 1671.0
-    carbs: 4.78
-    fiber: 0.0
-    total_sugars: 2.26
-    protein: 18.13
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 170853
-    description: Cheese, pasteurized process, American, fortified with vitamin D
-  portions:
-    slice: 28.0
-  aisle: Refrigerated
 Ancho chili powder:
   nutrients:
     basis_grams: 100.0
@@ -242,32 +223,6 @@ Anchovies:
   - anchovy fillets
   - canned anchovies
   - oil-packed anchovies
-Apples:
-  nutrients:
-    basis_grams: 100.0
-    calories: 48.0
-    fat: 0.13
-    saturated_fat: 0.021
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 0.0
-    carbs: 12.76
-    fiber: 1.3
-    total_sugars: 10.1
-    protein: 0.27
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 171689
-    description: Apples, raw, without skin
-  density:
-    grams: 110.0
-    volume: 1.0
-    unit: cup
-  portions:
-    "~unitless": 216.0
-  aisle: Produce
 Applesauce:
   nutrients:
     basis_grams: 100.0
@@ -378,8 +333,6 @@ Artichoke hearts (canned):
   - canned artichoke hearts
   - marinated artichoke hearts
   - artichoke hearts
-Artichokes (jarred):
-  aisle: Pantry
 Arugula:
   nutrients:
     basis_grams: 100.0
@@ -410,8 +363,6 @@ Arugula:
   - rocket
   - rucola
   - roquette
-Asparagus:
-  aisle: Produce
 Avocado:
   nutrients:
     basis_grams: 100.0
@@ -467,8 +418,7 @@ Avocado oil:
   aisle: Pantry
   aliases:
   - cold-pressed avocado oil
-Baby spinach:
-  aisle: Produce
+  - cooking oil
 Bacon:
   nutrients:
     basis_grams: 100.0
@@ -522,54 +472,6 @@ Baguette:
   - French bread
   - French baguette
   - Vienna bread
-Baking powder:
-  nutrients:
-    basis_grams: 100.0
-    calories: 51.0
-    fat: 0.0
-    saturated_fat: 0.0
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 7893.0
-    carbs: 24.1
-    fiber: 0.2
-    total_sugars: 0.0
-    protein: 0.1
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 172804
-    description: Leavening agents, baking powder, double-acting, straight phosphate
-  density:
-    grams: 4.6
-    volume: 1.0
-    unit: tsp
-  aisle: Baking
-Baking soda:
-  nutrients:
-    basis_grams: 100.0
-    calories: 0.0
-    fat: 0.0
-    saturated_fat: 0.0
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 27360.0
-    carbs: 0.0
-    fiber: 0.0
-    total_sugars: 0.0
-    protein: 0.0
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 175040
-    description: Leavening agents, baking soda
-  density:
-    grams: 4.6
-    volume: 1.0
-    unit: tsp
-  aisle: Baking
 Bamboo shoots (canned):
   nutrients:
     basis_grams: 100.0
@@ -687,32 +589,6 @@ Barley:
   - pearl barley
   - pearled barley
   - pot barley
-Basil:
-  nutrients:
-    basis_grams: 100.0
-    calories: 23.0
-    fat: 0.64
-    saturated_fat: 0.041
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 4.0
-    carbs: 2.65
-    fiber: 1.6
-    total_sugars: 0.3
-    protein: 3.15
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 172232
-    description: Basil, fresh
-  density:
-    grams: 24.0
-    volume: 1.0
-    unit: cup
-  aisle: Produce
-  aliases:
-  - Fresh basil
 Basmati rice:
   nutrients:
     basis_grams: 100.0
@@ -766,6 +642,7 @@ Bay leaves:
     unit: tbsp
   aisle: Spices
   aliases:
+  - bay leaves
   - bay leaf
   - laurel leaves
 Bean sprouts:
@@ -798,56 +675,6 @@ Bean sprouts:
   - mung bean sprouts
   - beansprouts
   - soybean sprouts
-Beans (any canned):
-  nutrients:
-    basis_grams: 100.0
-    calories: 114.0
-    fat: 0.9
-    saturated_fat: 0.158
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 239.0
-    carbs: 20.22
-    fiber: 5.5
-    total_sugars: 0.54
-    protein: 6.99
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 174286
-    description: Beans, pinto, canned, drained solids
-  portions:
-    can: 439.0
-  aisle: Pantry
-  aliases:
-  - Beans (canned)
-Beans (any dry):
-  nutrients:
-    basis_grams: 100.0
-    calories: 337.0
-    fat: 1.06
-    saturated_fat: 0.154
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 12.0
-    carbs: 61.29
-    fiber: 15.2
-    total_sugars: 2.1
-    protein: 22.53
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 173744
-    description: Beans, kidney, red, mature seeds, raw
-  density:
-    grams: 184.0
-    volume: 1.0
-    unit: cup
-  aliases:
-  - Dry beans
-  aisle: Pantry
 Beef (brisket):
   nutrients:
     basis_grams: 100.0
@@ -1135,8 +962,6 @@ Bell pepper (yellow):
   - yellow pepper
   - sweet yellow pepper
   - yellow capsicum
-Berries:
-  aisle: Produce
 Berries (frozen, mixed):
   nutrients:
     basis_grams: 100.0
@@ -1167,60 +992,6 @@ Berries (frozen, mixed):
   - frozen mixed berries
   - mixed berry blend
   - frozen berry mix
-Black beans (canned):
-  nutrients:
-    basis_grams: 100.0
-    calories: 91.0
-    fat: 0.29
-    saturated_fat: 0.075
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 384.0
-    carbs: 16.55
-    fiber: 6.9
-    total_sugars: 0.23
-    protein: 6.03
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 175188
-    description: Beans, black turtle, mature seeds, canned
-  density:
-    grams: 240.0
-    volume: 1.0
-    unit: cup
-  portions:
-    can: 439.0
-  aisle: Pantry
-  aliases:
-  - Canned black beans
-Black pepper:
-  nutrients:
-    basis_grams: 100.0
-    calories: 251.0
-    fat: 3.26
-    saturated_fat: 1.392
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 20.0
-    carbs: 63.95
-    fiber: 25.3
-    total_sugars: 0.64
-    protein: 10.39
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 170931
-    description: Spices, pepper, black
-  density:
-    grams: 6.9
-    volume: 1.0
-    unit: tbsp
-  aisle: Spices
-  aliases:
-  - Pepper
 Blackberries:
   nutrients:
     basis_grams: 100.0
@@ -1279,30 +1050,6 @@ Blue cheese:
   - roquefort
   - gorgonzola
   - stilton
-Blueberries:
-  nutrients:
-    basis_grams: 100.0
-    calories: 57.0
-    fat: 0.33
-    saturated_fat: 0.028
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 1.0
-    carbs: 14.49
-    fiber: 2.4
-    total_sugars: 9.96
-    protein: 0.74
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 171711
-    description: Blueberries, raw
-  density:
-    grams: 148.0
-    volume: 1.0
-    unit: cup
-  aisle: Produce
 Bok choy:
   nutrients:
     basis_grams: 100.0
@@ -1334,30 +1081,6 @@ Bok choy:
   - pak choi
   - pak-choi
   - Chinese bok choy
-Bouillon:
-  nutrients:
-    basis_grams: 100.0
-    calories: 267.0
-    fat: 13.88
-    saturated_fat: 3.43
-    trans_fat: 0.0
-    cholesterol: 13.0
-    sodium: 23875.0
-    carbs: 18.01
-    fiber: 0.0
-    total_sugars: 17.36
-    protein: 16.66
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 171562
-    description: Soup, chicken broth or bouillon, dry
-  density:
-    grams: 2.0
-    volume: 1.0
-    unit: tsp
-  aisle: Baking
 Bratwurst:
   nutrients:
     basis_grams: 100.0
@@ -1384,34 +1107,6 @@ Bratwurst:
   - brats
   - pork bratwurst
   - German sausage
-Bread:
-  nutrients:
-    basis_grams: 100.0
-    calories: 266.0
-    fat: 3.33
-    saturated_fat: 0.698
-    trans_fat: 0.027
-    cholesterol: 0.0
-    sodium: 490.0
-    carbs: 49.42
-    fiber: 2.7
-    total_sugars: 5.67
-    protein: 8.85
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 174924
-    description: Bread, white, commercially prepared (includes soft bread crumbs)
-  density:
-    grams: 45.0
-    volume: 1.0
-    unit: cup
-  aliases:
-  - Sandwich bread
-  aisle: Bread
-  portions:
-    slice: 29.0
 Bread (white):
   nutrients:
     basis_grams: 100.0
@@ -1530,30 +1225,6 @@ Brie:
   aliases:
   - brie cheese
   - double brie
-Broccoli:
-  nutrients:
-    basis_grams: 100.0
-    calories: 34.0
-    fat: 0.37
-    saturated_fat: 0.114
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 33.0
-    carbs: 6.64
-    fiber: 2.6
-    total_sugars: 1.7
-    protein: 2.82
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 170379
-    description: Broccoli, raw
-  density:
-    grams: 91.0
-    volume: 1.0
-    unit: cup
-  aisle: Produce
 Broccoli (frozen):
   nutrients:
     basis_grams: 100.0
@@ -1640,89 +1311,6 @@ Bulgur:
   - cracked wheat
   - bulgur wheat
   - burghul
-Butter:
-  nutrients:
-    basis_grams: 100.0
-    calories: 717.0
-    fat: 81.11
-    saturated_fat: 51.368
-    trans_fat: 3.278
-    cholesterol: 215.0
-    sodium: 643.0
-    carbs: 0.06
-    fiber: 0.0
-    total_sugars: 0.06
-    protein: 0.85
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 173410
-    description: Butter, salted
-  density:
-    grams: 227.0
-    volume: 1.0
-    unit: cup
-  aliases:
-  - Salted butter
-  - Butter (salted)
-  portions:
-    pat: 5.0
-    stick: 113.0
-  aisle: Refrigerated
-Butter (unsalted):
-  nutrients:
-    basis_grams: 100.0
-    calories: 717.0
-    fat: 81.11
-    saturated_fat: 50.489
-    trans_fat: 0.0
-    cholesterol: 215.0
-    sodium: 11.0
-    carbs: 0.06
-    fiber: 0.0
-    total_sugars: 0.06
-    protein: 0.85
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 173430
-    description: Butter, without salt
-  density:
-    grams: 227.0
-    volume: 1.0
-    unit: cup
-  aliases:
-  - Unsalted butter
-  aisle: Refrigerated
-  portions:
-    pat: 5.0
-    stick: 113.0
-Buttermilk:
-  nutrients:
-    basis_grams: 100.0
-    calories: 62.0
-    fat: 3.31
-    saturated_fat: 1.899
-    trans_fat: 0.0
-    cholesterol: 11.0
-    sodium: 105.0
-    carbs: 4.88
-    fiber: 0.0
-    total_sugars: 4.88
-    protein: 3.21
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 172225
-    description: Milk, buttermilk, fluid, whole
-  density:
-    grams: 245.0
-    volume: 1.0
-    unit: cup
-  aisle: Refrigerated
 Butternut squash:
   nutrients:
     basis_grams: 100.0
@@ -1871,6 +1459,8 @@ Canola oil:
   aisle: Pantry
   aliases:
   - rapeseed oil
+  - cooking oil
+  - neutral oil
 Cantaloupe:
   nutrients:
     basis_grams: 100.0
@@ -1959,37 +1549,9 @@ Cardamom:
     unit: tbsp
   aisle: Spices
   aliases:
+  - cardamom
   - ground cardamom
   - cardamon
-Carrot:
-  nutrients:
-    basis_grams: 100.0
-    calories: 41.0
-    fat: 0.24
-    saturated_fat: 0.032
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 69.0
-    carbs: 9.58
-    fiber: 2.8
-    total_sugars: 4.74
-    protein: 0.93
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 170393
-    description: Carrots, raw
-  density:
-    grams: 128.0
-    volume: 1.0
-    unit: cup
-  portions:
-    "~unitless": 72.0
-    small: 50.0
-    medium: 61.0
-    large: 72.0
-  aisle: Produce
 Cashews:
   nutrients:
     basis_grams: 100.0
@@ -2046,26 +1608,6 @@ Cauliflower:
   aliases:
   - cauliflower florets
   - fresh cauliflower
-Cavatappi:
-  nutrients:
-    basis_grams: 100.0
-    calories: 371.0
-    fat: 1.51
-    saturated_fat: 0.277
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 6.0
-    carbs: 74.67
-    fiber: 3.2
-    total_sugars: 2.67
-    protein: 13.04
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 169736
-    description: Pasta, dry, enriched
-  aisle: Pantry
 Cayenne:
   nutrients:
     basis_grams: 100.0
@@ -2091,34 +1633,9 @@ Cayenne:
     unit: tbsp
   aisle: Spices
   aliases:
+  - cayenne
   - cayenne pepper
   - ground red pepper
-Celery:
-  nutrients:
-    basis_grams: 100.0
-    calories: 14.0
-    fat: 0.17
-    saturated_fat: 0.042
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 80.0
-    carbs: 2.97
-    fiber: 1.6
-    total_sugars: 1.34
-    protein: 0.69
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 169988
-    description: Celery, raw
-  density:
-    grams: 101.0
-    volume: 1.0
-    unit: cup
-  portions:
-    stalk: 64.0
-  aisle: Produce
 Celery root:
   nutrients:
     basis_grams: 100.0
@@ -2172,34 +1689,8 @@ Celery seed:
     unit: tbsp
   aisle: Spices
   aliases:
+  - celery seed
   - celery seeds
-Cheddar:
-  nutrients:
-    basis_grams: 100.0
-    calories: 410.0
-    fat: 33.82
-    saturated_fat: 19.368
-    trans_fat: 1.179
-    cholesterol: 99.0
-    sodium: 644.0
-    carbs: 2.13
-    fiber: 0.0
-    total_sugars: 0.27
-    protein: 24.25
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 170899
-    description: Cheese, cheddar, sharp, sliced
-  aliases:
-  - Cheddar cheese
-  aisle: Refrigerated
-  portions: {}
-  density:
-    grams: 112.0
-    volume: 1.0
-    unit: cup
 Cherries:
   nutrients:
     basis_grams: 100.0
@@ -2342,6 +1833,7 @@ Chicken breast:
     breast, bone removed: 290.0
   aisle: Refrigerated
   aliases:
+  - chicken breast
   - boneless chicken breast
   - chicken cutlet
 Chicken broth:
@@ -2396,6 +1888,7 @@ Chicken drumsticks:
     drumstick with skin: 133.0
   aisle: Refrigerated
   aliases:
+  - chicken drumsticks
   - chicken legs
   - drumsticks
 Chicken thigh:
@@ -2448,35 +1941,9 @@ Chicken wings:
     piece: 107.0
   aisle: Refrigerated
   aliases:
+  - chicken wings
   - buffalo wings
   - party wings
-Chickpeas (canned):
-  nutrients:
-    basis_grams: 100.0
-    calories: 139.0
-    fat: 2.77
-    saturated_fat: 0.214
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 246.0
-    carbs: 22.53
-    fiber: 6.4
-    total_sugars: 4.01
-    protein: 7.05
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 173800
-    description: Chickpeas (garbanzo beans, bengal gram), mature seeds, canned, drained
-      solids
-  portions:
-    can: 439.0
-  aisle: Pantry
-  density:
-    grams: 130.0
-    volume: 0.5
-    unit: cup
 Chili powder:
   nutrients:
     basis_grams: 100.0
@@ -2502,6 +1969,7 @@ Chili powder:
     unit: tbsp
   aisle: Spices
   aliases:
+  - chili powder
   - chile powder
   - chilli powder
 Chili-lime seasoning:
@@ -2532,8 +2000,6 @@ Chili-lime seasoning:
   - Tajin
   - chili lime spice
   - chile lime seasoning
-Chipotles en adobo:
-  aisle: International
 Chives:
   nutrients:
     basis_grams: 100.0
@@ -2560,26 +2026,6 @@ Chives:
   aisle: Produce
   aliases:
   - fresh chives
-Chocolate:
-  nutrients:
-    basis_grams: 100.0
-    calories: 535.0
-    fat: 29.66
-    saturated_fat: 18.509
-    trans_fat: 0.0
-    cholesterol: 23.0
-    sodium: 79.0
-    carbs: 59.4
-    fiber: 3.4
-    total_sugars: 51.5
-    protein: 7.65
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 167587
-    description: Candies, milk chocolate
-  aisle: Pantry
 Chocolate (baking, unsweetened):
   nutrients:
     basis_grams: 100.0
@@ -2634,33 +2080,6 @@ Chocolate (dark):
   - dark chocolate
   - bittersweet chocolate
   - semi-sweet chocolate
-Chocolate chips:
-  nutrients:
-    basis_grams: 100.0
-    calories: 480.0
-    fat: 30.0
-    saturated_fat: 17.75
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 11.0
-    carbs: 63.9
-    fiber: 5.9
-    total_sugars: 54.5
-    protein: 4.2
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 167976
-    description: Candies, semisweet chocolate
-  density:
-    grams: 182.0
-    volume: 1.0
-    unit: cup
-  aisle: Pantry
-  aliases:
-  - Semisweet chocolate chips
-  - Chocolate chips (semi-sweet)
 Chorizo:
   nutrients:
     basis_grams: 100.0
@@ -2717,33 +2136,6 @@ Cilantro:
   - coriander
   - fresh coriander
   - Chinese parsley
-Cinnamon:
-  nutrients:
-    basis_grams: 100.0
-    calories: 247.0
-    fat: 1.24
-    saturated_fat: 0.345
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 10.0
-    carbs: 80.59
-    fiber: 53.1
-    total_sugars: 2.17
-    protein: 3.99
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 171320
-    description: Spices, cinnamon, ground
-  density:
-    grams: 7.8
-    volume: 1.0
-    unit: tbsp
-  aisle: Spices
-  aliases:
-  - Ground cinnamon
-  - Cinnamon (ground)
 Clam juice:
   nutrients:
     basis_grams: 100.0
@@ -2829,6 +2221,7 @@ Cloves:
     unit: tbsp
   aisle: Spices
   aliases:
+  - cloves
   - ground cloves
   - whole cloves
 Cocoa powder:
@@ -2856,6 +2249,7 @@ Cocoa powder:
     unit: cup
   aisle: Baking
   aliases:
+  - cocoa powder
   - unsweetened cocoa
   - cacao powder
 Coconut (fresh):
@@ -3110,6 +2504,7 @@ Collard greens:
   aliases:
   - collards
   - collard
+  - collard greens
 Condensed milk (sweetened):
   nutrients:
     basis_grams: 100.0
@@ -3250,6 +2645,7 @@ Corn (fresh):
   aisle: Produce
   aliases:
   - fresh corn
+  - sweet corn
   - corn on the cob
 Corn (frozen):
   nutrients:
@@ -3280,6 +2676,7 @@ Corn (frozen):
   aliases:
   - frozen sweet corn
   - frozen corn kernels
+  - sweet corn
 Cornbread mix:
   nutrients:
     basis_grams: 100.0
@@ -3332,54 +2729,6 @@ Corned beef:
   - corned beef brisket
   - canned corned beef
   - salt beef
-Cornmeal:
-  nutrients:
-    basis_grams: 100.0
-    calories: 370.0
-    fat: 1.75
-    saturated_fat: 0.22
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 7.0
-    carbs: 79.45
-    fiber: 3.9
-    total_sugars: 1.61
-    protein: 7.11
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 168929
-    description: Cornmeal, degermed, unenriched, yellow
-  density:
-    grams: 157.0
-    volume: 1.0
-    unit: cup
-  aisle: Baking
-Cornstarch:
-  nutrients:
-    basis_grams: 100.0
-    calories: 381.0
-    fat: 0.05
-    saturated_fat: 0.009
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 9.0
-    carbs: 91.27
-    fiber: 0.9
-    total_sugars: 0.0
-    protein: 0.26
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 169698
-    description: Cornstarch
-  density:
-    grams: 128.0
-    volume: 1.0
-    unit: cup
-  aisle: Baking
 Cottage cheese:
   nutrients:
     basis_grams: 100.0
@@ -3522,30 +2871,6 @@ Cranberries (fresh):
   aliases:
   - cranberry
   - fresh cranberries
-Cream cheese:
-  nutrients:
-    basis_grams: 100.0
-    calories: 350.0
-    fat: 34.44
-    saturated_fat: 20.213
-    trans_fat: 1.173
-    cholesterol: 101.0
-    sodium: 314.0
-    carbs: 5.52
-    fiber: 0.0
-    total_sugars: 3.76
-    protein: 6.15
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 173418
-    description: Cheese, cream
-  density:
-    grams: 232.0
-    volume: 1.0
-    unit: cup
-  aisle: Refrigerated
 Cream of tartar:
   nutrients:
     basis_grams: 100.0
@@ -3571,6 +2896,7 @@ Cream of tartar:
     unit: tsp
   aisle: Baking
   aliases:
+  - cream of tartar
   - potassium bitartrate
 Cucumber:
   nutrients:
@@ -3626,6 +2952,7 @@ Cumin:
     unit: tbsp
   aisle: Spices
   aliases:
+  - cumin
   - ground cumin
   - cumin seed
 Curry paste (red):
@@ -3680,6 +3007,7 @@ Curry powder:
     unit: tbsp
   aisle: Spices
   aliases:
+  - curry powder
   - madras curry powder
 Daikon radish:
   nutrients:
@@ -3736,8 +3064,6 @@ Dates:
   aliases:
   - Medjool date
   - Deglet Noor date
-Diastatic malt powder:
-  aisle: Specialty
 Dill:
   nutrients:
     basis_grams: 100.0
@@ -3961,6 +3287,7 @@ Egg noodles:
   aisle: Pantry
   aliases:
   - wide egg noodles
+  - pasta
   - noodles
 Egg whites:
   nutrients:
@@ -3991,30 +3318,6 @@ Egg whites:
   aliases:
   - egg white
   - whites
-Egg yolks:
-  nutrients:
-    basis_grams: 100.0
-    calories: 322.0
-    fat: 26.54
-    saturated_fat: 9.551
-    trans_fat: 0.0
-    cholesterol: 1085.0
-    sodium: 48.0
-    carbs: 3.59
-    fiber: 0.0
-    total_sugars: 0.56
-    protein: 15.86
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 172184
-    description: Egg, yolk, raw, fresh
-  density:
-    grams: 243.0
-    volume: 1.0
-    unit: cup
-  aisle: Refrigerated
 Eggplant:
   nutrients:
     basis_grams: 100.0
@@ -4045,37 +3348,6 @@ Eggplant:
   aliases:
   - aubergine
   - brinjal
-Eggs:
-  nutrients:
-    basis_grams: 100.0
-    calories: 143.0
-    fat: 9.51
-    saturated_fat: 3.126
-    trans_fat: 0.038
-    cholesterol: 372.0
-    sodium: 142.0
-    carbs: 0.72
-    fiber: 0.0
-    total_sugars: 0.37
-    protein: 12.56
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 171287
-    description: Egg, whole, raw, fresh
-  density:
-    grams: 243.0
-    volume: 1.0
-    unit: cup
-  portions:
-    "~unitless": 50.0
-    large: 50.0
-    small: 38.0
-    medium: 44.0
-    extra large: 56.0
-    jumbo: 63.0
-  aisle: Refrigerated
 Endive:
   nutrients:
     basis_grams: 100.0
@@ -4159,10 +3431,6 @@ Evaporated milk:
   aliases:
   - canned evaporated milk
   - unsweetened condensed milk
-Everclear 151:
-  aisle: Alcohol
-Farro:
-  aisle: Pantry
 Fennel:
   nutrients:
     basis_grams: 100.0
@@ -4218,6 +3486,7 @@ Fennel seeds:
     unit: tbsp
   aisle: Spices
   aliases:
+  - fennel seeds
   - fennel seed
   - anise seed
 Fenugreek:
@@ -4303,6 +3572,7 @@ Fettuccine:
     unit: cup
   aisle: Pantry
   aliases:
+  - pasta
   - fettucine
   - flat pasta
 Figs (fresh):
@@ -4332,8 +3602,6 @@ Figs (fresh):
   aliases:
   - fig
   - Black Mission fig
-Fiori di Sicilia:
-  aisle: Specialty
 Fish fillets (frozen):
   nutrients:
     basis_grams: 100.0
@@ -4413,6 +3681,7 @@ Five-spice powder:
     unit: tbsp
   aisle: Spices
   aliases:
+  - five-spice powder
   - five spice
   - Chinese five spice
 Flaxseed:
@@ -4443,88 +3712,6 @@ Flaxseed:
   - flax seeds
   - ground flaxseed
   - milled flaxseed
-Flour (00):
-  nutrients:
-    basis_grams: 100.0
-    calories: 364.0
-    fat: 0.98
-    saturated_fat: 0.155
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 2.0
-    carbs: 76.31
-    fiber: 2.7
-    total_sugars: 0.27
-    protein: 10.33
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 169761
-    description: Wheat flour, white, all-purpose, unenriched
-  density:
-    grams: 125.0
-    volume: 1.0
-    unit: cup
-  aisle: Baking
-  aliases:
-  - 00 Flour
-  - Pizza flour
-Flour (all-purpose):
-  nutrients:
-    basis_grams: 100.0
-    calories: 364.0
-    fat: 0.98
-    saturated_fat: 0.155
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 2.0
-    carbs: 76.31
-    fiber: 2.7
-    total_sugars: 0.27
-    protein: 10.33
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 168936
-    description: Wheat flour, white, all-purpose, enriched, unbleached
-  density:
-    grams: 125.0
-    volume: 1.0
-    unit: cup
-  aisle: Baking
-  aliases:
-  - AP flour
-  - All purpose flour
-  - All-purpose flour
-  - Flour (AP)
-Flour (bread):
-  nutrients:
-    basis_grams: 100.0
-    calories: 361.0
-    fat: 1.66
-    saturated_fat: 0.244
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 2.0
-    carbs: 72.53
-    fiber: 2.4
-    total_sugars: 0.31
-    protein: 11.98
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 168896
-    description: Wheat flour, white, bread, enriched
-  density:
-    grams: 137.0
-    volume: 1.0
-    unit: cup
-  aisle: Baking
-  aliases:
-  - Bread flour
 Flour (cake):
   nutrients:
     basis_grams: 100.0
@@ -4579,58 +3766,6 @@ Flour (self-rising):
   aliases:
   - self-rising flour
   - self-raising flour
-Flour (semolina):
-  nutrients:
-    basis_grams: 100.0
-    calories: 360.0
-    fat: 1.05
-    saturated_fat: 0.15
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 1.0
-    carbs: 72.83
-    fiber: 3.9
-    total_sugars: 0.0
-    protein: 12.68
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 169715
-    description: Semolina, enriched
-  density:
-    grams: 167.0
-    volume: 1.0
-    unit: cup
-  aliases:
-  - Semolina flour
-  aisle: Baking
-Flour (whole wheat):
-  nutrients:
-    basis_grams: 100.0
-    calories: 332.0
-    fat: 1.95
-    saturated_fat: 0.43
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 3.0
-    carbs: 74.48
-    fiber: 13.1
-    total_sugars: 1.02
-    protein: 9.61
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 168944
-    description: Wheat flour, whole-grain, soft wheat
-  density:
-    grams: 125.0
-    volume: 1.0
-    unit: cup
-  aisle: Baking
-Frank's Red Hot:
-  aisle: Pantry
 French fries (frozen):
   nutrients:
     basis_grams: 100.0
@@ -4682,60 +3817,6 @@ Fresh pasta:
   - refrigerated pasta
   - fresh-made pasta
   - egg pasta
-Frozen spinach:
-  nutrients:
-    basis_grams: 100.0
-    calories: 34.0
-    fat: 0.87
-    saturated_fat: 0.036
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 322.0
-    carbs: 4.8
-    fiber: 3.7
-    total_sugars: 0.51
-    protein: 4.01
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 170124
-    description: Spinach, frozen, chopped or leaf, cooked, boiled, drained, with salt
-  density:
-    grams: 190.0
-    volume: 1.0
-    unit: cup
-  aisle: Frozen
-Fruit:
-  aisle: Produce
-Garlic:
-  nutrients:
-    basis_grams: 100.0
-    calories: 149.0
-    fat: 0.5
-    saturated_fat: 0.089
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 17.0
-    carbs: 33.06
-    fiber: 2.1
-    total_sugars: 1.0
-    protein: 6.36
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 169230
-    description: Garlic, raw
-  density:
-    grams: 136.0
-    volume: 1.0
-    unit: cup
-  portions:
-    clove: 3.0
-  aisle: Produce
-  aliases:
-  - Fresh garlic
 Garlic powder:
   nutrients:
     basis_grams: 100.0
@@ -4761,6 +3842,7 @@ Garlic powder:
     unit: tbsp
   aisle: Spices
   aliases:
+  - garlic powder
   - granulated garlic
 Gelatin:
   nutrients:
@@ -4786,6 +3868,7 @@ Gelatin:
     envelope: 7.0
   aisle: Baking
   aliases:
+  - gelatin
   - unflavored gelatin
   - gelatine
 Ghee:
@@ -4894,26 +3977,6 @@ Goat cheese:
   - chèvre
   - chevre
   - fresh goat cheese
-Gouda:
-  nutrients:
-    basis_grams: 100.0
-    calories: 356.0
-    fat: 27.44
-    saturated_fat: 17.614
-    trans_fat: 0.0
-    cholesterol: 114.0
-    sodium: 819.0
-    carbs: 2.22
-    fiber: 0.0
-    total_sugars: 2.22
-    protein: 24.94
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 171241
-    description: Cheese, gouda
-  aisle: Gourmet
 Grapefruits:
   nutrients:
     basis_grams: 100.0
@@ -5001,32 +4064,6 @@ Green beans:
   - string beans
   - snap beans
   - haricots verts
-Green bell pepper:
-  nutrients:
-    basis_grams: 100.0
-    calories: 20.0
-    fat: 0.17
-    saturated_fat: 0.058
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 3.0
-    carbs: 4.64
-    fiber: 1.7
-    total_sugars: 2.4
-    protein: 0.86
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 170427
-    description: Peppers, sweet, green, raw
-  density:
-    grams: 149.0
-    volume: 1.0
-    unit: cup
-  portions:
-    "~unitless": 164.0
-  aisle: Produce
 Green chiles (canned):
   nutrients:
     basis_grams: 100.0
@@ -5055,32 +4092,6 @@ Green chiles (canned):
   - canned green chiles
   - diced green chiles
   - mild green chiles
-Green onions:
-  nutrients:
-    basis_grams: 100.0
-    calories: 27.0
-    fat: 0.47
-    saturated_fat: 0.165
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 15.0
-    carbs: 5.74
-    fiber: 1.8
-    total_sugars: 3.91
-    protein: 0.97
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 170006
-    description: Onions, young green, tops only
-  density:
-    grams: 71.0
-    volume: 1.0
-    unit: cup
-  portions:
-    bunch: 71.0
-  aisle: Produce
 Grits:
   nutrients:
     basis_grams: 100.0
@@ -5130,6 +4141,7 @@ Ground beef:
     description: Beef, ground, 80% lean meat / 20% fat, raw
   aisle: Refrigerated
   aliases:
+  - ground beef
   - hamburger meat
   - minced beef
 Ground chicken:
@@ -5153,6 +4165,7 @@ Ground chicken:
     description: Chicken, ground, raw
   aisle: Refrigerated
   aliases:
+  - ground chicken
   - minced chicken
 Ground pork:
   nutrients:
@@ -5175,6 +4188,7 @@ Ground pork:
     description: Pork, fresh, ground, raw
   aisle: Refrigerated
   aliases:
+  - ground pork
   - minced pork
 Ground turkey:
   nutrients:
@@ -5199,33 +4213,8 @@ Ground turkey:
     patty, 4 oz: 114.0
   aisle: Refrigerated
   aliases:
+  - ground turkey
   - minced turkey
-Gruyère:
-  nutrients:
-    basis_grams: 100.0
-    calories: 413.0
-    fat: 32.34
-    saturated_fat: 18.913
-    trans_fat: 0.0
-    cholesterol: 110.0
-    sodium: 714.0
-    carbs: 0.36
-    fiber: 0.0
-    total_sugars: 0.36
-    protein: 29.81
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 171242
-    description: Cheese, gruyere
-  density:
-    grams: 132.0
-    volume: 1.0
-    unit: cup
-  aisle: Gourmet
-  aliases:
-  - Gruyere
 Habanero pepper:
   nutrients:
     basis_grams: 100.0
@@ -5481,30 +4470,6 @@ Hearts of palm:
   - canned hearts of palm
   - palmito
   - palm hearts
-Heavy cream:
-  nutrients:
-    basis_grams: 100.0
-    calories: 340.0
-    fat: 36.08
-    saturated_fat: 23.032
-    trans_fat: 1.236
-    cholesterol: 113.0
-    sodium: 27.0
-    carbs: 2.84
-    fiber: 0.0
-    total_sugars: 2.92
-    protein: 2.84
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 170859
-    description: Cream, fluid, heavy whipping
-  density:
-    grams: 238.0
-    volume: 1.0
-    unit: cup
-  aisle: Refrigerated
 Hemp seeds:
   nutrients:
     basis_grams: 100.0
@@ -5586,30 +4551,6 @@ Hoisin sauce:
   aliases:
   - Chinese BBQ sauce
   - Peking sauce
-Honey:
-  nutrients:
-    basis_grams: 100.0
-    calories: 304.0
-    fat: 0.0
-    saturated_fat: 0.0
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 4.0
-    carbs: 82.4
-    fiber: 0.2
-    total_sugars: 82.12
-    protein: 0.3
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 169640
-    description: Honey
-  density:
-    grams: 339.0
-    volume: 1.0
-    unit: cup
-  aisle: Baking
 Honeydew:
   nutrients:
     basis_grams: 100.0
@@ -5690,30 +4631,6 @@ Hot dogs:
   - frankfurters
   - wieners
   - sausages
-Hot sauce:
-  nutrients:
-    basis_grams: 100.0
-    calories: 11.0
-    fat: 0.37
-    saturated_fat: 0.052
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 2643.0
-    carbs: 1.75
-    fiber: 0.3
-    total_sugars: 1.26
-    protein: 0.51
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 174527
-    description: Sauce, ready-to-serve, pepper or hot
-  density:
-    grams: 4.7
-    volume: 1.0
-    unit: tsp
-  aisle: Produce
 Hummus:
   nutrients:
     basis_grams: 100.0
@@ -5741,30 +4658,6 @@ Hummus:
   aliases:
   - chickpea dip
   - garbanzo dip
-Ice:
-  omit_from_shopping: true
-Ice cream (vanilla):
-  nutrients:
-    basis_grams: 100.0
-    calories: 207.0
-    fat: 11.0
-    saturated_fat: 6.79
-    trans_fat: 0.0
-    cholesterol: 44.0
-    sodium: 80.0
-    carbs: 23.6
-    fiber: 0.7
-    total_sugars: 21.22
-    protein: 3.5
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 167575
-    description: Ice creams, vanilla
-  aisle: Frozen
-  aliases:
-  - Ice cream
 Iceberg lettuce:
   nutrients:
     basis_grams: 100.0
@@ -5799,8 +4692,6 @@ Iceberg lettuce:
   aliases:
   - crisphead lettuce
   - head lettuce
-Italian seasoning:
-  aisle: Spices
 Jackfruit (canned):
   nutrients:
     basis_grams: 100.0
@@ -5887,33 +4778,6 @@ Jam:
   - preserves
   - fruit spread
   - jelly
-Jasmine rice:
-  nutrients:
-    basis_grams: 100.0
-    calories: 360.0
-    fat: 0.58
-    saturated_fat: 0.158
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 1.0
-    carbs: 79.34
-    fiber: 1.4
-    total_sugars: 0.0
-    protein: 6.61
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 168879
-    description: Rice, white, medium-grain, raw, enriched
-  density:
-    grams: 195.0
-    volume: 1.0
-    unit: cup
-  portions:
-    go: 150.0
-    gō: 150.0
-  aisle: International
 Jicama:
   nutrients:
     basis_grams: 100.0
@@ -6002,6 +4866,7 @@ Ketchup:
   aliases:
   - catsup
   - tomato ketchup
+  - tomato sauce
 Kidney beans (canned):
   nutrients:
     basis_grams: 100.0
@@ -6086,8 +4951,6 @@ Kiwi:
   aliases:
   - kiwifruit
   - Chinese gooseberry
-Kombu:
-  aisle: International
 Lamb (ground):
   nutrients:
     basis_grams: 100.0
@@ -6186,6 +5049,7 @@ Lasagna noodles:
   aisle: Pantry
   aliases:
   - lasagna sheets
+  - pasta
   - lasagne noodles
 Leeks:
   nutrients:
@@ -6216,32 +5080,6 @@ Leeks:
   aisle: Produce
   aliases:
   - leek
-Lemon:
-  nutrients:
-    basis_grams: 100.0
-    calories: 29.0
-    fat: 0.3
-    saturated_fat: 0.039
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 2.0
-    carbs: 9.32
-    fiber: 2.8
-    total_sugars: 2.5
-    protein: 1.1
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 167746
-    description: Lemons, raw, without peel
-  density:
-    grams: 212.0
-    volume: 1.0
-    unit: cup
-  portions:
-    "~unitless": 84.0
-  aisle: Produce
 Lemon juice:
   nutrients:
     basis_grams: 100.0
@@ -6327,30 +5165,8 @@ Lemons:
     fruit: 58.0
     wedge or slice: 7.0
   aisle: Produce
-Lentils:
-  nutrients:
-    basis_grams: 100.0
-    calories: 352.0
-    fat: 1.06
-    saturated_fat: 0.154
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 6.0
-    carbs: 63.35
-    fiber: 10.7
-    total_sugars: 2.03
-    protein: 24.63
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 172420
-    description: Lentils, raw
-  density:
-    grams: 192.0
-    volume: 1.0
-    unit: cup
-  aisle: Pantry
+  aliases:
+  - lemon
 Lentils (canned):
   nutrients:
     basis_grams: 100.0
@@ -6404,6 +5220,8 @@ Lentils (dry):
     unit: cup
   aisle: Pantry
   aliases:
+  - lentils
+  - green lentils
   - French lentils
 Light corn syrup:
   nutrients:
@@ -6430,6 +5248,7 @@ Light corn syrup:
     unit: cup
   aisle: Baking
   aliases:
+  - light corn syrup
   - corn syrup
   - Karo syrup
 Lime juice:
@@ -6462,34 +5281,6 @@ Lime juice:
   - fresh lime juice
   - squeezed lime
   - key lime juice
-Limes:
-  nutrients:
-    basis_grams: 100.0
-    calories: 30.0
-    fat: 0.2
-    saturated_fat: 0.022
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 2.0
-    carbs: 10.54
-    fiber: 2.8
-    total_sugars: 1.69
-    protein: 0.7
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 168155
-    description: Limes, raw
-  portions:
-    "~unitless": 67.0
-  aisle: Produce
-Liquid smoke:
-  density:
-    grams: 236.6
-    volume: 1.0
-    unit: cup
-  aisle: Pantry
 Lobster:
   nutrients:
     basis_grams: 100.0
@@ -6570,6 +5361,7 @@ Macaroni:
   aisle: Pantry
   aliases:
   - elbow macaroni
+  - pasta
   - elbow pasta
 Mahi-mahi:
   nutrients:
@@ -6597,60 +5389,6 @@ Mahi-mahi:
   - mahi mahi
   - dolphinfish
   - dorado
-Maldon salt:
-  nutrients:
-    basis_grams: 100.0
-    calories: 0.0
-    fat: 0.0
-    saturated_fat: 0.0
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 38758.0
-    carbs: 0.0
-    fiber: 0.0
-    total_sugars: 0.0
-    protein: 0.0
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 173468
-    description: Salt, table
-  density:
-    grams: 130.0
-    volume: 1.0
-    unit: cup
-  aliases:
-  - Flaky salt
-  - Salt (flaky)
-  aisle: Baking
-Malt syrup:
-  nutrients:
-    basis_grams: 100.0
-    calories: 318.0
-    fat: 0.0
-    saturated_fat: 0.0
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 35.0
-    carbs: 71.3
-    fiber: 0.0
-    total_sugars: 71.3
-    protein: 6.2
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 169660
-    description: Syrups, malt
-  density:
-    grams: 332.0
-    volume: 1.0
-    unit: cup
-  aisle: Baking
-  aliases:
-  - Barley malt syrup
-  - Barley malt
 Mango:
   nutrients:
     basis_grams: 100.0
@@ -6709,30 +5447,6 @@ Mango (frozen):
   aliases:
   - frozen mango chunks
   - frozen mango pieces
-Maple syrup:
-  nutrients:
-    basis_grams: 100.0
-    calories: 260.0
-    fat: 0.06
-    saturated_fat: 0.007
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 12.0
-    carbs: 67.04
-    fiber: 0.0
-    total_sugars: 60.46
-    protein: 0.04
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 169661
-    description: Syrups, maple
-  density:
-    grams: 315.0
-    volume: 1.0
-    unit: cup
-  aisle: Pantry
 Marjoram:
   nutrients:
     basis_grams: 100.0
@@ -6790,32 +5504,6 @@ Marsala wine:
   - dry Marsala
   - sweet Marsala
   - cooking Marsala
-Mayonnaise:
-  nutrients:
-    basis_grams: 100.0
-    calories: 680.0
-    fat: 74.85
-    saturated_fat: 11.703
-    trans_fat: 0.187
-    cholesterol: 42.0
-    sodium: 635.0
-    carbs: 0.57
-    fiber: 0.0
-    total_sugars: 0.57
-    protein: 0.96
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 171009
-    description: Salad dressing, mayonnaise, regular
-  density:
-    grams: 220.0
-    volume: 1.0
-    unit: cup
-  aisle: Pantry
-  aliases:
-  - Mayo
 Meringue powder:
   nutrients:
     basis_grams: 100.0
@@ -6836,55 +5524,8 @@ Meringue powder:
     fdc_id: 172204
     description: Egg, white, dried
   aisle: Baking
-Mexican oregano:
-  aisle: Spices
-Mezze rigatoni:
-  nutrients:
-    basis_grams: 100.0
-    calories: 371.0
-    fat: 1.51
-    saturated_fat: 0.277
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 6.0
-    carbs: 74.67
-    fiber: 3.2
-    total_sugars: 2.67
-    protein: 13.04
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 169736
-    description: Pasta, dry, enriched
-  aisle: Pantry
-Milk:
-  nutrients:
-    basis_grams: 100.0
-    calories: 64.0
-    fat: 3.66
-    saturated_fat: 2.278
-    trans_fat: 0.0
-    cholesterol: 14.0
-    sodium: 49.0
-    carbs: 4.65
-    fiber: 0.0
-    total_sugars: 0.0
-    protein: 3.28
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 171266
-    description: Milk, producer, fluid, 3.7% milkfat
-  density:
-    grams: 976.0
-    volume: 1.0
-    unit: qt
-  aisle: Refrigerated
   aliases:
-  - Whole milk
-  - Milk (whole)
+  - meringue powder
 Milk (2%):
   nutrients:
     basis_grams: 100.0
@@ -7086,6 +5727,7 @@ Mixed greens:
     leaf outer: 24.0
   aisle: Produce
   aliases:
+  - salad greens
   - mesclun
   - spring mix
 Mixed vegetables (frozen):
@@ -7140,6 +5782,7 @@ Molasses:
     unit: cup
   aisle: Baking
   aliases:
+  - molasses
   - blackstrap molasses
   - treacle
 Monterey Jack:
@@ -7173,83 +5816,6 @@ Monterey Jack:
   aliases:
   - monterey jack cheese
   - jack cheese
-Mozzarella (fresh):
-  nutrients:
-    basis_grams: 100.0
-    calories: 299.0
-    fat: 22.14
-    saturated_fat: 13.9
-    trans_fat: 0.0
-    cholesterol: 79.0
-    sodium: 486.0
-    carbs: 2.4
-    fiber: 0.0
-    total_sugars: 0.0
-    protein: 22.17
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 170845
-    description: Cheese, mozzarella, whole milk
-  aisle: Gourmet
-  aliases:
-  - Fresh mozzarella
-Mozzarella (low-moisture):
-  nutrients:
-    basis_grams: 100.0
-    calories: 299.0
-    fat: 22.14
-    saturated_fat: 13.9
-    trans_fat: 0.0
-    cholesterol: 79.0
-    sodium: 486.0
-    carbs: 2.4
-    fiber: 0.0
-    total_sugars: 0.0
-    protein: 22.17
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 170845
-    description: Cheese, mozzarella, whole milk
-  density:
-    grams: 112.0
-    volume: 1.0
-    unit: cup
-  aliases:
-  - Mozzarella
-  - Mozarella cheese
-  aisle: Refrigerated
-MSG:
-  aisle: Spices
-Muenster:
-  nutrients:
-    basis_grams: 100.0
-    calories: 368.0
-    fat: 30.04
-    saturated_fat: 19.113
-    trans_fat: 0.0
-    cholesterol: 96.0
-    sodium: 628.0
-    carbs: 1.12
-    fiber: 0.0
-    total_sugars: 1.12
-    protein: 23.41
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 171245
-    description: Cheese, muenster
-  density:
-    grams: 132.0
-    volume: 1.0
-    unit: cup
-  aisle: Refrigerated
-  aliases:
-  - Muenster cheese
 Mushrooms (cremini):
   nutrients:
     basis_grams: 100.0
@@ -7620,6 +6186,7 @@ Nutmeg:
     unit: tbsp
   aisle: Spices
   aliases:
+  - nutmeg
   - ground nutmeg
 Okra:
   nutrients:
@@ -7650,35 +6217,6 @@ Okra:
   aliases:
   - lady's fingers
   - gumbo
-Olive oil:
-  nutrients:
-    basis_grams: 100.0
-    calories: 884.0
-    fat: 100.0
-    saturated_fat: 13.808
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 2.0
-    carbs: 0.0
-    fiber: 0.0
-    total_sugars: 0.0
-    protein: 0.0
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 171413
-    description: Oil, olive, salad or cooking
-  density:
-    grams: 216.0
-    volume: 1.0
-    unit: cup
-  aisle: Pantry
-  aliases:
-  - EVOO
-  - Olive oil (extra virgin)
-  - Extra virgin olive oil
-  - Extra-virgin olive oil
 Olive oil (extra-virgin):
   nutrients:
     basis_grams: 100.0
@@ -7704,36 +6242,9 @@ Olive oil (extra-virgin):
     unit: cup
   aisle: Pantry
   aliases:
+  - EVOO
+  - extra virgin olive oil
   - cold-pressed olive oil
-Olive oil (mild):
-  nutrients:
-    basis_grams: 100.0
-    calories: 884.0
-    fat: 100.0
-    saturated_fat: 13.808
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 2.0
-    carbs: 0.0
-    fiber: 0.0
-    total_sugars: 0.0
-    protein: 0.0
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 171413
-    description: Oil, olive, salad or cooking
-  density:
-    grams: 216.0
-    volume: 1.0
-    unit: cup
-  aliases:
-  - Olive oil (light)
-  - Light olive oil
-  aisle: Pantry
-Olives:
-  aisle: Gourmet
 Olives (black):
   nutrients:
     basis_grams: 100.0
@@ -7786,37 +6297,6 @@ Olives (green):
   - green olives
   - manzanilla olives
   - pimento-stuffed olives
-Onion:
-  nutrients:
-    basis_grams: 100.0
-    calories: 40.0
-    fat: 0.1
-    saturated_fat: 0.042
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 4.0
-    carbs: 9.34
-    fiber: 1.7
-    total_sugars: 4.24
-    protein: 1.1
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 170000
-    description: Onions, raw
-  density:
-    grams: 160.0
-    volume: 1.0
-    unit: cup
-  portions:
-    "~unitless": 150.0
-    large: 150.0
-    medium: 110.0
-    small: 70.0
-  aisle: Produce
-  aliases:
-  - Yellow onion
 Onion (red):
   nutrients:
     basis_grams: 100.0
@@ -7903,6 +6383,7 @@ Onion powder:
     unit: tbsp
   aisle: Spices
   aliases:
+  - onion powder
   - granulated onion
 Orange juice:
   nutrients:
@@ -7963,33 +6444,6 @@ Oranges:
   aliases:
   - orange
   - navel orange
-Oregano:
-  nutrients:
-    basis_grams: 100.0
-    calories: 265.0
-    fat: 4.28
-    saturated_fat: 1.551
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 25.0
-    carbs: 68.92
-    fiber: 42.5
-    total_sugars: 4.09
-    protein: 9.0
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 171328
-    description: Spices, oregano, dried
-  density:
-    grams: 1.8
-    volume: 1.0
-    unit: tsp
-  aisle: Spices
-  aliases:
-  - Dried oregano
-  - Oregano (dried)
 Oregano (fresh):
   nutrients:
     basis_grams: 100.0
@@ -8016,6 +6470,7 @@ Oregano (fresh):
   aisle: Produce
   aliases:
   - fresh oregano
+  - oregano
   - wild marjoram
 Orzo:
   nutrients:
@@ -8042,6 +6497,7 @@ Orzo:
     unit: cup
   aisle: Pantry
   aliases:
+  - pasta
   - orzo pasta
   - rice-shaped pasta
 Oyster sauce:
@@ -8091,6 +6547,7 @@ Pancetta:
     description: Pork, cured, salt pork, raw
   aisle: Refrigerated
   aliases:
+  - pancetta
   - Italian bacon
   - cured pork belly
 Panko breadcrumbs:
@@ -8175,37 +6632,9 @@ Paprika:
     unit: tbsp
   aisle: Spices
   aliases:
+  - paprika
   - sweet paprika
   - red paprika
-Parmesan:
-  nutrients:
-    basis_grams: 100.0
-    calories: 420.0
-    fat: 27.84
-    saturated_fat: 15.371
-    trans_fat: 0.876
-    cholesterol: 86.0
-    sodium: 1804.0
-    carbs: 13.91
-    fiber: 0.0
-    total_sugars: 0.07
-    protein: 28.42
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 171247
-    description: Cheese, parmesan, grated
-  density:
-    grams: 100.0
-    volume: 1.0
-    unit: cup
-  aisle: Gourmet
-  aliases:
-  - Parmesan cheese
-  - Parmigiano
-  - Parmigiano-Reggiano
-  - Parmigiano Reggiano
 Parsley (curly):
   nutrients:
     basis_grams: 100.0
@@ -8321,49 +6750,6 @@ Passion fruit:
   - passionfruit
   - granadilla
   - maracuja
-Pasta:
-  nutrients:
-    basis_grams: 100.0
-    calories: 371.0
-    fat: 1.51
-    saturated_fat: 0.277
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 6.0
-    carbs: 74.67
-    fiber: 3.2
-    total_sugars: 2.67
-    protein: 13.04
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 169736
-    description: Pasta, dry, enriched
-  aisle: Pantry
-Pasta sauce (jarred):
-  nutrients:
-    basis_grams: 100.0
-    calories: 50.0
-    fat: 1.61
-    saturated_fat: 0.218
-    trans_fat: 0.007
-    cholesterol: 2.0
-    sodium: 437.0
-    carbs: 7.43
-    fiber: 1.8
-    total_sugars: 4.91
-    protein: 1.39
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 171192
-    description: Sauce, pasta, spaghetti/marinara, ready-to-serve
-  aisle: Pantry
-  aliases:
-  - Marinara sauce
-  - Spaghetti sauce
 Peaches:
   nutrients:
     basis_grams: 100.0
@@ -8515,56 +6901,6 @@ Peas (frozen):
   - frozen green peas
   - sweet peas
   - garden peas
-Peas and carrots (frozen):
-  aisle: Frozen
-  nutrients:
-    basis_grams: 100.0
-    calories: 53.0
-    fat: 0.47
-    saturated_fat: 0.084
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 79.0
-    carbs: 11.15
-    fiber: 3.4
-    total_sugars: 0.0
-    protein: 3.4
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 170425
-    description: Peas and carrots, frozen, unprepared
-  density:
-    grams: 140.0
-    volume: 1.0
-    unit: cup
-Pecans:
-  nutrients:
-    basis_grams: 100.0
-    calories: 691.0
-    fat: 71.97
-    saturated_fat: 6.18
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 0.0
-    carbs: 13.86
-    fiber: 9.6
-    total_sugars: 3.97
-    protein: 9.17
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 170182
-    description: Nuts, pecans
-  density:
-    grams: 109.0
-    volume: 1.0
-    unit: cup
-  aisle: Pantry
-Pecorino:
-  aisle: Gourmet
 Penne:
   nutrients:
     basis_grams: 100.0
@@ -8591,6 +6927,7 @@ Penne:
   aisle: Pantry
   aliases:
   - penne rigate
+  - pasta
   - penne pasta
 Pepper Jack:
   nutrients:
@@ -8674,30 +7011,6 @@ Phyllo dough (frozen):
   - filo dough
   - phyllo sheets
   - filo pastry
-Pickled jalapeños:
-  nutrients:
-    basis_grams: 100.0
-    calories: 27.0
-    fat: 0.94
-    saturated_fat: 0.097
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 1671.0
-    carbs: 4.74
-    fiber: 2.6
-    total_sugars: 2.14
-    protein: 0.92
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 170080
-    description: Peppers, jalapeno, canned, solids and liquids
-  density:
-    grams: 136.0
-    volume: 1.0
-    unit: cup
-  aisle: International
 Pickles:
   nutrients:
     basis_grams: 100.0
@@ -9013,7 +7326,9 @@ Polenta:
     unit: cup
   aisle: Pantry
   aliases:
+  - cornmeal
   - yellow cornmeal
+  - grits
 Pomegranate:
   nutrients:
     basis_grams: 100.0
@@ -9043,8 +7358,6 @@ Pomegranate:
   aliases:
   - pomegranate seeds
   - arils
-Poolish:
-  omit_from_shopping: true
 Poppy seeds:
   nutrients:
     basis_grams: 100.0
@@ -9170,6 +7483,7 @@ Pork shoulder:
     description: Pork, fresh, shoulder, whole, separable lean and fat, raw
   aisle: Refrigerated
   aliases:
+  - pork shoulder
   - Boston butt
   - pork butt
   - pulled pork
@@ -9196,6 +7510,7 @@ Pork tenderloin:
     roast: 505.0
   aisle: Refrigerated
   aliases:
+  - pork tenderloin
   - pork fillet
 Potato:
   nutrients:
@@ -9473,54 +7788,6 @@ Pumpkin seeds:
   - pepitas
   - squash seeds
   - pumpkin seed kernels
-Queso fresco:
-  nutrients:
-    basis_grams: 100.0
-    calories: 299.0
-    fat: 23.82
-    saturated_fat: 12.94
-    trans_fat: 0.834
-    cholesterol: 69.0
-    sodium: 751.0
-    carbs: 2.98
-    fiber: 0.0
-    total_sugars: 2.32
-    protein: 18.09
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 172223
-    description: Cheese, fresh, queso fresco
-  density:
-    grams: 122.0
-    volume: 1.0
-    unit: cup
-  aisle: International
-Queso Quesadilla:
-  nutrients:
-    basis_grams: 100.0
-    calories: 374.0
-    fat: 29.68
-    saturated_fat: 18.843
-    trans_fat: 0.0
-    cholesterol: 105.0
-    sodium: 617.0
-    carbs: 5.56
-    fiber: 0.0
-    total_sugars: 5.56
-    protein: 21.56
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 173438
-    description: Cheese, mexican, queso chihuahua
-  density:
-    grams: 132.0
-    volume: 1.0
-    unit: cup
-  aisle: International
 Quinoa:
   nutrients:
     basis_grams: 100.0
@@ -9611,30 +7878,6 @@ Radishes:
   - red radishes
   - radish
   - table radish
-Raisins:
-  nutrients:
-    basis_grams: 100.0
-    calories: 296.0
-    fat: 0.54
-    saturated_fat: 0.178
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 28.0
-    carbs: 78.47
-    fiber: 6.8
-    total_sugars: 0.0
-    protein: 2.52
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 168166
-    description: Raisins, seeded
-  density:
-    grams: 165.0
-    volume: 1.0
-    unit: cup
-  aisle: Pantry
 Ramen noodles:
   nutrients:
     basis_grams: 100.0
@@ -9688,81 +7931,6 @@ Raspberries:
   aliases:
   - raspberry
   - red raspberry
-Red beans (dry):
-  nutrients:
-    basis_grams: 100.0
-    calories: 337.0
-    fat: 1.06
-    saturated_fat: 0.154
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 12.0
-    carbs: 61.29
-    fiber: 15.2
-    total_sugars: 2.1
-    protein: 22.53
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 173744
-    description: Beans, kidney, red, mature seeds, raw
-  density:
-    grams: 184.0
-    volume: 1.0
-    unit: cup
-  aisle: Pantry
-Red bell pepper:
-  nutrients:
-    basis_grams: 100.0
-    calories: 26.0
-    fat: 0.3
-    saturated_fat: 0.059
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 4.0
-    carbs: 6.03
-    fiber: 2.1
-    total_sugars: 4.2
-    protein: 0.99
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 170108
-    description: Peppers, sweet, red, raw
-  density:
-    grams: 149.0
-    volume: 1.0
-    unit: cup
-  portions:
-    "~unitless": 164.0
-    small: 74.0
-    large: 164.0
-    medium: 119.0
-  aliases:
-  - Bell pepper
-  aisle: Produce
-Red pepper flakes:
-  nutrients:
-    basis_grams: 100.0
-    calories: 318.0
-    fat: 17.27
-    saturated_fat: 3.26
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 30.0
-    carbs: 56.63
-    fiber: 27.2
-    total_sugars: 10.34
-    protein: 12.01
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 170932
-    description: Spices, pepper, red or cayenne
-  aisle: Spices
 Refried beans (canned):
   nutrients:
     basis_grams: 100.0
@@ -9957,30 +8125,6 @@ Rice wine (shaoxing):
   - Shaoxing wine
   - Chinese cooking wine
   - shao hsing
-Ricotta:
-  nutrients:
-    basis_grams: 100.0
-    calories: 150.0
-    fat: 10.18
-    saturated_fat: 6.42
-    trans_fat: 0.333
-    cholesterol: 49.0
-    sodium: 110.0
-    carbs: 7.27
-    fiber: 0.0
-    total_sugars: 0.27
-    protein: 7.54
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 170851
-    description: Cheese, ricotta, whole milk
-  density:
-    grams: 246.0
-    volume: 1.0
-    unit: cup
-  aisle: Refrigerated
 Rigatoni:
   nutrients:
     basis_grams: 100.0
@@ -10006,31 +8150,9 @@ Rigatoni:
     unit: cup
   aisle: Pantry
   aliases:
+  - pasta
   - tube pasta
   - ziti
-Ritz crackers:
-  nutrients:
-    basis_grams: 100.0
-    calories: 492.0
-    fat: 23.21
-    saturated_fat: 5.45
-    trans_fat: 1.05
-    cholesterol: 0.0
-    sodium: 882.0
-    carbs: 63.51
-    fiber: 2.3
-    total_sugars: 8.14
-    protein: 7.23
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 173258
-    description: Nabisco, Nabisco Ritz Crackers
-  portions:
-    "~unitless": 3.3
-    cracker: 3.3
-  aisle: Pantry
 Roasted red peppers (jarred):
   nutrients:
     basis_grams: 100.0
@@ -10059,30 +8181,6 @@ Roasted red peppers (jarred):
   - jarred roasted peppers
   - pimientos
   - roasted peppers
-Rolled oats:
-  nutrients:
-    basis_grams: 100.0
-    calories: 371.0
-    fat: 6.87
-    saturated_fat: 1.11
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 3.0
-    carbs: 68.18
-    fiber: 9.4
-    total_sugars: 1.42
-    protein: 13.7
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 172989
-    description: Cereals, QUAKER, Quick Oats, Dry
-  density:
-    grams: 80.0
-    volume: 1.0
-    unit: cup
-  aisle: Cereal
 Romaine lettuce:
   nutrients:
     basis_grams: 100.0
@@ -10166,6 +8264,7 @@ Saffron:
     unit: tbsp
   aisle: Spices
   aliases:
+  - saffron
   - saffron threads
 Sage:
   nutrients:
@@ -10222,32 +8321,6 @@ Sake:
   - rice wine
   - Japanese rice wine
   - cooking sake
-Salad greens:
-  nutrients:
-    basis_grams: 100.0
-    calories: 15.0
-    fat: 0.15
-    saturated_fat: 0.02
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 28.0
-    carbs: 2.87
-    fiber: 1.3
-    total_sugars: 0.78
-    protein: 1.36
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 169249
-    description: Lettuce, green leaf, raw
-  density:
-    grams: 36.0
-    volume: 1.0
-    unit: cup
-  aisle: Produce
-  aliases:
-  - Lettuce
 Salami:
   nutrients:
     basis_grams: 100.0
@@ -10382,60 +8455,7 @@ Salsa (jarred):
   aliases:
   - jarred salsa
   - chunky salsa
-Salt:
-  nutrients:
-    basis_grams: 100.0
-    calories: 0.0
-    fat: 0.0
-    saturated_fat: 0.0
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 38758.0
-    carbs: 0.0
-    fiber: 0.0
-    total_sugars: 0.0
-    protein: 0.0
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 173468
-    description: Salt, table
-  density:
-    grams: 292.0
-    volume: 1.0
-    unit: cup
-  aliases:
-  - Table salt
-  portions:
-    spoonful: 2.5
-  aisle: Baking
-Salt (Kosher):
-  nutrients:
-    basis_grams: 100.0
-    calories: 0.0
-    fat: 0.0
-    saturated_fat: 0.0
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 38758.0
-    carbs: 0.0
-    fiber: 0.0
-    total_sugars: 0.0
-    protein: 0.0
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 173468
-    description: Salt, table
-  density:
-    grams: 140.0
-    volume: 1.0
-    unit: cup
-  aisle: Baking
-  aliases:
-  - Kosher salt
+  - tomato salsa
 Sardines (canned):
   nutrients:
     basis_grams: 100.0
@@ -10604,30 +8624,6 @@ Sesame oil:
   - toasted sesame oil
   - dark sesame oil
   - sesame seed oil
-Sesame seeds:
-  nutrients:
-    basis_grams: 100.0
-    calories: 573.0
-    fat: 49.67
-    saturated_fat: 6.957
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 11.0
-    carbs: 23.45
-    fiber: 11.8
-    total_sugars: 0.3
-    protein: 17.73
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 170150
-    description: Seeds, sesame seeds, whole, dried
-  density:
-    grams: 144.0
-    volume: 1.0
-    unit: cup
-  aisle: Spices
 Sesame seeds (black):
   nutrients:
     basis_grams: 100.0
@@ -10729,30 +8725,8 @@ Shrimp (frozen):
   aisle: Frozen
   aliases:
   - frozen shrimp
-Smoked paprika:
-  nutrients:
-    basis_grams: 100.0
-    calories: 282.0
-    fat: 12.89
-    saturated_fat: 2.14
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 68.0
-    carbs: 53.99
-    fiber: 34.9
-    total_sugars: 10.34
-    protein: 14.14
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 171329
-    description: Spices, paprika
-  density:
-    grams: 6.8
-    volume: 1.0
-    unit: tbsp
-  aisle: Spices
+  - raw shrimp
+  - prawns
 Snap peas:
   nutrients:
     basis_grams: 100.0
@@ -10807,34 +8781,6 @@ Soba noodles:
   - buckwheat noodles
   - Japanese noodles
   - soba
-Sodium carbonate:
-  aisle: Specialty
-Sodium citrate:
-  aisle: Specialty
-Sour cream:
-  nutrients:
-    basis_grams: 100.0
-    calories: 198.0
-    fat: 19.35
-    saturated_fat: 10.14
-    trans_fat: 0.796
-    cholesterol: 59.0
-    sodium: 31.0
-    carbs: 4.63
-    fiber: 0.0
-    total_sugars: 3.41
-    protein: 2.44
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 171257
-    description: Cream, sour, cultured
-  density:
-    grams: 230.0
-    volume: 1.0
-    unit: cup
-  aisle: Refrigerated
 Sourdough bread:
   nutrients:
     basis_grams: 100.0
@@ -10861,54 +8807,6 @@ Sourdough bread:
   - sourdough loaf
   - sourdough boule
   - San Francisco sourdough
-Soy sauce:
-  nutrients:
-    basis_grams: 100.0
-    calories: 53.0
-    fat: 0.57
-    saturated_fat: 0.073
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 5493.0
-    carbs: 4.93
-    fiber: 0.8
-    total_sugars: 0.4
-    protein: 8.14
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 174277
-    description: Soy sauce made from soy and wheat (shoyu)
-  density:
-    grams: 255.0
-    volume: 1.0
-    unit: cup
-  aisle: International
-Spaghetti:
-  nutrients:
-    basis_grams: 100.0
-    calories: 371.0
-    fat: 1.51
-    saturated_fat: 0.277
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 6.0
-    carbs: 74.67
-    fiber: 3.2
-    total_sugars: 2.67
-    protein: 13.04
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 169736
-    description: Pasta, dry, enriched
-  density:
-    grams: 122.0
-    volume: 1.0
-    unit: cup
-  aisle: Pantry
 Spaghetti squash:
   nutrients:
     basis_grams: 100.0
@@ -11217,32 +9115,6 @@ Strawberries (frozen):
   aliases:
   - frozen strawberries
   - whole frozen strawberries
-Sugar (brown):
-  nutrients:
-    basis_grams: 100.0
-    calories: 380.0
-    fat: 0.0
-    saturated_fat: 0.0
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 28.0
-    carbs: 98.09
-    fiber: 0.0
-    total_sugars: 97.02
-    protein: 0.12
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 168833
-    description: Sugars, brown
-  density:
-    grams: 220.0
-    volume: 1.0
-    unit: cup
-  aliases:
-  - Brown sugar
-  aisle: Baking
 Sugar (powdered):
   nutrients:
     basis_grams: 100.0
@@ -11271,32 +9143,6 @@ Sugar (powdered):
   - powdered sugar
   - confectioners sugar
   - icing sugar
-Sugar (white):
-  nutrients:
-    basis_grams: 100.0
-    calories: 387.0
-    fat: 0.0
-    saturated_fat: 0.0
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 1.0
-    carbs: 99.98
-    fiber: 0.0
-    total_sugars: 99.8
-    protein: 0.0
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 169655
-    description: Sugars, granulated
-  density:
-    grams: 200.0
-    volume: 1.0
-    unit: cup
-  aisle: Baking
-  aliases:
-  - White sugar
 Sun-dried tomatoes:
   nutrients:
     basis_grams: 100.0
@@ -11354,6 +9200,7 @@ Sunflower seeds:
   aliases:
   - sunflower kernels
   - shelled sunflower seeds
+  - pepitas
 Swiss:
   nutrients:
     basis_grams: 100.0
@@ -11578,6 +9425,7 @@ Tapioca starch:
     unit: cup
   aisle: Baking
   aliases:
+  - tapioca starch
   - tapioca flour
   - cassava starch
 Tarragon:
@@ -11718,32 +9566,6 @@ Thai basil:
   aliases:
   - Asian basil
   - holy basil
-Thyme:
-  nutrients:
-    basis_grams: 100.0
-    calories: 276.0
-    fat: 7.43
-    saturated_fat: 2.73
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 55.0
-    carbs: 63.94
-    fiber: 37.0
-    total_sugars: 1.71
-    protein: 9.11
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 170938
-    description: Spices, thyme, dried
-  density:
-    grams: 4.3
-    volume: 1.0
-    unit: tbsp
-  aliases:
-  - Dried thyme
-  aisle: Spices
 Tilapia:
   nutrients:
     basis_grams: 100.0
@@ -11882,83 +9704,6 @@ Tomato juice:
   aliases:
   - canned tomato juice
   - vegetable juice
-Tomato passata:
-  nutrients:
-    basis_grams: 100.0
-    calories: 32.0
-    fat: 0.39
-    saturated_fat: 0.055
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 15.0
-    carbs: 7.09
-    fiber: 1.4
-    total_sugars: 0.0
-    protein: 1.32
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 170463
-    description: Tomato products, canned, sauce, with tomato tidbits
-  density:
-    grams: 244.0
-    volume: 1.0
-    unit: cup
-  aliases:
-  - Passata
-  aisle: Pantry
-Tomato paste:
-  nutrients:
-    basis_grams: 100.0
-    calories: 82.0
-    fat: 0.47
-    saturated_fat: 0.1
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 59.0
-    carbs: 18.91
-    fiber: 4.1
-    total_sugars: 12.18
-    protein: 4.32
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 170459
-    description: Tomato products, canned, paste, without salt added (Includes foods
-      for USDA's Food Distribution Program)
-  density:
-    grams: 262.0
-    volume: 1.0
-    unit: cup
-  aisle: Pantry
-Tomato salsa:
-  nutrients:
-    basis_grams: 100.0
-    calories: 29.0
-    fat: 0.17
-    saturated_fat: 0.021
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 711.0
-    carbs: 6.64
-    fiber: 1.9
-    total_sugars: 4.01
-    protein: 1.52
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 174524
-    description: Sauce, salsa, ready-to-serve
-  density:
-    grams: 259.0
-    volume: 1.0
-    unit: cup
-  aisle: International
-  aliases:
-  - Salsa
 Tomato sauce:
   nutrients:
     basis_grams: 100.0
@@ -11986,32 +9731,6 @@ Tomato sauce:
   aliases:
   - canned tomato sauce
   - plain tomato sauce
-Tomatoes (canned):
-  nutrients:
-    basis_grams: 100.0
-    calories: 32.0
-    fat: 0.28
-    saturated_fat: 0.04
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 186.0
-    carbs: 7.29
-    fiber: 1.9
-    total_sugars: 4.4
-    protein: 1.64
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 170501
-    description: Tomatoes, crushed, canned
-  density:
-    grams: 242.0
-    volume: 1.0
-    unit: cup
-  aisle: Pantry
-  aliases:
-  - Canned whole tomatoes
 Tomatoes (canned, crushed):
   nutrients:
     basis_grams: 100.0
@@ -12104,58 +9823,7 @@ Tomatoes (canned, whole):
   aliases:
   - whole peeled tomatoes
   - San Marzano tomatoes
-Tomatoes (fresh):
-  nutrients:
-    basis_grams: 100.0
-    calories: 18.0
-    fat: 0.2
-    saturated_fat: 0.028
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 5.0
-    carbs: 3.89
-    fiber: 1.2
-    total_sugars: 2.63
-    protein: 0.88
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 170457
-    description: Tomatoes, red, ripe, raw, year round average
-  density:
-    grams: 180.0
-    volume: 1.0
-    unit: cup
-  portions:
-    "~unitless": 182.0
-  aisle: Produce
-  aliases:
-  - Fresh tomatoes
-Tortillas (corn):
-  nutrients:
-    basis_grams: 100.0
-    calories: 218.0
-    fat: 2.85
-    saturated_fat: 0.453
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 45.0
-    carbs: 44.64
-    fiber: 6.3
-    total_sugars: 0.88
-    protein: 5.7
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 175036
-    description: Tortillas, ready-to-bake or -fry, corn
-  portions:
-    "~unitless": 24.0
-  aisle: International
-  aliases:
-  - Corn tortillas
+  - canned whole tomatoes
 Tortillas (flour):
   nutrients:
     basis_grams: 100.0
@@ -12183,28 +9851,6 @@ Tortillas (flour):
   - flour tortillas
   - soft tortillas
   - wraps
-Tortillas (large flour):
-  nutrients:
-    basis_grams: 100.0
-    calories: 297.0
-    fat: 7.58
-    saturated_fat: 1.225
-    trans_fat: 0.014
-    cholesterol: 0.0
-    sodium: 742.0
-    carbs: 49.27
-    fiber: 2.4
-    total_sugars: 2.66
-    protein: 8.01
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 167535
-    description: Tortillas, ready-to-bake or -fry, flour, shelf stable
-  portions:
-    "~unitless": 71.0
-  aisle: International
 Trout:
   nutrients:
     basis_grams: 100.0
@@ -12330,6 +9976,7 @@ Turkey breast:
     breast: 1769.0
   aisle: Refrigerated
   aliases:
+  - turkey breast
   - boneless turkey breast
 Turmeric:
   nutrients:
@@ -12356,6 +10003,7 @@ Turmeric:
     unit: tbsp
   aisle: Spices
   aliases:
+  - turmeric
   - ground turmeric
   - turmeric powder
 Turnips:
@@ -12390,30 +10038,6 @@ Turnips:
   aliases:
   - turnip
   - white turnip
-Vanilla extract:
-  nutrients:
-    basis_grams: 100.0
-    calories: 288.0
-    fat: 0.06
-    saturated_fat: 0.01
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 9.0
-    carbs: 12.65
-    fiber: 0.0
-    total_sugars: 12.65
-    protein: 0.06
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 173471
-    description: Vanilla extract
-  density:
-    grams: 208.0
-    volume: 1.0
-    unit: cup
-  aisle: Baking
 Veal:
   nutrients:
     basis_grams: 100.0
@@ -12553,32 +10177,6 @@ Vinegar (apple cider):
   - ACV
   - cider vinegar
   - apple vinegar
-Vinegar (balsamic):
-  nutrients:
-    basis_grams: 100.0
-    calories: 88.0
-    fat: 0.0
-    saturated_fat: 0.0
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 23.0
-    carbs: 17.03
-    fiber: 0.0
-    total_sugars: 14.95
-    protein: 0.49
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 172241
-    description: Vinegar, balsamic
-  density:
-    grams: 255.0
-    volume: 1.0
-    unit: cup
-  aisle: Pantry
-  aliases:
-  - Balsamic vinegar
 Vinegar (red wine):
   nutrients:
     basis_grams: 100.0
@@ -12606,100 +10204,6 @@ Vinegar (red wine):
   aliases:
   - red wine vinegar
   - red vinegar
-Vinegar (sherry):
-  nutrients:
-    basis_grams: 100.0
-    calories: 19.0
-    fat: 0.0
-    saturated_fat: 0.0
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 8.0
-    carbs: 0.27
-    fiber: 0.0
-    total_sugars: 0.0
-    protein: 0.04
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 172240
-    description: Vinegar, red wine
-  density:
-    grams: 239.0
-    volume: 1.0
-    unit: cup
-  aisle: Pantry
-Vinegar (white):
-  nutrients:
-    basis_grams: 100.0
-    calories: 18.0
-    fat: 0.0
-    saturated_fat: 0.0
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 2.0
-    carbs: 0.04
-    fiber: 0.0
-    total_sugars: 0.04
-    protein: 0.0
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 172237
-    description: Vinegar, distilled
-  density:
-    grams: 238.0
-    volume: 1.0
-    unit: cup
-  aisle: Pantry
-  aliases:
-  - White vinegar
-Walnuts:
-  nutrients:
-    basis_grams: 100.0
-    calories: 643.0
-    fat: 60.71
-    saturated_fat: 5.357
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 643.0
-    carbs: 17.86
-    fiber: 7.1
-    total_sugars: 3.57
-    protein: 14.29
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 170594
-    description: Nuts, walnuts, dry roasted, with salt added
-  aisle: Pantry
-Water:
-  nutrients:
-    basis_grams: 100.0
-    calories: 0.0
-    fat: 0.0
-    saturated_fat: 0.0
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 3.0
-    carbs: 0.0
-    fiber: 0.0
-    total_sugars: 0.0
-    protein: 0.0
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 175103
-    description: Beverages, water, tap, municipal
-  density:
-    grams: 1000.0
-    volume: 1.0
-    unit: l
-  omit_from_shopping: true
 Water chestnuts (canned):
   nutrients:
     basis_grams: 100.0
@@ -12753,54 +10257,6 @@ Watercress:
   aliases:
   - water cress
   - garden cress
-Watermelon:
-  nutrients:
-    basis_grams: 100.0
-    calories: 30.0
-    fat: 0.15
-    saturated_fat: 0.016
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 1.0
-    carbs: 7.55
-    fiber: 0.4
-    total_sugars: 6.2
-    protein: 0.61
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 167765
-    description: Watermelon, raw
-  density:
-    grams: 154.0
-    volume: 1.0
-    unit: cup
-  aisle: Produce
-Whipped cream:
-  nutrients:
-    basis_grams: 100.0
-    calories: 257.0
-    fat: 22.22
-    saturated_fat: 13.831
-    trans_fat: 0.0
-    cholesterol: 76.0
-    sodium: 8.0
-    carbs: 12.49
-    fiber: 0.0
-    total_sugars: 8.0
-    protein: 3.2
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 170860
-    description: Cream, whipped, cream topping, pressurized
-  density:
-    grams: 60.0
-    volume: 1.0
-    unit: cup
-  aisle: Refrigerated
 White pepper:
   nutrients:
     basis_grams: 100.0
@@ -12826,6 +10282,7 @@ White pepper:
     unit: tbsp
   aisle: Spices
   aliases:
+  - white pepper
   - ground white pepper
 Wine (red):
   nutrients:
@@ -12938,34 +10395,6 @@ Worcestershire sauce:
   - Worcestershire
   - worchestershire sauce
   - lea and perrins
-Yeast:
-  nutrients:
-    basis_grams: 100.0
-    calories: 325.0
-    fat: 7.61
-    saturated_fat: 1.001
-    trans_fat: 0.0
-    cholesterol: 0.0
-    sodium: 51.0
-    carbs: 41.22
-    fiber: 26.9
-    total_sugars: 0.0
-    protein: 40.44
-    added_sugars: 0.0
-  sources:
-  - type: usda
-    dataset: SR Legacy
-    fdc_id: 175043
-    description: Leavening agents, yeast, baker's, active dry
-  density:
-    grams: 12.0
-    volume: 1.0
-    unit: tbsp
-  portions:
-    packet: 7.0
-  aisle: Baking
-  aliases:
-  - Active dry yeast
 Yellow squash:
   nutrients:
     basis_grams: 100.0
