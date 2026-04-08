@@ -5,29 +5,23 @@
     data-ingredient-name="<%= row[:name] %>"
     data-status="<%= row[:status] %>"
     data-has-nutrition="<%= row[:has_nutrition] %>"
-    data-has-density="<%= row[:has_density] %>"
     data-aisle="<%= row[:aisle] || '' %>"
     data-recipe-count="<%= row[:recipe_count] %>"
     data-resolvable="<%= row[:resolvable] %>"
     data-omit="<%= row[:omit_from_shopping] %>"
     data-source="<%= row[:source] %>"
+    data-qb-only="<%= row[:qb_only] %>"
     data-open-editor
     tabindex="0"
     role="button"
     data-action="click->ingredient-table#openEditor keydown->ingredient-table#rowKeydown">
   <td class="col-name">
     <%= row[:name] %>
-    <span class="ingredient-icons">
-      <% if row[:source] == 'custom' %>
+    <% if row[:source] == 'custom' %>
+      <span class="ingredient-icons">
         <%= icon(:edit, size: 14, class: 'ingredient-icon', 'aria-label': 'Custom entry', 'aria-hidden': nil) %>
-      <% end %>
-      <% if row[:has_nutrition] %>
-        <%= icon(:apple, size: 14, class: 'ingredient-icon', 'aria-label': 'Has nutrition', 'aria-hidden': nil) %>
-      <% end %>
-      <% if row[:has_density] %>
-        <%= icon(:scale, size: 14, class: 'ingredient-icon', 'aria-label': 'Has density', 'aria-hidden': nil) %>
-      <% end %>
-    </span>
+      </span>
+    <% end %>
   </td>
   <td class="col-aisle"><%= display_aisle(row[:aisle]) %></td>
   <td class="col-recipes"><%= row[:recipe_count] %></td>

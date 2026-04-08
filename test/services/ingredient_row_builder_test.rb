@@ -82,7 +82,6 @@ class IngredientRowBuilderTest < ActiveSupport::TestCase
     assert_equal 'incomplete', flour[:status]
     assert_equal 'global', flour[:source]
     assert flour[:has_nutrition]
-    assert_not flour[:has_density]
   end
 
   test 'rows reflects complete catalog entry' do
@@ -97,7 +96,6 @@ class IngredientRowBuilderTest < ActiveSupport::TestCase
 
     assert_equal 'complete', flour[:status]
     assert flour[:has_nutrition]
-    assert flour[:has_density]
   end
 
   test 'rows shows custom source for kitchen-scoped entry' do
@@ -178,7 +176,6 @@ class IngredientRowBuilderTest < ActiveSupport::TestCase
     assert_equal 3, summary[:total]
     assert_equal 1, summary[:complete]
     assert_equal 1, summary[:missing_nutrition]
-    assert_equal 2, summary[:missing_density]
   end
 
   test 'summary counts custom entries' do
@@ -288,6 +285,79 @@ class IngredientRowBuilderTest < ActiveSupport::TestCase
     assert_equal 1, hummus[:recipe_count]
     assert_instance_of IngredientRowBuilder::QuickBiteSource, hummus[:recipes].first
     assert_equal 'Hummus with Pretzels', hummus[:recipes].first.title
+  end
+
+  test 'qb_only ingredient with aisle has status complete' do
+    IngredientCatalog.where(kitchen_id: nil).delete_all
+    create_catalog_entry('butter', aisle: 'Dairy')
+    create_quick_bite('Toast', ingredients: ['butter'])
+
+    builder = IngredientRowBuilder.new(kitchen: @kitchen, recipes: Recipe.none)
+    row = builder.rows.find { |r| r[:name] == 'butter' }
+
+    assert row[:qb_only]
+    assert_equal 'complete', row[:status]
+  end
+
+  test 'qb_only ingredient without aisle has status incomplete' do
+    IngredientCatalog.where(kitchen_id: nil).delete_all
+    create_catalog_entry('butter')
+    create_quick_bite('Toast', ingredients: ['butter'])
+
+    builder = IngredientRowBuilder.new(kitchen: @kitchen, recipes: Recipe.none)
+    row = builder.rows.find { |r| r[:name] == 'butter' }
+
+    assert row[:qb_only]
+    assert_equal 'incomplete', row[:status]
+  end
+
+  test 'qb_only ingredient omitted from shopping is complete without aisle' do
+    IngredientCatalog.where(kitchen_id: nil).delete_all
+    create_catalog_entry('butter', omit_from_shopping: true)
+    create_quick_bite('Toast', ingredients: ['butter'])
+
+    builder = IngredientRowBuilder.new(kitchen: @kitchen, recipes: Recipe.none)
+    row = builder.rows.find { |r| r[:name] == 'butter' }
+
+    assert row[:qb_only]
+    assert_equal 'complete', row[:status]
+  end
+
+  test 'summary missing_nutrition excludes qb_only ingredients' do
+    create_quick_bite('Toast', ingredients: ['butter'])
+
+    focaccia = @kitchen.recipes.find_by!(slug: 'focaccia')
+    builder = IngredientRowBuilder.new(kitchen: @kitchen, recipes: [focaccia])
+
+    assert_equal 2, builder.summary[:missing_nutrition]
+    assert_equal 3, builder.summary[:total]
+  end
+
+  test 'coverage unresolvable list excludes qb_only ingredients' do
+    create_quick_bite('Toast', ingredients: ['butter'])
+
+    focaccia = @kitchen.recipes.find_by!(slug: 'focaccia')
+    builder = IngredientRowBuilder.new(kitchen: @kitchen, recipes: [focaccia])
+    unresolvable_names = builder.coverage[:unresolvable].pluck(:name)
+
+    assert_includes unresolvable_names, 'Flour'
+    assert_not_includes unresolvable_names, 'butter'
+  end
+
+  test 'ingredient in both recipe and quick bite is not qb_only' do
+    IngredientCatalog.where(kitchen_id: nil).delete_all
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Pancakes
+      ## Mix (combine)
+      - Butter, 2 tablespoons
+    MD
+    create_quick_bite('Toast', ingredients: ['Butter'])
+
+    builder = IngredientRowBuilder.new(kitchen: @kitchen)
+    row = builder.rows.find { |r| r[:name] == 'Butter' }
+
+    assert_not row[:qb_only]
+    assert_equal 'missing', row[:status]
   end
 
   test 'quick bite ingredients are canonicalized through resolver' do

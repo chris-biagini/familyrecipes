@@ -26,11 +26,6 @@
         aria-pressed="false">No Nutrition (<%= summary[:missing_nutrition] %>)</button>
 <button type="button" class="btn-pill"
         data-ingredient-table-target="filterButton"
-        data-filter="no_density"
-        data-action="click->ingredient-table#filter"
-        aria-pressed="false">No Density (<%= summary[:missing_density] %>)</button>
-<button type="button" class="btn-pill"
-        data-ingredient-table-target="filterButton"
         data-filter="not_resolvable"
         data-action="click->ingredient-table#filter"
         aria-pressed="false">Not Resolvable (<%= coverage[:unresolvable].size %>)</button>
