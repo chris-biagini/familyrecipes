@@ -117,7 +117,6 @@ class IngredientRowBuilder # rubocop:disable Metrics/ClassLength
     all_resolvable = units.empty? || (entry&.basis_grams.present? && units.all? { |u| unit_resolvable?(u, entry) })
     { name:, entry:, recipe_count: recs.size, recipes: recs,
       has_nutrition: entry&.basis_grams.present?,
-      has_density: entry&.density_grams.present?,
       aisle: entry&.aisle,
       omit_from_shopping: entry&.omit_from_shopping || false,
       source: entry_source(entry),

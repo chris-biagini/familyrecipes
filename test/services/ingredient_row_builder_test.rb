@@ -82,7 +82,6 @@ class IngredientRowBuilderTest < ActiveSupport::TestCase
     assert_equal 'incomplete', flour[:status]
     assert_equal 'global', flour[:source]
     assert flour[:has_nutrition]
-    assert_not flour[:has_density]
   end
 
   test 'rows reflects complete catalog entry' do
@@ -97,7 +96,6 @@ class IngredientRowBuilderTest < ActiveSupport::TestCase
 
     assert_equal 'complete', flour[:status]
     assert flour[:has_nutrition]
-    assert flour[:has_density]
   end
 
   test 'rows shows custom source for kitchen-scoped entry' do
