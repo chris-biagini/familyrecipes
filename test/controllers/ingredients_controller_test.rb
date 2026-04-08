@@ -621,7 +621,8 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select 'svg.ingredient-icon' do |icons|
-      icon_labels = icons.map { |i| i['aria-label'] }
+      icon_labels = icons.pluck('aria-label')
+
       assert_not_includes icon_labels, 'Has nutrition'
       assert_not_includes icon_labels, 'Has density'
     end
