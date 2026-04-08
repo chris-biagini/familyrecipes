@@ -504,8 +504,10 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'button.btn-pill[data-filter="custom"]'
   end
 
-  test 'renders inline ingredient icons for custom entry with nutrition' do
-    IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Flour', basis_grams: 30, calories: 110)
+  test 'renders inline ingredient icons for custom entry' do
+    IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Flour', basis_grams: 100,
+                              calories: 364, density_grams: 120, density_volume: 1,
+                              density_unit: 'cup')
     @category = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
     MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Focaccia
@@ -521,7 +523,10 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
     get ingredients_path(kitchen_slug: kitchen_slug)
 
     assert_response :success
-    assert_select 'td.col-name .ingredient-icons svg.ingredient-icon', minimum: 1
+    assert_select 'td.col-name .ingredient-icons svg.ingredient-icon' do |icons|
+      assert_equal 1, icons.size
+      assert_equal 'Custom entry', icons.first['aria-label']
+    end
   end
 
   test 'does not render Data column header' do
@@ -586,6 +591,49 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select 'summary .editor-summary-meta svg line[x1="6"][y1="6"]'
+  end
+
+  test 'index does not render no_density filter pill' do
+    log_in
+    get ingredients_path(kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_no_match 'No Density', response.body
+    assert_select 'button.btn-pill[data-filter="no_density"]', count: 0
+  end
+
+  test 'index does not render apple or scale icons in ingredient rows' do
+    IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Flour', basis_grams: 100,
+                              calories: 364, density_grams: 120, density_volume: 1, density_unit: 'cup')
+    @category = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Focaccia
+
+      ## Mix (combine)
+
+      - Flour, 3 cups
+
+      Mix well.
+    MD
+
+    log_in
+    get ingredients_path(kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select 'svg.ingredient-icon' do |icons|
+      icon_labels = icons.map { |i| i['aria-label'] }
+      assert_not_includes icon_labels, 'Has nutrition'
+      assert_not_includes icon_labels, 'Has density'
+    end
+  end
+
+  test 'index renders data-qb-only attribute on ingredient rows' do
+    create_quick_bite('Toast', ingredients: ['butter'])
+    log_in
+    get ingredients_path(kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select 'tr.ingredient-row[data-qb-only="true"]'
   end
 
   test 'edit requires membership' do
