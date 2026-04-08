@@ -24,10 +24,11 @@ class IngredientsController < ApplicationController
     aisles = current_kitchen.all_aisles
     sources = row_builder.sources_for(ingredient_name)
     needed_units = row_builder.needed_units(ingredient_name)
+    qb_only = sources.present? && sources.all?(IngredientRowBuilder::QuickBiteSource)
 
     render partial: 'ingredients/editor_form',
            locals: { ingredient_name:, entry:, available_aisles: aisles, sources:, needed_units:,
-                     has_usda_key: current_kitchen.usda_api_key.present? }
+                     has_usda_key: current_kitchen.usda_api_key.present?, qb_only: }
   rescue => error # rubocop:disable Style/RescueStandardError
     logger.error "Ingredient edit failed for #{params[:ingredient_name]}: #{error.class} — #{error.message}"
     render partial: 'ingredients/editor_error', locals: { message: error.message }

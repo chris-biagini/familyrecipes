@@ -1,4 +1,4 @@
-<%# locals: (ingredient_name:, entry:, available_aisles:, sources: [], needed_units: [], has_usda_key: false) %>
+<%# locals: (ingredient_name:, entry:, available_aisles:, sources: [], needed_units: [], has_usda_key: false, qb_only: false) %>
 <% has_density = entry&.density_grams.present? %>
 <% has_unresolved = needed_units.any? { |nu| !nu[:resolvable] } %>
 <% conversions_icon = has_unresolved ? :x_mark : (has_density ? :check : :alert) %>
@@ -53,6 +53,7 @@
       </div>
     </div>
 
+    <% unless qb_only %>
     <hr class="editor-divider">
 
     <div class="editor-section">
@@ -223,6 +224,7 @@
         </div>
       </div>
     </div>
+    <% end %>
 
     <% if sources.any? %>
       <div class="editor-recipes">

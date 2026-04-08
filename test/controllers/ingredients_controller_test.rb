@@ -636,6 +636,45 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'tr.ingredient-row[data-qb-only="true"]'
   end
 
+  test 'edit hides nutrition section for qb_only ingredient' do
+    create_quick_bite('Toast', ingredients: ['butter'])
+    log_in
+    get ingredient_edit_path('butter', kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select 'details[data-section-key="nutrition"]', count: 0
+  end
+
+  test 'edit hides conversions section for qb_only ingredient' do
+    create_quick_bite('Toast', ingredients: ['butter'])
+    log_in
+    get ingredient_edit_path('butter', kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select 'details[data-section-key="conversions"]', count: 0
+  end
+
+  test 'edit shows nutrition and conversions for recipe ingredient' do
+    @category = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
+    MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
+      # Focaccia
+
+
+      ## Mix (combine)
+
+      - Flour, 3 cups
+
+      Mix well.
+    MD
+
+    log_in
+    get ingredient_edit_path('Flour', kitchen_slug: kitchen_slug)
+
+    assert_response :success
+    assert_select 'details[data-section-key="nutrition"]', count: 1
+    assert_select 'details[data-section-key="conversions"]', count: 1
+  end
+
   test 'edit requires membership' do
     get ingredient_edit_path('Flour', kitchen_slug: kitchen_slug)
 
