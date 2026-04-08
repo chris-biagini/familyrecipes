@@ -30,7 +30,8 @@ Add a `qb_only` boolean to each ingredient row (true when all sources are
 **`row_status` becomes context-aware:**
 - Recipe ingredients (unchanged): `missing` → `incomplete` → `complete` based
   on nutrition + density
-- QB-only: `complete` if aisle is present, `incomplete` if not
+- QB-only: `complete` if aisle is present or omitted from shopping,
+  `incomplete` if neither
 
 **Summary counts exclude QB-only from irrelevant issues:**
 - `missing_nutrition`: excludes QB-only rows
@@ -93,7 +94,8 @@ In `ingredient_table_controller.js`:
 
 **IngredientRowBuilder tests:**
 - QB-only ingredient with aisle → status `complete`, `qb_only: true`
-- QB-only ingredient without aisle → status `incomplete`, `qb_only: true`
+- QB-only ingredient omitted from shopping (no aisle) → status `complete`, `qb_only: true`
+- QB-only ingredient without aisle and not omitted → status `incomplete`, `qb_only: true`
 - Ingredient in both recipe and QB → normal status logic, `qb_only: false`
 - `missing_nutrition` summary count excludes QB-only
 - Unresolvable coverage list excludes QB-only
