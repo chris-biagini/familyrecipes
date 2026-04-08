@@ -1,0 +1,25 @@
+{
+  "fdc_id": "173430",
+  "description": "Butter, without salt",
+  "data_type": "SR Legacy",
+  "nutrients": {
+    "basis_grams": 100.0,
+    "calories": 717.0,
+    "fat": 81.11,
+    "saturated_fat": 51.368,
+    "trans_fat": 3.278,
+    "cholesterol": 215.0,
+    "sodium": 11.0,
+    "carbs": 0.06,
+    "fiber": 0.0,
+    "total_sugars": 0.06,
+    "protein": 0.85,
+    "added_sugars": 0.0
+  },
+  "portions": [
+    { "modifier": "cup", "grams": 227.0, "amount": 1.0 },
+    { "modifier": "tbsp", "grams": 14.2, "amount": 1.0 },
+    { "modifier": "pat (1\" sq, 1/3\" high)", "grams": 5.0, "amount": 1.0 },
+    { "modifier": "stick", "grams": 113.0, "amount": 1.0 }
+  ]
+}

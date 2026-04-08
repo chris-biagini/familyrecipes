@@ -87,6 +87,11 @@ Rails/I18nLocaleTexts:
 
 # --- Rails cops ---
 
+# Standalone scripts don't have ActiveSupport — blank?/present? unavailable
+Rails/Blank:
+  Exclude:
+    - scripts/**/*
+
 # BuildValidator is a CLI build tool that intentionally uses puts
 Rails/Output:
   Exclude:
@@ -108,3 +113,4 @@ Rails/RefuteMethods:
     - test/recipe_serializer_test.rb
     - test/unit_resolver_test.rb
     - test/smart_tag_registry_test.rb
+    - test/seed_catalog/shared_test.rb
