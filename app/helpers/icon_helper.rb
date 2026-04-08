@@ -51,10 +51,10 @@ module IconHelper # rubocop:disable Metrics/ModuleLength
                             '<path d="M16.5 2.5 C17 1 18.5 1 19 2.5"/>' },
     menu: { view_box: '0 0 24 24', attrs: { 'stroke-width' => '1.8' },
             content: '<rect x="4" y="2" width="16" height="20"/>' \
-                     '<line x1="8" y1="7" x2="16" y2="7"/>' \
-                     '<line x1="8" y1="11" x2="16" y2="11"/>' \
-                     '<line x1="8" y1="15" x2="16" y2="15"/>' \
-                     '<line x1="8" y1="19" x2="16" y2="19"/>' },
+                     '<line x1="8" y1="6" x2="16" y2="6"/>' \
+                     '<line x1="8" y1="10" x2="16" y2="10"/>' \
+                     '<line x1="8" y1="14" x2="16" y2="14"/>' \
+                     '<line x1="8" y1="18" x2="16" y2="18"/>' },
     cart: { view_box: '0 0 24 24', attrs: { 'stroke-width' => '1.8' },
             content: '<path d="M1 1h3.5l2 11h11l2.5-7H6"/>' \
                      '<circle cx="8.5" cy="19" r="2"/><circle cx="16.5" cy="19" r="2"/>' \
