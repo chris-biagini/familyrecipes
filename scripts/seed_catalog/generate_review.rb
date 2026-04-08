@@ -79,6 +79,9 @@ def build_html(data)
     <script type="application/json" id="aisle-list">
     #{JSON.generate(AISLES)}
     </script>
+    <script type="application/json" id="default-decisions">
+    #{JSON.generate(build_defaults(data))}
+    </script>
     <script>
     #{javascript}
     </script>
@@ -348,10 +351,18 @@ def javascript
       }
 
       function loadDecisions() {
+        var defaults = JSON.parse(
+          document.getElementById('default-decisions').textContent
+        );
         try {
           var stored = localStorage.getItem(STORAGE_KEY);
-          return stored ? JSON.parse(stored) : {};
-        } catch(e) { return {}; }
+          if (!stored) return defaults;
+          var manual = JSON.parse(stored);
+          for (var key in defaults) {
+            if (!manual[key]) manual[key] = defaults[key];
+          }
+          return manual;
+        } catch(e) { return defaults; }
       }
 
       function exportDecisions() {
@@ -384,6 +395,21 @@ def javascript
       }
     })();
   JS
+end
+
+def build_defaults(data)
+  data.each_with_object({}) do |item, defaults|
+    next unless item['ai_pick']
+    next if item['ai_pick']['reasoning']&.include?('proxy')
+
+    defaults[item['name']] = {
+      'status' => 'accept',
+      'aisle' => item['aisle'] || '',
+      'aliases' => (item['aliases'] || []).join(', '),
+      'override_fdc_id' => '',
+      'notes' => ''
+    }
+  end
 end
 
 run if $PROGRAM_NAME == __FILE__
