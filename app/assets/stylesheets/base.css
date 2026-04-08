@@ -1,8 +1,22 @@
-/*********************************************************/
-/* Base styles, applicable to all screen sizes and media */
-/*********************************************************/
-
-/* Made with invaluable assistance from ChatGPT and Claude. :) */
+/*
+ * Global design tokens, typography, and shared UI patterns.
+ *
+ * Propshaft serves each stylesheet individually — no bundling. This file
+ * is loaded in the application layout alongside navigation.css, editor.css,
+ * nutrition.css, recipe.css, and print.css. Page-specific sheets (menu.css,
+ * groceries.css, ingredients.css) load via content_for(:head).
+ *
+ * Conventions:
+ * - Color tokens: all in :root below — check before inventing new names
+ * - Icons: IconHelper#icon(name, size:) / JS buildIcon(name, size) — never raw SVG
+ * - Inputs: .input-base + modifiers
+ * - Buttons: .btn + modifiers
+ * - Collapse: <details class="collapse-header"> pattern
+ * - Editor classes: editor- prefix
+ *
+ * Collaborators: navigation.css, editor.css, nutrition.css (page-level peers),
+ *   IconHelper, base layout (application.html.erb)
+ */
 
 :root {
   --font-display: "Instrument Serif", Georgia, serif;

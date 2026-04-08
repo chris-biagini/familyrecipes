@@ -1,3 +1,14 @@
+/*
+ * Sticky navigation bar, glass-morphism backdrop, nav drawer, and search overlay.
+ *
+ * The nav uses a frosted-glass backdrop (backdrop-filter: blur). On mobile,
+ * the drawer slides down beneath the nav bar. The search overlay is a
+ * full-screen modal triggered from the nav search icon.
+ *
+ * Collaborators: navigation_controller.js, search_overlay_controller.js,
+ *   phone_fab_controller.js, base.css (tokens)
+ */
+
 nav {
   margin: 0 calc(-1 * var(--gingham-gap));
   display: flex;

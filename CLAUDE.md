@@ -137,29 +137,15 @@ Update the CSP initializer before adding any.
 - Use semantic HTML. Recipes are **documents first** — marked-up text, not an
   app that happens to contain text.
 
-**CSS file structure.** Propshaft serves each file individually; no bundling.
-- **Global** (loaded in layout): `base.css` (tokens, typography, buttons,
-  inputs, collapse, scale, tags, notifications), `navigation.css` (nav,
-  search overlay), `editor.css` (all editor dialogs, graphical editor),
-  `nutrition.css` (FDA label, nf-editor, USDA search, density/portion/alias),
-  `recipe.css` (embedded cards), `print.css`.
-- **Page-specific** (via `content_for(:head)`): `menu.css`, `groceries.css`,
-  `ingredients.css`.
-- Editor-related classes use `editor-` prefix. Nutrition editor form classes
-  use `editor-` prefix (e.g. `.editor-form-row`, `.editor-portion-row`,
-  `.editor-alias-chip`).
+**CSS.** Propshaft serves files individually; no bundling. Global (in layout):
+`base.css`, `navigation.css`, `editor.css`, `nutrition.css`, `recipe.css`,
+`print.css`. Page-specific (via `content_for(:head)`): `menu.css`,
+`groceries.css`, `ingredients.css`. See `base.css` header comment for design
+tokens, shared patterns, and naming conventions. Data is embedded via
+`<script type="application/json">` + `el.textContent`, not `data-` attributes.
 
-**CSS conventions.** Icons: `IconHelper#icon(name, size:)` / JS `buildIcon(name, size)`
-— never paste raw SVG. Inputs: `.input-base` + modifiers. Buttons: `.btn` +
-modifiers. Collapse: `<details class="collapse-header">` pattern. Color tokens
-live in `base.css :root` — always check before inventing names. Data is embedded
-via `<script type="application/json">` + `el.textContent`, not `data-` attributes
-— check partials before assuming how data is embedded.
-
-**`hidden` attribute gotcha.** Explicit CSS `display` values (flex, grid)
-override the `[hidden]` user-agent style. When using `el.hidden = true` on
-elements with explicit display rules, add `selector[hidden] { display: none }`
-to the stylesheet.
+**`hidden` attribute gotcha.** Explicit CSS `display` values override
+`[hidden]`. Add `selector[hidden] { display: none }` when needed.
 
 ## Architecture
 
@@ -185,18 +171,12 @@ collision. Parser pipeline: `LineClassifier` → `RecipeBuilder` →
   picker — read its header comment for delegation details.
   `QuickBite` models live within `Category` alongside recipes.
 
-**Editor dialogs.** Use `render layout: 'shared/editor_dialog'` with Stimulus
-data attributes — no JS needed. Custom dialogs hook in via lifecycle events
-(`editor:content-loaded`, `editor:collect`, `editor:save`, `editor:modified`,
-`editor:reset`). All editor bodies load via Turbo Frames (eager preload).
-- Open `<dialog>` elements are protected from Turbo morph via
-  `turbo:before-morph-element` in `application.js`.
-- `turbo:before-cache` closes all open dialogs before page snapshots.
-- Do NOT use `data-turbo-permanent` on dialogs.
-- AR records are the sole source of truth — no stored `markdown_source`.
-  `RecipeSerializer` / `QuickBitesSerializer` handle IR ↔ text conversion.
-- Read `editor_controller.js` and `dual_mode_editor_controller.js` header
-  comments for the coordinator/child pattern and lifecycle routing.
+**Editor dialogs.** `render layout: 'shared/editor_dialog'` + Stimulus data
+attributes. Custom dialogs hook via lifecycle events (`editor:content-loaded`,
+`editor:collect`, `editor:save`, `editor:modified`, `editor:reset`). Do NOT
+use `data-turbo-permanent` on dialogs. AR records are the sole source of
+truth — `RecipeSerializer` / `QuickBitesSerializer` handle IR ↔ text.
+See `editor_controller.js` header for the coordinator/child pattern.
 
 **Hotwire stack.** Turbo Drive + Turbo Streams, Stimulus controllers,
 jsbundling-rails + esbuild for JS bundling.
@@ -207,10 +187,6 @@ jsbundling-rails + esbuild for JS bundling.
   prefixed attribute (e.g. `data-grocery-action`) for custom button actions.
 - CSP nonce: see `content_security_policy.rb` header comment. The layout's
   `<%= csp_meta_tag %>` exposes the nonce for JS libraries (CodeMirror).
-- CodeMirror lives in `app/javascript/codemirror/` — a vendored integration
-  for the plaintext editor. It depends on the CSP nonce above.
-- Phone FAB (`phone_fab_controller.js`) provides a floating action button
-  menu on mobile — check it before adding mobile-specific navigation.
 
 **Write path.** Controllers are thin adapters: param parsing → service call →
 response rendering. Services own all post-write side effects (reconcile,
@@ -220,14 +196,17 @@ var, not a DB setting. Background jobs: `RecipeNutritionJob` recomputes
 nutrition after recipe saves; `CascadeNutritionJob` propagates catalog
 changes across all recipes that use an ingredient.
 
-**Import/export.** ZIP-based backup/restore via `ExportService` and
-`ImportService`. AI recipe import (`AiImportController` → `AiImportService`)
-sends pasted text to the Anthropic API (Sonnet) and returns recipe Markdown;
-requires `Kitchen#anthropic_api_key`. Two modes: faithful (pure transcription,
-default) and expert (condensed for experienced cooks). Prompt templates live in
-`lib/familyrecipes/ai_import_prompt_{faithful,expert}.md` with `{{CATEGORIES}}`
-and `{{TAGS}}` slots interpolated from the kitchen at call time. Evaluation
-tooling in `test/ai_import/` (not part of `rake test`).
+**Services.** `app/services/` has ~20 services. Write services
+(`*WriteService`) handle CRUD + side effects for their domain.
+`ShoppingListBuilder` computes grocery lists; `IngredientResolver` handles
+nutrition lookups; `RecipeAvailabilityCalculator` builds the dinner picker
+pool. `RecipeBroadcaster` and `CrossReferenceUpdater` run as post-write
+hooks. All have architectural header comments.
+
+**Import/export.** ZIP backup/restore (`ExportService`/`ImportService`).
+AI recipe import (`AiImportService`) sends text to Anthropic API; two modes
+(faithful/expert). See service headers for details. Evaluation tooling in
+`test/ai_import/` (not part of `rake test`).
 
 **Settings.** Kitchen-scoped branding (title, heading, subtitle), API keys
 (USDA, Anthropic), and feature flags (`show_nutrition`, `decorate_tags`)
@@ -239,13 +218,7 @@ quantities and instructions when inputs were incomplete.
 **Tags.** Tag management dialog supports bulk rename/delete via
 `TagWriteService`. Tags are also auto-synced from recipe front matter on save.
 
-**Dinner picker.** 3D CSS cylinder with physics-based spin. Recency weighting
-via `CookHistoryEntry` deprioritizes recently cooked recipes. Logic lives in
-`dinner_picker_logic.js` and `spin_physics.js`.
-
-**Wake lock.** `wake_lock_controller.js` keeps the screen on during cooking
-via the Screen Wake Lock API. Auto-releases after 10 minutes of inactivity
-with a toast warning. No-op on unsupported browsers.
+**Dinner picker / wake lock.** See JS controller headers for details.
 
 ## Recipe & Data Formats
 
@@ -280,8 +253,6 @@ rake lint          # RuboCop — always use `bundle exec rubocop`, not bare `rub
 rake lint:html_safe # audit .html_safe / raw() calls against allowlist
 rake test          # all tests via Minitest
 rake catalog:sync  # push ingredient-catalog.yaml changes into the database
-rake release:audit       # Tier 2 quality gate (before any release)
-rake release:audit:full  # Tier 2 + Tier 3 (before minor/major releases)
 ruby -Itest test/controllers/recipes_controller_test.rb              # single file
 ruby -Itest test/models/recipe_test.rb -n test_requires_title        # single test
 bin/dev            # Puma + esbuild watcher (port 3030)
@@ -301,7 +272,7 @@ MULTI_KITCHEN=true bin/rails runner test/security/seed_security_kitchens.rb
 npx playwright test test/security/              # all security specs
 npx playwright test test/security/tenant_isolation.spec.mjs  # single spec
 ```
-CI runs Brakeman and `bundler-audit` automatically on every push and PR.
+CI (`test.yml`) runs Brakeman and `bundler-audit` on every push and PR.
 
 ```bash
 npm install                # install JS dependencies
@@ -312,17 +283,13 @@ ruby test/sim/grocery_audit.rb         # standalone grocery audit simulation (ex
 
 The default `rake` task runs both lint and test.
 
-**Help site.** User-facing documentation lives in `docs/help/` as a Jekyll static
-site deployed to GitHub Pages via `.github/workflows/docs.yml`. Design spec:
-`docs/superpowers/specs/2026-03-26-help-site-design.md`. The docs are a
-behavioral contract — if a feature doesn't match the docs, decide whether to fix
-the code or update the docs. To build locally:
+**Help site.** `docs/help/` — Jekyll on GitHub Pages (`docs.yml` workflow).
+Docs are a behavioral contract — if a feature doesn't match the docs, fix
+the code or update the docs. Build from outside the repo root (Jekyll picks
+up the Rails `Gemfile` otherwise):
 ```bash
-gem install jekyll kramdown-parser-gfm
-cp app/assets/images/favicon.svg docs/help/assets/favicon.svg
 cd /tmp && jekyll build --source ~/familyrecipes/docs/help --destination ~/familyrecipes/_site
 ```
-Note: must run `jekyll build` from outside the repo root — Jekyll picks up the Rails `Gemfile` and fails if run from within the project.
 
 **Test conventions.** Plain `Minitest::Test` files (parser-layer tests in
 `test/`) must be added to the `Rails/RefuteMethods` exclusion in `.rubocop.yml`
@@ -383,8 +350,6 @@ git push -u origin feature/short-description # push to GitHub
 gh pr create --title "..." --body "..."      # open PR for review
 # after merge on GitHub:
 git checkout main && git pull && git branch -D feature/short-description
-# if pull conflicts (unpushed local commits subsumed by squash merge):
-git fetch origin && git reset --hard origin/main
 ```
 
 **Key rules:**
