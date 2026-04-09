@@ -85,6 +85,11 @@ export default class extends Controller {
     if (this.hasProfileEmailTarget) this.profileEmailTarget.value = this.originals.profileEmail
   }
 
+  copyToClipboard(event) {
+    const text = event.params.copyText
+    navigator.clipboard.writeText(text)
+  }
+
   async regenerateJoinCode() {
     const response = await fetch(this.regenerateUrlValue, {
       method: "POST",
