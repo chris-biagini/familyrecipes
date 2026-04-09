@@ -1,8 +1,10 @@
 # frozen_string_literal: true
 
 # Dev/test-only authentication bypass. Provides direct login at /dev/login/:id
-# (blocked in production). Also handles /logout with a cookie that suppresses
-# the auto-login-in-development flow, enabling logged-out experience testing.
+# (blocked in production). Logout moved to SessionsController.
+#
+# - SessionsController: production logout endpoint
+# - Authentication concern: session lifecycle (start, terminate)
 class DevSessionsController < ApplicationController
   skip_before_action :set_kitchen_from_path
   before_action :require_non_production_environment, only: :create
@@ -15,12 +17,6 @@ class DevSessionsController < ApplicationController
     return redirect_to root_path unless kitchen
 
     redirect_to kitchen_root_path(kitchen_slug: kitchen.slug)
-  end
-
-  def destroy
-    terminate_session
-    cookies[:skip_dev_auto_login] = true if Rails.env.development?
-    redirect_to root_path
   end
 
   private

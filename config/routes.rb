@@ -61,7 +61,13 @@ Rails.application.routes.draw do
     get 'usda/:fdc_id', to: 'usda_search#show', as: :usda_show
   end
 
-  delete 'logout', to: 'dev_sessions#destroy', as: :logout
+  get 'new', to: 'kitchens#new', as: :new_kitchen
+  post 'new', to: 'kitchens#create'
+  get 'join', to: 'joins#new', as: :join_kitchen
+  post 'join', to: 'joins#verify', as: :verify_join
+  post 'join/complete', to: 'joins#create', as: :complete_join
+
+  delete 'logout', to: 'sessions#destroy', as: :logout
 
   get 'dev/login/:id', to: 'dev_sessions#create', as: :dev_login if Rails.env.local?
 end
