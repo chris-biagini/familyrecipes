@@ -39,6 +39,8 @@ class TransfersController < ApplicationController
 
   def create_for_member
     kitchen = resolve_current_kitchen
+    return head(:forbidden) unless ActsAsTenant.with_tenant(kitchen) { kitchen.member?(current_user) }
+
     target = find_kitchen_member(kitchen)
     return head(:not_found) unless target
 

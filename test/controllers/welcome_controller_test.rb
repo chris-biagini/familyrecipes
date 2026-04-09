@@ -25,11 +25,12 @@ class WelcomeControllerTest < ActionDispatch::IntegrationTest
 
   test 'show with expired signed ID redirects to root' do
     signed_id = sign_welcome_kitchen(@kitchen.id)
-    travel 20.minutes
 
-    get welcome_path(k: signed_id)
+    travel 20.minutes do
+      get welcome_path(k: signed_id)
 
-    assert_redirected_to root_path
+      assert_redirected_to root_path
+    end
   end
 
   private

@@ -27,12 +27,13 @@ class TransfersControllerTest < ActionDispatch::IntegrationTest
 
   test 'show with expired token renders error' do
     token = @user.signed_id(purpose: :transfer, expires_in: 0.seconds)
-    travel 1.minute
 
-    get show_transfer_path(token:, k: kitchen_slug)
+    travel 1.minute do
+      get show_transfer_path(token:, k: kitchen_slug)
 
-    assert_response :unprocessable_content
-    assert_select '.auth-error'
+      assert_response :unprocessable_content
+      assert_select '.auth-error'
+    end
   end
 
   test 'show with tampered token renders error' do
@@ -101,6 +102,21 @@ class TransfersControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select 'input[readonly]'
+  end
+
+  test 'create_for_member rejects caller who is not a kitchen member' do
+    log_in
+    other_kitchen = nil
+    target = nil
+    with_multi_kitchen do
+      other_kitchen = Kitchen.create!(name: 'Other Kitchen', slug: 'other-kitchen')
+      target = User.create!(name: 'Target', email: 'target@example.com')
+      ActsAsTenant.with_tenant(other_kitchen) { Membership.create!(kitchen: other_kitchen, user: target) }
+    end
+
+    post member_login_link_path(id: target.id), params: { kitchen_slug: other_kitchen.slug }
+
+    assert_response :forbidden
   end
 
   test 'create_for_member rejects non-member target' do
