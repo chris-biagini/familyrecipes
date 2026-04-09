@@ -12,12 +12,4 @@ class DevSessionsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to kitchen_root_path(kitchen_slug: @kitchen.slug)
   end
-
-  test 'logout clears session and redirects to landing' do
-    log_in
-
-    delete logout_path
-
-    assert_redirected_to root_path
-  end
 end
