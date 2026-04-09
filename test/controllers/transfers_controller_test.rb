@@ -127,6 +127,7 @@ class TransfersControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :redirect
     follow_redirect!
+
     assert_equal other_user.id, Session.last.user_id
   end
 end

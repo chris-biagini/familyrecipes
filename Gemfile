@@ -14,8 +14,8 @@ gem 'sqlite3'
 
 gem 'acts_as_tenant'
 gem 'anthropic'
-gem 'solid_cable'
 gem 'rqrcode'
+gem 'solid_cable'
 
 gem 'jsbundling-rails'
 gem 'stimulus-rails'
