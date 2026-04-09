@@ -122,6 +122,10 @@
                  value="<%= current_user_record.email %>">
         </div>
       </fieldset>
+
+      <div class="settings-signout">
+        <%= link_to 'Sign out', logout_path, data: { turbo_method: :delete }, class: 'settings-signout-link' %>
+      </div>
     </div>
   </div>
 </turbo-frame>
