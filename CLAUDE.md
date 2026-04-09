@@ -139,7 +139,7 @@ Update the CSP initializer before adding any.
 
 **CSS.** Propshaft serves files individually; no bundling. Global (in layout):
 `base.css`, `navigation.css`, `editor.css`, `nutrition.css`, `recipe.css`,
-`print.css`. Page-specific (via `content_for(:head)`): `menu.css`,
+`print.css`. Page-specific (via `content_for(:head)`): `auth.css`, `menu.css`,
 `groceries.css`, `ingredients.css`. See `base.css` header comment for design
 tokens, shared patterns, and naming conventions. Data is embedded via
 `<script type="application/json">` + `el.textContent`, not `data-` attributes.
@@ -221,6 +221,14 @@ quantities and instructions when inputs were incomplete.
 `TagWriteService`. Tags are also auto-synced from recipe front matter on save.
 
 **Dinner picker / wake lock.** See JS controller headers for details.
+
+**Auth flow.** Passwordless join-code system: `JoinCodeGenerator` (in `lib/`)
+creates human-readable codes; `JoinsController` validates codes and creates
+`Membership` records. `SessionsController` handles sign-in/sign-out;
+`DevSessionsController` provides test-only session shortcuts.
+`WelcomeController` and `LandingController` handle post-join and pre-auth
+landing pages. `TransfersController` manages kitchen ownership transfer.
+See each controller's header comment for details.
 
 ## Recipe & Data Formats
 
@@ -371,7 +379,7 @@ open for iterative development and testing across multiple sessions.
 - **Design docs and plans live on the branch** — they're part of the feature
   work and merge with it.
 
-Active long-lived branches: `feature/auth` (passwordless auth, Phase 1).
+Active long-lived branches are listed in the memory system, not here.
 
 **Key rules:**
 - **Squash-merge PRs** (`gh pr merge --squash`) for clean, linear history.
