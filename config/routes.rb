@@ -71,5 +71,10 @@ Rails.application.routes.draw do
 
   delete 'logout', to: 'sessions#destroy', as: :logout
 
+  post 'transfer', to: 'transfers#create', as: :create_transfer
+  get 'transfer/:token', to: 'transfers#show', as: :show_transfer
+  post 'members/:id/login_link', to: 'transfers#create_for_member', as: :member_login_link
+  get 'welcome', to: 'welcome#show', as: :welcome
+
   get 'dev/login/:id', to: 'dev_sessions#create', as: :dev_login if Rails.env.local?
 end
