@@ -1,0 +1,19 @@
+<% content_for(:title) { 'Signed Out' } %>
+
+<div class="auth-card">
+  <h1>You've been signed out</h1>
+
+  <% @kitchen_codes.each do |kitchen| %>
+    <div class="signout-kitchen">
+      <p class="signout-kitchen-name"><%= kitchen[:name] %></p>
+      <p class="auth-subtitle">Join code:</p>
+      <p class="signout-join-code"><%= kitchen[:join_code] %></p>
+    </div>
+  <% end %>
+
+  <p class="signout-hint">Save this — you'll need it to sign back in if you don't have another device handy.</p>
+
+  <div class="auth-footer">
+    <p><%= link_to 'Sign back in', join_kitchen_path %> · <%= link_to 'Go to homepage', root_path %></p>
+  </div>
+</div>
