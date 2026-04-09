@@ -160,6 +160,7 @@ All new routes live outside the kitchen scope (no tenant context needed):
 
 - `allow_unauthenticated_access`
 - `skip_before_action :set_kitchen_from_path`
+- `rate_limit to: 5, within: 1.hour, by: -> { request.remote_ip }`
 - `new`: render creation form. Redirect to kitchen homepage if already
   logged in.
 - `create`: validate inputs → transaction (Kitchen + User + Membership +
@@ -182,9 +183,10 @@ All new routes live outside the kitchen scope (no tenant context needed):
 
 - `allow_unauthenticated_access`
 - `skip_before_action :set_kitchen_from_path`
-- `destroy`: `terminate_session` → redirect to root. Replaces
-  `DevSessionsController#destroy` for production. `DevSessionsController`
-  stays for test convenience (dev login only).
+- `destroy`: `terminate_session` → redirect to root. The `DELETE /logout`
+  route moves from `DevSessionsController` to this controller.
+  `DevSessionsController` retains only `create` (dev login, gated to
+  local environments).
 
 ### Modified: LandingController
 
@@ -196,15 +198,20 @@ All new routes live outside the kitchen scope (no tenant context needed):
 
 ### Modified: ApplicationController
 
-Minimal changes. The existing before-action pipeline
+Remove `auto_join_sole_kitchen`. This method silently granted membership to
+any authenticated user when one Kitchen existed — safe when only Authelia
+users could authenticate, but with join codes the population of
+authenticated-but-unaffiliated users grows. The explicit join flow replaces
+this behavior. The rest of the before-action pipeline is unchanged
 (`resume_session` → `authenticate_from_headers` → `auto_login_in_development`
-→ `auto_join_sole_kitchen` → `set_kitchen_from_path`) is unchanged.
+→ `set_kitchen_from_path`).
 
 ### Modified: Settings Dialog
 
-Three new sections (visible to all members in Phase 1):
+Three new sections:
 
-- **Join code:** display current code + regenerate button
+- **Join code:** display current code + regenerate button (regenerate is
+  owner-only; display visible to all members)
 - **Members:** list of members (name, email, role)
 - **Profile:** edit own name and email
 
@@ -218,12 +225,30 @@ Three new sections (visible to all members in Phase 1):
 ## Security
 
 **Rate limiting.** Rails 8 `rate_limit` on `JoinsController`: 10
-attempts/hour/IP. Returns 429 with a friendly message. Kitchen creation is
-ungated in Phase 1 (beta only).
+attempts/hour/IP. `KitchensController`: 5 creations/hour/IP. Both return
+429 with a friendly message.
 
 **Signed tokens between steps.** Kitchen ID passed through the join flow via
-Rails `MessageVerifier`. Prevents skipping code validation or substituting a
-different kitchen.
+`MessageVerifier` with `purpose: :join` and `expires_in: 15.minutes`.
+Prevents skipping code validation, substituting a different kitchen, or
+replaying stale tokens.
+
+**Join code storage.** `encrypts :join_code, deterministic: true` — encrypted
+at rest (consistent with `usda_api_key` and `anthropic_api_key`), queryable
+via `find_by` thanks to deterministic mode.
+
+**User creation race condition.** `find_or_create_by!(email:)` rescues
+`ActiveRecord::RecordNotUnique` and retries with `find_by` — standard Rails
+pattern for concurrent creation.
+
+**Email squatting.** Without email verification, someone with the join code
+could claim an email before the real owner. Known limitation for Phase 1;
+Phase 2 email verification closes this gap.
+
+**`auto_join_sole_kitchen` removed.** Previously granted membership to any
+authenticated user when one Kitchen existed. With join codes widening the
+authenticated user pool, this is no longer safe. The explicit join flow
+replaces it.
 
 **Input validation.** All inputs go through existing model validations.
 Join code lookup uses parameterized queries. Slug auto-generated via
