@@ -110,12 +110,14 @@ ActiveRecord::Schema[8.1].define(version: 2) do
     t.boolean "decorate_tags", default: true, null: false
     t.string "homepage_heading", default: "Our Recipes"
     t.string "homepage_subtitle", default: "A collection of our family’s favorite recipes."
+    t.string "join_code", null: false
     t.string "name", null: false
     t.boolean "show_nutrition", default: false, null: false
     t.string "site_title", default: "Family Recipes"
     t.string "slug", null: false
     t.datetime "updated_at", null: false
     t.string "usda_api_key"
+    t.index ["join_code"], name: "index_kitchens_on_join_code", unique: true
     t.index ["slug"], name: "index_kitchens_on_slug", unique: true
   end
 

@@ -6,8 +6,9 @@
 # quick bites, ingredient catalog entries, a single MealPlan, and its member
 # Users via Memberships. Also holds aisle_order (user-customized grocery aisle
 # sequence), site branding (site_title, homepage_heading, homepage_subtitle),
-# display preferences (show_nutrition), and encrypted API keys (usda_api_key,
-# anthropic_api_key).
+# display preferences (show_nutrition), encrypted API keys (usda_api_key,
+# anthropic_api_key), and an encrypted join_code for membership invitations.
+# join_code uses deterministic encryption so it can be queried via find_by.
 #
 # Kitchen.finalize_writes(kitchen) is the single post-write entry point for
 # all write services: orphan cleanup, meal plan reconciliation, broadcast.
@@ -29,6 +30,7 @@ class Kitchen < ApplicationRecord
 
   encrypts :usda_api_key
   encrypts :anthropic_api_key
+  encrypts :join_code, deterministic: true
 
   MAX_AISLES = 50
   AI_MODEL = 'claude-sonnet-4-6'
@@ -87,6 +89,13 @@ class Kitchen < ApplicationRecord
   validates :slug, presence: true, uniqueness: true
   validate :enforce_single_kitchen_mode, on: :create
 
+  before_create :set_join_code
+
+  def self.find_by_join_code(code)
+    normalized = code.to_s.strip.downcase.squish
+    find_by(join_code: normalized)
+  end
+
   def broadcast_update
     Turbo::StreamsChannel.broadcast_refresh_to(self, :updates)
   end
@@ -121,7 +130,24 @@ class Kitchen < ApplicationRecord
     saved + catalog_aisles.reject { |a| saved_downcased.include?(a.downcase) }
   end
 
+  def regenerate_join_code!
+    loop do
+      self.join_code = JoinCodeGenerator.generate
+      break unless Kitchen.where.not(id: id).exists?(join_code: join_code)
+    end
+    save!
+  end
+
   private
+
+  def set_join_code
+    return if join_code.present?
+
+    loop do
+      self.join_code = JoinCodeGenerator.generate
+      break unless Kitchen.exists?(join_code: join_code)
+    end
+  end
 
   def enforce_single_kitchen_mode
     return if ENV['MULTI_KITCHEN'] == 'true'
