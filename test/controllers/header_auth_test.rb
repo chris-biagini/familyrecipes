@@ -74,43 +74,4 @@ class HeaderAuthTest < ActionDispatch::IntegrationTest
     assert_equal 'bob', User.find_by(email: 'bob@example.com').name
   end
 
-  test 'auto-joins sole kitchen for new user' do
-    get kitchen_root_path(kitchen_slug: @kitchen.slug), headers: {
-      'HTTP_REMOTE_USER' => 'alice',
-      'HTTP_REMOTE_NAME' => 'Alice',
-      'HTTP_REMOTE_EMAIL' => 'alice@example.com'
-    }
-
-    user = User.find_by(email: 'alice@example.com')
-
-    assert_predicate user.memberships, :any?
-    assert @kitchen.member?(user)
-  end
-
-  test 'does not auto-join when multiple kitchens exist' do
-    with_multi_kitchen { Kitchen.create!(name: 'Second Kitchen', slug: 'second') }
-
-    get kitchen_root_path(kitchen_slug: @kitchen.slug), headers: {
-      'HTTP_REMOTE_USER' => 'alice',
-      'HTTP_REMOTE_NAME' => 'Alice',
-      'HTTP_REMOTE_EMAIL' => 'alice@example.com'
-    }
-
-    user = User.find_by(email: 'alice@example.com')
-
-    assert_predicate user.memberships, :empty?
-  end
-
-  test 'does not auto-join when user already has membership' do
-    user = User.create!(name: 'Alice', email: 'alice@example.com')
-    ActsAsTenant.with_tenant(@kitchen) { Membership.create!(kitchen: @kitchen, user: user) }
-
-    assert_no_difference 'Membership.count' do
-      get kitchen_root_path(kitchen_slug: @kitchen.slug), headers: {
-        'HTTP_REMOTE_USER' => 'alice',
-        'HTTP_REMOTE_NAME' => 'Alice',
-        'HTTP_REMOTE_EMAIL' => 'alice@example.com'
-      }
-    end
-  end
 end

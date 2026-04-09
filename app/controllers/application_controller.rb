@@ -1,15 +1,15 @@
 # frozen_string_literal: true
 
 # Central before_action pipeline: resume session → authenticate from trusted
-# headers (Authelia in production) → auto-login in dev → auto-join sole kitchen
-# → set tenant from path. Public reads are allowed (allow_unauthenticated_access);
-# write paths and member-only pages call require_membership. Also manages the
-# optional kitchen_slug URL scope and cache headers for member-only pages.
+# headers (Authelia in production) → auto-login in dev → set tenant from path.
+# Public reads are allowed (allow_unauthenticated_access); write paths and
+# member-only pages call require_membership. Also manages the optional
+# kitchen_slug URL scope and cache headers for member-only pages.
 #
 # Collaborators:
 # - Authentication concern: session lifecycle (resume, start, terminate)
 # - Kitchen / acts_as_tenant: multi-tenant scoping via set_current_tenant
-# - User / Membership: trusted-header user lookup and auto-join
+# - User: trusted-header user lookup
 class ApplicationController < ActionController::Base
   include Authentication
 
@@ -22,7 +22,6 @@ class ApplicationController < ActionController::Base
   before_action :resume_session
   before_action :authenticate_from_headers
   before_action :auto_login_in_development
-  before_action :auto_join_sole_kitchen
   before_action :set_kitchen_from_path
   after_action :flush_broadcast
   helper_method :current_kitchen, :current_member?, :logged_in?, :home_path, :versioned_icon_path
@@ -87,20 +86,6 @@ class ApplicationController < ActionController::Base
     return unless user
 
     start_new_session_for(user)
-  end
-
-  def auto_join_sole_kitchen
-    return unless authenticated?
-
-    user = current_user
-    return if ActsAsTenant.without_tenant { user.memberships.exists? }
-
-    kitchens = ActsAsTenant.without_tenant { Kitchen.limit(2).to_a }
-    return unless kitchens.size == 1
-
-    ActsAsTenant.with_tenant(kitchens.first) do
-      Membership.create!(kitchen: kitchens.first, user: user)
-    end
   end
 
   def current_member?
