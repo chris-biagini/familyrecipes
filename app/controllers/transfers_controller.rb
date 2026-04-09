@@ -12,7 +12,7 @@
 # - Settings dialog: triggers create/create_for_member via Turbo Frame forms
 class TransfersController < ApplicationController
   skip_before_action :set_kitchen_from_path
-  before_action :require_authentication, only: %i[create]
+  before_action :require_authentication, only: %i[create create_for_member]
 
   layout 'auth', only: :show
 
@@ -37,6 +37,16 @@ class TransfersController < ApplicationController
     render layout: false
   end
 
+  def create_for_member
+    kitchen = resolve_current_kitchen
+    target = find_kitchen_member(kitchen)
+    return head(:not_found) unless target
+
+    token = target.signed_id(purpose: :login, expires_in: 24.hours)
+    @login_link_url = show_transfer_url(token:, k: kitchen.slug)
+    render layout: false
+  end
+
   private
 
   def resolve_token
@@ -51,6 +61,20 @@ class TransfersController < ApplicationController
       standalone: true,
       use_path: true
     )
+  end
+
+  def resolve_current_kitchen
+    slug = params[:kitchen_slug]
+    ActsAsTenant.without_tenant { Kitchen.find_by!(slug:) }
+  end
+
+  def find_kitchen_member(kitchen)
+    ActsAsTenant.with_tenant(kitchen) do
+      user = User.find_by(id: params[:id])
+      return nil unless user && kitchen.member?(user)
+
+      user
+    end
   end
 
   def resolve_kitchen(user)

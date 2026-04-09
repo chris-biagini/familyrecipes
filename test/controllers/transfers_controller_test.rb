@@ -85,4 +85,48 @@ class TransfersControllerTest < ActionDispatch::IntegrationTest
     assert_response :redirect
     assert_predicate cookies[:session_id], :present?
   end
+
+  test 'create_for_member requires authentication' do
+    post member_login_link_path(id: @user.id)
+
+    assert_response :forbidden
+  end
+
+  test 'create_for_member returns copyable link' do
+    log_in
+    other_user = User.create!(name: 'Other', email: 'other@example.com')
+    ActsAsTenant.with_tenant(@kitchen) { Membership.create!(kitchen: @kitchen, user: other_user) }
+
+    post member_login_link_path(id: other_user.id), params: { kitchen_slug: kitchen_slug }
+
+    assert_response :success
+    assert_select 'input[readonly]'
+  end
+
+  test 'create_for_member rejects non-member target' do
+    log_in
+    outsider = User.create!(name: 'Outsider', email: 'outsider@example.com')
+
+    post member_login_link_path(id: outsider.id), params: { kitchen_slug: kitchen_slug }
+
+    assert_response :not_found
+  end
+
+  test 'create_for_member token logs in target user' do
+    log_in
+    other_user = User.create!(name: 'Other', email: 'other@example.com')
+    ActsAsTenant.with_tenant(@kitchen) { Membership.create!(kitchen: @kitchen, user: other_user) }
+
+    post member_login_link_path(id: other_user.id), params: { kitchen_slug: kitchen_slug }
+
+    link_input = css_select('input[readonly]').first
+    url = link_input['value']
+    reset!
+
+    get url
+
+    assert_response :redirect
+    follow_redirect!
+    assert_equal other_user.id, Session.last.user_id
+  end
 end

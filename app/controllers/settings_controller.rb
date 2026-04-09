@@ -67,7 +67,7 @@ class SettingsController < ApplicationController
   def member_list
     ActsAsTenant.with_tenant(current_kitchen) do
       current_kitchen.memberships.includes(:user).map do |m|
-        { name: m.user.name, email: m.user.email, role: m.role }
+        { id: m.user_id, name: m.user.name, email: m.user.email, role: m.role }
       end
     end
   end
