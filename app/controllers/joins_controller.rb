@@ -68,7 +68,8 @@ class JoinsController < ApplicationController
     user = User.create!(name: name, email: email)
     ActsAsTenant.with_tenant(kitchen) { Membership.create!(kitchen: kitchen, user: user) }
     start_new_session_for(user)
-    redirect_to kitchen_root_path(kitchen_slug: kitchen.slug)
+    signed_k = Rails.application.message_verifier(:welcome).generate(kitchen.id, purpose: :welcome, expires_in: 15.minutes)
+    redirect_to welcome_path(k: signed_k)
   rescue ActiveRecord::RecordInvalid => error
     @errors = error.record.errors.full_messages
     render_name_form(kitchen, email)

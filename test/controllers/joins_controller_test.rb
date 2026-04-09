@@ -65,7 +65,8 @@ class JoinsControllerTest < ActionDispatch::IntegrationTest
       }
     end
 
-    assert_redirected_to kitchen_root_path(kitchen_slug: @kitchen.slug)
+    assert_response :redirect
+    assert_match %r{/welcome\?k=}, response.location
 
     user = User.find_by(email: 'newperson@example.com')
 

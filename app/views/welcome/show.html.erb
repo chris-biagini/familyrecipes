@@ -1,0 +1,14 @@
+<% content_for(:title) { "Welcome to #{@kitchen_name}" } %>
+
+<div class="auth-card">
+  <h1>Welcome to <%= @kitchen_name %>!</h1>
+
+  <p class="auth-subtitle">Your kitchen's join code:</p>
+  <p class="signout-join-code"><%= @join_code %></p>
+
+  <p class="signout-hint">Screenshot this or write it down — it's how you get back in on a new device.</p>
+
+  <div class="auth-footer">
+    <p><%= link_to 'Got it, take me to the kitchen', kitchen_root_path(kitchen_slug: @kitchen_slug) %></p>
+  </div>
+</div>
