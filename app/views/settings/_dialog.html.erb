@@ -10,7 +10,9 @@
         extra_controllers: 'settings-editor'
       },
       extra_data: {
-        'settings-editor-save-url-value' => settings_path
+        'settings-editor-save-url-value' => settings_path,
+        'settings-editor-regenerate-url-value' => settings_regenerate_join_code_path,
+        'settings-editor-profile-url-value' => settings_profile_path
       }
     } do %>
   <turbo-frame id="settings-editor-frame"
