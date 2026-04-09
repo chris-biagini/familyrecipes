@@ -577,31 +577,45 @@ ingredients:
 dishes:
   - adobo
   - arancini
+  - bake
   - baklava
+  - bao
+  - benedict
   - bibimbap
   - biryani
   - bisque
+  - blintz
   - bolognese
   - borsch
-  - bourguignon
+  - bowl
   - brioche
+  - brownie
+  - brulee
   - bruschetta
+  - bun
+  - burger
   - burrito
-  - cacciatore
+  - cake
   - calzone
   - carbonara
   - casserole
-  - cassoulet
   - ceviche
+  - chili
+  - chimichanga
+  - chips
   - chowder
-  - cioppino
+  - chutney
   - cobbler
+  - compote
+  - confit
   - congee
+  - cookie
   - couscous
   - crepe
   - croquette
   - crumble
   - crouton
+  - curry
   - custard
   - dashi
   - dolma
@@ -609,90 +623,132 @@ dishes:
   - dumpling
   - empanada
   - enchilada
-  - escabeche
   - falafel
-  - fattoush
   - fettuccine
+  - flan
+  - florentine
   - focaccia
   - fondue
+  - fricassee
   - frittata
+  - fritter
   - galette
   - ganache
+  - gazpacho
+  - gelato
   - gnocchi
   - granita
   - gratin
   - gumbo
   - gyoza
+  - gyro
+  - hash
+  - hotpot
   - hummus
   - injera
   - jambalaya
-  - kedgeree
+  - katsu
+  - kebab
   - korma
   - laksa
   - lasagna
   - linguine
+  - loaf
   - macaron
+  - marinara
   - masala
+  - mash
   - meatball
+  - medley
+  - melt
+  - mole
   - moussaka
   - mousse
   - nachos
   - naan
-  - nigirizushi
   - noodle
-  - okonomiyaki
+  - nugget
+  - omelet
   - paella
+  - pakora
   - pancake
   - paneer
+  - panini
   - panna
   - parfait
   - pasta
-  - pastilla
   - pavlova
   - pesto
   - pho
+  - piccata
+  - pie
   - pierogi
   - pilaf
   - pizza
+  - poke
   - polenta
   - porridge
+  - potpie
+  - poutine
   - pozole
   - pretzel
-  - puttanesca
+  - pudding
   - quesadilla
   - quiche
+  - ragout
   - ramen
   - ratatouille
   - ravioli
   - rendang
   - rigatoni
   - risotto
+  - roast
+  - roll
   - rosti
+  - rotisserie
   - roulade
+  - salad
   - salsa
   - samosa
+  - sandwich
   - satay
   - sashimi
   - schnitzel
+  - scramble
   - shakshuka
+  - shawarma
+  - skillet
+  - slaw
+  - slider
   - sorbet
   - souffle
+  - souvlaki
+  - stew
+  - stroganoff
   - strudel
+  - stuffing
   - succotash
+  - sundae
   - sushi
-  - tabbouleh
   - taco
   - tagine
   - tamale
   - tandoori
+  - tapas
+  - tart
+  - tartare
   - tempura
   - teriyaki
   - terrine
   - tiramisu
+  - toast
+  - torte
+  - tortellini
   - tostada
-  - uramaki
+  - trifle
+  - turnover
   - vindaloo
   - waffle
+  - wellington
   - wonton
   - yakitori
-  - zabaglione
