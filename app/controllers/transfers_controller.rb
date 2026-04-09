@@ -60,7 +60,7 @@ class TransfersController < ApplicationController
     RQRCode::QRCode.new(url).as_svg(
       shape_rendering: 'crispEdges',
       module_size: 4,
-      standalone: true,
+      viewbox: true,
       use_path: true
     )
   end
