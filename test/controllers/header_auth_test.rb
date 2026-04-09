@@ -73,5 +73,4 @@ class HeaderAuthTest < ActionDispatch::IntegrationTest
 
     assert_equal 'bob', User.find_by(email: 'bob@example.com').name
   end
-
 end
