@@ -189,7 +189,9 @@ jsbundling-rails + esbuild for JS bundling.
   `<%= csp_meta_tag %>` exposes the nonce for JS libraries (CodeMirror).
 
 **Write path.** Controllers are thin adapters: param parsing → service call →
-response rendering. Services own all post-write side effects (reconcile,
+response rendering. Shared controller logic lives in
+`app/controllers/concerns/` (authentication, meal-plan actions, structure
+validation). Services own all post-write side effects (reconcile,
 broadcast). Don't call `MarkdownImporter` directly for web operations.
 Read write service header comments for details. `multi_kitchen` is an env
 var, not a DB setting. Background jobs: `RecipeNutritionJob` recomputes
@@ -398,23 +400,12 @@ one-off rake tasks for backfills.  Migrations are numbered sequentially
 - CI verifies migrations from scratch (`db:create db:migrate db:seed`) before
   building the Docker image.
 
-**Releases.** Tag pushes trigger `docker.yml`: build → smoke test (`/up`
-health check) → push to GHCR → create GitHub Release. Three tiers based on
-tag format (optional letter suffix like `a` is stripped before classifying):
-- **Patch** (`vX.Y.Z`): auto-published with commit bullet list.
-- **Minor** (`vX.Y`): auto-published with curated release notes organized
-  by theme (features, fixes, polish). Claude generates the notes file
-  before tagging; CI publishes the release.
-- **Major** (`vX`): auto-published with marketing-quality release notes
-  with sections: Highlights, Breaking changes, What's new, Fixes, Upgrade
-  notes. Claude generates the notes file before tagging; CI publishes.
-- Four-part tags (`vX.Y.Z.W`) are not supported — CI skips release
-  creation for these.
-- **Run `rake release:audit` before tagging any release.** For minor/major
-  releases, run `rake release:audit:full` (requires a running dev server).
-  The pre-push hook enforces this — tag pushes are blocked without a fresh
-  audit marker.
-The `REVISION` build arg bakes the version into the image (read by
-`ApplicationHelper#app_version`). Only tag when code is known-good —
-in-between commits on main are not built. The pre-push hook runs lint on
-all files (~5s); tests run exclusively in CI.
+**Releases.** Tag pushes trigger `docker.yml`: build → smoke test → push to
+GHCR → create GitHub Release. Tag format determines tier: patch (`vX.Y.Z`),
+minor (`vX.Y`), major (`vX`). Minor/major get curated release notes
+(Claude generates before tagging). Four-part tags are not supported.
+Run `rake release:audit` before any tag; `rake release:audit:full` for
+minor/major (requires running dev server). Pre-push hook enforces this.
+`REVISION` build arg bakes the version into the image
+(`ApplicationHelper#app_version`). Pre-push hook runs lint (~5s); tests
+run exclusively in CI.
