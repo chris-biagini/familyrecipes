@@ -548,16 +548,18 @@ nav a:focus-visible {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     padding: 0.5rem;
     opacity: 0;
+    visibility: hidden;
     pointer-events: none;
     transform: scale(0.95);
-    transition: opacity 150ms ease, transform 150ms ease;
+    transition: opacity 150ms ease, transform 150ms ease, visibility 0s 150ms;
   }
 
   .fab-panel.fab-open {
     opacity: 1;
+    visibility: visible;
     pointer-events: auto;
     transform: scale(1);
-    transition: opacity 150ms ease, transform 250ms cubic-bezier(0.16, 0.75, 0.40, 1);
+    transition: opacity 150ms ease, transform 250ms cubic-bezier(0.16, 0.75, 0.40, 1), visibility 0s;
   }
 
   /* Panel content: nav links stacked vertically */

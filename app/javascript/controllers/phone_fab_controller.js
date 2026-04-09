@@ -25,10 +25,12 @@ export default class extends Controller {
     this.phoneQuery.addEventListener("change", this.boundMediaChange)
 
     this.boundOutsideTap = this.outsideTap.bind(this)
+    this.boundEscapeClose = this.escapeClose.bind(this)
   }
 
   disconnect() {
     this.phoneQuery.removeEventListener("change", this.boundMediaChange)
+    document.removeEventListener("keydown", this.boundEscapeClose)
     document.removeEventListener("pointerdown", this.boundOutsideTap)
   }
 
@@ -42,6 +44,7 @@ export default class extends Controller {
 
     this.trapFocusListener = this.trapFocus.bind(this)
     this.element.addEventListener("keydown", this.trapFocusListener)
+    document.addEventListener("keydown", this.boundEscapeClose)
     document.addEventListener("pointerdown", this.boundOutsideTap)
 
     this.firstFocusable?.focus()
@@ -54,6 +57,7 @@ export default class extends Controller {
     this.buttonTarget.setAttribute("aria-expanded", "false")
 
     this.element.removeEventListener("keydown", this.trapFocusListener)
+    document.removeEventListener("keydown", this.boundEscapeClose)
     document.removeEventListener("pointerdown", this.boundOutsideTap)
     this.buttonTarget.focus()
   }
@@ -62,6 +66,7 @@ export default class extends Controller {
     this.panelTarget.classList.remove("fab-open")
     this.buttonTarget.setAttribute("aria-expanded", "false")
     this.element.removeEventListener("keydown", this.trapFocusListener)
+    document.removeEventListener("keydown", this.boundEscapeClose)
     document.removeEventListener("pointerdown", this.boundOutsideTap)
   }
 
@@ -101,6 +106,10 @@ export default class extends Controller {
 
   outsideTap(event) {
     if (!this.element.contains(event.target)) this.close()
+  }
+
+  escapeClose(event) {
+    if (event.key === "Escape") this.close()
   }
 
   trapFocus(event) {
