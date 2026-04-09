@@ -1,0 +1,50 @@
+# frozen_string_literal: true
+
+# Generates and consumes signed, time-limited tokens for re-authentication.
+# Two token types: :transfer (self, 5 min, QR code) and :login (member-to-member,
+# 24 hours, copyable link). Both are consumed via the same show action using
+# User#find_signed. Kitchen context is passed as a query param (?k=slug) and
+# verified against the user's memberships before creating a session.
+#
+# - Authentication concern: start_new_session_for, require_authentication
+# - User: signed_id / find_signed (Rails built-in)
+# - Kitchen: membership verification
+# - Settings dialog: triggers create/create_for_member via Turbo Frame forms
+class TransfersController < ApplicationController
+  skip_before_action :set_kitchen_from_path
+
+  layout 'auth', only: :show
+
+  def show
+    user = resolve_token
+    kitchen = resolve_kitchen(user)
+
+    unless user && kitchen
+      @error = 'This link is invalid or has expired.'
+      return render :show_error, status: :unprocessable_content
+    end
+
+    start_new_session_for(user)
+    redirect_to kitchen_root_path(kitchen_slug: kitchen.slug)
+  end
+
+  private
+
+  def resolve_token
+    User.find_signed(params[:token], purpose: :transfer) ||
+      User.find_signed(params[:token], purpose: :login)
+  end
+
+  def resolve_kitchen(user)
+    return nil unless user
+
+    slug = params[:k]
+    return nil unless slug
+
+    kitchen = ActsAsTenant.without_tenant { Kitchen.find_by(slug:) }
+    return nil unless kitchen
+
+    member = ActsAsTenant.with_tenant(kitchen) { kitchen.member?(user) }
+    member ? kitchen : nil
+  end
+end
