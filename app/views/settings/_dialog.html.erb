@@ -4,7 +4,7 @@
       title: 'Settings',
       help_path: '/settings/',
       id: 'settings-editor',
-      footer_extra: button_to('Sign out', logout_path, method: :delete, data: { turbo: false }, class: 'settings-signout-link') + tag.span(class: 'editor-footer-spacer'),
+      footer_extra: button_to('Sign out', logout_path, method: :delete, data: { turbo: false }, class: 'btn') + tag.span(class: 'editor-footer-spacer'),
       dialog_data: {
         editor_on_success: 'reload',
         editor_open: '#settings-button',
