@@ -2,40 +2,20 @@
  * Auth page styles for kitchen creation, join flow, and similar
  * standalone pages that use the minimal auth layout.
  *
- * Relies on design tokens and .input-base from base.css.
- * No navigation, editor, or recipe styles are loaded.
+ * Auth pages share the gingham background and content card from
+ * base.css — the <main> element IS the card. This file adds only
+ * form and typography styles specific to auth flows.
  *
  * Collaborators: auth layout (layouts/auth.html.erb),
- *   KitchensController, JoinsController
+ *   KitchensController, JoinsController, SessionsController,
+ *   WelcomeController, TransfersController
  */
 
 .auth-page {
-  background: var(--ground);
-  color: var(--text);
-  font-family: var(--font-body);
   margin: 0;
-  min-height: 100dvh;
 }
 
-.auth-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100dvh;
-  padding: 2rem 1rem;
-}
-
-.auth-card {
-  width: 100%;
-  max-width: 420px;
-  background: var(--input-bg);
-  border: 1px solid var(--rule);
-  border-radius: 8px;
-  padding: 2.5rem 2rem 2rem;
-  box-shadow: var(--shadow-sm);
-}
-
-.auth-card h1 {
+.auth-container h1 {
   font-family: var(--font-display);
   font-size: 1.8rem;
   font-weight: normal;
@@ -153,14 +133,9 @@
   margin: 1.25rem 0 0;
 }
 
-/* Small screens: reduce card padding */
+/* Small screens */
 @media (max-width: 480px) {
-  .auth-card {
-    padding: 2rem 1.25rem 1.5rem;
-    border-radius: 6px;
-  }
-
-  .auth-card h1 {
+  .auth-container h1 {
     font-size: 1.5rem;
   }
 }

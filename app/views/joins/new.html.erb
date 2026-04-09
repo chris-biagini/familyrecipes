@@ -1,25 +1,23 @@
 <% content_for(:title) { 'Join a Kitchen' } %>
 
-<div class="auth-card">
-  <h1>Join a Kitchen</h1>
-  <p class="auth-subtitle">Enter the join code you received.</p>
+<h1>Join a Kitchen</h1>
+<p class="auth-subtitle">Enter the join code you received.</p>
 
-  <% if @error %>
-    <div class="auth-error"><p><%= @error %></p></div>
-  <% end %>
+<% if @error %>
+  <div class="auth-error"><p><%= @error %></p></div>
+<% end %>
 
-  <%= form_with url: verify_join_path, method: :post, local: true do |f| %>
-    <div class="auth-field">
-      <label for="join_code">Join code</label>
-      <input type="text" id="join_code" name="join_code" class="input-base input-lg"
-             placeholder="braised eggplant cardamom casserole" required autofocus
-             autocomplete="off" autocapitalize="none">
-    </div>
-
-    <button type="submit" class="btn auth-submit">Continue</button>
-  <% end %>
-
-  <div class="auth-footer">
-    <p>Want to start your own? <%= link_to 'Create a kitchen', new_kitchen_path %></p>
+<%= form_with url: verify_join_path, method: :post, local: true do |f| %>
+  <div class="auth-field">
+    <label for="join_code">Join code</label>
+    <input type="text" id="join_code" name="join_code" class="input-base input-lg"
+           placeholder="braised eggplant cardamom casserole" required autofocus
+           autocomplete="off" autocapitalize="none">
   </div>
+
+  <button type="submit" class="btn auth-submit">Continue</button>
+<% end %>
+
+<div class="auth-footer">
+  <p>Want to start your own? <%= link_to 'Create a kitchen', new_kitchen_path %></p>
 </div>

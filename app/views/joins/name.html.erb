@@ -1,27 +1,25 @@
 <% content_for(:title) { "Join #{@kitchen_name}" } %>
 
-<div class="auth-card">
-  <h1>Welcome to <%= @kitchen_name %></h1>
-  <p class="auth-subtitle">One more thing &mdash; what should we call you?</p>
+<h1>Welcome to <%= @kitchen_name %></h1>
+<p class="auth-subtitle">One more thing &mdash; what should we call you?</p>
 
-  <% if @errors&.any? %>
-    <div class="auth-error">
-      <% @errors.each do |error| %>
-        <p><%= error %></p>
-      <% end %>
-    </div>
-  <% end %>
+<% if @errors&.any? %>
+  <div class="auth-error">
+    <% @errors.each do |error| %>
+      <p><%= error %></p>
+    <% end %>
+  </div>
+<% end %>
 
-  <%= form_with url: complete_join_path, method: :post, local: true do |f| %>
-    <%= hidden_field_tag :signed_kitchen_id, @signed_kitchen_id %>
-    <%= hidden_field_tag :email, @email %>
+<%= form_with url: complete_join_path, method: :post, local: true do |f| %>
+  <%= hidden_field_tag :signed_kitchen_id, @signed_kitchen_id %>
+  <%= hidden_field_tag :email, @email %>
 
-    <div class="auth-field">
-      <label for="name">Your name</label>
-      <input type="text" id="name" name="name" class="input-base input-lg"
-             required autofocus>
-    </div>
+  <div class="auth-field">
+    <label for="name">Your name</label>
+    <input type="text" id="name" name="name" class="input-base input-lg"
+           required autofocus>
+  </div>
 
-    <button type="submit" class="btn auth-submit">Join Kitchen</button>
-  <% end %>
-</div>
+  <button type="submit" class="btn auth-submit">Join Kitchen</button>
+<% end %>
