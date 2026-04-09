@@ -55,7 +55,7 @@ class JoinsController < ApplicationController
   def authenticate_existing(kitchen, user)
     ensure_membership(kitchen, user)
     start_new_session_for(user)
-    redirect_to kitchen_root_path(kitchen_slug: kitchen.slug)
+    redirect_to_welcome(kitchen)
   end
 
   def ensure_membership(kitchen, user)
@@ -68,9 +68,7 @@ class JoinsController < ApplicationController
     user = User.create!(name: name, email: email)
     ActsAsTenant.with_tenant(kitchen) { Membership.create!(kitchen: kitchen, user: user) }
     start_new_session_for(user)
-    signed_k = Rails.application.message_verifier(:welcome).generate(kitchen.id, purpose: :welcome,
-                                                                                 expires_in: 15.minutes)
-    redirect_to welcome_path(k: signed_k)
+    redirect_to_welcome(kitchen)
   rescue ActiveRecord::RecordInvalid => error
     @errors = error.record.errors.full_messages
     render_name_form(kitchen, email)
@@ -83,6 +81,11 @@ class JoinsController < ApplicationController
     @kitchen_name = kitchen.name
     @email = email
     render :name
+  end
+
+  def redirect_to_welcome(kitchen)
+    signed_k = Rails.application.message_verifier(:welcome).generate(kitchen.id, purpose: :welcome, expires_in: 15.minutes)
+    redirect_to welcome_path(k: signed_k)
   end
 
   def sign_kitchen_id(id)

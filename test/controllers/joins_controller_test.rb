@@ -38,7 +38,8 @@ class JoinsControllerTest < ActionDispatch::IntegrationTest
       }
     end
 
-    assert_redirected_to kitchen_root_path(kitchen_slug: @kitchen.slug)
+    assert_response :redirect
+    assert_match %r{/welcome\?k=}, response.location
     assert_predicate cookies[:session_id], :present?
   end
 
@@ -93,7 +94,8 @@ class JoinsControllerTest < ActionDispatch::IntegrationTest
       }
     end
 
-    assert_redirected_to kitchen_root_path(kitchen_slug: @kitchen.slug)
+    assert_response :redirect
+    assert_match %r{/welcome\?k=}, response.location
     assert ActsAsTenant.with_tenant(@kitchen) { @kitchen.member?(outsider) }
   end
 
