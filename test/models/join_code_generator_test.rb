@@ -4,19 +4,19 @@ require 'test_helper'
 
 class JoinCodeGeneratorTest < ActiveSupport::TestCase
   test 'word lists are loaded and frozen' do
-    assert_predicate JoinCodeGenerator.techniques, :frozen?
+    assert_predicate JoinCodeGenerator.descriptors, :frozen?
     assert_predicate JoinCodeGenerator.ingredients, :frozen?
     assert_predicate JoinCodeGenerator.dishes, :frozen?
   end
 
   test 'word lists are non-empty' do
-    assert_operator JoinCodeGenerator.techniques.size, :>=, 60
+    assert_operator JoinCodeGenerator.descriptors.size, :>=, 60
     assert_operator JoinCodeGenerator.ingredients.size, :>=, 200
     assert_operator JoinCodeGenerator.dishes.size, :>=, 80
   end
 
   test 'all words are lowercase ASCII' do
-    all_words = JoinCodeGenerator.techniques + JoinCodeGenerator.ingredients + JoinCodeGenerator.dishes
+    all_words = JoinCodeGenerator.descriptors + JoinCodeGenerator.ingredients + JoinCodeGenerator.dishes
 
     all_words.each do |word|
       assert_match(/\A[a-z]+\z/, word, "Word '#{word}' contains non-ASCII or non-lowercase characters")
@@ -24,7 +24,7 @@ class JoinCodeGeneratorTest < ActiveSupport::TestCase
   end
 
   test 'no duplicate words within or across lists' do
-    all_words = JoinCodeGenerator.techniques + JoinCodeGenerator.ingredients + JoinCodeGenerator.dishes
+    all_words = JoinCodeGenerator.descriptors + JoinCodeGenerator.ingredients + JoinCodeGenerator.dishes
 
     assert_equal all_words.size, all_words.uniq.size, 'Duplicate words found in word lists'
   end
@@ -36,11 +36,11 @@ class JoinCodeGeneratorTest < ActiveSupport::TestCase
     assert_equal 4, words.size
   end
 
-  test 'generate follows technique-ingredient-ingredient-dish format' do
+  test 'generate follows descriptor-ingredient-ingredient-dish format' do
     code = JoinCodeGenerator.generate
     words = code.split
 
-    assert_includes JoinCodeGenerator.techniques, words[0]
+    assert_includes JoinCodeGenerator.descriptors, words[0]
     assert_includes JoinCodeGenerator.ingredients, words[1]
     assert_includes JoinCodeGenerator.ingredients, words[2]
     assert_includes JoinCodeGenerator.dishes, words[3]

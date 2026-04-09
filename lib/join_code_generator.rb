@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Generates cooking-themed join codes in the format:
-# "technique ingredient ingredient dish"
+# "descriptor ingredient ingredient dish"
 # Loaded once at boot via initializer; arrays frozen for thread safety.
 # Uses SecureRandom for index selection.
 #
@@ -11,21 +11,21 @@ module JoinCodeGenerator
   WORDS_PATH = Rails.root.join('db/seeds/resources/join-code-words.yaml')
 
   class << self
-    attr_reader :techniques, :ingredients, :dishes
+    attr_reader :descriptors, :ingredients, :dishes
 
     def load!
       data = YAML.load_file(WORDS_PATH)
-      @techniques = data.fetch('techniques').map(&:freeze).freeze
+      @descriptors = data.fetch('descriptors').map(&:freeze).freeze
       @ingredients = data.fetch('ingredients').map(&:freeze).freeze
       @dishes = data.fetch('dishes').map(&:freeze).freeze
     end
 
     def generate
-      t = techniques[SecureRandom.random_number(techniques.size)]
+      d = descriptors[SecureRandom.random_number(descriptors.size)]
       i1 = ingredients[SecureRandom.random_number(ingredients.size)]
       i2 = pick_second_ingredient(i1)
-      d = dishes[SecureRandom.random_number(dishes.size)]
-      "#{t} #{i1} #{i2} #{d}"
+      dish = dishes[SecureRandom.random_number(dishes.size)]
+      "#{d} #{i1} #{i2} #{dish}"
     end
 
     private
