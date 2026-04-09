@@ -212,10 +212,12 @@ class AddJoinCodeToKitchens < ActiveRecord::Migration[8.0]
   def up
     add_column :kitchens, :join_code, :string
 
-    # Backfill existing kitchens with generated codes
+    # Backfill existing kitchens — use update! (not update_column) so
+    # Active Record encryption runs. Define a bare stub to avoid coupling
+    # to the application model.
     Kitchen.reset_column_information
     Kitchen.find_each do |kitchen|
-      kitchen.update_column(:join_code, JoinCodeGenerator.generate) # rubocop:disable Rails/SkipsModelValidations
+      kitchen.update!(join_code: JoinCodeGenerator.generate)
     end
 
     change_column_null :kitchens, :join_code, false
@@ -228,7 +230,7 @@ class AddJoinCodeToKitchens < ActiveRecord::Migration[8.0]
 end
 ```
 
-Note: This migration references `JoinCodeGenerator` directly. Normally CLAUDE.md forbids calling application code from migrations, but `JoinCodeGenerator` is a standalone module with no AR dependencies — it just reads a YAML file. This is safe. Alternatively, generate random strings inline if the reviewer prefers.
+Note: This migration references `JoinCodeGenerator` directly. Normally CLAUDE.md forbids calling application code from migrations, but `JoinCodeGenerator` is a standalone module with no AR dependencies — it just reads a YAML file. This is safe. The `update!` call (not `update_column`) ensures Active Record encryption runs.
 
 - [ ] **Step 2: Run the migration**
 
@@ -364,6 +366,7 @@ class SessionsController < ApplicationController
 
   def destroy
     terminate_session
+    cookies[:skip_dev_auto_login] = true if Rails.env.development?
     redirect_to root_path
   end
 end
@@ -979,26 +982,31 @@ class JoinsController < ApplicationController
     return redirect_to join_kitchen_path, alert: 'Invalid or expired session. Please re-enter your join code.' unless kitchen
 
     email = params[:email].to_s.strip.downcase
+    authenticate_or_register(kitchen, email)
+  end
+
+  private
+
+  def authenticate_or_register(kitchen, email)
     user = User.find_by(email: email)
-    member = user && ActsAsTenant.with_tenant(kitchen) { kitchen.member?(user) }
 
-    if member
-      start_new_session_for(user)
-      return redirect_to kitchen_root_path(kitchen_slug: kitchen.slug)
-    end
-
-    if user && !member
-      ActsAsTenant.with_tenant(kitchen) { Membership.create!(kitchen: kitchen, user: user) }
-      start_new_session_for(user)
-      return redirect_to kitchen_root_path(kitchen_slug: kitchen.slug)
-    end
-
+    return authenticate_existing(kitchen, user) if user
     return render_name_form(kitchen, email) unless params[:name].present?
 
     register_new_member(kitchen, email, params[:name])
   end
 
-  private
+  def authenticate_existing(kitchen, user)
+    ensure_membership(kitchen, user)
+    start_new_session_for(user)
+    redirect_to kitchen_root_path(kitchen_slug: kitchen.slug)
+  end
+
+  def ensure_membership(kitchen, user)
+    return if ActsAsTenant.with_tenant(kitchen) { kitchen.member?(user) }
+
+    ActsAsTenant.with_tenant(kitchen) { Membership.create!(kitchen: kitchen, user: user) }
+  end
 
   def register_new_member(kitchen, email, name)
     user = User.create!(name: name, email: email)
@@ -1300,7 +1308,7 @@ class SettingsJoinCodeTest < ActionDispatch::IntegrationTest
   test 'regenerate_join_code changes the code' do
     old_code = @kitchen.join_code
 
-    post settings_path(kitchen_slug: kitchen_slug) + '/regenerate_join_code', as: :json
+    post settings_regenerate_join_code_path(kitchen_slug: kitchen_slug), as: :json
 
     assert_response :success
     @kitchen.reload
@@ -1312,13 +1320,13 @@ class SettingsJoinCodeTest < ActionDispatch::IntegrationTest
     Membership.create!(kitchen: @kitchen, user: member_user, role: 'member')
     get dev_login_path(id: member_user.id)
 
-    post settings_path(kitchen_slug: kitchen_slug) + '/regenerate_join_code', as: :json
+    post settings_regenerate_join_code_path(kitchen_slug: kitchen_slug), as: :json
 
     assert_response :forbidden
   end
 
   test 'update_profile changes user name and email' do
-    patch settings_path(kitchen_slug: kitchen_slug) + '/profile',
+    patch settings_profile_path(kitchen_slug: kitchen_slug),
           params: { user: { name: 'New Name', email: 'newemail@example.com' } },
           as: :json
 
