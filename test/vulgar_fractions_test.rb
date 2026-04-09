@@ -37,6 +37,30 @@ class VulgarFractionsTest < Minitest::Test
     assert_equal "\u00BE", FamilyRecipes::VulgarFractions.format(0.75)
   end
 
+  def test_fifth_formats_as_vulgar
+    assert_equal "\u2155", FamilyRecipes::VulgarFractions.format(0.2)
+  end
+
+  def test_two_fifths_formats_as_vulgar
+    assert_equal "\u2156", FamilyRecipes::VulgarFractions.format(0.4)
+  end
+
+  def test_three_fifths_formats_as_vulgar
+    assert_equal "\u2157", FamilyRecipes::VulgarFractions.format(0.6)
+  end
+
+  def test_four_fifths_formats_as_vulgar
+    assert_equal "\u2158", FamilyRecipes::VulgarFractions.format(0.8)
+  end
+
+  def test_sixth_formats_as_vulgar
+    assert_equal "\u2159", FamilyRecipes::VulgarFractions.format(1.0 / 6)
+  end
+
+  def test_five_sixths_formats_as_vulgar
+    assert_equal "\u215A", FamilyRecipes::VulgarFractions.format(5.0 / 6)
+  end
+
   def test_eighth_formats_as_vulgar
     assert_equal "\u215B", FamilyRecipes::VulgarFractions.format(0.125)
   end
@@ -66,11 +90,11 @@ class VulgarFractionsTest < Minitest::Test
   end
 
   def test_non_matching_decimal_formats_as_decimal
-    assert_equal '0.4', FamilyRecipes::VulgarFractions.format(0.4)
+    assert_equal '0.3', FamilyRecipes::VulgarFractions.format(0.3)
   end
 
   def test_non_matching_mixed_formats_as_decimal
-    assert_equal '1.4', FamilyRecipes::VulgarFractions.format(1.4)
+    assert_equal '1.3', FamilyRecipes::VulgarFractions.format(1.3)
   end
 
   def test_large_integer
@@ -95,6 +119,14 @@ class VulgarFractionsTest < Minitest::Test
     assert FamilyRecipes::VulgarFractions.singular_noun?(1.0 / 3)
   end
 
+  def test_singular_for_fifth
+    assert FamilyRecipes::VulgarFractions.singular_noun?(0.2)
+  end
+
+  def test_singular_for_sixth
+    assert FamilyRecipes::VulgarFractions.singular_noun?(1.0 / 6)
+  end
+
   def test_singular_for_eighth
     assert FamilyRecipes::VulgarFractions.singular_noun?(0.125)
   end
@@ -112,7 +144,7 @@ class VulgarFractionsTest < Minitest::Test
   end
 
   def test_plural_for_non_matching_decimal
-    refute FamilyRecipes::VulgarFractions.singular_noun?(0.4)
+    refute FamilyRecipes::VulgarFractions.singular_noun?(0.3)
   end
 
   def test_plural_for_non_matching_decimal_less_than_one
@@ -181,6 +213,22 @@ class VulgarFractionsTest < Minitest::Test
 
   def test_to_fraction_string_three_quarters
     assert_equal '3/4', FamilyRecipes::VulgarFractions.to_fraction_string(0.75)
+  end
+
+  def test_to_fraction_string_fifth
+    assert_equal '1/5', FamilyRecipes::VulgarFractions.to_fraction_string(0.2)
+  end
+
+  def test_to_fraction_string_two_fifths
+    assert_equal '2/5', FamilyRecipes::VulgarFractions.to_fraction_string(0.4)
+  end
+
+  def test_to_fraction_string_sixth
+    assert_equal '1/6', FamilyRecipes::VulgarFractions.to_fraction_string(1.0 / 6)
+  end
+
+  def test_to_fraction_string_five_sixths
+    assert_equal '5/6', FamilyRecipes::VulgarFractions.to_fraction_string(5.0 / 6)
   end
 
   def test_to_fraction_string_eighth

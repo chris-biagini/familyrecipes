@@ -14,6 +14,14 @@ test("third returns 1/3", () => {
   assert.equal(toFractionString(1/3), "1/3")
 })
 
+test("fifth returns 1/5", () => {
+  assert.equal(toFractionString(0.2), "1/5")
+})
+
+test("sixth returns 1/6", () => {
+  assert.equal(toFractionString(1/6), "1/6")
+})
+
 test("quarter returns 1/4", () => {
   assert.equal(toFractionString(0.25), "1/4")
 })
