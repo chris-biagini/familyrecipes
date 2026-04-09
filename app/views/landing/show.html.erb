@@ -15,4 +15,9 @@
     </ul>
   </nav>
   <% end %>
+
+  <nav class="landing-actions">
+    <%= link_to 'Create a kitchen', new_kitchen_path(intentional: true), class: 'btn' %>
+    <%= link_to 'Join a kitchen', join_kitchen_path, class: 'btn' %>
+  </nav>
 </article>
