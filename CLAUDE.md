@@ -354,6 +354,25 @@ gh pr create --title "..." --body "..."      # open PR for review
 git checkout main && git pull && git branch -D feature/short-description
 ```
 
+**Long-lived feature branches.** Some features (e.g., auth, billing) are too
+large or security-sensitive to squash-merge after one session. These stay
+open for iterative development and testing across multiple sessions.
+
+- **Commit freely on the branch** — messy history is fine; it aids debugging
+  during iteration. Don't squash mid-flight.
+- **Small fixes go to main directly** — stash or commit WIP on the branch,
+  checkout main, fix, push, checkout back.
+- **Rebase onto main periodically** — `git rebase main` keeps the branch
+  current. Force-push after rebase is expected and safe on feature branches.
+- **No PR until ready** — just push to the branch. Open the PR as the final
+  review gate when the feature is tested and ready for main.
+- **Squash-merge when done** — `gh pr merge --squash`. The full commit
+  history is preserved on the branch/PR in GitHub for forensics.
+- **Design docs and plans live on the branch** — they're part of the feature
+  work and merge with it.
+
+Active long-lived branches: `feature/auth` (passwordless auth, Phase 1).
+
 **Key rules:**
 - **Squash-merge PRs** (`gh pr merge --squash`) for clean, linear history.
 - **`-D` not `-d`** for local branch deletion — the post-commit timestamp
