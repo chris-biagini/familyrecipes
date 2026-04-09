@@ -10,9 +10,9 @@ class JoinCodeGeneratorTest < ActiveSupport::TestCase
   end
 
   test 'word lists are non-empty' do
-    assert_operator JoinCodeGenerator.descriptors.size, :>=, 60
-    assert_operator JoinCodeGenerator.ingredients.size, :>=, 200
-    assert_operator JoinCodeGenerator.dishes.size, :>=, 80
+    assert_operator JoinCodeGenerator.descriptors.size, :>=, 100
+    assert_operator JoinCodeGenerator.ingredients.size, :>=, 400
+    assert_operator JoinCodeGenerator.dishes.size, :>=, 100
   end
 
   test 'all words are lowercase ASCII' do
