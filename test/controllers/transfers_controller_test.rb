@@ -54,4 +54,35 @@ class TransfersControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_content
     assert_select '.auth-error'
   end
+
+  test 'create requires authentication' do
+    post create_transfer_path
+
+    assert_response :forbidden
+  end
+
+  test 'create returns QR code and link' do
+    log_in
+
+    post create_transfer_path, params: { kitchen_slug: kitchen_slug }
+
+    assert_response :success
+    assert_select 'svg'
+    assert_select 'input[readonly]'
+  end
+
+  test 'create token is consumable' do
+    log_in
+
+    post create_transfer_path, params: { kitchen_slug: kitchen_slug }
+
+    link_input = css_select('input[readonly]').first
+    url = link_input['value']
+    reset!
+
+    get url
+
+    assert_response :redirect
+    assert_predicate cookies[:session_id], :present?
+  end
 end

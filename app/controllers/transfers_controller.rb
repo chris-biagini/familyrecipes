@@ -12,6 +12,7 @@
 # - Settings dialog: triggers create/create_for_member via Turbo Frame forms
 class TransfersController < ApplicationController
   skip_before_action :set_kitchen_from_path
+  before_action :require_authentication, only: %i[create]
 
   layout 'auth', only: :show
 
@@ -28,11 +29,28 @@ class TransfersController < ApplicationController
     redirect_to kitchen_root_path(kitchen_slug: kitchen.slug)
   end
 
+  def create
+    token = current_user.signed_id(purpose: :transfer, expires_in: 5.minutes)
+    kitchen_slug = params[:kitchen_slug]
+    @transfer_url = show_transfer_url(token:, k: kitchen_slug)
+    @qr_svg = generate_qr_svg(@transfer_url)
+    render layout: false
+  end
+
   private
 
   def resolve_token
     User.find_signed(params[:token], purpose: :transfer) ||
       User.find_signed(params[:token], purpose: :login)
+  end
+
+  def generate_qr_svg(url)
+    RQRCode::QRCode.new(url).as_svg(
+      shape_rendering: 'crispEdges',
+      module_size: 4,
+      standalone: true,
+      use_path: true
+    )
   end
 
   def resolve_kitchen(user)

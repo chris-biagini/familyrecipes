@@ -1,0 +1,14 @@
+<turbo-frame id="transfer-frame">
+  <div class="transfer-result">
+    <div class="transfer-qr">
+      <%= @qr_svg.html_safe %>
+    </div>
+    <div class="transfer-link-row">
+      <input type="text" class="input-base" readonly value="<%= @transfer_url %>">
+      <button type="button" class="btn"
+              data-action="settings-editor#copyToClipboard"
+              data-settings-editor-copy-text-param="<%= @transfer_url %>">Copy</button>
+    </div>
+    <p class="transfer-hint">Scan this QR code or copy the link. Expires in 5 minutes.</p>
+  </div>
+</turbo-frame>
