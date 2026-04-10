@@ -214,10 +214,15 @@ is rewritten (in place, ~10 net lines changed):
 
 1. Return if already authenticated (unchanged).
 2. Load `cfg = Rails.configuration.trusted_proxy_config`.
-3. **Peer IP gate:** return unless `cfg.allow?(request.remote_ip)`. This
-   is the critical check — headers are ignored entirely if the TCP peer
-   is not in the allowlist, and the request falls through to anonymous
-   (passwordless auth still available).
+3. **Peer gate:** return unless `cfg.allow?(request.env['REMOTE_ADDR'])`.
+   This is the critical check — headers are ignored entirely if the raw
+   TCP peer is not in the allowlist, and the request falls through to
+   anonymous (passwordless auth still available). We read `REMOTE_ADDR`,
+   NOT `request.remote_ip`: the latter is ActionDispatch::RemoteIp's
+   XFF-walked value, which trusts all RFC1918 ranges as proxies and walks
+   past them, so any host on a private network could forge
+   `X-Forwarded-For: 127.0.0.1` and bypass the allowlist. `REMOTE_ADDR`
+   is the raw TCP peer and cannot be spoofed by any HTTP header.
 4. Read the three headers using the configured keys
    (`request.env[cfg.user_header]`, etc.) — no more hardcoded
    `HTTP_REMOTE_USER`.
@@ -360,7 +365,7 @@ upgrade. Mitigations:
 
 **PR 2 risk — test fragility around `REMOTE_ADDR`.** The "outside
 allowlist" test relies on `headers: { 'REMOTE_ADDR' => '203.0.113.5' }`
-reaching `request.remote_ip`. This is well-supported by
+landing in `request.env['REMOTE_ADDR']`. This is well-supported by
 `ActionDispatch::IntegrationTest` but worth verifying on first run.
 
 ## Acceptance Criteria
