@@ -11,7 +11,6 @@
 class KitchensController < ApplicationController
   skip_before_action :set_kitchen_from_path
   before_action :redirect_if_logged_in, only: :new
-  before_action :require_multi_kitchen_mode, only: %i[new create]
 
   layout 'auth'
 
@@ -63,11 +62,5 @@ class KitchensController < ApplicationController
     return if params[:intentional]
 
     redirect_to root_path
-  end
-
-  def require_multi_kitchen_mode
-    return if ENV['MULTI_KITCHEN'] == 'true' || ActsAsTenant.without_tenant { Kitchen.none? }
-
-    redirect_to root_path, alert: 'Kitchen creation is not enabled.'
   end
 end
