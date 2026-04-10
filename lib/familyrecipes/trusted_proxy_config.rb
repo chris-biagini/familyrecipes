@@ -55,7 +55,7 @@ module FamilyRecipes
     end
 
     def allow?(ip_string)
-      return false if ip_string.nil? || ip_string.empty? # rubocop:disable Rails/Blank
+      return false if ip_string.blank?
 
       ip = IPAddr.new(ip_string)
       @networks.any? { |net| net.include?(ip) }
