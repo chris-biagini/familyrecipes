@@ -73,4 +73,53 @@ class HeaderAuthTest < ActionDispatch::IntegrationTest
 
     assert_equal 'bob', User.find_by(email: 'bob@example.com').name
   end
+
+  test 'auto-joins new trusted-header user when sole kitchen exists' do
+    assert_difference 'Membership.count', 1 do
+      get kitchen_root_path(kitchen_slug: @kitchen.slug), headers: {
+        'HTTP_REMOTE_USER' => 'carol',
+        'HTTP_REMOTE_NAME' => 'Carol',
+        'HTTP_REMOTE_EMAIL' => 'carol@example.com'
+      }
+    end
+
+    assert_response :success
+    user = User.find_by!(email: 'carol@example.com')
+    membership = Membership.find_by!(user_id: user.id, kitchen_id: @kitchen.id)
+
+    assert_equal 'member', membership.role
+  end
+
+  test 'does not auto-join when multiple kitchens exist' do
+    with_multi_kitchen do
+      ActsAsTenant.without_tenant { Kitchen.create!(name: 'Other', slug: 'other') }
+    end
+
+    assert_no_difference 'Membership.count' do
+      assert_difference 'User.count', 1 do
+        assert_difference 'Session.count', 1 do
+          get kitchen_root_path(kitchen_slug: @kitchen.slug), headers: {
+            'HTTP_REMOTE_USER' => 'dave',
+            'HTTP_REMOTE_NAME' => 'Dave',
+            'HTTP_REMOTE_EMAIL' => 'dave@example.com'
+          }
+        end
+      end
+    end
+  end
+
+  test 'does not auto-join when user already has a membership' do
+    existing = User.create!(name: 'Erin', email: 'erin@example.com')
+    Membership.create!(kitchen: @kitchen, user: existing, role: 'owner')
+
+    assert_no_difference 'Membership.count' do
+      get kitchen_root_path(kitchen_slug: @kitchen.slug), headers: {
+        'HTTP_REMOTE_USER' => 'erin',
+        'HTTP_REMOTE_NAME' => 'Erin',
+        'HTTP_REMOTE_EMAIL' => 'erin@example.com'
+      }
+    end
+
+    assert_equal 'owner', Membership.find_by!(user_id: existing.id).role
+  end
 end

@@ -6,10 +6,20 @@
 # member-only pages call require_membership. Also manages the optional
 # kitchen_slug URL scope and cache headers for member-only pages.
 #
+# Trusted-header auto-join: when trusted headers identify a brand-new user
+# (zero memberships) and exactly one Kitchen exists, the user is auto-joined
+# to that kitchen as a member. This smooths homelab onboarding under Authelia,
+# where the reverse proxy is the source of truth for identity. Trust model:
+# the proxy MUST strip any inbound Remote-User/Remote-Email headers from
+# external requests — if the proxy is misconfigured, an attacker spoofing
+# headers would gain membership in the sole kitchen. The narrow condition
+# (exactly one kitchen) limits blast radius so multi-kitchen installs are
+# unaffected.
+#
 # Collaborators:
 # - Authentication concern: session lifecycle (resume, start, terminate)
 # - Kitchen / acts_as_tenant: multi-tenant scoping via set_current_tenant
-# - User: trusted-header user lookup
+# - User / Membership: trusted-header user lookup and auto-join
 class ApplicationController < ActionController::Base
   include Authentication
 
@@ -75,6 +85,16 @@ class ApplicationController < ActionController::Base
     end
 
     start_new_session_for(user)
+    auto_join_sole_kitchen(user)
+  end
+
+  def auto_join_sole_kitchen(user)
+    ActsAsTenant.without_tenant do
+      return if Membership.exists?(user_id: user.id)
+      return unless Kitchen.limit(2).one?
+
+      Membership.create!(kitchen: Kitchen.first, user: user, role: 'member')
+    end
   end
 
   def auto_login_in_development
