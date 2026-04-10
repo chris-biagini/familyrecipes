@@ -10,13 +10,13 @@
  */
 import { describe, it } from "node:test"
 import assert from "node:assert/strict"
-import { fetchAnonymous, BASE_URL } from "./helpers.mjs"
+import { fetchAnonymous, fetchAnonymousWithCsrf, BASE_URL } from "./helpers.mjs"
 
 describe("Auth Security", () => {
   it("join code brute force is rate limited", async () => {
     const responses = []
     for (let i = 0; i < 12; i++) {
-      const resp = await fetchAnonymous("/join", {
+      const resp = await fetchAnonymousWithCsrf("/join", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: `join_code=invalid+attempt+${i}`,
@@ -32,7 +32,7 @@ describe("Auth Security", () => {
   })
 
   it("tampered signed kitchen ID is rejected", async () => {
-    const resp = await fetchAnonymous("/join/complete", {
+    const resp = await fetchAnonymousWithCsrf("/join/complete", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: "email=test%40example.com&signed_kitchen_id=tampered-value",
