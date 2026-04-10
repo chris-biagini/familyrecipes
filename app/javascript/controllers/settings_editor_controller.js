@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { saveRequest } from "../utilities/editor_utils"
+import { saveRequest, getCsrfToken } from "../utilities/editor_utils"
 import ListenerManager from "../utilities/listener_manager"
 
 /**
@@ -8,14 +8,22 @@ import ListenerManager from "../utilities/listener_manager"
  * Frame delivers pre-populated fields; this controller snapshots originals
  * on content-loaded and provides collect/save/modified/reset handlers.
  *
+ * Kitchen section: join code display + regenerate (owner-only).
+ * Profile section: name/email saved alongside kitchen settings.
+ *
  * - editor_controller: open/close/save lifecycle, dirty guards, frame readiness
  * - reveal_controller: API key show/hide toggle (nested)
- * - editor_utils: save requests
+ * - editor_utils: save requests, CSRF token
  * - ListenerManager: clean event listener teardown
  */
 export default class extends Controller {
-  static targets = ["siteTitle", "homepageHeading", "homepageSubtitle", "usdaApiKey", "anthropicApiKey", "showNutrition", "decorateTags"]
-  static values = { saveUrl: String }
+  static targets = [
+    "siteTitle", "homepageHeading", "homepageSubtitle",
+    "usdaApiKey", "anthropicApiKey", "showNutrition", "decorateTags",
+    "joinCode", "regenerateButton",
+    "profileName", "profileEmail"
+  ]
+  static values = { saveUrl: String, regenerateUrl: String, profileUrl: String }
 
   connect() {
     this.originals = {}
@@ -43,7 +51,12 @@ export default class extends Controller {
 
   provideSaveFn = (event) => {
     event.detail.handled = true
-    event.detail.saveFn = () => saveRequest(this.saveUrlValue, "PATCH", this.#buildPayload())
+    event.detail.saveFn = async () => {
+      if (this.#profileChanged()) {
+        await saveRequest(this.profileUrlValue, "PATCH", this.#buildProfilePayload())
+      }
+      return saveRequest(this.saveUrlValue, "PATCH", this.#buildPayload())
+    }
   }
 
   checkModified = (event) => {
@@ -55,7 +68,8 @@ export default class extends Controller {
       this.usdaApiKeyTarget.value.length > 0 ||
       this.anthropicApiKeyTarget.value.length > 0 ||
       this.showNutritionTarget.checked !== this.originals.showNutrition ||
-      this.decorateTagsTarget.checked !== this.originals.decorateTags
+      this.decorateTagsTarget.checked !== this.originals.decorateTags ||
+      this.#profileChanged()
   }
 
   reset = (event) => {
@@ -67,6 +81,27 @@ export default class extends Controller {
     this.anthropicApiKeyTarget.value = ""
     this.showNutritionTarget.checked = this.originals.showNutrition
     this.decorateTagsTarget.checked = this.originals.decorateTags
+    if (this.hasProfileNameTarget) this.profileNameTarget.value = this.originals.profileName
+    if (this.hasProfileEmailTarget) this.profileEmailTarget.value = this.originals.profileEmail
+  }
+
+  copyToClipboard(event) {
+    const text = event.params.copyText
+    navigator.clipboard.writeText(text)
+  }
+
+  async regenerateJoinCode() {
+    const response = await fetch(this.regenerateUrlValue, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": getCsrfToken()
+      }
+    })
+    if (response.ok) {
+      const data = await response.json()
+      this.joinCodeTarget.value = data.join_code
+    }
   }
 
   storeOriginals() {
@@ -75,7 +110,25 @@ export default class extends Controller {
       homepageHeading: this.homepageHeadingTarget.value,
       homepageSubtitle: this.homepageSubtitleTarget.value,
       showNutrition: this.showNutritionTarget.checked,
-      decorateTags: this.decorateTagsTarget.checked
+      decorateTags: this.decorateTagsTarget.checked,
+      profileName: this.hasProfileNameTarget ? this.profileNameTarget.value : "",
+      profileEmail: this.hasProfileEmailTarget ? this.profileEmailTarget.value : ""
+    }
+  }
+
+  #profileChanged() {
+    if (!this.hasProfileNameTarget || !this.hasProfileEmailTarget) return false
+
+    return this.profileNameTarget.value !== this.originals.profileName ||
+      this.profileEmailTarget.value !== this.originals.profileEmail
+  }
+
+  #buildProfilePayload() {
+    return {
+      user: {
+        name: this.profileNameTarget.value,
+        email: this.profileEmailTarget.value
+      }
     }
   }
 

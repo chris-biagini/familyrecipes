@@ -1,10 +1,20 @@
 # frozen_string_literal: true
 
 # Central before_action pipeline: resume session → authenticate from trusted
-# headers (Authelia in production) → auto-login in dev → auto-join sole kitchen
-# → set tenant from path. Public reads are allowed (allow_unauthenticated_access);
-# write paths and member-only pages call require_membership. Also manages the
-# optional kitchen_slug URL scope and cache headers for member-only pages.
+# headers (Authelia in production) → auto-login in dev → set tenant from path.
+# Public reads are allowed (allow_unauthenticated_access); write paths and
+# member-only pages call require_membership. Also manages the optional
+# kitchen_slug URL scope and cache headers for member-only pages.
+#
+# Trusted-header auto-join: when trusted headers identify a brand-new user
+# (zero memberships) and exactly one Kitchen exists, the user is auto-joined
+# to that kitchen as a member. This smooths homelab onboarding under Authelia,
+# where the reverse proxy is the source of truth for identity. Trust model:
+# the proxy MUST strip any inbound Remote-User/Remote-Email headers from
+# external requests — if the proxy is misconfigured, an attacker spoofing
+# headers would gain membership in the sole kitchen. The narrow condition
+# (exactly one kitchen) limits blast radius so multi-kitchen installs are
+# unaffected.
 #
 # Collaborators:
 # - Authentication concern: session lifecycle (resume, start, terminate)
@@ -22,7 +32,6 @@ class ApplicationController < ActionController::Base
   before_action :resume_session
   before_action :authenticate_from_headers
   before_action :auto_login_in_development
-  before_action :auto_join_sole_kitchen
   before_action :set_kitchen_from_path
   after_action :flush_broadcast
   helper_method :current_kitchen, :current_member?, :logged_in?, :home_path, :versioned_icon_path
@@ -76,6 +85,16 @@ class ApplicationController < ActionController::Base
     end
 
     start_new_session_for(user)
+    auto_join_sole_kitchen(user)
+  end
+
+  def auto_join_sole_kitchen(user)
+    ActsAsTenant.without_tenant do
+      return if Membership.exists?(user_id: user.id)
+      return unless Kitchen.limit(2).one?
+
+      Membership.create!(kitchen: Kitchen.first, user: user, role: 'member')
+    end
   end
 
   def auto_login_in_development
@@ -87,20 +106,6 @@ class ApplicationController < ActionController::Base
     return unless user
 
     start_new_session_for(user)
-  end
-
-  def auto_join_sole_kitchen
-    return unless authenticated?
-
-    user = current_user
-    return if ActsAsTenant.without_tenant { user.memberships.exists? }
-
-    kitchens = ActsAsTenant.without_tenant { Kitchen.limit(2).to_a }
-    return unless kitchens.size == 1
-
-    ActsAsTenant.with_tenant(kitchens.first) do
-      Membership.create!(kitchen: kitchens.first, user: user)
-    end
   end
 
   def current_member?

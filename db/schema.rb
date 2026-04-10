@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2) do
+ActiveRecord::Schema[8.1].define(version: 3) do
   create_table "categories", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "kitchen_id", null: false
@@ -110,12 +110,14 @@ ActiveRecord::Schema[8.1].define(version: 2) do
     t.boolean "decorate_tags", default: true, null: false
     t.string "homepage_heading", default: "Our Recipes"
     t.string "homepage_subtitle", default: "A collection of our family’s favorite recipes."
+    t.string "join_code", null: false
     t.string "name", null: false
     t.boolean "show_nutrition", default: false, null: false
     t.string "site_title", default: "Family Recipes"
     t.string "slug", null: false
     t.datetime "updated_at", null: false
     t.string "usda_api_key"
+    t.index ["join_code"], name: "index_kitchens_on_join_code", unique: true
     t.index ["slug"], name: "index_kitchens_on_slug", unique: true
   end
 
@@ -240,6 +242,7 @@ ActiveRecord::Schema[8.1].define(version: 2) do
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email", null: false
+    t.datetime "email_verified_at"
     t.string "name", null: false
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_users_on_email", unique: true

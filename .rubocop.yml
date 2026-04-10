@@ -87,6 +87,13 @@ Rails/I18nLocaleTexts:
 
 # --- Rails cops ---
 
+# find_by_join_code is an explicit class method, not a dynamic finder
+Rails/DynamicFindBy:
+  AllowedMethods:
+    - find_by_sql
+    - find_by_token_for
+    - find_by_join_code
+
 # Standalone scripts don't have ActiveSupport — blank?/present? unavailable
 Rails/Blank:
   Exclude:

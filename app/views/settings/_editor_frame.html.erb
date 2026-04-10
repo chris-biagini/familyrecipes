@@ -1,4 +1,4 @@
-<%# locals: (kitchen:) %>
+<%# locals: (kitchen:, owner:, members:, current_user_record:) %>
 <turbo-frame id="settings-editor-frame">
   <div class="editor-body">
     <div class="editor-form">
@@ -74,6 +74,72 @@
           </div>
         </div>
       </fieldset>
+
+      <fieldset class="editor-section">
+        <legend class="editor-section-title">Kitchen</legend>
+        <div class="settings-field">
+          <label>Join code</label>
+          <div class="settings-join-code-row">
+            <input type="text" class="input-base input-lg" readonly
+                   value="<%= kitchen.join_code %>"
+                   data-settings-editor-target="joinCode">
+            <% if owner %>
+              <button type="button" class="btn"
+                      data-action="settings-editor#regenerateJoinCode"
+                      data-settings-editor-target="regenerateButton">Regenerate</button>
+            <% end %>
+          </div>
+          <span class="settings-field-hint">Share this code with people you want to invite to your kitchen.</span>
+        </div>
+        <div class="settings-field">
+          <form action="<%= create_transfer_path %>" method="post" data-turbo-frame="transfer-frame">
+            <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
+            <input type="hidden" name="kitchen_slug" value="<%= kitchen.slug %>">
+            <button type="submit" class="btn settings-transfer-btn">Log in on another device</button>
+          </form>
+          <turbo-frame id="transfer-frame"></turbo-frame>
+        </div>
+        <div class="settings-field">
+          <label>Members</label>
+          <ul class="settings-members-list">
+            <% members.each do |member| %>
+              <li class="settings-member-row">
+                <span class="member-info">
+                  <span class="member-name"><%= member[:name] %></span>
+                  <span class="member-email"><%= member[:email] %></span>
+                  <% if member[:role] == 'owner' %>
+                    <span class="member-role">owner</span>
+                  <% end %>
+                </span>
+                <form action="<%= member_login_link_path(id: member[:id]) %>" method="post"
+                      data-turbo-frame="login-link-frame-<%= member[:id] %>">
+                  <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
+                  <input type="hidden" name="kitchen_slug" value="<%= kitchen.slug %>">
+                  <button type="submit" class="btn btn-sm settings-login-link-btn">Login link</button>
+                </form>
+                <turbo-frame id="login-link-frame-<%= member[:id] %>"></turbo-frame>
+              </li>
+            <% end %>
+          </ul>
+        </div>
+      </fieldset>
+
+      <fieldset class="editor-section">
+        <legend class="editor-section-title">Your Profile</legend>
+        <div class="settings-field">
+          <label for="settings-profile-name">Name</label>
+          <input type="text" id="settings-profile-name" class="input-base input-lg"
+                 data-settings-editor-target="profileName"
+                 value="<%= current_user_record.name %>">
+        </div>
+        <div class="settings-field">
+          <label for="settings-profile-email">Email</label>
+          <input type="email" id="settings-profile-email" class="input-base input-lg"
+                 data-settings-editor-target="profileEmail"
+                 value="<%= current_user_record.email %>">
+        </div>
+      </fieldset>
+
     </div>
   </div>
 </turbo-frame>

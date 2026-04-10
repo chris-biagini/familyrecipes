@@ -4,13 +4,16 @@
       title: 'Settings',
       help_path: '/settings/',
       id: 'settings-editor',
+      footer_extra: button_to('Sign out', logout_path, method: :delete, data: { turbo: false }, class: 'btn') + tag.span(class: 'editor-footer-spacer'),
       dialog_data: {
         editor_on_success: 'reload',
         editor_open: '#settings-button',
         extra_controllers: 'settings-editor'
       },
       extra_data: {
-        'settings-editor-save-url-value' => settings_path
+        'settings-editor-save-url-value' => settings_path,
+        'settings-editor-regenerate-url-value' => settings_regenerate_join_code_path,
+        'settings-editor-profile-url-value' => settings_profile_path
       }
     } do %>
   <turbo-frame id="settings-editor-frame"

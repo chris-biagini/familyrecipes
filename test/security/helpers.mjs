@@ -67,11 +67,55 @@ export async function fetchWithSession(context, url, options = {}) {
   return fetch(`${BASE_URL}${url}`, { ...options, headers, redirect: "manual" })
 }
 
+// The dev server runs `auto_login_in_development` which auto-creates a session
+// as User.first for any request without a session cookie. That defeats the
+// point of testing anonymous behavior, so the security helpers always send
+// `skip_dev_auto_login=1` to opt out. The cookie is a no-op outside development.
+const SKIP_AUTO_LOGIN_COOKIE = "skip_dev_auto_login=1"
+
+function mergeCookieHeader(existing, ...additions) {
+  return [existing, ...additions].filter(Boolean).join("; ")
+}
+
 /**
- * Make an unauthenticated HTTP request (no cookies, no CSRF).
+ * Make an unauthenticated HTTP request. Sends `skip_dev_auto_login=1` to
+ * bypass the dev server's auto-login so the request is genuinely anonymous.
  */
 export async function fetchAnonymous(url, options = {}) {
-  return fetch(`${BASE_URL}${url}`, { ...options, redirect: "manual" })
+  const headers = {
+    ...options.headers,
+    Cookie: mergeCookieHeader(options.headers?.Cookie, SKIP_AUTO_LOGIN_COOKIE),
+  }
+  return fetch(`${BASE_URL}${url}`, { ...options, headers, redirect: "manual" })
+}
+
+/**
+ * Unauthenticated POST that still passes Rails CSRF protection: first GETs
+ * the priming page to capture the session cookie and CSRF meta token, then
+ * replays both on the follow-up request. Use when exercising controller
+ * logic that lives behind `protect_from_forgery`. Also bypasses dev auto-login.
+ */
+export async function fetchAnonymousWithCsrf(url, options = {}, primingPath = "/join") {
+  const primer = await fetch(`${BASE_URL}${primingPath}`, {
+    redirect: "manual",
+    headers: { Cookie: SKIP_AUTO_LOGIN_COOKIE },
+  })
+  const setCookies = primer.headers.getSetCookie?.() ?? []
+  const cookieHeader = mergeCookieHeader(
+    SKIP_AUTO_LOGIN_COOKIE,
+    ...setCookies.map((c) => c.split(";")[0]).filter(Boolean),
+  )
+  const html = await primer.text()
+  const tokenMatch = html.match(/<meta name="csrf-token" content="([^"]+)"/)
+  const csrfToken = tokenMatch ? tokenMatch[1] : ""
+
+  const headers = {
+    Cookie: cookieHeader,
+    "X-CSRF-Token": csrfToken,
+    ...options.headers,
+  }
+
+  return fetch(`${BASE_URL}${url}`, { ...options, headers, redirect: "manual" })
 }
 
 /**

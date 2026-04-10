@@ -1,0 +1,11 @@
+<% content_for(:title) { 'Link Expired' } %>
+
+<h1>Can't sign in</h1>
+
+<div class="auth-error"><p><%= @error %></p></div>
+
+<p class="auth-subtitle">This login link may have expired or already been used. Ask a kitchen member to send you a new one, or sign in with your kitchen's join code.</p>
+
+<div class="auth-footer">
+  <p><%= link_to 'Sign in with join code', join_kitchen_path %></p>
+</div>

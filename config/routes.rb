@@ -54,6 +54,8 @@ Rails.application.routes.draw do
     get 'settings', to: 'settings#show', as: :settings
     patch 'settings', to: 'settings#update'
     get 'settings/editor_frame', to: 'settings#editor_frame', as: :settings_editor_frame
+    post 'settings/regenerate_join_code', to: 'settings#regenerate_join_code', as: :settings_regenerate_join_code
+    patch 'settings/profile', to: 'settings#update_profile', as: :settings_profile
     post 'ai_import', to: 'ai_import#create', as: :ai_import
     post 'nutrition/:ingredient_name', to: 'nutrition_entries#upsert', as: :nutrition_entry_upsert
     delete 'nutrition/:ingredient_name', to: 'nutrition_entries#destroy', as: :nutrition_entry_destroy
@@ -61,7 +63,18 @@ Rails.application.routes.draw do
     get 'usda/:fdc_id', to: 'usda_search#show', as: :usda_show
   end
 
-  delete 'logout', to: 'dev_sessions#destroy', as: :logout
+  get 'new', to: 'kitchens#new', as: :new_kitchen
+  post 'new', to: 'kitchens#create'
+  get 'join', to: 'joins#new', as: :join_kitchen
+  post 'join', to: 'joins#verify', as: :verify_join
+  post 'join/complete', to: 'joins#create', as: :complete_join
+
+  delete 'logout', to: 'sessions#destroy', as: :logout
+
+  post 'transfer', to: 'transfers#create', as: :create_transfer
+  get 'transfer/:token', to: 'transfers#show', as: :show_transfer
+  post 'members/:id/login_link', to: 'transfers#create_for_member', as: :member_login_link
+  get 'welcome', to: 'welcome#show', as: :welcome
 
   get 'dev/login/:id', to: 'dev_sessions#create', as: :dev_login if Rails.env.local?
 end

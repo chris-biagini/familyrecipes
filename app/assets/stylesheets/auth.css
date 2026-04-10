@@ -1,0 +1,141 @@
+/*
+ * Auth page styles for kitchen creation, join flow, and similar
+ * standalone pages that use the minimal auth layout.
+ *
+ * Auth pages share the gingham background and content card from
+ * base.css — the <main> element IS the card. This file adds only
+ * form and typography styles specific to auth flows.
+ *
+ * Collaborators: auth layout (layouts/auth.html.erb),
+ *   KitchensController, JoinsController, SessionsController,
+ *   WelcomeController, TransfersController
+ */
+
+.auth-page {
+  margin: 0;
+}
+
+.auth-container h1 {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: normal;
+  color: var(--text);
+  margin: 0 0 0.25rem;
+  line-height: 1.2;
+}
+
+.auth-subtitle {
+  color: var(--text-soft);
+  font-size: 0.9rem;
+  margin: 0 0 1.75rem;
+  line-height: 1.4;
+}
+
+.auth-field {
+  margin-bottom: 1.25rem;
+}
+
+.auth-field label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.35rem;
+}
+
+.auth-field input {
+  width: 100%;
+}
+
+.auth-submit {
+  appearance: none;
+  -webkit-appearance: none;
+  display: block;
+  width: 100%;
+  padding: 0.65rem 1rem;
+  margin-top: 1.5rem;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: white;
+  background: var(--red);
+  border: 1px solid var(--red);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background var(--duration-fast) ease,
+              border-color var(--duration-fast) ease;
+}
+
+@media (hover: hover) {
+  .auth-submit:hover {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+  }
+}
+
+.auth-submit:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+
+.auth-error {
+  color: var(--red);
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+  padding: 0.6rem 0.75rem;
+  background: var(--red-light);
+  border-radius: 4px;
+  line-height: 1.4;
+}
+
+.auth-footer {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 0.85rem;
+  color: var(--text-soft);
+}
+
+.auth-footer a {
+  color: var(--red);
+  text-decoration: none;
+}
+
+@media (hover: hover) {
+  .auth-footer a:hover {
+    text-decoration: underline;
+  }
+}
+
+/* Sign-out interstitial & welcome screen */
+.signout-kitchen {
+  margin-bottom: 1.25rem;
+}
+
+.signout-kitchen-name {
+  font-weight: 500;
+  margin: 0 0 0.25rem;
+}
+
+.signout-join-code {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  color: var(--text);
+  margin: 0.25rem 0;
+  line-height: 1.3;
+}
+
+.signout-hint {
+  color: var(--text-soft);
+  font-size: 0.85rem;
+  line-height: 1.4;
+  margin: 1.25rem 0 0;
+}
+
+/* Small screens */
+@media (max-width: 480px) {
+  .auth-container h1 {
+    font-size: 1.5rem;
+  }
+}
