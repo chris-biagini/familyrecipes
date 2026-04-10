@@ -3,23 +3,14 @@
 Rails 8 app backed by SQLite with multi-tenant "Kitchen" support.
 Passwordless auth via join codes, with a parallel trusted-header path for
 homelab installs.  Two-database architecture: primary (app data), cable
-(Solid Cable pub/sub).  Docker image for homelab installs during
-development, eventual move to hosted model with many users.
+(Solid Cable pub/sub).  Docker image for homelab installs, plan to also have
+hosted model with many users.
 
 ## Design Philosophy
 
 - Default to simple UI. We can add complexity when it's necessary.
 - Retro theme: skeuomorphism with mid-century cookbook vibes
-- Err on the side of less JavaScript
-
-## Development Notes
-- Challenge assumptions, misconceptions, and poor design decisions.
-- Suggest quality-of-life, performance, and feature improvements.
-- Let's walk before we run. Don't solve scale problems I don't have.
-- We're still early in development, so we are not beholden to legacy code and
-  data. It's ok to break compatibility to keep things clean.
-- DRY: if you find yourself copying code from elsewhere verbatim, stop and ask
-  if you should refactor instead. 
+- Rely on Rails conventions and "free" features whenever possible 
 
 ## Ruby Style
 
@@ -74,7 +65,7 @@ list.concat(custom.map { |item| { name: item, amounts: [] } })
 - Never prefix with `get_` or `is_`. Use `name` not `get_name`. Use `valid?`
   not `is_valid?`.
 
-### Comments — LLMs get this wrong constantly
+### Comments
 
 Comments that narrate code are the #1 tell of LLM-generated Ruby. This is a
 hard rule:
