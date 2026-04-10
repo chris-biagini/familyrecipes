@@ -260,8 +260,9 @@ Extensions to `test/controllers/header_auth_test.rb`:
 - A **Trust model** callout at the top: "Your reverse proxy MUST strip
   any inbound `Remote-User`, `Remote-Email`, and `Remote-Name` headers
   from external requests before forwarding to FamilyRecipes. If you
-  cannot guarantee this, disable trusted-header auth and use join codes
-  exclusively." Bold, not a footnote.
+  cannot guarantee this, see 'Disabling trusted-header auth' below."
+  Bold, not a footnote. The pointer gives operators an actionable
+  path instead of a dead-end warning.
 - The **underscore/dash footgun**: nginx strips headers containing
   underscores by default; Caddy, Traefik, and HAProxy do not. Operators
   on non-nginx proxies must explicitly strip both the hyphenated
@@ -278,6 +279,15 @@ Extensions to `test/controllers/header_auth_test.rb`:
 - New **`TRUSTED_HEADER_USER` / `_EMAIL` / `_NAME`** section: explains
   configurability for Authentik, oauth2-proxy, Grafana-style
   `X-Webauth-*`, and Caddy `forward_auth` users.
+- New **"Disabling trusted-header auth"** subsection. Explicit and
+  prominent — set `TRUSTED_PROXY_IPS=` (empty string) in the
+  environment. Explains the effect: the peer IP check rejects every
+  request, trusted headers are ignored unconditionally, and users
+  must sign in via join code or re-auth link instead. This is the
+  right posture if the operator cannot guarantee the reverse proxy
+  strips inbound `Remote-*` headers. Call out the distinction between
+  *unset* (falls back to loopback default) and *set-to-empty*
+  (explicit disable) so operators don't guess.
 - The env var table in the preceding section gains four new rows for
   these vars.
 
