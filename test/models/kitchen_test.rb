@@ -33,13 +33,11 @@ class KitchenTest < ActiveSupport::TestCase
   end
 
   test 'duplicate slug error reads as Kitchen name' do
-    with_multi_kitchen do
-      Kitchen.create!(name: 'Shared Kitchen', slug: 'shared-kitchen')
-      dup = Kitchen.new(name: 'Shared Kitchen', slug: 'shared-kitchen')
+    Kitchen.create!(name: 'Shared Kitchen', slug: 'shared-kitchen')
+    dup = Kitchen.new(name: 'Shared Kitchen', slug: 'shared-kitchen')
 
-      assert_not dup.valid?
-      assert_includes dup.errors.full_messages, 'Kitchen name has already been taken'
-    end
+    assert_not dup.valid?
+    assert_includes dup.errors.full_messages, 'Kitchen name has already been taken'
   end
 
   test 'member? returns true for kitchen members' do

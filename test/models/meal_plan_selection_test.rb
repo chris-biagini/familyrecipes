@@ -12,10 +12,7 @@ class MealPlanSelectionTest < ActiveSupport::TestCase
   test 'scoped to kitchen via acts_as_tenant' do
     MealPlanSelection.create!(selectable_type: 'Recipe', selectable_id: 'bagels')
 
-    other_kitchen = nil
-    with_multi_kitchen do
-      other_kitchen = Kitchen.create!(name: 'Other', slug: 'other')
-    end
+    other_kitchen = Kitchen.create!(name: 'Other', slug: 'other')
     ActsAsTenant.current_tenant = other_kitchen
 
     assert_empty MealPlanSelection.all

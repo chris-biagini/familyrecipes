@@ -67,10 +67,7 @@ class CustomGroceryItemTest < ActiveSupport::TestCase
   test 'scoped to current kitchen via acts_as_tenant' do
     CustomGroceryItem.create!(name: 'Foil', last_used_at: Date.current)
 
-    other_kitchen = nil
-    with_multi_kitchen do
-      other_kitchen = Kitchen.create!(name: 'Other', slug: 'other')
-    end
+    other_kitchen = Kitchen.create!(name: 'Other', slug: 'other')
     ActsAsTenant.current_tenant = other_kitchen
 
     assert_empty CustomGroceryItem.all

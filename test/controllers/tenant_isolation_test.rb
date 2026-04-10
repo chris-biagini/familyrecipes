@@ -10,9 +10,7 @@ class TenantIsolationTest < ActionDispatch::IntegrationTest
   setup do
     create_kitchen_and_user
 
-    with_multi_kitchen do
-      @kitchen_b = Kitchen.create!(name: 'Other Kitchen', slug: 'other-kitchen')
-    end
+    @kitchen_b = Kitchen.create!(name: 'Other Kitchen', slug: 'other-kitchen')
     @user_b = User.create!(name: 'Other User', email: 'other@example.com')
     ActsAsTenant.with_tenant(@kitchen_b) do
       Membership.create!(kitchen: @kitchen_b, user: @user_b)

@@ -11,13 +11,11 @@ class CookHistoryEntryTest < ActiveSupport::TestCase
   test 'acts_as_tenant scopes to current kitchen' do
     CookHistoryEntry.record(kitchen: @kitchen, recipe_slug: 'pasta')
 
-    with_multi_kitchen do
-      other = ActsAsTenant.without_tenant do
-        Kitchen.create!(name: 'Other', slug: 'other')
-      end
-      ActsAsTenant.with_tenant(other) do
-        CookHistoryEntry.record(kitchen: other, recipe_slug: 'soup')
-      end
+    other = ActsAsTenant.without_tenant do
+      Kitchen.create!(name: 'Other', slug: 'other')
+    end
+    ActsAsTenant.with_tenant(other) do
+      CookHistoryEntry.record(kitchen: other, recipe_slug: 'soup')
     end
 
     assert_equal 1, CookHistoryEntry.where(recipe_slug: 'pasta').size
@@ -75,24 +73,22 @@ class CookHistoryEntryTest < ActiveSupport::TestCase
   end
 
   test 'prune! only deletes entries for the given kitchen' do
-    with_multi_kitchen do
-      other = ActsAsTenant.without_tenant do
-        Kitchen.create!(name: 'Other', slug: 'other')
+    other = ActsAsTenant.without_tenant do
+      Kitchen.create!(name: 'Other', slug: 'other')
+    end
+
+    freeze_time do
+      CookHistoryEntry.create!(recipe_slug: 'ours-old', cooked_at: 100.days.ago)
+
+      ActsAsTenant.with_tenant(other) do
+        CookHistoryEntry.create!(recipe_slug: 'theirs-old', cooked_at: 100.days.ago)
       end
 
-      freeze_time do
-        CookHistoryEntry.create!(recipe_slug: 'ours-old', cooked_at: 100.days.ago)
+      CookHistoryEntry.prune!(kitchen: @kitchen)
 
-        ActsAsTenant.with_tenant(other) do
-          CookHistoryEntry.create!(recipe_slug: 'theirs-old', cooked_at: 100.days.ago)
-        end
-
-        CookHistoryEntry.prune!(kitchen: @kitchen)
-
-        assert_equal 0, CookHistoryEntry.count
-        ActsAsTenant.with_tenant(other) do
-          assert_equal 1, CookHistoryEntry.count
-        end
+      assert_equal 0, CookHistoryEntry.count
+      ActsAsTenant.with_tenant(other) do
+        assert_equal 1, CookHistoryEntry.count
       end
     end
   end

@@ -52,10 +52,8 @@ class PwaControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'manifest works with multiple kitchens' do
-    with_multi_kitchen do
-      Kitchen.create!(name: 'Kitchen A', slug: 'kitchen-a')
-      Kitchen.create!(name: 'Kitchen B', slug: 'kitchen-b')
-    end
+    Kitchen.create!(name: 'Kitchen A', slug: 'kitchen-a')
+    Kitchen.create!(name: 'Kitchen B', slug: 'kitchen-b')
 
     get '/manifest.json'
 

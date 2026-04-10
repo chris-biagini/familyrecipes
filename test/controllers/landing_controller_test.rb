@@ -23,10 +23,8 @@ class LandingControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'renders kitchen list with create/join links when multiple kitchens exist' do
-    with_multi_kitchen do
-      Kitchen.create!(name: 'Kitchen A', slug: 'kitchen-a')
-      Kitchen.create!(name: 'Kitchen B', slug: 'kitchen-b')
-    end
+    Kitchen.create!(name: 'Kitchen A', slug: 'kitchen-a')
+    Kitchen.create!(name: 'Kitchen B', slug: 'kitchen-b')
 
     get root_path
 

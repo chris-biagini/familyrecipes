@@ -34,10 +34,7 @@ class OnHandEntryTest < ActiveSupport::TestCase
     OnHandEntry.create!(ingredient_name: 'Eggs', confirmed_at: Date.current,
                         interval: 7, ease: 1.5)
 
-    other_kitchen = nil
-    with_multi_kitchen do
-      other_kitchen = Kitchen.create!(name: 'Other', slug: 'other')
-    end
+    other_kitchen = Kitchen.create!(name: 'Other', slug: 'other')
     ActsAsTenant.current_tenant = other_kitchen
 
     assert_empty OnHandEntry.all
