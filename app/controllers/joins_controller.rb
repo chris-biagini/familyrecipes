@@ -84,7 +84,8 @@ class JoinsController < ApplicationController
   end
 
   def redirect_to_welcome(kitchen)
-    signed_k = Rails.application.message_verifier(:welcome).generate(kitchen.id, purpose: :welcome, expires_in: 15.minutes)
+    verifier = Rails.application.message_verifier(:welcome)
+    signed_k = verifier.generate(kitchen.id, purpose: :welcome, expires_in: 15.minutes)
     redirect_to welcome_path(k: signed_k)
   end
 
