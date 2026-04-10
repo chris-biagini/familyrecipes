@@ -42,8 +42,7 @@ Replace all 98 current cooking verbs with a new list mixing:
   roasted, smoked, crispy, seared, charred, poached, whipped, pickled,
   grilled, toasted, steamed, cured, glazed, blistered, caramelized...*
 - **Vibe/style words** — restaurant/cookbook aesthetic: *rustic, golden,
-  harvest, farmhouse, coastal, garden, fireside, meadow, copper, hearth,
-  orchard, wild, ancient, stone, ember...*
+  harvest, farmhouse, garden...*
 
 Target: ~120-150 words. YAML key changes from `techniques` to `descriptors`.
 
