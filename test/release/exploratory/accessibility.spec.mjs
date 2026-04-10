@@ -2,8 +2,8 @@
 // Runs WCAG 2.1 AA rules via AxeBuilder. Critical/serious violations fail
 // the test; moderate/minor are logged as warnings only.
 //
-// Requires a running dev server: MULTI_KITCHEN=true bin/dev
-// Requires security kitchens seeded: MULTI_KITCHEN=true bin/rails runner test/security/seed_security_kitchens.rb
+// Requires a running dev server: bin/dev
+// Requires security kitchens seeded: bin/rails runner test/security/seed_security_kitchens.rb
 
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';

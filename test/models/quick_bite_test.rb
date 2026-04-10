@@ -59,10 +59,7 @@ class QuickBiteTest < ActiveSupport::TestCase
   test 'scoped to kitchen via acts_as_tenant' do
     QuickBite.create!(title: 'Tacos', category: @category, position: 0)
 
-    other_kitchen = nil
-    with_multi_kitchen do
-      other_kitchen = Kitchen.create!(name: 'Other', slug: 'other')
-    end
+    other_kitchen = Kitchen.create!(name: 'Other', slug: 'other')
     ActsAsTenant.current_tenant = other_kitchen
 
     assert_empty QuickBite.all

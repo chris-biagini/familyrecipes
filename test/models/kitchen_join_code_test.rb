@@ -8,21 +8,17 @@ class KitchenJoinCodeTest < ActiveSupport::TestCase
   end
 
   test 'join code is generated on create' do
-    with_multi_kitchen do
-      kitchen = Kitchen.create!(name: 'New Kitchen', slug: 'new-kitchen')
+    kitchen = Kitchen.create!(name: 'New Kitchen', slug: 'new-kitchen')
 
-      assert_predicate kitchen.join_code, :present?
-      assert_equal 4, kitchen.join_code.split.size
-    end
+    assert_predicate kitchen.join_code, :present?
+    assert_equal 4, kitchen.join_code.split.size
   end
 
   test 'join code is unique across kitchens' do
-    with_multi_kitchen do
-      k1 = Kitchen.create!(name: 'Kitchen A', slug: 'kitchen-a')
-      k2 = Kitchen.create!(name: 'Kitchen B', slug: 'kitchen-b')
+    k1 = Kitchen.create!(name: 'Kitchen A', slug: 'kitchen-a')
+    k2 = Kitchen.create!(name: 'Kitchen B', slug: 'kitchen-b')
 
-      assert_not_equal k1.join_code, k2.join_code
-    end
+    assert_not_equal k1.join_code, k2.join_code
   end
 
   test 'regenerate_join_code! produces a new code' do

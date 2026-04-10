@@ -51,7 +51,6 @@ service_worker
 generate_slug
 normalize_portion_keys
 downcase_name
-enforce_single_kitchen_mode
 
 # --- ActiveRecord validations (invoked via `validate`) ---
 nutrients_require_basis_grams

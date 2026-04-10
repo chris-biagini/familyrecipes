@@ -74,10 +74,7 @@ class TagTest < ActiveSupport::TestCase
   test 'allows same name in different kitchens' do
     Tag.create!(name: 'dinner')
 
-    other_kitchen = nil
-    with_multi_kitchen do
-      other_kitchen = Kitchen.create!(name: 'Other', slug: 'other')
-    end
+    other_kitchen = Kitchen.create!(name: 'Other', slug: 'other')
     ActsAsTenant.current_tenant = other_kitchen
     other_tag = Tag.new(name: 'dinner')
 

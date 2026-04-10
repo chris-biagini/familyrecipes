@@ -76,10 +76,7 @@ class JoinsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'complete with existing user from another kitchen creates membership only' do
-    other_kitchen = nil
-    with_multi_kitchen do
-      other_kitchen = Kitchen.create!(name: 'Other', slug: 'other')
-    end
+    other_kitchen = Kitchen.create!(name: 'Other', slug: 'other')
     outsider = User.create!(name: 'Outsider', email: 'outsider@example.com')
     ActsAsTenant.with_tenant(other_kitchen) do
       Membership.create!(kitchen: other_kitchen, user: outsider)

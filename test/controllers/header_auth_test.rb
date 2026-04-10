@@ -91,9 +91,7 @@ class HeaderAuthTest < ActionDispatch::IntegrationTest
   end
 
   test 'does not auto-join when multiple kitchens exist' do
-    with_multi_kitchen do
-      ActsAsTenant.without_tenant { Kitchen.create!(name: 'Other', slug: 'other') }
-    end
+    ActsAsTenant.without_tenant { Kitchen.create!(name: 'Other', slug: 'other') }
 
     assert_no_difference 'Membership.count' do
       assert_difference 'User.count', 1 do

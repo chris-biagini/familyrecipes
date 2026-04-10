@@ -1,15 +1,13 @@
 # frozen_string_literal: true
 
 # Seeds two isolated kitchens for security testing. Run via:
-#   MULTI_KITCHEN=true bin/rails runner test/security/seed_security_kitchens.rb
+#   bin/rails runner test/security/seed_security_kitchens.rb
 #
 # Creates:
 #   - kitchen_alpha (user: alice) with a recipe and API keys set
 #   - kitchen_beta (user: bob) with a recipe
 #
 # Idempotent — safe to run multiple times.
-#
-# Note: set MULTI_KITCHEN=true for multi-kitchen routing to work.
 
 alpha = Kitchen.find_or_create_by!(slug: 'kitchen-alpha') do |k|
   k.name = 'Kitchen Alpha'

@@ -44,10 +44,7 @@ class TransfersControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'show with wrong kitchen slug renders error' do
-    other_kitchen = nil
-    with_multi_kitchen do
-      other_kitchen = Kitchen.create!(name: 'Other', slug: 'other')
-    end
+    other_kitchen = Kitchen.create!(name: 'Other', slug: 'other')
     token = @user.signed_id(purpose: :transfer, expires_in: 5.minutes)
 
     get show_transfer_path(token:, k: other_kitchen.slug)
@@ -106,13 +103,9 @@ class TransfersControllerTest < ActionDispatch::IntegrationTest
 
   test 'create_for_member rejects caller who is not a kitchen member' do
     log_in
-    other_kitchen = nil
-    target = nil
-    with_multi_kitchen do
-      other_kitchen = Kitchen.create!(name: 'Other Kitchen', slug: 'other-kitchen')
-      target = User.create!(name: 'Target', email: 'target@example.com')
-      ActsAsTenant.with_tenant(other_kitchen) { Membership.create!(kitchen: other_kitchen, user: target) }
-    end
+    other_kitchen = Kitchen.create!(name: 'Other Kitchen', slug: 'other-kitchen')
+    target = User.create!(name: 'Target', email: 'target@example.com')
+    ActsAsTenant.with_tenant(other_kitchen) { Membership.create!(kitchen: other_kitchen, user: target) }
 
     post member_login_link_path(id: target.id), params: { kitchen_slug: other_kitchen.slug }
 

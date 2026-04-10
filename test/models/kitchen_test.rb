@@ -33,13 +33,11 @@ class KitchenTest < ActiveSupport::TestCase
   end
 
   test 'duplicate slug error reads as Kitchen name' do
-    with_multi_kitchen do
-      Kitchen.create!(name: 'Shared Kitchen', slug: 'shared-kitchen')
-      dup = Kitchen.new(name: 'Shared Kitchen', slug: 'shared-kitchen')
+    Kitchen.create!(name: 'Shared Kitchen', slug: 'shared-kitchen')
+    dup = Kitchen.new(name: 'Shared Kitchen', slug: 'shared-kitchen')
 
-      assert_not dup.valid?
-      assert_includes dup.errors.full_messages, 'Kitchen name has already been taken'
-    end
+    assert_not dup.valid?
+    assert_includes dup.errors.full_messages, 'Kitchen name has already been taken'
   end
 
   test 'member? returns true for kitchen members' do
@@ -115,32 +113,10 @@ class KitchenTest < ActiveSupport::TestCase
     end
   end
 
-  test 'allows first kitchen when multi_kitchen is false' do
-    ActsAsTenant.without_tenant { Kitchen.destroy_all }
-    kitchen = Kitchen.new(name: 'First', slug: 'first')
-
-    assert_predicate kitchen, :valid?
-  end
-
-  test 'blocks second kitchen when multi_kitchen is false' do
+  test 'allows multiple kitchens to coexist' do
     second = Kitchen.new(name: 'Second', slug: 'second')
 
-    assert_not second.valid?
-    assert_includes second.errors[:base], 'Only one kitchen is allowed in single-kitchen mode'
-  end
-
-  test 'allows second kitchen when multi_kitchen is true' do
-    with_multi_kitchen do
-      second = Kitchen.new(name: 'Second', slug: 'second')
-
-      assert_predicate second, :valid?
-    end
-  end
-
-  test 'allows updating existing kitchen when multi_kitchen is false' do
-    @kitchen.name = 'Updated'
-
-    assert_predicate @kitchen, :valid?
+    assert_predicate second, :valid?
   end
 
   test 'encrypts usda_api_key at rest' do

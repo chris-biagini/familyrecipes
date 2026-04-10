@@ -143,10 +143,7 @@ class AisleWriteServiceTest < ActiveSupport::TestCase
   # --- update: tenant isolation ---
 
   test 'update does not affect other kitchens' do
-    other_kitchen = nil
-    with_multi_kitchen do
-      other_kitchen = Kitchen.create!(name: 'Other', slug: 'other')
-    end
+    other_kitchen = Kitchen.create!(name: 'Other', slug: 'other')
     IngredientCatalog.create!(kitchen: @kitchen, ingredient_name: 'Apples', aisle: 'Produce')
     IngredientCatalog.create!(kitchen: other_kitchen, ingredient_name: 'Apples', aisle: 'Produce')
 

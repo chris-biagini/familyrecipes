@@ -3,23 +3,14 @@
 Rails 8 app backed by SQLite with multi-tenant "Kitchen" support.
 Passwordless auth via join codes, with a parallel trusted-header path for
 homelab installs.  Two-database architecture: primary (app data), cable
-(Solid Cable pub/sub).  Docker image for homelab installs during
-development, eventual move to hosted model with many users.
+(Solid Cable pub/sub).  Docker image for homelab installs, plan to also have
+hosted model with many users.
 
 ## Design Philosophy
 
 - Default to simple UI. We can add complexity when it's necessary.
 - Retro theme: skeuomorphism with mid-century cookbook vibes
-- Err on the side of less JavaScript
-
-## Development Notes
-- Challenge assumptions, misconceptions, and poor design decisions.
-- Suggest quality-of-life, performance, and feature improvements.
-- Let's walk before we run. Don't solve scale problems I don't have.
-- We're still early in development, so we are not beholden to legacy code and
-  data. It's ok to break compatibility to keep things clean.
-- DRY: if you find yourself copying code from elsewhere verbatim, stop and ask
-  if you should refactor instead. 
+- Rely on Rails conventions and "free" features whenever possible 
 
 ## Ruby Style
 
@@ -74,7 +65,7 @@ list.concat(custom.map { |item| { name: item, amounts: [] } })
 - Never prefix with `get_` or `is_`. Use `name` not `get_name`. Use `valid?`
   not `is_valid?`.
 
-### Comments — LLMs get this wrong constantly
+### Comments
 
 Comments that narrate code are the #1 tell of LLM-generated Ruby. This is a
 hard rule:
@@ -194,10 +185,10 @@ response rendering. Shared controller logic lives in
 `app/controllers/concerns/` (authentication, meal-plan actions, structure
 validation). Services own all post-write side effects (reconcile,
 broadcast). Don't call `MarkdownImporter` directly for web operations.
-Read write service header comments for details. `multi_kitchen` is an env
-var, not a DB setting. Background jobs: `RecipeNutritionJob` recomputes
-nutrition after recipe saves; `CascadeNutritionJob` propagates catalog
-changes across all recipes that use an ingredient.
+Read write service header comments for details. Background jobs:
+`RecipeNutritionJob` recomputes nutrition after recipe saves;
+`CascadeNutritionJob` propagates catalog changes across all recipes that
+use an ingredient.
 
 **Services.** `app/services/` has ~20 services. Write services
 (`*WriteService`) handle CRUD + side effects for their domain.
@@ -284,7 +275,7 @@ warnings fail). `rake security:verbose` for full detail. False positives go in
 `config/brakeman.ignore`. Playwright pen tests in `test/security/` require a
 running dev server:
 ```bash
-MULTI_KITCHEN=true bin/rails runner test/security/seed_security_kitchens.rb
+bin/rails runner test/security/seed_security_kitchens.rb
 npx playwright test test/security/              # all security specs
 npx playwright test test/security/tenant_isolation.spec.mjs  # single spec
 ```
@@ -325,7 +316,7 @@ testing an array of Regexps against a string (reversed operands) — use
 Three-tier quality gate: Tier 1 (CI, automatic), Tier 2 (before any release),
 Tier 3 (before minor/major). Pre-push hook blocks tag pushes without a fresh
 (< 48h) audit marker matching HEAD. Tier 3 requires a running dev server
-(`MULTI_KITCHEN=true bin/dev`). Config: `config/release_audit.yml`,
+(`bin/dev`). Config: `config/release_audit.yml`,
 `config/debride_allowlist.txt`, `config/license_allowlist.yml`.
 
 ```bash

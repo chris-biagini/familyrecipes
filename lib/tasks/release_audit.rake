@@ -102,7 +102,7 @@ namespace :release do # rubocop:disable Metrics/BlockLength
       puts ''
 
       puts '--- Seeding security kitchens ---'
-      unless system({ 'MULTI_KITCHEN' => 'true' }, 'bin/rails runner test/security/seed_security_kitchens.rb')
+      unless system('bin/rails runner test/security/seed_security_kitchens.rb')
         abort "\nFailed to seed security kitchens."
       end
 
@@ -123,7 +123,7 @@ namespace :release do # rubocop:disable Metrics/BlockLength
     desc 'Run Playwright exploratory QA walkthrough'
     task explore: :environment do
       puts '--- Exploratory QA walkthrough ---'
-      puts 'NOTE: Requires a running dev server (MULTI_KITCHEN=true bin/dev)'
+      puts 'NOTE: Requires a running dev server (bin/dev)'
 
       specs = %w[recipe_flows menu_grocery_flows ingredients_flows settings_flows
                  multi_tenant import_export navigation].map { |s| "test/release/exploratory/#{s}.spec.mjs" }
@@ -138,7 +138,7 @@ namespace :release do # rubocop:disable Metrics/BlockLength
     desc 'Run accessibility spot-check on key pages'
     task a11y: :environment do
       puts '--- Accessibility spot-check ---'
-      puts 'NOTE: Requires a running dev server (MULTI_KITCHEN=true bin/dev)'
+      puts 'NOTE: Requires a running dev server (bin/dev)'
       unless system('npx playwright test test/release/exploratory/accessibility.spec.mjs ' \
                     '--config=test/release/exploratory/playwright.config.mjs ' \
                     '--reporter=list')
@@ -150,7 +150,7 @@ namespace :release do # rubocop:disable Metrics/BlockLength
     desc 'Capture performance baseline for key pages'
     task perf: :environment do
       puts '--- Performance baseline ---'
-      puts 'NOTE: Requires a running dev server (MULTI_KITCHEN=true bin/dev)'
+      puts 'NOTE: Requires a running dev server (bin/dev)'
 
       sha = `git rev-parse HEAD`.strip
       system({ 'GIT_SHA' => sha },

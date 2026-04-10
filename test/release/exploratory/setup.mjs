@@ -1,5 +1,5 @@
 // Shared helpers for release exploratory tests.
-// Assumes a running dev server on localhost:3030 with MULTI_KITCHEN=true.
+// Assumes a running dev server on localhost:3030.
 
 import { expect } from '@playwright/test';
 
