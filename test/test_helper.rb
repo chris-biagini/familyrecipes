@@ -95,14 +95,6 @@ module ActiveSupport
       end
       qb
     end
-
-    def with_multi_kitchen
-      original = ENV.fetch('MULTI_KITCHEN', nil)
-      ENV['MULTI_KITCHEN'] = 'true'
-      yield
-    ensure
-      ENV['MULTI_KITCHEN'] = original
-    end
   end
 end
 
