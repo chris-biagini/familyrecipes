@@ -1,8 +1,9 @@
 # CLAUDE.md
 
-Rails 8 app backed by SQLite with multi-tenant "Kitchen" support and
-trusted-header authentication.  Two-database architecture: primary (app data),
-cable (Solid Cable pub/sub).  Docker image for homelab installs during
+Rails 8 app backed by SQLite with multi-tenant "Kitchen" support.
+Passwordless auth via join codes, with a parallel trusted-header path for
+homelab installs.  Two-database architecture: primary (app data), cable
+(Solid Cable pub/sub).  Docker image for homelab installs during
 development, eventual move to hosted model with many users.
 
 ## Design Philosophy
@@ -229,6 +230,11 @@ creates human-readable codes; `JoinsController` validates codes and creates
 `WelcomeController` and `LandingController` handle post-join and pre-auth
 landing pages. `TransfersController` manages kitchen ownership transfer.
 See each controller's header comment for details.
+
+**Trusted-header auto-join.** A trusted-header user with zero memberships is
+auto-added as a member iff exactly one Kitchen exists (`Kitchen.limit(2).one?`).
+Trust assumption: the reverse proxy strips inbound `Remote-User` headers.
+Multi-kitchen installs are unaffected. Hardening tracked in #365.
 
 ## Recipe & Data Formats
 
