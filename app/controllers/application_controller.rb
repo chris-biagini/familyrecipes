@@ -7,16 +7,18 @@
 # the optional kitchen_slug URL scope and cache headers for member-only pages.
 #
 # Trusted-header auth (defense in depth): every request that carries the
-# configured Remote-User header is subject to a per-request peer IP check
-# against Rails.configuration.trusted_proxy_config. If the TCP peer is not
-# in the allowlist (default: 127.0.0.0/8, ::1/128) the headers are ignored
-# and the request falls through to anonymous/passwordless. This protects
-# against reverse-proxy misconfigurations that leak inbound Remote-* headers
-# from external requests. Operators running a proxy on a separate host or
-# different docker network must widen the allowlist via TRUSTED_PROXY_IPS;
-# operators who cannot guarantee header stripping can disable the path
-# entirely with TRUSTED_PROXY_IPS= (empty). See README "Disabling
-# trusted-header auth".
+# configured Remote-User header is subject to a per-request check of the
+# raw TCP peer (request.env['REMOTE_ADDR'], NOT request.remote_ip which
+# is the XFF-walked value and spoofable from any RFC1918 host) against
+# Rails.configuration.trusted_proxy_config. If the peer is not in the
+# allowlist (default: 127.0.0.0/8, ::1/128) the headers are ignored and
+# the request falls through to anonymous/passwordless. This protects
+# against reverse-proxy misconfigurations that leak inbound Remote-*
+# headers from external requests. Operators running a proxy on a separate
+# host or different docker network must widen the allowlist via
+# TRUSTED_PROXY_IPS; operators who cannot guarantee header stripping can
+# disable the path entirely with TRUSTED_PROXY_IPS= (empty). See README
+# "Disabling trusted-header auth".
 #
 # Trusted-header auto-join: when trusted headers identify a brand-new user
 # (zero memberships) and exactly one Kitchen exists, the user is auto-joined
@@ -80,7 +82,7 @@ class ApplicationController < ActionController::Base
     return if authenticated?
 
     cfg = Rails.application.config.trusted_proxy_config
-    return unless cfg.allow?(request.remote_ip)
+    return unless cfg.allow?(request.env['REMOTE_ADDR'])
 
     identity = trusted_header_identity(cfg)
     return unless identity

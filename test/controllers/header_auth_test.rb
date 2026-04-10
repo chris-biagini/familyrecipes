@@ -137,6 +137,21 @@ class HeaderAuthTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test 'ignores headers when peer is RFC1918 but XFF claims loopback' do
+    # Regression: request.remote_ip walks the XFF chain past Rails default
+    # trusted proxies (all RFC1918), so an attacker on any private network
+    # could set XFF=127.0.0.1 to bypass the gate. The gate must read the
+    # raw TCP peer (REMOTE_ADDR), not request.remote_ip.
+    assert_no_difference 'User.count' do
+      get kitchen_root_path(kitchen_slug: @kitchen.slug), headers: {
+        'REMOTE_ADDR' => '10.1.2.3',
+        'HTTP_X_FORWARDED_FOR' => '127.0.0.1',
+        'HTTP_REMOTE_USER' => 'mallory',
+        'HTTP_REMOTE_EMAIL' => 'mallory@attacker.example'
+      }
+    end
+  end
+
   test 'honors headers when peer IP is inside the default loopback allowlist' do
     # ActionDispatch::IntegrationTest sets REMOTE_ADDR to 127.0.0.1 by default,
     # which is inside the loopback default. No override needed.
