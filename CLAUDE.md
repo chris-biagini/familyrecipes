@@ -185,10 +185,10 @@ response rendering. Shared controller logic lives in
 `app/controllers/concerns/` (authentication, meal-plan actions, structure
 validation). Services own all post-write side effects (reconcile,
 broadcast). Don't call `MarkdownImporter` directly for web operations.
-Read write service header comments for details. `multi_kitchen` is an env
-var, not a DB setting. Background jobs: `RecipeNutritionJob` recomputes
-nutrition after recipe saves; `CascadeNutritionJob` propagates catalog
-changes across all recipes that use an ingredient.
+Read write service header comments for details. Background jobs:
+`RecipeNutritionJob` recomputes nutrition after recipe saves;
+`CascadeNutritionJob` propagates catalog changes across all recipes that
+use an ingredient.
 
 **Services.** `app/services/` has ~20 services. Write services
 (`*WriteService`) handle CRUD + side effects for their domain.
@@ -275,7 +275,7 @@ warnings fail). `rake security:verbose` for full detail. False positives go in
 `config/brakeman.ignore`. Playwright pen tests in `test/security/` require a
 running dev server:
 ```bash
-MULTI_KITCHEN=true bin/rails runner test/security/seed_security_kitchens.rb
+bin/rails runner test/security/seed_security_kitchens.rb
 npx playwright test test/security/              # all security specs
 npx playwright test test/security/tenant_isolation.spec.mjs  # single spec
 ```
@@ -316,7 +316,7 @@ testing an array of Regexps against a string (reversed operands) — use
 Three-tier quality gate: Tier 1 (CI, automatic), Tier 2 (before any release),
 Tier 3 (before minor/major). Pre-push hook blocks tag pushes without a fresh
 (< 48h) audit marker matching HEAD. Tier 3 requires a running dev server
-(`MULTI_KITCHEN=true bin/dev`). Config: `config/release_audit.yml`,
+(`bin/dev`). Config: `config/release_audit.yml`,
 `config/debride_allowlist.txt`, `config/license_allowlist.yml`.
 
 ```bash
