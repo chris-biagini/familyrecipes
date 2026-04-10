@@ -115,32 +115,10 @@ class KitchenTest < ActiveSupport::TestCase
     end
   end
 
-  test 'allows first kitchen when multi_kitchen is false' do
-    ActsAsTenant.without_tenant { Kitchen.destroy_all }
-    kitchen = Kitchen.new(name: 'First', slug: 'first')
-
-    assert_predicate kitchen, :valid?
-  end
-
-  test 'blocks second kitchen when multi_kitchen is false' do
+  test 'allows multiple kitchens to coexist' do
     second = Kitchen.new(name: 'Second', slug: 'second')
 
-    assert_not second.valid?
-    assert_includes second.errors[:base], 'Only one kitchen is allowed in single-kitchen mode'
-  end
-
-  test 'allows second kitchen when multi_kitchen is true' do
-    with_multi_kitchen do
-      second = Kitchen.new(name: 'Second', slug: 'second')
-
-      assert_predicate second, :valid?
-    end
-  end
-
-  test 'allows updating existing kitchen when multi_kitchen is false' do
-    @kitchen.name = 'Updated'
-
-    assert_predicate @kitchen, :valid?
+    assert_predicate second, :valid?
   end
 
   test 'encrypts usda_api_key at rest' do

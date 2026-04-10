@@ -87,7 +87,6 @@ class Kitchen < ApplicationRecord
 
   validates :name, presence: true
   validates :slug, presence: true, uniqueness: true
-  validate :enforce_single_kitchen_mode, on: :create
 
   before_create :set_join_code
 
@@ -147,12 +146,5 @@ class Kitchen < ApplicationRecord
       self.join_code = JoinCodeGenerator.generate
       break unless Kitchen.exists?(join_code: join_code)
     end
-  end
-
-  def enforce_single_kitchen_mode
-    return if ENV['MULTI_KITCHEN'] == 'true'
-
-    # Intentionally unscoped — checking global kitchen count, not tenant-scoped data
-    errors.add(:base, 'Only one kitchen is allowed in single-kitchen mode') if Kitchen.exists?
   end
 end
