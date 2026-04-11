@@ -4,7 +4,6 @@ require 'test_helper'
 
 class MagicLinkMailerTest < ActionMailer::TestCase
   setup do
-    Rails.application.routes.default_url_options[:host] = 'example.test'
     create_kitchen_and_user
     @magic_link = MagicLink.create!(
       user: @user,

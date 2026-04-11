@@ -2,7 +2,7 @@
 
 require 'active_support/core_ext/integer/time'
 
-Rails.application.configure do
+Rails.application.configure do # rubocop:disable Metrics/BlockLength
   # Settings specified here will take precedence over those in config/application.rb.
 
   # Code is not reloaded between requests.
@@ -60,4 +60,25 @@ Rails.application.configure do
     config.hosts = ENV['ALLOWED_HOSTS'].split(',').map(&:strip)
     config.host_authorization = { exclude: ->(request) { request.path == '/up' } }
   end
+
+  # Action Mailer — SMTP when configured, Rails logger delivery otherwise.
+  # The logger fallback writes the full email to stdout so a homelab
+  # operator without SMTP can retrieve the sign-in code from container logs.
+  smtp_address = ENV.fetch('SMTP_ADDRESS', nil)
+  base_url = ENV.fetch('BASE_URL', 'http://localhost:3030')
+  config.action_mailer.delivery_method = smtp_address.present? ? :smtp : :logger
+  config.action_mailer.perform_deliveries = true
+  config.action_mailer.raise_delivery_errors = true
+  config.action_mailer.smtp_settings = {
+    address: smtp_address,
+    port: ENV.fetch('SMTP_PORT', 587).to_i,
+    user_name: ENV.fetch('SMTP_USERNAME', nil),
+    password: ENV.fetch('SMTP_PASSWORD', nil),
+    authentication: ENV.fetch('SMTP_AUTHENTICATION', 'plain').to_sym,
+    enable_starttls_auto: true
+  }
+  config.action_mailer.default_url_options = {
+    host: URI.parse(base_url).host,
+    protocol: base_url.start_with?('https') ? 'https' : 'http'
+  }
 end
