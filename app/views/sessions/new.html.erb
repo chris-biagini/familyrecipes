@@ -1,0 +1,22 @@
+<% content_for(:title) { 'Sign in' } %>
+
+<h1>Sign in</h1>
+<p class="auth-subtitle">Enter your email and we'll send you a sign-in code.</p>
+
+<% if flash[:alert].present? %>
+  <div class="auth-error"><p><%= flash[:alert] %></p></div>
+<% end %>
+
+<%= form_with url: sessions_path, method: :post, local: true do |f| %>
+  <div class="auth-field">
+    <%= f.label :email, 'Email address' %>
+    <%= f.email_field :email, required: true, autofocus: true, autocomplete: 'email',
+                              class: 'input-base input-lg' %>
+  </div>
+
+  <%= f.submit 'Send me a sign-in code', class: 'btn auth-submit' %>
+<% end %>
+
+<div class="auth-footer">
+  <p>New here? <%= link_to 'Use a join code', join_kitchen_path %>.</p>
+</div>
