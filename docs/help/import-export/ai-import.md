@@ -36,8 +36,8 @@ AI Import has two modes, controlled by a checkbox in the import dialog.
 Preserves the original recipe's wording and style as closely as possible.
 Informal language, verbose descriptions, and the author's voice all come
 through intact. Use this when you want an accurate transcription of the
-source — for example, importing a family recipe where the exact phrasing
-matters.
+source — for example, importing a recipe handed down in your family
+where the exact phrasing matters.
 
 ### Expert mode
 
