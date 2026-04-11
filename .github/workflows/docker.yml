@@ -88,14 +88,14 @@ jobs:
           context: .
           load: true
           build-args: REVISION=${{ steps.version.outputs.value }}
-          tags: familyrecipes:smoke-test
+          tags: mirepoix:smoke-test
 
       - name: Smoke test container
         run: |
           docker run -d --name smoke \
             -p 3030:3030 \
             -e SECRET_KEY_BASE=smoke-test-secret \
-            familyrecipes:smoke-test
+            mirepoix:smoke-test
 
           echo "Waiting for /up to return 200..."
           for i in $(seq 1 90); do

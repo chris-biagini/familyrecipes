@@ -20,10 +20,10 @@ class ApplicationHelperTest < ActionView::TestCase
   end
 
   test 'help_url prepends base URL to path' do
-    assert_equal 'https://chris-biagini.github.io/familyrecipes/recipes/', help_url('/recipes/')
+    assert_equal 'https://chris-biagini.github.io/mirepoix/recipes/', help_url('/recipes/')
   end
 
   test 'help_url works with nested path' do
-    assert_equal 'https://chris-biagini.github.io/familyrecipes/recipes/editing/', help_url('/recipes/editing/')
+    assert_equal 'https://chris-biagini.github.io/mirepoix/recipes/editing/', help_url('/recipes/editing/')
   end
 end

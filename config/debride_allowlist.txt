@@ -1,4 +1,4 @@
-# Debride false-positive allowlist for familyrecipes.
+# Debride false-positive allowlist for mirepoix.
 # One method name per line. These are methods debride flags as unreachable
 # but are actually invoked dynamically by Rails, from ERB templates, or
 # via framework conventions.
