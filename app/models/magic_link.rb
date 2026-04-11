@@ -31,6 +31,22 @@ class MagicLink < ApplicationRecord
     def generate_code
       Array.new(CODE_LENGTH) { ALPHABET.sample(random: SecureRandom) }.join
     end
+
+    def consume(raw_code)
+      sanitized = normalize(raw_code)
+      return nil if sanitized.blank?
+
+      updated = where(code: sanitized, consumed_at: nil)
+                .where('expires_at > ?', Time.current)
+                .update_all(consumed_at: Time.current) # rubocop:disable Rails/SkipsModelValidations -- intentional: atomic single-use claim
+      return nil unless updated == 1
+
+      find_by(code: sanitized)
+    end
+
+    def normalize(raw_code)
+      raw_code.to_s.strip.upcase
+    end
   end
 
   private

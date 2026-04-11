@@ -37,4 +37,48 @@ class MagicLinkTest < ActiveSupport::TestCase
 
     assert_equal codes.uniq.size, codes.size
   end
+
+  test 'consume returns the link and marks it consumed' do
+    link = MagicLink.create!(user: @user, purpose: :sign_in, expires_at: 15.minutes.from_now)
+    result = MagicLink.consume(link.code)
+
+    assert_equal link.id, result.id
+    assert_not_nil result.consumed_at
+  end
+
+  test 'consume returns nil for unknown code' do
+    assert_nil MagicLink.consume('ZZZZZZ')
+  end
+
+  test 'consume returns nil for expired code' do
+    link = MagicLink.create!(user: @user, purpose: :sign_in, expires_at: 1.minute.ago)
+
+    assert_nil MagicLink.consume(link.code)
+  end
+
+  test 'consume returns nil when code is already consumed' do
+    link = MagicLink.create!(user: @user, purpose: :sign_in, expires_at: 15.minutes.from_now)
+    MagicLink.consume(link.code)
+
+    assert_nil MagicLink.consume(link.code)
+  end
+
+  test 'consume normalizes the input code (whitespace and case)' do
+    link = MagicLink.create!(user: @user, purpose: :sign_in, expires_at: 15.minutes.from_now)
+    result = MagicLink.consume("  #{link.code.downcase}  ")
+
+    assert_equal link.id, result.id
+  end
+
+  test 'consume is atomic under concurrent attempts' do
+    link = MagicLink.create!(user: @user, purpose: :sign_in, expires_at: 15.minutes.from_now)
+
+    results = Array.new(5) do
+      Thread.new { MagicLink.consume(link.code) }
+    end.map(&:value)
+
+    successes = results.compact
+
+    assert_equal 1, successes.size
+  end
 end
