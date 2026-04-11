@@ -19,8 +19,23 @@ class MagicLinksController < ApplicationController
 
   layout 'auth'
 
+  rate_limit to: 10, within: 15.minutes, by: -> { request.remote_ip }, only: :create
+
   def new
     @masked_email = mask_email(pending_auth_email)
+  end
+
+  def create
+    link = MagicLink.consume(params[:code])
+    return render_invalid unless link
+    return fail_mismatch unless pending_auth_email == link.user.email
+
+    link.user.verify_email!
+    ensure_join_membership(link) if link.join?
+    start_new_session_for(link.user)
+    clear_pending_auth
+
+    redirect_to after_sign_in_path_for(link)
   end
 
   private
@@ -36,5 +51,31 @@ class MagicLinksController < ApplicationController
 
     _local, domain = email.split('@', 2)
     "…@#{domain}"
+  end
+
+  def render_invalid
+    flash.now[:alert] = 'Invalid or expired code. Try again or start over.'
+    @masked_email = mask_email(pending_auth_email)
+    render :new, status: :unprocessable_content
+  end
+
+  def fail_mismatch
+    clear_pending_auth
+    redirect_to new_session_path, alert: "That code didn't match. Please start over."
+  end
+
+  def ensure_join_membership(link)
+    ActsAsTenant.with_tenant(link.kitchen) do
+      Membership.find_or_create_by!(kitchen: link.kitchen, user: link.user) do |m|
+        m.role = 'member'
+      end
+    end
+  end
+
+  def after_sign_in_path_for(link)
+    kitchen = link.kitchen || ActsAsTenant.without_tenant { link.user.kitchens.first }
+    return root_path unless kitchen
+
+    kitchen_root_path(kitchen_slug: kitchen.slug)
   end
 end
