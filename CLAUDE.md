@@ -1,10 +1,10 @@
 # CLAUDE.md
 
 Rails 8 app backed by SQLite with multi-tenant "Kitchen" support.
-Passwordless auth via join codes, with a parallel trusted-header path for
-homelab installs.  Two-database architecture: primary (app data), cable
-(Solid Cable pub/sub).  Docker image for homelab installs, plan to also have
-hosted model with many users.
+Email-verified magic link auth, with the join code as invitation-only.
+Two-database architecture: primary (app data), cable (Solid Cable pub/sub).
+Docker image for homelab installs, plan to also have hosted model with
+many users.
 
 ## Design Philosophy
 
@@ -214,18 +214,25 @@ quantities and instructions when inputs were incomplete.
 
 **Dinner picker / wake lock.** See JS controller headers for details.
 
-**Auth flow.** Passwordless join-code system: `JoinCodeGenerator` (in `lib/`)
-creates human-readable codes; `JoinsController` validates codes and creates
-`Membership` records. `SessionsController` handles sign-in/sign-out;
-`DevSessionsController` provides test-only session shortcuts.
-`WelcomeController` and `LandingController` handle post-join and pre-auth
-landing pages. `TransfersController` manages kitchen ownership transfer.
-See each controller's header comment for details.
-
-**Trusted-header auto-join.** A trusted-header user with zero memberships is
-auto-added as a member iff exactly one Kitchen exists (`Kitchen.limit(2).one?`).
-Trust assumption: the reverse proxy strips inbound `Remote-User` headers.
-Multi-kitchen installs are unaffected. Hardening tracked in #365.
+**Auth flow.** Email-verified magic link sign-in. `SessionsController#new`
+accepts an email; `#create` issues a `MagicLink` (6-char single-use code,
+15-min expiry) via `MagicLinkMailer` and sets a signed `pending_auth`
+cookie carrying the typed email. `MagicLinksController#create` atomically
+consumes the code — verifying the consumed link's user email matches the
+cookie — then `start_new_session_for` and sets `email_verified_at`.
+`JoinsController#create` uses the same mechanism with `purpose: :join`,
+so membership is only created after email verification (closes the
+email-squatting gap). Kitchen creation (`/new`) is gated by
+`Kitchen.accepting_signups?` (`DISABLE_SIGNUPS` / `ALLOW_SIGNUPS` env
+vars); hosted deployments seed kitchens via `rake "kitchen:create[...]"`.
+SMTP is optional — Rails logger delivery is the homelab fallback (read
+the code from `docker logs`). `TransfersController` handles self-transfer
+QR codes (`/transfer`) for device-to-device handoff. `DevSessionsController`
+provides test-only session shortcuts. The `PendingAuthToken` concern
+encapsulates the signed cookie used between `/sessions/new`,
+`/sessions/magic_link`, and `/join`. Member-to-member login links and
+the `WelcomeController` were removed — returning members sign in via
+`/sessions/new` themselves.
 
 ## Recipe & Data Formats
 
