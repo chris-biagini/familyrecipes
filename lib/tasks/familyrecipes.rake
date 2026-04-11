@@ -13,7 +13,7 @@ end
 begin
   require 'rubocop/rake_task'
   RuboCop::RakeTask.new(:lint)
-  task default: %i[lint test]
+  task default: %i[lint test brand:check_residue]
 rescue LoadError
   task default: :test
 end
