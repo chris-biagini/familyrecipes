@@ -6,7 +6,6 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
   setup do
     create_kitchen_and_user
     ActionMailer::Base.deliveries.clear
-    Rails.cache.clear
   end
 
   test 'GET /sessions/new renders the email form' do
@@ -46,6 +45,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_redirected_to sessions_magic_link_path
+    assert_not_empty cookies[:pending_auth].to_s
   end
 
   test 'POST /sessions with an email that matches a user with no memberships is treated as unknown' do
@@ -59,6 +59,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_redirected_to sessions_magic_link_path
+    assert_not_empty cookies[:pending_auth].to_s
   end
 
   test 'POST /sessions is rate-limited' do
@@ -72,5 +73,4 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
 
     assert_not_empty cookies[:pending_auth].to_s
   end
-
 end

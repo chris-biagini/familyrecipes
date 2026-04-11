@@ -45,6 +45,15 @@ if defined?(Bullet)
   end
 end
 
+# Clear the cache before each test. Rails 8's `rate_limit` is backed by
+# Rails.cache, so shared state across tests would otherwise leak counters
+# between controller tests that exercise rate-limited actions.
+module ActiveSupport
+  class TestCase
+    setup { Rails.cache.clear }
+  end
+end
+
 module ActiveSupport
   class TestCase
     private
