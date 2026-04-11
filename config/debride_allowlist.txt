@@ -32,7 +32,6 @@ order_content
 update_order
 check
 confirm_all
-create_for_member
 deplete_all
 have_it
 need_it

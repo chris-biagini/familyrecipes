@@ -111,13 +111,6 @@
                     <span class="member-role">owner</span>
                   <% end %>
                 </span>
-                <form action="<%= member_login_link_path(id: member[:id]) %>" method="post"
-                      data-turbo-frame="login-link-frame-<%= member[:id] %>">
-                  <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
-                  <input type="hidden" name="kitchen_slug" value="<%= kitchen.slug %>">
-                  <button type="submit" class="btn btn-sm settings-login-link-btn">Login link</button>
-                </form>
-                <turbo-frame id="login-link-frame-<%= member[:id] %>"></turbo-frame>
               </li>
             <% end %>
           </ul>
