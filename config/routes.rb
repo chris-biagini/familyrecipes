@@ -69,15 +69,14 @@ Rails.application.routes.draw do
   post 'join', to: 'joins#verify', as: :verify_join
   post 'join/complete', to: 'joins#create', as: :complete_join
 
+  get 'sessions/new', to: 'sessions#new', as: :new_session
+  post 'sessions', to: 'sessions#create', as: :sessions
+  get 'sessions/magic_link', to: 'magic_links#new', as: :sessions_magic_link
+  post 'sessions/magic_link', to: 'magic_links#create', as: :consume_magic_link
   delete 'logout', to: 'sessions#destroy', as: :logout
 
   post 'transfer', to: 'transfers#create', as: :create_transfer
   get 'transfer/:token', to: 'transfers#show', as: :show_transfer
-  post 'members/:id/login_link', to: 'transfers#create_for_member', as: :member_login_link
-  get 'welcome', to: 'welcome#show', as: :welcome
-
-  # Temporarily added in Task 5; finalized in Task 9.
-  get 'sessions/magic_link', to: 'magic_links#new', as: :sessions_magic_link
 
   get 'dev/login/:id', to: 'dev_sessions#create', as: :dev_login if Rails.env.local?
 end
