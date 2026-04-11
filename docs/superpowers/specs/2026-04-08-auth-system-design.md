@@ -1,3 +1,13 @@
+> **SUPERSEDED by** `2026-04-10-magic-link-auth-design.md` (Phase 2, merged
+> via PR #375 on 2026-04-11). That later spec collapsed the three-phase
+> outline below into a single new Phase 2: magic-link email auth,
+> trusted-header auth deleted entirely, and fly.io-ready code. See also
+> the orientation doc at `2026-04-11-orientation-design.md` for strategic
+> context (product direction, deploy target, licensing, Phase 3/4 shape).
+>
+> This document is preserved as a historical record of the original
+> passwordless auth plan.
+
 # Auth System Design
 
 Passwordless authentication for the family recipes app, replacing the
