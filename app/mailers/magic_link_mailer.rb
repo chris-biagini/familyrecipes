@@ -18,6 +18,6 @@ class MagicLinkMailer < ApplicationMailer
     @request_ip = magic_link.request_ip
     @request_user_agent = magic_link.request_user_agent
 
-    mail to: magic_link.user.email, subject: 'Sign in to Family Recipes'
+    mail to: magic_link.user.email, subject: 'Sign in to mirepoix'
   end
 end

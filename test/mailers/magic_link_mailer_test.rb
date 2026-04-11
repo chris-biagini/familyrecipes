@@ -18,7 +18,7 @@ class MagicLinkMailerTest < ActionMailer::TestCase
     mail = MagicLinkMailer.sign_in_instructions(@magic_link)
 
     assert_equal [@user.email], mail.to
-    assert_equal 'Sign in to Family Recipes', mail.subject
+    assert_equal 'Sign in to mirepoix', mail.subject
     assert_equal ['no-reply@localhost'], mail.from
   end
 

@@ -19,7 +19,7 @@ module Mirepoix
       mail = ::Mail.new do
         to 'alice@test.local'
         from 'no-reply@localhost'
-        subject 'Sign in to Family Recipes'
+        subject 'Sign in to mirepoix'
         text_part { body "Your code is ABCD23\nExpires in 15 minutes." }
       end
 
@@ -27,7 +27,7 @@ module Mirepoix
       output = @log.string
 
       assert_includes output, 'Mail to: alice@test.local'
-      assert_includes output, 'Subject: Sign in to Family Recipes'
+      assert_includes output, 'Subject: Sign in to mirepoix'
       assert_includes output, 'ABCD23'
       assert_includes output, 'Expires in 15 minutes'
     end
