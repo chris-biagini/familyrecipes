@@ -28,72 +28,63 @@ class JoinsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'input[name="email"]'
   end
 
-  test 'complete with known email re-authenticates' do
-    signed_kitchen = sign_kitchen_id(@kitchen.id)
+  test 'POST /join/complete with known email creates a :join magic link and delivers mail' do
+    kitchen_being_joined = Kitchen.create!(name: 'Another Kitchen', slug: 'another-kitchen')
+    signed = sign_kitchen_id(kitchen_being_joined.id)
+    joiner = User.create!(name: 'Joiner', email: 'joiner@example.com')
+    ActionMailer::Base.deliveries.clear
 
-    assert_no_difference ['User.count'] do
-      post complete_join_path, params: {
-        email: @user.email,
-        signed_kitchen_id: signed_kitchen
-      }
+    assert_difference -> { MagicLink.where(purpose: :join).count } => 1,
+                      -> { ActionMailer::Base.deliveries.size } => 1 do
+      post complete_join_path, params: { signed_kitchen_id: signed, email: joiner.email }
     end
 
-    assert_response :redirect
-    assert_match %r{/welcome\?k=}, response.location
-    assert_predicate cookies[:session_id], :present?
+    assert_redirected_to sessions_magic_link_path
+
+    link = MagicLink.order(:created_at).last
+
+    assert_equal kitchen_being_joined, link.kitchen
+    assert_equal 'join', link.purpose
+    assert_equal joiner, link.user
+    assert_nil ActsAsTenant.with_tenant(kitchen_being_joined) { Membership.find_by(user: joiner) }
   end
 
-  test 'complete with unknown email renders name form' do
-    signed_kitchen = sign_kitchen_id(@kitchen.id)
+  test 'POST /join/complete with new email creates User, magic link, and mail' do
+    kitchen_being_joined = Kitchen.create!(name: 'Another Kitchen', slug: 'another-kitchen')
+    signed = sign_kitchen_id(kitchen_being_joined.id)
+    ActionMailer::Base.deliveries.clear
 
-    post complete_join_path, params: {
-      email: 'newperson@example.com',
-      signed_kitchen_id: signed_kitchen
-    }
+    assert_difference -> { User.count } => 1, -> { MagicLink.count } => 1 do
+      post complete_join_path,
+           params: { signed_kitchen_id: signed, email: 'new@example.com', name: 'New Person' }
+    end
+
+    assert_redirected_to sessions_magic_link_path
+    new_user = User.find_by(email: 'new@example.com')
+
+    assert_equal 'New Person', new_user.name
+  end
+
+  test 'POST /join/complete with missing name re-renders the name form' do
+    kitchen_being_joined = Kitchen.create!(name: 'Another Kitchen', slug: 'another-kitchen')
+    signed = sign_kitchen_id(kitchen_being_joined.id)
+
+    assert_no_difference -> { MagicLink.count } do
+      post complete_join_path, params: { signed_kitchen_id: signed, email: 'new@example.com' }
+    end
 
     assert_response :success
-    assert_select 'input[name="name"]'
+    assert_select 'input[name=name]'
   end
 
-  test 'complete with name creates user and membership' do
-    signed_kitchen = sign_kitchen_id(@kitchen.id)
+  test 'POST /join/complete sets pending_auth cookie' do
+    kitchen_being_joined = Kitchen.create!(name: 'Another Kitchen', slug: 'another-kitchen')
+    signed = sign_kitchen_id(kitchen_being_joined.id)
+    User.create!(name: 'Joiner', email: 'joiner@example.com')
 
-    assert_difference 'User.count', 1 do
-      post complete_join_path, params: {
-        email: 'newperson@example.com',
-        name: 'New Person',
-        signed_kitchen_id: signed_kitchen
-      }
-    end
+    post complete_join_path, params: { signed_kitchen_id: signed, email: 'joiner@example.com' }
 
-    assert_response :redirect
-    assert_match %r{/welcome\?k=}, response.location
-
-    user = User.find_by(email: 'newperson@example.com')
-
-    assert_equal 'New Person', user.name
-    assert ActsAsTenant.with_tenant(@kitchen) { @kitchen.member?(user) }
-  end
-
-  test 'complete with existing user from another kitchen creates membership only' do
-    other_kitchen = Kitchen.create!(name: 'Other', slug: 'other')
-    outsider = User.create!(name: 'Outsider', email: 'outsider@example.com')
-    ActsAsTenant.with_tenant(other_kitchen) do
-      Membership.create!(kitchen: other_kitchen, user: outsider)
-    end
-
-    signed_kitchen = sign_kitchen_id(@kitchen.id)
-
-    assert_no_difference 'User.count' do
-      post complete_join_path, params: {
-        email: 'outsider@example.com',
-        signed_kitchen_id: signed_kitchen
-      }
-    end
-
-    assert_response :redirect
-    assert_match %r{/welcome\?k=}, response.location
-    assert ActsAsTenant.with_tenant(@kitchen) { @kitchen.member?(outsider) }
+    assert_not_empty cookies[:pending_auth].to_s
   end
 
   test 'complete with tampered signed kitchen ID is rejected' do

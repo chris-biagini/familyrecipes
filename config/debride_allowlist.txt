@@ -5,8 +5,6 @@
 
 # --- Rails controller callbacks and before_actions ---
 connect
-authenticate_from_headers
-auto_join_sole_kitchen
 auto_login_in_development
 default_url_options
 flush_broadcast
@@ -32,7 +30,6 @@ order_content
 update_order
 check
 confirm_all
-create_for_member
 deplete_all
 have_it
 need_it
@@ -157,6 +154,4 @@ apply_select
 DENSITY_UNITS
 
 # --- Called from config/initializers/ (debride doesn't scan initializers) ---
-from_env
-default_networks?
 load!

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 3) do
+ActiveRecord::Schema[8.1].define(version: 4) do
   create_table "categories", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "kitchen_id", null: false
@@ -119,6 +119,23 @@ ActiveRecord::Schema[8.1].define(version: 3) do
     t.string "usda_api_key"
     t.index ["join_code"], name: "index_kitchens_on_join_code", unique: true
     t.index ["slug"], name: "index_kitchens_on_slug", unique: true
+  end
+
+  create_table "magic_links", force: :cascade do |t|
+    t.string "code", limit: 6, null: false
+    t.datetime "consumed_at"
+    t.datetime "created_at", null: false
+    t.datetime "expires_at", null: false
+    t.integer "kitchen_id"
+    t.integer "purpose", default: 0, null: false
+    t.string "request_ip"
+    t.string "request_user_agent"
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.index ["code"], name: "index_magic_links_on_code", unique: true
+    t.index ["expires_at"], name: "index_magic_links_on_expires_at"
+    t.index ["kitchen_id"], name: "index_magic_links_on_kitchen_id"
+    t.index ["user_id"], name: "index_magic_links_on_user_id"
   end
 
   create_table "meal_plan_selections", force: :cascade do |t|
@@ -256,6 +273,8 @@ ActiveRecord::Schema[8.1].define(version: 3) do
   add_foreign_key "custom_grocery_items", "kitchens"
   add_foreign_key "ingredient_catalog", "kitchens"
   add_foreign_key "ingredients", "steps"
+  add_foreign_key "magic_links", "kitchens"
+  add_foreign_key "magic_links", "users"
   add_foreign_key "meal_plan_selections", "kitchens"
   add_foreign_key "meal_plans", "kitchens"
   add_foreign_key "memberships", "kitchens"

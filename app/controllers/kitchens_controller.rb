@@ -10,6 +10,7 @@
 # - Authentication concern: start_new_session_for
 class KitchensController < ApplicationController
   skip_before_action :set_kitchen_from_path
+  before_action :enforce_accepting_signups
   before_action :redirect_if_logged_in, only: :new
 
   layout 'auth'
@@ -62,5 +63,11 @@ class KitchensController < ApplicationController
     return if params[:intentional]
 
     redirect_to root_path
+  end
+
+  def enforce_accepting_signups
+    return if Kitchen.accepting_signups?
+
+    render file: Rails.public_path.join('404.html'), status: :not_found, layout: false
   end
 end

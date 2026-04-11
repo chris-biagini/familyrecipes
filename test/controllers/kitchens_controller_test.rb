@@ -72,17 +72,61 @@ class KitchensControllerTest < ActionDispatch::IntegrationTest
   test 'create redirects to home if already logged in and not intentional' do
     create_kitchen_and_user
     log_in
+    ENV['ALLOW_SIGNUPS'] = 'true'
 
     get new_kitchen_path
 
     assert_redirected_to root_path
+  ensure
+    ENV.delete('ALLOW_SIGNUPS')
   end
 
   test 'create allows logged-in user when intentional param present' do
     create_kitchen_and_user
     log_in
+    ENV['ALLOW_SIGNUPS'] = 'true'
 
     get new_kitchen_path(intentional: true)
+
+    assert_response :success
+  ensure
+    ENV.delete('ALLOW_SIGNUPS')
+  end
+
+  test 'GET /new returns 404 when signups are disabled' do
+    create_kitchen_and_user
+    ENV['DISABLE_SIGNUPS'] = 'true'
+
+    get new_kitchen_path
+
+    assert_response :not_found
+  ensure
+    ENV.delete('DISABLE_SIGNUPS')
+  end
+
+  test 'POST /new returns 404 when signups are disabled' do
+    create_kitchen_and_user
+    ENV['DISABLE_SIGNUPS'] = 'true'
+
+    post new_kitchen_path, params: { name: 'A', email: 'a@example.com', kitchen_name: 'Test' }
+
+    assert_response :not_found
+  ensure
+    ENV.delete('DISABLE_SIGNUPS')
+  end
+
+  test 'GET /new returns 404 on a populated homelab without ALLOW_SIGNUPS' do
+    create_kitchen_and_user
+
+    get new_kitchen_path
+
+    assert_response :not_found
+  end
+
+  test 'GET /new returns 200 on a fresh install' do
+    ActsAsTenant.without_tenant { Kitchen.delete_all }
+
+    get new_kitchen_path
 
     assert_response :success
   end

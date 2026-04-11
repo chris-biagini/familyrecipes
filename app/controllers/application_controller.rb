@@ -1,34 +1,15 @@
 # frozen_string_literal: true
 
-# Central before_action pipeline: resume session → authenticate from trusted
-# headers (Authelia, Authentik, oauth2-proxy, etc.) → auto-login in dev →
-# set tenant from path. Public reads are allowed (allow_unauthenticated_access);
-# write paths and member-only pages call require_membership. Also manages
-# the optional kitchen_slug URL scope and cache headers for member-only pages.
-#
-# Trusted-header auth (defense in depth): every request that carries the
-# configured Remote-User header is subject to a per-request check of the
-# raw TCP peer (request.env['REMOTE_ADDR'], NOT request.remote_ip which
-# is the XFF-walked value and spoofable from any RFC1918 host) against
-# Rails.configuration.trusted_proxy_config. If the peer is not in the
-# allowlist (default: 127.0.0.0/8, ::1/128) the headers are ignored and
-# the request falls through to anonymous/passwordless. This protects
-# against reverse-proxy misconfigurations that leak inbound Remote-*
-# headers from external requests. Operators running a proxy on a separate
-# host or different docker network must widen the allowlist via
-# TRUSTED_PROXY_IPS; operators who cannot guarantee header stripping can
-# disable the path entirely with TRUSTED_PROXY_IPS= (empty). See README
-# "Disabling trusted-header auth".
-#
-# Trusted-header auto-join: when trusted headers identify a brand-new user
-# (zero memberships) and exactly one Kitchen exists, the user is auto-joined
-# to that kitchen as a member. Restricted by the peer IP gate above.
+# Central before_action pipeline: resume session -> auto-login in dev ->
+# set tenant from path. Public reads are allowed
+# (allow_unauthenticated_access); write paths and member-only pages call
+# require_membership. Also manages the optional kitchen_slug URL scope
+# and cache headers for member-only pages.
 #
 # Collaborators:
 # - Authentication concern: session lifecycle (resume, start, terminate)
-# - FamilyRecipes::TrustedProxyConfig: peer IP + header name resolution
 # - Kitchen / acts_as_tenant: multi-tenant scoping via set_current_tenant
-# - User / Membership: trusted-header user lookup and auto-join
+# - User / Membership: session-bound identity
 class ApplicationController < ActionController::Base
   include Authentication
 
@@ -39,7 +20,6 @@ class ApplicationController < ActionController::Base
 
   set_current_tenant_through_filter
   before_action :resume_session
-  before_action :authenticate_from_headers
   before_action :auto_login_in_development
   before_action :set_kitchen_from_path
   after_action :flush_broadcast
@@ -76,40 +56,6 @@ class ApplicationController < ActionController::Base
 
   def versioned_icon_path(filename)
     "/icons/#{filename}?v=#{Rails.configuration.icon_version}"
-  end
-
-  def authenticate_from_headers
-    return if authenticated?
-
-    cfg = Rails.application.config.trusted_proxy_config
-    return unless cfg.allow?(request.env['REMOTE_ADDR'])
-
-    identity = trusted_header_identity(cfg)
-    return unless identity
-
-    user = User.find_or_create_by!(email: identity[:email]) { |u| u.name = identity[:name] }
-    start_new_session_for(user)
-    auto_join_sole_kitchen(user)
-  end
-
-  def trusted_header_identity(cfg)
-    # Must use request.env, not request.headers — 'Remote-User' collides with
-    # the CGI REMOTE_USER variable, so request.headers['Remote-User'] is unreliable.
-    env = request.env
-    remote_user = env[cfg.user_header]
-    return if remote_user.blank?
-
-    { email: env[cfg.email_header].presence || "#{remote_user}@header.local",
-      name: env[cfg.name_header].presence || remote_user }
-  end
-
-  def auto_join_sole_kitchen(user)
-    ActsAsTenant.without_tenant do
-      return if Membership.exists?(user_id: user.id)
-      return unless Kitchen.limit(2).one?
-
-      Membership.create!(kitchen: Kitchen.first, user: user, role: 'member')
-    end
   end
 
   def auto_login_in_development

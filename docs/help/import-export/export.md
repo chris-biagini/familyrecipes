@@ -28,8 +28,8 @@ On the homepage, click **Export All Data**. Your browser downloads a
   history are not included in the export.
 - API keys — these are stored encrypted and are not exported. You'll need
   to re-enter your USDA and Anthropic API keys after importing on a new install.
-- User accounts — authentication is handled externally (Authelia) and is
-  not part of the export.
+- User accounts and memberships — authentication state and kitchen
+  memberships are not part of the export.
 
 ## Using the export
 

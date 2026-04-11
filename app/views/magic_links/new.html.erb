@@ -1,0 +1,28 @@
+<% content_for :title, 'Check your email' %>
+
+<h1>Check your email</h1>
+
+<p>
+  If <strong><%= @masked_email %></strong> is a member of a kitchen, we've
+  sent them a 6-character sign-in code.
+</p>
+
+<% if flash[:alert].present? %>
+  <div class="auth-error"><p><%= flash[:alert] %></p></div>
+<% end %>
+
+<%= form_with url: sessions_magic_link_path, method: :post, local: true do |f| %>
+  <div class="auth-field">
+    <%= f.label :code, 'Sign-in code' %>
+    <%= f.text_field :code,
+                     class: 'input-base input-lg',
+                     required: true,
+                     autofocus: true,
+                     autocomplete: 'one-time-code',
+                     inputmode: 'latin',
+                     maxlength: 6 %>
+  </div>
+  <%= f.submit 'Sign in', class: 'btn auth-submit' %>
+<% end %>
+
+<p class="auth-footer"><%= link_to 'Start over', new_session_path %></p>

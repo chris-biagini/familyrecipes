@@ -22,7 +22,10 @@ Rails.application.configure do
 
   # Show full error reports.
   config.consider_all_requests_local = true
-  config.cache_store = :null_store
+  # memory_store (not null_store) so Rails.cache-backed features like
+  # rate_limit can be exercised in tests. Cleared per test via a global
+  # setup hook in test/test_helper.rb.
+  config.cache_store = :memory_store
 
   # Render exception templates for rescuable exceptions and raise for other exceptions.
   config.action_dispatch.show_exceptions = :rescuable
@@ -41,4 +44,7 @@ Rails.application.configure do
 
   # Raise error when a before_action's only/except options reference missing actions.
   config.action_controller.raise_on_missing_callback_actions = true
+
+  config.action_mailer.delivery_method = :test
+  config.action_mailer.default_url_options = { host: 'example.test' }
 end

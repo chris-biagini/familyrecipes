@@ -35,6 +35,17 @@ class Kitchen < ApplicationRecord
   MAX_AISLES = 50
   AI_MODEL = 'claude-sonnet-4-6'
 
+  def self.accepting_signups?
+    return false if ENV['DISABLE_SIGNUPS'] == 'true'
+    return true if Rails.env.development?
+
+    ActsAsTenant.without_tenant do
+      return true if Kitchen.none?
+    end
+
+    ENV['ALLOW_SIGNUPS'] == 'true'
+  end
+
   def self.finalize_writes(kitchen)
     return if batching?
 
