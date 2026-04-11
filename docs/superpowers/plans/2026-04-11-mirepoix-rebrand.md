@@ -510,8 +510,11 @@ EOF
 
 **Files:**
 - Modify: `db/migrate/001_create_schema.rb` line 106
+- Modify: `db/schema.rb` line 116 (matching edit — see schema.rb note below)
 
 This is the one CLAUDE.md rule exception documented in spec §1.5: editing a shipped migration in place. Justified because the project is pre-deploy (no production DB to protect) and the user's dogfood env rebuilds from backup.
+
+**`db/schema.rb` note (load-bearing — do not skip):** Rails 8's `db:create` and `db:setup` load `db/schema.rb` instead of replaying migrations. A fresh DB for CI, dev setup, or dogfood rebuild therefore gets whatever default is in `schema.rb` — NOT what's in the migration file. The migration edit alone is shadowed. You MUST also edit `db/schema.rb` line 116 (the corresponding `t.string "site_title", default: "..."` line inside the `create_table "kitchens"` block) to match. Verify by running `rails db:drop db:setup` followed by `Kitchen.columns_hash["site_title"].default` — the new default must come back.
 
 - [ ] **Step 1: Confirm the line to edit**
 
@@ -521,19 +524,30 @@ rg -n '"Family Recipes"' db/migrate/001_create_schema.rb
 
 Expected: one match, likely on line 106 or nearby, showing `default: "Family Recipes"`. If the line number has shifted due to prior commits, use whatever `rg` reports.
 
-- [ ] **Step 2: Edit the line**
+- [ ] **Step 2: Edit the migration line**
 
 Use Edit to change `default: "Family Recipes"` to `default: "mirepoix"` in `db/migrate/001_create_schema.rb`. The `old_string` should include enough context to be unique — for example the whole column definition line.
 
-- [ ] **Step 3: Verify migration runs from scratch**
+- [ ] **Step 3: Also edit `db/schema.rb`**
+
+Confirm the matching line:
 
 ```bash
-bundle exec rails db:drop db:create db:migrate db:seed
+rg -n '"Family Recipes"' db/schema.rb
 ```
 
-Expected: clean migration, no errors. Verifies the in-place edit is syntactically valid and CI-safe.
+Expected: one match inside the `create_table "kitchens"` block, similar to `t.string "site_title", default: "Family Recipes"`. Edit the default to `"mirepoix"` — this is the load-bearing half of the fix because Rails 8's `db:create`/`db:setup` load schema.rb rather than replaying migrations.
 
-- [ ] **Step 4: Run the full test suite**
+- [ ] **Step 4: Verify a fresh DB gets the new default**
+
+```bash
+bundle exec rails db:drop db:setup
+bundle exec rails runner 'puts Kitchen.columns_hash["site_title"].default.inspect'
+```
+
+Expected: `"mirepoix"`. If it still prints `"Family Recipes"`, the schema.rb edit didn't land — re-check it.
+
+- [ ] **Step 5: Run the full test suite**
 
 ```bash
 bundle exec rake test
@@ -541,21 +555,27 @@ bundle exec rake test
 
 Expected: all tests pass. If any tests seed a kitchen and then check `site_title == "Family Recipes"`, they should have been caught in Task 4's sweep; if not, fix them now.
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 6: Commit**
 
 ```bash
-git add db/migrate/001_create_schema.rb
+git add db/migrate/001_create_schema.rb db/schema.rb
 git commit -m "$(cat <<'EOF'
-Rebrand: kitchen default title in migration 001
+Rebrand: kitchen default title in migration 001 + schema.rb
 
 Edit db/migrate/001_create_schema.rb in place, changing the kitchens
-site_title column default from "Family Recipes" to "mirepoix".
+site_title column default from "Family Recipes" to "mirepoix". Also
+edit db/schema.rb to match — Rails 8's db:create/db:setup load schema.rb
+instead of replaying migrations, so the migration edit alone is shadowed
+on fresh DBs (CI, dev setup, dogfood rebuild).
 
 This is the single CLAUDE.md rule exception documented in the rebrand
 design spec (§1.5). Justified because the project is pre-deploy — no
 production DB exists to protect, the dogfood env rebuilds from backup,
-and CI runs migrations from scratch on every build. The audit trail
-lives in the spec.
+and CI runs from scratch on every build. The audit trail lives in the
+spec.
+
+Verified: db:drop db:setup then Kitchen.columns_hash["site_title"].default
+returns "mirepoix".
 
 Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
 EOF
