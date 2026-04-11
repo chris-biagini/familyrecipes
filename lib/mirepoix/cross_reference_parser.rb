@@ -12,7 +12,7 @@ module CrossReferenceParser
 
     match = text.match(PATTERN)
     unless match
-      raise FamilyRecipes::ParseError,
+      raise Mirepoix::ParseError,
             "Invalid cross-reference syntax: \"#{text}\". Expected @[Recipe Title]"
     end
 
@@ -27,13 +27,13 @@ module CrossReferenceParser
   def self.reject_old_syntax!(text)
     return unless text.match?(OLD_SYNTAX)
 
-    raise FamilyRecipes::ParseError,
+    raise Mirepoix::ParseError,
           "Invalid cross-reference syntax: \"#{text}\". " \
           'Use @[Recipe Title], quantity (quantity after reference), not quantity before.'
   end
 
   def self.parse_multiplier(str)
-    FamilyRecipes::NumericParsing.parse_fraction(str) || 1.0
+    Mirepoix::NumericParsing.parse_fraction(str) || 1.0
   end
 
   private_class_method :reject_old_syntax!, :parse_multiplier

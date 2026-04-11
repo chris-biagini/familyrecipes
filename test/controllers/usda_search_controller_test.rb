@@ -55,10 +55,10 @@ class UsdaSearchControllerTest < ActionDispatch::IntegrationTest
   test 'search returns error on UsdaClient failure' do
     mock_client = Minitest::Mock.new
     mock_client.expect :search, nil do
-      raise FamilyRecipes::UsdaClient::NetworkError, 'connection refused'
+      raise Mirepoix::UsdaClient::NetworkError, 'connection refused'
     end
 
-    FamilyRecipes::UsdaClient.stub :new, mock_client do
+    Mirepoix::UsdaClient.stub :new, mock_client do
       get usda_search_path(kitchen_slug: kitchen_slug), params: { q: 'cheese' }, as: :json
     end
 
@@ -125,10 +125,10 @@ class UsdaSearchControllerTest < ActionDispatch::IntegrationTest
   test 'show returns error on UsdaClient failure' do
     mock_client = Minitest::Mock.new
     mock_client.expect :fetch, nil do
-      raise FamilyRecipes::UsdaClient::AuthError, 'Authentication failed (403)'
+      raise Mirepoix::UsdaClient::AuthError, 'Authentication failed (403)'
     end
 
-    FamilyRecipes::UsdaClient.stub :new, mock_client do
+    Mirepoix::UsdaClient.stub :new, mock_client do
       get usda_show_path(9003, kitchen_slug: kitchen_slug), as: :json
     end
 
@@ -158,7 +158,7 @@ class UsdaSearchControllerTest < ActionDispatch::IntegrationTest
     mock_client = Minitest::Mock.new
     mock_client.expect :search, result, [query], page: page
 
-    FamilyRecipes::UsdaClient.stub(:new, mock_client, &)
+    Mirepoix::UsdaClient.stub(:new, mock_client, &)
 
     mock_client.verify
   end
@@ -167,7 +167,7 @@ class UsdaSearchControllerTest < ActionDispatch::IntegrationTest
     mock_client = Minitest::Mock.new
     mock_client.expect :fetch, result, [], fdc_id: fdc_id.to_s
 
-    FamilyRecipes::UsdaClient.stub(:new, mock_client, &)
+    Mirepoix::UsdaClient.stub(:new, mock_client, &)
 
     mock_client.verify
   end

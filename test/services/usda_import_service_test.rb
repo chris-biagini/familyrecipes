@@ -31,7 +31,7 @@ class UsdaImportServiceTest < ActiveSupport::TestCase
     assert_in_delta 0.17, result.nutrients[:fat]
     assert_in_delta 13.81, result.nutrients[:carbs]
 
-    FamilyRecipes::NutritionConstraints::NUTRIENT_KEYS.each do |key|
+    Mirepoix::NutritionConstraints::NUTRIENT_KEYS.each do |key|
       assert result.nutrients.key?(key), "Expected nutrient key #{key}"
     end
   end

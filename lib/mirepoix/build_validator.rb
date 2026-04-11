@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module FamilyRecipes
+module Mirepoix
   # Seed-time integrity checker. Validates cross-references resolve and are
   # acyclic, verifies all recipe ingredients exist in IngredientCatalog, and
   # checks that ingredients with nutrition data have resolvable units. Prints
@@ -59,7 +59,7 @@ module FamilyRecipes
     private
 
     def validate_title_slug(recipe)
-      title_slug = FamilyRecipes.slugify(recipe.title)
+      title_slug = Mirepoix.slugify(recipe.title)
       return if title_slug == recipe.id
 
       raise StandardError,
@@ -98,7 +98,7 @@ module FamilyRecipes
 
     def build_known_ingredient_set
       names = IngredientCatalog.pluck(:ingredient_name)
-      variants = names.flat_map { |name| FamilyRecipes::Inflector.ingredient_variants(name) }
+      variants = names.flat_map { |name| Mirepoix::Inflector.ingredient_variants(name) }
       (names + variants).to_set(&:downcase)
     end
 

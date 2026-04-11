@@ -7,7 +7,7 @@
 # inbound_cross_references — no Markdown rewriting needed.
 class CrossReferenceUpdater
   def self.rename_references(old_title:, new_title:, kitchen:)
-    slug = FamilyRecipes.slugify(old_title)
+    slug = Mirepoix.slugify(old_title)
     recipe = kitchen.recipes.find_by(slug: slug)
     return [] unless recipe
 
@@ -19,11 +19,11 @@ class CrossReferenceUpdater
   end
 
   def rename_references(new_title)
-    normalized_old = FamilyRecipes.normalize_for_comparison(@recipe.title)
+    normalized_old = Mirepoix.normalize_for_comparison(@recipe.title)
     update_referencing_recipes do |source, _|
       source.gsub(/@\[([^\]]+)\]/) do |match|
         ref_title = Regexp.last_match(1)
-        FamilyRecipes.normalize_for_comparison(ref_title) == normalized_old ? "@[#{new_title}]" : match
+        Mirepoix.normalize_for_comparison(ref_title) == normalized_old ? "@[#{new_title}]" : match
       end
     end
   end
@@ -44,7 +44,7 @@ class CrossReferenceUpdater
   end
 
   def generate_markdown(recipe)
-    ir = FamilyRecipes::RecipeSerializer.from_record(recipe)
-    FamilyRecipes::RecipeSerializer.serialize(ir)
+    ir = Mirepoix::RecipeSerializer.from_record(recipe)
+    Mirepoix::RecipeSerializer.serialize(ir)
   end
 end

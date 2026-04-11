@@ -9,7 +9,7 @@
 # Collaborators:
 # - IngredientCatalog: overlay model for ingredient metadata
 # - IngredientResolver: variant-aware name resolution
-# - FamilyRecipes::NutritionCalculator: FDA-label computation
+# - Mirepoix::NutritionCalculator: FDA-label computation
 class RecipeNutritionJob < ApplicationJob
   def perform(recipe, resolver: nil)
     loaded = eager_load_recipe(recipe)
@@ -19,7 +19,7 @@ class RecipeNutritionJob < ApplicationJob
       Rails.logger.warn { "Nutrition: empty catalog for kitchen #{loaded.kitchen_id}, recipe #{recipe.id}" }
     end
 
-    calculator = FamilyRecipes::NutritionCalculator.new(resolver.lookup, omit_set: resolver.omit_set)
+    calculator = Mirepoix::NutritionCalculator.new(resolver.lookup, omit_set: resolver.omit_set)
     result = calculator.calculate(loaded, {})
     recipe.update_column(:nutrition_data, result.as_json) # rubocop:disable Rails/SkipsModelValidations
   rescue StandardError => error

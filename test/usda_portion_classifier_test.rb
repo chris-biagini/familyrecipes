@@ -2,10 +2,10 @@
 
 require 'minitest/autorun'
 require 'active_support/core_ext/object/blank'
-require_relative '../lib/familyrecipes'
+require_relative '../lib/mirepoix'
 
 class UsdaPortionClassifierTest < Minitest::Test
-  Classifier = FamilyRecipes::UsdaPortionClassifier
+  Classifier = Mirepoix::UsdaPortionClassifier
 
   # --- classify ---
 

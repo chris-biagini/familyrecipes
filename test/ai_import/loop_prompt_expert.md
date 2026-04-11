@@ -38,7 +38,7 @@ Also look for **prompt trimming opportunities**:
 
 ## Step 3: Edit the Prompt
 
-Edit `lib/familyrecipes/ai_import_prompt_expert.md`. Rules:
+Edit `lib/mirepoix/ai_import_prompt_expert.md`. Rules:
 
 **Prefer removing or simplifying rules over adding new ones.** A shorter
 prompt burns fewer tokens and gives the model less to misinterpret. Every
@@ -56,7 +56,7 @@ line in the prompt should earn its place.
 
 Commit the change:
 
-    git add lib/familyrecipes/ai_import_prompt_expert.md
+    git add lib/mirepoix/ai_import_prompt_expert.md
     git commit -m "Ralph loop: [brief description of change]"
 
 ## Step 4: Run Evaluation
@@ -73,11 +73,11 @@ If `patience >= 2`:
 1. Read the `best_iteration` label and its `prompt_sha`.
 2. Restore the best prompt:
 
-       git show <prompt_sha>:lib/familyrecipes/ai_import_prompt_expert.md > lib/familyrecipes/ai_import_prompt_expert.md
+       git show <prompt_sha>:lib/mirepoix/ai_import_prompt_expert.md > lib/mirepoix/ai_import_prompt_expert.md
 
 3. Commit:
 
-       git add lib/familyrecipes/ai_import_prompt_expert.md
+       git add lib/mirepoix/ai_import_prompt_expert.md
        git commit -m "Ralph loop: restore best prompt (iteration <label>, avg <score>)"
 
 4. Output: <promise>EXPERT TUNED</promise>

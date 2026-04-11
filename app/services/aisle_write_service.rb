@@ -30,9 +30,9 @@ class AisleWriteService < ListWriteService
 
     validate_order(kitchen.parsed_aisle_order,
                    max_items: Kitchen::MAX_AISLES,
-                   max_name_length: FamilyRecipes::NutritionConstraints::AISLE_MAX_LENGTH,
+                   max_name_length: Mirepoix::NutritionConstraints::AISLE_MAX_LENGTH,
                    exact_dupes: false) +
-      validate_renames_length(renames, FamilyRecipes::NutritionConstraints::AISLE_MAX_LENGTH)
+      validate_renames_length(renames, Mirepoix::NutritionConstraints::AISLE_MAX_LENGTH)
   end
 
   def apply_renames(renames)

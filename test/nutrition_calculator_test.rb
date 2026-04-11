@@ -39,12 +39,12 @@ class NutritionCalculatorTest < Minitest::Test
     }
 
     @omit_set = Set.new(['water', 'ice', 'poolish', 'sourdough starter'])
-    @calculator = FamilyRecipes::NutritionCalculator.new(@nutrition_data, omit_set: @omit_set)
+    @calculator = Mirepoix::NutritionCalculator.new(@nutrition_data, omit_set: @omit_set)
     @recipe_map = {}
   end
 
   def make_recipe(markdown, id: 'test-recipe')
-    FamilyRecipes::Recipe.new(markdown_source: markdown, id: id)
+    Mirepoix::Recipe.new(markdown_source: markdown, id: id)
   end
 
   # --- Basic calculations ---
@@ -617,7 +617,7 @@ class NutritionCalculatorTest < Minitest::Test
         portions: { 'stick' => 113 }
       )
     }
-    calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data)
+    calculator = Mirepoix::NutritionCalculator.new(nutrition_data)
 
     recipe = make_recipe(<<~MD)
       # Test
@@ -648,7 +648,7 @@ class NutritionCalculatorTest < Minitest::Test
         density_grams: 125, density_volume: 1, density_unit: 'cup'
       )
     }
-    calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data)
+    calculator = Mirepoix::NutritionCalculator.new(nutrition_data)
 
     recipe = make_recipe(<<~MD)
       # Test
@@ -675,7 +675,7 @@ class NutritionCalculatorTest < Minitest::Test
   def test_silently_skips_entries_without_nutrients
     data = { 'Celery' => IngredientCatalog.new(ingredient_name: 'Celery', aisle: 'Produce') }
     assert_silent do
-      FamilyRecipes::NutritionCalculator.new(data)
+      Mirepoix::NutritionCalculator.new(data)
     end
   end
 
@@ -689,7 +689,7 @@ class NutritionCalculatorTest < Minitest::Test
       )
     }
 
-    calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data)
+    calculator = Mirepoix::NutritionCalculator.new(nutrition_data)
 
     assert calculator.nutrition_data.key?('Good')
     refute calculator.nutrition_data.key?('Bad')
@@ -700,7 +700,7 @@ class NutritionCalculatorTest < Minitest::Test
       'NoBasis' => IngredientCatalog.new(ingredient_name: 'NoBasis', calories: 100)
     }
 
-    calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data)
+    calculator = Mirepoix::NutritionCalculator.new(nutrition_data)
 
     refute calculator.nutrition_data.key?('NoBasis')
   end
@@ -712,7 +712,7 @@ class NutritionCalculatorTest < Minitest::Test
       )
     }
 
-    calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data)
+    calculator = Mirepoix::NutritionCalculator.new(nutrition_data)
 
     refute calculator.nutrition_data.key?('ZeroGrams')
   end
@@ -1036,7 +1036,7 @@ class NutritionCalculatorTest < Minitest::Test
   end
 
   def test_as_json_coerces_numeric_scalars_to_float
-    result = FamilyRecipes::NutritionCalculator::Result.new(
+    result = Mirepoix::NutritionCalculator::Result.new(
       totals: { calories: BigDecimal('100') },
       serving_count: BigDecimal('4'),
       per_serving: { calories: BigDecimal('25') },

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module FamilyRecipes
+module Mirepoix
   # Aggregates nutrient totals for a recipe from IngredientCatalog entries.
   # Delegates quantity-to-grams resolution to UnitResolver, then sums nutrients
   # proportionally. Produces a Result with totals, per-serving, and per-unit

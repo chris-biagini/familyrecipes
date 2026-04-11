@@ -81,7 +81,7 @@ class CatalogWriteService
   end
 
   def find_variant_entry
-    FamilyRecipes::Inflector.ingredient_variants(ingredient_name).lazy.filter_map do |variant|
+    Mirepoix::Inflector.ingredient_variants(ingredient_name).lazy.filter_map do |variant|
       IngredientCatalog.find_by(kitchen:, ingredient_name: variant)
     end.first
   end
@@ -122,7 +122,7 @@ class CatalogWriteService
     existing = IngredientCatalog.find_by(kitchen:, ingredient_name: name)
     return existing if existing
 
-    variant = FamilyRecipes::Inflector.ingredient_variants(name).find { |v| seen[v.downcase] }
+    variant = Mirepoix::Inflector.ingredient_variants(name).find { |v| seen[v.downcase] }
     return seen[variant.downcase] if variant
 
     IngredientCatalog.find_or_initialize_by(kitchen:, ingredient_name: name)

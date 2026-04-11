@@ -1,18 +1,18 @@
 # frozen_string_literal: true
 
 # Shared utilities for the seed catalog pipeline scripts.
-# Standalone — no Rails dependency. Uses lib/familyrecipes/ modules
+# Standalone — no Rails dependency. Uses lib/mirepoix/ modules
 # for USDA portion classification only.
 
 require 'json'
 require 'fileutils'
 
-# Load FamilyRecipes domain modules for portion classification.
+# Load Mirepoix domain modules for portion classification.
 # These are standalone (no Rails required). The modules assume
-# FamilyRecipes is already defined and that Inflector/UnitResolver
+# Mirepoix is already defined and that Inflector/UnitResolver
 # are loaded before UsdaPortionClassifier.
 $LOAD_PATH.unshift(File.expand_path('../../lib', __dir__))
-module FamilyRecipes; end
+module Mirepoix; end
 
 # Inflector uses blank? (ActiveSupport) — polyfill for standalone use
 unless String.method_defined?(:blank?)
@@ -23,10 +23,10 @@ unless String.method_defined?(:blank?)
   end
 end
 
-require 'familyrecipes/inflector'
-require 'familyrecipes/unit_resolver'
-require 'familyrecipes/usda_client'
-require 'familyrecipes/usda_portion_classifier'
+require 'mirepoix/inflector'
+require 'mirepoix/unit_resolver'
+require 'mirepoix/usda_client'
+require 'mirepoix/usda_portion_classifier'
 
 module SeedCatalog
   DATA_DIR = File.expand_path('../../data/seed_catalog', __dir__)
@@ -94,17 +94,17 @@ module SeedCatalog
   def self.add_density_and_portions(entry, raw_portions)
     return if raw_portions.nil? || raw_portions.empty?
 
-    classified = FamilyRecipes::UsdaPortionClassifier.classify(raw_portions)
+    classified = Mirepoix::UsdaPortionClassifier.classify(raw_portions)
     add_density(entry, classified.density_candidates)
     add_portions(entry, classified.portion_candidates)
   end
   private_class_method :add_density_and_portions
 
   def self.add_density(entry, candidates)
-    best = FamilyRecipes::UsdaPortionClassifier.pick_best_density(candidates)
+    best = Mirepoix::UsdaPortionClassifier.pick_best_density(candidates)
     return unless best
 
-    unit = FamilyRecipes::UsdaPortionClassifier.normalize_volume_unit(best[:modifier])
+    unit = Mirepoix::UsdaPortionClassifier.normalize_volume_unit(best[:modifier])
     entry['density'] = { 'grams' => best[:each].round(2), 'volume' => 1.0, 'unit' => unit }
   end
   private_class_method :add_density
@@ -113,7 +113,7 @@ module SeedCatalog
     return if candidates.empty?
 
     entry['portions'] = candidates.each_with_object({}) do |p, h|
-      name = FamilyRecipes::UsdaPortionClassifier.strip_parenthetical(p[:modifier]).strip
+      name = Mirepoix::UsdaPortionClassifier.strip_parenthetical(p[:modifier]).strip
       h[name] = p[:each].round(2)
     end
   end

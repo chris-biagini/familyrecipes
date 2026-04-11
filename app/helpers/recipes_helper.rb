@@ -11,21 +11,21 @@
 # - VulgarFractions (human-readable fraction formatting)
 # - ScalableNumberPreprocessor (instruction/yield scaling)
 module RecipesHelper # rubocop:disable Metrics/ModuleLength
-  NUTRITION_ROWS = FamilyRecipes::NutritionConstraints::NUTRIENT_DEFS.map do |d|
+  NUTRITION_ROWS = Mirepoix::NutritionConstraints::NUTRIENT_DEFS.map do |d|
     [d.label, d.key.to_s, d.unit, d.indent, d.daily_value]
   end.freeze
 
   def render_markdown(text)
     return '' if text.blank?
 
-    html = FamilyRecipes::Recipe::MARKDOWN.render(text)
+    html = Mirepoix::Recipe::MARKDOWN.render(text)
     linkify_recipe_references(html).html_safe # rubocop:disable Rails/OutputSafety
   end
 
   def scalable_instructions(text)
     return '' if text.blank?
 
-    html = FamilyRecipes::Recipe::MARKDOWN.render(text)
+    html = Mirepoix::Recipe::MARKDOWN.render(text)
     html = ScalableNumberPreprocessor.process_instructions(html)
     linkify_recipe_references(html).html_safe # rubocop:disable Rails/OutputSafety
   end
@@ -65,7 +65,7 @@ module RecipesHelper # rubocop:disable Metrics/ModuleLength
   end
 
   def percent_daily_value(nutrient_key, amount)
-    dv = FamilyRecipes::NutritionConstraints::DAILY_VALUES[nutrient_key]
+    dv = Mirepoix::NutritionConstraints::DAILY_VALUES[nutrient_key]
     return unless dv
 
     (amount.to_f / dv * 100).round
@@ -114,7 +114,7 @@ module RecipesHelper # rubocop:disable Metrics/ModuleLength
       title = Regexp.last_match(1)
       next match if inside_code_or_tag?(Regexp.last_match.pre_match)
 
-      slug = FamilyRecipes.slugify(title)
+      slug = Mirepoix.slugify(title)
       %(<a href="#{recipe_path(slug)}" class="recipe-link">#{ERB::Util.html_escape(title)}</a>)
     end
   end
@@ -169,14 +169,14 @@ module RecipesHelper # rubocop:disable Metrics/ModuleLength
   end
 
   def unit_serving_text(per_serving, nutrition)
-    formatted = FamilyRecipes::VulgarFractions.format(per_serving)
-    singular = FamilyRecipes::VulgarFractions.singular_noun?(per_serving)
+    formatted = Mirepoix::VulgarFractions.format(per_serving)
+    singular = Mirepoix::VulgarFractions.singular_noun?(per_serving)
     unit = singular ? nutrition['makes_unit_singular'] : nutrition['makes_unit_plural']
     "#{formatted} #{unit}"
   end
 
   def fraction_of_recipe(count)
-    "#{FamilyRecipes::VulgarFractions.format(1.0 / count)} recipe"
+    "#{Mirepoix::VulgarFractions.format(1.0 / count)} recipe"
   end
 
   def scaled_quantity_display(item, scale_factor)
@@ -198,25 +198,25 @@ module RecipesHelper # rubocop:disable Metrics/ModuleLength
   end
 
   def format_scaled_value(value, scale_factor, unit)
-    FamilyRecipes::VulgarFractions.format(value.to_f * scale_factor, unit: unit)
+    Mirepoix::VulgarFractions.format(value.to_f * scale_factor, unit: unit)
   end
 
   def scaled_unit_display(item, display_value)
     return unless item.quantity_unit
 
-    FamilyRecipes::Inflector.unit_display(item.quantity_unit, display_value)
+    Mirepoix::Inflector.unit_display(item.quantity_unit, display_value)
   end
 
   def add_unit_plural_attr(attrs, unit)
     return unless unit
 
     attrs[:'data-quantity-unit-plural'] =
-      FamilyRecipes::Inflector.unit_display(unit, 2)
+      Mirepoix::Inflector.unit_display(unit, 2)
   end
 
   def add_name_inflection_attrs(attrs, item)
-    singular = FamilyRecipes::Inflector.display_name(item.name, 1)
-    plural = FamilyRecipes::Inflector.display_name(item.name, 2)
+    singular = Mirepoix::Inflector.display_name(item.name, 1)
+    plural = Mirepoix::Inflector.display_name(item.name, 2)
     return if singular == plural
 
     attrs[:'data-name-singular'] = singular

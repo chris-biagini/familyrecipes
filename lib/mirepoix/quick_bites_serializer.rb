@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
-module FamilyRecipes
+module Mirepoix
   # Pure-function serializer that converts a Quick Bites IR hash to canonical
   # plaintext and vice versa. The inverse of parse_quick_bites_content — together
   # they form a lossless round-trip for editor save/load cycles. Also provides
   # `from_records` to build IR from AR-backed QuickBite/QuickBiteIngredient rows.
   #
-  # - FamilyRecipes.parse_quick_bites_content: parser (plaintext -> QuickBite[])
+  # - Mirepoix.parse_quick_bites_content: parser (plaintext -> QuickBite[])
   # - QuickBitesWriteService: persistence orchestrator that will consume serialize output
   # - MenuController: editor UI that round-trips through to_ir/serialize
   # - QuickBite / QuickBiteIngredient: AR models consumed by from_records

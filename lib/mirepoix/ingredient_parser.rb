@@ -25,7 +25,7 @@ module IngredientParser
   def self.reject_cross_reference_syntax!(text)
     return unless text.start_with?('@[')
 
-    raise FamilyRecipes::ParseError,
+    raise Mirepoix::ParseError,
           "Cross-references now use > @[...] syntax. Write: > #{text}"
   end
 

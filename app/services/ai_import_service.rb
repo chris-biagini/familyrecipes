@@ -10,14 +10,14 @@
 #
 # - Kitchen#anthropic_api_key: encrypted API key for Anthropic
 # - Kitchen::AI_MODEL: model identifier (claude-sonnet-4-6)
-# - lib/familyrecipes/ai_import_prompt_faithful.md: faithful mode template
-# - lib/familyrecipes/ai_import_prompt_expert.md: expert mode template
+# - lib/mirepoix/ai_import_prompt_faithful.md: faithful mode template
+# - lib/mirepoix/ai_import_prompt_expert.md: expert mode template
 class AiImportService
   Result = Data.define(:markdown, :error)
 
   PROMPTS = {
-    faithful: Rails.root.join('lib/familyrecipes/ai_import_prompt_faithful.md').read.freeze,
-    expert: Rails.root.join('lib/familyrecipes/ai_import_prompt_expert.md').read.freeze
+    faithful: Rails.root.join('lib/mirepoix/ai_import_prompt_faithful.md').read.freeze,
+    expert: Rails.root.join('lib/mirepoix/ai_import_prompt_expert.md').read.freeze
   }.freeze
   MAX_TOKENS = 8192
 

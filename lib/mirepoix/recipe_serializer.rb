@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module FamilyRecipes
+module Mirepoix
   # Pure-function serializer that converts a RecipeBuilder IR hash back into
   # canonical Markdown. The inverse of the parser pipeline (LineClassifier ->
   # RecipeBuilder). Single source of truth for the recipe markdown format when

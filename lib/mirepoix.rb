@@ -8,10 +8,9 @@ require 'yaml'
 # Root module for the recipe parser pipeline — a pure-Ruby domain layer that
 # knows nothing about Rails. Parses Markdown recipe files into structured value
 # objects (Recipe, Step, Ingredient, CrossReference, QuickBite) and computes
-# nutrition data. Loaded once at boot via config/initializers/familyrecipes.rb,
-# not through Zeitwerk. The Rails app module is Familyrecipes (lowercase r);
-# this module is FamilyRecipes (uppercase R) — different constants, no collision.
-module FamilyRecipes
+# nutrition data. Loaded once at boot via config/initializers/mirepoix.rb, not
+# through Zeitwerk (see config/application.rb autoload_lib ignore list).
+module Mirepoix
   # Raised by parser pipeline components (RecipeBuilder, IngredientParser,
   # CrossReferenceParser) for structurally invalid input. Controllers rescue
   # this specifically instead of broad RuntimeError.
@@ -67,28 +66,28 @@ module FamilyRecipes
   end
 end
 
-require_relative 'familyrecipes/numeric_parsing'
-require_relative 'familyrecipes/quantity'
-require_relative 'familyrecipes/scalable_number_preprocessor'
-require_relative 'familyrecipes/inflector'
-require_relative 'familyrecipes/ingredient'
-require_relative 'familyrecipes/ingredient_aggregator'
-require_relative 'familyrecipes/ingredient_parser'
-require_relative 'familyrecipes/cross_reference_parser'
-require_relative 'familyrecipes/cross_reference'
-require_relative 'familyrecipes/line_classifier'
-require_relative 'familyrecipes/recipe_builder'
-require_relative 'familyrecipes/recipe_serializer'
-require_relative 'familyrecipes/step'
-require_relative 'familyrecipes/recipe'
-require_relative 'familyrecipes/quick_bite'
-require_relative 'familyrecipes/quick_bites_serializer'
-require_relative 'familyrecipes/nutrition_constraints'
-require_relative 'familyrecipes/unit_resolver'
-require_relative 'familyrecipes/nutrition_calculator'
-require_relative 'familyrecipes/vulgar_fractions'
-require_relative 'familyrecipes/build_validator'
-require_relative 'familyrecipes/usda_client'
-require_relative 'familyrecipes/usda_portion_classifier'
-require_relative 'familyrecipes/smart_tag_registry'
-require_relative 'familyrecipes/logger_delivery'
+require_relative 'mirepoix/numeric_parsing'
+require_relative 'mirepoix/quantity'
+require_relative 'mirepoix/scalable_number_preprocessor'
+require_relative 'mirepoix/inflector'
+require_relative 'mirepoix/ingredient'
+require_relative 'mirepoix/ingredient_aggregator'
+require_relative 'mirepoix/ingredient_parser'
+require_relative 'mirepoix/cross_reference_parser'
+require_relative 'mirepoix/cross_reference'
+require_relative 'mirepoix/line_classifier'
+require_relative 'mirepoix/recipe_builder'
+require_relative 'mirepoix/recipe_serializer'
+require_relative 'mirepoix/step'
+require_relative 'mirepoix/recipe'
+require_relative 'mirepoix/quick_bite'
+require_relative 'mirepoix/quick_bites_serializer'
+require_relative 'mirepoix/nutrition_constraints'
+require_relative 'mirepoix/unit_resolver'
+require_relative 'mirepoix/nutrition_calculator'
+require_relative 'mirepoix/vulgar_fractions'
+require_relative 'mirepoix/build_validator'
+require_relative 'mirepoix/usda_client'
+require_relative 'mirepoix/usda_portion_classifier'
+require_relative 'mirepoix/smart_tag_registry'
+require_relative 'mirepoix/logger_delivery'

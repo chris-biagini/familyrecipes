@@ -59,7 +59,7 @@ class MarkdownImporter
   end
 
   def find_or_initialize_recipe
-    slug = FamilyRecipes.slugify(parsed[:title])
+    slug = Mirepoix.slugify(parsed[:title])
     recipe = kitchen.recipes.find_or_initialize_by(slug: slug)
     check_slug_collision!(recipe)
     recipe
@@ -74,7 +74,7 @@ class MarkdownImporter
   end
 
   def update_recipe_attributes(recipe)
-    makes_qty, makes_unit = FamilyRecipes::Recipe.parse_makes(parsed[:front_matter][:makes])
+    makes_qty, makes_unit = Mirepoix::Recipe.parse_makes(parsed[:front_matter][:makes])
 
     recipe.assign_attributes(
       title: parsed[:title],
@@ -125,7 +125,7 @@ class MarkdownImporter
   def process_instructions(text)
     return if text.blank?
 
-    html = FamilyRecipes::Recipe::MARKDOWN.render(text)
+    html = Mirepoix::Recipe::MARKDOWN.render(text)
     ScalableNumberPreprocessor.process_instructions(html)
   end
 
@@ -136,9 +136,9 @@ class MarkdownImporter
   end
 
   def import_ingredient(step, data, position)
-    normalized = FamilyRecipes::Ingredient.normalize_quantity(data[:quantity])
-    qty, unit = FamilyRecipes::Ingredient.split_quantity(normalized)
-    low, high = FamilyRecipes::Ingredient.parse_range(qty)
+    normalized = Mirepoix::Ingredient.normalize_quantity(data[:quantity])
+    qty, unit = Mirepoix::Ingredient.split_quantity(normalized)
+    low, high = Mirepoix::Ingredient.parse_range(qty)
 
     step.ingredients.create!(
       name: data[:name],
@@ -152,7 +152,7 @@ class MarkdownImporter
   end
 
   def import_cross_reference(step, data, position = 0)
-    target_slug = FamilyRecipes.slugify(data[:target_title])
+    target_slug = Mirepoix.slugify(data[:target_title])
     target = kitchen.recipes.find_by(slug: target_slug)
 
     step.cross_references.create!(

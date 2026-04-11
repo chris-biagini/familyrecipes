@@ -3,7 +3,7 @@
 require 'test_helper'
 
 class NutritionConstraintsTest < ActiveSupport::TestCase
-  NC = FamilyRecipes::NutritionConstraints
+  NC = Mirepoix::NutritionConstraints
 
   # --- valid_nutrient? ---
 

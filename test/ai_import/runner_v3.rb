@@ -36,14 +36,14 @@ class Object
   end
 end
 
-require_relative '../../lib/familyrecipes'
+require_relative '../../lib/mirepoix'
 require_relative 'scorers/parse_checker'
 require_relative 'scorers/format_checker'
 require_relative 'scorers/system_compat_checker'
 
 BASE_DIR = File.expand_path(__dir__)
 RESULTS_DIR = File.join(BASE_DIR, 'results')
-LIB_DIR = File.expand_path('../../lib/familyrecipes', BASE_DIR)
+LIB_DIR = File.expand_path('../../lib/mirepoix', BASE_DIR)
 
 CATEGORIES = %w[Baking Bread Breakfast Dessert Drinks Holiday Mains Pizza Sides Snacks Miscellaneous].freeze
 TAGS = %w[vegetarian vegan gluten-free weeknight easy quick one-pot make-ahead

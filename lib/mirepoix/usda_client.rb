@@ -4,7 +4,7 @@ require 'net/http'
 require 'json'
 require 'uri'
 
-module FamilyRecipes
+module Mirepoix
   # HTTP client for the USDA FoodData Central API. Encapsulates search and
   # detail-fetch operations, error classification, and nutrient/portion
   # extraction. Returns flat portion arrays; classification into volume vs

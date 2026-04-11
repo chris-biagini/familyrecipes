@@ -2,7 +2,7 @@
 
 # Second stage of the parser pipeline. Consumes LineTokens from LineClassifier
 # and assembles them into a structured hash (title, description, front_matter,
-# steps, footer) that FamilyRecipes::Recipe uses to populate itself. Works as
+# steps, footer) that Mirepoix::Recipe uses to populate itself. Works as
 # a single-pass cursor over the token array — peek/advance/skip_blanks. Handles
 # both explicit steps (## headers) and implicit steps (ingredients without headers).
 #
@@ -10,7 +10,7 @@
 # - LineClassifier: produces the LineToken stream this class consumes
 # - IngredientParser: parses individual :ingredient tokens into structured hashes
 # - CrossReferenceParser: parses :cross_reference_block tokens
-# - FamilyRecipes::Recipe: receives the assembled hash via .from_parsed
+# - Mirepoix::Recipe: receives the assembled hash via .from_parsed
 # - MarkdownImporter: the entry point that wires LineClassifier → RecipeBuilder
 class RecipeBuilder # rubocop:disable Metrics/ClassLength
   def initialize(tokens)
@@ -55,7 +55,7 @@ class RecipeBuilder # rubocop:disable Metrics/ClassLength
     token = advance
     if token.nil? || token.type != :title
       line_num = token&.line_number || 1
-      raise FamilyRecipes::ParseError,
+      raise Mirepoix::ParseError,
             "Invalid recipe format at line #{line_num}: " \
             'The first line must be a level-one header (# Toasted Bread).'
     end
@@ -194,7 +194,7 @@ class RecipeBuilder # rubocop:disable Metrics/ClassLength
   end
 
   def reject_implicit_cross_reference(token)
-    raise FamilyRecipes::ParseError,
+    raise Mirepoix::ParseError,
           "Cross-reference (>) at line #{token.line_number} must appear inside " \
           'an explicit step (## Step Name)'
   end
@@ -206,13 +206,13 @@ class RecipeBuilder # rubocop:disable Metrics/ClassLength
   end
 
   def raise_duplicate_cross_reference(token)
-    raise FamilyRecipes::ParseError,
+    raise Mirepoix::ParseError,
           'Only one cross-reference (>) is allowed per step ' \
           "(line #{token.line_number})"
   end
 
   def raise_mixed_content_error(token, content_type)
-    raise FamilyRecipes::ParseError,
+    raise Mirepoix::ParseError,
           "Cross-reference (>) at line #{token.line_number} " \
           "cannot be mixed with #{content_type} in the same step"
   end

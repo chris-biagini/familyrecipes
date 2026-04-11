@@ -4,8 +4,8 @@ require_relative 'test_helper'
 
 class QuickBitesSerializerTest < Minitest::Test
   def parse_to_ir(content)
-    result = FamilyRecipes.parse_quick_bites_content(content)
-    FamilyRecipes::QuickBitesSerializer.to_ir(result.quick_bites)
+    result = Mirepoix.parse_quick_bites_content(content)
+    Mirepoix::QuickBitesSerializer.to_ir(result.quick_bites)
   end
 
   def test_round_trip_preserves_content
@@ -19,7 +19,7 @@ class QuickBitesSerializerTest < Minitest::Test
     TXT
 
     ir = parse_to_ir(content)
-    serialized = FamilyRecipes::QuickBitesSerializer.serialize(ir)
+    serialized = Mirepoix::QuickBitesSerializer.serialize(ir)
     ir_again = parse_to_ir(serialized)
 
     assert_equal ir, ir_again
@@ -37,7 +37,7 @@ class QuickBitesSerializerTest < Minitest::Test
       ]
     }
 
-    output = FamilyRecipes::QuickBitesSerializer.serialize(ir)
+    output = Mirepoix::QuickBitesSerializer.serialize(ir)
 
     assert_equal "## Snacks\n- Banana\n", output
   end
@@ -45,7 +45,7 @@ class QuickBitesSerializerTest < Minitest::Test
   def test_empty_categories_produces_empty_output
     ir = { categories: [] }
 
-    output = FamilyRecipes::QuickBitesSerializer.serialize(ir)
+    output = Mirepoix::QuickBitesSerializer.serialize(ir)
 
     assert_equal '', output
   end
@@ -71,7 +71,7 @@ class QuickBitesSerializerTest < Minitest::Test
       ]
     }
 
-    output = FamilyRecipes::QuickBitesSerializer.serialize(ir)
+    output = Mirepoix::QuickBitesSerializer.serialize(ir)
 
     assert_equal "## Snacks\n- Chips\n\n## Drinks\n- Lemonade: Lemons, Sugar, Water\n", output
   end
@@ -88,7 +88,7 @@ class QuickBitesSerializerTest < Minitest::Test
       ]
     }
 
-    output = FamilyRecipes::QuickBitesSerializer.serialize(ir)
+    output = Mirepoix::QuickBitesSerializer.serialize(ir)
 
     assert_equal "## Lunch\n- PB&J: Peanut butter, Jelly, Bread\n", output
   end

@@ -31,14 +31,14 @@ class MenuController < ApplicationController
   end
 
   def quick_bites_content
-    ir = FamilyRecipes::QuickBitesSerializer.from_records(current_kitchen)
-    content = FamilyRecipes::QuickBitesSerializer.serialize(ir)
+    ir = Mirepoix::QuickBitesSerializer.from_records(current_kitchen)
+    content = Mirepoix::QuickBitesSerializer.serialize(ir)
     render json: { content:, structure: ir }
   end
 
   def quickbites_editor_frame
-    ir = FamilyRecipes::QuickBitesSerializer.from_records(current_kitchen)
-    content = FamilyRecipes::QuickBitesSerializer.serialize(ir)
+    ir = Mirepoix::QuickBitesSerializer.from_records(current_kitchen)
+    content = Mirepoix::QuickBitesSerializer.serialize(ir)
 
     render partial: 'menu/quickbites_editor_frame', locals: {
       content:, structure: ir
@@ -64,13 +64,13 @@ class MenuController < ApplicationController
   end
 
   def parse_quick_bites
-    result = FamilyRecipes.parse_quick_bites_content(params[:content].to_s)
-    ir = FamilyRecipes::QuickBitesSerializer.to_ir(result.quick_bites)
+    result = Mirepoix.parse_quick_bites_content(params[:content].to_s)
+    ir = Mirepoix::QuickBitesSerializer.to_ir(result.quick_bites)
     render json: ir
   end
 
   def serialize_quick_bites
-    content = FamilyRecipes::QuickBitesSerializer.serialize(validated_quick_bites_structure)
+    content = Mirepoix::QuickBitesSerializer.serialize(validated_quick_bites_structure)
     render json: { content: }
   end
 

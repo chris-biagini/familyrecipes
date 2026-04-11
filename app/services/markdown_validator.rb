@@ -20,7 +20,7 @@ class MarkdownValidator
     errors = []
     errors << 'Recipe must have at least one step (## Step Name).' if parsed[:steps].empty?
     errors
-  rescue FamilyRecipes::ParseError => error
+  rescue Mirepoix::ParseError => error
     [error.message]
   end
 

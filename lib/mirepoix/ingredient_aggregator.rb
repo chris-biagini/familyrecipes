@@ -9,7 +9,7 @@
 # Collaborators:
 # - ShoppingListBuilder: aggregates ingredient amounts for the grocery list
 # - NutritionCalculator: sums quantities when computing recipe nutrition
-# - FamilyRecipes::Recipe#all_ingredients_with_quantities: cross-ref folding
+# - Mirepoix::Recipe#all_ingredients_with_quantities: cross-ref folding
 module IngredientAggregator
   def self.merge_amounts(existing, new_amounts)
     all = existing + new_amounts

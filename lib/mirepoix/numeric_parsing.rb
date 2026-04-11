@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module FamilyRecipes
+module Mirepoix
   # Safe numeric string parser that handles integers, decimals, and fractions
   # (e.g., "3/4"). Used throughout the parser pipeline wherever user-authored
   # quantity strings need to become floats — IngredientParser and

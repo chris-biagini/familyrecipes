@@ -5,8 +5,8 @@
 # and persists directly to QuickBite/QuickBiteIngredient records. Replaces all
 # existing QBs on each save (full replacement, not incremental diff).
 #
-# - FamilyRecipes.parse_quick_bites_content: plaintext -> value objects (editor path)
-# - FamilyRecipes::QuickBitesSerializer: value objects -> IR (editor path)
+# - Mirepoix.parse_quick_bites_content: plaintext -> value objects (editor path)
+# - Mirepoix::QuickBitesSerializer: value objects -> IR (editor path)
 # - Category.find_or_create_for: category resolution
 # - Kitchen.finalize_writes: centralized post-write pipeline
 class QuickBitesWriteService
@@ -28,8 +28,8 @@ class QuickBitesWriteService
     stored = content.to_s.presence
     return clear_all if stored.nil?
 
-    result = FamilyRecipes.parse_quick_bites_content(stored)
-    ir = FamilyRecipes::QuickBitesSerializer.to_ir(result.quick_bites)
+    result = Mirepoix.parse_quick_bites_content(stored)
+    ir = Mirepoix::QuickBitesSerializer.to_ir(result.quick_bites)
     persist_structure(ir)
     finalize
     Result.new(warnings: result.warnings)

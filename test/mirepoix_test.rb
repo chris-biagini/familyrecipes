@@ -2,30 +2,30 @@
 
 require_relative 'test_helper'
 
-class FamilyRecipesTest < Minitest::Test
+class MirepoixTest < Minitest::Test
   def test_slugify_simple_word
-    assert_equal 'cookies', FamilyRecipes.slugify('Cookies')
+    assert_equal 'cookies', Mirepoix.slugify('Cookies')
   end
 
   def test_slugify_multiple_words
-    assert_equal 'chocolate-chip-cookies', FamilyRecipes.slugify('Chocolate Chip Cookies')
+    assert_equal 'chocolate-chip-cookies', Mirepoix.slugify('Chocolate Chip Cookies')
   end
 
   def test_slugify_removes_special_characters
-    assert_equal 'mac--cheese', FamilyRecipes.slugify('Mac & Cheese')
+    assert_equal 'mac--cheese', Mirepoix.slugify('Mac & Cheese')
   end
 
   def test_slugify_handles_accented_characters
     # NFKD normalization decomposes e into e + combining accent, accent is removed
-    assert_equal 'sauteed-asparagus', FamilyRecipes.slugify('Sauteed Asparagus')
+    assert_equal 'sauteed-asparagus', Mirepoix.slugify('Sauteed Asparagus')
   end
 
   def test_slugify_removes_parentheses
-    assert_equal 'sugar-brown', FamilyRecipes.slugify('Sugar (brown)')
+    assert_equal 'sugar-brown', Mirepoix.slugify('Sugar (brown)')
   end
 
   def test_slugify_collapses_multiple_spaces
-    assert_equal 'red-beans-and-rice', FamilyRecipes.slugify('Red  Beans   and   Rice')
+    assert_equal 'red-beans-and-rice', Mirepoix.slugify('Red  Beans   and   Rice')
   end
 
   def test_parse_quick_bites_content_new_format
@@ -38,7 +38,7 @@ class FamilyRecipesTest < Minitest::Test
       - Cereal with Milk: Cereal, Milk
     TXT
 
-    result = FamilyRecipes.parse_quick_bites_content(content)
+    result = Mirepoix.parse_quick_bites_content(content)
 
     assert_equal 3, result.quick_bites.size
     assert_equal 'Peanut Butter on Bread', result.quick_bites[0].title
@@ -58,7 +58,7 @@ class FamilyRecipesTest < Minitest::Test
       - Dried fruit
     TXT
 
-    result = FamilyRecipes.parse_quick_bites_content(content)
+    result = Mirepoix.parse_quick_bites_content(content)
 
     assert_equal 2, result.quick_bites.size
     assert_equal 1, result.warnings.size
@@ -73,14 +73,14 @@ class FamilyRecipesTest < Minitest::Test
 
     TXT
 
-    result = FamilyRecipes.parse_quick_bites_content(content)
+    result = Mirepoix.parse_quick_bites_content(content)
 
     assert_equal 1, result.quick_bites.size
     assert_empty result.warnings
   end
 
   def test_parse_quick_bites_handles_empty_content
-    result = FamilyRecipes.parse_quick_bites_content('')
+    result = Mirepoix.parse_quick_bites_content('')
 
     assert_empty result.quick_bites
     assert_empty result.warnings
@@ -88,32 +88,32 @@ class FamilyRecipesTest < Minitest::Test
 
   def test_parse_quick_bites_category_with_apostrophe
     content = "## Kids' Lunches\n- RXBARs\n"
-    result = FamilyRecipes.parse_quick_bites_content(content)
+    result = Mirepoix.parse_quick_bites_content(content)
 
     assert_equal "Quick Bites: Kids' Lunches", result.quick_bites.first.category
   end
 
   def test_normalize_for_comparison_curly_single_quotes
-    assert_equal "Grandma's Cookies", FamilyRecipes.normalize_for_comparison("Grandma\u2019s Cookies")
+    assert_equal "Grandma's Cookies", Mirepoix.normalize_for_comparison("Grandma\u2019s Cookies")
   end
 
   def test_normalize_for_comparison_left_single_quote
-    assert_equal "'quoted'", FamilyRecipes.normalize_for_comparison("\u2018quoted\u2019")
+    assert_equal "'quoted'", Mirepoix.normalize_for_comparison("\u2018quoted\u2019")
   end
 
   def test_normalize_for_comparison_curly_double_quotes
-    assert_equal '"hello"', FamilyRecipes.normalize_for_comparison("\u201Chello\u201D")
+    assert_equal '"hello"', Mirepoix.normalize_for_comparison("\u201Chello\u201D")
   end
 
   def test_normalize_for_comparison_mixed
-    assert_equal "Baker's \"Best\" Rolls", FamilyRecipes.normalize_for_comparison("Baker\u2019s \u201CBest\u201D Rolls")
+    assert_equal "Baker's \"Best\" Rolls", Mirepoix.normalize_for_comparison("Baker\u2019s \u201CBest\u201D Rolls")
   end
 
   def test_normalize_for_comparison_no_change
-    assert_equal 'plain text', FamilyRecipes.normalize_for_comparison('plain text')
+    assert_equal 'plain text', Mirepoix.normalize_for_comparison('plain text')
   end
 
   def test_normalize_for_comparison_nil
-    assert_equal '', FamilyRecipes.normalize_for_comparison(nil)
+    assert_equal '', Mirepoix.normalize_for_comparison(nil)
   end
 end

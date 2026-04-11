@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module FamilyRecipes
+module Mirepoix
   # Parsed representation of a single Markdown recipe file. Constructed from raw
   # Markdown via LineClassifier → RecipeBuilder → Recipe. Holds the full parse
   # tree: title, description, front matter (makes/serves), steps with their
@@ -109,7 +109,7 @@ module FamilyRecipes
     def validate_makes_has_unit_noun
       return unless @makes && !makes_unit_noun
 
-      raise FamilyRecipes::ParseError,
+      raise Mirepoix::ParseError,
             "Makes field for '#{@title}' requires a unit noun " \
             "(e.g., 'Makes: 12 pancakes', not 'Makes: 12')."
     end

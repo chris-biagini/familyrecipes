@@ -149,9 +149,9 @@ covers only cross-cutting concerns that no single file explains.
 unscoped model queries like `Recipe.find_by`.
 
 **Two namespaces.** Rails app module: `Familyrecipes` (lowercase r). Domain
-parser module: `FamilyRecipes` (uppercase R). Different constants, no
+parser module: `Mirepoix` (uppercase R). Different constants, no
 collision. Parser pipeline: `LineClassifier` → `RecipeBuilder` →
-`FamilyRecipes::Recipe`; `MarkdownImporter` is the sole write-path entry point.
+`Mirepoix::Recipe`; `MarkdownImporter` is the sole write-path entry point.
 
 **Routing.** Optional `(/kitchens/:kitchen_slug)` scope:
 - One Kitchen → root-level URLs (`/recipes/bagels`)
@@ -252,7 +252,7 @@ via `RecipeWriteService`.
 **Quick Bites** are grocery bundles, not recipes — a title plus a flat
 ingredient list. Normalized into `QuickBite` and `QuickBiteIngredient` AR
 models within `Category` (shared with recipes). The plaintext format and
-parser (`FamilyRecipes::QuickBite`) are retained for editor mode-switching.
+parser (`Mirepoix::QuickBite`) are retained for editor mode-switching.
 `QuickBitesSerializer.from_records` builds editor IR from AR models.
 
 **Nutrition catalog** lives in `db/seeds/resources/ingredient-catalog.yaml`.

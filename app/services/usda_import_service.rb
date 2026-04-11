@@ -27,7 +27,7 @@ class UsdaImportService
   end
 
   def call
-    classified = FamilyRecipes::UsdaPortionClassifier.classify(@detail[:portions])
+    classified = Mirepoix::UsdaPortionClassifier.classify(@detail[:portions])
 
     Result.new(
       nutrients: extract_nutrients,
@@ -42,7 +42,7 @@ class UsdaImportService
 
   def extract_nutrients
     raw = @detail[:nutrients]
-    FamilyRecipes::NutritionConstraints::NUTRIENT_KEYS.each_with_object(
+    Mirepoix::NutritionConstraints::NUTRIENT_KEYS.each_with_object(
       { basis_grams: raw['basis_grams'] }
     ) do |key, hash|
       hash[key] = raw[key.to_s]
@@ -50,10 +50,10 @@ class UsdaImportService
   end
 
   def pick_density(density_candidates)
-    best = FamilyRecipes::UsdaPortionClassifier.pick_best_density(density_candidates)
+    best = Mirepoix::UsdaPortionClassifier.pick_best_density(density_candidates)
     return unless best
 
-    unit = FamilyRecipes::UsdaPortionClassifier.normalize_volume_unit(best[:modifier])
+    unit = Mirepoix::UsdaPortionClassifier.normalize_volume_unit(best[:modifier])
     { grams: best[:each].round(2), volume: 1.0, unit: unit }
   end
 

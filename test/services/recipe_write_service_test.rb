@@ -51,7 +51,7 @@ class RecipeWriteServiceTest < ActiveSupport::TestCase
   end
 
   test 'create raises on invalid markdown' do
-    assert_raises(FamilyRecipes::ParseError) do
+    assert_raises(Mirepoix::ParseError) do
       RecipeWriteService.create(markdown: 'not a recipe at all', kitchen: @kitchen)
     end
   end

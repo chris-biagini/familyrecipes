@@ -8,8 +8,8 @@
 # and display formatting to VulgarFractions.
 #
 # - Step (parent via belongs_to)
-# - FamilyRecipes::VulgarFractions (display formatting)
-# - FamilyRecipes::Inflector (unit normalization and pluralization)
+# - Mirepoix::VulgarFractions (display formatting)
+# - Mirepoix::Inflector (unit normalization and pluralization)
 class Ingredient < ApplicationRecord
   belongs_to :step, inverse_of: :ingredients
 
@@ -32,7 +32,7 @@ class Ingredient < ApplicationRecord
   def quantity_unit
     return unless unit
 
-    FamilyRecipes::Inflector.normalize_unit(unit)
+    Mirepoix::Inflector.normalize_unit(unit)
   end
 
   def range?
@@ -48,7 +48,7 @@ class Ingredient < ApplicationRecord
   end
 
   def format_value(val)
-    FamilyRecipes::VulgarFractions.format(val.to_f, unit: quantity_unit)
+    Mirepoix::VulgarFractions.format(val.to_f, unit: quantity_unit)
   end
 
   def format_decimal(value)
@@ -59,7 +59,7 @@ class Ingredient < ApplicationRecord
     return unless unit
 
     count = (quantity_high || quantity_low).to_f
-    singular = FamilyRecipes::VulgarFractions.singular_noun?(count)
-    singular ? unit : FamilyRecipes::Inflector.unit_display(unit, count)
+    singular = Mirepoix::VulgarFractions.singular_noun?(count)
+    singular ? unit : Mirepoix::Inflector.unit_display(unit, count)
   end
 end

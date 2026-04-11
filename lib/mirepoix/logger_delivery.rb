@@ -12,7 +12,7 @@
 #
 # - ActionMailer::Base.delivery_method = :logger selects this
 # - Rails.logger: receives the rendered mail
-module FamilyRecipes
+module Mirepoix
   class LoggerDelivery
     def initialize(_settings = nil); end
 

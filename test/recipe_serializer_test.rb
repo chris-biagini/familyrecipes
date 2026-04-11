@@ -10,7 +10,7 @@ class RecipeSerializerTest < Minitest::Test
 
   def round_trip(markdown)
     ir = parse(markdown)
-    serialized = FamilyRecipes::RecipeSerializer.serialize(ir)
+    serialized = Mirepoix::RecipeSerializer.serialize(ir)
     parse(serialized)
   end
 
@@ -166,7 +166,7 @@ class RecipeSerializerTest < Minitest::Test
     MD
 
     original = parse(markdown)
-    serialized = FamilyRecipes::RecipeSerializer.serialize(original)
+    serialized = Mirepoix::RecipeSerializer.serialize(original)
 
     refute_includes serialized, '- Bread,'
     refute_includes serialized, '- Bread:'
@@ -191,7 +191,7 @@ class RecipeSerializerTest < Minitest::Test
     MD
 
     original = parse(markdown)
-    serialized = FamilyRecipes::RecipeSerializer.serialize(original)
+    serialized = Mirepoix::RecipeSerializer.serialize(original)
 
     assert_includes serialized, '- Rice, 200 g'
     refute_includes serialized, '- Rice, 200 g:'
@@ -217,7 +217,7 @@ class RecipeSerializerTest < Minitest::Test
     MD
 
     original = parse(markdown)
-    serialized = FamilyRecipes::RecipeSerializer.serialize(original)
+    serialized = Mirepoix::RecipeSerializer.serialize(original)
 
     assert_includes serialized, '> @[Simple Tomato Sauce]'
     refute_includes serialized, '> @[Simple Tomato Sauce],'
@@ -244,7 +244,7 @@ class RecipeSerializerTest < Minitest::Test
     MD
 
     original = parse(markdown)
-    serialized = FamilyRecipes::RecipeSerializer.serialize(original)
+    serialized = Mirepoix::RecipeSerializer.serialize(original)
 
     assert_includes serialized, '> @[Simple Tomato Sauce]'
     refute_match(/> @\[Simple Tomato Sauce\], 1/, serialized)
@@ -311,7 +311,7 @@ class RecipeSerializerTest < Minitest::Test
       Do it.
     MD
 
-    serialized = FamilyRecipes::RecipeSerializer.serialize(parse(markdown))
+    serialized = Mirepoix::RecipeSerializer.serialize(parse(markdown))
 
     serialized.each_line do |line|
       assert_equal "#{line.rstrip}\n", line, "Line has trailing whitespace: #{line.inspect}"
@@ -328,7 +328,7 @@ class RecipeSerializerTest < Minitest::Test
       footer: nil
     }
 
-    serialized = FamilyRecipes::RecipeSerializer.serialize(ir)
+    serialized = Mirepoix::RecipeSerializer.serialize(ir)
 
     assert_includes serialized, '> @[Sauce], 2'
     refute_includes serialized, '> @[Sauce], 2.0'
@@ -344,7 +344,7 @@ class RecipeSerializerTest < Minitest::Test
       footer: nil
     }
 
-    serialized = FamilyRecipes::RecipeSerializer.serialize(ir)
+    serialized = Mirepoix::RecipeSerializer.serialize(ir)
 
     assert_includes serialized, '> @[Sauce]'
     refute_match(/> @\[Sauce\], 1/, serialized)
@@ -359,7 +359,7 @@ class RecipeSerializerTest < Minitest::Test
       Do it.
     MD
 
-    serialized = FamilyRecipes::RecipeSerializer.serialize(parse(markdown))
+    serialized = Mirepoix::RecipeSerializer.serialize(parse(markdown))
 
     assert serialized.end_with?("\n"), 'Output must end with a newline'
     refute serialized.end_with?("\n\n"), 'Output must not end with trailing blank lines'
