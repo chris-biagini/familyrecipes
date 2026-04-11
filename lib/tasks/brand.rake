@@ -14,9 +14,12 @@ namespace :brand do # rubocop:disable Metrics/BlockLength
     require 'open3'
 
     pattern = '\bfamily[-_ ]?recipes?\b'
+    # This file is self-documenting: its prose describes the old brand the
+    # oracle detects. Scanning it would flag its own self-reference.
     excludes = %w[
       docs/superpowers/specs/**
       docs/superpowers/plans/**
+      lib/tasks/brand.rake
       .git/**
     ]
     exclude_args = excludes.flat_map { |glob| ['--glob', "!#{glob}"] }
