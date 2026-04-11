@@ -233,5 +233,8 @@ Inspired by [Paprika](https://www.paprikaapp.com/) by Hindsight Labs.
 
 ## License
 
-[GNU Affero General Public License v3.0](LICENSE.md) — Copyright (c) 2025
-Christopher Biagini.
+[O'Saasy License](LICENSE.md) — Copyright (c) 2025 Christopher Biagini.
+
+Mirepoix is free to self-host. The license reserves the right to offer
+Mirepoix as a hosted SaaS product to the copyright holder. See
+[osaasy.dev](https://osaasy.dev) for background on the license.
