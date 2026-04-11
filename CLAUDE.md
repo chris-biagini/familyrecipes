@@ -148,7 +148,7 @@ covers only cross-cutting concerns that no single file explains.
 `current_kitchen` (e.g., `current_kitchen.recipes.find_by!`). Never use
 unscoped model queries like `Recipe.find_by`.
 
-**Two namespaces.** Rails app module: `Familyrecipes` (lowercase r). Domain
+**Two namespaces.** Rails app module: `Mirepoix` (lowercase r). Domain
 parser module: `Mirepoix` (uppercase R). Different constants, no
 collision. Parser pipeline: `LineClassifier` → `RecipeBuilder` →
 `Mirepoix::Recipe`; `MarkdownImporter` is the sole write-path entry point.

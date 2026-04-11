@@ -13,7 +13,7 @@ require 'rails/test_unit/railtie'
 
 Bundler.require(*Rails.groups)
 
-module Familyrecipes
+module Mirepoix
   class Application < Rails::Application
     config.load_defaults 8.1
 
