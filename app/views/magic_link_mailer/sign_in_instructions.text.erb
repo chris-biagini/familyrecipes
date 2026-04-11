@@ -1,0 +1,17 @@
+Sign in to Family Recipes
+
+Enter this code on the sign-in page:
+
+    <%= @code %>
+
+Or open this link:
+
+<%= @login_url %>
+
+This code expires in <%= @expires_in_minutes %> minutes.
+
+---
+
+Requested from <%= @request_ip %> (<%= @request_user_agent %>).
+If you didn't request this, ignore this email — nothing will happen
+without the code.

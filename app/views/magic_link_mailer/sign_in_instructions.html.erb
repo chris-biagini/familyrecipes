@@ -1,0 +1,18 @@
+<h1>Sign in to Family Recipes</h1>
+
+<p>Enter this code on the sign-in page:</p>
+
+<p style="font-size:28px; letter-spacing:4px; font-family:monospace;">
+  <strong><%= @code %></strong>
+</p>
+
+<p>Or just click this link:</p>
+
+<p><%= link_to 'Sign me in', @login_url %></p>
+
+<p>This code expires in <%= @expires_in_minutes %> minutes.</p>
+
+<hr>
+
+<p><small>Requested from <%= @request_ip %> (<%= @request_user_agent %>).<br>
+If you didn't request this, ignore this email — nothing will happen without the code.</small></p>

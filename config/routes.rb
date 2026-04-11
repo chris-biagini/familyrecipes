@@ -76,5 +76,8 @@ Rails.application.routes.draw do
   post 'members/:id/login_link', to: 'transfers#create_for_member', as: :member_login_link
   get 'welcome', to: 'welcome#show', as: :welcome
 
+  # Temporarily added in Task 5; finalized in Task 9.
+  get 'sessions/magic_link', to: 'magic_links#new', as: :sessions_magic_link
+
   get 'dev/login/:id', to: 'dev_sessions#create', as: :dev_login if Rails.env.local?
 end
