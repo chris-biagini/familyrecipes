@@ -9,7 +9,7 @@ next: /import-export/export/
 # Markdown Import
 
 You can import recipes directly as Markdown files, or import a ZIP archive
-exported from another familyrecipes installation.
+exported from another mirepoix installation.
 
 ## How to import
 
@@ -25,7 +25,7 @@ Each file is imported as one recipe. The file must use the
 
 ## ZIP archives
 
-A `.zip` file is expected to come from familyrecipes [Export]({{ site.baseurl }}/import-export/export/).
+A `.zip` file is expected to come from mirepoix [Export]({{ site.baseurl }}/import-export/export/).
 It can contain recipe files, QuickBites, the ingredient catalog, and
 aisle/category ordering.
 

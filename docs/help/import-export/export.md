@@ -34,7 +34,7 @@ On the homepage, click **Export All Data**. Your browser downloads a
 ## Using the export
 
 The ZIP is [re-importable]({{ site.baseurl }}/import-export/markdown-import/)
-on any familyrecipes installation. Use it for:
+on any mirepoix installation. Use it for:
 
 - **Backups** — keep a copy of your data outside the app
 - **Migration** — move to a new server or installation
