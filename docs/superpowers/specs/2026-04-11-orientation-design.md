@@ -79,8 +79,15 @@ public host for you, your family, and the occasional invited friend.
 - **Docker image:** existing GHCR image, renamed as part of the rebrand.
 - **TLS:** Thruster + Let's Encrypt via `TLS_DOMAIN=mirepoix.recipes`. Zero
   certbot dance.
-- **Secrets:** gitignored `.env.production` + `kamal secrets`. 1Password
-  CLI integration is optional later.
+- **Secrets:** 1Password-only, via Kamal's 1Password adapter. All secrets
+  (Rails master key, ActiveRecord encryption keys, SMTP creds, API keys,
+  backup creds) live in a "Mirepoix Production" 1Password vault. **Delete
+  `config/credentials.yml.enc` + `config/master.key`** as part of the
+  rebrand — Rails credentials adds ceremony without value when everything
+  is already in 1Password. App reads all secrets via `ENV["FOO"]`; no
+  `Rails.application.credentials.*` calls anywhere. Kamal's `op` CLI runs
+  on the deploy machine (laptop), not the VPS — secrets are fetched at
+  deploy time and pushed to the container as env vars.
 
 ### Email
 
@@ -140,7 +147,13 @@ Before first `kamal deploy`:
 6. [ ] `rake release:audit` passes; Playwright pen tests green (partial
    coverage for #373)
 7. [ ] `rake kitchen:create` smoke test in a local Docker build
-8. [ ] DNS cut and TLS cert issuance verified
+8. [ ] **Bootstrap ActiveRecord encryption keys to 1Password + physical-
+   world backup** (BEFORE first deploy — irreversible). Run
+   `bin/rails db:encryption:init` once, store `PRIMARY_KEY`,
+   `DETERMINISTIC_KEY`, and `KEY_DERIVATION_SALT` in the "Mirepoix
+   Production" vault, also print the values and stash in a home safe.
+   These cannot be rotated without re-encrypting all data.
+9. [ ] DNS cut and TLS cert issuance verified
 
 Soon after dogfood is stable:
 
