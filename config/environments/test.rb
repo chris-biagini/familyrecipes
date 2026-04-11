@@ -22,7 +22,10 @@ Rails.application.configure do
 
   # Show full error reports.
   config.consider_all_requests_local = true
-  config.cache_store = :null_store
+  # memory_store (not null_store) so Rails.cache-backed features like
+  # rate_limit can be exercised in tests. Cleared per test by
+  # ActiveSupport::TestCase#setup in test_helper.rb.
+  config.cache_store = :memory_store
 
   # Render exception templates for rescuable exceptions and raise for other exceptions.
   config.action_dispatch.show_exceptions = :rescuable
