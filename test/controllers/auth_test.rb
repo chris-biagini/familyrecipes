@@ -109,4 +109,15 @@ class AuthTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select '#edit-aisle-order-button', count: 1
   end
+
+  test 'trusted-header environment variables are ignored' do
+    get root_path, env: {
+      'REMOTE_ADDR' => '127.0.0.1',
+      'HTTP_REMOTE_USER' => 'alice',
+      'HTTP_REMOTE_EMAIL' => 'alice@example.com',
+      'HTTP_REMOTE_NAME' => 'Alice'
+    }
+
+    assert_nil cookies[:session_id].presence
+  end
 end
