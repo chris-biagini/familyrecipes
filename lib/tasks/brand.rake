@@ -19,9 +19,10 @@ namespace :brand do # rubocop:disable Metrics/BlockLength
       docs/superpowers/plans/**
       .git/**
     ]
-    cmd = ['rg', '-i', '-c', '--no-heading', pattern]
-    excludes.each { |glob| cmd.push('--glob', "!#{glob}") }
-    cmd.push('.')
+    exclude_args = excludes.flat_map { |glob| ['--glob', "!#{glob}"] }
+    # Trailing '.' is load-bearing: rg under Open3.capture2e reads from the
+    # empty stdin pipe and silently reports clean unless given an explicit path.
+    cmd = ['rg', '-i', '-c', '--no-heading', pattern, *exclude_args, '.']
 
     output, status = Open3.capture2e(*cmd)
 
