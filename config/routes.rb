@@ -78,5 +78,8 @@ Rails.application.routes.draw do
   post 'transfer', to: 'transfers#create', as: :create_transfer
   get 'transfer/:token', to: 'transfers#show', as: :show_transfer
 
-  get 'dev/login/:id', to: 'dev_sessions#create', as: :dev_login if Rails.env.local?
+  if Rails.env.local?
+    get 'dev/login/:id', to: 'dev_sessions#create', as: :dev_login
+    delete 'dev/cache', to: 'dev_sessions#reset_cache', as: :dev_reset_cache
+  end
 end

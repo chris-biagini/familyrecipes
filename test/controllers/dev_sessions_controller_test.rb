@@ -12,4 +12,13 @@ class DevSessionsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to kitchen_root_path(kitchen_slug: @kitchen.slug)
   end
+
+  test 'reset_cache clears Rails.cache and returns 204' do
+    Rails.cache.write('sentinel', 'x')
+
+    delete dev_reset_cache_path
+
+    assert_response :no_content
+    assert_nil Rails.cache.read('sentinel')
+  end
 end

@@ -106,10 +106,18 @@ namespace :release do # rubocop:disable Metrics/BlockLength
         abort "\nFailed to seed security kitchens."
       end
 
+      # Rate limits are cache-backed with a 15-min window, so prior runs
+      # leak state into the fresh run. Clear it via the dev-only endpoint.
+      require 'net/http'
+      Net::HTTP.start('localhost', 3030) { |h| h.request(Net::HTTP::Delete.new('/dev/cache')) }
+
       puts ''
-      puts '--- Running Playwright security specs ---'
+      puts '--- Running security specs ---'
       specs = Dir['test/security/*.spec.mjs']
-      failures = specs.reject { |spec| system("node --test #{spec}") }
+      failures = specs.reject do |spec|
+        runner = File.read(spec).include?('@playwright/test') ? 'npx playwright test' : 'node --test'
+        system("#{runner} #{spec}")
+      end
 
       puts ''
       if failures.empty?
