@@ -126,19 +126,80 @@ title and homepage text.
 | `ALLOWED_HOSTS` | allow all | Comma-separated domain(s) for DNS rebinding protection |
 | `RAILS_LOG_LEVEL` | `info` | `debug`, `info`, `warn`, `error` |
 | `USDA_API_KEY` | — | Free at [fdc.nal.usda.gov](https://fdc.nal.usda.gov/api-key-signup) |
+| `TRUSTED_PROXY_IPS` | `127.0.0.0/8,::1/128` | CIDR allowlist of reverse proxies allowed to set trusted-auth headers. Empty string disables trusted-header auth entirely. See "Trust model" below. |
+| `TRUSTED_HEADER_USER` | `Remote-User` | HTTP header carrying the username/identifier from your reverse proxy. |
+| `TRUSTED_HEADER_EMAIL` | `Remote-Email` | HTTP header carrying the user's email. |
+| `TRUSTED_HEADER_NAME` | `Remote-Name` | HTTP header carrying the user's display name. |
 
 ### 4. Add authentication (production)
 
-familyrecipes is designed for deployment behind a reverse proxy with
-trusted-header authentication ([Authelia](https://www.authelia.com/),
-[Authentik](https://goauthentik.io/), etc.). The proxy sets `Remote-User`,
-`Remote-Email`, and `Remote-Name` headers; the app reads them to identify
-users and establish sessions.
+familyrecipes supports two complementary auth paths:
 
-Example [Caddy](https://caddyserver.com/) configuration:
+1. **Passwordless join codes** — 4-word cooking-themed codes you share
+   with trusted people. No setup, works anywhere. See the in-app
+   settings dialog to view or regenerate the join code for a kitchen.
+2. **Trusted-header auth** — for homelab installs running a reverse
+   proxy with SSO ([Authelia](https://www.authelia.com/),
+   [Authentik](https://goauthentik.io/),
+   [oauth2-proxy](https://oauth2-proxy.github.io/oauth2-proxy/), Caddy's
+   `forward_auth`, etc.). The proxy authenticates the user and sets
+   HTTP headers that familyrecipes reads to identify them.
+
+Both paths coexist — trusted headers are checked first, passwordless
+join codes are the fallback.
+
+#### Trust model
+
+> **Your reverse proxy MUST strip any inbound `Remote-User`,
+> `Remote-Email`, and `Remote-Name` headers from external requests
+> before forwarding to familyrecipes.** If you cannot guarantee this,
+> see "Disabling trusted-header auth" below.
+
+A misconfigured proxy that passes through client-supplied `Remote-User`
+headers lets an attacker impersonate any user on your install. This is
+the dominant failure mode for trusted-header auth in self-hosted apps.
+
+familyrecipes defends against this in two layers:
+
+1. **Peer IP allowlist (`TRUSTED_PROXY_IPS`).** Trusted headers are
+   only honored when the TCP peer — the actual host that opened the
+   connection to familyrecipes — is in a configured CIDR allowlist.
+   Default is `127.0.0.0/8,::1/128`, which covers same-host
+   docker-compose installs with zero configuration. If your reverse
+   proxy is on a separate host or in a different docker network, set
+   `TRUSTED_PROXY_IPS` to the proxy's address range (comma-separated
+   CIDRs, e.g. `172.18.0.0/16,10.0.0.5/32`). A request from any other
+   peer IP is treated as anonymous — the headers are ignored entirely.
+2. **Your proxy's header strip rules.** Even with the peer IP check,
+   your reverse proxy should still strip inbound `Remote-*` headers
+   from external requests as a defense-in-depth layer. The example
+   Caddy config below shows how.
+
+#### The underscore/dash footgun
+
+HTTP header names are case-insensitive, but Rack converts them to env
+variables by replacing `-` with `_`. This means `Remote-User` and
+`Remote_User` (underscore) end up in the same slot. **nginx strips
+headers containing underscores by default; Caddy, Traefik, and HAProxy
+do not.** Operators on non-nginx proxies must explicitly strip both
+forms or they leave a bypass open:
+
+- Caddy: `header_up -Remote-User` (the `-` prefix deletes)
+- Traefik: `customRequestHeaders: Remote-User: ""`
+- HAProxy: `http-request del-header Remote-User`
+
+Do the same for `Remote-Email` and `Remote-Name`.
+
+#### Example Caddy configuration
 
 ```
 recipes.example.com {
+    # Strip ANY inbound client-supplied auth headers first.
+    request_header -Remote-User
+    request_header -Remote-Email
+    request_header -Remote-Name
+    request_header -Remote-Groups
+
     forward_auth authelia:9091 {
         uri /api/authz/forward-auth
         copy_headers Remote-User Remote-Email Remote-Name Remote-Groups
@@ -147,9 +208,50 @@ recipes.example.com {
 }
 ```
 
-The app expects `X-Forwarded-Proto: https` from the proxy (Caddy sends this by
-default). Without a TLS-terminating proxy, `force_ssl` causes a redirect loop.
-The `/up` health endpoint is excluded from SSL redirect and host checks.
+The `request_header -Remote-User` lines are critical — they run before
+`forward_auth`, so Authelia is the only code that can re-set those
+headers. Without them, a client sending `Remote-User: admin` would
+reach familyrecipes with that header intact.
+
+The app expects `X-Forwarded-Proto: https` from the proxy (Caddy sends
+this by default). Without a TLS-terminating proxy, `force_ssl` causes
+a redirect loop. The `/up` health endpoint is excluded from SSL
+redirect and host checks.
+
+#### Custom header names
+
+If your proxy emits different header names (Grafana-style
+`X-Webauth-User`, oauth2-proxy's `X-Auth-Username`, etc.), set these
+env vars:
+
+```
+TRUSTED_HEADER_USER=X-Webauth-User
+TRUSTED_HEADER_EMAIL=X-Webauth-Email
+TRUSTED_HEADER_NAME=X-Webauth-Name
+```
+
+Defaults are `Remote-User` / `Remote-Email` / `Remote-Name` (the
+Authelia convention).
+
+#### Disabling trusted-header auth
+
+If you cannot guarantee that your reverse proxy strips inbound
+`Remote-*` headers — or if you just don't want trusted-header auth at
+all — disable it explicitly by setting:
+
+```
+TRUSTED_PROXY_IPS=
+```
+
+An **empty** value (not unset) produces an empty allowlist: every
+request fails the peer IP check, and trusted headers are ignored
+unconditionally. Users must sign in via join code or the re-auth link
+in the welcome email.
+
+**Unset** (env var missing entirely) falls back to the loopback
+default — it does *not* disable trusted-header auth. The distinction
+matters: "unset" means "I want the default", "empty" means "I want it
+off".
 
 ---
 

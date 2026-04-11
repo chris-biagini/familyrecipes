@@ -148,3 +148,7 @@ apply_select
 
 # --- Constants referenced from ERB templates (invisible to debride) ---
 DENSITY_UNITS
+
+# --- Called from config/initializers/ (debride doesn't scan initializers) ---
+from_env
+default_networks?

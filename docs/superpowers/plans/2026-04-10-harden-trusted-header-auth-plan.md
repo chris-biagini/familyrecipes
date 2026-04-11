@@ -4,7 +4,7 @@
 
 **Goal:** Add defense-in-depth to `ApplicationController#authenticate_from_headers` so a reverse-proxy misconfiguration cannot silently hand writable kitchen access to an unauthenticated attacker spoofing `Remote-User` headers.
 
-**Architecture:** A new `FamilyRecipes::TrustedProxyConfig` value object parses four env vars at boot: `TRUSTED_PROXY_IPS` (CIDR allowlist, default `127.0.0.0/8,::1/128`) and `TRUSTED_HEADER_USER` / `_EMAIL` / `_NAME` (configurable header names, defaulting to `Remote-*`). An initializer loads it into `Rails.configuration.trusted_proxy_config`. A second initializer emits a production-only `Rails.logger.warn` when the allowlist is still at the loopback default. `authenticate_from_headers` gains a per-request peer IP check — if `request.remote_ip` is not in the allowlist, trusted headers are ignored and the request falls through to anonymous. The README gets a rewrite of the auth section with trust model, underscore/dash footgun, and a "Disabling trusted-header auth" subsection.
+**Architecture:** A new `FamilyRecipes::TrustedProxyConfig` value object parses four env vars at boot: `TRUSTED_PROXY_IPS` (CIDR allowlist, default `127.0.0.0/8,::1/128`) and `TRUSTED_HEADER_USER` / `_EMAIL` / `_NAME` (configurable header names, defaulting to `Remote-*`). An initializer loads it into `Rails.configuration.trusted_proxy_config`. A second initializer emits a production-only `Rails.logger.warn` when the allowlist is still at the loopback default. `authenticate_from_headers` gains a per-request peer IP check — if the raw TCP peer (`request.env['REMOTE_ADDR']`, NOT `request.remote_ip` which is the XFF-walked, spoofable value) is not in the allowlist, trusted headers are ignored and the request falls through to anonymous. The README gets a rewrite of the auth section with trust model, underscore/dash footgun, and a "Disabling trusted-header auth" subsection.
 
 **Tech Stack:** Rails 8, Minitest, `IPAddr` (stdlib), RuboCop, Brakeman. No new dependencies.
 
@@ -475,7 +475,7 @@ Replace with:
     return if authenticated?
 
     cfg = Rails.application.config.trusted_proxy_config
-    return unless cfg.allow?(request.remote_ip)
+    return unless cfg.allow?(request.env['REMOTE_ADDR'])
 
     # Must use request.env, not request.headers — 'Remote-User' collides with
     # the CGI REMOTE_USER variable, so request.headers['Remote-User'] is unreliable.
@@ -494,7 +494,9 @@ Replace with:
   end
 ```
 
-Changes: load the config once, peer IP gate on line 2, read the three headers via the configured Rack env keys. Everything else (user creation, session start, auto-join) unchanged.
+Changes: load the config once, peer gate on line 2 (reads the raw TCP peer from `request.env['REMOTE_ADDR']` — NOT `request.remote_ip`, which is the XFF-walked value and spoofable from any RFC1918 host), read the three headers via the configured Rack env keys. Everything else (user creation, session start, auto-join) unchanged.
+
+**Why `REMOTE_ADDR` and not `request.remote_ip`:** `ActionDispatch::RemoteIp` walks the `X-Forwarded-For` chain past Rails' default trusted-proxies list, which includes all RFC1918 ranges (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `fc00::/7`, etc.). Any host on a private network could forge `X-Forwarded-For: 127.0.0.1` and `request.remote_ip` would return the spoofed loopback, bypassing the allowlist. `REMOTE_ADDR` is the raw TCP peer — the actual host that opened the socket — and cannot be spoofed by any HTTP header. A regression test in `test/controllers/header_auth_test.rb` locks this in.
 
 - [ ] **Step 4: Update the `ApplicationController` header comment**
 
@@ -533,20 +535,22 @@ Replace with:
 # the optional kitchen_slug URL scope and cache headers for member-only pages.
 #
 # Trusted-header auth (defense in depth): every request that carries the
-# configured Remote-User header is subject to a per-request peer IP check
-# against Rails.configuration.trusted_proxy_config. If the TCP peer is not
-# in the allowlist (default: 127.0.0.0/8, ::1/128) the headers are ignored
-# and the request falls through to anonymous/passwordless. This protects
-# against reverse-proxy misconfigurations that leak inbound Remote-* headers
-# from external requests. Operators running a proxy on a separate host or
-# different docker network must widen the allowlist via TRUSTED_PROXY_IPS;
-# operators who cannot guarantee header stripping can disable the path
-# entirely with TRUSTED_PROXY_IPS= (empty). See README "Disabling
-# trusted-header auth".
+# configured Remote-User header is subject to a per-request check of the
+# raw TCP peer (request.env['REMOTE_ADDR'], NOT request.remote_ip which
+# is the XFF-walked value and spoofable from any RFC1918 host) against
+# Rails.configuration.trusted_proxy_config. If the peer is not in the
+# allowlist (default: 127.0.0.0/8, ::1/128) the headers are ignored and
+# the request falls through to anonymous/passwordless. This protects
+# against reverse-proxy misconfigurations that leak inbound Remote-*
+# headers from external requests. Operators running a proxy on a separate
+# host or different docker network must widen the allowlist via
+# TRUSTED_PROXY_IPS; operators who cannot guarantee header stripping can
+# disable the path entirely with TRUSTED_PROXY_IPS= (empty). See README
+# "Disabling trusted-header auth".
 #
 # Trusted-header auto-join: when trusted headers identify a brand-new user
 # (zero memberships) and exactly one Kitchen exists, the user is auto-joined
-# to that kitchen as a member. Restricted by the peer IP gate above.
+# to that kitchen as a member. Restricted by the peer gate above.
 #
 # Collaborators:
 # - Authentication concern: session lifecycle (resume, start, terminate)
@@ -581,9 +585,10 @@ git commit -m "Add per-request peer IP check to trusted-header auth
 
 Part of #365. authenticate_from_headers now reads from the
 TrustedProxyConfig stash on Rails.configuration: first gating on
-request.remote_ip against the allowlist, then reading the three
-headers via the configured Rack env keys (instead of hardcoded
-HTTP_REMOTE_USER). Headers from a non-allowlisted peer are ignored;
+the raw TCP peer (request.env['REMOTE_ADDR']) against the allowlist,
+then reading the three headers via the configured Rack env keys
+(instead of hardcoded HTTP_REMOTE_USER). Headers from a
+non-allowlisted peer are ignored;
 the request falls through to anonymous. Custom header names work
 for Authentik, oauth2-proxy, Grafana, and Caddy forward_auth users.
 

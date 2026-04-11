@@ -120,4 +120,86 @@ class HeaderAuthTest < ActionDispatch::IntegrationTest
 
     assert_equal 'owner', Membership.find_by!(user_id: existing.id).role
   end
+
+  test 'ignores headers when peer IP is outside the allowlist' do
+    assert_no_difference 'User.count' do
+      assert_no_difference 'Session.count' do
+        get kitchen_root_path(kitchen_slug: @kitchen.slug),
+            headers: {
+              'REMOTE_ADDR' => '203.0.113.5',
+              'HTTP_REMOTE_USER' => 'mallory',
+              'HTTP_REMOTE_NAME' => 'Mallory',
+              'HTTP_REMOTE_EMAIL' => 'mallory@attacker.example'
+            }
+      end
+    end
+
+    assert_response :success
+  end
+
+  test 'ignores headers when peer is RFC1918 but XFF claims loopback' do
+    # Regression: request.remote_ip walks the XFF chain past Rails default
+    # trusted proxies (all RFC1918), so an attacker on any private network
+    # could set XFF=127.0.0.1 to bypass the gate. The gate must read the
+    # raw TCP peer (REMOTE_ADDR), not request.remote_ip.
+    assert_no_difference 'User.count' do
+      get kitchen_root_path(kitchen_slug: @kitchen.slug), headers: {
+        'REMOTE_ADDR' => '10.1.2.3',
+        'HTTP_X_FORWARDED_FOR' => '127.0.0.1',
+        'HTTP_REMOTE_USER' => 'mallory',
+        'HTTP_REMOTE_EMAIL' => 'mallory@attacker.example'
+      }
+    end
+  end
+
+  test 'honors headers when peer IP is inside the default loopback allowlist' do
+    # ActionDispatch::IntegrationTest sets REMOTE_ADDR to 127.0.0.1 by default,
+    # which is inside the loopback default. No override needed.
+    assert_difference 'User.count', 1 do
+      get kitchen_root_path(kitchen_slug: @kitchen.slug), headers: {
+        'HTTP_REMOTE_USER' => 'frank',
+        'HTTP_REMOTE_NAME' => 'Frank',
+        'HTTP_REMOTE_EMAIL' => 'frank@example.com'
+      }
+    end
+  end
+
+  test 'honors a custom header name when TRUSTED_HEADER_USER is configured' do
+    stub_trusted_proxy_config(user_header_name: 'X-Webauth-User', email_header_name: 'X-Webauth-Email') do
+      assert_difference 'User.count', 1 do
+        get kitchen_root_path(kitchen_slug: @kitchen.slug), headers: {
+          'HTTP_X_WEBAUTH_USER' => 'grace',
+          'HTTP_X_WEBAUTH_EMAIL' => 'grace@example.com'
+        }
+      end
+    end
+
+    assert_predicate User.find_by(email: 'grace@example.com'), :present?
+  end
+
+  test 'ignores the default Remote-User header when a custom header name is configured' do
+    stub_trusted_proxy_config(user_header_name: 'X-Webauth-User') do
+      assert_no_difference 'User.count' do
+        get kitchen_root_path(kitchen_slug: @kitchen.slug), headers: {
+          'HTTP_REMOTE_USER' => 'heidi',
+          'HTTP_REMOTE_EMAIL' => 'heidi@example.com'
+        }
+      end
+    end
+  end
+
+  private
+
+  def stub_trusted_proxy_config(**overrides)
+    original = Rails.application.config.trusted_proxy_config
+    env = {
+      'TRUSTED_HEADER_USER' => overrides[:user_header_name] || 'Remote-User',
+      'TRUSTED_HEADER_EMAIL' => overrides[:email_header_name] || 'Remote-Email',
+      'TRUSTED_HEADER_NAME' => overrides[:name_header_name] || 'Remote-Name'
+    }
+    Rails.application.config.trusted_proxy_config = FamilyRecipes::TrustedProxyConfig.from_env(env)
+    yield
+  ensure
+    Rails.application.config.trusted_proxy_config = original
+  end
 end
