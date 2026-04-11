@@ -46,4 +46,20 @@ class KitchenAcceptingSignupsTest < ActiveSupport::TestCase
 
     assert_not Kitchen.accepting_signups?
   end
+
+  test 'development environment short-circuits to true regardless of kitchen count' do
+    create_kitchen_and_user
+
+    Rails.env.stub :development?, true do
+      assert_predicate Kitchen, :accepting_signups?
+    end
+  end
+
+  test 'DISABLE_SIGNUPS beats the development short-circuit' do
+    ENV['DISABLE_SIGNUPS'] = 'true'
+
+    Rails.env.stub :development?, true do
+      assert_not Kitchen.accepting_signups?
+    end
+  end
 end

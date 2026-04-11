@@ -66,6 +66,8 @@ class KitchensController < ApplicationController
   end
 
   def enforce_accepting_signups
-    head :not_found unless Kitchen.accepting_signups?
+    return if Kitchen.accepting_signups?
+
+    render file: Rails.public_path.join('404.html'), status: :not_found, layout: false
   end
 end

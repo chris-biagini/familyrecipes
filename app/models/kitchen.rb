@@ -37,6 +37,7 @@ class Kitchen < ApplicationRecord
 
   def self.accepting_signups?
     return false if ENV['DISABLE_SIGNUPS'] == 'true'
+    return true if Rails.env.development?
 
     ActsAsTenant.without_tenant do
       return true if Kitchen.none?
