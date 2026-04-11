@@ -12,6 +12,7 @@ default_url_options
 flush_broadcast
 prevent_html_caching
 record_not_found
+redirect_if_logged_in
 require_membership
 set_kitchen_from_path
 require_authentication
@@ -24,16 +25,21 @@ perform
 
 # --- Rails route actions (invoked by router, not called in Ruby) ---
 show
+new
 edit
+verify
 order_content
 update_order
 check
 confirm_all
+create_for_member
 deplete_all
 have_it
 need_it
+regenerate_join_code
 update_aisle_order
 update_custom_items
+update_profile
 aisle_order_content
 show_html
 show_markdown
@@ -51,6 +57,7 @@ service_worker
 generate_slug
 normalize_portion_keys
 downcase_name
+set_join_code
 
 # --- ActiveRecord validations (invoked via `validate`) ---
 nutrients_require_basis_grams
@@ -152,3 +159,4 @@ DENSITY_UNITS
 # --- Called from config/initializers/ (debride doesn't scan initializers) ---
 from_env
 default_networks?
+load!
