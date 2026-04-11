@@ -48,7 +48,7 @@ class Recipe < ApplicationRecord
     end
   end
 
-  # Accepts optional _recipe_map for duck-typing parity with FamilyRecipes::Recipe,
+  # Accepts optional _recipe_map for duck-typing parity with Mirepoix::Recipe,
   # which needs a recipe_map to resolve cross-references from parsed objects.
   # Accesses cross-references via steps (not the through-association) so callers'
   # preloading of steps: { cross_references: ... } is honored.
@@ -62,5 +62,5 @@ class Recipe < ApplicationRecord
 
   private
 
-  def generate_slug = self.slug = FamilyRecipes.slugify(title)
+  def generate_slug = self.slug = Mirepoix.slugify(title)
 end

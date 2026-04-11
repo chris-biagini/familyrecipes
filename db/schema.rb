@@ -113,7 +113,7 @@ ActiveRecord::Schema[8.1].define(version: 4) do
     t.string "join_code", null: false
     t.string "name", null: false
     t.boolean "show_nutrition", default: false, null: false
-    t.string "site_title", default: "Family Recipes"
+    t.string "site_title", default: "mirepoix"
     t.string "slug", null: false
     t.datetime "updated_at", null: false
     t.string "usda_api_key"

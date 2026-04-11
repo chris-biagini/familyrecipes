@@ -5,7 +5,7 @@ title: Getting Started
 
 # Getting Started
 
-familyrecipes is a self-hosted home recipe organizer. You write and store
+mirepoix is a self-hosted home recipe organizer. You write and store
 recipes, plan your weekly meals, and let the app build your shopping list
 automatically.
 

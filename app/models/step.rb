@@ -7,7 +7,7 @@
 #
 # Collaborators:
 # - Recipe (parent; preloads via with_full_tree)
-# - MarkdownImporter (creates steps from parsed FamilyRecipes::Step objects)
+# - MarkdownImporter (creates steps from parsed Mirepoix::Step objects)
 # - Views call #ingredient_list_items to interleave ingredients and cross-references
 class Step < ApplicationRecord
   belongs_to :recipe, inverse_of: :steps

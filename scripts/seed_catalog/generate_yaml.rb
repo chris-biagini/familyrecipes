@@ -34,7 +34,7 @@ end
 
 def build_client
   api_key = ENV.fetch('USDA_API_KEY') { abort 'Set USDA_API_KEY environment variable' }
-  FamilyRecipes::UsdaClient.new(api_key: api_key)
+  Mirepoix::UsdaClient.new(api_key: api_key)
 end
 
 def fetch_catalog_entries(client, actionable) # rubocop:disable Metrics/MethodLength
@@ -51,11 +51,11 @@ def fetch_catalog_entries(client, actionable) # rubocop:disable Metrics/MethodLe
 
     catalog[name] = fetch_entry(client, item, label)
     sleep 0.3
-  rescue FamilyRecipes::UsdaClient::RateLimitError
+  rescue Mirepoix::UsdaClient::RateLimitError
     puts 'Rate limited — waiting 60s'
     sleep 60
     retry
-  rescue FamilyRecipes::UsdaClient::Error => error
+  rescue Mirepoix::UsdaClient::Error => error
     puts "Error: #{error.message} — skipping"
   end
 end

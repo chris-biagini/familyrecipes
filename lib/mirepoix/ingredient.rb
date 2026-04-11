@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module FamilyRecipes
+module Mirepoix
   # Parsed ingredient from a recipe step's bullet list (e.g., "Flour, 2 cups:
   # sifted"). Carries name, optional quantity string, and optional prep note.
   # IngredientAggregator and NutritionCalculator consume the parsed quantity_value
@@ -112,7 +112,7 @@ module FamilyRecipes
       raw_unit = parsed_quantity[1]
       return nil if raw_unit.nil?
 
-      FamilyRecipes::Inflector.normalize_unit(raw_unit)
+      Mirepoix::Inflector.normalize_unit(raw_unit)
     end
 
     private

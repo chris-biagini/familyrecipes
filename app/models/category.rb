@@ -28,7 +28,7 @@ class Category < ApplicationRecord
   }
 
   def self.find_or_create_for(kitchen, name)
-    slug = FamilyRecipes.slugify(name)
+    slug = Mirepoix.slugify(name)
     kitchen.categories.find_or_create_by!(slug:) do |cat|
       cat.name = name
       cat.position = kitchen.categories.maximum(:position).to_i + 1
@@ -47,5 +47,5 @@ class Category < ApplicationRecord
 
   private
 
-  def generate_slug = self.slug = FamilyRecipes.slugify(name)
+  def generate_slug = self.slug = Mirepoix.slugify(name)
 end

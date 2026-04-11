@@ -19,7 +19,7 @@ class QuickBitesSerializerFromRecordsTest < ActiveSupport::TestCase
     qb2 = QuickBite.create!(title: 'Goldfish', category:, position: 1)
     qb2.quick_bite_ingredients.create!(name: 'Goldfish', position: 0)
 
-    ir = FamilyRecipes::QuickBitesSerializer.from_records(@kitchen)
+    ir = Mirepoix::QuickBitesSerializer.from_records(@kitchen)
 
     assert_equal 1, ir[:categories].size
     cat = ir[:categories].first
@@ -41,8 +41,8 @@ class QuickBitesSerializerFromRecordsTest < ActiveSupport::TestCase
       ]
     )
 
-    ir = FamilyRecipes::QuickBitesSerializer.from_records(@kitchen)
-    plaintext = FamilyRecipes::QuickBitesSerializer.serialize(ir)
+    ir = Mirepoix::QuickBitesSerializer.from_records(@kitchen)
+    plaintext = Mirepoix::QuickBitesSerializer.serialize(ir)
 
     assert_includes plaintext, '## Snacks'
     assert_includes plaintext, '- PB&J: Bread, Peanut Butter, Jelly'

@@ -192,14 +192,14 @@ class IngredientRowBuilder # rubocop:disable Metrics/ClassLength
   end
 
   def unit_resolvable?(unit, entry)
-    FamilyRecipes::UnitResolver.new(entry).resolvable?(1, unit)
+    Mirepoix::UnitResolver.new(entry).resolvable?(1, unit)
   end
 
   def resolution_method(unit, resolvable, entry)
-    return 'weight' if FamilyRecipes::UnitResolver.weight_unit?(unit)
+    return 'weight' if Mirepoix::UnitResolver.weight_unit?(unit)
     return 'no nutrition data' if entry&.basis_grams.blank?
     return unitless_method(resolvable) if unit.nil?
-    return volume_method(resolvable) if FamilyRecipes::UnitResolver.volume_unit?(unit)
+    return volume_method(resolvable) if Mirepoix::UnitResolver.volume_unit?(unit)
 
     resolvable ? "via #{unit}" : 'no portion'
   end

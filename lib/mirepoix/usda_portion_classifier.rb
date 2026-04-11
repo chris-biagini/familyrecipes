@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module FamilyRecipes
+module Mirepoix
   # Classifies raw USDA FoodData Central portion entries into three buckets:
   # density candidates (volume-based, usable for g/mL density), portion
   # candidates (discrete units like "clove" or "large"), and filtered entries

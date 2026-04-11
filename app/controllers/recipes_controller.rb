@@ -20,8 +20,8 @@ class RecipesController < ApplicationController
 
   def content
     recipe = current_kitchen.recipes.with_full_tree.find_by!(slug: params[:slug])
-    ir = FamilyRecipes::RecipeSerializer.from_record(recipe)
-    markdown = FamilyRecipes::RecipeSerializer.serialize(ir)
+    ir = Mirepoix::RecipeSerializer.from_record(recipe)
+    markdown = Mirepoix::RecipeSerializer.serialize(ir)
 
     render json: {
       markdown_source: markdown,
@@ -33,8 +33,8 @@ class RecipesController < ApplicationController
 
   def editor_frame
     recipe = current_kitchen.recipes.with_full_tree.find_by!(slug: params[:slug])
-    ir = FamilyRecipes::RecipeSerializer.from_record(recipe)
-    markdown = FamilyRecipes::RecipeSerializer.serialize(ir)
+    ir = Mirepoix::RecipeSerializer.from_record(recipe)
+    markdown = Mirepoix::RecipeSerializer.serialize(ir)
 
     render partial: 'recipes/editor_frame', locals: {
       recipe: recipe,
@@ -53,7 +53,7 @@ class RecipesController < ApplicationController
   end
 
   def serialize
-    markdown_source = FamilyRecipes::RecipeSerializer.serialize(structure_params)
+    markdown_source = Mirepoix::RecipeSerializer.serialize(structure_params)
     render json: { markdown_source: }
   end
 
@@ -64,14 +64,14 @@ class RecipesController < ApplicationController
 
   def show_html
     recipe = current_kitchen.recipes.with_full_tree.find_by!(slug: params[:slug])
-    body = FamilyRecipes::Recipe::MARKDOWN.render(generate_markdown(recipe))
+    body = Mirepoix::Recipe::MARKDOWN.render(generate_markdown(recipe))
     render html: minimal_html_document(title: recipe.title, body:), layout: false
   end
 
   def create
     result = create_result
     render json: { redirect_url: recipe_path(result.recipe.slug) } unless performed?
-  rescue ActiveRecord::RecordInvalid, FamilyRecipes::ParseError, MarkdownImporter::SlugCollisionError => error
+  rescue ActiveRecord::RecordInvalid, Mirepoix::ParseError, MarkdownImporter::SlugCollisionError => error
     render json: { errors: [error.message] }, status: :unprocessable_content
   end
 
@@ -79,7 +79,7 @@ class RecipesController < ApplicationController
     current_kitchen.recipes.find_by!(slug: params[:slug])
     result = update_result
     render json: update_response(result) unless performed?
-  rescue ActiveRecord::RecordInvalid, FamilyRecipes::ParseError, MarkdownImporter::SlugCollisionError => error
+  rescue ActiveRecord::RecordInvalid, Mirepoix::ParseError, MarkdownImporter::SlugCollisionError => error
     render json: { errors: [error.message] }, status: :unprocessable_content
   end
 
@@ -99,8 +99,8 @@ class RecipesController < ApplicationController
   end
 
   def generate_markdown(recipe)
-    ir = FamilyRecipes::RecipeSerializer.from_record(recipe)
-    FamilyRecipes::RecipeSerializer.serialize(ir)
+    ir = Mirepoix::RecipeSerializer.from_record(recipe)
+    Mirepoix::RecipeSerializer.serialize(ir)
   end
 
   def minimal_html_document(title:, body:)

@@ -26,7 +26,7 @@ class Object
 end
 
 # Load parser pipeline
-require_relative '../../lib/familyrecipes'
+require_relative '../../lib/mirepoix'
 require_relative 'scorers/parse_checker'
 require_relative 'scorers/format_checker'
 
@@ -112,7 +112,7 @@ def expected_ingredient_count(expected_text)
   tokens = LineClassifier.classify(expected_text)
   parsed = RecipeBuilder.new(tokens).build
   parsed[:steps].sum { |s| (s[:ingredients] || []).size }
-rescue FamilyRecipes::ParseError
+rescue Mirepoix::ParseError
   nil
 end
 

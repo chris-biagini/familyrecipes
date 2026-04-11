@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module FamilyRecipes
+module Mirepoix
   # Resolves ingredient quantities to grams via a priority chain: weight units →
   # named portions → density-derived volume conversions. Wraps one
   # IngredientCatalog entry; nil entries are safe (only weight units resolve).

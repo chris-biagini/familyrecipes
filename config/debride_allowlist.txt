@@ -1,4 +1,4 @@
-# Debride false-positive allowlist for familyrecipes.
+# Debride false-positive allowlist for mirepoix.
 # One method name per line. These are methods debride flags as unreachable
 # but are actually invoked dynamically by Rails, from ERB templates, or
 # via framework conventions.
@@ -80,15 +80,15 @@ resolved
 depleted
 
 # --- Data.define / attr_reader accessors on value objects ---
-# FamilyRecipes::Recipe
+# Mirepoix::Recipe
 makes
 source
 
-# FamilyRecipes::Step
+# Mirepoix::Step
 ingredient_list_items
 tldr
 
-# FamilyRecipes::QuickBite
+# Mirepoix::QuickBite
 text_source
 
 # MealPlanWriteService::QuickAddResult / Result

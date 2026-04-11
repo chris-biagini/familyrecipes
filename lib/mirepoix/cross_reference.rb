@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module FamilyRecipes
+module Mirepoix
   # A reference from one recipe to another (e.g., "@[Pizza Dough], 2"). Carries
   # the target recipe title, its slugified form for lookup, an optional multiplier,
   # and an optional prep note. #expanded_ingredients resolves the reference against
@@ -15,7 +15,7 @@ module FamilyRecipes
 
     def initialize(target_title:, multiplier: 1.0, prep_note: nil)
       @target_title = target_title
-      @target_slug = FamilyRecipes.slugify(target_title)
+      @target_slug = Mirepoix.slugify(target_title)
       @multiplier = multiplier
       @prep_note = prep_note
     end

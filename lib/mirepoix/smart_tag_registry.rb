@@ -10,7 +10,7 @@
 #   version embedded in the layout
 # - base.css: defines the .tag-pill--{color} and .tag-pill--crossout classes
 
-module FamilyRecipes
+module Mirepoix
   module SmartTagRegistry # rubocop:disable Metrics/ModuleLength
     TAGS = {
       # Green — plant-based identity

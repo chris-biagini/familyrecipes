@@ -148,10 +148,12 @@ covers only cross-cutting concerns that no single file explains.
 `current_kitchen` (e.g., `current_kitchen.recipes.find_by!`). Never use
 unscoped model queries like `Recipe.find_by`.
 
-**Two namespaces.** Rails app module: `Familyrecipes` (lowercase r). Domain
-parser module: `FamilyRecipes` (uppercase R). Different constants, no
-collision. Parser pipeline: `LineClassifier` → `RecipeBuilder` →
-`FamilyRecipes::Recipe`; `MarkdownImporter` is the sole write-path entry point.
+**Module.** `Mirepoix` is reopened in two places: `config/application.rb`
+declares `Mirepoix::Application` (the Rails app), and `lib/mirepoix.rb`
+declares the parser classes (`Mirepoix::Recipe`, `Mirepoix::Step`,
+`Mirepoix::Ingredient`, etc.). The parser pipeline is:
+`LineClassifier` → `RecipeBuilder` → `Mirepoix::Recipe`;
+`MarkdownImporter` is the sole write-path entry point.
 
 **Routing.** Optional `(/kitchens/:kitchen_slug)` scope:
 - One Kitchen → root-level URLs (`/recipes/bagels`)
@@ -252,7 +254,7 @@ via `RecipeWriteService`.
 **Quick Bites** are grocery bundles, not recipes — a title plus a flat
 ingredient list. Normalized into `QuickBite` and `QuickBiteIngredient` AR
 models within `Category` (shared with recipes). The plaintext format and
-parser (`FamilyRecipes::QuickBite`) are retained for editor mode-switching.
+parser (`Mirepoix::QuickBite`) are retained for editor mode-switching.
 `QuickBitesSerializer.from_records` builds editor IR from AR models.
 
 **Nutrition catalog** lives in `db/seeds/resources/ingredient-catalog.yaml`.
@@ -302,7 +304,7 @@ Docs are a behavioral contract — if a feature doesn't match the docs, fix
 the code or update the docs. Build from outside the repo root (Jekyll picks
 up the Rails `Gemfile` otherwise):
 ```bash
-cd /tmp && jekyll build --source ~/familyrecipes/docs/help --destination ~/familyrecipes/_site
+cd /tmp && jekyll build --source ~/mirepoix/docs/help --destination ~/mirepoix/_site
 ```
 
 **Test conventions.** Plain `Minitest::Test` files (parser-layer tests in
@@ -401,14 +403,14 @@ Active long-lived branches are listed in the memory system, not here.
 **Screenshots.** Save to `~/screenshots/`, not inside the repo.
 
 **`Data.define` + Rails JSON.** Classes with custom `to_json` must also define
-`as_json` — see `Quantity` in `lib/familyrecipes/quantity.rb`.
+`as_json` — see `Quantity` in `lib/mirepoix/quantity.rb`.
 
 **`rails runner` + multi-tenancy.** `ActsAsTenant` scoping applies outside web
 requests too. Wrap all `rails runner` model queries in
 `ActsAsTenant.with_tenant(kitchen) { ... }`.
 
 **Server restart.** Adding gems, new concerns, or modifying
-`lib/familyrecipes/` requires restarting Puma (`pkill -f puma; rm -f
+`lib/mirepoix/` requires restarting Puma (`pkill -f puma; rm -f
 tmp/pids/server.pid` then `bin/dev`). Domain classes in `lib/` are loaded once
 at boot — they do not hot-reload.
 

@@ -71,7 +71,7 @@ module ScalableNumberPreprocessor
   end
 
   def parse_numeral(str)
-    FamilyRecipes::NumericParsing.parse_fraction(str)
+    Mirepoix::NumericParsing.parse_fraction(str)
   end
 
   def build_span(value, original_text)

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module FamilyRecipes
+module Mirepoix
   # Canonical nutrient definitions and shared validation for ingredient catalog
   # data. NUTRIENT_DEFS is the single source of truth for which nutrients exist,
   # their display labels, units, and indent levels — all downstream constants

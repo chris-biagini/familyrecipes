@@ -204,6 +204,6 @@ class ShoppingListBuilder # rubocop:disable Metrics/ClassLength
   def display_unit(quantity)
     return quantity.unit unless quantity.unit
 
-    FamilyRecipes::Inflector.unit_display(quantity.unit, quantity.value)
+    Mirepoix::Inflector.unit_display(quantity.unit, quantity.value)
   end
 end

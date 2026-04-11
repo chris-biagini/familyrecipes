@@ -6,9 +6,9 @@
 #
 # Collaborators:
 # - LineClassifier, RecipeBuilder — parse pipeline
-# - FamilyRecipes::RecipeSerializer — canonical serializer for round-trip
-# - FamilyRecipes::Ingredient — quantity splitting
-# - FamilyRecipes::NumericParsing — fraction parsing
+# - Mirepoix::RecipeSerializer — canonical serializer for round-trip
+# - Mirepoix::Ingredient — quantity splitting
+# - Mirepoix::NumericParsing — fraction parsing
 # - Scorers::ParseChecker — companion gate check (structural validity)
 module Scorers
   class SystemCompatChecker
@@ -20,7 +20,7 @@ module Scorers
       begin
         tokens = LineClassifier.classify(output_text)
         parsed = RecipeBuilder.new(tokens).build
-      rescue FamilyRecipes::ParseError => error
+      rescue Mirepoix::ParseError => error
         return Result.new(pass: false, details: { errors: ["Parse error: #{error.message}"] })
       end
 
@@ -31,12 +31,12 @@ module Scorers
     end
 
     def self.check_round_trip(parsed)
-      reconstructed = FamilyRecipes::RecipeSerializer.serialize(parsed)
+      reconstructed = Mirepoix::RecipeSerializer.serialize(parsed)
 
       begin
         tokens2 = LineClassifier.classify(reconstructed)
         parsed2 = RecipeBuilder.new(tokens2).build
-      rescue FamilyRecipes::ParseError => error
+      rescue Mirepoix::ParseError => error
         return ["Round-trip re-parse failed: #{error.message}"]
       end
 
@@ -63,10 +63,10 @@ module Scorers
     def self.scaling_error(ingredient)
       return nil unless ingredient[:quantity]
 
-      qty_str, _unit = FamilyRecipes::Ingredient.split_quantity(ingredient[:quantity])
+      qty_str, _unit = Mirepoix::Ingredient.split_quantity(ingredient[:quantity])
       return nil unless qty_str
 
-      value = FamilyRecipes::NumericParsing.parse_fraction(qty_str)
+      value = Mirepoix::NumericParsing.parse_fraction(qty_str)
       return nil unless value
 
       scaled = value * 2

@@ -38,16 +38,16 @@ class ExportService
   def add_recipes(zos)
     @kitchen.recipes.includes(:category, :tags, steps: %i[ingredients cross_references]).find_each do |recipe|
       zos.put_next_entry("#{recipe.category.name}/#{recipe.title}.md")
-      ir = FamilyRecipes::RecipeSerializer.from_record(recipe)
-      zos.write(FamilyRecipes::RecipeSerializer.serialize(ir))
+      ir = Mirepoix::RecipeSerializer.from_record(recipe)
+      zos.write(Mirepoix::RecipeSerializer.serialize(ir))
     end
   end
 
   def add_quick_bites(zos)
     return if @kitchen.quick_bites.none?
 
-    ir = FamilyRecipes::QuickBitesSerializer.from_records(@kitchen)
-    content = FamilyRecipes::QuickBitesSerializer.serialize(ir)
+    ir = Mirepoix::QuickBitesSerializer.from_records(@kitchen)
+    content = Mirepoix::QuickBitesSerializer.serialize(ir)
     zos.put_next_entry('quick-bites.txt')
     zos.write(content)
   end

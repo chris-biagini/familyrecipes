@@ -1,5 +1,5 @@
 /**
- * Client-side mirror of FamilyRecipes::VulgarFractions. Formats decimals as
+ * Client-side mirror of Mirepoix::VulgarFractions. Formats decimals as
  * Unicode fraction glyphs (0.5 → "½") for scaled ingredient display. When a
  * metric unit (g, kg, ml, l) is passed, skips vulgar fractions and returns
  * plain decimals instead. Also determines singular/plural noun agreement for

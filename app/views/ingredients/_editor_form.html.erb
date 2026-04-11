@@ -118,7 +118,7 @@
               <% IngredientCatalog::NUTRIENT_DISPLAY.each do |label, key, unit| %>
                 <% next if key.in?(%i[trans_fat added_sugars]) %>
                 <% indent = label.size - label.lstrip.size %>
-                <% nutrient_max = FamilyRecipes::NutritionConstraints::NUTRIENT_MAX[key.to_s] %>
+                <% nutrient_max = Mirepoix::NutritionConstraints::NUTRIENT_MAX[key.to_s] %>
                 <div class="nf-row<%= ' nf-indent' if indent.positive? %><%= ' nf-calories' if key == :calories %>">
                   <span class="nf-name"><%= label.strip %></span>
                   <input type="number" id="editor-<%= key %>" class="input-base input-sm"
@@ -184,7 +184,7 @@
                     data-nutrition-editor-target="densityUnit"
                     data-action="change->nutrition-editor#updateDerivedVolumes"
                     aria-label="Volume unit">
-              <% FamilyRecipes::UnitResolver::DENSITY_UNITS.each do |u| %>
+              <% Mirepoix::UnitResolver::DENSITY_UNITS.each do |u| %>
                 <% selected = has_density ? entry.density_unit == u : u == 'cup' %>
                 <option value="<%= u %>" <%= 'selected' if selected %>><%= u %></option>
               <% end %>

@@ -167,7 +167,7 @@ module Scorers
 
     def self.safe_parse(tokens)
       RecipeBuilder.new(tokens).build
-    rescue FamilyRecipes::ParseError
+    rescue Mirepoix::ParseError
       nil
     end
 

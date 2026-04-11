@@ -11,7 +11,7 @@
 # - IngredientCatalog.resolver_for(kitchen) — factory entry point
 # - ShoppingListBuilder, RecipeAvailabilityCalculator, IngredientRowBuilder — consumers
 # - RecipeNutritionJob — uses omit_set for nutrition calculations
-# - FamilyRecipes::Inflector — variant generation for uncataloged fallback
+# - Mirepoix::Inflector — variant generation for uncataloged fallback
 class IngredientResolver
   attr_reader :lookup
 
@@ -71,7 +71,7 @@ class IngredientResolver
   end
 
   def find_variant_match(name, normalized_name = normalize_key(name))
-    FamilyRecipes::Inflector.ingredient_variants(name).each do |variant|
+    Mirepoix::Inflector.ingredient_variants(name).each do |variant|
       canonical = @uncataloged[normalize_key(variant)]
       return register_alias(normalized_name, canonical) if canonical
     end
@@ -84,6 +84,6 @@ class IngredientResolver
   end
 
   def normalize_key(str)
-    FamilyRecipes.normalize_for_comparison(str).downcase
+    Mirepoix.normalize_for_comparison(str).downcase
   end
 end

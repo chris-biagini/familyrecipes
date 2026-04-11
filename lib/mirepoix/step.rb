@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module FamilyRecipes
+module Mirepoix
   # One step within a parsed recipe. Holds a tldr (summary heading), a mixed list
   # of Ingredient and CrossReference items, and prose instructions. Steps are
   # constructed by Recipe during parsing and consumed by MarkdownImporter.

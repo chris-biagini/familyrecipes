@@ -8,16 +8,16 @@
 # omit-from-shopping flags, and provenance sources.
 #
 # Collaborators:
-# - FamilyRecipes::NutritionConstraints (shared validation rules)
+# - Mirepoix::NutritionConstraints (shared validation rules)
 # - NutritionCalculator and ShoppingListBuilder consume this.
 class IngredientCatalog < ApplicationRecord # rubocop:disable Metrics/ClassLength
   self.table_name = 'ingredient_catalog'
 
   belongs_to :kitchen, optional: true
 
-  NUTRIENT_COLUMNS = FamilyRecipes::NutritionConstraints::NUTRIENT_KEYS
+  NUTRIENT_COLUMNS = Mirepoix::NutritionConstraints::NUTRIENT_KEYS
 
-  NUTRIENT_DISPLAY = FamilyRecipes::NutritionConstraints::NUTRIENT_DEFS.map do |d|
+  NUTRIENT_DISPLAY = Mirepoix::NutritionConstraints::NUTRIENT_DEFS.map do |d|
     label = d.indent.positive? ? "#{'  ' * d.indent}#{d.label}" : d.label
     [label, d.key, d.unit]
   end.freeze
@@ -27,7 +27,7 @@ class IngredientCatalog < ApplicationRecord # rubocop:disable Metrics/ClassLengt
 
   validates :ingredient_name, presence: true, uniqueness: { scope: :kitchen_id, case_sensitive: false }
   validates :basis_grams, numericality: { greater_than: 0 }, allow_nil: true
-  validates :aisle, length: { maximum: FamilyRecipes::NutritionConstraints::AISLE_MAX_LENGTH }, allow_nil: true
+  validates :aisle, length: { maximum: Mirepoix::NutritionConstraints::AISLE_MAX_LENGTH }, allow_nil: true
   validate :nutrients_require_basis_grams
   validate :nutrient_values_in_range
   validate :density_completeness
@@ -92,7 +92,7 @@ class IngredientCatalog < ApplicationRecord # rubocop:disable Metrics/ClassLengt
 
   def self.add_ingredient_variants(lookup)
     extras = lookup.each_value.with_object({}) do |entry, acc|
-      FamilyRecipes::Inflector.ingredient_variants(entry.ingredient_name).each do |variant|
+      Mirepoix::Inflector.ingredient_variants(entry.ingredient_name).each do |variant|
         acc[variant] = entry unless lookup.key?(variant)
       end
       add_alias_keys(acc, entry, lookup)
@@ -108,7 +108,7 @@ class IngredientCatalog < ApplicationRecord # rubocop:disable Metrics/ClassLengt
       next if lookup.key?(alias_name) || lookup.key?(lowered)
 
       variants = alias_case_variants(alias_name) +
-                 FamilyRecipes::Inflector.ingredient_variants(alias_name)
+                 Mirepoix::Inflector.ingredient_variants(alias_name)
       variants.each do |v|
         if extras.key?(v) && extras[v].ingredient_name != entry.ingredient_name
           Rails.logger.warn("Alias '#{alias_name}' on '#{entry.ingredient_name}' " \
@@ -167,7 +167,7 @@ class IngredientCatalog < ApplicationRecord # rubocop:disable Metrics/ClassLengt
       value = public_send(col)
       next unless value
 
-      valid, msg = FamilyRecipes::NutritionConstraints.valid_nutrient?(col, value)
+      valid, msg = Mirepoix::NutritionConstraints.valid_nutrient?(col, value)
       errors.add(col, msg) unless valid
     end
   end
@@ -184,7 +184,7 @@ class IngredientCatalog < ApplicationRecord # rubocop:disable Metrics/ClassLengt
     return if portions.blank?
 
     portions.each do |name, value|
-      valid, = FamilyRecipes::NutritionConstraints.valid_portion_value?(value.to_f)
+      valid, = Mirepoix::NutritionConstraints.valid_portion_value?(value.to_f)
       errors.add(:portions, "value for '#{name}' must be greater than 0") unless valid
     end
   end

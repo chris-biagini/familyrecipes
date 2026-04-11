@@ -74,7 +74,7 @@ module ActiveSupport
     end
 
     def setup_test_category(name: 'Test', slug: nil)
-      slug ||= FamilyRecipes.slugify(name)
+      slug ||= Mirepoix.slugify(name)
       @category = Category.find_or_create_by!(name:, slug:)
     end
 

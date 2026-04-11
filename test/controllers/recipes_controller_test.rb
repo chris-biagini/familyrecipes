@@ -474,8 +474,8 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
   test 'update broadcasts to kitchen updates stream' do
     log_in
     focaccia = @kitchen.recipes.find_by!(slug: 'focaccia')
-    ir = FamilyRecipes::RecipeSerializer.from_record(focaccia)
-    focaccia_markdown = FamilyRecipes::RecipeSerializer.serialize(ir)
+    ir = Mirepoix::RecipeSerializer.from_record(focaccia)
+    focaccia_markdown = Mirepoix::RecipeSerializer.serialize(ir)
 
     assert_turbo_stream_broadcasts [@kitchen, :updates] do
       patch recipe_path('focaccia', kitchen_slug: kitchen_slug),
@@ -616,8 +616,8 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'text/plain; charset=utf-8', response.content_type
 
     focaccia = @kitchen.recipes.find_by!(slug: 'focaccia')
-    ir = FamilyRecipes::RecipeSerializer.from_record(focaccia)
-    expected = FamilyRecipes::RecipeSerializer.serialize(ir)
+    ir = Mirepoix::RecipeSerializer.from_record(focaccia)
+    expected = Mirepoix::RecipeSerializer.serialize(ir)
 
     assert_equal expected, response.body
   end
@@ -738,8 +738,8 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
 
   test 'update with tags syncs tags' do
     focaccia = @kitchen.recipes.find_by!(slug: 'focaccia')
-    ir = FamilyRecipes::RecipeSerializer.from_record(focaccia)
-    focaccia_markdown = FamilyRecipes::RecipeSerializer.serialize(ir)
+    ir = Mirepoix::RecipeSerializer.from_record(focaccia)
+    focaccia_markdown = Mirepoix::RecipeSerializer.serialize(ir)
 
     log_in
     patch recipe_path('focaccia', kitchen_slug: kitchen_slug),
@@ -954,7 +954,7 @@ class RecipesControllerTest < ActionDispatch::IntegrationTest
   test 'show renders ingredient tooltip title when nutrition data present' do
     recipe = @kitchen.recipes.find_by!(slug: 'focaccia')
     first = recipe.steps.first.ingredients.first
-    unit_key = FamilyRecipes::Inflector.normalize_unit(first.unit) || '~unitless'
+    unit_key = Mirepoix::Inflector.normalize_unit(first.unit) || '~unitless'
     recipe.update_column(:nutrition_data, { # rubocop:disable Rails/SkipsModelValidations
                            'ingredient_details' => {
                              first.name.downcase => {

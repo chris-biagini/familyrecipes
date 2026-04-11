@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module FamilyRecipes
+module Mirepoix
   # Minimal inflection engine for ingredient names and measurement units. Handles
   # singular/plural forms via a curated lookup table (KNOWN_PLURALS) with rule-based
   # fallback, unit normalization (abbreviations, aliases), and ingredient variant

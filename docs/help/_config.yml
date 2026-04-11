@@ -1,8 +1,8 @@
-title: familyrecipes help
+title: mirepoix help
 # Adjust baseurl to match your GitHub Pages repo path.
-# If repo is github.com/<org>/familyrecipes → "/familyrecipes"
+# If repo is github.com/<org>/mirepoix → "/mirepoix"
 # If user/org site at <user>.github.io → ""
-baseurl: "/familyrecipes"
+baseurl: "/mirepoix"
 url: ""
 markdown: kramdown
 kramdown:

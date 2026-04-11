@@ -5,7 +5,8 @@
 # build time (falls back to "dev" in development).
 module ApplicationHelper
   APP_VERSION = Rails.root.join('REVISION').then { |f| f.exist? ? f.read.strip : 'dev' }.freeze
-  HELP_BASE_URL = 'https://chris-biagini.github.io/familyrecipes'
+  # Resolves after the post-merge GitHub repo rename (rebrand host-side step).
+  HELP_BASE_URL = 'https://chris-biagini.github.io/mirepoix'
 
   def help_url(path)
     "#{HELP_BASE_URL}#{path}"

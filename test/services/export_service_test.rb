@@ -44,8 +44,8 @@ class ExportServiceTest < ActiveSupport::TestCase
     zip_data = ExportService.call(kitchen: @kitchen)
     content = zip_entry_content(zip_data, 'Bread/Focaccia.md')
     recipe = @kitchen.recipes.find_by!(title: 'Focaccia')
-    ir = FamilyRecipes::RecipeSerializer.from_record(recipe)
-    expected = FamilyRecipes::RecipeSerializer.serialize(ir)
+    ir = Mirepoix::RecipeSerializer.from_record(recipe)
+    expected = Mirepoix::RecipeSerializer.serialize(ir)
 
     assert_equal expected, content
   end

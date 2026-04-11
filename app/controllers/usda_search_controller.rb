@@ -16,7 +16,7 @@ class UsdaSearchController < ApplicationController
   def search
     result = usda_client.search(params[:q], page: params.fetch(:page, 0).to_i)
     render json: result
-  rescue FamilyRecipes::UsdaClient::Error => error
+  rescue Mirepoix::UsdaClient::Error => error
     render json: { error: error.message }, status: :unprocessable_content
   end
 
@@ -24,7 +24,7 @@ class UsdaSearchController < ApplicationController
     detail = usda_client.fetch(fdc_id: params[:fdc_id])
     import = UsdaImportService.call(detail)
     render json: import
-  rescue FamilyRecipes::UsdaClient::Error => error
+  rescue Mirepoix::UsdaClient::Error => error
     render json: { error: error.message }, status: :unprocessable_content
   end
 
@@ -37,6 +37,6 @@ class UsdaSearchController < ApplicationController
   end
 
   def usda_client
-    FamilyRecipes::UsdaClient.new(api_key: current_kitchen.usda_api_key)
+    Mirepoix::UsdaClient.new(api_key: current_kitchen.usda_api_key)
   end
 end

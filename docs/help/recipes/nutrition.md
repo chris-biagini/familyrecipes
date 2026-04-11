@@ -8,7 +8,7 @@ next: /menu/
 
 # Nutrition
 
-familyrecipes can display per-serving nutrition facts under each recipe,
+mirepoix can display per-serving nutrition facts under each recipe,
 calculated from the ingredient quantities and your nutrition catalog data.
 
 ## Enabling nutrition display

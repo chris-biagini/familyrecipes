@@ -102,7 +102,7 @@ Rails/Blank:
 # BuildValidator is a CLI build tool that intentionally uses puts
 Rails/Output:
   Exclude:
-    - lib/familyrecipes/build_validator.rb
+    - lib/mirepoix/build_validator.rb
     - db/seeds.rb
 
 # Plain Minitest tests (Minitest::Test) don't have assert_not_* methods

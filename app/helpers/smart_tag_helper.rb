@@ -5,12 +5,12 @@
 # tags or when decorations are disabled.
 #
 # Collaborators:
-# - FamilyRecipes::SmartTagRegistry: the curated tag definitions
+# - Mirepoix::SmartTagRegistry: the curated tag definitions
 # - Kitchen#decorate_tags: per-kitchen toggle
 # - _recipe_content.html.erb: server-rendered tag pills (recipe detail)
 # - _recipe_listings.html.erb: filter pills and card tags (homepage)
 module SmartTagHelper
-  SMART_TAGS_JSON = FamilyRecipes::SmartTagRegistry::TAGS.to_json.freeze
+  SMART_TAGS_JSON = Mirepoix::SmartTagRegistry::TAGS.to_json.freeze
 
   def smart_tags_json
     SMART_TAGS_JSON
@@ -19,7 +19,7 @@ module SmartTagHelper
   def smart_tag_pill_attrs(tag_name, kitchen: current_kitchen)
     return {} unless kitchen.decorate_tags
 
-    entry = FamilyRecipes::SmartTagRegistry.lookup(tag_name)
+    entry = Mirepoix::SmartTagRegistry.lookup(tag_name)
     return {} unless entry
 
     classes = ["tag-pill--#{entry[:color]}"]

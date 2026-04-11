@@ -104,7 +104,7 @@ class BuildValidatorTest < ActiveSupport::TestCase
     md = "# Test Recipe\n\n## Step (do it)\n\n- Flour, 500 g\n\nMix."
     recipe = make_recipe(md, id: 'test-recipe')
     nutrition_data = {}
-    calculator = FamilyRecipes::NutritionCalculator.new(nutrition_data)
+    calculator = Mirepoix::NutritionCalculator.new(nutrition_data)
     validator = build_validator(recipes: [recipe], nutrition_calculator: calculator)
 
     output = capture_io { validator.validate_nutrition }
@@ -122,7 +122,7 @@ class BuildValidatorTest < ActiveSupport::TestCase
         density_grams: 30.0, density_volume: 0.25, density_unit: 'cup'
       )
     }
-    calculator = FamilyRecipes::NutritionCalculator.new(catalog_lookup)
+    calculator = Mirepoix::NutritionCalculator.new(catalog_lookup)
     validator = build_validator(recipes: [recipe], nutrition_calculator: calculator)
 
     output = capture_io { validator.validate_nutrition }
@@ -161,12 +161,12 @@ class BuildValidatorTest < ActiveSupport::TestCase
   private
 
   def make_recipe(markdown, id: 'test-recipe')
-    FamilyRecipes::Recipe.new(markdown_source: markdown, id: id)
+    Mirepoix::Recipe.new(markdown_source: markdown, id: id)
   end
 
   def build_validator(recipes: [], quick_bites: [], nutrition_calculator: nil)
     recipe_map = recipes.index_by(&:id)
-    FamilyRecipes::BuildValidator.new(
+    Mirepoix::BuildValidator.new(
       recipes: recipes,
       quick_bites: quick_bites,
       recipe_map: recipe_map,

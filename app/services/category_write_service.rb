@@ -19,8 +19,8 @@ class CategoryWriteService < ListWriteService
 
   def apply_renames(renames)
     renames.each_pair do |old_name, new_name|
-      category = kitchen.categories.find_by!(slug: FamilyRecipes.slugify(old_name))
-      category.update!(name: new_name, slug: FamilyRecipes.slugify(new_name))
+      category = kitchen.categories.find_by!(slug: Mirepoix.slugify(old_name))
+      category.update!(name: new_name, slug: Mirepoix.slugify(new_name))
     end
   end
 
@@ -30,7 +30,7 @@ class CategoryWriteService < ListWriteService
     misc = Category.miscellaneous(kitchen)
 
     deletes.each do |name|
-      category = kitchen.categories.find_by(slug: FamilyRecipes.slugify(name))
+      category = kitchen.categories.find_by(slug: Mirepoix.slugify(name))
       next unless category
 
       category.recipes.update_all(category_id: misc.id) # rubocop:disable Rails/SkipsModelValidations
@@ -40,7 +40,7 @@ class CategoryWriteService < ListWriteService
 
   def apply_ordering(names:, **)
     names.each_with_index do |name, index|
-      kitchen.categories.where(slug: FamilyRecipes.slugify(name))
+      kitchen.categories.where(slug: Mirepoix.slugify(name))
              .update_all(position: index) # rubocop:disable Rails/SkipsModelValidations
     end
   end

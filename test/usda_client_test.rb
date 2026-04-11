@@ -4,7 +4,7 @@ require_relative 'test_helper'
 
 class UsdaClientTest < Minitest::Test
   def setup
-    @client = FamilyRecipes::UsdaClient.new(api_key: 'test-key')
+    @client = Mirepoix::UsdaClient.new(api_key: 'test-key')
   end
 
   # -- search --
@@ -112,19 +112,19 @@ class UsdaClientTest < Minitest::Test
 
   def test_raises_network_error_on_socket_error
     Net::HTTP.stub(:start, ->(*) { raise SocketError, 'getaddrinfo failed' }) do
-      assert_raises(FamilyRecipes::UsdaClient::NetworkError) { @client.search('flour') }
+      assert_raises(Mirepoix::UsdaClient::NetworkError) { @client.search('flour') }
     end
   end
 
   def test_raises_network_error_on_timeout
     Net::HTTP.stub(:start, ->(*) { raise Net::ReadTimeout, 'read timeout' }) do
-      assert_raises(FamilyRecipes::UsdaClient::NetworkError) { @client.fetch(fdc_id: 1) }
+      assert_raises(Mirepoix::UsdaClient::NetworkError) { @client.fetch(fdc_id: 1) }
     end
   end
 
   def test_raises_auth_error_on_unauthorized
     with_api_response(401, { 'error' => 'Unauthorized' }) do
-      error = assert_raises(FamilyRecipes::UsdaClient::AuthError) { @client.search('flour') }
+      error = assert_raises(Mirepoix::UsdaClient::AuthError) { @client.search('flour') }
 
       assert_match(/401/, error.message)
     end
@@ -132,13 +132,13 @@ class UsdaClientTest < Minitest::Test
 
   def test_raises_auth_error_on_forbidden
     with_api_response(403, { 'error' => 'Forbidden' }) do
-      assert_raises(FamilyRecipes::UsdaClient::AuthError) { @client.search('flour') }
+      assert_raises(Mirepoix::UsdaClient::AuthError) { @client.search('flour') }
     end
   end
 
   def test_raises_rate_limit_error_on_too_many_requests
     with_api_response(429, { 'error' => 'Too Many Requests' }) do
-      error = assert_raises(FamilyRecipes::UsdaClient::RateLimitError) { @client.search('flour') }
+      error = assert_raises(Mirepoix::UsdaClient::RateLimitError) { @client.search('flour') }
 
       assert_match(/429/, error.message)
     end
@@ -146,7 +146,7 @@ class UsdaClientTest < Minitest::Test
 
   def test_raises_server_error_on_internal_error
     with_api_response(500, { 'error' => 'Internal Server Error' }) do
-      error = assert_raises(FamilyRecipes::UsdaClient::ServerError) { @client.search('flour') }
+      error = assert_raises(Mirepoix::UsdaClient::ServerError) { @client.search('flour') }
 
       assert_match(/500/, error.message)
     end
@@ -154,7 +154,7 @@ class UsdaClientTest < Minitest::Test
 
   def test_raises_parse_error_on_malformed_json
     with_api_response(200, 'not json at all') do
-      assert_raises(FamilyRecipes::UsdaClient::ParseError) { @client.search('flour') }
+      assert_raises(Mirepoix::UsdaClient::ParseError) { @client.search('flour') }
     end
   end
 

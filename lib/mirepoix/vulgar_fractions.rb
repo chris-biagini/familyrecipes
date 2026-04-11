@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module FamilyRecipes
+module Mirepoix
   # Formats decimal quantities as Unicode vulgar fraction glyphs (e.g., 0.5 → "½",
   # 1.25 → "1¼") or ASCII fraction strings (0.5 → "1/2", 1.25 → "1 1/4").
   # Unit-aware: metric units (g, kg, ml, l) bypass glyph conversion and keep plain

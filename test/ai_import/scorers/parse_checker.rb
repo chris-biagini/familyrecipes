@@ -18,7 +18,7 @@ module Scorers
       begin
         tokens = LineClassifier.classify(output_text)
         parsed = RecipeBuilder.new(tokens).build
-      rescue FamilyRecipes::ParseError => error
+      rescue Mirepoix::ParseError => error
         return Result.new(pass: false, details: {
                             title: nil, steps: 0, ingredients: 0,
                             errors: ["Parse error: #{error.message}"]

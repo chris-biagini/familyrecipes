@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module FamilyRecipes
+module Mirepoix
   # A "grocery bundle" — a simple name + ingredient list that isn't a full recipe.
   # Parsed from the Quick Bites format ("## Category\n- Name: Ing1, Ing2"). Lives on
   # the menu page, not the homepage. Responds to the same #ingredients_with_quantities
@@ -16,7 +16,7 @@ module FamilyRecipes
       rest ||= ''
 
       @title = title
-      @id = FamilyRecipes.slugify(title)
+      @id = Mirepoix.slugify(title)
 
       # If no colon, the title itself is the ingredient (simple items like "Ice cream")
       # If colon present, parse the comma-separated list after it

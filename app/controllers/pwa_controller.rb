@@ -48,7 +48,7 @@ class PwaController < ApplicationController
 
   def sole_kitchen_title
     kitchen = ActsAsTenant.without_tenant { Kitchen.first }
-    kitchen&.site_title || 'Family Recipes'
+    kitchen&.site_title || 'mirepoix'
   end
 
   def icon_entry(filename, sizes, media: nil)

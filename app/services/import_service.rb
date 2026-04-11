@@ -152,7 +152,7 @@ class ImportService # rubocop:disable Metrics/ClassLength
     return if category_names.empty?
 
     category_names.each_with_index do |name, index|
-      kitchen.categories.where(slug: FamilyRecipes.slugify(name)).update_all(position: index) # rubocop:disable Rails/SkipsModelValidations
+      kitchen.categories.where(slug: Mirepoix.slugify(name)).update_all(position: index) # rubocop:disable Rails/SkipsModelValidations
     end
   end
 

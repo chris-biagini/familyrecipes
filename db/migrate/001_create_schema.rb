@@ -103,7 +103,7 @@ class CreateSchema < ActiveRecord::Migration[8.1]
       t.string "homepage_subtitle", default: "A collection of our family's favorite recipes."
       t.string "name", null: false
       t.boolean "show_nutrition", default: false, null: false
-      t.string "site_title", default: "Family Recipes"
+      t.string "site_title", default: "mirepoix"
       t.string "slug", null: false
       t.datetime "updated_at", null: false
       t.string "usda_api_key"
