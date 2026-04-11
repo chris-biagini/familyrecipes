@@ -19,13 +19,45 @@ class SessionsController < ApplicationController
 
   layout 'auth'
 
+  rate_limit to: 10, within: 15.minutes, by: -> { request.remote_ip }, only: :create
+
   def new
     redirect_to root_path if authenticated?
+  end
+
+  def create
+    email = normalize_email(params[:email])
+    return redirect_to new_session_path, alert: 'Please enter an email address.' if email.blank?
+
+    issue_magic_link_for(email)
+    set_pending_auth_email(email)
+    redirect_to sessions_magic_link_path
   end
 
   def destroy
     terminate_session
     cookies[:skip_dev_auto_login] = true if Rails.env.development?
     redirect_to root_path, notice: "You've been signed out."
+  end
+
+  private
+
+  def normalize_email(raw)
+    raw.to_s.strip.downcase.presence
+  end
+
+  def issue_magic_link_for(email)
+    user = User.find_by(email:)
+    return unless user && ActsAsTenant.without_tenant { user.memberships.any? }
+
+    deliver_sign_in_link(user)
+  end
+
+  def deliver_sign_in_link(user)
+    link = MagicLink.create!(
+      user: user, purpose: :sign_in, expires_at: 15.minutes.from_now,
+      request_ip: request.remote_ip, request_user_agent: request.user_agent
+    )
+    MagicLinkMailer.sign_in_instructions(link).deliver_now
   end
 end
