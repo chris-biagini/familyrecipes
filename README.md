@@ -1,18 +1,18 @@
-# familyrecipes
+# mirepoix
 
 A self-hosted recipe manager for families who cook together. Write recipes in
 Markdown, plan your week's meals, generate grocery lists that sync across
 devices, and track nutrition — all from a single Docker container backed by
 SQLite. No cloud account required.
 
-**[Documentation](https://chris-biagini.github.io/familyrecipes/)** · **[Docker Image](https://github.com/chris-biagini/familyrecipes/pkgs/container/familyrecipes)** · **[Source](https://github.com/chris-biagini/familyrecipes)**
+**[Documentation](https://chris-biagini.github.io/mirepoix/)** · **[Docker Image](https://github.com/chris-biagini/mirepoix/pkgs/container/mirepoix)** · **[Source](https://github.com/chris-biagini/mirepoix)**
 
 ---
 
-## Why familyrecipes?
+## Why mirepoix?
 
 Most recipe apps are either cloud services that hold your data hostage or
-bare-bones tools that stop at storing text. familyrecipes is different:
+bare-bones tools that stop at storing text. mirepoix is different:
 
 - **Your data, your server.** Runs on any machine with Docker — a Raspberry Pi,
   a NAS, a VPS. SQLite means zero external dependencies.
@@ -30,37 +30,37 @@ bare-bones tools that stop at storing text. familyrecipes is different:
 
 Write recipes in Markdown with structured steps, ingredients, and metadata.
 Edit in a graphical editor or switch to plaintext with syntax highlighting.
-[Cross-reference](https://chris-biagini.github.io/familyrecipes/recipes/cross-references/)
+[Cross-reference](https://chris-biagini.github.io/mirepoix/recipes/cross-references/)
 other recipes as ingredients — a bread recipe can pull in your sourdough
-starter. [Scale](https://chris-biagini.github.io/familyrecipes/recipes/scaling/)
+starter. [Scale](https://chris-biagini.github.io/mirepoix/recipes/scaling/)
 quantities up or down with a tap. Organize with
-[tags and categories](https://chris-biagini.github.io/familyrecipes/recipes/tags-and-categories/).
+[tags and categories](https://chris-biagini.github.io/mirepoix/recipes/tags-and-categories/).
 
-[Learn more about recipes →](https://chris-biagini.github.io/familyrecipes/recipes/)
+[Learn more about recipes →](https://chris-biagini.github.io/mirepoix/recipes/)
 
 ### Menu Planning
 
 Pick what you're cooking this week. The
-[dinner picker](https://chris-biagini.github.io/familyrecipes/menu/dinner-picker/)
+[dinner picker](https://chris-biagini.github.io/mirepoix/menu/dinner-picker/)
 suggests meals based on your history and preferences. Add
-[QuickBites](https://chris-biagini.github.io/familyrecipes/menu/quickbites/)
+[QuickBites](https://chris-biagini.github.io/mirepoix/menu/quickbites/)
 for non-recipe items like snacks and staples. Your selections feed directly
 into the grocery list.
 
-[Learn more about the menu →](https://chris-biagini.github.io/familyrecipes/menu/)
+[Learn more about the menu →](https://chris-biagini.github.io/mirepoix/menu/)
 
 ### Grocery Lists
 
 Shopping lists are
-[generated automatically](https://chris-biagini.github.io/familyrecipes/groceries/how-it-works/)
+[generated automatically](https://chris-biagini.github.io/mirepoix/groceries/how-it-works/)
 from your menu selections, grouped by aisle, and
-[synced in real time](https://chris-biagini.github.io/familyrecipes/groceries/)
+[synced in real time](https://chris-biagini.github.io/mirepoix/groceries/)
 across every open tab and device. The system
-[learns your pantry](https://chris-biagini.github.io/familyrecipes/groceries/learning/)
+[learns your pantry](https://chris-biagini.github.io/mirepoix/groceries/learning/)
 over time — items you always have on hand stop showing up. Screen stays awake
 while you shop.
 
-[Learn more about groceries →](https://chris-biagini.github.io/familyrecipes/groceries/)
+[Learn more about groceries →](https://chris-biagini.github.io/mirepoix/groceries/)
 
 ### Nutrition
 
@@ -68,18 +68,18 @@ Per-ingredient nutrition data sourced from
 [USDA FoodData Central](https://fdc.nal.usda.gov/). Automatic per-recipe and
 per-serving calculation with density-based unit resolution. Manage your
 ingredient catalog through the
-[web-based editor](https://chris-biagini.github.io/familyrecipes/ingredients/nutrition-data/).
+[web-based editor](https://chris-biagini.github.io/mirepoix/ingredients/nutrition-data/).
 
-[Learn more about nutrition →](https://chris-biagini.github.io/familyrecipes/recipes/nutrition/)
+[Learn more about nutrition →](https://chris-biagini.github.io/mirepoix/recipes/nutrition/)
 
 ### Import & Export
 
 Paste a recipe from any source and let the
-[AI import](https://chris-biagini.github.io/familyrecipes/import-export/ai-import/)
+[AI import](https://chris-biagini.github.io/mirepoix/import-export/ai-import/)
 parse it into structured format (requires an Anthropic API key). Bulk-import
 Markdown files or ZIP archives. Export everything as a portable ZIP.
 
-[Learn more about import & export →](https://chris-biagini.github.io/familyrecipes/import-export/)
+[Learn more about import & export →](https://chris-biagini.github.io/mirepoix/import-export/)
 
 ### Multi-Tenant Kitchens
 
@@ -94,8 +94,8 @@ When only one kitchen exists, URLs stay clean — no `/kitchens/:slug` prefix.
 ### 1. Download and start
 
 ```bash
-mkdir familyrecipes && cd familyrecipes
-curl -O https://raw.githubusercontent.com/chris-biagini/familyrecipes/main/docker-compose.example.yml
+mkdir mirepoix && cd mirepoix
+curl -O https://raw.githubusercontent.com/chris-biagini/mirepoix/main/docker-compose.example.yml
 cp docker-compose.example.yml docker-compose.yml
 docker compose up -d
 ```
@@ -129,7 +129,7 @@ title and homepage text.
 
 ### 4. Sign in (production)
 
-familyrecipes uses passwordless magic-link auth. To sign in, enter your
+mirepoix uses passwordless magic-link auth. To sign in, enter your
 email address on the sign-in page; the app sends a one-time link that
 logs you in when clicked. Joining a kitchen also uses a 4-word
 cooking-themed join code that the owner shares with you — enter the
@@ -191,8 +191,8 @@ messages and can be safely discarded.
 ## Development
 
 ```bash
-git clone https://github.com/chris-biagini/familyrecipes.git
-cd familyrecipes
+git clone https://github.com/chris-biagini/mirepoix.git
+cd mirepoix
 bundle install && npm install
 rails db:setup
 bin/dev
