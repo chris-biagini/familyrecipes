@@ -32,6 +32,9 @@ Files renamed (`git mv`, with content edits):
 - `lib/familyrecipes/` → `lib/mirepoix/` (directory with 28 files)
 - `lib/familyrecipes.rb` → `lib/mirepoix.rb`
 - `config/initializers/familyrecipes.rb` → `config/initializers/mirepoix.rb`
+- `test/lib/familyrecipes/` → `test/lib/mirepoix/` (parallel test directory)
+- `test/familyrecipes_test.rb` → `test/mirepoix_test.rb` (top-level parser test file)
+- `lib/tasks/familyrecipes.rake` → `lib/tasks/mirepoix.rake` (rake task file holding the `default` target; renamed in Task 6)
 
 Files edited (content-only):
 - `config/application.rb` — module name, autoload_lib ignore list, comment
@@ -74,9 +77,13 @@ Create `lib/tasks/brand.rake` with this exact content:
 # of the old "Family Recipes" brand is found in tracked files outside the
 # frozen historical directories. Runs in CI (and manually) to prevent
 # accidental reintroduction of old brand strings.
-namespace :brand do
+#
+# Deliberately does NOT depend on :environment — the check is a pure string
+# scan via `rg` and must keep working even if Rails boot is temporarily
+# broken mid-rebrand. Rails/RakeEnvironment is disabled for that reason.
+namespace :brand do # rubocop:disable Metrics/BlockLength
   desc 'Fail if any "Family Recipes" brand residue remains in tracked files'
-  task :check_residue do
+  task :check_residue do # rubocop:disable Rails/RakeEnvironment
     require 'open3'
 
     pattern = '\bfamily[-_ ]?recipes?\b'
@@ -87,6 +94,7 @@ namespace :brand do
     ]
     cmd = ['rg', '-i', '-c', '--no-heading', pattern]
     excludes.each { |glob| cmd.push('--glob', "!#{glob}") }
+    cmd.push('.')
 
     output, status = Open3.capture2e(*cmd)
 
@@ -107,6 +115,12 @@ namespace :brand do
 end
 ```
 
+**Why `cmd.push('.')` matters:** `rg` invoked via `Open3.capture2e` runs with stdin connected to an empty pipe (not a tty). Without an explicit path argument, `rg` reads from stdin, finds no input, and exits 1 — which the rake task would interpret as "Clean: no residue" regardless of actual state. The explicit `.` argument tells `rg` to recursively search the current directory.
+
+**Why the cop disables:** `Metrics/BlockLength` fires at 27 lines (limit is 25) — matching how `kitchen.rake` and `release_audit.rake` handle the same cop. `Rails/RakeEnvironment` wants `:environment` as a prerequisite, but the oracle must stay independent of Rails boot so it can run when the app is temporarily broken mid-rebrand (e.g., after a module rename but before dependent files are updated). Adding `:environment` would couple the oracle to Rails boot success and add startup cost with no benefit.
+
+**Ripgrep dependency:** the rake task shells out to `rg`. Ripgrep must be installed on the machine running the task (dev laptop, CI image, etc.). If `rg` is missing, `Open3.capture2e` raises `ENOENT`. CI currently assumes `rg` is available — if the Docker build image doesn't include it, add it in Task 9's final verification.
+
 - [ ] **Step 2: Run the task to capture the starting residue count**
 
 ```bash
@@ -118,23 +132,25 @@ Expected: **FAILS** with a large list of files (hundreds of matches). Note the t
 
 - [ ] **Step 3: Wire the check into the default rake task**
 
-Edit `Rakefile`. Find the existing `task default: %i[lint test]` (or similar — may be `task default: :lint` + `task default: :test` in sequence). Add `brand:check_residue` after `:test`:
+The default task is NOT in the top-level `Rakefile` (that file only contains `Rails.application.load_tasks`). It lives in `lib/tasks/familyrecipes.rake`. Find the existing line:
 
 ```bash
-rg -n 'task default' Rakefile
+rg -n 'task default' lib/tasks/familyrecipes.rake
 ```
 
-Expected output: a line like `task default: %i[lint test]`.
+Expected output: something like `task default: %i[lint test]` inside a `begin/rescue LoadError` block (the rescue branch falls back to `:test` only when RuboCop isn't available).
 
-Edit that line with Edit to become:
+Edit the `task default: %i[lint test]` line to include `brand:check_residue`:
 
 ```ruby
 task default: %i[lint test brand:check_residue]
 ```
 
-If the Rakefile uses a different pattern (e.g., separate `task default: :test` lines), add a new line `task default: :'brand:check_residue'` at the bottom.
+Leave the `rescue LoadError` fallback (`task default: :test`) as-is — it only runs in the rare case RuboCop isn't loadable, and the residue check doesn't depend on RuboCop anyway.
 
 **Note:** the default task will now fail until the rebrand is complete. That's intentional — the whole point is that the oracle fails until the work is done. During this PR, verification uses `bundle exec rake test` (bypass default) until the final task, which switches back to `bundle exec rake`.
+
+**Task 6 will rename this file** from `lib/tasks/familyrecipes.rake` to `lib/tasks/mirepoix.rake` as part of the config/CI identifier sweep. The contents don't change then — only the filename. The line you're editing now lives in the same logical file regardless of name.
 
 - [ ] **Step 4: Verify `bundle exec rake test` still runs the test suite directly**
 
@@ -147,7 +163,7 @@ Expected: full test suite passes (~1961 runs, 6727 assertions). No failures. Thi
 - [ ] **Step 5: Commit**
 
 ```bash
-git add lib/tasks/brand.rake Rakefile
+git add lib/tasks/brand.rake lib/tasks/familyrecipes.rake
 git commit -m "$(cat <<'EOF'
 Rebrand: brand:check_residue oracle
 
@@ -173,10 +189,14 @@ EOF
 - Rename: `lib/familyrecipes/` → `lib/mirepoix/` (directory, 28 files)
 - Rename: `lib/familyrecipes.rb` → `lib/mirepoix.rb`
 - Rename: `config/initializers/familyrecipes.rb` → `config/initializers/mirepoix.rb`
+- Rename: `test/lib/familyrecipes/` → `test/lib/mirepoix/` (parallel test directory)
+- Rename: `test/familyrecipes_test.rb` → `test/mirepoix_test.rb` (top-level parser test)
 - Modify: `config/application.rb` — autoload_lib ignore list + comment
 - Modify: all files matching `rg 'FamilyRecipes'` outside frozen dirs (module declarations + `FamilyRecipes::` references)
 
 This is the largest and most structurally load-bearing task. It must be one atomic commit because intermediate states don't boot: the `require_relative` paths in the module entry point, the directory name, the autoload_lib ignore list, and every `FamilyRecipes::` reference all need to move together or Zeitwerk will either try to autoload files that use their own require system (explosion at boot) or fail to find constants the app code depends on.
+
+The test files/dirs rename together because Ruby convention pairs `test/foo_test.rb` with `lib/foo.rb` and `test/lib/foo/` with `lib/foo/`, and Minitest discovers tests by glob `test/**/*_test.rb` — the filename doesn't need to match the class name for discovery, but matching-names is a hard codebase convention worth preserving.
 
 - [ ] **Step 1: Move the directory and module entry point files**
 
@@ -185,9 +205,11 @@ cd ~/familyrecipes
 git mv lib/familyrecipes lib/mirepoix
 git mv lib/familyrecipes.rb lib/mirepoix.rb
 git mv config/initializers/familyrecipes.rb config/initializers/mirepoix.rb
+git mv test/lib/familyrecipes test/lib/mirepoix
+git mv test/familyrecipes_test.rb test/mirepoix_test.rb
 ```
 
-Verify with `git status` — you should see three rename entries. No content changes yet.
+Verify with `git status` — you should see five rename entries. No content changes yet.
 
 - [ ] **Step 2: Update `lib/mirepoix.rb` — module name, require paths, header comment**
 
@@ -545,15 +567,24 @@ EOF
 ## Task 6: Config, CI, and packaging (`familyrecipes` lowercase)
 
 **Files:**
+- Rename: `lib/tasks/familyrecipes.rake` → `lib/tasks/mirepoix.rake` (the rake task file holding the default target, modified during Task 1 but not renamed)
 - Modify: `package.json` (name field)
 - Modify: `.github/workflows/docker.yml` (smoke-test image tag)
 - Modify: `.env.example` (if contains brand references)
 - Modify: `config/debride_allowlist.txt` (brand references)
 - Modify: any other files with lowercase `familyrecipes` outside frozen dirs, the `lib/mirepoix/` directory (already renamed), and `docs/help/` (Task 7 handles help site separately)
 
-Lowercase `familyrecipes` is the DNS-safe / URL-safe form. It appears in package identifiers, Docker tags, and any file that references the old working-directory name or repo name as a bare word.
+Lowercase `familyrecipes` is the DNS-safe / URL-safe form. It appears in package identifiers, Docker tags, filenames for supporting rake tasks, and any file that references the old working-directory name or repo name as a bare word.
 
-- [ ] **Step 1: Find all lowercase `familyrecipes` residue**
+- [ ] **Step 1: Rename the rake task file**
+
+```bash
+git mv lib/tasks/familyrecipes.rake lib/tasks/mirepoix.rake
+```
+
+This file holds the top-level `:test`, `:lint`, and `default` task definitions. The filename contains the bare word `familyrecipes` which the content-sweep in Step 3 won't fix. Its contents (after Task 1's edit) already reference `brand:check_residue` in the default task list — no content change needed here.
+
+- [ ] **Step 2: Find all lowercase `familyrecipes` residue**
 
 ```bash
 rg 'familyrecipes' \
@@ -564,7 +595,7 @@ rg 'familyrecipes' \
 
 Expected output includes `package.json`, `.github/workflows/docker.yml`, `config/debride_allowlist.txt`, possibly `.env.example`, and possibly a few test files or other configs. The `docs/help/` glob is excluded because Task 7 handles it separately (help site also has structural changes like baseurl). Historical specs and plans are always excluded.
 
-- [ ] **Step 2: Global find-and-replace**
+- [ ] **Step 3: Global find-and-replace**
 
 ```bash
 rg -l 'familyrecipes' \
@@ -574,7 +605,7 @@ rg -l 'familyrecipes' \
   | xargs sed -i 's/familyrecipes/mirepoix/g'
 ```
 
-- [ ] **Step 3: Verify `package.json`**
+- [ ] **Step 4: Verify `package.json`**
 
 ```bash
 rg -n '"name"' package.json
@@ -582,7 +613,7 @@ rg -n '"name"' package.json
 
 Expected: `"name": "mirepoix"`.
 
-- [ ] **Step 4: Verify `.github/workflows/docker.yml` smoke-test tag**
+- [ ] **Step 5: Verify `.github/workflows/docker.yml` smoke-test tag**
 
 ```bash
 rg -n 'mirepoix:smoke-test' .github/workflows/docker.yml
@@ -590,7 +621,15 @@ rg -n 'mirepoix:smoke-test' .github/workflows/docker.yml
 
 Expected: at least two matches (originally lines 91 and 98). The `${{ github.repository }}` reference for the GHCR image path remains unchanged — it auto-follows the post-merge repo rename.
 
-- [ ] **Step 5: Run the test suite**
+- [ ] **Step 6: Verify the renamed rake task file still works**
+
+```bash
+bundle exec rake -T | head -20
+```
+
+Expected: the rake task list still shows `test`, `lint`, `brand:check_residue` etc. If rake can't load the tasks at all, the rename broke something — check for `require` statements that reference the old filename.
+
+- [ ] **Step 7: Run the test suite**
 
 ```bash
 bundle exec rake test
@@ -598,7 +637,7 @@ bundle exec rake test
 
 Expected: tests still pass. This task shouldn't touch any application behavior, only config text.
 
-- [ ] **Step 6: Verify `npm run build` still works**
+- [ ] **Step 8: Verify `npm run build` still works**
 
 ```bash
 npm run build
@@ -606,16 +645,17 @@ npm run build
 
 Expected: esbuild bundles without error. The `package.json` name change doesn't affect build tooling.
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 9: Commit**
 
 ```bash
 git add -A
 git commit -m "$(cat <<'EOF'
 Rebrand: config and CI identifiers familyrecipes -> mirepoix
 
-Update package.json name, the .github/workflows/docker.yml local
-smoke-test image tag, config/debride_allowlist.txt, .env.example, and
-any other files referencing the lowercase bare-word identifier.
+Rename lib/tasks/familyrecipes.rake -> lib/tasks/mirepoix.rake, update
+package.json name, the .github/workflows/docker.yml local smoke-test
+image tag, config/debride_allowlist.txt, .env.example, and any other
+files referencing the lowercase bare-word identifier.
 
 The GHCR image path uses \${{ github.repository }} and auto-follows the
 post-merge GitHub repo rename — no manual change needed.
@@ -831,7 +871,7 @@ bundle exec rake brand:check_residue
 
 Expected: **PASSES** with `Clean: no 'Family Recipes' brand residue detected.` If this fails, the report will show exactly which files still have residue. Fix them with Edit or another targeted sed run and re-check.
 
-- [ ] **Step 2: Manual grep cross-check (belt and suspenders)**
+- [ ] **Step 2: Manual content grep cross-check (belt and suspenders)**
 
 ```bash
 rg -i '\bfamily[-_ ]?recipes?\b' \
@@ -841,7 +881,36 @@ rg -i '\bfamily[-_ ]?recipes?\b' \
 
 Expected: empty output. If the rake task passed but this grep finds something, there's a glob escaping mismatch in the rake task — fix it.
 
-- [ ] **Step 3: Full default rake (lint + test + residue)**
+- [ ] **Step 3: Filename residue check**
+
+The `brand:check_residue` rake task scans file *contents*, not filenames. Run this `find` command to verify no residual filenames remain:
+
+```bash
+find . -type f -iname '*family*recipe*' \
+  -not -path './.git/*' \
+  -not -path './docs/superpowers/specs/*' \
+  -not -path './docs/superpowers/plans/*' \
+  -not -path './tmp/*' \
+  -not -path './log/*' \
+  -not -path './storage/*' \
+  -not -path './node_modules/*' \
+  -not -path './_site/*' \
+  -not -path './public/assets/*' \
+  -not -path './.jekyll-cache/*'
+```
+
+Then directories:
+
+```bash
+find . -type d -iname '*family*recipe*' \
+  -not -path './.git/*' \
+  -not -path './docs/superpowers/specs/*' \
+  -not -path './docs/superpowers/plans/*'
+```
+
+Expected: both commands return empty output. At the start of the rebrand, the filesystem contained these residual names (known set): `lib/familyrecipes/`, `lib/familyrecipes.rb`, `config/initializers/familyrecipes.rb`, `test/lib/familyrecipes/`, `test/familyrecipes_test.rb`, and `lib/tasks/familyrecipes.rake`. All should have been renamed by Tasks 2 (first five) and 6 (rake task file). If any remain, use `git mv` to fix them, re-run tests and the content check, and include the fix in a new commit.
+
+- [ ] **Step 4: Full default rake (lint + test + residue)**
 
 ```bash
 bundle exec rake
@@ -849,7 +918,7 @@ bundle exec rake
 
 Expected: PASSES — RuboCop clean, full test suite green, residue check clean. This is the signal that the rebrand is complete.
 
-- [ ] **Step 4: Security audit**
+- [ ] **Step 5: Security audit**
 
 ```bash
 bundle exec rake security
@@ -857,7 +926,7 @@ bundle exec rake security
 
 Expected: Brakeman clean (medium+ confidence). The rebrand is textual and shouldn't introduce security issues, but verify.
 
-- [ ] **Step 5: JS build**
+- [ ] **Step 6: JS build**
 
 ```bash
 npm run build && npm test
@@ -865,7 +934,7 @@ npm run build && npm test
 
 Expected: esbuild bundles without error, JS classifier tests pass.
 
-- [ ] **Step 6: Boot smoke test**
+- [ ] **Step 7: Boot smoke test**
 
 In a separate terminal:
 
@@ -884,7 +953,7 @@ Expected: `<title>` contains `mirepoix` (lowercase), no occurrence of `family` o
 
 Stop the dev server (Ctrl-C in its terminal) when done.
 
-- [ ] **Step 7: Mailer preview**
+- [ ] **Step 8: Mailer preview**
 
 With the dev server running, list available mailer previews:
 
@@ -900,7 +969,7 @@ curl -s http://rika:3030<path_from_above> | grep -i -E 'mirepoix|family'
 
 Expected: body contains lowercase `mirepoix`, no `Family Recipes`. Also confirm the subject line — either by reading the preview's HTML frame or by reading `app/mailers/magic_link_mailer.rb` and verifying the `subject:` value is `"Sign in to mirepoix"`.
 
-- [ ] **Step 8: Rails console sanity check**
+- [ ] **Step 9: Rails console sanity check**
 
 ```bash
 bundle exec rails runner 'puts Rails.application.class.name, Mirepoix::CONFIG[:quick_bites_filename]'
@@ -915,7 +984,7 @@ Quick Bites.md
 
 Confirms both the Rails app module and the parser module resolve under the new name.
 
-- [ ] **Step 9: Push the branch**
+- [ ] **Step 10: Push the branch**
 
 ```bash
 git push origin feature/mirepoix-rebrand
@@ -923,7 +992,7 @@ git push origin feature/mirepoix-rebrand
 
 (Branch already has `-u origin/feature/mirepoix-rebrand` set from the design-spec commit, so `git push` is sufficient.)
 
-- [ ] **Step 10: Open the PR**
+- [ ] **Step 11: Open the PR**
 
 ```bash
 gh pr create --title "Rebrand: Family Recipes -> mirepoix" --body "$(cat <<'EOF'
