@@ -35,7 +35,7 @@ module Authentication
   end
 
   def find_session_by_cookie
-    Session.find_by(id: cookies.signed[:session_id])
+    Session.find_signed(cookies.signed[:session_id], purpose: :session)
   end
 
   def start_new_session_for(user)
@@ -45,7 +45,7 @@ module Authentication
     ).tap do |new_session|
       Current.session = new_session
       cookies.signed.permanent[:session_id] = {
-        value: new_session.id, httponly: true, same_site: :lax, secure: Rails.env.production?
+        value: new_session.signed_id(purpose: :session), httponly: true, same_site: :lax, secure: Rails.env.production?
       }
       SecurityEventLogger.log(:session_created, session_id: new_session.id, user_id: user.id)
     end
