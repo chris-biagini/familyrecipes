@@ -8,11 +8,15 @@ class AiImportServiceTest < ActiveSupport::TestCase
 
   setup do
     setup_test_kitchen
-    @kitchen.update!(anthropic_api_key: 'sk-test-key-123')
+    ENV['ANTHROPIC_API_KEY'] = 'sk-test-key-123'
     Category.find_or_create_for(@kitchen, 'Baking')
     Category.find_or_create_for(@kitchen, 'Mains')
     Tag.find_or_create_by!(kitchen: @kitchen, name: 'easy')
     Tag.find_or_create_by!(kitchen: @kitchen, name: 'grilled')
+  end
+
+  teardown do
+    ENV.delete('ANTHROPIC_API_KEY')
   end
 
   test 'returns markdown on successful API call' do
@@ -25,7 +29,7 @@ class AiImportServiceTest < ActiveSupport::TestCase
   end
 
   test 'returns error when no API key configured' do
-    @kitchen.update!(anthropic_api_key: nil)
+    ENV.delete('ANTHROPIC_API_KEY')
 
     result = AiImportService.call(text: 'recipe for bagels', kitchen: @kitchen)
 
@@ -163,7 +167,7 @@ class AiImportServiceTest < ActiveSupport::TestCase
     end
 
     assert_nil result.markdown
-    assert_equal 'Invalid Anthropic API key. Check your key in Settings.', result.error
+    assert_equal 'Invalid Anthropic API key. Check the ANTHROPIC_API_KEY environment variable.', result.error
   end
 
   test 'returns error on rate limit' do

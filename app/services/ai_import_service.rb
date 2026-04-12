@@ -8,7 +8,7 @@
 # The system prompt is a template with {{CATEGORIES}} and {{TAGS}} placeholders
 # interpolated from the kitchen's current taxonomy at call time.
 #
-# - Kitchen#anthropic_api_key: encrypted API key for Anthropic
+# - ENV['ANTHROPIC_API_KEY']: operator-provided API key
 # - Kitchen::AI_MODEL: model identifier (claude-sonnet-4-6)
 # - lib/mirepoix/ai_import_prompt_faithful.md: faithful mode template
 # - lib/mirepoix/ai_import_prompt_expert.md: expert mode template
@@ -26,7 +26,7 @@ class AiImportService
   end
 
   def initialize(kitchen:, mode:)
-    @api_key = kitchen.anthropic_api_key
+    @api_key = ENV['ANTHROPIC_API_KEY']
     @kitchen = kitchen
     @mode = PROMPTS.key?(mode) ? mode : :faithful
   end
@@ -37,7 +37,7 @@ class AiImportService
     markdown = fetch_completion(text:)
     Result.new(markdown: clean_output(markdown), error: nil)
   rescue Anthropic::Errors::AuthenticationError
-    Result.new(markdown: nil, error: 'Invalid Anthropic API key. Check your key in Settings.')
+    Result.new(markdown: nil, error: 'Invalid Anthropic API key. Check the ANTHROPIC_API_KEY environment variable.')
   rescue Anthropic::Errors::RateLimitError
     Result.new(markdown: nil, error: 'Rate limited by Anthropic. Wait a moment and try again.')
   rescue Anthropic::Errors::APITimeoutError
