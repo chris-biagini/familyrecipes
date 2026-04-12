@@ -198,7 +198,7 @@ rails db:setup
 bin/dev
 ```
 
-Starts the app at `http://localhost:3030` with auto-login in development mode.
+Starts the app at `http://localhost:3030`. Visit `/dev/login/1` to sign in as the first seeded user.
 
 ```bash
 rake          # lint + tests

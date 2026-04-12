@@ -76,7 +76,36 @@ class MagicLinksControllerTest < ActionDispatch::IntegrationTest
 
     post sessions_magic_link_path, params: { code: other_link.code }
 
-    assert_redirected_to new_session_path
+    assert_response :unprocessable_content
+    assert_select 'input[name=code]'
+  end
+
+  test 'POST /sessions/magic_link with code/email mismatch re-renders the form (no redirect)' do
+    other_user = ActsAsTenant.without_tenant do
+      User.create!(name: 'Other2', email: 'other2@example.com')
+    end
+    ActsAsTenant.with_tenant(@kitchen) do
+      Membership.create!(kitchen: @kitchen, user: other_user)
+    end
+
+    post sessions_path, params: { email: other_user.email }
+    other_link = MagicLink.order(:created_at).last
+
+    cookies.delete(:pending_auth)
+    post sessions_path, params: { email: @user.email }
+
+    post sessions_magic_link_path, params: { code: other_link.code }
+
+    assert_response :unprocessable_content
+    assert_select 'input[name=code]'
+  end
+
+  test 'POST /sessions/magic_link preserves pending_auth cookie on failed consume' do
+    post sessions_path, params: { email: @user.email }
+
+    post sessions_magic_link_path, params: { code: 'ZZZZZZ' }
+
+    assert_not_empty cookies[:pending_auth].to_s
   end
 
   test 'POST /sessions/magic_link with :join purpose creates the membership idempotently' do
@@ -110,12 +139,48 @@ class MagicLinksControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_content
   end
 
-  test 'POST /sessions/magic_link is rate-limited' do
+  test 'POST /sessions/magic_link is rate-limited and logs the event' do
     post sessions_path, params: { email: @user.email }
 
-    11.times { post sessions_magic_link_path, params: { code: 'ZZZZZZ' } }
+    io = StringIO.new
+    Rails.logger = ActiveSupport::TaggedLogging.new(Logger.new(io))
+    begin
+      11.times { post sessions_magic_link_path, params: { code: 'ZZZZZZ' } }
+    ensure
+      Rails.logger = Rails.application.config.logger || Rails.logger
+    end
 
     assert_response :too_many_requests
+    assert_match(/\[security\].*"event":"rate_limited"/, io.string)
+  end
+
+  test 'POST /sessions/magic_link logs :magic_link_consumed on success' do
+    post sessions_path, params: { email: @user.email }
+    link = MagicLink.order(:created_at).last
+
+    io = StringIO.new
+    Rails.logger = ActiveSupport::TaggedLogging.new(Logger.new(io))
+    begin
+      post sessions_magic_link_path, params: { code: link.code }
+    ensure
+      Rails.logger = Rails.application.config.logger || Rails.logger
+    end
+
+    assert_match(/\[security\].*"event":"magic_link_consumed"/, io.string)
+  end
+
+  test 'POST /sessions/magic_link logs :magic_link_consume_failed on invalid code' do
+    post sessions_path, params: { email: @user.email }
+
+    io = StringIO.new
+    Rails.logger = ActiveSupport::TaggedLogging.new(Logger.new(io))
+    begin
+      post sessions_magic_link_path, params: { code: 'ZZZZZZ' }
+    ensure
+      Rails.logger = Rails.application.config.logger || Rails.logger
+    end
+
+    assert_match(/\[security\].*"event":"magic_link_consume_failed"/, io.string)
   end
 
   private

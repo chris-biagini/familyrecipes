@@ -14,7 +14,7 @@ module ApplicationCable
     private
 
     def find_verified_user
-      session = Session.find_by(id: cookies.signed[:session_id])
+      session = Session.find_signed(cookies.signed[:session_id], purpose: :session)
       session&.user || reject_unauthorized_connection
     end
   end

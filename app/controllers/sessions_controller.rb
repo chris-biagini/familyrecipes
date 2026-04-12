@@ -19,7 +19,11 @@ class SessionsController < ApplicationController
 
   layout 'auth'
 
-  rate_limit to: 10, within: 15.minutes, by: -> { request.remote_ip }, only: :create
+  rate_limit to: 10, within: 15.minutes, by: -> { request.remote_ip },
+             with: lambda {
+               log_rate_limited
+               head(:too_many_requests)
+             }, only: :create
 
   def new
     redirect_to root_path if authenticated?
@@ -36,7 +40,6 @@ class SessionsController < ApplicationController
 
   def destroy
     terminate_session
-    cookies[:skip_dev_auto_login] = true if Rails.env.development?
     redirect_to root_path, notice: "You've been signed out."
   end
 
@@ -48,7 +51,8 @@ class SessionsController < ApplicationController
 
   def issue_magic_link_for(email)
     user = User.find_by(email:)
-    return unless user && ActsAsTenant.without_tenant { user.memberships.any? }
+    has_membership = user && ActsAsTenant.without_tenant { user.memberships.any? }
+    return SecurityEventLogger.log(:unknown_email_auth_attempt, email:) unless has_membership
 
     deliver_sign_in_link(user)
   end
@@ -58,6 +62,12 @@ class SessionsController < ApplicationController
       user: user, purpose: :sign_in, expires_at: 15.minutes.from_now,
       request_ip: request.remote_ip, request_user_agent: request.user_agent
     )
-    MagicLinkMailer.sign_in_instructions(link).deliver_now
+    SecurityEventLogger.log(:magic_link_issued, user_id: user.id, purpose: :sign_in)
+    MagicLinkMailer.sign_in_instructions(link).deliver_later
+  end
+
+  def log_rate_limited
+    SecurityEventLogger.log(:rate_limited,
+                            controller: controller_name, action: action_name, ip: request.remote_ip)
   end
 end

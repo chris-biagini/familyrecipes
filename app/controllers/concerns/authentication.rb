@@ -30,10 +30,15 @@ module Authentication
 
   def resume_session
     Current.session ||= find_session_by_cookie
+    warn_on_session_drift if Current.session
+    Current.session
   end
 
   def find_session_by_cookie
-    Session.find_by(id: cookies.signed[:session_id])
+    token = cookies.signed[:session_id]
+    return nil unless token.is_a?(String)
+
+    Session.find_signed(token, purpose: :session)
   end
 
   def start_new_session_for(user)
@@ -43,15 +48,31 @@ module Authentication
     ).tap do |new_session|
       Current.session = new_session
       cookies.signed.permanent[:session_id] = {
-        value: new_session.id, httponly: true, same_site: :lax, secure: Rails.env.production?
+        value: new_session.signed_id(purpose: :session), httponly: true, same_site: :lax, secure: Rails.env.production?
       }
+      SecurityEventLogger.log(:session_created, session_id: new_session.id, user_id: user.id)
     end
   end
 
   def terminate_session
-    Current.session&.destroy
+    if Current.session
+      SecurityEventLogger.log(:session_destroyed, session_id: Current.session.id)
+      Current.session.destroy
+    end
     cookies.delete(:session_id)
     Current.reset
+  end
+
+  def warn_on_session_drift
+    return unless Current.session
+
+    ip_changed = Current.session.ip_address != request.remote_ip
+    ua_changed = Current.session.user_agent != request.user_agent
+    return unless ip_changed || ua_changed
+
+    SecurityEventLogger.log(:session_drift,
+                            session_id: Current.session.id,
+                            ip_changed: ip_changed, ua_changed: ua_changed)
   end
 
   def current_user = Current.user

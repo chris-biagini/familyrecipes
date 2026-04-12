@@ -4,6 +4,8 @@ require 'test_helper'
 
 class PendingAuthTokenTest < ActiveSupport::TestCase
   # Test the concern by including it into a PORO with stubbed cookies.
+  # Decryption + tamper protection is the cookies.encrypted jar's job —
+  # tested by Rails itself — so the harness just models set/get/clear.
   class Harness
     include PendingAuthToken
 
@@ -22,7 +24,7 @@ class PendingAuthTokenTest < ActiveSupport::TestCase
         @store = store
       end
 
-      def signed
+      def encrypted
         self
       end
 
@@ -43,9 +45,9 @@ class PendingAuthTokenTest < ActiveSupport::TestCase
     assert_nil Harness.new.pending_auth_email
   end
 
-  test 'pending_auth_email returns nil when tampered' do
+  test 'pending_auth_email returns nil when stored value is blank' do
     h = Harness.new
-    h.cookies.signed[:pending_auth] = 'garbage'
+    h.cookies.encrypted[:pending_auth] = ''
 
     assert_nil h.pending_auth_email
   end

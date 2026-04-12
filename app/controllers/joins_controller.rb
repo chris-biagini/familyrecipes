@@ -16,7 +16,16 @@ class JoinsController < ApplicationController
 
   layout 'auth'
 
-  rate_limit to: 10, within: 1.hour, by: -> { request.remote_ip }, only: :verify
+  rate_limit to: 10, within: 1.hour, by: -> { request.remote_ip }, name: 'joins-verify',
+             with: lambda {
+               log_rate_limited
+               head(:too_many_requests)
+             }, only: :verify
+  rate_limit to: 10, within: 15.minutes, by: -> { request.remote_ip }, name: 'joins-create',
+             with: lambda {
+               log_rate_limited
+               head(:too_many_requests)
+             }, only: :create
 
   def new; end
 
@@ -64,7 +73,8 @@ class JoinsController < ApplicationController
   def issue_join_link(kitchen, email)
     user = find_or_create_user(email)
     link = create_join_link(user, kitchen)
-    MagicLinkMailer.sign_in_instructions(link).deliver_now
+    SecurityEventLogger.log(:magic_link_issued, user_id: user.id, purpose: :join, kitchen_id: kitchen.id)
+    MagicLinkMailer.sign_in_instructions(link).deliver_later
     set_pending_auth_email(email)
     redirect_to sessions_magic_link_path
   rescue ActiveRecord::RecordNotUnique
@@ -110,5 +120,10 @@ class JoinsController < ApplicationController
     ActsAsTenant.without_tenant { Kitchen.find_by(id: kitchen_id) }
   rescue ActiveSupport::MessageVerifier::InvalidSignature
     nil
+  end
+
+  def log_rate_limited
+    SecurityEventLogger.log(:rate_limited,
+                            controller: controller_name, action: action_name, ip: request.remote_ip)
   end
 end

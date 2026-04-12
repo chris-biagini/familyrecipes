@@ -22,10 +22,13 @@ class TransfersController < ApplicationController
     kitchen = resolve_kitchen(user)
 
     unless user && kitchen
+      SecurityEventLogger.log(:transfer_token_consume_failed,
+                              reason: user ? :kitchen_membership_missing : :invalid_token)
       @error = 'This link is invalid or has expired.'
       return render :show_error, status: :unprocessable_content
     end
 
+    SecurityEventLogger.log(:transfer_token_consumed, user_id: user.id, kitchen_id: kitchen.id)
     start_new_session_for(user)
     redirect_to kitchen_root_path(kitchen_slug: kitchen.slug)
   end

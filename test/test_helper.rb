@@ -32,6 +32,7 @@ require_relative '../config/environment'
 require 'rails/test_help'
 require 'action_cable/test_helper'
 require 'action_cable/channel/test_case'
+require 'action_mailer/test_helper'
 require 'minitest/autorun'
 
 # Bullet integration: start/end tracking around each test so N+1 queries
@@ -56,6 +57,8 @@ end
 
 module ActiveSupport
   class TestCase
+    include ActionMailer::TestHelper
+
     private
 
     def setup_test_kitchen
