@@ -26,7 +26,7 @@ class AiImportService
   end
 
   def initialize(kitchen:, mode:)
-    @api_key = ENV['ANTHROPIC_API_KEY']
+    @api_key = ENV.fetch('ANTHROPIC_API_KEY', nil)
     @kitchen = kitchen
     @mode = PROMPTS.key?(mode) ? mode : :faithful
   end

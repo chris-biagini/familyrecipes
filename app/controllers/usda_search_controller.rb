@@ -37,6 +37,6 @@ class UsdaSearchController < ApplicationController
   end
 
   def usda_client
-    Mirepoix::UsdaClient.new(api_key: ENV['USDA_API_KEY'])
+    Mirepoix::UsdaClient.new(api_key: ENV.fetch('USDA_API_KEY', nil))
   end
 end
