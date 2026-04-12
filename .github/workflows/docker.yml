@@ -110,6 +110,17 @@ jobs:
           docker logs smoke
           exit 1
 
+      # Exercises the encrypted write path (Kitchen#join_code is deterministic-
+      # encrypted). The /up check above only proves the app booted — it doesn't
+      # touch any encrypted column, so it can't catch an AR encryption wiring
+      # regression. kitchen:create does.
+      - name: Exec kitchen:create in smoke container
+        run: |
+          output=$(docker exec smoke bin/rails 'kitchen:create[Smoke Kitchen,smoke@example.com,Smoke Owner]' 2>&1)
+          echo "$output"
+          echo "$output" | grep -q 'Created kitchen: Smoke Kitchen' || { echo "::error::kitchen:create missing Created kitchen line"; exit 1; }
+          echo "$output" | grep -q 'Join code:' || { echo "::error::kitchen:create missing Join code line (encryption wiring broken?)"; exit 1; }
+
       - name: Cleanup smoke test container
         if: always()
         run: docker rm -f smoke 2>/dev/null || true
