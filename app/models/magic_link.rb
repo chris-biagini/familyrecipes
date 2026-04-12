@@ -6,7 +6,9 @@ require 'securerandom'
 # email (or logged to stdout when SMTP is unconfigured). The code is the
 # shared secret between the "check your email" page and the email itself;
 # consuming it atomically starts a session. Join-purpose links also carry
-# a kitchen_id so consumption can create the matching Membership.
+# a kitchen_id so consumption can create the matching Membership. Every
+# successful consume also opportunistically prunes expired rows — a bridge
+# until Solid Queue + a recurring job land (tracked in #384).
 #
 # - User: the identity the link authenticates as
 # - Kitchen: only set when purpose == :join
@@ -41,7 +43,13 @@ class MagicLink < ApplicationRecord
                 .update_all(consumed_at: Time.current) # rubocop:disable Rails/SkipsModelValidations -- intentional: atomic single-use claim
       return nil unless updated == 1
 
+      cleanup_expired
       find_by(code: sanitized)
+    end
+
+    def cleanup_expired
+      where('expires_at < ? OR (consumed_at IS NOT NULL AND consumed_at < ?)',
+            Time.current, 1.hour.ago).delete_all
     end
 
     def normalize(raw_code)

@@ -81,4 +81,59 @@ class MagicLinkTest < ActiveSupport::TestCase
 
     assert_equal 1, successes.size
   end
+
+  test 'cleanup_expired deletes rows past expires_at' do
+    expired = MagicLink.create!(
+      user: @user, purpose: :sign_in, expires_at: 20.minutes.ago, code: 'EXPRD2'
+    )
+    fresh = MagicLink.create!(
+      user: @user, purpose: :sign_in, expires_at: 10.minutes.from_now, code: 'FRESH3'
+    )
+
+    MagicLink.cleanup_expired
+
+    assert_not MagicLink.exists?(expired.id)
+    assert MagicLink.exists?(fresh.id)
+  end
+
+  test 'cleanup_expired deletes consumed rows older than 1 hour' do
+    old_consumed = MagicLink.create!(
+      user: @user, purpose: :sign_in, expires_at: 10.minutes.from_now,
+      code: 'OLDCNS', consumed_at: 2.hours.ago
+    )
+    recent_consumed = MagicLink.create!(
+      user: @user, purpose: :sign_in, expires_at: 10.minutes.from_now,
+      code: 'NEWCNS', consumed_at: 5.minutes.ago
+    )
+
+    MagicLink.cleanup_expired
+
+    assert_not MagicLink.exists?(old_consumed.id)
+    assert MagicLink.exists?(recent_consumed.id)
+  end
+
+  test 'consume triggers cleanup_expired on success and preserves the just-consumed row' do
+    stale = MagicLink.create!(
+      user: @user, purpose: :sign_in, expires_at: 2.hours.ago, code: 'STALE3'
+    )
+    link = MagicLink.create!(
+      user: @user, purpose: :sign_in, expires_at: 10.minutes.from_now, code: 'FRSHX2'
+    )
+
+    result = MagicLink.consume(link.code)
+
+    assert_not MagicLink.exists?(stale.id)
+    assert_equal link.id, result.id
+    assert MagicLink.exists?(link.id)
+  end
+
+  test 'consume does not trigger cleanup on failure' do
+    stale = MagicLink.create!(
+      user: @user, purpose: :sign_in, expires_at: 2.hours.ago, code: 'STALE4'
+    )
+
+    MagicLink.consume('NOTACD')
+
+    assert MagicLink.exists?(stale.id)
+  end
 end
