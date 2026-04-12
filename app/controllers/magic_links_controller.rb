@@ -27,8 +27,7 @@ class MagicLinksController < ApplicationController
 
   def create
     link = MagicLink.consume(params[:code])
-    return render_invalid unless link
-    return fail_mismatch unless pending_auth_email == link.user.email
+    return render_invalid unless link && pending_auth_email == link.user.email
 
     link.user.verify_email!
     ensure_join_membership(link) if link.join?
@@ -57,11 +56,6 @@ class MagicLinksController < ApplicationController
     flash.now[:alert] = 'Invalid or expired code. Try again or start over.'
     @masked_email = mask_email(pending_auth_email)
     render :new, status: :unprocessable_content
-  end
-
-  def fail_mismatch
-    clear_pending_auth
-    redirect_to new_session_path, alert: "That code didn't match. Please start over."
   end
 
   def ensure_join_membership(link)
