@@ -7,11 +7,13 @@
 connect
 auto_login_in_development
 default_url_options
+enforce_accepting_signups
 flush_broadcast
 prevent_html_caching
 record_not_found
 redirect_if_logged_in
 require_membership
+require_pending_auth
 set_kitchen_from_path
 require_authentication
 require_non_production_environment
@@ -49,12 +51,14 @@ update_quick_bites
 update_tags
 manifest
 service_worker
+reset_cache
 
 # --- ActiveRecord callbacks ---
 generate_slug
 normalize_portion_keys
 downcase_name
 set_join_code
+assign_code
 
 # --- ActiveRecord validations (invoked via `validate`) ---
 nutrients_require_basis_grams
@@ -73,6 +77,7 @@ meal_plan_selections
 on_hand_entries
 users
 quick_bite
+magic_links
 
 # --- ActiveRecord scopes ---
 with_content
@@ -155,3 +160,6 @@ DENSITY_UNITS
 
 # --- Called from config/initializers/ (debride doesn't scan initializers) ---
 load!
+
+# --- ActionMailer delivery method interface (invoked by Rails, not called directly) ---
+deliver!
