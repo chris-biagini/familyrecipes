@@ -36,7 +36,6 @@ class SessionsController < ApplicationController
 
   def destroy
     terminate_session
-    cookies[:skip_dev_auto_login] = true if Rails.env.development?
     redirect_to root_path, notice: "You've been signed out."
   end
 

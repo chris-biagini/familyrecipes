@@ -1,10 +1,9 @@
 # frozen_string_literal: true
 
-# Central before_action pipeline: resume session -> auto-login in dev ->
-# set tenant from path. Public reads are allowed
-# (allow_unauthenticated_access); write paths and member-only pages call
-# require_membership. Also manages the optional kitchen_slug URL scope
-# and cache headers for member-only pages.
+# Central before_action pipeline: resume session -> set tenant from path.
+# Public reads are allowed (allow_unauthenticated_access); write paths and
+# member-only pages call require_membership. Also manages the optional
+# kitchen_slug URL scope and cache headers for member-only pages.
 #
 # Collaborators:
 # - Authentication concern: session lifecycle (resume, start, terminate)
@@ -20,7 +19,6 @@ class ApplicationController < ActionController::Base
 
   set_current_tenant_through_filter
   before_action :resume_session
-  before_action :auto_login_in_development
   before_action :set_kitchen_from_path
   after_action :flush_broadcast
   helper_method :current_kitchen, :current_member?, :logged_in?, :home_path, :versioned_icon_path
@@ -56,17 +54,6 @@ class ApplicationController < ActionController::Base
 
   def versioned_icon_path(filename)
     "/icons/#{filename}?v=#{Rails.configuration.icon_version}"
-  end
-
-  def auto_login_in_development
-    return unless Rails.env.development?
-    return if authenticated?
-    return if cookies[:skip_dev_auto_login]
-
-    user = User.first
-    return unless user
-
-    start_new_session_for(user)
   end
 
   def current_member?

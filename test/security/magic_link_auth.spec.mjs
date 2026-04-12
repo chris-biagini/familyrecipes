@@ -21,18 +21,6 @@ import { test, expect } from "@playwright/test"
 const BASE_URL = process.env.BASE_URL || "http://localhost:3030"
 
 test.describe("magic link auth", () => {
-  // Dev server auto-logs-in anonymous requests as User.first; the skip cookie
-  // opts out so /sessions/new actually renders the form instead of redirecting.
-  test.beforeEach(async ({ context }) => {
-    await context.addCookies([
-      {
-        name: "skip_dev_auto_login",
-        value: "1",
-        url: BASE_URL,
-      },
-    ])
-  })
-
   test("known email redirects to code entry screen", async ({ page }) => {
     await page.goto(`${BASE_URL}/sessions/new`)
     await page.fill('input[type="email"]', "alpha-owner@example.com")
