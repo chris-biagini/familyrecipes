@@ -430,18 +430,16 @@ re-surface them as "new" findings:
 
 ## Follow-ups (out of scope, track as issues)
 
-- **Close #365** (harden trusted-header auth) as moot — the code path
-  was removed in #375. The obsoleted plan at
-  `docs/superpowers/plans/2026-04-10-harden-trusted-header-auth-plan.md`
-  should also be deleted or moved to an archive directory.
-- **"Sign out everywhere" button** in settings dialog — needs a
-  `User#destroy_all_sessions!` method and a settings-dialog button.
-- **Per-account rate limits** (not just per-IP) for the hosted
-  deployment phase — current per-IP limits are fine for homelab scale
-  but don't help against a NAT'd attacker at scale.
+- **Delete the obsoleted plan** at
+  `docs/superpowers/plans/2026-04-10-harden-trusted-header-auth-plan.md`.
+  #365 (its parent issue) was already closed by PR #371 as COMPLETED,
+  but the planning artifact lingered. Small cleanup — can land with
+  this PR or as a separate tidy commit.
+- **Sign out everywhere button** — GH #382.
+- **Per-account rate limits** — GH #383.
+- **Promote opportunistic F4 cleanup to a Solid Queue recurring job**
+  when Solid Queue is installed — GH #384.
 - **Magic link code entropy** — 28⁶ ≈ 481M = ~29 bits. Acceptable with
   current rate limits but on the low end. Revisit if/when rate limits
-  change for hosted deployment.
-- **Promote F4 to a real recurring job** when Solid Queue is installed
-  during the hosted-deployment phase. The opportunistic inline cleanup
-  is a bridge, not the intended end state.
+  change for hosted deployment. (No issue yet; revisit alongside
+  #383.)
