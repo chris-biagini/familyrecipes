@@ -19,7 +19,11 @@ class MagicLinksController < ApplicationController
 
   layout 'auth'
 
-  rate_limit to: 10, within: 15.minutes, by: -> { request.remote_ip }, only: :create
+  rate_limit to: 10, within: 15.minutes, by: -> { request.remote_ip },
+             with: lambda {
+               log_rate_limited
+               head(:too_many_requests)
+             }, only: :create
 
   def new
     @masked_email = mask_email(pending_auth_email)
@@ -27,13 +31,18 @@ class MagicLinksController < ApplicationController
 
   def create
     link = MagicLink.consume(params[:code])
-    return render_invalid unless link && pending_auth_email == link.user.email
+    unless link && pending_auth_email == link.user.email
+      SecurityEventLogger.log(:magic_link_consume_failed,
+                              reason: link ? :email_mismatch : :invalid_or_expired)
+      return render_invalid
+    end
 
     link.user.verify_email!
     ensure_join_membership(link) if link.join?
     start_new_session_for(link.user)
     clear_pending_auth
 
+    SecurityEventLogger.log(:magic_link_consumed, user_id: link.user.id, purpose: link.purpose)
     redirect_to after_sign_in_path_for(link)
   end
 
@@ -71,5 +80,10 @@ class MagicLinksController < ApplicationController
     return root_path unless kitchen
 
     kitchen_root_path(kitchen_slug: kitchen.slug)
+  end
+
+  def log_rate_limited
+    SecurityEventLogger.log(:rate_limited,
+                            controller: controller_name, action: action_name, ip: request.remote_ip)
   end
 end

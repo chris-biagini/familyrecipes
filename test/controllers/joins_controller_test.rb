@@ -88,16 +88,23 @@ class JoinsControllerTest < ActionDispatch::IntegrationTest
     assert_not_empty cookies[:pending_auth].to_s
   end
 
-  test 'POST /join/complete is rate-limited' do
+  test 'POST /join/complete is rate-limited and logs the event' do
     kitchen_being_joined = Kitchen.create!(name: 'Another Kitchen', slug: 'another-kitchen')
     signed = sign_kitchen_id(kitchen_being_joined.id)
 
-    11.times do |i|
-      post complete_join_path,
-           params: { signed_kitchen_id: signed, email: "person#{i}@example.com", name: 'Person' }
+    io = StringIO.new
+    Rails.logger = ActiveSupport::TaggedLogging.new(Logger.new(io))
+    begin
+      11.times do |i|
+        post complete_join_path,
+             params: { signed_kitchen_id: signed, email: "person#{i}@example.com", name: 'Person' }
+      end
+    ensure
+      Rails.logger = Rails.application.config.logger || Rails.logger
     end
 
     assert_response :too_many_requests
+    assert_match(/\[security\].*"event":"rate_limited"/, io.string)
   end
 
   test 'complete with tampered signed kitchen ID is rejected' do

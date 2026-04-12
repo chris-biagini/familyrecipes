@@ -63,10 +63,17 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_not_empty cookies[:pending_auth].to_s
   end
 
-  test 'POST /sessions is rate-limited' do
-    11.times { post sessions_path, params: { email: @user.email } }
+  test 'POST /sessions is rate-limited and logs the event' do
+    io = StringIO.new
+    Rails.logger = ActiveSupport::TaggedLogging.new(Logger.new(io))
+    begin
+      11.times { post sessions_path, params: { email: @user.email } }
+    ensure
+      Rails.logger = Rails.application.config.logger || Rails.logger
+    end
 
     assert_response :too_many_requests
+    assert_match(/\[security\].*"event":"rate_limited"/, io.string)
   end
 
   test 'POST /sessions sets the pending_auth cookie' do
