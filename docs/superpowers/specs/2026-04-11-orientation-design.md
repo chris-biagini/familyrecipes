@@ -136,30 +136,13 @@ gets annoying, that's the trigger for Phase 3 — not a guess.
 
 ### Pre-deploy punch list
 
-Before first `kamal deploy`:
+Tracked in the pinned **"Kamal Deploy: Critical Path"** issue (#391) in the
+`Kamal Deploy` milestone. That issue is the single source of truth for
+what's left before first deploy — don't maintain a competing checklist
+here.
 
-1. [ ] **Rebrand to Mirepoix** — separate implementation plan, prerequisite
-   for everything else
-2. [ ] Apply O'Saasy license (verify current LICENSE, update; closes #376)
-3. [ ] CLAUDE.md stale-reference sweep
-4. [ ] Update `MEMORY.md` "Passwordless Auth Merged" section
-5. [ ] Annotate `2026-04-08-auth-system-design.md` as superseded
-6. [ ] `rake release:audit` passes; Playwright pen tests green (partial
-   coverage for #373)
-7. [ ] `rake kitchen:create` smoke test in a local Docker build
-8. [ ] **Bootstrap ActiveRecord encryption keys to 1Password + physical-
-   world backup** (BEFORE first deploy — irreversible). Run
-   `bin/rails db:encryption:init` once, store `PRIMARY_KEY`,
-   `DETERMINISTIC_KEY`, and `KEY_DERIVATION_SALT` in the "Mirepoix
-   Production" vault, also print the values and stash in a home safe.
-   These cannot be rotated without re-encrypting all data.
-9. [ ] DNS cut and TLS cert issuance verified
-
-Soon after dogfood is stable:
-
-- [ ] Anthropic API key → env var (#367)
-- [ ] USDA API key → env var (#366)
-- [ ] Full Rails security guide walkthrough (#373)
+Completed prior to this change: rebrand (#378), O'Saasy license (#379),
+CLAUDE.md sweep, MEMORY.md update, superseded spec annotation.
 
 ### Explicitly NOT in this slice
 
