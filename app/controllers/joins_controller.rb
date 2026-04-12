@@ -17,6 +17,7 @@ class JoinsController < ApplicationController
   layout 'auth'
 
   rate_limit to: 10, within: 1.hour, by: -> { request.remote_ip }, only: :verify
+  rate_limit to: 10, within: 15.minutes, by: -> { request.remote_ip }, only: :create
 
   def new; end
 

@@ -87,6 +87,18 @@ class JoinsControllerTest < ActionDispatch::IntegrationTest
     assert_not_empty cookies[:pending_auth].to_s
   end
 
+  test 'POST /join/complete is rate-limited' do
+    kitchen_being_joined = Kitchen.create!(name: 'Another Kitchen', slug: 'another-kitchen')
+    signed = sign_kitchen_id(kitchen_being_joined.id)
+
+    11.times do |i|
+      post complete_join_path,
+           params: { signed_kitchen_id: signed, email: "person#{i}@example.com", name: 'Person' }
+    end
+
+    assert_response :too_many_requests
+  end
+
   test 'complete with tampered signed kitchen ID is rejected' do
     post complete_join_path, params: {
       email: @user.email,
