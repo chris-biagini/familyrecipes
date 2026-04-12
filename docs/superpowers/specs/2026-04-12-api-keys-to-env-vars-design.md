@@ -82,8 +82,9 @@ key in Settings" which no longer applies.
 
 ### docker-compose.example.yml
 
-Uncomment `USDA_API_KEY`, add `ANTHROPIC_API_KEY`. Both optional, with
-comments explaining what features they enable.
+Add `ANTHROPIC_API_KEY` alongside the existing `USDA_API_KEY`. Both
+remain commented out (optional), with comments explaining what features
+they enable.
 
 ### .env.example
 
