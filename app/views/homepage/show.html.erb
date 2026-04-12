@@ -15,7 +15,7 @@
         <%= icon(:plus, size: 12, 'stroke-width': '2.5') %>
         Add Recipe
       </button>
-      <% if current_kitchen.anthropic_api_key.present? %>
+      <% if ENV['ANTHROPIC_API_KEY'].present? %>
         <span class="recipe-actions-dot">&middot;</span>
         <button type="button" id="ai-import-button" class="btn-ghost">
           <%= icon(:sparkle, size: 14) %>
@@ -156,7 +156,7 @@ Optional notes or source." %>
 <% end %>
 <% end %>
 
-<% if current_member? && current_kitchen.anthropic_api_key.present? %>
+<% if current_member? && ENV['ANTHROPIC_API_KEY'].present? %>
 <dialog id="ai-import-editor" class="editor-dialog"
         data-controller="ai-import"
         data-ai-import-url-value="<%= ai_import_path %>"
