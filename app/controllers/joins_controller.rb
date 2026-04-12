@@ -65,7 +65,8 @@ class JoinsController < ApplicationController
   def issue_join_link(kitchen, email)
     user = find_or_create_user(email)
     link = create_join_link(user, kitchen)
-    MagicLinkMailer.sign_in_instructions(link).deliver_now
+    SecurityEventLogger.log(:magic_link_issued, user_id: user.id, purpose: :join, kitchen_id: kitchen.id)
+    MagicLinkMailer.sign_in_instructions(link).deliver_later
     set_pending_auth_email(email)
     redirect_to sessions_magic_link_path
   rescue ActiveRecord::RecordNotUnique

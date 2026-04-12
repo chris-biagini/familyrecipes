@@ -28,15 +28,15 @@ class JoinsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'input[name="email"]'
   end
 
-  test 'POST /join/complete with known email creates a :join magic link and delivers mail' do
+  test 'POST /join/complete with known email creates a :join magic link and enqueues mail' do
     kitchen_being_joined = Kitchen.create!(name: 'Another Kitchen', slug: 'another-kitchen')
     signed = sign_kitchen_id(kitchen_being_joined.id)
     joiner = User.create!(name: 'Joiner', email: 'joiner@example.com')
-    ActionMailer::Base.deliveries.clear
 
-    assert_difference -> { MagicLink.where(purpose: :join).count } => 1,
-                      -> { ActionMailer::Base.deliveries.size } => 1 do
-      post complete_join_path, params: { signed_kitchen_id: signed, email: joiner.email }
+    assert_enqueued_emails 1 do
+      assert_difference -> { MagicLink.where(purpose: :join).count } => 1 do
+        post complete_join_path, params: { signed_kitchen_id: signed, email: joiner.email }
+      end
     end
 
     assert_redirected_to sessions_magic_link_path
@@ -49,14 +49,15 @@ class JoinsControllerTest < ActionDispatch::IntegrationTest
     assert_nil ActsAsTenant.with_tenant(kitchen_being_joined) { Membership.find_by(user: joiner) }
   end
 
-  test 'POST /join/complete with new email creates User, magic link, and mail' do
+  test 'POST /join/complete with new email creates User, magic link, and enqueues mail' do
     kitchen_being_joined = Kitchen.create!(name: 'Another Kitchen', slug: 'another-kitchen')
     signed = sign_kitchen_id(kitchen_being_joined.id)
-    ActionMailer::Base.deliveries.clear
 
-    assert_difference -> { User.count } => 1, -> { MagicLink.count } => 1 do
-      post complete_join_path,
-           params: { signed_kitchen_id: signed, email: 'new@example.com', name: 'New Person' }
+    assert_enqueued_emails 1 do
+      assert_difference -> { User.count } => 1, -> { MagicLink.count } => 1 do
+        post complete_join_path,
+             params: { signed_kitchen_id: signed, email: 'new@example.com', name: 'New Person' }
+      end
     end
 
     assert_redirected_to sessions_magic_link_path

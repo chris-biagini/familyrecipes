@@ -5,7 +5,6 @@ require 'test_helper'
 class SessionsControllerTest < ActionDispatch::IntegrationTest
   setup do
     create_kitchen_and_user
-    ActionMailer::Base.deliveries.clear
   end
 
   test 'GET /sessions/new renders the email form' do
@@ -24,9 +23,11 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to root_path
   end
 
-  test 'POST /sessions with known email creates a magic link and delivers mail' do
-    assert_difference -> { MagicLink.count } => 1, -> { ActionMailer::Base.deliveries.size } => 1 do
-      post sessions_path, params: { email: @user.email }
+  test 'POST /sessions with known email creates a magic link and enqueues mail' do
+    assert_enqueued_emails 1 do
+      assert_difference -> { MagicLink.count } => 1 do
+        post sessions_path, params: { email: @user.email }
+      end
     end
 
     assert_redirected_to sessions_magic_link_path
@@ -37,9 +38,9 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'sign_in', link.purpose
   end
 
-  test 'POST /sessions with unknown email sends no mail but still redirects (anti-enumeration)' do
+  test 'POST /sessions with unknown email enqueues no mail but still redirects (anti-enumeration)' do
     assert_no_difference -> { MagicLink.count } do
-      assert_no_difference -> { ActionMailer::Base.deliveries.size } do
+      assert_no_enqueued_emails do
         post sessions_path, params: { email: 'stranger@example.com' }
       end
     end
@@ -54,7 +55,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     end
     orphan.memberships.destroy_all
 
-    assert_no_difference -> { MagicLink.count } do
+    assert_no_enqueued_emails do
       post sessions_path, params: { email: orphan.email }
     end
 

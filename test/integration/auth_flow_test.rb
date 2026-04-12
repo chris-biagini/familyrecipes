@@ -14,9 +14,10 @@ class AuthFlowTest < ActionDispatch::IntegrationTest
 
     assert_response :success
 
-    assert_difference -> { ActionMailer::Base.deliveries.size } => 1 do
+    perform_enqueued_jobs do
       post sessions_path, params: { email: @user.email }
     end
+
     assert_redirected_to sessions_magic_link_path
 
     delivered = ActionMailer::Base.deliveries.last
