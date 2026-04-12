@@ -109,14 +109,15 @@ namespace :release do # rubocop:disable Metrics/BlockLength
       # Rate limits are cache-backed with a 15-min window, so prior runs
       # leak state into the fresh run. Clear it via the dev-only endpoint.
       require 'net/http'
-      Net::HTTP.start('localhost', 3030) { |h| h.request(Net::HTTP::Delete.new('/dev/cache')) }
+      reset = Net::HTTP.start('localhost', 3030, open_timeout: 5, read_timeout: 5) { |h| h.request(Net::HTTP::Delete.new('/dev/cache')) }
+      abort "\nFailed to reset dev cache: HTTP #{reset.code}" unless reset.is_a?(Net::HTTPNoContent)
 
       puts ''
       puts '--- Running security specs ---'
       specs = Dir['test/security/*.spec.mjs']
       failures = specs.reject do |spec|
-        runner = File.read(spec).include?('@playwright/test') ? 'npx playwright test' : 'node --test'
-        system("#{runner} #{spec}")
+        runner = File.read(spec).include?('@playwright/test') ? %w[npx playwright test] : %w[node --test]
+        system(*runner, spec)
       end
 
       puts ''
