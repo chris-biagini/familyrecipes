@@ -57,7 +57,7 @@ test.describe('Import and export flows', () => {
     await page.goto('/kitchens/kitchen-alpha');
     await page.waitForLoadState('networkidle');
 
-    // kitchen-alpha has an anthropic_api_key set by the seed script
+    // AI import button only appears when ANTHROPIC_API_KEY is set in the environment
     const aiButton = page.locator('#ai-import-button');
     if (await aiButton.count() > 0) {
       await expect(aiButton).toBeVisible();

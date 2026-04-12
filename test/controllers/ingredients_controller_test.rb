@@ -8,6 +8,10 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
     IngredientCatalog.where(kitchen_id: nil).delete_all
   end
 
+  teardown do
+    ENV.delete('USDA_API_KEY')
+  end
+
   test 'requires membership to view ingredients' do
     get ingredients_path(kitchen_slug: kitchen_slug)
 
@@ -409,7 +413,7 @@ class IngredientsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'edit renders USDA search panel when API key is set' do
-    @kitchen.update!(usda_api_key: 'test-key')
+    ENV['USDA_API_KEY'] = 'test-key'
     @category = Category.create!(name: 'Bread', slug: 'bread', position: 0, kitchen: @kitchen)
     MarkdownImporter.import(<<~MD, kitchen: @kitchen, category: @category)
       # Focaccia

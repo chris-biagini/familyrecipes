@@ -4,7 +4,7 @@
 #   bin/rails runner test/security/seed_security_kitchens.rb
 #
 # Creates:
-#   - kitchen_alpha (user: alice) with a recipe and API keys set
+#   - kitchen_alpha (user: alice) with a recipe
 #   - kitchen_beta (user: bob) with a recipe
 #
 # Idempotent — safe to run multiple times.
@@ -46,12 +46,6 @@ ActsAsTenant.with_tenant(beta) do
     )
   end
 end
-
-# Set fake API keys on alpha (for exfiltration tests)
-alpha.update!(
-  usda_api_key: 'secret-usda-key-12345',
-  anthropic_api_key: 'secret-anthropic-key-67890'
-)
 
 # Write user IDs to a JSON file so Playwright tests can discover them
 require 'json'

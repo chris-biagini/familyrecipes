@@ -99,10 +99,10 @@ class DocContractCheck < ActionDispatch::IntegrationTest
       relative = Pathname.new(file).relative_path_from(help_docs_path).to_s
       content = File.read(file)
 
-      # Maps doc phrases to Kitchen column names
+      # Maps doc phrases to Kitchen columns or ENV var names
       setting_map = {
-        'usda api key' => 'usda_api_key',
-        'anthropic api key' => 'anthropic_api_key',
+        'usda api key' => 'USDA_API_KEY',
+        'anthropic api key' => 'ANTHROPIC_API_KEY',
         'show nutrition' => 'show_nutrition',
         'display nutrition' => 'show_nutrition',
         'decorate' => 'decorate_tags',
