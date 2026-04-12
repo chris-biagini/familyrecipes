@@ -12,14 +12,13 @@ import ListenerManager from "../utilities/listener_manager"
  * Profile section: name/email saved alongside kitchen settings.
  *
  * - editor_controller: open/close/save lifecycle, dirty guards, frame readiness
- * - reveal_controller: API key show/hide toggle (nested)
  * - editor_utils: save requests, CSRF token
  * - ListenerManager: clean event listener teardown
  */
 export default class extends Controller {
   static targets = [
     "siteTitle", "homepageHeading", "homepageSubtitle",
-    "usdaApiKey", "anthropicApiKey", "showNutrition", "decorateTags",
+    "showNutrition", "decorateTags",
     "joinCode", "regenerateButton",
     "profileName", "profileEmail"
   ]
@@ -65,8 +64,6 @@ export default class extends Controller {
       this.siteTitleTarget.value !== this.originals.siteTitle ||
       this.homepageHeadingTarget.value !== this.originals.homepageHeading ||
       this.homepageSubtitleTarget.value !== this.originals.homepageSubtitle ||
-      this.usdaApiKeyTarget.value.length > 0 ||
-      this.anthropicApiKeyTarget.value.length > 0 ||
       this.showNutritionTarget.checked !== this.originals.showNutrition ||
       this.decorateTagsTarget.checked !== this.originals.decorateTags ||
       this.#profileChanged()
@@ -77,8 +74,6 @@ export default class extends Controller {
     this.siteTitleTarget.value = this.originals.siteTitle
     this.homepageHeadingTarget.value = this.originals.homepageHeading
     this.homepageSubtitleTarget.value = this.originals.homepageSubtitle
-    this.usdaApiKeyTarget.value = ""
-    this.anthropicApiKeyTarget.value = ""
     this.showNutritionTarget.checked = this.originals.showNutrition
     this.decorateTagsTarget.checked = this.originals.decorateTags
     if (this.hasProfileNameTarget) this.profileNameTarget.value = this.originals.profileName
@@ -137,8 +132,6 @@ export default class extends Controller {
       site_title: this.siteTitleTarget.value,
       homepage_heading: this.homepageHeadingTarget.value,
       homepage_subtitle: this.homepageSubtitleTarget.value,
-      usda_api_key: this.usdaApiKeyTarget.value,
-      anthropic_api_key: this.anthropicApiKeyTarget.value,
       show_nutrition: this.showNutritionTarget.checked,
       decorate_tags: this.decorateTagsTarget.checked
     }

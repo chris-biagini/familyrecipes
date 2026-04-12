@@ -27,7 +27,6 @@ import QuickbitesGraphicalController from "./controllers/quickbites_graphical_co
 import RecipeFilterController from "./controllers/recipe_filter_controller"
 import RecipeGraphicalController from "./controllers/recipe_graphical_controller"
 import RecipeStateController from "./controllers/recipe_state_controller"
-import RevealController from "./controllers/reveal_controller"
 import ScalePanelController from "./controllers/scale_panel_controller"
 import SearchOverlayController from "./controllers/search_overlay_controller"
 import SettingsEditorController from "./controllers/settings_editor_controller"
@@ -52,7 +51,6 @@ application.register("quickbites-graphical", QuickbitesGraphicalController)
 application.register("recipe-filter", RecipeFilterController)
 application.register("recipe-graphical", RecipeGraphicalController)
 application.register("recipe-state", RecipeStateController)
-application.register("reveal", RevealController)
 application.register("scale-panel", ScalePanelController)
 application.register("search-overlay", SearchOverlayController)
 application.register("settings-editor", SettingsEditorController)

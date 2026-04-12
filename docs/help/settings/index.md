@@ -30,14 +30,17 @@ When off, all tags appear as plain gray pills.
 
 ## API Keys
 
-**USDA API key** — enables USDA ingredient search in the nutrition editor.
-Get a free key at [fdc.nal.usda.gov](https://fdc.nal.usda.gov/api-guide.html).
+API keys are deployment-level configuration — they are not stored in the
+database and cannot be changed here.
 
-**Anthropic API key** — enables [AI Import]({{ site.baseurl }}/import-export/ai-import/)
-on the homepage. Get a key at [console.anthropic.com](https://console.anthropic.com).
+- **Homelab installs:** set `USDA_API_KEY` and/or `ANTHROPIC_API_KEY` in your
+  `docker-compose.yml` environment section or `.env` file. See
+  `.env.example` and `docker-compose.example.yml` for the full list of
+  supported variables.
+- **Hosted installs:** keys are configured by the operator. Features that
+  require a key are automatically available if the operator has enabled them.
 
-Keys are stored encrypted. Use the **Show** button to reveal a key you've
-already entered.
+When a key is present, it applies to all kitchens on that deployment.
 
 ## Multi-kitchen support
 

@@ -39,22 +39,6 @@
   width: 100%;
 }
 
-.settings-api-key-row {
-  display: flex;
-  gap: 0.5rem;
-  align-items: stretch;
-}
-
-.settings-api-key-row .input-base {
-  flex: 1;
-  font-family: var(--font-mono);
-}
-
-.settings-reveal-btn {
-  white-space: nowrap;
-  min-width: 3.5rem;
-}
-
 .settings-join-code-row {
   display: flex;
   gap: 0.5rem;

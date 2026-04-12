@@ -7,7 +7,7 @@
 #
 # Collaborators:
 # - AiImportService (API call orchestration)
-# - Kitchen#anthropic_api_key (key presence check)
+# - ENV['ANTHROPIC_API_KEY'] (key presence check)
 class AiImportController < ApplicationController
   before_action :require_membership
 

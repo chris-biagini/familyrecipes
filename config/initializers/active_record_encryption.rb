@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Configures Active Record Encryption keys for encrypting sensitive columns
-# (e.g., usda_api_key on Kitchen). In production, all three env vars must be
+# (e.g., join_code on Kitchen). In production, all three env vars must be
 # set — hardcoded dev defaults would silently encrypt with known keys.
 ENCRYPTION_ENV_VARS = %w[
   ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY

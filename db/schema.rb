@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 4) do
+ActiveRecord::Schema[8.1].define(version: 5) do
   create_table "categories", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "kitchen_id", null: false
@@ -105,7 +105,6 @@ ActiveRecord::Schema[8.1].define(version: 4) do
 
   create_table "kitchens", force: :cascade do |t|
     t.text "aisle_order"
-    t.string "anthropic_api_key"
     t.datetime "created_at", null: false
     t.boolean "decorate_tags", default: true, null: false
     t.string "homepage_heading", default: "Our Recipes"
@@ -116,7 +115,6 @@ ActiveRecord::Schema[8.1].define(version: 4) do
     t.string "site_title", default: "mirepoix"
     t.string "slug", null: false
     t.datetime "updated_at", null: false
-    t.string "usda_api_key"
     t.index ["join_code"], name: "index_kitchens_on_join_code", unique: true
     t.index ["slug"], name: "index_kitchens_on_slug", unique: true
   end

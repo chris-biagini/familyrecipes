@@ -126,6 +126,7 @@ title and homepage text.
 | `ALLOWED_HOSTS` | allow all | Comma-separated domain(s) for DNS rebinding protection |
 | `RAILS_LOG_LEVEL` | `info` | `debug`, `info`, `warn`, `error` |
 | `USDA_API_KEY` | — | Free at [fdc.nal.usda.gov](https://fdc.nal.usda.gov/api-key-signup) |
+| `ANTHROPIC_API_KEY` | — | Optional; enables AI-powered recipe import in the recipe editor |
 
 ### 4. Sign in (production)
 

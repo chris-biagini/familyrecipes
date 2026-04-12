@@ -6,8 +6,9 @@
 # quick bites, ingredient catalog entries, a single MealPlan, and its member
 # Users via Memberships. Also holds aisle_order (user-customized grocery aisle
 # sequence), site branding (site_title, homepage_heading, homepage_subtitle),
-# display preferences (show_nutrition), encrypted API keys (usda_api_key,
-# anthropic_api_key), and an encrypted join_code for membership invitations.
+# display preferences (show_nutrition), and an encrypted join_code for
+# membership invitations. Third-party API keys (USDA, Anthropic) are read
+# from environment variables, not stored in the database.
 # join_code uses deterministic encryption so it can be queried via find_by.
 #
 # Kitchen.finalize_writes(kitchen) is the single post-write entry point for
@@ -28,8 +29,6 @@ class Kitchen < ApplicationRecord
   has_many :custom_grocery_items, dependent: :destroy
   has_many :on_hand_entries, dependent: :destroy
 
-  encrypts :usda_api_key
-  encrypts :anthropic_api_key
   encrypts :join_code, deterministic: true
 
   MAX_AISLES = 50

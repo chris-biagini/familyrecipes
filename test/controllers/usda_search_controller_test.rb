@@ -6,7 +6,11 @@ class UsdaSearchControllerTest < ActionDispatch::IntegrationTest
   setup do
     create_kitchen_and_user
     log_in
-    @kitchen.update!(usda_api_key: 'test-key-123')
+    ENV['USDA_API_KEY'] = 'test-key-123'
+  end
+
+  teardown do
+    ENV.delete('USDA_API_KEY')
   end
 
   # --- search ---
@@ -44,7 +48,7 @@ class UsdaSearchControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'search returns no_api_key error when key is blank' do
-    @kitchen.update!(usda_api_key: nil)
+    ENV.delete('USDA_API_KEY')
 
     get usda_search_path(kitchen_slug: kitchen_slug), params: { q: 'cheese' }, as: :json
 
@@ -114,7 +118,7 @@ class UsdaSearchControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'show returns no_api_key error when key is blank' do
-    @kitchen.update!(usda_api_key: nil)
+    ENV.delete('USDA_API_KEY')
 
     get usda_show_path(9003, kitchen_slug: kitchen_slug), as: :json
 

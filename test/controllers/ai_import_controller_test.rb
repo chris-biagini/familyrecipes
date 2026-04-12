@@ -6,7 +6,11 @@ class AiImportControllerTest < ActionDispatch::IntegrationTest
   setup do
     create_kitchen_and_user
     log_in
-    @kitchen.update!(anthropic_api_key: 'sk-ant-test-key')
+    ENV['ANTHROPIC_API_KEY'] = 'sk-ant-test-key'
+  end
+
+  teardown do
+    ENV.delete('ANTHROPIC_API_KEY')
   end
 
   test 'create returns markdown on success' do

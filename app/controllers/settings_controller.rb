@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Manages kitchen-scoped settings: site branding (title, heading, subtitle),
-# API keys (USDA, Anthropic), join code management, member listing, and user
+# display preferences, join code management, member listing, and user
 # profile editing. The settings dialog loads its form via a Turbo Frame
 # (editor_frame) and saves via JSON PATCH. Join code regeneration is
 # restricted to kitchen owners.
@@ -17,8 +17,6 @@ class SettingsController < ApplicationController
       site_title: current_kitchen.site_title,
       homepage_heading: current_kitchen.homepage_heading,
       homepage_subtitle: current_kitchen.homepage_subtitle,
-      usda_api_key_set: current_kitchen.usda_api_key.present?,
-      anthropic_api_key_set: current_kitchen.anthropic_api_key.present?,
       show_nutrition: current_kitchen.show_nutrition,
       decorate_tags: current_kitchen.decorate_tags,
       join_code: current_kitchen.join_code,
@@ -35,7 +33,7 @@ class SettingsController < ApplicationController
   end
 
   def update
-    if current_kitchen.update(filtered_settings_params)
+    if current_kitchen.update(settings_params)
       current_kitchen.broadcast_update
       render json: { status: 'ok' }
     else
@@ -72,15 +70,8 @@ class SettingsController < ApplicationController
     end
   end
 
-  def filtered_settings_params
-    permitted = settings_params
-    permitted.delete(:usda_api_key) if permitted[:usda_api_key].blank?
-    permitted.delete(:anthropic_api_key) if permitted[:anthropic_api_key].blank?
-    permitted
-  end
-
   def settings_params
-    params.expect(kitchen: %i[site_title homepage_heading homepage_subtitle usda_api_key anthropic_api_key
+    params.expect(kitchen: %i[site_title homepage_heading homepage_subtitle
                               show_nutrition decorate_tags])
   end
 
