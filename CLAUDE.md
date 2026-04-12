@@ -397,8 +397,29 @@ Active long-lived branches are listed in the memory system, not here.
   any superpowers skill that recommends worktrees.
 - **GitHub auto-deletes remote branches** after PR merge.
 - Reference GitHub issues in commit messages to auto-close on push
-  (e.g., "Resolves #nn" or "Resolves #nn1, resolves #nn2").
+  (e.g., "Resolves #123" or "Resolves #123, resolves #124"). Use bare
+  `#NNN` — prefixes like `GH #NNN` prevent GitHub's auto-close parser
+  from matching.
 - Commit after finishing edits to a file — don't batch unrelated changes.
+
+### Project Tracking — GitHub Issues is the source of truth
+
+**Milestoned issues = committed work.** `Kamal Deploy` and
+`Phase 3: Self-Serve` contain shaped, actionable issues. The pinned
+tracking issue in each active milestone shows the critical path in
+dependency order.
+
+**Unmilestoned issues = idea pile.** Quick notes, half-baked bugs,
+tinkering candidates. Zero commitment. Promoting to a milestone is a
+deliberate act.
+
+**Labels:** `bug`, `smelly`, `ops` (non-code tasks). No label = normal
+code work.
+
+**Convention:** When a session discovers new work, file an issue. When
+a session completes work, close the issue and check off the tracking
+issue line. Don't maintain competing task lists in design docs, memory,
+or CLAUDE.md.
 
 **Screenshots.** Save to `~/screenshots/`, not inside the repo.
 
