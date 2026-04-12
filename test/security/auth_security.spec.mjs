@@ -57,4 +57,22 @@ describe("Auth Security", () => {
       `Expected 403/404/422 for anonymous recipe create, got ${resp.status}`,
     )
   })
+
+  it("/join/complete is rate limited", async () => {
+    const responses = []
+    for (let i = 0; i < 12; i++) {
+      const resp = await fetchAnonymousWithCsrf("/join/complete", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `email=flood${i}%40example.com&name=Flood&signed_kitchen_id=dummy`,
+      })
+      responses.push(resp.status)
+    }
+
+    const rateLimited = responses.filter((s) => s === 429)
+    assert.ok(
+      rateLimited.length > 0,
+      `Expected at least one 429 response, got statuses: ${responses.join(", ")}`,
+    )
+  })
 })
