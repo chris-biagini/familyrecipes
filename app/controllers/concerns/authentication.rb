@@ -35,7 +35,10 @@ module Authentication
   end
 
   def find_session_by_cookie
-    Session.find_signed(cookies.signed[:session_id], purpose: :session)
+    token = cookies.signed[:session_id]
+    return nil unless token.is_a?(String)
+
+    Session.find_signed(token, purpose: :session)
   end
 
   def start_new_session_for(user)
