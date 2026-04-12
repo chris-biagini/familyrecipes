@@ -21,7 +21,8 @@ services:
       SECRET_KEY_BASE: ${SECRET_KEY_BASE:-}
       ALLOWED_HOSTS: ${ALLOWED_HOSTS:-}
       # RAILS_LOG_LEVEL: ${RAILS_LOG_LEVEL:-info}
-      # USDA_API_KEY: ${USDA_API_KEY:-}
+      # USDA_API_KEY: ${USDA_API_KEY:-}            # enables USDA nutrition lookups
+      # ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}  # enables AI recipe import
     volumes:
       # Named volume (default — works everywhere, managed by Docker):
       - app_storage:/app/storage
