@@ -49,8 +49,8 @@ for grocery and nutrition purposes.
 
 ## USDA search
 
-If a [USDA API key]({{ site.baseurl }}/settings/) is configured, an inline
-search panel appears in the editor. Search by ingredient name, click a
+If a USDA API key is configured on the deployment (via the `USDA_API_KEY`
+environment variable), an inline search panel appears in the editor. Search by ingredient name, click a
 result to import its nutrient values, volume conversions, and unit weights automatically.
 
 USDA data imports as a starting point — review and adjust values as needed

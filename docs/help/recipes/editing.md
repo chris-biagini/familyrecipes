@@ -34,8 +34,9 @@ without losing anything.
 
 ## AI import
 
-If an [Anthropic API key]({{ site.baseurl }}/settings/) is configured, an
-**AI Import** button appears on the homepage. Click it, paste any recipe
+If an Anthropic API key is configured on the deployment (via the
+`ANTHROPIC_API_KEY` environment variable), an **AI Import** button appears
+on the homepage. Click it, paste any recipe
 text (from a website, a photo, dictated notes — anything), and Claude will
 parse it into the recipe format and open it in the editor for review.
 

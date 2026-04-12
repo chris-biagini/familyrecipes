@@ -13,8 +13,10 @@ AI Import uses Claude to parse recipe text and convert it into the
 
 ## Requirements
 
-An Anthropic API key must be set in [Settings]({{ site.baseurl }}/settings/).
-Once configured, an **AI Import** button appears on the homepage.
+An Anthropic API key must be configured on the deployment. Homelab users set
+`ANTHROPIC_API_KEY` in their `docker-compose.yml` or `.env` file. Hosted users
+get this automatically if the operator has enabled it. Once a key is present,
+an **AI Import** button appears on the homepage.
 
 ## How to use it
 

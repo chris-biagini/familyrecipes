@@ -36,15 +36,17 @@ class DocContractCheck < ActionDispatch::IntegrationTest
     assert_empty failures, "Doc contract violations:\n#{failures.join("\n")}"
   end
 
-  test 'settings mentioned in docs correspond to Kitchen columns' do
-    doc_settings = extract_setting_references
+  test 'settings mentioned in docs correspond to Kitchen columns or known env vars' do
+    column_refs, env_var_refs = extract_setting_references
     kitchen_columns = Kitchen.column_names.to_set
 
-    missing = doc_settings.reject { |s| kitchen_columns.include?(s[:column]) }
+    missing_columns = column_refs.reject { |s| kitchen_columns.include?(s[:identifier]) }
+    unknown_env_vars = env_var_refs.reject { |s| known_env_var_settings.include?(s[:identifier]) }
+    failures = missing_columns + unknown_env_vars
 
-    assert_empty missing,
-                 "Settings in docs but not in Kitchen model:\n#{missing.map do |s|
-                   "  #{s[:source]}: #{s[:column]}"
+    assert_empty failures,
+                 "Settings in docs not found in Kitchen model or known env vars:\n#{failures.map do |s|
+                   "  #{s[:source]}: #{s[:identifier]}"
                  end.join("\n")}"
   end
 
@@ -93,31 +95,43 @@ class DocContractCheck < ActionDispatch::IntegrationTest
     routes
   end
 
+  # Returns [column_refs, env_var_refs] — two arrays of {identifier:, source:} hashes.
+  # Column refs map to Kitchen columns; env var refs map to deployment-level env vars.
   def extract_setting_references
-    settings = []
+    column_map = {
+      'show nutrition' => 'show_nutrition',
+      'display nutrition' => 'show_nutrition',
+      'decorate' => 'decorate_tags',
+      'site title' => 'site_title',
+      'homepage heading' => 'homepage_heading',
+      'homepage subtitle' => 'homepage_subtitle'
+    }
+
+    env_var_map = {
+      'usda api key' => 'USDA_API_KEY',
+      'anthropic api key' => 'ANTHROPIC_API_KEY'
+    }
+
+    column_refs = []
+    env_var_refs = []
+
     help_doc_files.each do |file|
       relative = Pathname.new(file).relative_path_from(help_docs_path).to_s
       content = File.read(file)
 
-      # Maps doc phrases to Kitchen columns or ENV var names
-      setting_map = {
-        'usda api key' => 'USDA_API_KEY',
-        'anthropic api key' => 'ANTHROPIC_API_KEY',
-        'show nutrition' => 'show_nutrition',
-        'display nutrition' => 'show_nutrition',
-        'decorate' => 'decorate_tags',
-        'site title' => 'site_title',
-        'homepage heading' => 'homepage_heading',
-        'homepage subtitle' => 'homepage_subtitle'
-      }
+      column_map.each do |phrase, column|
+        column_refs << { identifier: column, source: relative } if content.downcase.include?(phrase)
+      end
 
-      setting_map.each do |phrase, column|
-        next unless content.downcase.include?(phrase)
-
-        settings << { column:, source: relative }
+      env_var_map.each do |phrase, var|
+        env_var_refs << { identifier: var, source: relative } if content.downcase.include?(phrase)
       end
     end
 
-    settings.uniq { |s| s[:column] }
+    [column_refs.uniq { |s| s[:identifier] }, env_var_refs.uniq { |s| s[:identifier] }]
+  end
+
+  def known_env_var_settings
+    %w[USDA_API_KEY ANTHROPIC_API_KEY].to_set
   end
 end

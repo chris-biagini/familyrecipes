@@ -26,8 +26,9 @@ On the homepage, click **Export All Data**. Your browser downloads a
 
 - Meal plan state — menu selections, grocery check-off state, and pantry
   history are not included in the export.
-- API keys — these are stored encrypted and are not exported. You'll need
-  to re-enter your USDA and Anthropic API keys after importing on a new install.
+- API keys — these are environment variables set at the deployment level,
+  not stored in the database. Configure them in your `docker-compose.yml` or
+  `.env` on the new install.
 - User accounts and memberships — authentication state and kitchen
   memberships are not part of the export.
 
